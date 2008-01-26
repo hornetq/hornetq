@@ -21,6 +21,7 @@
   */
 package org.jboss.messaging.core;
 
+import java.util.LinkedList;
 import java.util.List;
 
 
@@ -38,6 +39,13 @@ public interface Queue
    HandleStatus addLast(MessageReference ref);
    
    HandleStatus addFirst(MessageReference ref);
+   
+   /**
+    * This method is used to add a List of MessageReferences atomically at the head of the list.
+    * Useful when cancelling messages and guaranteeing ordering
+    * @param list
+    */
+   void addListFirst(LinkedList<MessageReference> list);
    
    void deliver();
    

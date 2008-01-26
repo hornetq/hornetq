@@ -23,7 +23,6 @@ package org.jboss.jms.server.endpoint;
 
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CHANGERATE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CLOSE;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CLOSING;
 
 import javax.jms.JMSException;
 
@@ -44,9 +43,7 @@ import org.jboss.messaging.core.impl.ConditionImpl;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
-import org.jboss.messaging.core.remoting.wireformat.ChangeRateMessage;
-import org.jboss.messaging.core.remoting.wireformat.ClosingRequest;
-import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
+import org.jboss.messaging.core.remoting.wireformat.ConsumerChangeRateMessage;
 import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
@@ -67,7 +64,7 @@ import org.jboss.messaging.util.Logger;
  * 
  * @version <tt>$Revision$</tt> $Id$
  */
-public class ServerConsumerEndpoint implements Consumer, ConsumerEndpoint
+public class ServerConsumerEndpoint implements Consumer
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -109,15 +106,12 @@ public class ServerConsumerEndpoint implements Consumer, ConsumerEndpoint
    // Must be volatile
    private volatile boolean clientAccepting;
 
-   private long lastDeliveryID = -1;
-   
    private int prefetchSize;
    
    private volatile int sendCount;
    
    private boolean firstTime = true;
-   
-   
+      
    //FIXME temp
    public Queue getMessageQueue()
    {
@@ -270,7 +264,7 @@ public class ServerConsumerEndpoint implements Consumer, ConsumerEndpoint
                    
          try
          {
-         	sessionEndpoint.handleDelivery(ref, this);
+         	sessionEndpoint.handleDelivery(ref, this, replier);
          }
          catch (Exception e)
          {
@@ -308,15 +302,13 @@ public class ServerConsumerEndpoint implements Consumer, ConsumerEndpoint
 
    // Closeable implementation ---------------------------------------------------------------------
 
-   public long closing(long sequence) throws JMSException
+   public void closing() throws JMSException
    {
       try
       {
          if (trace) { log.trace(this + " closing");}
 
          stop();
-         
-         return lastDeliveryID;
       }
       catch (Throwable t)
       {
@@ -405,11 +397,6 @@ public class ServerConsumerEndpoint implements Consumer, ConsumerEndpoint
    	return this.id;
    }
 
-   void setLastDeliveryID(long id)
-   {
-   	this.lastDeliveryID = id;
-   }
-   
    void setStarted(boolean started)
    {
       //No need to lock since caller already has the lock
@@ -523,35 +510,7 @@ public class ServerConsumerEndpoint implements Consumer, ConsumerEndpoint
             return;
          }
 
-         started = false;
-         
-         // Any message deliveries already transit to the consumer, will just be ignored by the
-         // ClientConsumer since it will be closed.
-         //
-         // To clarify, the close protocol (from connection) is as follows:
-         //
-         // 1) ClientConsumer::close() - any messages in buffer are cancelled to the server
-         // session, and any subsequent receive messages will be ignored.
-         //
-         // 2) ServerConsumerEndpoint::closing() causes stop() this flushes any deliveries yet to
-         // deliver to the client callback handler.
-         //
-         // 3) ClientConsumer waits for all deliveries to arrive at client side
-         //
-         // 4) ServerConsumerEndpoint:close() - endpoint is deregistered.
-         //
-         // 5) Session.close() - acks or cancels any remaining deliveries in the SessionState as
-         // appropriate.
-         //
-         // 6) ServerSessionEndpoint::close() - cancels any remaining deliveries and deregisters
-         // session.
-         //
-         // 7) Client side session executor is shutdown.
-         //
-         // 8) ServerConnectionEndpoint::close() - connection is deregistered.
-         //
-         // 9) Remoting connection listener is removed and remoting connection stopped.
-
+         started = false;         
       }
    }
 
@@ -566,22 +525,24 @@ public class ServerConsumerEndpoint implements Consumer, ConsumerEndpoint
 
    private PacketSender replier;
 
+   //FIXME - this is a hack - we shouldn't have to wait for a change rate message before we can send
+   //a message to the client
    private void setReplier(PacketSender replier)
    {
       this.replier = replier;
    }
-
-   public void deliver(DeliverMessage message)
-   {
-      if (replier != null)
-      {
-         message.setTargetID(id);
-         replier.send(message);
-      } else
-      {
-         log.error("No replier to deliver message to consumer");
-      }
-   }
+//
+//   public void deliver(DeliverMessage message)
+//   {
+//      if (replier != null)
+//      {
+//         message.setTargetID(id);
+//         replier.send(message);
+//      } else
+//      {
+//         log.error("No replier to deliver message to consumer");
+//      }
+//   }
 
    // Inner classes --------------------------------------------------------------------------------
    
@@ -603,14 +564,13 @@ public class ServerConsumerEndpoint implements Consumer, ConsumerEndpoint
             {
                setReplier(sender);
 
-               ChangeRateMessage message = (ChangeRateMessage) packet;
+               ConsumerChangeRateMessage message = (ConsumerChangeRateMessage) packet;
                changeRate(message.getRate());
-            } else if (type == REQ_CLOSING)
+            } else if (type == PacketType.MSG_CLOSING)
             {
-               ClosingRequest request = (ClosingRequest) packet;
-               long id = closing(request.getSequence());
+               closing();
                
-               response = new ClosingResponse(id);
+               response = new NullPacket();
             } else if (type == MSG_CLOSE)
             {
                close();

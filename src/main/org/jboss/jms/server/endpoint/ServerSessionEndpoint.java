@@ -21,26 +21,18 @@
   */
 package org.jboss.jms.server.endpoint;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_ACKDELIVERIES;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_ADDTEMPORARYDESTINATION;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CANCELDELIVERIES;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CANCELDELIVERY;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CLOSE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_DELETETEMPORARYDESTINATION;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SENDMESSAGE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_UNSUBSCRIBE;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_ACKDELIVERY;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CLOSING;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATEBROWSER;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATECONSUMER;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATEDESTINATION;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -50,10 +42,6 @@ import javax.jms.InvalidDestinationException;
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 
-import org.jboss.jms.client.impl.Ack;
-import org.jboss.jms.client.impl.AckImpl;
-import org.jboss.jms.client.impl.Cancel;
-import org.jboss.jms.client.impl.DeliveryInfo;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
@@ -62,6 +50,7 @@ import org.jboss.jms.server.container.SecurityAspect;
 import org.jboss.jms.server.security.CheckType;
 import org.jboss.messaging.core.Binding;
 import org.jboss.messaging.core.Condition;
+import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.core.DestinationType;
 import org.jboss.messaging.core.Filter;
@@ -71,21 +60,14 @@ import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.PostOffice;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.Transaction;
-import org.jboss.messaging.core.TransactionSynchronization;
 import org.jboss.messaging.core.impl.ConditionImpl;
+import org.jboss.messaging.core.impl.DeliveryImpl;
 import org.jboss.messaging.core.impl.TransactionImpl;
 import org.jboss.messaging.core.impl.filter.FilterImpl;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
-import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveriesMessage;
-import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveryRequest;
-import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveryResponse;
 import org.jboss.messaging.core.remoting.wireformat.AddTemporaryDestinationMessage;
-import org.jboss.messaging.core.remoting.wireformat.CancelDeliveriesMessage;
-import org.jboss.messaging.core.remoting.wireformat.CancelDeliveryMessage;
-import org.jboss.messaging.core.remoting.wireformat.ClosingRequest;
-import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
 import org.jboss.messaging.core.remoting.wireformat.CreateBrowserRequest;
 import org.jboss.messaging.core.remoting.wireformat.CreateBrowserResponse;
 import org.jboss.messaging.core.remoting.wireformat.CreateConsumerRequest;
@@ -93,20 +75,19 @@ import org.jboss.messaging.core.remoting.wireformat.CreateConsumerResponse;
 import org.jboss.messaging.core.remoting.wireformat.CreateDestinationRequest;
 import org.jboss.messaging.core.remoting.wireformat.CreateDestinationResponse;
 import org.jboss.messaging.core.remoting.wireformat.DeleteTemporaryDestinationMessage;
-import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
-import org.jboss.messaging.core.remoting.wireformat.SendMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionAcknowledgeMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionCancelMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.MessageQueueNameHelper;
 
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedLong;
 
 /**
  * Session implementation
@@ -122,7 +103,7 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedLong;
  *
  * $Id$
  */
-public class ServerSessionEndpoint implements SessionEndpoint
+public class ServerSessionEndpoint
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -131,8 +112,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
    static final String DUR_SUB_STATE_CONSUMERS = "C";
 
    static final String TEMP_QUEUE_MESSAGECOUNTER_PREFIX = "TempQueue.";
-
-   private static final long CLOSE_WAIT_TIMEOUT = 5 * 1000;
 
    // Static ---------------------------------------------------------------------------------------
 
@@ -159,26 +138,34 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private Queue defaultDLQ;
    private Queue defaultExpiryQueue;
 
-   // Map <deliveryID, Delivery>
-   private Map deliveries;
+   private volatile LinkedList<Delivery> deliveries = new LinkedList<Delivery>();
 
-   private SynchronizedLong deliveryIdSequence;
+   //private SynchronizedLong deliveryIdSequence;
+   
+   private long deliveryIDSequence = 0;
 
    //Temporary until we have our own NIO transport
    QueuedExecutor executor = new QueuedExecutor(new LinkedQueue());
 
-   private Object waitLock = new Object();
-   
    private Transaction tx;
    
-   private boolean transacted;
+   //private boolean transacted;
    
    private boolean xa;
+   
+   private PacketSender sender;
+   
+   //private boolean transactionalSends;
+   
+   private boolean autoCommitSends;
+   
+   private boolean autoCommitAcks;
 
    // Constructors ---------------------------------------------------------------------------------
 
    ServerSessionEndpoint(String sessionID, ServerConnectionEndpoint connectionEndpoint,
-                         boolean transacted, boolean xa) throws Exception
+                         boolean autoCommitSends, boolean autoCommitAcks, boolean xa,
+                         PacketSender sender) throws Exception
    {
       this.id = sessionID;
 
@@ -196,41 +183,198 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
       defaultRedeliveryDelay = sp.getConfiguration().getDefaultRedeliveryDelay();
 
-      deliveries = new ConcurrentHashMap();
-
-      deliveryIdSequence = new SynchronizedLong(0);
-      
-      this.transacted = transacted;
+      //this.transacted = transacted;
       
       this.xa = xa;
       
-      if (transacted && !xa)
-      {
-         tx = new TransactionImpl();
-      }
+      tx = new TransactionImpl();
+      
+      
+      this.sender = sender;
+      
+      //this.transactionalSends = transactionalSends;
+      
+      this.autoCommitSends = autoCommitSends;
+      
+      this.autoCommitAcks = autoCommitAcks;
    }
+   
+   
+   // Public ---------------------------------------------------------------------------------------
 
-   // SessionDelegate implementation ---------------------------------------------------------------
-
-
-   private void checkSecurityCreateConsumerDelegate(Destination dest, String subscriptionName ) throws JMSException
+   public ServerConnectionEndpoint getConnectionEndpoint()
    {
-      security.check(dest, CheckType.READ, this.getConnectionEndpoint());
+      return connectionEndpoint;
+   }
 
-      // if creating a durable subscription then need create permission
+   public String toString()
+   {
+      return "SessionEndpoint[" + id + "]";
+   }
 
-      if (subscriptionName != null)
+   // Package protected ----------------------------------------------------------------------------
+
+   void expireDelivery(MessageReference ref, Queue expiryQueue) throws Exception
+   {
+      if (trace) { log.trace(this + " detected expired message " + ref); }
+
+//      if (expiryQueue != null)
+//      {
+//         if (trace) { log.trace(this + " sending expired message to expiry queue " + expiryQueue); }
+//
+//         Message copy = makeCopyForDLQOrExpiry(true, ref);
+//
+//         moveInTransaction(copy, ref, expiryQueue, true);
+//      }
+//      else
+//      {
+//         log.warn("No expiry queue has been configured so removing expired " + ref);
+//
+//         //TODO - tidy up these references - ugly
+//         ref.acknowledge(this.getConnectionEndpoint().getMessagingServer().getPersistenceManager());
+//      }
+      
+      //TODO
+   }
+
+   void removeBrowser(String browserId) throws Exception
+   {
+      synchronized (browsers)
       {
-         // durable
-         security.check(dest, CheckType.CREATE, this.getConnectionEndpoint());
+         if (browsers.remove(browserId) == null)
+         {
+            throw new IllegalStateException("Cannot find browser with id " + browserId + " to remove");
+         }
       }
    }
 
-   public CreateConsumerResponse createConsumerDelegate(Destination destination,
-                                                        String filterString,
-                                                        boolean noLocal,
-                                                        String subscriptionName,
-                                                        boolean isCC) throws JMSException
+   void removeConsumer(String consumerId) throws Exception
+   {
+      synchronized (consumers)
+      {
+         if (consumers.remove(consumerId) == null)
+         {
+            throw new IllegalStateException("Cannot find consumer with id " + consumerId + " to remove");
+         }         
+      }
+   }
+
+   void localClose() throws Exception
+   {
+      if (closed)
+      {
+         throw new IllegalStateException("Session is already closed");
+      }
+
+      if (trace) log.trace(this + " close()");
+
+      //We clone to avoid deadlock http://jira.jboss.org/jira/browse/JBMESSAGING-836
+      Map consumersClone;
+      synchronized (consumers)
+      {
+         consumersClone = new HashMap(consumers);
+      }
+
+      for( Iterator i = consumersClone.values().iterator(); i.hasNext(); )
+      {
+         ((ServerConsumerEndpoint)i.next()).localClose();
+      }
+
+      consumers.clear();
+
+
+      //We clone to avoid deadlock http://jira.jboss.org/jira/browse/JBMESSAGING-836
+      Map browsersClone;
+      synchronized (browsers)
+      {
+         browsersClone = new HashMap(browsers);
+      }
+
+      for( Iterator i = browsersClone.values().iterator(); i.hasNext(); )
+      {
+         ((ServerBrowserEndpoint)i.next()).localClose();
+      }
+
+      browsers.clear();
+
+      rollback();
+      
+      //Close down the executor
+
+      //Note we need to wait for ALL tasks to complete NOT just one otherwise we can end up with the following situation
+      //prompter is queued and starts to execute
+      //prompter almost finishes executing then a message is cancelled due to this session closing
+      //this causes another prompter to be queued
+      //shutdownAfterProcessingCurrentTask is then called
+      //this means the second prompter never runs and the cancelled message doesn't get redelivered
+      executor.shutdownAfterProcessingCurrentlyQueuedTasks();
+
+      deliveries.clear();
+
+      sp.removeSession(id);
+
+      closed = true;
+   }
+      
+   synchronized void handleDelivery(MessageReference ref, ServerConsumerEndpoint consumer,
+                                    PacketSender sender) throws Exception
+   { 
+       //FIXME - we shouldn't have to pass in the packet Sender - this should be creatable
+       //without the consumer having to call change rate first
+       Delivery delivery = new DeliveryImpl(ref, consumer.getID(), deliveryIDSequence++, sender);
+       
+       deliveries.add(delivery);       
+              
+       delivery.deliver();
+   }
+
+   /**
+    * Starts this session's Consumers
+    */
+   void setStarted(boolean s) throws Exception
+   {
+      //We clone to prevent deadlock http://jira.jboss.org/jira/browse/JBMESSAGING-836
+      Map consumersClone;
+      synchronized(consumers)
+      {
+         consumersClone = new HashMap(consumers);
+      }
+
+      for(Iterator i = consumersClone.values().iterator(); i.hasNext(); )
+      {
+         ServerConsumerEndpoint sce = (ServerConsumerEndpoint)i.next();
+         if (s)
+         {
+            sce.start();
+         }
+         else
+         {
+            sce.stop();
+         }
+      }
+   }
+
+   void promptDelivery(final Queue queue)
+   {
+      if (trace) { log.trace("Prompting delivery on " + queue); }
+
+      try
+      {
+         //TODO - do we really need to prompt on a different thread?
+         this.executor.execute(new Runnable() { public void run() { queue.deliver();} } );
+
+      }
+      catch (Throwable t)
+      {
+         log.error("Failed to prompt delivery", t);
+      }
+   }
+
+   private CreateConsumerResponse createServerConsumer(Destination destination,
+                                                       String filterString,
+                                                       boolean noLocal,
+                                                       String subscriptionName,
+                                                       boolean isCC) throws JMSException
    {
 
       checkSecurityCreateConsumerDelegate(destination, subscriptionName);
@@ -245,8 +389,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
 
-	public CreateBrowserResponse createBrowserDelegate(Destination destination,
-                                                String filterString)
+	private CreateBrowserResponse createServerBrowser(Destination destination,
+                                                     String filterString)
       throws JMSException
 	{
       security.check(destination, CheckType.READ, this.getConnectionEndpoint());
@@ -261,7 +405,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
 	}
 
-   public JBossQueue createQueue(String name) throws JMSException
+   private JBossQueue createQueue(String name) throws JMSException
    {
       try
       {
@@ -287,7 +431,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
 
-   public JBossTopic createTopic(String name) throws JMSException
+   private JBossTopic createTopic(String name) throws JMSException
    {
       try
       {
@@ -312,8 +456,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw ExceptionUtil.handleJMSInvocation(t, this + " createTopic");
       }
    }
+   
+   private void closing() throws JMSException
+   {      
+   }
 
-   public void close() throws JMSException
+   private void close() throws JMSException
    {
       try
       {
@@ -329,74 +477,46 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
 
-   public long closing(long sequence) throws JMSException
-   {
-      if (trace) log.trace(this + " closing");
-
-      // Wait for last np message to arrive
-
-      if (sequence != 0)
-      {
-      	synchronized (waitLock)
-      	{
-      		long wait = CLOSE_WAIT_TIMEOUT;
-
-	      	while (sequence != expectedSequence && wait > 0)
-	      	{
-	      		long start = System.currentTimeMillis();
-	      		try
-	      		{
-	      			waitLock.wait();
-	      		}
-	      		catch (InterruptedException e)
-	      		{
-	      		}
-	      		wait -= (System.currentTimeMillis() - start);
-	      	}
-
-	      	if (wait <= 0)
-	      	{
-	      		log.warn("Timed out waiting for last message");
-	      	}
-      	}
-      }
-
-      return -1;
-   }
-
-   private volatile long expectedSequence = 0;
-
-   public void send(Message message) throws JMSException
-   {
-   	throw new IllegalStateException("Should not be handled on the server");
-   }
-
-   public void send(Message message, long thisSequence) throws JMSException
+   private void send(Message msg) throws JMSException
    {
       try
       {
-      	if (thisSequence != -1)
-      	{
-      		synchronized (waitLock)
-      		{
-   				connectionEndpoint.sendMessage(message);
+         Destination dest = (Destination)msg.getHeader(org.jboss.messaging.core.Message.TEMP_DEST_HEADER_NAME);
 
-      			expectedSequence++;
+         //Assign the message an internal id - this is used to key it in the store and also used to 
+         //handle delivery
+         
+         msg.setMessageID(sp.getPersistenceManager().generateMessageID());
+         
+         // This allows the no-local consumers to filter out the messages that come from the same
+         // connection.
 
-	      		waitLock.notify();
-      		}
-      	}
-      	else
-      	{
-      		connectionEndpoint.sendMessage(message);
-      	}
+         msg.setConnectionID(connectionEndpoint.getConnectionID());
 
-      	if (message.isDurable())
-      	{
-      	   sp.getPersistenceManager().addMessage(message);
-      	}
+         Condition condition = new ConditionImpl(dest.getType(), dest.getName());
+         
+         postOffice.route(condition, msg);
+         
+         //FIXME - this check belongs on the client side!!
+         
+         if (dest.getType() == DestinationType.QUEUE && msg.getReferences().isEmpty())
+         {
+            throw new InvalidDestinationException("Failed to route to queue " + dest.getName());
+         }
+         
+         if (autoCommitSends)
+         {
+            if (msg.getNumDurableReferences() != 0)
+            {
+               sp.getPersistenceManager().addMessage(msg);
+            }
 
-      	message.send();
+            msg.send();
+         }
+         else
+         {
+            tx.addMessage(msg);
+         }              	
       }
       catch (Throwable t)
       {
@@ -404,82 +524,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
 
-   public boolean acknowledgeDelivery(Ack ack) throws JMSException
-   {
-      try
-      {
-         return acknowledgeDeliveryInternal(ack);
-      }
-      catch (Throwable t)
-      {
-         JMSException e = ExceptionUtil.handleJMSInvocation(t, this + " acknowledgeDelivery");
-
-         throw e;
-      }
-   }
-
-   public void acknowledgeDeliveries(List acks) throws JMSException
-   {
-      if (trace) {log.trace(this + " acknowledges deliveries " + acks); }
-
-      try
-      {
-         Iterator iter = acks.iterator();
-
-         while (iter.hasNext())
-         {
-            Ack ack = (Ack)iter.next();
-
-            acknowledgeDeliveryInternal(ack);
-         }
-      }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " acknowledgeDeliveries");
-      }
-   }
-
-   public void cancelDelivery(Cancel cancel) throws JMSException
-   {
-      try
-      {
-         if (trace) {log.trace(this + " cancelDelivery " + cancel); }
-
-         cancelDeliveryInternal(cancel);
-      }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " acknowledgeDeliveries");
-      }
-   }
-
-   public void cancelDeliveries(List cancels) throws JMSException
-   {
-      if (trace) {log.trace(this + " cancels deliveries " + cancels); }
-
-      try
-      {
-         // deliveries must be cancelled in reverse order
-
-         for (int i = cancels.size() - 1; i >= 0; i--)
-         {
-            Cancel cancel = (Cancel)cancels.get(i);
-
-            if (trace) { log.trace(this + " cancelling delivery " + cancel.getDeliveryId()); }
-
-            cancelDeliveryInternal(cancel);
-         }
-
-         if (trace) { log.trace("Cancelled deliveries"); }
-
-      }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " cancelDeliveries");
-      }
-   }
-
-   public void addTemporaryDestination(Destination dest) throws JMSException
+   private void addTemporaryDestination(Destination dest) throws JMSException
    {
       try
       {
@@ -515,7 +560,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
 
-   public void deleteTemporaryDestination(Destination dest) throws JMSException
+   private void deleteTemporaryDestination(Destination dest) throws JMSException
    {
       try
       {
@@ -579,7 +624,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
 
-   public void unsubscribe(String subscriptionName) throws JMSException
+   private void unsubscribe(String subscriptionName) throws JMSException
    {
       log.trace(this + " unsubscribing " + subscriptionName);
 
@@ -670,384 +715,251 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw ExceptionUtil.handleJMSInvocation(t, this + " unsubscribe");
       }
    }
-
-   public int getDupsOKBatchSize()
+   
+   
+   private synchronized void acknowledge(long deliveryID, boolean allUpTo) throws JMSException
    {
-      throw new RuntimeException("information only available on client side");
-   }
-
-   public boolean isStrictTck()
-   {
-      throw new RuntimeException("information only available on client side");
-   }
-
-   // Public ---------------------------------------------------------------------------------------
-
-   public ServerConnectionEndpoint getConnectionEndpoint()
-   {
-      return connectionEndpoint;
-   }
-
-   public String toString()
-   {
-      return "SessionEndpoint[" + id + "]";
-   }
-
-   // Package protected ----------------------------------------------------------------------------
-
-   void expireDelivery(MessageReference ref, Queue expiryQueue) throws Exception
-   {
-      if (trace) { log.trace(this + " detected expired message " + ref); }
-
-      if (expiryQueue != null)
+      //Note that we do not consider it an error if the deliveries cannot be found to be acked.
+      //This can legitimately occur if a connection/session/consumer is closed from inside a MessageHandlers
+      //onMessage method. In this situation the close will cancel any unacked deliveries, but the subsequent
+      //call to delivered() will try and ack again and not find the last delivery on the server.
+      try
       {
-         if (trace) { log.trace(this + " sending expired message to expiry queue " + expiryQueue); }
-
-         Message copy = makeCopyForDLQOrExpiry(true, ref);
-
-         moveInTransaction(copy, ref, expiryQueue, true);
-      }
-      else
-      {
-         log.warn("No expiry queue has been configured so removing expired " + ref);
-
-         //TODO - tidy up these references - ugly
-         ref.acknowledge(this.getConnectionEndpoint().getMessagingServer().getPersistenceManager());
-      }
-   }
-
-   void removeBrowser(String browserId) throws Exception
-   {
-      synchronized (browsers)
-      {
-         if (browsers.remove(browserId) == null)
+         if (allUpTo)
          {
-            throw new IllegalStateException("Cannot find browser with id " + browserId + " to remove");
-         }
-      }
-   }
-
-   void removeConsumer(String consumerId) throws Exception
-   {
-      synchronized (consumers)
-      {
-         if (consumers.remove(consumerId) == null)
-         {
-            throw new IllegalStateException("Cannot find consumer with id " + consumerId + " to remove");
-         }
-      }
-   }
-
-   void localClose() throws Exception
-   {
-      if (closed)
-      {
-         throw new IllegalStateException("Session is already closed");
-      }
-
-      if (trace) log.trace(this + " close()");
-
-      //We clone to avoid deadlock http://jira.jboss.org/jira/browse/JBMESSAGING-836
-      Map consumersClone;
-      synchronized (consumers)
-      {
-         consumersClone = new HashMap(consumers);
-      }
-
-      for( Iterator i = consumersClone.values().iterator(); i.hasNext(); )
-      {
-         ((ServerConsumerEndpoint)i.next()).localClose();
-      }
-
-      consumers.clear();
-
-
-      //We clone to avoid deadlock http://jira.jboss.org/jira/browse/JBMESSAGING-836
-      Map browsersClone;
-      synchronized (browsers)
-      {
-         browsersClone = new HashMap(browsers);
-      }
-
-      for( Iterator i = browsersClone.values().iterator(); i.hasNext(); )
-      {
-         ((ServerBrowserEndpoint)i.next()).localClose();
-      }
-
-      browsers.clear();
-
-
-      //Now cancel any remaining deliveries in reverse delivery order
-      //Note we don't maintain order using a LinkedHashMap since then we lose
-      //concurrency since we would have to lock it exclusively
-
-      List entries = new ArrayList(deliveries.entrySet());
-
-      //Sort them in reverse delivery id order
-      Collections.sort(entries,
-                       new Comparator()
-                       {
-                           public int compare(Object obj1, Object obj2)
-                           {
-                              Map.Entry entry1 = (Map.Entry)obj1;
-                              Map.Entry entry2 = (Map.Entry)obj2;
-                              Long id1 = (Long)entry1.getKey();
-                              Long id2 = (Long)entry2.getKey();
-                              return id2.compareTo(id1);
-                           }
-                       });
-
-      Iterator iter = entries.iterator();
-
-      if (trace) { log.trace(this + " cancelling " + entries.size() + " deliveries"); }
-
-      while (iter.hasNext())
-      {
-         Map.Entry entry = (Map.Entry)iter.next();
-
-         if (trace) { log.trace(this + " cancelling delivery with delivery id: " + entry.getKey()); }
-
-         DeliveryRecord rec = (DeliveryRecord)entry.getValue();
-
-         rec.ref.cancel(this.sp.getPersistenceManager());
-      }
-
-      //Close down the executor
-
-      //Note we need to wait for ALL tasks to complete NOT just one otherwise we can end up with the following situation
-      //prompter is queued and starts to execute
-      //prompter almost finishes executing then a message is cancelled due to this session closing
-      //this causes another prompter to be queued
-      //shutdownAfterProcessingCurrentTask is then called
-      //this means the second prompter never runs and the cancelled message doesn't get redelivered
-      executor.shutdownAfterProcessingCurrentlyQueuedTasks();
-
-      deliveries.clear();
-
-      sp.removeSession(id);
-
-      closed = true;
-   }
-
-   void cancelDelivery(long deliveryId) throws Exception
-   {
-      DeliveryRecord rec = (DeliveryRecord)deliveries.remove(new Long(deliveryId));
-
-      if (rec == null)
-      {
-         throw new IllegalStateException("Cannot find delivery to cancel " + deliveryId);
-      }
-
-      rec.ref.cancel(this.sp.getPersistenceManager());
-   }
-
-   //TODO NOTE! This needs to be synchronized to prevent deliveries coming back
-   //out of order! There maybe some better way of doing this
-   synchronized void handleDelivery(MessageReference ref, ServerConsumerEndpoint consumer) throws Exception
-   {
-   	 long deliveryId = -1;
-
-   	 DeliveryRecord rec = null;
-
-   	 deliveryId = deliveryIdSequence.increment();
-
-   	 if (trace) { log.trace("Delivery id is now " + deliveryId); }
-
-   	 // Add a delivery
-
-   	 rec = new DeliveryRecord(ref, consumer, deliveryId);
-
-       deliveries.put(new Long(deliveryId), rec);
-
-       if (trace) { log.trace(this + " added delivery " + deliveryId + ": " + ref); }
-
-       performDelivery(ref, deliveryId, consumer);
-   }
-
-   void performDelivery(MessageReference ref, long deliveryID, ServerConsumerEndpoint consumer)
-   {
-   	if (consumer == null)
-   	{
-   		if (trace) { log.trace(this + " consumer is null, cannot perform delivery"); }
-
-   		return;
-   	}
-
-   	if (trace) { log.trace(this + " performing delivery for " + ref); }
-
-      // We send the message to the client on the current thread. The message is written onto the
-      // transport and then the thread returns immediately without waiting for a response.
-
-   	DeliverMessage m = new DeliverMessage(ref.getMessage(), consumer.getID(), deliveryID, ref.getDeliveryCount());
-   	m.setVersion(getConnectionEndpoint().getUsingVersion());
-   	consumer.deliver(m);
-
-   	//TODO - what if we get an exception from MINA?
-   	//Surely we need to do exception logic too???
-
-//      }
-//      catch (Throwable t)
-//      {
-//         // it's an oneway callback, so exception could only have happened on the server, while
-//         // trying to send the callback. This is a good reason to smack the whole connection.
-//         // I trust remoting to have already done its own cleanup via a CallbackErrorHandler,
-//         // I need to do my own cleanup at ConnectionManager level.
-//
-//         log.trace(this + " failed to handle callback", t);
-//
-//         //We stop the consumer - some time later the lease will expire and the connection will be closed
-//         //which will remove the consumer
-//
-//         consumer.setStarted(false);
-//
-//         consumer.setDead();
-//
-//         //** IMPORTANT NOTE! We must return the delivery NOT null. **
-//         //This is because if we return NULL then message will remain in the queue, but later
-//         //the connection checker will cleanup and close this consumer which will cancel all the deliveries in it
-//         //including this one, so the message will go back on the queue twice!
-//      }
-   }
-
-   List<MessageReference> acknowledgeTransactionally(List<Ack> acks, Transaction tx) throws Exception
-   {
-      if (trace) { log.trace(this + " acknowledging transactionally " + acks.size() + " messages for " + tx); }
-
-      List<MessageReference> refs = new ArrayList<MessageReference>();
-
-      for(Ack ack: acks)
-      {
-         long id = ack.getDeliveryID();
-
-         DeliveryRecord rec = (DeliveryRecord)deliveries.get(id);
-
-         DeliveryCallback cb = new DeliveryCallback(id);
-
-         tx.addSynchronization(cb);
-
-         refs.add(rec.ref);
-
-         if (rec.ref.getMessage().isDurable() && rec.getConsumer().getMessageQueue().isDurable())
-         {
-            tx.setContainsPersistent(true);
-         }
-      }
-
-      return refs;
-   }
-
-   /**
-    * Starts this session's Consumers
-    */
-   void setStarted(boolean s) throws Exception
-   {
-      //We clone to prevent deadlock http://jira.jboss.org/jira/browse/JBMESSAGING-836
-      Map consumersClone;
-      synchronized(consumers)
-      {
-         consumersClone = new HashMap(consumers);
-      }
-
-      for(Iterator i = consumersClone.values().iterator(); i.hasNext(); )
-      {
-         ServerConsumerEndpoint sce = (ServerConsumerEndpoint)i.next();
-         if (s)
-         {
-            sce.start();
+            //Ack all deliveries up to and including the specified id
+            
+            for (Iterator<Delivery> iter = deliveries.iterator(); iter.hasNext();)
+            {
+               Delivery rec = iter.next();
+               
+               if (rec.getDeliveryID() <= deliveryID)
+               {
+                  iter.remove();
+                  
+                  MessageReference ref = rec.getReference();
+                  
+                  if (rec.getDeliveryID() > deliveryID)
+                  {
+                     //This catches the case where the delivery has been cancelled since it's expired
+                     //And we don't want to end up acking all deliveries!
+                     break;
+                  }
+                  
+                  if (autoCommitAcks)
+                  {
+                     ref.acknowledge(sp.getPersistenceManager());
+                  }
+                  else
+                  {
+                     tx.addAcknowledgement(ref);
+                  }
+                  
+                  if (rec.getDeliveryID() == deliveryID)
+                  {
+                     break;
+                  }
+               }
+               else
+               {
+                  //Sanity check
+                  throw new IllegalStateException("Failed to ack contiguently");
+               }
+            }
          }
          else
          {
-            sce.stop();
+            //Ack a specific delivery
+            
+            for (Iterator<Delivery> iter = deliveries.iterator(); iter.hasNext();)
+            {
+               Delivery rec = iter.next();
+               
+               if (rec.getDeliveryID() == deliveryID)
+               {
+                  iter.remove();
+                  
+                  MessageReference ref = rec.getReference();
+                  
+                  if (autoCommitAcks)
+                  {
+                     ref.acknowledge(sp.getPersistenceManager());
+                  }
+                  else
+                  {
+                     tx.addAcknowledgement(ref);
+                  }
+                   
+                  break;
+               }
+            }            
          }
-      }
-   }
-
-   void promptDelivery(final Queue queue)
-   {
-   	if (trace) { log.trace("Prompting delivery on " + queue); }
-
-      try
-      {
-         //TODO - do we really need to prompt on a different thread?
-         this.executor.execute(new Runnable() { public void run() { queue.deliver();} } );
-
       }
       catch (Throwable t)
       {
-         log.error("Failed to prompt delivery", t);
+         throw ExceptionUtil.handleJMSInvocation(t, this + " acknowledge");
       }
    }
-
+      
+   private void rollback() throws JMSException
+   {     
+      try
+      {                        
+         //Synchronize to prevent any new deliveries arriving during this recovery
+         synchronized (this)
+         {                     
+            //Add any unacked deliveries into the tx
+            //Doing this ensures all references are rolled back in the correct order
+            //in a single contiguous block
+            
+            for (Delivery del: deliveries)
+            {
+               tx.addAcknowledgement(del.getReference());
+            }
+            
+            deliveries.clear();
+            
+            deliveryIDSequence -= tx.getAcknowledgementsCount();
+         }
+            
+         tx.rollback(sp.getPersistenceManager());          
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMSInvocation(t, this + " commit");
+      }
+   }
+   
+   private void cancel(long deliveryID, boolean expired) throws JMSException
+   {
+      try
+      {
+         if (deliveryID == -1)
+         {
+            //Cancel all
+            
+            Transaction cancelTx;
+            
+            synchronized (this)
+            {
+               cancelTx = new TransactionImpl();
+               
+               for (Delivery del: deliveries)
+               {
+                  cancelTx.addAcknowledgement(del.getReference());
+               }
+               
+               deliveries.clear();
+            }
+            
+            cancelTx.rollback(sp.getPersistenceManager());
+         }
+         else
+         {
+            for (Iterator<Delivery> iter = deliveries.iterator(); iter.hasNext();)
+            {
+               Delivery delivery = iter.next();
+               
+               if (delivery.getDeliveryID() == deliveryID)
+               {
+                  //TODO - send to expiry queue
+                  delivery.getReference().acknowledge(sp.getPersistenceManager());
+               }
+               
+               iter.remove();
+               
+               break;                              
+            }
+         }
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMSInvocation(t, this + " commit");
+      }
+   }
+   
+   private void commit() throws JMSException
+   {
+      try
+      {
+         tx.commit(sp.getPersistenceManager());      
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMSInvocation(t, this + " commit");
+      }
+   }
+         
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
 
-   private void cancelDeliveryInternal(Cancel cancel) throws Exception
-   {
-      DeliveryRecord rec = (DeliveryRecord)deliveries.remove(cancel.getDeliveryId());
-
-      if (rec == null)
-      {
-         //The delivery might not be found, if the session is not replicated (i.e. auto_ack or dups_ok)
-      	//and has failed over since recoverDeliveries won't have been called
-      	if (trace)
-      	{
-      		log.trace("Cannot find delivery to cancel, session probably failed over and is not replicated");
-      	}
-      	return;
-      }
-
-      MessageReference ref = rec.ref;
-
-      //Note we check the flag *and* evaluate again, this is because the server and client clocks may
-      //be out of synch and don't want to send back to the client a message it thought it has sent to
-      //the expiry queue
-      boolean expired = cancel.isExpired() || ref.getMessage().isExpired();
-
-      //Note we check the flag *and* evaluate again, this is because the server value of maxDeliveries
-      //might get changed after the client has sent the cancel - and we don't want to end up cancelling
-      //back to the original queue
-      boolean reachedMaxDeliveryAttempts =
-         cancel.isReachedMaxDeliveryAttempts() || cancel.getDeliveryCount() >= rec.maxDeliveryAttempts;
-
-      if (!expired && !reachedMaxDeliveryAttempts)
-      {
-         //Normal cancel back to the queue
-
-         ref.setDeliveryCount(cancel.getDeliveryCount());
-
-         //Do we need to set a redelivery delay?
-
-         if (rec.redeliveryDelay != 0)
-         {
-            ref.setScheduledDeliveryTime(System.currentTimeMillis() + rec.redeliveryDelay);
-         }
-
-         if (trace) { log.trace("Cancelling delivery " + cancel.getDeliveryId()); }
-
-         ref.cancel(sp.getPersistenceManager());
-
-      }
-      else
-      {
-         if (expired)
-         {
-            //Sent to expiry queue
-
-            Message copy = makeCopyForDLQOrExpiry(true, ref);
-
-            moveInTransaction(copy, ref, rec.expiryQueue, false);
-         }
-         else
-         {
-            //Send to DLQ
-
-            Message copy = makeCopyForDLQOrExpiry(false, ref);
-
-            moveInTransaction(copy, ref, rec.dlq, true);
-         }
-      }
-   }
+//   private void cancelDeliveryInternal(Cancel cancel) throws Exception
+//   {
+//      DeliveryRecord rec = (DeliveryRecord)deliveries.remove(cancel.getDeliveryId());
+//
+//      if (rec == null)
+//      {
+//         //The delivery might not be found, if the session is not replicated (i.e. auto_ack or dups_ok)
+//      	//and has failed over since recoverDeliveries won't have been called
+//      	if (trace)
+//      	{
+//      		log.trace("Cannot find delivery to cancel, session probably failed over and is not replicated");
+//      	}
+//      	return;
+//      }
+//
+//      MessageReference ref = rec.ref;
+//
+//      //Note we check the flag *and* evaluate again, this is because the server and client clocks may
+//      //be out of synch and don't want to send back to the client a message it thought it has sent to
+//      //the expiry queue
+//      boolean expired = cancel.isExpired() || ref.getMessage().isExpired();
+//
+//      //Note we check the flag *and* evaluate again, this is because the server value of maxDeliveries
+//      //might get changed after the client has sent the cancel - and we don't want to end up cancelling
+//      //back to the original queue
+//      boolean reachedMaxDeliveryAttempts =
+//         cancel.isReachedMaxDeliveryAttempts() || cancel.getDeliveryCount() >= rec.maxDeliveryAttempts;
+//
+//      if (!expired && !reachedMaxDeliveryAttempts)
+//      {
+//         //Normal cancel back to the queue
+//
+//         ref.setDeliveryCount(cancel.getDeliveryCount());
+//
+//         //Do we need to set a redelivery delay?
+//
+//         if (rec.redeliveryDelay != 0)
+//         {
+//            ref.setScheduledDeliveryTime(System.currentTimeMillis() + rec.redeliveryDelay);
+//         }
+//
+//         if (trace) { log.trace("Cancelling delivery " + cancel.getDeliveryId()); }
+//
+//         ref.cancel(sp.getPersistenceManager());
+//
+//      }
+//      else
+//      {
+//         if (expired)
+//         {
+//            //Sent to expiry queue
+//
+//            Message copy = makeCopyForDLQOrExpiry(true, ref);
+//
+//            moveInTransaction(copy, ref, rec.expiryQueue, false);
+//         }
+//         else
+//         {
+//            //Send to DLQ
+//
+//            Message copy = makeCopyForDLQOrExpiry(false, ref);
+//
+//            moveInTransaction(copy, ref, rec.dlq, true);
+//         }
+//      }
+//   }
 
    private Message makeCopyForDLQOrExpiry(boolean expiry, MessageReference ref) throws Exception
    {
@@ -1091,63 +1003,45 @@ public class ServerSessionEndpoint implements SessionEndpoint
       return copy;
    }
 
-   private void moveInTransaction(Message msg, MessageReference ref, Queue queue, boolean dlq) throws Exception
-   {
-      List<Message> msgs = new ArrayList<Message>();
-
-      msgs.add(msg);
-
-      List<MessageReference> refs = new ArrayList<MessageReference>();
-
-      refs.add(ref);
-
-      Transaction tx = new TransactionImpl(msgs, refs, msg.isDurable());
-
-      //FIXME - clear up these ugly refs to the pm
-      tx.commit(getConnectionEndpoint().getMessagingServer().getPersistenceManager());
-
-//      MessageReference ref = msg.createReference();
+//   private void moveInTransaction(Message msg, MessageReference ref, Queue queue, boolean dlq) throws Exception
+//   {
+//      List<Message> msgs = new ArrayList<Message>();
 //
-//      try
-//      {
-//         if (queue != null)
-//         {
-//            queue.handle(null, ref, tx);
-//            del.acknowledge(tx);
-//         }
-//         else
-//         {
-//            log.warn("No " + (dlq ? "DLQ" : "expiry queue") + " has been specified so the message will be removed");
+//      msgs.add(msg);
 //
-//            del.acknowledge(tx);
-//         }
+//      List<MessageReference> refs = new ArrayList<MessageReference>();
 //
-//         tx.commit();
-//      }
-//      catch (Throwable t)
-//      {
-//         tx.rollback();
-//         throw t;
-//      }
-   }
-
-   private boolean acknowledgeDeliveryInternal(Ack ack) throws Exception
-   {
-      if (trace) { log.trace(this + " acknowledging delivery " + ack); }
-
-      DeliveryRecord rec = (DeliveryRecord)deliveries.remove(ack.getDeliveryID());
-
-      if (rec != null)
-      {
-         rec.ref.acknowledge(this.sp.getPersistenceManager());
-
-         if (trace) { log.trace(this + " acknowledged delivery " + ack); }
-
-         return true;
-      }
-
-      return false;
-   }
+//      refs.add(ref);
+//
+//      Transaction tx = new TransactionImpl(msgs, refs, msg.isDurable());
+//
+//      //FIXME - clear up these ugly refs to the pm
+//      tx.commit(getConnectionEndpoint().getMessagingServer().getPersistenceManager());
+//
+////      MessageReference ref = msg.createReference();
+////
+////      try
+////      {
+////         if (queue != null)
+////         {
+////            queue.handle(null, ref, tx);
+////            del.acknowledge(tx);
+////         }
+////         else
+////         {
+////            log.warn("No " + (dlq ? "DLQ" : "expiry queue") + " has been specified so the message will be removed");
+////
+////            del.acknowledge(tx);
+////         }
+////
+////         tx.commit();
+////      }
+////      catch (Throwable t)
+////      {
+////         tx.rollback();
+////         throw t;
+////      }
+//   }
 
    private CreateConsumerResponse createConsumerDelegateInternal(Destination destination,
                                                                  String filterString,
@@ -1440,131 +1334,146 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
       return new CreateBrowserResponse(browserID);
    }
+   
+   private void checkSecurityCreateConsumerDelegate(Destination dest, String subscriptionName ) throws JMSException
+   {
+      security.check(dest, CheckType.READ, this.getConnectionEndpoint());
+
+      // if creating a durable subscription then need create permission
+
+      if (subscriptionName != null)
+      {
+         // durable
+         security.check(dest, CheckType.CREATE, this.getConnectionEndpoint());
+      }
+   }
+
 
    // Inner classes --------------------------------------------------------------------------------
 
-   /*
-    * Holds a record of a delivery - we need to store the consumer id as well
-    * hence this class
-    * We can't rely on the cancel being driven from the ClientConsumer since
-    * the deliveries may have got lost in transit (ignored) since the consumer might have closed
-    * when they were in transit.
-    * In such a case we might otherwise end up with the consumer closing but not all it's deliveries being
-    * cancelled, which would mean they wouldn't be cancelled until the session is closed which is too late
-    *
-    * We need to store various pieces of information, such as consumer id, dlq, expiry queue
-    * since we need this at cancel time, but by then the actual consumer might have closed
-    */
-   private static class DeliveryRecord
-   {
-   	// We need to cache the attributes here  since the consumer may get gc'd BEFORE the delivery is acked
+//   /*
+//    * Holds a record of a delivery - we need to store the consumer id as well
+//    * hence this class
+//    * We can't rely on the cancel being driven from the ClientConsumer since
+//    * the deliveries may have got lost in transit (ignored) since the consumer might have closed
+//    * when they were in transit.
+//    * In such a case we might otherwise end up with the consumer closing but not all it's deliveries being
+//    * cancelled, which would mean they wouldn't be cancelled until the session is closed which is too late
+//    *
+//    * We need to store various pieces of information, such as consumer id, dlq, expiry queue
+//    * since we need this at cancel time, but by then the actual consumer might have closed
+//    */
+//   private static class DeliveryRecord
+//   {
+//   	// We need to cache the attributes here  since the consumer may get gc'd BEFORE the delivery is acked
+//
+//      MessageReference ref;
+//
+//      Queue dlq;
+//
+//      Queue expiryQueue;
+//
+//      long redeliveryDelay;
+//
+//      int maxDeliveryAttempts;
+//
+//      WeakReference consumerRef;
+//
+//      String queueName;
+//
+//      long deliveryID;
+//
+//      ServerConsumerEndpoint getConsumer()
+//      {
+//      	if (consumerRef != null)
+//      	{
+//      		return (ServerConsumerEndpoint)consumerRef.get();
+//      	}
+//      	else
+//      	{
+//      		return null;
+//      	}
+//      }
+//
+//      private DeliveryRecord(MessageReference ref, Queue dlq, Queue expiryQueue, long redeliveryDelay, int maxDeliveryAttempts,
+//      		                 String queueName, long deliveryID)
+//      {
+//      	this.ref = ref;
+//
+//      	this.dlq = dlq;
+//
+//      	this.expiryQueue = expiryQueue;
+//
+//      	this.redeliveryDelay = redeliveryDelay;
+//
+//      	this.maxDeliveryAttempts = maxDeliveryAttempts;
+//
+//      	this.queueName = queueName;
+//
+//      	this.deliveryID = deliveryID;
+//      }
+//
+//      DeliveryRecord(MessageReference ref, ServerConsumerEndpoint consumer, long deliveryID)
+//      {
+//      	this (ref, consumer.getDLQ(), consumer.getExpiryQueue(), consumer.getRedliveryDelay(), consumer.getMaxDeliveryAttempts(),
+//      			consumer.getQueueName(), deliveryID);
+//
+//      	// We need to cache the attributes here  since the consumer may get gc'd BEFORE the delivery is acked
+//
+//
+//         //We hold a WeakReference to the consumer - this is only needed when replicating - where we store the delivery then wait
+//         //for the response to come back from the replicant before actually performing delivery
+//         //We need a weak ref since when the consumer closes deliveries may still and remain and we don't want that to prevent
+//         //the consumer being gc'd
+//
+//      	//FIXME - do we still need this??
+//         this.consumerRef = new WeakReference(consumer);
+//      }
+//
+//   	public String toString()
+//   	{
+//   		return "DeliveryRecord " + System.identityHashCode(this) + " ref: " + ref + " queueName: " + queueName;
+//   	}
+//   }
 
-      MessageReference ref;
-
-      Queue dlq;
-
-      Queue expiryQueue;
-
-      long redeliveryDelay;
-
-      int maxDeliveryAttempts;
-
-      WeakReference consumerRef;
-
-      String queueName;
-
-      long deliveryID;
-
-      ServerConsumerEndpoint getConsumer()
-      {
-      	if (consumerRef != null)
-      	{
-      		return (ServerConsumerEndpoint)consumerRef.get();
-      	}
-      	else
-      	{
-      		return null;
-      	}
-      }
-
-      private DeliveryRecord(MessageReference ref, Queue dlq, Queue expiryQueue, long redeliveryDelay, int maxDeliveryAttempts,
-      		                 String queueName, long deliveryID)
-      {
-      	this.ref = ref;
-
-      	this.dlq = dlq;
-
-      	this.expiryQueue = expiryQueue;
-
-      	this.redeliveryDelay = redeliveryDelay;
-
-      	this.maxDeliveryAttempts = maxDeliveryAttempts;
-
-      	this.queueName = queueName;
-
-      	this.deliveryID = deliveryID;
-      }
-
-      DeliveryRecord(MessageReference ref, ServerConsumerEndpoint consumer, long deliveryID)
-      {
-      	this (ref, consumer.getDLQ(), consumer.getExpiryQueue(), consumer.getRedliveryDelay(), consumer.getMaxDeliveryAttempts(),
-      			consumer.getQueueName(), deliveryID);
-
-      	// We need to cache the attributes here  since the consumer may get gc'd BEFORE the delivery is acked
-
-
-         //We hold a WeakReference to the consumer - this is only needed when replicating - where we store the delivery then wait
-         //for the response to come back from the replicant before actually performing delivery
-         //We need a weak ref since when the consumer closes deliveries may still and remain and we don't want that to prevent
-         //the consumer being gc'd
-
-      	//FIXME - do we still need this??
-         this.consumerRef = new WeakReference(consumer);
-      }
-
-   	public String toString()
-   	{
-   		return "DeliveryRecord " + System.identityHashCode(this) + " ref: " + ref + " queueName: " + queueName;
-   	}
-   }
-
-   /**
-    *
-    * The purpose of this class is to remove deliveries from the delivery list on commit
-    * Each transaction has once instance of this per SCE
-    *
-    */
-   private class DeliveryCallback implements TransactionSynchronization
-   {
-      private long deliveryId;
-
-      DeliveryCallback(long deliveryId)
-      {
-         this.deliveryId = deliveryId;
-      }
-
-      public void afterCommit() throws Exception
-      {
-         deliveries.remove(deliveryId);
-      }
-
-      public void afterRollback() throws Exception
-      {
-       //One phase rollbacks never hit the server - they are dealt with locally only
-         //so this would only ever be executed for a two phase rollback.
-
-         //We don't do anything since cancellation is driven from the client.
-      }
-
-      public void beforeCommit() throws Exception
-      {
-      }
-
-      public void beforeRollback() throws Exception
-      {
-      }
-   }
-
+//   /**
+//    *
+//    * The purpose of this class is to remove deliveries from the delivery list on commit
+//    * Each transaction has once instance of this per SCE
+//    *
+//    */
+//   private class DeliveryCallback implements TransactionSynchronization
+//   {
+//      private long deliveryId;
+//
+//      DeliveryCallback(long deliveryId)
+//      {
+//         this.deliveryId = deliveryId;
+//      }
+//
+//      public void afterCommit() throws Exception
+//      {
+//         //deliveries.remove(deliveryId);
+//      }
+//
+//      public void afterRollback() throws Exception
+//      {
+//       //One phase rollbacks never hit the server - they are dealt with locally only
+//         //so this would only ever be executed for a two phase rollback.
+//
+//         //We don't do anything since cancellation is driven from the client.
+//      }
+//
+//      public void beforeCommit() throws Exception
+//      {
+//      }
+//
+//      public void beforeRollback() throws Exception
+//      {
+//      }
+//   }
+//
+         
    public PacketHandler newHandler()
    {
       return new SessionAdvisedPacketHandler();
@@ -1574,9 +1483,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    // INNER CLASSES
 
    private class SessionAdvisedPacketHandler implements PacketHandler
-      {
-
-
+   {
       public SessionAdvisedPacketHandler()
       {
       }
@@ -1595,13 +1502,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
             PacketType type = packet.getType();
             if (type == MSG_SENDMESSAGE)
             {
-               SendMessage message = (SendMessage) packet;
+               SessionSendMessage message = (SessionSendMessage) packet;
+              
+               send(message.getMessage());
 
-               long sequence = message.getSequence();
-               send(message.getMessage(), sequence);
-
-               // a response is required only if seq == -1 -> reliable message or strict TCK
-               if (sequence == -1)
+               if (message.getMessage().isDurable())
                {
                   response = new NullPacket();
                }
@@ -1609,7 +1514,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             } else if (type == REQ_CREATECONSUMER)
             {
                CreateConsumerRequest request = (CreateConsumerRequest) packet;
-               response = createConsumerDelegate(
+               response = createServerConsumer(
                                 request.getDestination(), request.getSelector(), request
                            .isNoLocal(), request.getSubscriptionName(), request
                            .isConnectionConsumer());
@@ -1629,39 +1534,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
             } else if (type == REQ_CREATEBROWSER)
             {
                CreateBrowserRequest request = (CreateBrowserRequest) packet;
-               response = createBrowserDelegate(
+               response = createServerBrowser(
                      request.getDestination(), request.getSelector());
-            } else if (type == REQ_ACKDELIVERY)
+            }
+            else if (type == PacketType.MSG_CLOSING)
             {
-               AcknowledgeDeliveryRequest request = (AcknowledgeDeliveryRequest) packet;
-               boolean acknowledged = acknowledgeDelivery(new AckImpl(
-                     request.getDeliveryID()));
-
-               response = new AcknowledgeDeliveryResponse(acknowledged);
-            } else if (type == MSG_ACKDELIVERIES)
-            {
-               AcknowledgeDeliveriesMessage message = (AcknowledgeDeliveriesMessage) packet;
-               acknowledgeDeliveries(message.getAcks());
+               closing();
 
                response = new NullPacket();
-            } else if (type == MSG_CANCELDELIVERY)
-            {
-               CancelDeliveryMessage message = (CancelDeliveryMessage) packet;
-               cancelDelivery(message.getCancel());
-
-               response = new NullPacket();
-            } else if (type == MSG_CANCELDELIVERIES)
-            {
-               CancelDeliveriesMessage message = (CancelDeliveriesMessage) packet;
-               cancelDeliveries(message.getCancels());
-
-               response = new NullPacket();
-            } else if (type == REQ_CLOSING)
-            {
-               ClosingRequest request = (ClosingRequest) packet;
-               long id = closing(request.getSequence());
-
-               response = new ClosingResponse(id);
             } else if (type == MSG_CLOSE)
             {
                close();
@@ -1685,7 +1565,27 @@ public class ServerSessionEndpoint implements SessionEndpoint
                deleteTemporaryDestination(message.getDestination());
 
                response = new NullPacket();
-            } else
+            }            
+            else if (type == PacketType.MSG_ACKNOWLEDGE)
+            {
+               SessionAcknowledgeMessage message = (SessionAcknowledgeMessage)packet;
+               acknowledge(message.getDeliveryID(), message.isAllUpTo());
+               response = new NullPacket();
+            }
+            else if (type == PacketType.MSG_COMMIT)
+            {
+               commit();
+            }
+            else if (type == PacketType.MSG_ROLLBACK)
+            {
+               rollback();
+            }
+            else if (type == PacketType.MSG_CANCEL)
+            {
+               SessionCancelMessage message = (SessionCancelMessage)packet;
+               cancel(message.getDeliveryID(), message.isExpired());
+            }
+            else
             {
                response = new JMSExceptionMessage(new MessagingJMSException(
                      "Unsupported packet for browser: " + packet));

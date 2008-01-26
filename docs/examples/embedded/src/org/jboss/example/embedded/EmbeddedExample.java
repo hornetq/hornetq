@@ -21,7 +21,11 @@
    */
 package org.jboss.example.embedded;
 
+import javax.jms.Session;
+
+import org.jboss.example.embedded.MessagingServerFactory;
 import org.jboss.jms.client.api.ClientConnection;
+import org.jboss.jms.client.api.ClientConnectionFactory;
 import org.jboss.jms.client.api.ClientConsumer;
 import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
@@ -31,8 +35,6 @@ import org.jboss.messaging.core.DestinationType;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.impl.DestinationImpl;
 import org.jboss.messaging.core.impl.MessageImpl;
-
-import javax.jms.Session;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -44,7 +46,7 @@ public class EmbeddedExample
       MessagingServer messagingServer = MessagingServerFactory.createMessagingServer();
       messagingServer.start();
       messagingServer.createQueue("Queue1");
-      ClientConnectionFactoryImpl cf = new ClientConnectionFactoryImpl("tcp://localhost:5400?timeout=5");
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl("tcp://localhost:5400?timeout=5");
       ClientConnection clientConnection = cf.createConnection(null, null);
       ClientSession clientSession = clientConnection.createClientSession(false, Session.AUTO_ACKNOWLEDGE, false);
 
@@ -54,7 +56,7 @@ public class EmbeddedExample
       message.setPayload("hello".getBytes());
       clientSession.send(message);
 
-      ClientConsumer clientConsumer = clientSession.createClientConsumer(destination, null, false, "me", false);
+      ClientConsumer clientConsumer = clientSession.createClientConsumer(destination, null, false, null);
       clientConnection.start();
       JBossMessage m = (JBossMessage) clientConsumer.receive(0);
       System.out.println("m = " + new String(m.getCoreMessage().getPayload()));

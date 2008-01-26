@@ -35,8 +35,7 @@ import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageBlockRespo
 import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageResponse;
 import org.jboss.messaging.core.remoting.wireformat.BrowserResetMessage;
 import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
-import org.jboss.messaging.core.remoting.wireformat.ClosingRequest;
-import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
+import org.jboss.messaging.core.remoting.wireformat.ClosingMessage;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -89,22 +88,20 @@ public class ClientBrowserImpl implements ClientBrowser
       }
       finally
       {
-         session.removeChild(id);
+         session.removeBrowser(this);
          
          closed = true;
       }
    }
 
-   public synchronized long closing(long sequence) throws JMSException
+   public synchronized void closing() throws JMSException
    {
       if (closed)
       {
-         return -1;
+         return;
       }
       
-      ClosingResponse response = (ClosingResponse) remotingConnection.sendBlocking(id, new ClosingRequest(sequence));
-      
-      return response.getID();
+      remotingConnection.sendBlocking(id, new ClosingMessage());
    }
 
    public void reset() throws JMSException

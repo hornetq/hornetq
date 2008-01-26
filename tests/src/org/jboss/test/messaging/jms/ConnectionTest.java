@@ -33,7 +33,6 @@ import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 
-import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.messaging.util.Logger;
 
 
@@ -69,51 +68,6 @@ public class ConnectionTest extends JMSTestCase
    // Public --------------------------------------------------------
 
   
-   public void testResourceManagerFactory()
-   {
-      ResourceManagerFactory.instance.checkOutResourceManager(1);
-      
-      ResourceManagerFactory.instance.checkOutResourceManager(2);
-      
-      ResourceManagerFactory.instance.checkOutResourceManager(3);
-      
-      ResourceManagerFactory.instance.checkOutResourceManager(4);
-      
-      assertEquals(4, ResourceManagerFactory.instance.size());
-      
-      ResourceManagerFactory.instance.checkOutResourceManager(4);
-      
-      assertEquals(4, ResourceManagerFactory.instance.size());
-      
-      ResourceManagerFactory.instance.checkOutResourceManager(4);
-      
-      assertEquals(4, ResourceManagerFactory.instance.size());
-      
-      ResourceManagerFactory.instance.checkInResourceManager(4);
-      
-      assertEquals(4, ResourceManagerFactory.instance.size());
-      
-      ResourceManagerFactory.instance.checkInResourceManager(4);
-      
-      assertEquals(4, ResourceManagerFactory.instance.size());
-      
-      ResourceManagerFactory.instance.checkInResourceManager(4);
-      
-      assertEquals(3, ResourceManagerFactory.instance.size());
-      
-      ResourceManagerFactory.instance.checkInResourceManager(3);
-      
-      assertEquals(2, ResourceManagerFactory.instance.size());
-      
-      ResourceManagerFactory.instance.checkInResourceManager(2);
-      
-      assertEquals(1, ResourceManagerFactory.instance.size());
-      
-      ResourceManagerFactory.instance.checkInResourceManager(1);
-      
-      assertEquals(0, ResourceManagerFactory.instance.size());
- 
-   }
    
    public void testManyConnections() throws Exception
    {

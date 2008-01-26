@@ -10,7 +10,6 @@ package org.jboss.jms.client.api;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
-import org.jboss.jms.client.Closeable;
 import org.jboss.jms.destination.JBossDestination;
 
 /**
@@ -18,7 +17,7 @@ import org.jboss.jms.destination.JBossDestination;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
-public interface ClientProducer extends Closeable
+public interface ClientProducer
 {
    String getID();
    
@@ -49,5 +48,9 @@ public interface ClientProducer extends Closeable
              int deliveryMode,
              int priority,
              long timeToLive) throws JMSException;
+   
+   void closing() throws JMSException;
+   
+   void close() throws JMSException;
 
 }

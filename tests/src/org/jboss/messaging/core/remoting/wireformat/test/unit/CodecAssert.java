@@ -6,12 +6,8 @@
  */
 package org.jboss.messaging.core.remoting.wireformat.test.unit;
 
-import java.util.List;
-
 import junit.framework.Assert;
 
-import org.jboss.jms.client.impl.Ack;
-import org.jboss.jms.client.impl.Cancel;
 import org.jboss.messaging.core.tx.MessagingXid;
 
 /**
@@ -27,33 +23,6 @@ public class CodecAssert extends Assert
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
-
-   static void assertEqualsAcks(List<Ack> expected, List<Ack> actual)
-   {
-      assertEquals(expected.size(), actual.size());
-      for (int i = 0; i < expected.size(); i++)
-      {
-         assertEquals(expected.get(i).getDeliveryID(), actual.get(i)
-               .getDeliveryID());
-      }
-   }
-
-   static void assertEqualsCancels(List<Cancel> expected, List<Cancel> actual)
-   {
-      assertEquals(expected.size(), actual.size());
-      for (int i = 0; i < expected.size(); i++)
-      {
-         Cancel expectedCancel = expected.get(i);
-         Cancel actualCancel = actual.get(i);
-         assertEquals(expectedCancel.getDeliveryId(), actualCancel
-               .getDeliveryId());
-         assertEquals(expectedCancel.getDeliveryCount(), actualCancel
-               .getDeliveryCount());
-         assertEquals(expectedCancel.isExpired(), actualCancel.isExpired());
-         assertEquals(expectedCancel.isReachedMaxDeliveryAttempts(),
-               actualCancel.isReachedMaxDeliveryAttempts());
-      }
-   }
 
    static void assertSameXids(MessagingXid[] expected, MessagingXid[] actual)
    {

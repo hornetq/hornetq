@@ -227,7 +227,7 @@ public class JNDIObjectDeployer extends Deployer
 
          ClientConnectionFactoryImpl delegate =
                  new ClientConnectionFactoryImpl(messagingServer.getConfiguration().getMessagingServerID(),
-                         serverLocator.getURI(), version, false, useStrict, prefetchSize, dupsOKBatchSize, clientID);
+                         serverLocator.getURI(), version, useStrict, prefetchSize, dupsOKBatchSize, clientID);
 
          log.debug(this + " created local delegate " + delegate);
 

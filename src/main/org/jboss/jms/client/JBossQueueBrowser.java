@@ -38,14 +38,11 @@ import org.jboss.messaging.util.Logger;
  *
  * $Id$
  */
-public class JBossQueueBrowser implements QueueBrowser, Serializable
+public class JBossQueueBrowser implements QueueBrowser
 {
    // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(JBossQueueBrowser.class);
-
-   
-   private static final long serialVersionUID = 4245650830082712281L;
 
    // Static ---------------------------------------------------------------------------------------
 
@@ -68,7 +65,7 @@ public class JBossQueueBrowser implements QueueBrowser, Serializable
 
    public void close() throws JMSException
    {
-      delegate.closing(-1);
+      delegate.closing();
       delegate.close();
    }
 
@@ -129,7 +126,7 @@ public class JBossQueueBrowser implements QueueBrowser, Serializable
          {
             Message message = delegate.nextMessage();
 
-            JBossMessage jbm = JBossMessage.createMessage(message, 0, 0);
+            JBossMessage jbm = JBossMessage.createMessage(message, null);
             
             jbm.doBeforeReceive();                        
             

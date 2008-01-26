@@ -83,7 +83,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
       Message m = queueProducerSession.createMessage();
       queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, 5000);
       
-      //Delivery is asynch - need to give enough time to get to the consumer
+      //DeliveryImpl is asynch - need to give enough time to get to the consumer
       Thread.sleep(2000);
       
       Message result = queueConsumer.receive(10);
@@ -95,7 +95,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
       Message m = queueProducerSession.createMessage();
       queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, 1000);
       
-      // Delivery is asynch - need to give enough time to get to the consumer
+      // DeliveryImpl is asynch - need to give enough time to get to the consumer
       Thread.sleep(2000);
       
       assertNull(queueConsumer.receive(100));
@@ -106,7 +106,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
       Message m = queueProducerSession.createMessage();
       queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, 1000);
       
-      // Delivery is asynch - need to give enough time to get to the consumer
+      // DeliveryImpl is asynch - need to give enough time to get to the consumer
       Thread.sleep(2000);
       
       assertNull(queueConsumer.receiveNoWait());
@@ -117,7 +117,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
       Message m = queueProducerSession.createMessage();
       queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, 1000);
       
-      // Delivery is asynch - need to give enough time to get to the consumer
+      // DeliveryImpl is asynch - need to give enough time to get to the consumer
       Thread.sleep(2000);
 
       // start the receiver thread
@@ -312,7 +312,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
       
       queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, 1000);
       
-      //Delivery is asynch - need to give enough time to get to the consumer
+      //DeliveryImpl is asynch - need to give enough time to get to the consumer
       Thread.sleep(2000);
       
       assertNull(queueConsumer.receive(100));

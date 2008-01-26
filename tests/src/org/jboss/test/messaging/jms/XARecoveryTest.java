@@ -33,7 +33,6 @@ import javax.jms.XASession;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.messaging.core.tx.MessagingXid;
 
 import com.arjuna.ats.arjuna.common.Uid;
@@ -66,22 +65,6 @@ public class XARecoveryTest extends JMSTestCase
    }
 
    // TestCase overrides -------------------------------------------
-
-
-   protected void setUp() throws Exception
-   {
-      // if this is not set testMockCoordinatorRecoveryWithJBossTSXids will create an invalid ObjectStore
-      //ServiceContainer.setupObjectStoreDir();
-      super.setUp();
-   }
-
-   public void tearDown() throws Exception
-   {
-      super.tearDown();
-      
-      ResourceManagerFactory.instance.clear();      
-   }
-
 
    // Public --------------------------------------------------------
    

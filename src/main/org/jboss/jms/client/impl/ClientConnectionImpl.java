@@ -32,6 +32,7 @@ import javax.jms.ExceptionListener;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.ServerSessionPool;
+import javax.jms.Session;
 
 import org.jboss.jms.client.JBossConnectionConsumer;
 import org.jboss.jms.client.JBossConnectionMetaData;
@@ -40,23 +41,15 @@ import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
 import org.jboss.jms.client.remoting.MessagingRemotingConnection;
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.tx.ResourceManager;
-import org.jboss.jms.tx.ResourceManagerFactory;
-import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
-import org.jboss.messaging.core.remoting.wireformat.ClosingRequest;
-import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
+import org.jboss.messaging.core.remoting.wireformat.ClosingMessage;
 import org.jboss.messaging.core.remoting.wireformat.CreateSessionRequest;
 import org.jboss.messaging.core.remoting.wireformat.CreateSessionResponse;
 import org.jboss.messaging.core.remoting.wireformat.GetClientIDRequest;
 import org.jboss.messaging.core.remoting.wireformat.GetClientIDResponse;
-import org.jboss.messaging.core.remoting.wireformat.GetPreparedTransactionsRequest;
-import org.jboss.messaging.core.remoting.wireformat.GetPreparedTransactionsResponse;
-import org.jboss.messaging.core.remoting.wireformat.SendTransactionMessage;
 import org.jboss.messaging.core.remoting.wireformat.SetClientIDMessage;
 import org.jboss.messaging.core.remoting.wireformat.StartConnectionMessage;
 import org.jboss.messaging.core.remoting.wireformat.StopConnectionMessage;
-import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.Version;
 
@@ -100,15 +93,13 @@ public class ClientConnectionImpl implements ClientConnection
 
    private String clientID;
 
-   private ResourceManager resourceManager;
-   
    private volatile boolean closed;
 
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConnectionImpl(String id, int serverID, boolean strictTck, Version version, ResourceManager rm,
+   public ClientConnectionImpl(String id, int serverID, boolean strictTck, Version version,
                                MessagingRemotingConnection connection)
    {
       this.id = id;
@@ -118,8 +109,6 @@ public class ClientConnectionImpl implements ClientConnection
       this.strictTck = strictTck;
       
       this.versionToUse = version;
-      
-      this.resourceManager = rm;
       
       this.remotingConnection = connection;
    }
@@ -151,25 +140,20 @@ public class ClientConnectionImpl implements ClientConnection
          // Finished with the connection - we need to shutdown callback server
          remotingConnection.stop();
 
-         // And to resource manager
-         ResourceManagerFactory.instance.checkInResourceManager(serverID);
-         
          closed = true;
       }
    }
 
-   public synchronized long closing(long sequence) throws JMSException
+   public synchronized void closing() throws JMSException
    {
       if (closed)
       {
-         return -1;
+         return;
       }
       
       closeChildren();
       
-      ClosingResponse response = (ClosingResponse)remotingConnection.sendBlocking(id, new ClosingRequest(sequence));
-      
-      return response.getID();
+      remotingConnection.sendBlocking(id, new ClosingMessage());
    }
    
    // ClientConnection implementation ------------------------------------------------------------
@@ -194,20 +178,35 @@ public class ClientConnectionImpl implements ClientConnection
 
 
    public ClientSession createClientSession(boolean transacted,
-                                                int acknowledgmentMode,
-                                                boolean isXA) throws JMSException
+                                            int acknowledgementMode,
+                                            boolean isXA) throws JMSException
    {
       checkClosed();
             
       justCreated = false;
 
-      CreateSessionRequest request = new CreateSessionRequest(transacted, acknowledgmentMode, isXA);
+      CreateSessionRequest request = new CreateSessionRequest(transacted, acknowledgementMode, isXA);
       
       CreateSessionResponse response = (CreateSessionResponse)remotingConnection.sendBlocking(id, request);   
       
-      ClientSession session = new ClientSessionImpl(this, response.getSessionID(), response.getDupsOKBatchSize(), isStrictTck(), 
-            transacted, acknowledgmentMode, isXA);
+      int ackBatchSize;
       
+      if (transacted || acknowledgementMode == Session.CLIENT_ACKNOWLEDGE)
+      {
+         ackBatchSize = -1; //Infinite
+      }
+      else if (acknowledgementMode == Session.DUPS_OK_ACKNOWLEDGE)
+      {
+         ackBatchSize = response.getDupsOKBatchSize();
+      }
+      else
+      {
+         //Auto ack
+         ackBatchSize = 1;
+      }
+       
+      ClientSession session =  new ClientSessionImpl(this, response.getSessionID(), ackBatchSize, isXA);
+                  
       children.put(response.getSessionID(), session);
       
       return session;
@@ -262,13 +261,6 @@ public class ClientConnectionImpl implements ClientConnection
       return remotingConnection.getConnectionListener().getJMSExceptionListener(); 
    }
 
-   public void sendTransaction(TransactionRequest tr) throws JMSException
-   {
-      checkClosed();
-      
-      remotingConnection.sendBlocking(id, new SendTransactionMessage(tr));
-   }
-
    public void setClientID(String clientID) throws JMSException
    {
       checkClosed();
@@ -321,21 +313,6 @@ public class ClientConnectionImpl implements ClientConnection
       remotingConnection.sendBlocking(id, new StopConnectionMessage());
    }
 
-   public MessagingXid[] getPreparedTransactions() throws JMSException
-   {
-      checkClosed();
-      
-      GetPreparedTransactionsResponse response =
-         (GetPreparedTransactionsResponse)remotingConnection.sendBlocking(id, new GetPreparedTransactionsRequest());
-      
-      return response.getXids();
-   }
-   
-   public ResourceManager getResourceManager()
-   {
-      return resourceManager;
-   }
-   
    public MessagingRemotingConnection getRemotingConnection()
    {
       return remotingConnection;
@@ -377,7 +354,7 @@ public class ClientConnectionImpl implements ClientConnection
       
       for (ClientSession session: childrenClone)
       {
-         session.closing(-1);
+         session.closing();
          session.close(); 
       }
    }

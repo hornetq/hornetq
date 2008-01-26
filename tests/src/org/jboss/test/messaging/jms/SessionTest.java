@@ -38,9 +38,6 @@ import javax.jms.TopicSession;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
 
-import org.jboss.jms.client.JBossSession;
-import org.jboss.jms.client.api.ClientSession;
-import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
 
 /**
@@ -67,39 +64,39 @@ public class SessionTest extends JBMServerTestCase
    
    // Public --------------------------------------------------------
    
-   public void testNoTransactionAfterClose() throws Exception
-   {
-      Connection conn = getConnectionFactory().createConnection();
-      conn.start();
-      Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
-      MessageProducer prod = sess.createProducer(queue1);
-      prod.send(sess.createMessage());
-      sess.commit();
-      MessageConsumer cons = sess.createConsumer(queue1);
-      cons.receive();
-      sess.commit();
-      
-      ClientSession del = ((JBossSession)sess).getDelegate();
-      
-      //SessionState state = (SessionState)del.getState();
-      //ConnectionState cState = (ConnectionState)state.getParent();
-      
-      Object xid = del.getCurrentTxId();
-      assertNotNull(xid);
-      assertNotNull(del.getConnection().getResourceManager().getTx(xid));
-      
-      //Now close the session
-      sess.close();
-      
-      //Session should be removed from resource manager
-      xid = del.getCurrentTxId();
-      assertNotNull(xid);
-      assertNull(del.getConnection().getResourceManager().getTx(xid));
-      
-      conn.close();
-      
-      assertEquals(0, del.getConnection().getResourceManager().size());
-   }
+//   public void testNoTransactionAfterClose() throws Exception
+//   {
+//      Connection conn = getConnectionFactory().createConnection();
+//      conn.start();
+//      Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+//      MessageProducer prod = sess.createProducer(queue1);
+//      prod.send(sess.createMessage());
+//      sess.commit();
+//      MessageConsumer cons = sess.createConsumer(queue1);
+//      cons.receive();
+//      sess.commit();
+//      
+//      ClientSession del = ((JBossSession)sess).getDelegate();
+//      
+//      //SessionState state = (SessionState)del.getState();
+//      //ConnectionState cState = (ConnectionState)state.getParent();
+//      
+//      Object xid = del.getCurrentTxId();
+//      assertNotNull(xid);
+//      assertNotNull(del.getConnection().getResourceManager().getTx(xid));
+//      
+//      //Now close the session
+//      sess.close();
+//      
+//      //Session should be removed from resource manager
+//      xid = del.getCurrentTxId();
+//      assertNotNull(xid);
+//      assertNull(del.getConnection().getResourceManager().getTx(xid));
+//      
+//      conn.close();
+//      
+//      assertEquals(0, del.getConnection().getResourceManager().size());
+//   }
 
    public void testCreateProducer() throws Exception
    {
@@ -497,13 +494,7 @@ public class SessionTest extends JBMServerTestCase
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
-   
-   protected void setUp() throws Exception
-	{
-		super.setUp();
-		
-		ResourceManagerFactory.instance.clear();
-	}
+
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------

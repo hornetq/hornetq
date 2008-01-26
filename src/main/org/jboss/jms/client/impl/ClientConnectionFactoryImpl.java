@@ -21,23 +21,25 @@
  */
 package org.jboss.jms.client.impl;
 
+import java.io.Serializable;
+
+import javax.jms.JMSException;
+
 import org.jboss.jms.client.api.ClientConnection;
+import org.jboss.jms.client.api.ClientConnectionFactory;
 import org.jboss.jms.client.plugin.LoadBalancingFactory;
 import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
 import org.jboss.jms.client.remoting.MessagingRemotingConnection;
 import org.jboss.jms.exception.MessagingJMSException;
-import org.jboss.jms.tx.ResourceManager;
-import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.Version;
 
-import javax.jms.JMSException;
-import java.io.Serializable;
-
 /**
- * The client-side ConnectionFactory delegate class.
+ * Core connection factory.
+ * 
+ * Can be instantiate programmatically and used to make connections.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -49,7 +51,7 @@ import java.io.Serializable;
  *
  * $Id: ClientConnectionFactoryImpl.java 3602 2008-01-21 17:48:32Z timfox $
  */
-public class ClientConnectionFactoryImpl implements Serializable
+public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Serializable
 {
    // Constants ------------------------------------------------------------------------------------
    public  static final String id = "CONNECTION_FACTORY_ID";
@@ -66,13 +68,9 @@ public class ClientConnectionFactoryImpl implements Serializable
  
    private int serverID;
    
-   private boolean clientPing;
-
    private String clientID;
 
    private int prefetchSize = 150;
-
-   private boolean slowConsumers;
 
    private boolean supportsFailover;
 
@@ -85,36 +83,16 @@ public class ClientConnectionFactoryImpl implements Serializable
    private boolean strictTck;
    
    // Static ---------------------------------------------------------------------------------------
-   
-   private static Version getVersionToUse(Version connectionVersion)
-   {
-      Version clientVersion = Version.instance();
-
-      Version versionToUse;
-
-      if (connectionVersion != null && connectionVersion.getProviderIncrementingVersion() <=
-          clientVersion.getProviderIncrementingVersion())
-      {
-         versionToUse = connectionVersion;
-      }
-      else
-      {
-         versionToUse = clientVersion;
-      }
-
-      return versionToUse;
-   }
-
+    
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConnectionFactoryImpl( int serverID,
-         String serverLocatorURI, Version serverVersion, boolean clientPing, boolean strictTck,
+   public ClientConnectionFactoryImpl(int serverID,
+         String serverLocatorURI, Version serverVersion, boolean strictTck,
          int prefetchSize, int dupsOKBatchSize, String clientID)
    {
       this.serverID = serverID;
       this.serverLocatorURI = serverLocatorURI;
       this.serverVersion = serverVersion;
-      this.clientPing = clientPing;
       this.strictTck = strictTck;
       this.prefetchSize = prefetchSize;
       this.dupsOKBatchSize = dupsOKBatchSize;
@@ -128,6 +106,11 @@ public class ClientConnectionFactoryImpl implements Serializable
 
    public ClientConnectionFactoryImpl()
    {
+   }
+   
+   public ClientConnection createConnection() throws JMSException
+   {
+      return createConnection(null, null);
    }
    
    public ClientConnection createConnection(String username, String password) throws JMSException
@@ -152,10 +135,8 @@ public class ClientConnectionFactoryImpl implements Serializable
          CreateConnectionResponse response =
             (CreateConnectionResponse)remotingConnection.sendBlocking(id, request);
          
-         ResourceManager resourceManager = ResourceManagerFactory.instance.checkOutResourceManager(this.serverID);
-            
          ClientConnectionImpl connection =
-            new ClientConnectionImpl(response.getConnectionID(), serverID, strictTck, version, resourceManager, remotingConnection);
+            new ClientConnectionImpl(response.getConnectionID(), serverID, strictTck, version, remotingConnection);
          
          //FIXME - get rid of this stupid ConsolidatedThingamajug bollocks
          
@@ -186,8 +167,8 @@ public class ClientConnectionFactoryImpl implements Serializable
       }
    }
    
-   // Public ---------------------------------------------------------------------------------------
-
+   // ClientConnectionFactory implementation ---------------------------------------------
+   
    public String getServerLocatorURI()
    {
       return serverLocatorURI;
@@ -198,27 +179,37 @@ public class ClientConnectionFactoryImpl implements Serializable
       return serverID;
    }
    
-   public boolean getClientPing()
-   {
-      return clientPing;
-   }
-   
    public Version getServerVersion()
    {
       return serverVersion;
    }
    
-   public boolean getStrictTck()
-   {
-       return strictTck;
-   }
-
-   
+   // Public ---------------------------------------------------------------------------------------
+      
    // Protected ------------------------------------------------------------------------------------
 
    // Package Private ------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
+   
+   private Version getVersionToUse(Version connectionVersion)
+   {
+      Version clientVersion = Version.instance();
+
+      Version versionToUse;
+
+      if (connectionVersion != null && connectionVersion.getProviderIncrementingVersion() <=
+          clientVersion.getProviderIncrementingVersion())
+      {
+         versionToUse = connectionVersion;
+      }
+      else
+      {
+         versionToUse = clientVersion;
+      }
+
+      return versionToUse;
+   }
    
    // Inner Classes --------------------------------------------------------------------------------
 

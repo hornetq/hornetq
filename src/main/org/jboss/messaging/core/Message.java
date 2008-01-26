@@ -28,6 +28,7 @@ import org.jboss.messaging.util.Streamable;
 
 /**
  * A message is a routable instance that has a payload.
+ * 
  * The payload is opaque to the messaging system.
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -41,27 +42,6 @@ public interface Message extends Streamable
    //FIXME - temp
    public static final String TEMP_DEST_HEADER_NAME = "JMSDestination";
    
-   
-	/**
-	 * This header is set on a message when a message is sucked from one node of the cluster to another
-	 * and order preservation is true.
-	 * The header is checked when sucking messages and if order preservation is true then the message is not accepted.
-	 * This is a basic way of ensuring message order is preserved.
-	 */
-	public static final String CLUSTER_SUCKED = "SUCKED";
-	
-	/**
-	 * This header is set on a message when it is sucked from one node to another.
-	 * If the header exists on the destination node, and the message is persistent, the message
-	 * will be moved from one channel to the other by doing a simple database update
-	 */
-	public static final String SOURCE_CHANNEL_ID = "SCID";
-	
-	/**
-	 * The scheduled delivery time for the message
-	 */
-	public static final String SCHEDULED_DELIVERY_TIME = "SCHED";
-	
    /**    
     * @return The unique id of the message
     */
@@ -191,6 +171,18 @@ public interface Message extends Streamable
     * @return the type of the message
     */
    int getType();   
+   
+   /**
+    * 
+    * @return The delivery count of the message - only available on the client side
+    */
+   int getDeliveryCount();
+   
+   /**
+    * Set the delivery count of the message
+    * @param count
+    */
+   void setDeliveryCount(int count);
    
    /**
     * Get the connection id

@@ -28,6 +28,7 @@ public class ClientConsumerPacketHandler implements PacketHandler
          String consumerID)
    {
       this.clientConsumer = clientConsumer;
+      
       this.consumerID = consumerID;
    }
 
@@ -45,13 +46,10 @@ public class ClientConsumerPacketHandler implements PacketHandler
          {
             DeliverMessage message = (DeliverMessage) packet;
             
-            JBossMessage msg = JBossMessage.createMessage(message.getMessage(), message.getDeliveryID(), message.getDeliveryCount());
-            
-            msg.doBeforeReceive();
-            
-            clientConsumer.handleMessage(msg);
+            clientConsumer.handleMessage(message);
          }
-      } catch (Exception e)
+      }
+      catch (Exception e)
       {
          // TODO Auto-generated catch block
          e.printStackTrace();

@@ -119,28 +119,39 @@ public class JBossMessage implements javax.jms.Message
    private static final Logger log = Logger.getLogger(JBossMessage.class);
 
    
-   public static JBossMessage createMessage(org.jboss.messaging.core.Message message,
-                                            long deliveryID, int deliveryCount)
+   public static JBossMessage createMessage(org.jboss.messaging.core.Message message, ClientSession session)
    {
       int type = message.getType();
+      
+      JBossMessage msg;
       
       switch(type)
       {
          case JBossMessage.TYPE:
-            return new JBossMessage(message, deliveryID, deliveryCount);
+            msg =  new JBossMessage(message, session);
+            break;
          case JBossBytesMessage.TYPE:
-            return new JBossBytesMessage(message, deliveryID, deliveryCount);
+            msg = new JBossBytesMessage(message, session);
+            break;
          case JBossMapMessage.TYPE:
-            return new JBossMapMessage(message, deliveryID, deliveryCount);
+            msg =  new JBossMapMessage(message, session);
+            break;
          case JBossObjectMessage.TYPE:
-            return new JBossObjectMessage(message, deliveryID, deliveryCount);
+            msg =  new JBossObjectMessage(message, session);
+            break;
          case JBossStreamMessage.TYPE:
-            return new JBossStreamMessage(message, deliveryID, deliveryCount);
+            msg = new JBossStreamMessage(message, session);
+            break;
          case JBossTextMessage.TYPE:
-            return new JBossTextMessage(message, deliveryID, deliveryCount);
+            msg = new JBossTextMessage(message, session);
+            break;
          default:
             throw new IllegalArgumentException("Invalid message type " + type);
       }
+      
+      message.putHeader("JMSXDeliveryCount", message.getDeliveryCount());
+      
+      return msg;      
    }
    
    // Attributes ----------------------------------------------------
@@ -149,15 +160,6 @@ public class JBossMessage implements javax.jms.Message
    protected org.jboss.messaging.core.Message message;
    
    private ClientSession session;
-   
-   //From a connection consumer?   
-   private boolean cc;
-   
-   //The delivery count
-   private int deliveryCount;
-   
-   //The delivery id
-   private long deliveryID;
    
    //Read-only?
    protected boolean readOnly;
@@ -177,15 +179,13 @@ public class JBossMessage implements javax.jms.Message
    /**
     * Constructor for when receiving a message from the server
     */
-   public JBossMessage(org.jboss.messaging.core.Message message, long deliveryID, int deliveryCount)
+   public JBossMessage(org.jboss.messaging.core.Message message, ClientSession session)
    {
       this.message = message;
       
-      this.deliveryID = deliveryID;
-      
-      this.deliveryCount = deliveryCount;
-      
       this.readOnly = true;
+      
+      this.session = session;
    }
 
    /*
@@ -347,25 +347,25 @@ public class JBossMessage implements javax.jms.Message
       }
       else
       {
-         throw new MessagingJMSException("Delivery mode must be either DeliveryMode.PERSISTENT "
+         throw new MessagingJMSException("DeliveryImpl mode must be either DeliveryMode.PERSISTENT "
                + "or DeliveryMode.NON_PERSISTENT");
       }
    }
 
    public boolean getJMSRedelivered() throws JMSException
    {
-      return deliveryCount >= 2;
+      return message.getDeliveryCount() > 1;
    }
 
    public void setJMSRedelivered(boolean redelivered) throws JMSException
-   {
-      if (deliveryCount == 1)
+   {      
+      if (message.getDeliveryCount() > 1)
       {
-         deliveryCount++;
+         //do nothing
       }
       else
       {
-         //do nothing
+         message.setDeliveryCount(2);
       }
    }
 
@@ -492,12 +492,7 @@ public class JBossMessage implements javax.jms.Message
    }
 
    public int getIntProperty(String name) throws JMSException
-   {      
-      if ("JMSXDeliveryCount".equals(name))
-      {
-         return deliveryCount;
-      }
-      
+   {       
       Object value = message.getHeader(name);
 
       if (value == null)
@@ -529,11 +524,6 @@ public class JBossMessage implements javax.jms.Message
 
    public long getLongProperty(String name) throws JMSException
    {
-      if ("JMSXDeliveryCount".equals(name))
-      {
-         return deliveryCount;
-      }
-      
       Object value = message.getHeader(name);
 
       if (value == null)
@@ -599,11 +589,6 @@ public class JBossMessage implements javax.jms.Message
 
    public String getStringProperty(String name) throws JMSException
    {
-      if ("JMSXDeliveryCount".equals(name))
-      {
-         return Integer.toString(deliveryCount);
-      }
-      
       Object value = message.getHeader(name);
       if (value == null)
          return null;
@@ -758,11 +743,7 @@ public class JBossMessage implements javax.jms.Message
    
    public void acknowledge() throws JMSException
    {
-      if (!cc)
-      {
-         //Only acknowledge for client ack if is not in connection consumer
-         session.acknowledgeAll();
-      }
+      session.commit();
    }
     
    // Public --------------------------------------------------------
@@ -815,33 +796,11 @@ public class JBossMessage implements javax.jms.Message
       return JBossMessage.TYPE;
    }   
    
-   public void setSession(ClientSession sd, boolean isConnectionConsumer)
-   {
-      this.session = sd;
-      
-      this.cc = isConnectionConsumer;
-   }
-   
    public ClientSession getSession()
    {
       return session;
    }
 
-   public int getDeliveryCount()
-   {
-      return deliveryCount;
-   }
-   
-   public void incDeliveryCount()
-   {
-      this.deliveryCount++;            
-   }
-   
-   public long getDeliveryId()
-   {
-      return deliveryID;
-   }
-   
    public void copyMessage()
    {
       message = message.copy();

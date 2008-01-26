@@ -6,14 +6,15 @@
  */
 package org.jboss.messaging.core.remoting.codec;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_CLOSING;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SENDMESSAGE;
 
-import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.remoting.wireformat.SessionSendMessage;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
  */
-public class ClosingResponseCodec extends AbstractPacketCodec<ClosingResponse>
+public class SessionSendMessageCodec extends AbstractPacketCodec<SessionSendMessage>
 {
    // Constants -----------------------------------------------------
 
@@ -23,9 +24,9 @@ public class ClosingResponseCodec extends AbstractPacketCodec<ClosingResponse>
 
    // Constructors --------------------------------------------------
 
-   public ClosingResponseCodec()
+   public SessionSendMessageCodec()
    {
-      super(RESP_CLOSING);
+      super(MSG_SENDMESSAGE);
    }
 
    // Public --------------------------------------------------------
@@ -33,14 +34,19 @@ public class ClosingResponseCodec extends AbstractPacketCodec<ClosingResponse>
    // AbstractPacketCodec overrides ---------------------------------
 
    @Override
-   protected void encodeBody(ClosingResponse response, RemotingBuffer out) throws Exception
+   protected void encodeBody(SessionSendMessage message, RemotingBuffer out) throws Exception
    {
-      out.putInt(LONG_LENGTH);
-      out.putLong(response.getID());
+      byte[] encodedMsg = encodeMessage(message.getMessage());   
+
+      int bodyLength = INT_LENGTH + encodedMsg.length;
+
+      out.putInt(bodyLength);
+      out.putInt(encodedMsg.length);
+      out.put(encodedMsg);
    }
 
    @Override
-   protected ClosingResponse decodeBody(RemotingBuffer in)
+   protected SessionSendMessage decodeBody(RemotingBuffer in)
          throws Exception
    {
       int bodyLength = in.getInt();
@@ -49,16 +55,19 @@ public class ClosingResponseCodec extends AbstractPacketCodec<ClosingResponse>
          return null;
       }
 
-      long id = in.getLong();
+      int msgLength = in.getInt();
+      byte[] encodedMsg = new byte[msgLength];
+      in.get(encodedMsg);
+      Message msg = decodeMessage(encodedMsg);
 
-      return new ClosingResponse(id);
+      return new SessionSendMessage(msg);
    }
 
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private ----------------------------------------------------
 
    // Inner classes -------------------------------------------------
 }

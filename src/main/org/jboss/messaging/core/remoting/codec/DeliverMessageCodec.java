@@ -37,17 +37,15 @@ public class DeliverMessageCodec extends AbstractPacketCodec<DeliverMessage>
    protected void encodeBody(DeliverMessage message, RemotingBuffer out) throws Exception
    {
       byte[] encodedMsg = encodeMessage(message.getMessage());
-      String consumerID = message.getConsumerID();
       long deliveryID = message.getDeliveryID();
       int deliveryCount = message.getDeliveryCount();
 
-      int bodyLength = INT_LENGTH + encodedMsg.length + sizeof(consumerID)
+      int bodyLength = INT_LENGTH + encodedMsg.length
             + LONG_LENGTH + INT_LENGTH;
       out.putInt(bodyLength);
 
       out.putInt(encodedMsg.length);
       out.put(encodedMsg);
-      out.putNullableString(consumerID);
       out.putLong(deliveryID);
       out.putInt(deliveryCount);
    }
@@ -66,11 +64,10 @@ public class DeliverMessageCodec extends AbstractPacketCodec<DeliverMessage>
       byte[] encodedMsg = new byte[msgLength];
       in.get(encodedMsg);
       Message msg = decodeMessage(encodedMsg);
-      String consumerID = in.getNullableString();
       long deliveryID = in.getLong();
       int deliveryCount = in.getInt();
 
-      return new DeliverMessage(msg, consumerID, deliveryID, deliveryCount);
+      return new DeliverMessage(msg, deliveryID, deliveryCount);
    }
 
    // Package protected ---------------------------------------------

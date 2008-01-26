@@ -142,13 +142,23 @@ public class MessageHeaderTestBase extends JBMServerTestCase
       assertEquals(m1.getJMSPriority(), m2.getJMSPriority());
 
       int m1PropertyCount = 0, m2PropertyCount = 0;
-      for(Enumeration p = m1.getPropertyNames(); p.hasMoreElements(); m1PropertyCount++)
+      for(Enumeration p = m1.getPropertyNames(); p.hasMoreElements(); )
       {
-         p.nextElement();
+         String name = (String)p.nextElement();
+         
+         if (!name.startsWith("JMSX"))
+         {
+            m1PropertyCount++;
+         }
       }
-      for(Enumeration p = m2.getPropertyNames(); p.hasMoreElements(); m2PropertyCount++)
+      for(Enumeration p = m2.getPropertyNames(); p.hasMoreElements();)
       {
-         p.nextElement();
+         String name = (String)p.nextElement();
+         
+         if (!name.startsWith("JMSX"))
+         {
+            m2PropertyCount++;
+         }
       }
 
       assertEquals(m1PropertyCount, m2PropertyCount);
@@ -158,6 +168,12 @@ public class MessageHeaderTestBase extends JBMServerTestCase
          boolean found = false;
 
          String name = (String)props.nextElement();
+         
+         if (name.startsWith("JMSX"))
+         {
+            //ignore
+            continue;
+         }
 
          boolean booleanProperty = false;
          try

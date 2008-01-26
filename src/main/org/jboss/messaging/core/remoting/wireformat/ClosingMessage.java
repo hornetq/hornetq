@@ -6,44 +6,29 @@
  */
 package org.jboss.messaging.core.remoting.wireformat;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_ACKDELIVERY;
 
 /**
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
  * 
  * @version <tt>$Revision$</tt>
  */
-public class AcknowledgeDeliveryResponse extends AbstractPacket
+public class ClosingMessage extends AbstractPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final boolean acknowledged;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public AcknowledgeDeliveryResponse(boolean acknowledged)
+   public ClosingMessage()
    {
-      super(RESP_ACKDELIVERY);
-
-      this.acknowledged = acknowledged;
+      super(PacketType.MSG_CLOSING);
    }
 
    // Public --------------------------------------------------------
-
-   public boolean isAcknowledged()
-   {
-      return acknowledged;
-   }
-
-   @Override
-   public String toString()
-   {
-      return getParentString() + ", acknowledged=" + acknowledged + "]";
-   }
 
    // Package protected ---------------------------------------------
 

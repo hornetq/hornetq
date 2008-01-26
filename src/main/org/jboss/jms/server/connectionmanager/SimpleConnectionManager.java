@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.jms.JMSException;
 
 import org.jboss.jms.server.ConnectionManager;
-import org.jboss.jms.server.endpoint.ConnectionEndpoint;
+import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.Logger;
@@ -59,13 +59,13 @@ public class SimpleConnectionManager implements ConnectionManager
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private Map</** VMID */String, Map</** RemoteSessionID */String, ConnectionEndpoint>> jmsClients;
+   private Map</** VMID */String, Map</** RemoteSessionID */String, ServerConnectionEndpoint>> jmsClients;
 
    // Map<remotingClientSessionID<String> - jmsClientVMID<String>
    private Map<String, String> remotingSessions;
 
-   // Set<ConnectionEndpoint>
-   private Set<ConnectionEndpoint> activeConnectionEndpoints;
+   // Set<ServerConnectionEndpoint>
+   private Set<ServerConnectionEndpoint> activeServerConnectionEndpoints;
 
    private Map</** CFUniqueName*/ String, ConnectionFactoryCallbackInformation> cfCallbackInfo;
    
@@ -73,9 +73,9 @@ public class SimpleConnectionManager implements ConnectionManager
 
    public SimpleConnectionManager()
    {
-      jmsClients = new HashMap<String, Map<String, ConnectionEndpoint>>();
+      jmsClients = new HashMap<String, Map<String, ServerConnectionEndpoint>>();
       remotingSessions = new HashMap<String, String>();
-      activeConnectionEndpoints = new HashSet<ConnectionEndpoint>();
+      activeServerConnectionEndpoints = new HashSet<ServerConnectionEndpoint>();
       cfCallbackInfo = new ConcurrentHashMap<String, ConnectionFactoryCallbackInformation>();
    }
 
@@ -85,13 +85,13 @@ public class SimpleConnectionManager implements ConnectionManager
    
    public synchronized void registerConnection(String jmsClientVMID,
                                                String remotingClientSessionID,
-                                               ConnectionEndpoint endpoint)
+                                               ServerConnectionEndpoint endpoint)
    {    
-      Map<String, ConnectionEndpoint> endpoints = jmsClients.get(jmsClientVMID);
+      Map<String, ServerConnectionEndpoint> endpoints = jmsClients.get(jmsClientVMID);
       
       if (endpoints == null)
       {
-         endpoints = new HashMap<String, ConnectionEndpoint>();
+         endpoints = new HashMap<String, ServerConnectionEndpoint>();
          
          jmsClients.put(jmsClientVMID, endpoints);
       }
@@ -100,25 +100,25 @@ public class SimpleConnectionManager implements ConnectionManager
       
       remotingSessions.put(remotingClientSessionID, jmsClientVMID);
 
-      activeConnectionEndpoints.add(endpoint);
+      activeServerConnectionEndpoints.add(endpoint);
       
       log.debug("registered connection " + endpoint + " as " +
                 Util.guidToString(remotingClientSessionID));
    }
 
-   public synchronized ConnectionEndpoint unregisterConnection(String jmsClientVMId,
+   public synchronized ServerConnectionEndpoint unregisterConnection(String jmsClientVMId,
                                                                String remotingClientSessionID)
    {
-      Map<String, ConnectionEndpoint> endpoints = jmsClients.get(jmsClientVMId);
+      Map<String, ServerConnectionEndpoint> endpoints = jmsClients.get(jmsClientVMId);
       
       if (endpoints != null)
       {
-         ConnectionEndpoint e = endpoints.remove(remotingClientSessionID);
+         ServerConnectionEndpoint e = endpoints.remove(remotingClientSessionID);
 
          if (e != null)
          {
             endpoints.remove(e);
-            activeConnectionEndpoints.remove(e);
+            activeServerConnectionEndpoints.remove(e);
          }
 
          log.debug("unregistered connection " + e + " with remoting session ID " +
@@ -139,8 +139,8 @@ public class SimpleConnectionManager implements ConnectionManager
    public synchronized List getActiveConnections()
    {
       // I will make a copy to avoid ConcurrentModification
-      List<ConnectionEndpoint> list = new ArrayList<ConnectionEndpoint>();
-      list.addAll(activeConnectionEndpoints);
+      List<ServerConnectionEndpoint> list = new ArrayList<ServerConnectionEndpoint>();
+      list.addAll(activeServerConnectionEndpoints);
       return list;
    }
       
@@ -248,15 +248,15 @@ public class SimpleConnectionManager implements ConnectionManager
       // Remoting only provides one pinger per invoker, not per connection therefore when the pinger
       // dies we must close ALL connections corresponding to that jms client ID.
 
-      Map<String, ConnectionEndpoint> endpoints = jmsClients.get(jmsClientID);
+      Map<String, ServerConnectionEndpoint> endpoints = jmsClients.get(jmsClientID);
 
       if (endpoints != null)
       {
-         List<ConnectionEndpoint> sces = new ArrayList<ConnectionEndpoint>();
+         List<ServerConnectionEndpoint> sces = new ArrayList<ServerConnectionEndpoint>();
 
-         for (Map.Entry<String, ConnectionEndpoint> entry: endpoints.entrySet())
+         for (Map.Entry<String, ServerConnectionEndpoint> entry: endpoints.entrySet())
          {
-            ConnectionEndpoint sce = entry.getValue();
+            ServerConnectionEndpoint sce = entry.getValue();
             sces.add(sce);
          }
 
@@ -264,12 +264,12 @@ public class SimpleConnectionManager implements ConnectionManager
          // to remove the data from the jmsClients and sessions maps.
          // Note we do this outside the loop to prevent ConcurrentModificationException
 
-         for(ConnectionEndpoint sce: sces )
+         for(ServerConnectionEndpoint sce: sces )
          {
             try
             {
       			log.debug("clPearing up state for connection " + sce);
-               sce.closing(-1);
+               sce.closing();
                sce.close();
                log.debug("cleared up state for connection " + sce);
             }
@@ -367,7 +367,7 @@ public class SimpleConnectionManager implements ConnectionManager
    			
    			String sessionID = (String)entry2.getKey();
    			
-   			ConnectionEndpoint endpoint = (ConnectionEndpoint)entry2.getValue();
+   			ServerConnectionEndpoint endpoint = (ServerConnectionEndpoint)entry2.getValue();
    			
    			log.debug("            " + sessionID + "------>" + System.identityHashCode(endpoint));
       	}

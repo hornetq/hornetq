@@ -23,6 +23,7 @@ package org.jboss.messaging.core.impl;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
@@ -159,6 +160,20 @@ public class QueueImpl implements Queue
    public synchronized HandleStatus addFirst(MessageReference ref)
    {
       return add(ref, true);
+   }
+   
+   public synchronized void addListFirst(LinkedList<MessageReference> list)
+   {
+      ListIterator<MessageReference> iter = list.listIterator(list.size());
+      
+      while (iter.hasPrevious())
+      {            
+         MessageReference ref = iter.previous();
+         
+         messageReferences.addFirst(ref, ref.getMessage().getPriority());        
+      }
+      
+      deliver();
    }
               
    /*
@@ -315,6 +330,7 @@ public class QueueImpl implements Queue
 
    public synchronized int getMessageCount()
    {
+     // log.info("mr: " + messageReferences.size() + " sc: " + getScheduledCount() + " dc: " + getDeliveringCount());
       return messageReferences.size() + getScheduledCount() + getDeliveringCount();
    }
    
@@ -327,7 +343,7 @@ public class QueueImpl implements Queue
    {
       return deliveringCount.get();
    }
-   
+
    public void referenceAcknowledged()
    {
       deliveringCount.decrementAndGet();

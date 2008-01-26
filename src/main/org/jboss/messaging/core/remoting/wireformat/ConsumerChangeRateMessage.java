@@ -14,7 +14,7 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CHANGE
  * 
  * @version <tt>$Revision$</tt>
  */
-public class ChangeRateMessage extends AbstractPacket
+public class ConsumerChangeRateMessage extends AbstractPacket
 {
    // Constants -----------------------------------------------------
 
@@ -26,7 +26,7 @@ public class ChangeRateMessage extends AbstractPacket
 
    // Constructors --------------------------------------------------
 
-   public ChangeRateMessage(float rate)
+   public ConsumerChangeRateMessage(float rate)
    {
       super(MSG_CHANGERATE);
 

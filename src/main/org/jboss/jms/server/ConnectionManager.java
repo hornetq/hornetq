@@ -23,7 +23,7 @@ package org.jboss.jms.server;
 
 import java.util.List;
 
-import org.jboss.jms.server.endpoint.ConnectionEndpoint;
+import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.messaging.core.MessagingComponent;
 import org.jboss.messaging.core.remoting.PacketSender;
 
@@ -42,12 +42,12 @@ public interface ConnectionManager extends MessagingComponent
 {
    void registerConnection(String jmsClientVMId,
                            String remotingClientSessionID,
-                           ConnectionEndpoint endpoint);
+                           ServerConnectionEndpoint endpoint);
 
    /**
     * @return null if there is no such connection.
     */
-   ConnectionEndpoint unregisterConnection(String jmsClientVMID, String remotingClientSessionID);
+   ServerConnectionEndpoint unregisterConnection(String jmsClientVMID, String remotingClientSessionID);
    
    boolean containsRemotingSession(String remotingClientSessionID);
 

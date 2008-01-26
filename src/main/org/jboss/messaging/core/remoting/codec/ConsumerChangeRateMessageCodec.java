@@ -8,13 +8,13 @@ package org.jboss.messaging.core.remoting.codec;
 
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CHANGERATE;
 
-import org.jboss.messaging.core.remoting.wireformat.ChangeRateMessage;
+import org.jboss.messaging.core.remoting.wireformat.ConsumerChangeRateMessage;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
  */
-public class ChangeRateMessageCodec extends
-      AbstractPacketCodec<ChangeRateMessage>
+public class ConsumerChangeRateMessageCodec extends
+      AbstractPacketCodec<ConsumerChangeRateMessage>
 {
    // Constants -----------------------------------------------------
 
@@ -24,7 +24,7 @@ public class ChangeRateMessageCodec extends
 
    // Constructors --------------------------------------------------
 
-   public ChangeRateMessageCodec()
+   public ConsumerChangeRateMessageCodec()
    {
       super(MSG_CHANGERATE);
    }
@@ -34,14 +34,14 @@ public class ChangeRateMessageCodec extends
    // AbstractPacketCodec overrides ---------------------------------
 
    @Override
-   protected void encodeBody(ChangeRateMessage message, RemotingBuffer out) throws Exception
+   protected void encodeBody(ConsumerChangeRateMessage message, RemotingBuffer out) throws Exception
    {
       out.putInt(FLOAT_LENGTH);
       out.putFloat(message.getRate());
    }
 
    @Override
-   protected ChangeRateMessage decodeBody(RemotingBuffer in)
+   protected ConsumerChangeRateMessage decodeBody(RemotingBuffer in)
          throws Exception
    {
       int bodyLength = in.getInt();
@@ -52,7 +52,7 @@ public class ChangeRateMessageCodec extends
 
       float rate = in.getFloat();
 
-      return new ChangeRateMessage(rate);
+      return new ConsumerChangeRateMessage(rate);
    }
 
    // Package protected ---------------------------------------------

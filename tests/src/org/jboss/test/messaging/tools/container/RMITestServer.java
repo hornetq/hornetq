@@ -596,18 +596,6 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       server.setDefaultRedeliveryDelay(delay);
    }
 
-
-   public void clear() throws Exception
-   {
-      server.clear();
-   }
-
-
-   public int getResourceManagerFactorySize()
-   {
-      return server.getResourceManagerFactorySize();
-   }
-
    public InitialContext getInitialContext() throws Exception
    {
       Hashtable env = new Hashtable();

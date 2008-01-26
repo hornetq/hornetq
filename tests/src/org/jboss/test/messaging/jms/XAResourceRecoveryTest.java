@@ -27,7 +27,6 @@ import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.ServiceContainer;
@@ -71,11 +70,6 @@ public class XAResourceRecoveryTest extends JBMServerTestCase
    protected void setUp() throws Exception
 	{
 		super.setUp();
-
-		// Now start another remote server
-		//ServerManagement.start(1, "all", false);
-
-		ResourceManagerFactory.instance.clear();
 
 		// We need a local transaction and recovery manager
 		// We must start this after the remote servers have been created or it
@@ -156,12 +150,6 @@ public class XAResourceRecoveryTest extends JBMServerTestCase
 		{
 			tm.resume(suspendedTx);
 		}
-
-		// We explicitly clear the resource manager factory since the recovery
-		// manager will keep a connection open, and
-		// otherewise it will fail
-
-		ResourceManagerFactory.instance.clear();
 
 		super.tearDown();
 	}

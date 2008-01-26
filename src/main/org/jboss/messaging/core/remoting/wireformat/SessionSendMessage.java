@@ -6,48 +6,51 @@
  */
 package org.jboss.messaging.core.remoting.wireformat;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_CLOSING;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SENDMESSAGE;
 
+import org.jboss.messaging.core.Message;
 
 /**
- * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 
  * @version <tt>$Revision$</tt>
  */
-public class ClosingResponse extends AbstractPacket
+public class SessionSendMessage extends AbstractPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final long id;
+   private final Message message;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ClosingResponse(long id)
+   public SessionSendMessage(Message message)
    {
-      super(RESP_CLOSING);
+      super(MSG_SENDMESSAGE);
 
-      this.id = id;
+      assert message != null;
+
+      this.message = message;
    }
 
    // Public --------------------------------------------------------
 
-   public long getID()
+   public Message getMessage()
    {
-      return id;
+      return message;
    }
 
    @Override
    public String toString()
    {
-      return getParentString() + ", id=" + id + "]";
+      return getParentString() + ", message=" + message
+            + "]";
    }
-
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

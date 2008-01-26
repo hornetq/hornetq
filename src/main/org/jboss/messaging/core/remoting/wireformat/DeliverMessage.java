@@ -6,7 +6,6 @@
  */
 package org.jboss.messaging.core.remoting.wireformat;
 
-import static org.jboss.messaging.core.remoting.Assert.assertValidID;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_DELIVERMESSAGE;
 
 import org.jboss.messaging.core.Message;
@@ -24,9 +23,9 @@ public class DeliverMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
 
+   //FIXME - we do not need all these fields
+   
    private final Message message;
-
-   private final String consumerID;
 
    private final long deliveryID;
 
@@ -36,19 +35,16 @@ public class DeliverMessage extends AbstractPacket
 
    // Constructors --------------------------------------------------
 
-   public DeliverMessage(Message message, String consumerID, long deliveryID,
-         int deliveryCount)
+   public DeliverMessage(Message message, long deliveryID,
+                         int deliveryCount)
    {
       super(MSG_DELIVERMESSAGE);
 
       assert message != null;
-      assertValidID(consumerID);
 
       this.message = message;
-      this.consumerID = consumerID;
       this.deliveryID = deliveryID;
       this.deliveryCount = deliveryCount;
-
    }
 
    // Public --------------------------------------------------------
@@ -56,11 +52,6 @@ public class DeliverMessage extends AbstractPacket
    public Message getMessage()
    {
       return message;
-   }
-
-   public String getConsumerID()
-   {
-      return consumerID;
    }
 
    public long getDeliveryID()
@@ -78,7 +69,6 @@ public class DeliverMessage extends AbstractPacket
    {
       StringBuffer buf = new StringBuffer(getParentString());
       buf.append(", message=" + message);
-      buf.append(", consumerID=" + consumerID);
       buf.append(", deliveryID=" + deliveryID);
       buf.append(", deliveryCount=" + deliveryCount);
       buf.append("]");

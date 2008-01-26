@@ -21,32 +21,55 @@
   */
 package org.jboss.jms.server.endpoint;
 
+
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CLOSE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SETCLIENTID;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_STARTCONNECTION;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_STOPCONNECTION;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATESESSION;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_GETCLIENTID;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+import javax.jms.IllegalStateException;
+import javax.jms.JMSException;
+import javax.jms.Session;
+import javax.transaction.xa.Xid;
+
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.SecurityStore;
 import org.jboss.jms.server.TransactionRepository;
 import org.jboss.jms.server.container.SecurityAspect;
-import org.jboss.jms.server.security.CheckType;
-import org.jboss.jms.tx.ClientTransaction;
-import org.jboss.jms.tx.ClientTransaction.SessionTxState;
-import org.jboss.jms.tx.TransactionRequest;
-import org.jboss.messaging.core.*;
+import org.jboss.messaging.core.Binding;
+import org.jboss.messaging.core.Condition;
+import org.jboss.messaging.core.Destination;
+import org.jboss.messaging.core.DestinationType;
+import org.jboss.messaging.core.MessagingServer;
+import org.jboss.messaging.core.PostOffice;
 import org.jboss.messaging.core.impl.ConditionImpl;
-import org.jboss.messaging.core.impl.TransactionImpl;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.wireformat.*;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.*;
+import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.wireformat.CreateSessionRequest;
+import org.jboss.messaging.core.remoting.wireformat.CreateSessionResponse;
+import org.jboss.messaging.core.remoting.wireformat.GetClientIDResponse;
+import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
+import org.jboss.messaging.core.remoting.wireformat.NullPacket;
+import org.jboss.messaging.core.remoting.wireformat.PacketType;
+import org.jboss.messaging.core.remoting.wireformat.SetClientIDMessage;
 import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.Util;
-
-import javax.jms.IllegalStateException;
-import javax.jms.InvalidDestinationException;
-import javax.jms.JMSException;
-import javax.transaction.xa.Xid;
-import java.util.*;
 
 /**
  * Concrete implementation of ConnectionEndpoint.
@@ -58,7 +81,7 @@ import java.util.*;
  *
  * $Id$
  */
-public class ServerConnectionEndpoint implements ConnectionEndpoint
+public class ServerConnectionEndpoint
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -152,14 +175,15 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    // ConnectionDelegate implementation ------------------------------------------------------------
 
    public CreateSessionResponse createSession(boolean transacted,
-                                              int acknowledgmentMode,
-                                              boolean xa)
+                                              int acknowledgementMode,
+                                              boolean xa,
+                                              PacketSender sender)
       throws JMSException
    {
       try
       {
          log.trace(this + " creating " + (transacted ? "transacted" : "non transacted") +
-            " session, " + Util.acknowledgmentMode(acknowledgmentMode) + ", " +
+            " session, " + Util.acknowledgmentMode(acknowledgementMode) + ", " +
             (xa ? "XA": "non XA"));
 
          if (closed)
@@ -169,11 +193,40 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
          String sessionID = UUID.randomUUID().toString();
 
-         // create the corresponding server-side session endpoint and register it with this
-         // connection endpoint instance
-
+         //TODO do this checks on the client side
+         boolean autoCommitSends;
+         
+         boolean autoCommitAcks;
+         
+         if (!transacted)
+         {
+            if (acknowledgementMode == Session.AUTO_ACKNOWLEDGE || acknowledgementMode == Session.DUPS_OK_ACKNOWLEDGE)
+            {
+               autoCommitSends = true;
+               
+               autoCommitAcks = true;
+            }
+            else if (acknowledgementMode == Session.CLIENT_ACKNOWLEDGE)
+            {
+               autoCommitSends = true;
+               
+               autoCommitAcks = false;
+            }
+            else
+            {
+               throw new IllegalArgumentException("Invalid ack mode " + acknowledgementMode);
+            }
+         }
+         else
+         {
+            autoCommitSends = false;
+            
+            autoCommitAcks = false;
+         }
+         
          //Note we only replicate transacted and client acknowledge sessions.
-         ServerSessionEndpoint ep = new ServerSessionEndpoint(sessionID, this, transacted, xa);
+         ServerSessionEndpoint ep =
+            new ServerSessionEndpoint(sessionID, this, autoCommitSends, autoCommitAcks, xa, sender);
 
          synchronized (sessions)
          {
@@ -191,7 +244,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          throw ExceptionUtil.handleJMSInvocation(t, this + " createSessionDelegate");
       }
    }
-
+   
    public String getClientID() throws JMSException
    {
       try
@@ -346,112 +399,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       }
    }
 
-   public long closing(long sequence) throws JMSException
+   public void closing() throws JMSException
    {
-      log.trace(this + " closing (noop)");
-
-      return -1;
-   }
-
-   private void checkSecurityOnSendTransaction(TransactionRequest t) throws JMSException
-   {
-      ClientTransaction txState = t.getState();
-
-      //FIXME - can't we optimise this??
-      if (txState != null)
-      {
-         // distinct list of destinations...
-         HashSet<org.jboss.messaging.core.Destination> destinations = new HashSet<org.jboss.messaging.core.Destination>();
-
-         for (Iterator i = txState.getSessionStates().iterator(); i.hasNext(); )
-         {
-            ClientTransaction.SessionTxState sessionState = (ClientTransaction.SessionTxState)i.next();
-            for (Iterator j = sessionState.getMsgs().iterator(); j.hasNext(); )
-            {
-               Message message = (Message)j.next();
-
-               org.jboss.messaging.core.Destination dest =
-                  (org.jboss.messaging.core.Destination)message.getHeader(org.jboss.messaging.core.Message.TEMP_DEST_HEADER_NAME);
-
-
-               destinations.add(dest);
-            }
-         }
-         for (Iterator iterDestinations = destinations.iterator();iterDestinations.hasNext();)
-         {
-            org.jboss.messaging.core.Destination destination = (org.jboss.messaging.core.Destination) iterDestinations.next();
-            security.check(destination, CheckType.WRITE, this);
-         }
-
-      }
-
-   }
-
-   public void sendTransaction(TransactionRequest request) throws JMSException
-   {
-
-      checkSecurityOnSendTransaction(request);
-      try
-      {
-         if (closed)
-         {
-            throw new IllegalStateException("Connection is closed");
-         }
-
-         if (request.getRequestType() == TransactionRequest.ONE_PHASE_COMMIT_REQUEST)
-         {
-            if (trace) { log.trace(this + " received ONE_PHASE_COMMIT request"); }
-
-            Transaction tx = new TransactionImpl();
-            
-            processTransaction(request.getState(), tx);
-            
-            tx.commit(messagingServer.getPersistenceManager());
-         }
-         else if (request.getRequestType() == TransactionRequest.TWO_PHASE_PREPARE_REQUEST)
-         {
-            if (trace) { log.trace(this + " received TWO_PHASE_COMMIT prepare request"); }
-
-            Transaction tx = new TransactionImpl(request.getXid());
-            
-            tr.addTransaction(request.getXid(), tx);
-            
-            processTransaction(request.getState(), tx);
-            
-            tx.prepare(messagingServer.getPersistenceManager());
-         }
-         else if (request.getRequestType() == TransactionRequest.TWO_PHASE_COMMIT_REQUEST)
-         {
-            if (trace) { log.trace(this + " received TWO_PHASE_COMMIT commit request"); }
-
-            Transaction tx = tr.getTransaction(request.getXid());
-            
-            if (trace) { log.trace("Committing " + tx); }
-            
-            tx.commit(messagingServer.getPersistenceManager());
-         }
-         else if (request.getRequestType() == TransactionRequest.TWO_PHASE_ROLLBACK_REQUEST)
-         {
-            if (trace) { log.trace(this + " received TWO_PHASE_COMMIT rollback request"); }
-
-            // for 2pc rollback - we just don't cancel any messages back to the channel; this is
-            // driven from the client side.
-
-            Transaction tx =  tr.getTransaction(request.getXid());
-
-            if (trace) { log.trace(this + " rolling back " + tx); }
-
-            tx.rollback(messagingServer.getPersistenceManager());
-            
-            tr.removeTransaction(request.getXid());
-         }
-
-         if (trace) { log.trace(this + " processed transaction successfully"); }
-      }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " sendTransaction");
-      }
    }
 
    /**
@@ -578,36 +527,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       return remotingClientSessionID;
    }
 
-   void sendMessage(Message msg) throws Exception
-   {
-      if (trace) { log.trace(this + " sending message " + msg); }
-
-      Destination dest = (Destination)msg.getHeader(org.jboss.messaging.core.Message.TEMP_DEST_HEADER_NAME);
-
-      //Assign the message an internal id - this is used to key it in the store and also used to 
-      //handle delivery
-      
-      msg.setMessageID(messagingServer.getPersistenceManager().generateMessageID());
-      
-      // This allows the no-local consumers to filter out the messages that come from the same
-      // connection.
-
-      msg.setConnectionID(id);
-
-      Condition condition = new ConditionImpl(dest.getType(), dest.getName());
-      
-      postOffice.route(condition, msg);
-      
-      //FIXME - this check belongs on the client side!!
-      
-      if (dest.getType() == DestinationType.QUEUE && msg.getReferences().isEmpty())
-      {
-         throw new InvalidDestinationException("Failed to route to queue " + dest.getName());
-      }
-      
-      if (trace) { log.trace("sent " + msg); }
-   }
-   
+  
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
@@ -631,41 +551,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       started = s;      
    }   
     
-   private void processTransaction(ClientTransaction txState, Transaction tx) throws Exception
-   {
-      if (trace) { log.trace(this + " processing transaction " + tx); }
-
-      for (SessionTxState sessionState: txState.getSessionStates())
-      {
-         List<Message> messages = sessionState.getMsgs();
-         
-         for (Message message: messages)
-         {
-            sendMessage(message);    
-            
-            if (message.getNumDurableReferences() != 0)
-            {
-               tx.setContainsPersistent(true);
-            }
-         }
-         
-         tx.addAllSends(messages);
- 
-         ServerSessionEndpoint session = messagingServer.getSession(sessionState.getSessionId());
-         
-         if (session == null)
-         {               
-            throw new IllegalStateException("Cannot find session with id " +
-               sessionState.getSessionId());
-         }
-         
-         tx.addAllAcks(session.acknowledgeTransactionally(sessionState.getAcks(), tx));         
-      }
-            
-      if (trace) { log.trace(this + " processed transaction " + tx); }
-   }
-
-
    // Inner classes --------------------------------------------------------------------------------
 
    private class ConnectionPacketHandler implements PacketHandler
@@ -691,7 +576,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                CreateSessionRequest request = (CreateSessionRequest) packet;
                response = createSession(
                      request.isTransacted(), request.getAcknowledgementMode(),
-                     request.isXA());
+                     request.isXA(), sender);
             } else if (type == MSG_STARTCONNECTION)
             {
                start();
@@ -700,29 +585,18 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                stop();
 
                response = new NullPacket();
-            } else if (type == REQ_CLOSING)
-            {
-               ClosingRequest request = (ClosingRequest) packet;
-               long id = closing(request.getSequence());
+            } else if (type == PacketType.MSG_CLOSING)
+            {              
+               closing();
 
-               response = new ClosingResponse(id);
+               response = new NullPacket();
             } else if (type == MSG_CLOSE)
             {
                close();
 
                response = new NullPacket();
-            } else if (type == MSG_SENDTRANSACTION)
-            {
-               SendTransactionMessage message = (SendTransactionMessage) packet;
-               sendTransaction(message.getTransactionRequest());
-
-               response = new NullPacket();
-            } else if (type == REQ_GETPREPAREDTRANSACTIONS)
-            {
-               MessagingXid[] xids = getPreparedTransactions();
-
-               response = new GetPreparedTransactionsResponse(xids);
-            } else if (type == REQ_GETCLIENTID)
+            } 
+            else if (type == REQ_GETCLIENTID)
             {
                response = new GetClientIDResponse(getClientID());
             } else if (type == MSG_SETCLIENTID)

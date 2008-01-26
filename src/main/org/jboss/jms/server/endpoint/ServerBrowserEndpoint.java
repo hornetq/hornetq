@@ -25,7 +25,6 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_BROWSE
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CLOSE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_BROWSER_HASNEXTMESSAGE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_BROWSER_NEXTMESSAGE;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CLOSING;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -46,8 +45,7 @@ import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.BrowserHasNextMessageResponse;
 import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageResponse;
-import org.jboss.messaging.core.remoting.wireformat.ClosingRequest;
-import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
+import org.jboss.messaging.core.remoting.wireformat.ClosingMessage;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
@@ -63,7 +61,7 @@ import org.jboss.messaging.util.Logger;
  * 
  * $Id$
  */
-public class ServerBrowserEndpoint implements BrowserEndpoint
+public class ServerBrowserEndpoint
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -232,10 +230,8 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
       }
    }
          
-   public long closing(long sequence) throws JMSException
+   public void closing() throws JMSException
    {
-      // Do nothing
-      return -1;
    }
    
    // Public ---------------------------------------------------------------------------------------
@@ -312,12 +308,12 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
                reset();
 
                response = new NullPacket();
-            } else if (type == REQ_CLOSING)
+            } else if (type == PacketType.MSG_CLOSING)
             {
-               ClosingRequest request = (ClosingRequest) packet;
-               long id = closing(request.getSequence());
+               ClosingMessage request = (ClosingMessage) packet;
+               closing();
 
-               response = new ClosingResponse(id);
+               response = new NullPacket();
             } else if (type == MSG_CLOSE)
             {
                close();

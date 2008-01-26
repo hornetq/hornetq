@@ -299,7 +299,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          propNames.add(propName);
       }
 
-      assertEquals(8, propNames.size());
+      assertEquals(9, propNames.size());
 
       assertTrue(propNames.contains("myBool"));
       assertTrue(propNames.contains("myByte"));

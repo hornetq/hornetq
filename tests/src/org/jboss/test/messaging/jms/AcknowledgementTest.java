@@ -267,16 +267,18 @@ public class AcknowledgementTest extends JMSTestCase
 	      
 	      assertRemainingMessages(NUM_MESSAGES);
 	
-	      log.trace("Session rollback called");
+	      log.info("Session rollback called");
 	
 	      int i = 0;
 	      for(; i < NUM_MESSAGES; i++)
 	      {
 	         consumer.receive();
-	         log.trace("Received message " + i);	  
+	         log.info("Received message " + i);	  
 	      }
 	      
 	      assertRemainingMessages(NUM_MESSAGES);
+	      
+	      log.info("Got here");
 	
 	      // if I don't receive enough messages, the test will timeout
 	
@@ -338,10 +340,11 @@ public class AcknowledgementTest extends JMSTestCase
 	      
 	      assertRemainingMessages(NUM_MESSAGES);
 	
-			log.trace("Received " + count +  " messages");
+			log.info("Received " + count +  " messages");
 	
 			assertEquals(count, NUM_MESSAGES);
 	
+			log.info("calling recover");
 			consumerSess.recover();
 	      
 	      assertRemainingMessages(NUM_MESSAGES);
@@ -353,15 +356,20 @@ public class AcknowledgementTest extends JMSTestCase
 	      int i = 0;
 	      for(; i < NUM_MESSAGES; i++)
 	      {
-	         m = consumer.receive();
+	         m = consumer.receive(1000);
 	         log.trace("Received message " + i);	
+	         
+	         if (m == null)
+	         {
+	            break;
+	         }
 	      }
 	      
 	      assertRemainingMessages(NUM_MESSAGES);
 	
 	      // if I don't receive enough messages, the test will timeout
 	
-			log.trace("Received " + i +  " messages after recover");
+			log.info("Received " + i +  " messages after recover");
 	      
 	      m.acknowledge();
 	      
@@ -597,7 +605,12 @@ public class AcknowledgementTest extends JMSTestCase
 				conn.close();
 			}
 			
+			log.info("Removing all messages from queue " + queue1.getQueueName());
 			removeAllMessages(queue1.getQueueName(), true, 0);
+			
+			log.info("Done remove");
+			
+			assertRemainingMessages(0);
 		}
    }
 
@@ -613,6 +626,7 @@ public class AcknowledgementTest extends JMSTestCase
 		
 		try
 		{
+		   assertRemainingMessages(0);
 			
 			conn = cf.createConnection();
 	
@@ -634,7 +648,7 @@ public class AcknowledgementTest extends JMSTestCase
 	      
 	      assertRemainingMessages(NUM_MESSAGES);
 	
-			log.trace("Sent messages");
+			log.info("Sent messages");
 	
 			int count = 0;
 	
@@ -644,6 +658,8 @@ public class AcknowledgementTest extends JMSTestCase
 	         assertRemainingMessages(NUM_MESSAGES - i);
 	         
 				m = consumer.receive(200);
+				
+				log.info("got message " + m);
 	         
 	         assertRemainingMessages(NUM_MESSAGES - (i + 1));
 	         
@@ -679,29 +695,6 @@ public class AcknowledgementTest extends JMSTestCase
 
    }
    
-   public void testDupsOKBatchDefault() throws Exception
-   {
-      //test default
-      Connection conn = null;
-      
-      try
-      {	      
-	      conn = cf.createConnection();
-	      
-	      JBossSession sess = (JBossSession)conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
-	      
-	      ClientSession del = sess.getDelegate();
-	      
-	      assertEquals(1000, del.getDupsOKBatchSize());
-      }
-      finally
-      {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
-      }
-   }
       
    public void testDupsOKAcknowledgeQueue() throws Exception
    {       
@@ -830,84 +823,10 @@ public class AcknowledgementTest extends JMSTestCase
       	}
       	
       	undeployConnectionFactory("mycf");
-      }
-      
-
+      }     
    }
    
-   
-   
-	/*
-	 * Send some messages, consume them and verify the messages are not sent upon recovery
-	 *
-	 */
-	public void testLazyAcknowledge() throws Exception
-   {
-		Connection conn = null;
-		
-		try
-		{
-			
-			conn = cf.createConnection();
-	
-			Session producerSess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
-			MessageProducer producer = producerSess.createProducer(queue1);
-	
-			Session consumerSess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
-			MessageConsumer consumer = consumerSess.createConsumer(queue1);
-			conn.start();
-	
-			final int NUM_MESSAGES = 20;
-	
-			//Send some messages
-			for (int i = 0; i < NUM_MESSAGES; i++)
-			{
-				Message m = producerSess.createMessage();
-				producer.send(m);
-			}
-	
-	      assertRemainingMessages(NUM_MESSAGES);
-	      
-			log.trace("Sent messages");
-	
-			int count = 0;
-	
-			Message m = null;
-			for (int i = 0; i < NUM_MESSAGES; i++)
-			{
-				m = consumer.receive(200);
-				if (m == null) break;
-				count++;
-			}
-	      
-			assertNotNull(m);
-	      
-	      assertRemainingMessages(NUM_MESSAGES);
-	
-			log.trace("Received " + count +  " messages");
-	
-			assertEquals(count, NUM_MESSAGES);
-	
-			consumerSess.recover();
-	
-			log.trace("Session recover called");
-	
-			m = consumer.receive(200);
-	
-			log.trace("Message is:" + m);
-	
-			assertNull(m);
-		}
-		finally
-		{
-			if (conn != null)
-			{
-				conn.close();
-			}
-		}
-
-   }
-   
+     
    public void testMessageListenerAutoAck() throws Exception
    {
       Connection conn = null;
@@ -918,7 +837,7 @@ public class AcknowledgementTest extends JMSTestCase
 	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      MessageProducer prod = sessSend.createProducer(queue1);
   
-	      log.trace("Sending messages");
+	      log.info("Sending messages");
 	      
 	      TextMessage tm1 = sessSend.createTextMessage("a");
 	      TextMessage tm2 = sessSend.createTextMessage("b");
@@ -927,7 +846,7 @@ public class AcknowledgementTest extends JMSTestCase
 	      prod.send(tm2);
 	      prod.send(tm3);
 	      
-	      log.trace("Sent messages");
+	      log.info("Sent messages");
 	      
 	      sessSend.close();
 	      
@@ -937,19 +856,19 @@ public class AcknowledgementTest extends JMSTestCase
 	
 	      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      
-	      log.trace("Creating consumer");
+	      log.info("Creating consumer");
 	      
 	      MessageConsumer cons = sessReceive.createConsumer(queue1);
 	      
-	      log.trace("Created consumer");
+	      log.info("Created consumer");
 	      
 	      MessageListenerAutoAck listener = new MessageListenerAutoAck(sessReceive);
 	      
-	      log.trace("Setting message listener");
+	      log.info("Setting message listener");
 	      
 	      cons.setMessageListener(listener);
 	      
-	      log.trace("Set message listener");
+	      log.info("Set message listener");
 	
 	      listener.waitForMessages();
 	                  
@@ -1004,33 +923,42 @@ public class AcknowledgementTest extends JMSTestCase
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          MessageConsumer consumer = session.createConsumer(queue1);
+         
+         log.info("here1");
 
          TextMessage messageReceived = (TextMessage)consumer.receive(1000);
+         
+         log.info("here2");
 
          assertNotNull(messageReceived);
 
          assertEquals("one", messageReceived.getText());
+         
+         log.info("here3");
 
          session.recover();
 
          messageReceived = (TextMessage)consumer.receive(1000);
+                          
+         log.info("here4");
+         
+         assertNotNull(messageReceived);
 
          assertEquals("two", messageReceived.getText());
 
+         log.info("closing consumer");
+         
          consumer.close();
-
-         // I can't call xasession.close for this test as JCA layer would cache the session
-         // So.. keep this close commented!
-         //xasession.close();
+         
+         log.info("consumer closed");
 
          assertRemainingMessages(0);
-
       }
       finally
       {
          if (conn != null)
          {
-            conn.close();
+            conn.close();                        
          }
       }
    }
@@ -1044,6 +972,8 @@ public class AcknowledgementTest extends JMSTestCase
       try
       {
 	      
+         this.assertRemainingMessages(0);
+         
 	      conn = cf.createConnection();
 	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      MessageProducer prod = sessSend.createProducer(queue1);
@@ -1083,14 +1013,20 @@ public class AcknowledgementTest extends JMSTestCase
 	
 	      listener.waitForMessages();
 	      
-	      assertRemainingMessages(3);
+	      assertFalse(listener.failed);
 	      
-	      conn.close();
+	      assertRemainingMessages(1);
 	      
-	      Thread.sleep(500);
+	      log.info("Closing session");
+	      sessReceive.close();
+	      log.info("Closed session");
 	      
 	      assertRemainingMessages(0);
-	      assertFalse(listener.failed);
+	      
+	      conn.close();
+	           
+	      assertRemainingMessages(0);
+	      
       }
       finally
       {
@@ -1098,6 +1034,7 @@ public class AcknowledgementTest extends JMSTestCase
       	{
       		conn.close();
       	}
+      	
       }
    }
    
@@ -1240,7 +1177,7 @@ public class AcknowledgementTest extends JMSTestCase
                   
             TextMessage tm = (TextMessage)m;
             
-            //log.info("Got message: " + tm.getText());
+            log.info("Got message: " + tm.getText());
                       
             // Receive first three messages then recover() session
             // Only last message should be redelivered
@@ -1273,7 +1210,9 @@ public class AcknowledgementTest extends JMSTestCase
                   failed = true;
                   latch.release();
                }
+               log.info("Recovering session");
                sess.recover();
+               log.info("Session recovered");
             }
             if (count == 4)
             {
@@ -1313,6 +1252,8 @@ public class AcknowledgementTest extends JMSTestCase
             count++;
                   
             TextMessage tm = (TextMessage)m;
+            
+            log.info("Got message " + tm.getText());
 
             // Receive first three messages then recover() session
             // Only last message should be redelivered
@@ -1323,6 +1264,7 @@ public class AcknowledgementTest extends JMSTestCase
                if (!"a".equals(tm.getText()))
                {
                   failed = true;
+                  log.info("Failed1");
                   latch.release();
                }
             }
@@ -1333,6 +1275,7 @@ public class AcknowledgementTest extends JMSTestCase
                if (!"b".equals(tm.getText()))
                {
                   failed = true;
+                  log.info("Failed2");
                   latch.release();
                }
             }
@@ -1343,27 +1286,30 @@ public class AcknowledgementTest extends JMSTestCase
                if (!"c".equals(tm.getText()))
                {
                   failed = true;
+                  log.info("Failed3");
                   latch.release();
                }
                sess.recover();
             }
             if (count == 4)
             {
-               assertRemainingMessages(3);
+               assertRemainingMessages(1);
                
                if (!"c".equals(tm.getText()))
                {
                   failed = true;
+                  log.info("Failed4");
                   latch.release();
-               }               
+               }      
                latch.release();
-            }            
-               
+            }   
+            
          }
          catch (Exception e)
          {
             failed = true;
             latch.release();
+            e.printStackTrace();
          }
       }
             
@@ -1427,6 +1373,7 @@ public class AcknowledgementTest extends JMSTestCase
                   failed = true;
                   latch.release();
                }     
+               log.info("acknowledging manually");
                tm.acknowledge();
                assertRemainingMessages(2);
                sess.recover();
@@ -1493,6 +1440,8 @@ public class AcknowledgementTest extends JMSTestCase
             count++;
             
             TextMessage tm = (TextMessage)m;
+            
+            log.info("Got message " + tm.getText());
                    
             if (count == 1)
             {
@@ -1520,7 +1469,7 @@ public class AcknowledgementTest extends JMSTestCase
                   failed = true;
                   latch.release();
                }
-               log.trace("Rollback");
+               log.info("Rollback");
                sess.rollback();
             }
             if (count == 4)
@@ -1540,7 +1489,7 @@ public class AcknowledgementTest extends JMSTestCase
                   failed = true;
                   latch.release();
                }  
-               log.trace("commit");
+               log.info("commit");
                sess.commit();
                assertRemainingMessages(1);
             }
@@ -1552,7 +1501,7 @@ public class AcknowledgementTest extends JMSTestCase
                   failed = true;
                   latch.release();
                }  
-               log.trace("recover");
+               log.info("rollback2");
                sess.rollback();
             }
             if (count == 7)
@@ -1563,7 +1512,7 @@ public class AcknowledgementTest extends JMSTestCase
                   failed = true;
                   latch.release();
                }  
-               log.trace("Commit");
+               log.info("Commit2");
                sess.commit();
                assertRemainingMessages(0);
                latch.release();

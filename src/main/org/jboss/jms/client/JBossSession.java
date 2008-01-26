@@ -62,7 +62,12 @@ import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTemporaryQueue;
 import org.jboss.jms.destination.JBossTemporaryTopic;
 import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.message.JBossBytesMessage;
+import org.jboss.jms.message.JBossMapMessage;
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.message.JBossObjectMessage;
+import org.jboss.jms.message.JBossStreamMessage;
+import org.jboss.jms.message.JBossTextMessage;
 import org.jboss.messaging.util.Logger;
 
 /**
@@ -75,11 +80,9 @@ import org.jboss.messaging.util.Logger;
  */
 public class JBossSession implements
    Session, XASession, QueueSession, XAQueueSession,
-   TopicSession, XATopicSession, Serializable
+   TopicSession, XATopicSession
 {   
    // Constants -----------------------------------------------------
-   
-   private static final long serialVersionUID = 2235942510476264909L;
    
    static final int TYPE_GENERIC_SESSION = 0;
    
@@ -101,137 +104,184 @@ public class JBossSession implements
    
    private MessageListener distinguishedListener;
    
+   private int ackMode;
+   
+   private boolean transacted;
+   
+   private boolean recoverCalled;
+   
    // Constructors --------------------------------------------------
 
-   public JBossSession(ClientSession sessionDelegate, int sessionType)
-   {
-      this.session = sessionDelegate;
+   public JBossSession(boolean transacted, int ackMode, ClientSession session, int sessionType)
+   {      
+      this.ackMode = ackMode;            
+      
+      this.session = session;
       
       this.sessionType = sessionType;
+      
+      this.transacted = transacted;
    }
 
    // Session implementation ----------------------------------------
                                                                         
    public BytesMessage createBytesMessage() throws JMSException
    {
-   	return session.createBytesMessage();
+      checkClosed();
+      
+      return new JBossBytesMessage();
    }
 
    public MapMessage createMapMessage() throws JMSException
    {
-   	return session.createMapMessage();
+      checkClosed();
+      
+   	return new JBossMapMessage();
    }
 
    public Message createMessage() throws JMSException
    {
-      return session.createMessage();
+      checkClosed();
+      
+      return new JBossMessage();
    }
 
    public ObjectMessage createObjectMessage() throws JMSException
    {
-   	return session.createObjectMessage();
+   	checkClosed();
+   	
+   	return new JBossObjectMessage();
    }
 
    public ObjectMessage createObjectMessage(Serializable object) throws JMSException
    {
-   	return session.createObjectMessage(object);
+   	checkClosed();
+   	
+   	JBossObjectMessage jbm = new JBossObjectMessage();
+   	
+   	jbm.setObject(object);
+   	
+   	return jbm;
    }
 
    public StreamMessage createStreamMessage() throws JMSException
    {
-   	return session.createStreamMessage();
+   	checkClosed();
+   	
+   	return new JBossStreamMessage();
    }
 
    public TextMessage createTextMessage() throws JMSException
    {
-   	return session.createTextMessage();
+   	checkClosed();
+   	
+   	return new JBossTextMessage();
    }
 
    public TextMessage createTextMessage(String text) throws JMSException
    {
-   	return session.createTextMessage(text);
+   	checkClosed();
+   	
+   	JBossTextMessage jbm = new JBossTextMessage();
+   	
+   	jbm.setText(text);
+   	
+   	return jbm;
    }
 
    public boolean getTransacted() throws JMSException
    {
-      return session.isTransacted();
+      checkClosed();
+      
+      return transacted;
    }
 
    public int getAcknowledgeMode() throws JMSException
    {
-      return session.getAcknowledgeMode();
+      checkClosed();
+      
+      return ackMode;
    }
 
    public void commit() throws JMSException
    {
+      if (!transacted)
+      {
+         throw new IllegalStateException("Cannot commit a non-transacted session");
+      }
       session.commit();
    }
 
    public void rollback() throws JMSException
    {
+      if (!transacted)
+      {
+         throw new IllegalStateException("Cannot rollback a non-transacted session");
+      }
+
       session.rollback();
    }
 
    public void close() throws JMSException
    {
-      session.closing(-1);
+      session.closing();
       session.close();
    }
 
    public void recover() throws JMSException
    {
-      session.recover();
+      if (transacted)
+      {
+         throw new IllegalStateException("Cannot recover a transacted session");
+      }
+      
+      session.rollback();
+      
+      recoverCalled = true;
    }
 
    public MessageListener getMessageListener() throws JMSException
    {
-      if (session.isClosed())
-      {
-         throw new IllegalStateException("Session is closed");
-      }
+      checkClosed();
+      
       return distinguishedListener;
    }
 
    public void setMessageListener(MessageListener listener) throws JMSException
    {
-      if (session.isClosed())
-      {
-         throw new IllegalStateException("Session is closed");
-      }
-      this.distinguishedListener = listener;
+      checkClosed();
       
-      //When we have a distinguised listener our behaviour is to fall back to local transacted
-      //when the session is not enlisted.
-      this.session.setTreatAsNonTransactedWhenNotEnlisted(false);
+      this.distinguishedListener = listener;
    }
-
+   
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
    public void run()
    {
-      try
-      {
-         if (asfMessages != null)
-         {         
-            int ackMode = getAcknowledgeMode();
+//      try
+//      {
+//         if (asfMessages != null)
+//         {         
+//            while (asfMessages.size() > 0)
+//            {
+//               AsfMessageHolder holder = (AsfMessageHolder)asfMessages.removeFirst();
+//                    
+//               session.preDeliver(holder.getMsg().getDeliveryId());
+//               
+//               session.postDeliver();
+//               
+//               distinguishedListener.onMessage(holder.getMsg());
+//            }
+//         }
+//      }
+//      catch (Exception e)
+//      {
+//         log.error("Failed to process ASF messages", e);
+//      }
       
-            while (asfMessages.size() > 0)
-            {
-               AsfMessageHolder holder = (AsfMessageHolder)asfMessages.removeFirst();
-      
-               MessageHandler.callOnMessage(session, distinguishedListener, holder.getConsumerID(),
-                                                false,
-                                                holder.getMsg(), ackMode, holder.getMaxDeliveries(),
-                                                holder.getConnectionConsumerSession());
-            }
-         }
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to process ASF messages", e);
-      }
+      //Need to work out how to get ASF to work with core
    }
 
    public MessageProducer createProducer(Destination d) throws JMSException
@@ -267,11 +317,27 @@ public class JBossSession implements
       {
          throw new InvalidDestinationException("Not a JBossDestination:" + d);
       }
+                        
+      ClientConsumer cd = session.
+         createClientConsumer(((JBossDestination)d).toCoreDestination(), messageSelector, noLocal, null);
 
-      org.jboss.jms.client.api.ClientConsumer cd = session.
-         createClientConsumer(((JBossDestination)d).toCoreDestination(), messageSelector, noLocal, null, false);
-
-      return new JBossMessageConsumer(cd);
+      return new JBossMessageConsumer(this, cd);
+   }
+   
+   private boolean isDeliveredBeforeOnMessage()
+   {
+      boolean deliveredBeforeOnMessage;
+      
+      if (transacted || ackMode == Session.CLIENT_ACKNOWLEDGE)
+      {
+         deliveredBeforeOnMessage = true;
+      }
+      else
+      {
+         deliveredBeforeOnMessage = false;
+      }
+      
+      return deliveredBeforeOnMessage;
    }
 
    public Queue createQueue(String queueName) throws JMSException
@@ -311,9 +377,9 @@ public class JBossSession implements
       }
 
       ClientConsumer cd =
-         session.createClientConsumer(((JBossTopic)topic).toCoreDestination(), null, false, name, false);
+         session.createClientConsumer(((JBossTopic)topic).toCoreDestination(), null, false, name);
 
-      return new JBossMessageConsumer(cd);
+      return new JBossMessageConsumer(this, cd);
    }
 
    public TopicSubscriber createDurableSubscriber(Topic topic,
@@ -341,9 +407,9 @@ public class JBossSession implements
       }
 
       ClientConsumer cd = session.
-         createClientConsumer(((JBossTopic)topic).toCoreDestination(), messageSelector, noLocal, name, false);
+         createClientConsumer(((JBossTopic)topic).toCoreDestination(), messageSelector, noLocal, name);
 
-      return new JBossMessageConsumer(cd);
+      return new JBossMessageConsumer(this, cd);
    }
 
    public QueueBrowser createBrowser(Queue queue) throws JMSException
@@ -485,9 +551,19 @@ public class JBossSession implements
       return "JBossSession->" + session;
    }
    
-   public org.jboss.jms.client.api.ClientSession getDelegate()
+   public ClientSession getCoreSession()
    {
       return session;
+   }   
+   
+   public boolean isRecoverCalled()
+   {
+      return recoverCalled;
+   }
+   
+   public void setRecoverCalled(boolean recoverCalled)
+   {
+      this.recoverCalled = recoverCalled;
    }
 
    // Package protected ---------------------------------------------
@@ -515,6 +591,15 @@ public class JBossSession implements
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+   
+   private void checkClosed() throws JMSException
+   {
+      if (session.isClosed())
+      {
+         throw new IllegalStateException("Session is closed");
+      }
+   }
+
 
    // Inner classes -------------------------------------------------
 

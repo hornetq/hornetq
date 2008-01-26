@@ -29,6 +29,7 @@ import java.io.Serializable;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
+import org.jboss.jms.client.api.ClientSession;
 import org.jboss.messaging.util.StreamUtils;
 
 /**
@@ -63,9 +64,9 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
       super(JBossObjectMessage.TYPE);
    }
    
-   public JBossObjectMessage(org.jboss.messaging.core.Message message, long deliveryID, int deliveryCount)
+   public JBossObjectMessage(org.jboss.messaging.core.Message message, ClientSession session)
    {
-      super(message, deliveryID, deliveryCount);
+      super(message, session);
    }
 
    /**

@@ -10,22 +10,15 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.NULL;
 
 import org.apache.mina.filter.codec.demux.DemuxingProtocolCodecFactory;
 import org.jboss.messaging.core.remoting.codec.AbstractPacketCodec;
-import org.jboss.messaging.core.remoting.codec.AcknowledgeDeliveriesRequestCodec;
-import org.jboss.messaging.core.remoting.codec.AcknowledgeDeliveryRequestCodec;
-import org.jboss.messaging.core.remoting.codec.AcknowledgeDeliveryResponseCodec;
 import org.jboss.messaging.core.remoting.codec.AddTemporaryDestinationMessageCodec;
 import org.jboss.messaging.core.remoting.codec.BrowserHasNextMessageResponseCodec;
 import org.jboss.messaging.core.remoting.codec.BrowserNextMessageBlockRequestCodec;
 import org.jboss.messaging.core.remoting.codec.BrowserNextMessageBlockResponseCodec;
 import org.jboss.messaging.core.remoting.codec.BrowserNextMessageResponseCodec;
 import org.jboss.messaging.core.remoting.codec.BytesPacketCodec;
-import org.jboss.messaging.core.remoting.codec.CancelDeliveriesMessageCodec;
-import org.jboss.messaging.core.remoting.codec.CancelDeliveryMessageCodec;
-import org.jboss.messaging.core.remoting.codec.ChangeRateMessageCodec;
-import org.jboss.messaging.core.remoting.codec.ClosingRequestCodec;
-import org.jboss.messaging.core.remoting.codec.ClosingResponseCodec;
 import org.jboss.messaging.core.remoting.codec.ConnectionFactoryCreateConnectionRequestCodec;
 import org.jboss.messaging.core.remoting.codec.ConnectionFactoryCreateConnectionResponseCodec;
+import org.jboss.messaging.core.remoting.codec.ConsumerChangeRateMessageCodec;
 import org.jboss.messaging.core.remoting.codec.CreateBrowserRequestCodec;
 import org.jboss.messaging.core.remoting.codec.CreateBrowserResponseCodec;
 import org.jboss.messaging.core.remoting.codec.CreateConsumerRequestCodec;
@@ -37,19 +30,15 @@ import org.jboss.messaging.core.remoting.codec.CreateSessionResponseCodec;
 import org.jboss.messaging.core.remoting.codec.DeleteTemporaryDestinationMessageCodec;
 import org.jboss.messaging.core.remoting.codec.DeliverMessageCodec;
 import org.jboss.messaging.core.remoting.codec.GetClientIDResponseCodec;
-import org.jboss.messaging.core.remoting.codec.GetPreparedTransactionsResponseCodec;
 import org.jboss.messaging.core.remoting.codec.JMSExceptionMessageCodec;
 import org.jboss.messaging.core.remoting.codec.RemotingBuffer;
-import org.jboss.messaging.core.remoting.codec.SendMessageCodec;
-import org.jboss.messaging.core.remoting.codec.SendTransactionMessageCodec;
+import org.jboss.messaging.core.remoting.codec.SessionAcknowledgeMessageCodec;
+import org.jboss.messaging.core.remoting.codec.SessionCancelMessageCodec;
+import org.jboss.messaging.core.remoting.codec.SessionSendMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SetClientIDMessageCodec;
 import org.jboss.messaging.core.remoting.codec.TextPacketCodec;
 import org.jboss.messaging.core.remoting.codec.UnsubscribeMessageCodec;
-import org.jboss.messaging.core.remoting.codec.UpdateCallbackMessageCodec;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
-import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveriesMessage;
-import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveryRequest;
-import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveryResponse;
 import org.jboss.messaging.core.remoting.wireformat.AddTemporaryDestinationMessage;
 import org.jboss.messaging.core.remoting.wireformat.BrowserHasNextMessageRequest;
 import org.jboss.messaging.core.remoting.wireformat.BrowserHasNextMessageResponse;
@@ -59,12 +48,9 @@ import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageRequest;
 import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageResponse;
 import org.jboss.messaging.core.remoting.wireformat.BrowserResetMessage;
 import org.jboss.messaging.core.remoting.wireformat.BytesPacket;
-import org.jboss.messaging.core.remoting.wireformat.CancelDeliveriesMessage;
-import org.jboss.messaging.core.remoting.wireformat.CancelDeliveryMessage;
-import org.jboss.messaging.core.remoting.wireformat.ChangeRateMessage;
 import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
-import org.jboss.messaging.core.remoting.wireformat.ClosingRequest;
-import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
+import org.jboss.messaging.core.remoting.wireformat.ClosingMessage;
+import org.jboss.messaging.core.remoting.wireformat.ConsumerChangeRateMessage;
 import org.jboss.messaging.core.remoting.wireformat.CreateBrowserRequest;
 import org.jboss.messaging.core.remoting.wireformat.CreateBrowserResponse;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
@@ -79,19 +65,20 @@ import org.jboss.messaging.core.remoting.wireformat.DeleteTemporaryDestinationMe
 import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
 import org.jboss.messaging.core.remoting.wireformat.GetClientIDRequest;
 import org.jboss.messaging.core.remoting.wireformat.GetClientIDResponse;
-import org.jboss.messaging.core.remoting.wireformat.GetPreparedTransactionsRequest;
-import org.jboss.messaging.core.remoting.wireformat.GetPreparedTransactionsResponse;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
-import org.jboss.messaging.core.remoting.wireformat.SendMessage;
-import org.jboss.messaging.core.remoting.wireformat.SendTransactionMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionAcknowledgeMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionCancelMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionCommitMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionRecoverMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionRollbackMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.wireformat.SetClientIDMessage;
 import org.jboss.messaging.core.remoting.wireformat.StartConnectionMessage;
 import org.jboss.messaging.core.remoting.wireformat.StopConnectionMessage;
 import org.jboss.messaging.core.remoting.wireformat.TextPacket;
 import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
-import org.jboss.messaging.core.remoting.wireformat.UpdateCallbackMessage;
 import org.jboss.messaging.util.Logger;
 
 /**
@@ -126,8 +113,6 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
       addCodec(CreateConnectionResponse.class,
             ConnectionFactoryCreateConnectionResponseCodec.class);
 
-      addCodec(UpdateCallbackMessage.class, UpdateCallbackMessageCodec.class);
-
       addCodec(CreateSessionRequest.class, CreateSessionRequestCodec.class);
 
       addCodec(CreateSessionResponse.class, CreateSessionResponseCodec.class);
@@ -139,7 +124,7 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
 
       addCodec(SetClientIDMessage.class, SetClientIDMessageCodec.class);
 
-      addCodec(SendMessage.class, SendMessageCodec.class);
+      addCodec(SessionSendMessage.class, SessionSendMessageCodec.class);
 
       addCodec(CreateConsumerRequest.class, CreateConsumerRequestCodec.class);
 
@@ -161,38 +146,27 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
       addCodecForEmptyPacket(PacketType.MSG_STOPCONNECTION,
             StopConnectionMessage.class);
 
-      addCodec(ChangeRateMessage.class, ChangeRateMessageCodec.class);
+      addCodec(ConsumerChangeRateMessage.class, ConsumerChangeRateMessageCodec.class);
 
       addCodec(DeliverMessage.class, DeliverMessageCodec.class);
 
-      addCodec(AcknowledgeDeliveryRequest.class,
-            AcknowledgeDeliveryRequestCodec.class);
-
-      addCodec(AcknowledgeDeliveryResponse.class,
-            AcknowledgeDeliveryResponseCodec.class);
-
-      addCodec(AcknowledgeDeliveriesMessage.class,
-            AcknowledgeDeliveriesRequestCodec.class);
-
-      addCodec(CancelDeliveryMessage.class, CancelDeliveryMessageCodec.class);
-
-      addCodec(CancelDeliveriesMessage.class,
-            CancelDeliveriesMessageCodec.class);
-
-      addCodec(ClosingRequest.class, ClosingRequestCodec.class);
-
-      addCodec(ClosingResponse.class, ClosingResponseCodec.class);
+      addCodec(SessionAcknowledgeMessage.class,
+            SessionAcknowledgeMessageCodec.class);
+      
+      addCodec(SessionCancelMessage.class,
+            SessionCancelMessageCodec.class);
+      
+      addCodecForEmptyPacket(PacketType.MSG_COMMIT, SessionCommitMessage.class);
+      
+      addCodecForEmptyPacket(PacketType.MSG_COMMIT, SessionRollbackMessage.class);
 
       addCodecForEmptyPacket(PacketType.MSG_CLOSE, CloseMessage.class);
-
-      addCodec(SendTransactionMessage.class, SendTransactionMessageCodec.class);
-
-      addCodecForEmptyPacket(PacketType.REQ_GETPREPAREDTRANSACTIONS,
-            GetPreparedTransactionsRequest.class);
-
-      addCodec(GetPreparedTransactionsResponse.class,
-            GetPreparedTransactionsResponseCodec.class);
-
+      
+      addCodecForEmptyPacket(PacketType.MSG_CLOSING, ClosingMessage.class);
+      
+      addCodecForEmptyPacket(PacketType.MSG_RECOVER, SessionRecoverMessage.class);
+      
+      
       addCodecForEmptyPacket(PacketType.MSG_BROWSER_RESET,
             BrowserResetMessage.class);
 

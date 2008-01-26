@@ -258,7 +258,11 @@ public class MessageConsumerTest extends JMSTestCase
    
          // this should cancel message and cause delivery to other consumer
    
+         log.info("closing session");
+         
          sessConsume1.close();
+         
+         log.info("closed session");
    
          TextMessage tm3 = (TextMessage)cons2.receive(1000);
    
@@ -780,9 +784,15 @@ public class MessageConsumerTest extends JMSTestCase
 	      
 	      assertEquals("One", m.getText());
 	
+	      log.info("Closing consumer");
 	      queueConsumer.close();
+	      log.info("Closed consumer");
 	      
+	      log.info("Committing session");
 	      consumerSession.commit();
+	      log.info("Committed session");
+	      
+	      
 	
 	      // I expect that "Two" is still in the queue
 	
@@ -1400,7 +1410,7 @@ public class MessageConsumerTest extends JMSTestCase
 	      MessageConsumer cons2 = sess2.createConsumer(topic1);
 	      MessageConsumer cons3 = sess3.createConsumer(topic1);
 	
-	      final int NUM_MESSAGES = 100;
+	      final int NUM_MESSAGES = 10;
 	
 	      class Receiver implements Runnable
 	      {
@@ -1423,7 +1433,7 @@ public class MessageConsumerTest extends JMSTestCase
 	                     failed = true;
 	                     break;
 	                  }
-	                  log.trace("received message");
+	                  log.info("received message");
 	                  if (!m.getText().equals("testing"))
 	                  {
 	                     failed = true;
@@ -1468,9 +1478,9 @@ public class MessageConsumerTest extends JMSTestCase
 	         log.trace("Sent message to topic");
 	      }
 	
-	      t1.join();
-	      t2.join();
-	      t3.join();
+	      t1.join(15000);
+	      t2.join(15000);
+	      t3.join(15000);
 	
 	      sess1.close();
 	      sess2.close();

@@ -28,6 +28,7 @@ import java.io.DataOutputStream;
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
+import org.jboss.jms.client.api.ClientSession;
 import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.SafeUTF;
 
@@ -68,9 +69,9 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
       super(JBossTextMessage.TYPE);
    }
    
-   public JBossTextMessage(org.jboss.messaging.core.Message message, long deliveryID, int deliveryCount)
+   public JBossTextMessage(org.jboss.messaging.core.Message message, ClientSession session)
    {
-      super(message, deliveryID, deliveryCount);
+      super(message, session);
    }
    
    /**

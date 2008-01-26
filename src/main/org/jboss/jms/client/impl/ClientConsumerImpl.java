@@ -21,27 +21,22 @@
   */
 package org.jboss.jms.client.impl;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
-import javax.jms.MessageListener;
 
-import org.jboss.jms.client.MessageHandler;
 import org.jboss.jms.client.api.ClientConsumer;
 import org.jboss.jms.client.api.ClientSession;
+import org.jboss.jms.client.api.MessageHandler;
 import org.jboss.jms.client.remoting.MessagingRemotingConnection;
-import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.core.Destination;
+import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.PriorityLinkedList;
 import org.jboss.messaging.core.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.wireformat.ChangeRateMessage;
 import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
-import org.jboss.messaging.core.remoting.wireformat.ClosingRequest;
-import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
+import org.jboss.messaging.core.remoting.wireformat.ClosingMessage;
+import org.jboss.messaging.core.remoting.wireformat.ConsumerChangeRateMessage;
+import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
 import org.jboss.messaging.util.Future;
 import org.jboss.messaging.util.Logger;
 
@@ -67,32 +62,25 @@ public class ClientConsumerImpl implements ClientConsumer
 	
 	private static final boolean trace = log.isTraceEnabled();
 	
-	private static final int WAIT_TIMEOUT = 30000;
-      
    // Attributes -----------------------------------------------------------------------------------
 
 	private String id;
 	private ClientSession session;
    private int bufferSize;
-   private int maxDeliveries;
-   private long redeliveryDelay;
    private Destination destination;
    private String selector;
    private boolean noLocal;
-   private boolean isConnectionConsumer;
-   private PriorityLinkedList<JBossMessage> buffer = new PriorityLinkedListImpl<JBossMessage>(10);
+   private PriorityLinkedList<DeliverMessage> buffer = new PriorityLinkedListImpl<DeliverMessage>(10);
    private volatile Thread receiverThread;
-   private MessageListener listener;
+   private MessageHandler handler;
    private volatile boolean closed;
    private boolean closing;
    private Object mainLock = new Object();
    private QueuedExecutor sessionExecutor;
    private boolean listenerRunning;
-   private long lastDeliveryId = -1;
-   private boolean waitingForLastDelivery;   
    private int consumeCount;
    private MessagingRemotingConnection remotingConnection;
-   
+
    //FIXME - revisit closed and closing flags
    
    // Static ---------------------------------------------------------------------------------------
@@ -100,24 +88,19 @@ public class ClientConsumerImpl implements ClientConsumer
    // Constructors ---------------------------------------------------------------------------------
 
    public ClientConsumerImpl(ClientSession session, String id, int bufferSize,
-                             int maxDeliveries, long redeliveryDelay,
                              Destination dest,
                              String selector, boolean noLocal,
-                             boolean isCC, QueuedExecutor sessionExecutor,
+                             QueuedExecutor sessionExecutor,
                              MessagingRemotingConnection remotingConnection)
    {
       this.id = id;
       this.session = session;
       this.bufferSize = bufferSize;
-      this.maxDeliveries = maxDeliveries;
-      this.redeliveryDelay = redeliveryDelay;
       this.destination = dest;
       this.selector = selector;
       this.noLocal = noLocal;
-      this.isConnectionConsumer = isCC;
       this.sessionExecutor = sessionExecutor;
-      this.remotingConnection = remotingConnection;
-      
+      this.remotingConnection = remotingConnection;    
    }
 
    // Closeable implementation ---------------------------------------------------------------------
@@ -135,37 +118,59 @@ public class ClientConsumerImpl implements ClientConsumer
       }
       finally
       {
-         session.removeChild(id);
+         session.removeConsumer(this);
          
          closed = true;
       }
    }
 
 
-   public synchronized long closing(long sequence) throws JMSException
+   public synchronized void closing() throws JMSException
    {
       if (closed)
       {
-         return -1;         
+         return;       
+      }
+     
+      try
+      {
+         remotingConnection.sendBlocking(id, new ClosingMessage());
+         
+         //Important! We set the handler to null so the next ListenerRunner won't run
+         if (handler != null)
+         {
+            setMessageHandler(null);
+         }
+         
+         //Now we wait for any current handler runners to run.
+         waitForOnMessageToComplete();   
+         
+         synchronized (mainLock)
+         {         
+            if (closing)
+            {
+               return;
+            }
+            
+            closing = true;   
+            
+            if (receiverThread != null)
+            {            
+               // Wake up any receive() thread that might be waiting
+               mainLock.notify();
+            }   
+            
+            this.handler = null;
+         }
+                              
+         if (trace) { log.trace(this + " closed"); }
+      }
+      finally
+      {
+         session.removeConsumer(this);
       }
 
-      // We make sure closing is called on the ServerConsumerEndpoint.
-      // This returns us the last delivery id sent
-
-      ClosingRequest request = new ClosingRequest(sequence);
-      ClosingResponse response = (ClosingResponse)remotingConnection.sendBlocking(id, request);
-      long lastDeliveryId =  response.getID();
-
-      // First we call close on the ClientConsumer which waits for onMessage invocations
-      // to complete and the last delivery to arrive
-      close(lastDeliveryId);
-
       PacketDispatcher.client.unregister(id);
-
-      //And then we cancel any messages still in the message callback handler buffer
-      cancelBuffer();
-
-      return lastDeliveryId;
    }
 
 
@@ -180,17 +185,17 @@ public class ClientConsumerImpl implements ClientConsumer
    {
       checkClosed();
       
-      remotingConnection.sendOneWay(id, new ChangeRateMessage(newRate));
+      remotingConnection.sendOneWay(id, new ConsumerChangeRateMessage(newRate));
    }
    
-   public MessageListener getMessageListener() throws JMSException
+   public MessageHandler getMessageHandler() throws JMSException
    {
       checkClosed();
       
-      return this.listener;
+      return handler;
    }
    
-   public void setMessageListener(MessageListener listener) throws JMSException
+   public void setMessageHandler(MessageHandler handler) throws JMSException
    {  
       checkClosed();
       
@@ -203,9 +208,9 @@ public class ClientConsumerImpl implements ClientConsumer
                "Cannot set MessageListener");
          }
          
-         this.listener = listener;
+         this.handler = handler;
                             
-         if (listener != null && !buffer.isEmpty())
+         if (handler != null && !buffer.isEmpty())
          {  
             listenerRunning = true;
             
@@ -235,16 +240,6 @@ public class ClientConsumerImpl implements ClientConsumer
       return this.selector;
    }
    
-   public int getMaxDeliveries()
-   {
-      return maxDeliveries;
-   }
-   
-   public long getRedeliveryDelay()
-   {
-      return redeliveryDelay;
-   }
-         
    /**
     * Method used by the client thread to synchronously get a Message, if available.
     *
@@ -253,11 +248,11 @@ public class ClientConsumerImpl implements ClientConsumer
     *        or null if one is not immediately available. Returns null if the consumer is
     *        concurrently closed.
     */
-   public JBossMessage receive(long timeout) throws JMSException
+   public Message receive(long timeout) throws JMSException
    {      
       checkClosed();
       
-      JBossMessage m = null;      
+      DeliverMessage m = null;      
       
       synchronized (mainLock)
       {        
@@ -270,7 +265,7 @@ public class ClientConsumerImpl implements ClientConsumer
             return null;
          }
          
-         if (listener != null)
+         if (handler != null)
          {
             throw new JMSException("The consumer has a MessageListener set, " +
                "cannot call receive(..)");
@@ -325,46 +320,17 @@ public class ClientConsumerImpl implements ClientConsumer
                               
                if (trace) { log.trace(this + " received " + m + " after being blocked on buffer"); }
                        
-               boolean ignore =
-                  MessageHandler.checkExpiredOrReachedMaxdeliveries(m, session, maxDeliveries);
+               boolean expired = m.getMessage().isExpired();
                
-               if (!isConnectionConsumer && !ignore)
+               session.delivered(m.getDeliveryID(), expired);
+               
+               if (!expired)
                {
-                  DeliveryInfo info = new DeliveryInfo(m, id, null);
-                                                    
-                  session.preDeliver(info);                  
-                  
-                  //If post deliver didn't succeed and acknowledgement mode is auto_ack
-                  //That means the ref wasn't acked since it couldn't be found.
-                  //In order to maintain at most once semantics we must therefore not return
-                  //the message
-                  
-                  ignore = !session.postDeliver();  
-                  
-                  if (trace)
-                  {
-                     log.trace("Post deliver returned " + !ignore);
-                  }
-                  
-                  if (!ignore)
-                  {
-                     m.incDeliveryCount();                                
-                  }
-               }
-                                             
-               if (!ignore)
-               {
-                  if (trace) { log.trace(this + ": message " + m + " is not expired, pushing it to the caller"); }
-                  
                   break;
                }
+
+               if (trace) { log.trace("Message has expired " + m); }
                
-               if (trace)
-               {
-                  log.trace("Discarding message " + m);
-               }
-               
-               // the message expired, so discard the message, adjust timeout and reenter the buffer
                if (timeout != 0)
                {
                   timeout -= System.currentTimeMillis() - startTimestamp;
@@ -382,27 +348,25 @@ public class ClientConsumerImpl implements ClientConsumer
             receiverThread = null;            
          }
       } 
-      
-      if (trace) { log.trace(this + " receive() returning " + m); }
-      
-      return m;
+         
+      return m.getMessage();
    } 
    
-   public void addToFrontOfBuffer(JBossMessage proxy) throws JMSException
-   {
-      checkClosed();
-      
-      synchronized (mainLock)
-      {
-         buffer.addFirst(proxy, proxy.getJMSPriority());
-         
-         consumeCount--;
-         
-         messageAdded();
-      }
-   }
+//   public void addToFrontOfBuffer(JBossMessage proxy) throws JMSException
+//   {
+//      checkClosed();
+//      
+//      synchronized (mainLock)
+//      {
+//         buffer.addFirst(proxy, proxy.getJMSPriority());
+//         
+//         consumeCount--;
+//         
+//         messageAdded();
+//      }
+//   }
    
-   public void handleMessage(final JBossMessage message) throws Exception
+   public void handleMessage(final DeliverMessage message) throws Exception
    {
       synchronized (mainLock)
       {
@@ -412,20 +376,46 @@ public class ClientConsumerImpl implements ClientConsumer
             // when closing
             throw new IllegalStateException(this + " is closed, so ignoring message");
          }
-
-         message.setSession(session, isConnectionConsumer);
-
-         message.doBeforeReceive();
-
-         //Add it to the buffer
-         buffer.addLast(message, message.getJMSPriority());
-
-         lastDeliveryId = message.getDeliveryId();
+                  
+         if (ignoreDeliveryMark >= 0)
+         {
+            long delID = message.getDeliveryID();
+            
+            if (delID > ignoreDeliveryMark)
+            {
+               //Ignore - the session is recovering and these are inflight messages
+               return;
+            }
+            else
+            {
+               //We have hit the begining of the recovered messages - we can stop ignoring
+               ignoreDeliveryMark = -1;
+            }            
+         }
+         
+         //Add it to the buffer    
+         Message coreMessage = message.getMessage();
+         
+         coreMessage.setDeliveryCount(message.getDeliveryCount());
+         
+         buffer.addLast(message, coreMessage.getPriority());
 
          if (trace) { log.trace(this + " added message(s) to the buffer are now " + buffer.size() + " messages"); }
 
          messageAdded();
       }
+   }
+   
+   private long ignoreDeliveryMark = -1;
+   
+   public void recover(long lastDeliveryID)
+   {
+      synchronized (mainLock)
+      {
+         ignoreDeliveryMark = lastDeliveryID;
+         
+         buffer.clear();
+      }            
    }
    
    // Public ---------------------------------------------------------------------------------------
@@ -436,92 +426,6 @@ public class ClientConsumerImpl implements ClientConsumer
             
    // Private --------------------------------------------------------------------------------------
    
-   private void close(long lastDeliveryId) throws JMSException
-   {     
-      try
-      {
-         log.trace(this + " close");
-            
-         //Wait for the last delivery to arrive
-         waitForLastDelivery(lastDeliveryId);
-         
-         //Important! We set the listener to null so the next ListenerRunner won't run
-         if (listener != null)
-         {
-            setMessageListener(null);
-         }
-         
-         //Now we wait for any current listener runners to run.
-         waitForOnMessageToComplete();   
-         
-         synchronized (mainLock)
-         {         
-            if (closing)
-            {
-               return;
-            }
-            
-            closing = true;   
-            
-            if (receiverThread != null)
-            {            
-               // Wake up any receive() thread that might be waiting
-               mainLock.notify();
-            }   
-            
-            this.listener = null;
-         }
-                              
-         if (trace) { log.trace(this + " closed"); }
-      }
-      finally
-      {
-         session.removeChild(id);
-      }
-   }
-   
-   private void cancelBuffer() throws JMSException
-   {
-      if (trace) { log.trace("Cancelling buffer: " + buffer.size()); }
-      
-      synchronized (mainLock)
-      {      
-         // Now we cancel anything left in the buffer. The reason we do this now is that otherwise
-         // the deliveries wouldn't get cancelled until session close (since we don't cancel
-         // consumer's deliveries until then), which is too late - since we need to preserve the
-         // order of messages delivered in a session.
-         
-         if (!buffer.isEmpty())
-         {                        
-            // Now we cancel any deliveries that might be waiting in our buffer. This is because
-            // otherwise the messages wouldn't get cancelled until the corresponding session died.
-            // So if another consumer in another session tried to consume from the channel before
-            // that session died it wouldn't receive those messages.
-            // We can't just cancel all the messages in the SCE since some of those messages might
-            // have actually been delivered (unlike these) and we may want to acknowledge them
-            // later, after this consumer has been closed
-   
-            List cancels = new ArrayList();
-   
-            for(Iterator i = buffer.iterator(); i.hasNext();)
-            {
-               JBossMessage mp = (JBossMessage)i.next();
-               
-               CancelImpl cancel =
-                  new CancelImpl(mp.getDeliveryId(), mp.getDeliveryCount(), false, false);
-               
-               cancels.add(cancel);
-            }
-                  
-            if (trace) { log.trace("Calling cancelDeliveries"); }
-            session.cancelDeliveries(cancels);
-            if (trace) { log.trace("Done call"); }
-            
-            buffer.clear();
-         }    
-      }
-   }
-
    private void checkSendChangeRate()
    {
       consumeCount++;
@@ -533,55 +437,7 @@ public class ClientConsumerImpl implements ClientConsumer
          sendChangeRateMessage(1.0f);
       }
    }
-
-   /*
-    * Wait for the last delivery to arrive
-    */
-   private void waitForLastDelivery(long id)
-   {
-      if (trace) { log.trace("Waiting for last delivery id " + id); }
-      
-      if (id == -1)
-      {
-         //No need to wait - nothing to wait for         
-         return;
-      }
-      
-      synchronized (mainLock)
-      {          
-         waitingForLastDelivery = true;
-         try
-         {
-            long wait = WAIT_TIMEOUT;
-            while (lastDeliveryId != id && wait > 0)
-            {
-               long start = System.currentTimeMillis();  
-               try
-               {
-                  mainLock.wait(wait);
-               }
-               catch (InterruptedException e)
-               {               
-               }
-               wait -= (System.currentTimeMillis() - start);
-            }      
-            if (trace && lastDeliveryId == id)
-            {
-               log.trace("Got last delivery");
-            }
-             
-            if (lastDeliveryId != id)
-            {
-               log.warn("Timed out waiting for last delivery " + id + " got " + lastDeliveryId); 
-            }
-         }
-         finally
-         {
-            waitingForLastDelivery = false;
-         }
-      }
-   }
-   
+     
    private void sendChangeRateMessage(float newRate) 
    {
       try
@@ -636,7 +492,7 @@ public class ClientConsumerImpl implements ClientConsumer
    {
       boolean notified = false;
       
-      if (trace) { log.trace("Receiver thread:" + receiverThread + " listener:" + listener + " listenerRunning:" + listenerRunning + 
+      if (trace) { log.trace("Receiver thread:" + receiverThread + " handler:" + handler + " listenerRunning:" + listenerRunning + 
             " sessionExecutor:" + sessionExecutor); }
       
       // If we have a thread waiting on receive() we notify it
@@ -648,9 +504,9 @@ public class ClientConsumerImpl implements ClientConsumer
          
          notified = true;
       }     
-      else if (listener != null)
+      else if (handler != null)
       { 
-         // We have a message listener
+         // We have a message handler
          if (!listenerRunning)
          {
             listenerRunning = true;
@@ -664,7 +520,7 @@ public class ClientConsumerImpl implements ClientConsumer
       }
       
       // Make sure we notify any thread waiting for last delivery
-      if (waitingForLastDelivery && !notified)
+      if (!notified)
       {
          if (trace) { log.trace("Notifying"); }
          
@@ -693,7 +549,7 @@ public class ClientConsumerImpl implements ClientConsumer
       }     
    }
         
-   private JBossMessage getMessage(long timeout)
+   private DeliverMessage getMessage(long timeout)
    {
       if (timeout == -1)
       {
@@ -737,11 +593,11 @@ public class ClientConsumerImpl implements ClientConsumer
          } 
       }
 
-      JBossMessage m = null;
+      DeliverMessage m = null;
              
       if (!closing && !buffer.isEmpty())
       {
-         m = (JBossMessage)buffer.removeFirst();
+         m = buffer.removeFirst();
          
          checkSendChangeRate();
       }
@@ -760,7 +616,7 @@ public class ClientConsumerImpl implements ClientConsumer
    // Inner classes --------------------------------------------------------------------------------
          
    /*
-    * This class is used to put on the listener executor to wait for onMessage
+    * This class is used to put on the handler executor to wait for onMessage
     * invocations to complete when closing
     */
    private class Closer implements Runnable
@@ -789,26 +645,26 @@ public class ClientConsumerImpl implements ClientConsumer
    {
       public void run()
       {         
-         JBossMessage msg = null;
+         DeliverMessage msg = null;
          
-         MessageListener theListener = null;
+         MessageHandler theListener = null;
          
          synchronized (mainLock)
          {
-            if (listener == null || buffer.isEmpty())
+            if (handler == null || buffer.isEmpty())
             {
                listenerRunning = false;
                
-               if (trace) { log.trace("no listener or buffer is empty, returning"); }
+               if (trace) { log.trace("no handler or buffer is empty, returning"); }
                
                return;
             }
             
-            theListener = listener;
+            theListener = handler;
             
             // remove a message from the buffer
 
-            msg = (JBossMessage)buffer.removeFirst();                
+            msg = buffer.removeFirst();                
             
             checkSendChangeRate();
          }
@@ -820,22 +676,19 @@ public class ClientConsumerImpl implements ClientConsumer
           * and failover will kick in, this will clear the executor
           * so the next queud one disappears at everything grinds to a halt
           * 
-          * Solution - don't use a session executor - have a sesion thread instead much nicer
+          * Solution - don't use a session executor - have a session thread instead much nicer
           */
                                 
          if (msg != null)
-         {
-            try
+         {     
+            boolean expired = msg.getMessage().isExpired();
+                        
+            session.delivered(msg.getDeliveryID(), expired);
+            
+            if (!expired)
             {
-               MessageHandler.callOnMessage(session, theListener, id,
-                             false, msg, session.getAcknowledgeMode(), maxDeliveries, null);
-               
-               if (trace) { log.trace("Called callonMessage"); }
+               theListener.onMessage(msg.getMessage());
             }
-            catch (Throwable t)
-            {
-               log.error("Failed to deliver message", t);
-            } 
          }
          
          synchronized (mainLock)
@@ -852,7 +705,7 @@ public class ClientConsumerImpl implements ClientConsumer
             }
             else
             {
-               if (trace) { log.trace("no more messages in buffer, marking listener as not running"); }
+               if (trace) { log.trace("no more messages in buffer, marking handler as not running"); }
                
                listenerRunning  = false;
             }   

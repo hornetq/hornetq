@@ -33,6 +33,7 @@ import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.MessageFormatException;
 
+import org.jboss.jms.client.api.ClientSession;
 import org.jboss.messaging.util.StreamUtils;
 
 /**
@@ -69,9 +70,9 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
       super(JBossMapMessage.TYPE);
    }
    
-   public JBossMapMessage(org.jboss.messaging.core.Message message, long deliveryID, int deliveryCount)
+   public JBossMapMessage(org.jboss.messaging.core.Message message, ClientSession session)
    {
-      super(message, deliveryID, deliveryCount);
+      super(message, session);
    }
 
    /**

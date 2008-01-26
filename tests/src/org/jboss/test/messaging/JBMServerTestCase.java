@@ -21,23 +21,6 @@
    */
 package org.jboss.test.messaging;
 
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.server.security.Role;
-import org.jboss.jms.tx.ResourceManagerFactory;
-import org.jboss.messaging.core.MessagingServer;
-import org.jboss.messaging.core.MessagingServerManagement;
-import org.jboss.messaging.microcontainer.JBMBootstrapServer;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.container.DatabaseClearer;
-import org.jboss.test.messaging.tools.container.Server;
-import org.jboss.tm.TransactionManagerLocator;
-
-import javax.jms.Queue;
-import javax.jms.Topic;
-import javax.management.ObjectName;
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -45,6 +28,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+
+import javax.jms.Queue;
+import javax.jms.Topic;
+import javax.management.ObjectName;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
+import javax.transaction.TransactionManager;
+
+import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.server.security.Role;
+import org.jboss.messaging.core.MessagingServer;
+import org.jboss.messaging.core.MessagingServerManagement;
+import org.jboss.messaging.microcontainer.JBMBootstrapServer;
+import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.container.DatabaseClearer;
+import org.jboss.test.messaging.tools.container.Server;
+import org.jboss.tm.TransactionManagerLocator;
 
 /**
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
@@ -182,27 +182,13 @@ public class JBMServerTestCase extends JBMBaseTestCase
       checkNoSubscriptions(topic1);
       checkNoSubscriptions(topic2);
       checkNoSubscriptions(topic3);
-      //some clean up between tests
-      for (int i = 0; i < getServerCount(); i++)
-      {
-         servers.get(i).clear();
-      }
-      ResourceManagerFactory.instance.clear();
-      
+
       if (isRemote())
       {
          // log the test start in the remote log, this will make hunting through logs so much easier
          ServerManagement.log(ServerManagement.INFO, banner);
       }
       
-   }
-
-
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-      //this will make sure there arent any connection hanging around
-      assertEquals(0, servers.get(0).getResourceManagerFactorySize());
    }
 
    protected boolean isRemote()

@@ -20,6 +20,8 @@ import org.jboss.messaging.test.unit.UnitTestCase;
  * 
  * A TransactionTest
  * 
+ * TODO test with persistent and non persistent
+ * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -40,7 +42,10 @@ public class TransactionTest extends UnitTestCase
       MessageReference ref2 = this.generateReference(queue, 2);
       refsToRemove.add(ref2);
                   
-      Transaction tx = new TransactionImpl(msgsToAdd, refsToRemove, true);
+      Transaction tx = new TransactionImpl();
+      
+      tx.addMessage(ref1.getMessage());
+      tx.addAcknowledgement(ref2);
       
       PersistenceManager pm = EasyMock.createStrictMock(PersistenceManager.class);
       
@@ -69,9 +74,13 @@ public class TransactionTest extends UnitTestCase
       MessageReference ref2 = this.generateReference(queue, 2);
       refsToRemove.add(ref2);
                   
-      Transaction tx = new TransactionImpl(msgsToAdd, refsToRemove, true);
+      Transaction tx = new TransactionImpl();
+      tx.addMessage(ref1.getMessage());
+      tx.addAcknowledgement(ref2);
       
       PersistenceManager pm = EasyMock.createStrictMock(PersistenceManager.class);
+      
+      pm.updateDeliveryCount(queue, ref2);
       
       EasyMock.replay(pm);
       
@@ -79,7 +88,7 @@ public class TransactionTest extends UnitTestCase
       
       EasyMock.verify(pm);
  
-      assertTrue(queue.list(null).isEmpty());
+      assertEquals(ref2, queue.list(null).get(0));
    }
    
    public void test1PCPrepare() throws Exception
@@ -96,7 +105,9 @@ public class TransactionTest extends UnitTestCase
       MessageReference ref2 = this.generateReference(queue, 2);
       refsToRemove.add(ref2);
                   
-      Transaction tx = new TransactionImpl(msgsToAdd, refsToRemove, true);
+      Transaction tx = new TransactionImpl();
+      tx.addMessage(ref1.getMessage());
+      tx.addAcknowledgement(ref2);
       
       PersistenceManager pm = EasyMock.createStrictMock(PersistenceManager.class);
       
@@ -129,7 +140,9 @@ public class TransactionTest extends UnitTestCase
       
       Xid xid = generateXid();
                   
-      Transaction tx = new TransactionImpl(xid, msgsToAdd, refsToRemove, true);
+      Transaction tx = new TransactionImpl(xid);
+      tx.addMessage(ref1.getMessage());
+      tx.addAcknowledgement(ref2);
       
       PersistenceManager pm = EasyMock.createStrictMock(PersistenceManager.class);
       
@@ -165,10 +178,12 @@ public class TransactionTest extends UnitTestCase
       
       MessageReference ref2 = this.generateReference(queue, 2);
       refsToRemove.add(ref2);
-      
+          
       Xid xid = generateXid();
-                  
-      Transaction tx = new TransactionImpl(xid, msgsToAdd, refsToRemove, true);
+      
+      Transaction tx = new TransactionImpl(xid);
+      tx.addMessage(ref1.getMessage());
+      tx.addAcknowledgement(ref2);
       
       PersistenceManager pm = EasyMock.createStrictMock(PersistenceManager.class);
       
@@ -200,7 +215,9 @@ public class TransactionTest extends UnitTestCase
       
       Xid xid = generateXid();
                   
-      Transaction tx = new TransactionImpl(xid, msgsToAdd, refsToRemove, true);
+      Transaction tx = new TransactionImpl(xid);
+      tx.addMessage(ref1.getMessage());
+      tx.addAcknowledgement(ref2);
       
       PersistenceManager pm = EasyMock.createStrictMock(PersistenceManager.class);
       
@@ -215,6 +232,8 @@ public class TransactionTest extends UnitTestCase
       EasyMock.reset(pm);
       
       pm.unprepareTransaction(xid, msgsToAdd, refsToRemove);
+      
+      pm.updateDeliveryCount(queue, ref2);
       
       EasyMock.replay(pm);
       
@@ -237,7 +256,9 @@ public class TransactionTest extends UnitTestCase
       MessageReference ref2 = this.generateReference(queue, 2);
       refsToRemove.add(ref2);
                   
-      Transaction tx = new TransactionImpl(msgsToAdd, refsToRemove, true);
+      Transaction tx = new TransactionImpl();
+      tx.addMessage(ref1.getMessage());
+      tx.addAcknowledgement(ref2);
       
       TransactionSynchronization sync = EasyMock.createStrictMock(TransactionSynchronization.class);
       
@@ -256,7 +277,9 @@ public class TransactionTest extends UnitTestCase
       
       EasyMock.reset(sync);
       
-      tx = new TransactionImpl(msgsToAdd, refsToRemove, true);
+      tx = new TransactionImpl();
+      tx.addMessage(ref1.getMessage());
+      tx.addAcknowledgement(ref2);
       
       tx.addSynchronization(sync);
       
@@ -286,7 +309,9 @@ public class TransactionTest extends UnitTestCase
       
       Xid xid = generateXid();
                   
-      Transaction tx = new TransactionImpl(xid, msgsToAdd, refsToRemove, true);
+      Transaction tx = new TransactionImpl(xid);
+      tx.addMessage(ref1.getMessage());
+      tx.addAcknowledgement(ref2);
       
       TransactionSynchronization sync = EasyMock.createStrictMock(TransactionSynchronization.class);
       
@@ -308,7 +333,9 @@ public class TransactionTest extends UnitTestCase
       
       xid = generateXid();
       
-      tx = new TransactionImpl(xid, msgsToAdd, refsToRemove, true);
+      tx = new TransactionImpl(xid);
+      tx.addMessage(ref1.getMessage());
+      tx.addAcknowledgement(ref2);
       
       tx.addSynchronization(sync);
       
@@ -322,5 +349,7 @@ public class TransactionTest extends UnitTestCase
       
       EasyMock.verify(sync);            
    }
-
+   
+   // Inner classes -----------------------------------------------------------------------
+   
 }

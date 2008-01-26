@@ -127,15 +127,15 @@ public class MessageReferenceImpl implements MessageReference
    }
    
    public void cancel(PersistenceManager persistenceManager) throws Exception
-   {
+   {      
+      deliveryCount++;
+      
       if (message.isDurable() && queue.isDurable())
       {
          persistenceManager.updateDeliveryCount(queue, this);
       }
             
       queue.referenceAcknowledged();
-      
-      queue.addFirst(this);
    }
    
    // Public --------------------------------------------------------

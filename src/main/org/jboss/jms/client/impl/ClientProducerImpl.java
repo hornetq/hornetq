@@ -110,14 +110,13 @@ public class ClientProducerImpl implements ClientProducer
       {
          return;         
       }
-      session.removeChild(id);
+      session.removeProducer(this);
       
       closed = true;
    }
 
-   public synchronized long closing(long sequence) throws JMSException
-   {
-      return -1;
+   public synchronized void closing() throws JMSException
+   {    
    }
 
    public JBossDestination getDestination() throws JMSException

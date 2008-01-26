@@ -40,7 +40,7 @@ import javax.naming.NamingException;
 import javax.naming.Reference;
 
 import org.jboss.jms.client.api.ClientConnection;
-import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.jms.client.api.ClientConnectionFactory;
 import org.jboss.jms.referenceable.SerializableObjectRefAddr;
 import org.jboss.messaging.util.Logger;
 
@@ -66,11 +66,11 @@ public class JBossConnectionFactory implements
    
    // Attributes -----------------------------------------------------------------------------------
    
-   protected ClientConnectionFactoryImpl delegate;
+   protected ClientConnectionFactory delegate;
 
    // Constructors ---------------------------------------------------------------------------------
    
-   public JBossConnectionFactory(ClientConnectionFactoryImpl delegate)
+   public JBossConnectionFactory(ClientConnectionFactory delegate)
    {
       this.delegate = delegate;      
    }
@@ -174,7 +174,7 @@ public class JBossConnectionFactory implements
       return "JBossConnectionFactory->" + delegate;
    }
    
-   public ClientConnectionFactoryImpl getDelegate()
+   public ClientConnectionFactory getDelegate()
    {
       return delegate;
    }

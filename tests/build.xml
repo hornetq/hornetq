@@ -504,6 +504,9 @@
 	       <!-- We exclude the recovery tests for now, until we get recovery up and running again -->
 	       <exclude name="**/jms/XARecoveryTest.class"/>
 	       <exclude name="**/jms/XAResourceRecoveryTest.class"/>
+	       <exclude name="**/jms/XATest.class"/>
+	       <exclude name="**/jms/ClientExitTest.class"/>
+	       <exclude name="**/jms/ConnectionConsumerTest.class"/>
 	       
                <include name="**/messaging/util/**/${test-mask}.class"/>
                <exclude name="**/jms/MemLeakTest.class"/>

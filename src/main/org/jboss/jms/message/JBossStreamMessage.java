@@ -31,6 +31,7 @@ import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 import javax.jms.StreamMessage;
 
+import org.jboss.jms.client.api.ClientSession;
 import org.jboss.messaging.util.StreamUtils;
 
 /**
@@ -73,9 +74,9 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       super(JBossStreamMessage.TYPE);
    }
    
-   public JBossStreamMessage(org.jboss.messaging.core.Message message, long deliveryID, int deliveryCount)
+   public JBossStreamMessage(org.jboss.messaging.core.Message message, ClientSession session)
    {
-      super(message, deliveryID, deliveryCount);
+      super(message, session);
    }
    
    public JBossStreamMessage(StreamMessage foreign) throws JMSException

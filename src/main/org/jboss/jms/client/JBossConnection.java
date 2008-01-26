@@ -21,8 +21,6 @@
   */
 package org.jboss.jms.client;
 
-import java.io.Serializable;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionConsumer;
 import javax.jms.ConnectionMetaData;
@@ -45,6 +43,7 @@ import javax.jms.XATopicConnection;
 import javax.jms.XATopicSession;
 
 import org.jboss.jms.client.api.ClientConnection;
+import org.jboss.jms.client.api.ClientSession;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -55,12 +54,11 @@ import org.jboss.jms.client.api.ClientConnection;
  */
 public class JBossConnection implements
     Connection, QueueConnection, TopicConnection,
-    XAConnection, XAQueueConnection, XATopicConnection, Serializable
+    XAConnection, XAQueueConnection, XATopicConnection
 {
 
    // Constants ------------------------------------------------------------------------------------
-   private static final long serialVersionUID = -3715868654823177898L;
-   
+
    static final int TYPE_GENERIC_CONNECTION = 0;
    static final int TYPE_QUEUE_CONNECTION = 1;
    static final int TYPE_TOPIC_CONNECTION = 2;
@@ -124,7 +122,7 @@ public class JBossConnection implements
 
    public void close() throws JMSException
    {
-      connection.closing(-1);
+      connection.closing();
       connection.close();
    }
 
@@ -252,9 +250,9 @@ public class JBossConnection implements
          acknowledgeMode = Session.SESSION_TRANSACTED;
       }
 
-      org.jboss.jms.client.api.ClientSession session =
-         connection.createClientSession(transacted, acknowledgeMode, isXA);
-      return new JBossSession(session, type);
+      ClientSession session =  connection.createClientSession(transacted, acknowledgeMode, isXA);
+      
+      return new JBossSession(transacted, acknowledgeMode, session, type);
    }
 
    // Private --------------------------------------------------------------------------------------

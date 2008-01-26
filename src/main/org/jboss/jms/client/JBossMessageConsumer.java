@@ -21,8 +21,7 @@
   */
 package org.jboss.jms.client;
 
-import java.io.Serializable;
-
+import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -33,7 +32,11 @@ import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 
 import org.jboss.jms.client.api.ClientConsumer;
+import org.jboss.jms.client.api.ClientSession;
+import org.jboss.jms.client.api.MessageHandler;
 import org.jboss.jms.destination.JBossDestination;
+import org.jboss.jms.message.JBossMessage;
+import org.jboss.messaging.util.Logger;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -41,23 +44,35 @@ import org.jboss.jms.destination.JBossDestination;
  *
  * $Id$
  */
-public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubscriber, Serializable
+public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubscriber
 {   
    // Constants -----------------------------------------------------  
    
-   private static final long serialVersionUID = -8776908463975467851L;
-
+   private static final Logger log = Logger.getLogger(JBossMessageConsumer.class);
+   
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   protected ClientConsumer consumer;
+   private ClientConsumer consumer;
+   
+   private MessageListener listener;
+   
+   private MessageHandler coreListener;
+   
+   private JBossSession session;
+   
+   private int ackMode;
 
    // Constructors --------------------------------------------------
 
-   public JBossMessageConsumer(ClientConsumer consumer)
+   public JBossMessageConsumer(JBossSession session, ClientConsumer consumer) throws JMSException
    {      
+      this.session = session;
+      
       this.consumer = consumer;
+      
+      this.ackMode = session.getAcknowledgeMode();
    }
 
    // MessageConsumer implementation --------------------------------
@@ -69,32 +84,38 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
 
    public MessageListener getMessageListener() throws JMSException
    {
-      return consumer.getMessageListener();
+      checkClosed();
+      
+      return listener;
    }
 
    public void setMessageListener(MessageListener listener) throws JMSException
    {
-      consumer.setMessageListener(listener);
+      this.listener = listener;
+      
+      coreListener = new JMSMessageListenerWrapper(session, listener, ackMode);
+      
+      consumer.setMessageHandler(coreListener);
    }
 
    public Message receive() throws JMSException
    {
-      return consumer.receive(0);
+      return getMessage(0);
    }
 
    public Message receive(long timeout) throws JMSException
    {
-      return consumer.receive(timeout);
+      return getMessage(timeout);
    }
 
    public Message receiveNoWait() throws JMSException
    {
-      return consumer.receive(-1);
+      return getMessage(-1);
    }
-
+     
    public void close() throws JMSException
    {
-      consumer.closing(-1);
+      consumer.closing();
       consumer.close();
    }
 
@@ -135,6 +156,42 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+   
+   private void checkClosed() throws JMSException
+   {
+      if (session.getCoreSession().isClosed())
+      {
+         throw new IllegalStateException("Consumer is closed");
+      }
+   }
+   
+   private JBossMessage getMessage(long timeout) throws JMSException
+   {
+      org.jboss.messaging.core.Message message =  consumer.receive(timeout);
+            
+      JBossMessage jbm = null;
+      
+      if (message != null)
+      {         
+         //At this point JMS considers the message delivered
+         session.getCoreSession().delivered();
+                  
+         jbm = JBossMessage.createMessage(message, session.getCoreSession());
+         
+         try
+         {
+            jbm.doBeforeReceive();
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to prepare message", e);
+            
+            return null;
+         }
+      }
+      
+      return jbm;
+   }
 
    // Inner classes -------------------------------------------------
 

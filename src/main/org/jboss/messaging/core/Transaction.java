@@ -21,7 +21,7 @@
  */
 package org.jboss.messaging.core;
 
-import java.util.List;
+
 
 /**
  * 
@@ -40,11 +40,9 @@ public interface Transaction
    
    void rollback(PersistenceManager persistenceManager) throws Exception;   
    
-   //FIXME temp
+   void addMessage(Message message);
    
-   void addAllSends(List<Message> msgs);
+   void addAcknowledgement(MessageReference acknowledgement);   
    
-   void addAllAcks(List<MessageReference> refs);
-   
-   void setContainsPersistent(boolean b);
+   int getAcknowledgementsCount();
 }

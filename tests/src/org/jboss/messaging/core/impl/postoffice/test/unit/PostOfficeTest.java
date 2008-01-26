@@ -317,7 +317,7 @@ public class PostOfficeTest extends UnitTestCase
       if (message.getNumDurableReferences() != 0)
       {
          //Need to route in a transaction
-         Transaction tx = new TransactionImpl(msgs, null, true);
+         Transaction tx = new TransactionImpl();
       }
       
       

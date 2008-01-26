@@ -21,7 +21,6 @@
   */
 package org.jboss.jms.client;
 
-import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -38,12 +37,10 @@ import org.jboss.messaging.util.Version;
  *
  * $Id$
  */
-public class JBossConnectionMetaData implements Serializable, ConnectionMetaData
+public class JBossConnectionMetaData implements ConnectionMetaData
 {
 
    // Constants -----------------------------------------------------
-
-   private static final long serialVersionUID = 327633302671160939L;
 
    // Static --------------------------------------------------------
 

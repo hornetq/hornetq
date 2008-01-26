@@ -21,21 +21,15 @@ public enum PacketType
    // Connection factory
    REQ_CREATECONNECTION           ((byte)10),
    RESP_CREATECONNECTION          ((byte)11), 
-   RESP_GETTOPOLOGY               ((byte)15), 
-   MSG_UPDATECALLBACK             ((byte)16),
    
    // Connection
-   REQ_CREATESESSION              ((byte)22),
-   RESP_CREATESESSION             ((byte)23),
-   MSG_STARTCONNECTION            ((byte)24),
-   MSG_STOPCONNECTION             ((byte)25),
-   MSG_SENDTRANSACTION            ((byte)26),
-   RESP_SENDTRANSACTION           ((byte)27),
-   REQ_GETPREPAREDTRANSACTIONS    ((byte)28),
-   RESP_GETPREPAREDTRANSACTIONS   ((byte)29),
-   REQ_GETCLIENTID                ((byte)30),
-   RESP_GETCLIENTID               ((byte)31),
-   MSG_SETCLIENTID                ((byte)32),
+   REQ_CREATESESSION              ((byte)20),
+   RESP_CREATESESSION             ((byte)21),
+   MSG_STARTCONNECTION            ((byte)22),
+   MSG_STOPCONNECTION             ((byte)23),
+   REQ_GETCLIENTID                ((byte)24),
+   RESP_GETCLIENTID               ((byte)25),
+   MSG_SETCLIENTID                ((byte)26),
    
    // Session
    REQ_CREATECONSUMER             ((byte)40),
@@ -47,14 +41,24 @@ public enum PacketType
    REQ_CREATEBROWSER              ((byte)46),
    RESP_CREATEBROWSER             ((byte)47),
    MSG_SENDMESSAGE                ((byte)48),
-   MSG_DELIVERMESSAGE             ((byte)49),
-   REQ_ACKDELIVERY                ((byte)50),
-   RESP_ACKDELIVERY               ((byte)51),
-   MSG_ACKDELIVERIES              ((byte)52),
-   RESP_ACKDELIVERIES             ((byte)53),
-   MSG_CANCELDELIVERY             ((byte)55),
-   MSG_CANCELDELIVERIES           ((byte)56),
-   MSG_UNSUBSCRIBE                ((byte)57),
+   MSG_DELIVERMESSAGE             ((byte)49),  
+   MSG_UNSUBSCRIBE                ((byte)50),
+   MSG_ACKNOWLEDGE                ((byte)51),
+   MSG_RECOVER                    ((byte)52),
+   MSG_COMMIT                     ((byte)53),
+   MSG_ROLLBACK                   ((byte)54),
+   MSG_CANCEL                     ((byte)55),
+   
+   MSG_XA_START                   ((byte)56),
+   MSG_XA_END                     ((byte)57),
+   MSG_XA_COMMIT                  ((byte)58),
+   MSG_XA_PREPARE                 ((byte)59),
+   MSG_XA_ROLLBACK                ((byte)60),
+   MSG_XA_JOIN                    ((byte)61),
+   MSG_XA_RESUME                  ((byte)62),
+   MSG_XA_FORGET                  ((byte)63),
+   REQ_XA_INDOUBT_XIDS            ((byte)64),
+   RESP_XA_INDOUBT_XIDS           ((byte)65),
    
    // ClientConsumer 
    MSG_CHANGERATE                 ((byte)70),
@@ -69,9 +73,8 @@ public enum PacketType
    RESP_BROWSER_NEXTMESSAGE       ((byte)86),
 
    // Misc
-   REQ_CLOSING                    ((byte)90),
-   RESP_CLOSING                   ((byte)91),
-   MSG_CLOSE                      ((byte)92);
+   MSG_CLOSING                    ((byte)90),  
+   MSG_CLOSE                      ((byte)91);
    
    private final byte type;
 

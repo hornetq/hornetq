@@ -641,7 +641,7 @@ public class JMSXDeliveryCountTest extends JBMServerTestCase
 
                   if (tm.getIntProperty("JMSXDeliveryCount") != (j + 1))
                   {
-                     log.error("Delivery count not expected value:" + (j + 1) +
+                     log.error("DeliveryImpl count not expected value:" + (j + 1) +
                                " actual:" + tm.getIntProperty("JMSXDeliveryCount"));;
                      failed = true;
                   }
@@ -661,11 +661,6 @@ public class JMSXDeliveryCountTest extends JBMServerTestCase
       }
    }
    
-   //TODO Check that delivery count is persisted properly, local to the channel
-   //Currently we are not persisting delivery count on the channel, only on the message
-   //So this won't work
-
-
    // Package protected ----------------------------------------------------------------------------
    
    // Protected ------------------------------------------------------------------------------------

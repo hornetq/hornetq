@@ -99,7 +99,7 @@ public class MiscellaneousTest extends JMSTestCase
    /**
     * Test case for http://jira.jboss.org/jira/browse/JBMESSAGING-542
     */
-   public void testClosingConsumerFromMessageListener() throws Exception
+   public void testClosingConsumerFromMessageListenerAutoAck() throws Exception
    {
       Connection c = null;
       
@@ -147,10 +147,10 @@ public class MiscellaneousTest extends JMSTestCase
       assertTrue(result.isSuccess());
       assertNull(result.getFailure());
 
-      // make sure the acknowledgment made it back to the queue
+      // it's auto _ack so message *should not* be acked (auto ack acks after successfully completion of onMessage
 
       Thread.sleep(1000);
-      assertRemainingMessages(0);
+      assertRemainingMessages(1);
       
       conn.close();
 
@@ -159,7 +159,7 @@ public class MiscellaneousTest extends JMSTestCase
    /**
     * Test case for http://jira.jboss.org/jira/browse/JBMESSAGING-542
     */
-   public void testClosingSessionFromMessageListener() throws Exception
+   public void testClosingSessionFromMessageListenerAutoAck() throws Exception
    {
       Connection c = null;
       
@@ -207,17 +207,15 @@ public class MiscellaneousTest extends JMSTestCase
       assertTrue(result.isSuccess());
       assertNull(result.getFailure());
 
-      // make sure the acknowledgment made it back to the queue
-
       Thread.sleep(1000);
-      assertRemainingMessages(0);
+      assertRemainingMessages(1);
       conn.close();
    }
 
    /**
     * Test case for http://jira.jboss.org/jira/browse/JBMESSAGING-542
     */
-   public void testClosingConnectionFromMessageListener() throws Exception
+   public void testClosingConnectionFromMessageListenerAutoAck() throws Exception
    {
       Connection c = null;
       
@@ -266,10 +264,187 @@ public class MiscellaneousTest extends JMSTestCase
       assertTrue(result.isSuccess());
       assertNull(result.getFailure());
 
-      // make sure the acknowledgment made it back to the queue
+      Thread.sleep(1000);
+      assertRemainingMessages(1);
+      
+      conn.close();
+      
+   }
+   
+   
+   
+   /**
+    * Test case for http://jira.jboss.org/jira/browse/JBMESSAGING-542
+    */
+   public void testClosingConsumerFromMessageListenerTransacted() throws Exception
+   {
+      Connection c = null;
+      
+      try
+      {        
+         c = cf.createConnection();
+         Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = s.createProducer(queue1);
+         Message m = s.createMessage();
+         prod.send(m);
+      }
+      finally
+      {
+         if (c != null)
+         {
+            c.close();
+         }
+      }
+      
+      log.info("sent message");
+   
+      final Result result = new Result();
+      Connection conn = cf.createConnection();
+      Session s = conn.createSession(true, Session.SESSION_TRANSACTED);
+      final MessageConsumer cons = s.createConsumer(queue1);
+      cons.setMessageListener(new MessageListener()
+      {
+         public void onMessage(Message m)
+         {
+            // close the connection on the same thread that processed the message
+            try
+            {
+               log.info("Closing consumer");
+               cons.close();
+               log.info("closed consumer");
+               result.setSuccess();
+            }
+            catch(Exception e)
+            {
+               result.setFailure(e);
+            }
+         }
+      });
+
+      conn.start();
+
+      result.waitForResult();
+
+      assertTrue(result.isSuccess());
+      assertNull(result.getFailure());
 
       Thread.sleep(1000);
-      assertRemainingMessages(0);
+      assertRemainingMessages(1);
+      
+      conn.close();
+
+   }
+
+   /**
+    * Test case for http://jira.jboss.org/jira/browse/JBMESSAGING-542
+    */
+   public void testClosingSessionFromMessageListenerTransacted() throws Exception
+   {
+      Connection c = null;
+      
+      try
+      {        
+         c = cf.createConnection();
+         Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = s.createProducer(queue1);
+         Message m = s.createMessage();
+         prod.send(m);
+      }
+      finally
+      {
+         if (c != null)
+         {
+            c.close();
+         }
+      }
+   
+      final Result result = new Result();
+      Connection conn = cf.createConnection();
+      final Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
+      MessageConsumer cons = session.createConsumer(queue1);
+      cons.setMessageListener(new MessageListener()
+      {
+         public void onMessage(Message m)
+         {
+            // close the connection on the same thread that processed the message
+            try
+            {
+               session.close();
+               result.setSuccess();
+            }
+            catch(Exception e)
+            {
+               result.setFailure(e);
+            }
+         }
+      });
+
+      conn.start();
+
+      result.waitForResult();
+
+      assertTrue(result.isSuccess());
+      assertNull(result.getFailure());
+
+      Thread.sleep(1000);
+      assertRemainingMessages(1);
+      conn.close();
+   }
+
+   /**
+    * Test case for http://jira.jboss.org/jira/browse/JBMESSAGING-542
+    */
+   public void testClosingConnectionFromMessageListenerTransacted() throws Exception
+   {
+      Connection c = null;
+      
+      try
+      {      
+         c = cf.createConnection();
+         Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = s.createProducer(queue1);
+         Message m = s.createMessage();
+         prod.send(m);
+      }
+      finally
+      {
+         if (c != null)
+         {
+            c.close();
+         }
+      }
+   
+      final Result result = new Result();
+      final Connection conn = cf.createConnection();
+      Session s = conn.createSession(true, Session.SESSION_TRANSACTED);
+      MessageConsumer cons = s.createConsumer(queue1);
+      cons.setMessageListener(new MessageListener()
+      {
+         public void onMessage(Message m)
+         {
+            // close the connection on the same thread that processed the message
+            try
+            {
+               conn.close();
+               result.setSuccess();
+            }
+            catch(Exception e)
+            {
+               e.printStackTrace();
+               result.setFailure(e);
+            }
+         }
+      });
+
+      conn.start();
+
+      result.waitForResult();
+
+      assertTrue(result.isSuccess());
+      assertNull(result.getFailure());
+
+      Thread.sleep(1000);
+      assertRemainingMessages(1);
       
       conn.close();
       

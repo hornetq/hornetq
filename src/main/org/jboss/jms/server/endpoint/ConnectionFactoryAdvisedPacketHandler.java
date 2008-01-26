@@ -21,18 +21,22 @@
    */
 package org.jboss.jms.server.endpoint;
 
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATECONNECTION;
+
+import javax.jms.JMSException;
+
 import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.wireformat.*;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_UPDATECALLBACK;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATECONNECTION;
+import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
+import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
+import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
+import org.jboss.messaging.core.remoting.wireformat.PacketType;
 import org.jboss.messaging.util.ExceptionUtil;
-
-import javax.jms.JMSException;
 
 /**
  * A packet handler for creating connections. All ConnectionFactories will use the same instance of this
@@ -79,16 +83,7 @@ public class ConnectionFactoryAdvisedPacketHandler implements
                      request.getClientVMID(), request.getPrefetchSize(), request.getDupsOKBatchSize(),
                        request.getClientID(), request.getVersion());
             }
-            else if (type == MSG_UPDATECALLBACK)
-            {
-               UpdateCallbackMessage message = (UpdateCallbackMessage) packet;
-               if (message.isAdd())
-               {
-                  addSender(message.getClientVMID(), message.getRemotingSessionID(), sender);
-               } else {
-                  removeSender(message.getClientVMID(), message.getRemotingSessionID(), sender);
-               }
-            } else
+            else
             {
                response = new JMSExceptionMessage(new MessagingJMSException(
                      "Unsupported packet for browser: " + packet));

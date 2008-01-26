@@ -21,8 +21,6 @@
   */
 package org.jboss.jms.client;
 
-import java.io.Serializable;
-
 import javax.jms.Destination;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
@@ -43,12 +41,10 @@ import org.jboss.messaging.util.Logger;
  *
  * $Id$
  */
-public class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublisher, Serializable
+public class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublisher
 {
    // Constants -----------------------------------------------------
    
-   private static final long serialVersionUID = 1080736785725023015L;
-
    // Static --------------------------------------------------------      
 
    private static final Logger log = Logger.getLogger(JBossMessageProducer.class);
@@ -125,7 +121,7 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
    
    public void close() throws JMSException
    {
-      producer.closing(-1);
+      producer.closing();
       producer.close();
    }
    

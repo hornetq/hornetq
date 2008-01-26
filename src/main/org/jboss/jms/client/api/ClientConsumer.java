@@ -8,27 +8,25 @@
 package org.jboss.jms.client.api;
 
 import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
 
-import org.jboss.jms.client.Closeable;
-import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.core.Destination;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
-public interface ClientConsumer extends Closeable
+public interface ClientConsumer
 {
    String getID();
    
    void changeRate(float newRate) throws JMSException;
 
-   MessageListener getMessageListener() throws JMSException;
+   MessageHandler getMessageHandler() throws JMSException;
 
-   void setMessageListener(MessageListener listener) throws JMSException;
+   void setMessageHandler(MessageHandler handler) throws JMSException;
 
    Destination getDestination() throws JMSException;
 
@@ -38,11 +36,11 @@ public interface ClientConsumer extends Closeable
 
    Message receive(long timeout) throws JMSException;
    
-   int getMaxDeliveries();
+   void handleMessage(DeliverMessage message) throws Exception;
    
-   void handleMessage(JBossMessage message) throws Exception;
+   void closing() throws JMSException;
    
-   void addToFrontOfBuffer(JBossMessage message) throws JMSException;
+   void close() throws JMSException;
    
-   long getRedeliveryDelay();
+   void recover(long lastDeliveryID) throws JMSException;
 }

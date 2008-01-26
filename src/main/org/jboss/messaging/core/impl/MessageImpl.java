@@ -86,6 +86,8 @@ public class MessageImpl implements Message
    
    private volatile int numDurableReferences;
    
+   private int deliveryCount;
+   
    /*
     * We use a semaphore of size 1, i.e. a mutex to synchronize access to the refs rather than
     * use the synchronized keyword since java.util.Semaphore uses compareAndSet to maintain the semaphore
@@ -94,7 +96,7 @@ public class MessageImpl implements Message
    private Semaphore refsLock = new Semaphore(1);
    
       
-   //FIXME - does scheduledDeliveryTime belong on message? surely on SendMessage
+   //FIXME - does scheduledDeliveryTime belong on message? surely on SessionSendMessage
   // private long scheduledDeliveryTime;
          
    // Constructors --------------------------------------------------
@@ -284,6 +286,16 @@ public class MessageImpl implements Message
    public void setConnectionID(String connectionID)
    {
       this.connectionID = connectionID;
+   }
+   
+   public void setDeliveryCount(int deliveryCount)
+   {
+      this.deliveryCount = deliveryCount;
+   }
+   
+   public int getDeliveryCount()
+   {
+      return this.deliveryCount;
    }
 
    public boolean isExpired()

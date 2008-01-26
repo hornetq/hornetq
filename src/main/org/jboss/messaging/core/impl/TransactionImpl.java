@@ -22,13 +22,17 @@
 package org.jboss.messaging.core.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.Transaction;
 import org.jboss.messaging.core.TransactionSynchronization;
 import org.jboss.messaging.util.Logger;
@@ -44,9 +48,9 @@ public class TransactionImpl implements Transaction
 {
    private static final Logger log = Logger.getLogger(TransactionImpl.class);
    
-   private List<Message> messagesToAdd;
+   private List<Message> messagesToAdd = new ArrayList<Message>();
    
-   private List<MessageReference> refsToRemove;
+   private List<MessageReference> acknowledgements = new ArrayList<MessageReference>();  
    
    private List<TransactionSynchronization> synchronizations = new ArrayList<TransactionSynchronization>();
    
@@ -56,60 +60,37 @@ public class TransactionImpl implements Transaction
    
    private boolean prepared;
    
-   //FIXME - temp
    public TransactionImpl()
-   {
-      messagesToAdd = new ArrayList<Message>();
-      
-      refsToRemove = new ArrayList<MessageReference>();            
+   {            
    }
    
    public TransactionImpl(Xid xid)
    {
-      this();
-      
       this.xid = xid;      
-   }
-   
-   public void setContainsPersistent(boolean persistent)
-   {
-      this.containsPersistent = persistent;
-   }
-   
-   public TransactionImpl(List<Message> messagesToAdd, List<MessageReference> refsToRemove,
-                          boolean containsPersistent)
-   {
-      this.messagesToAdd = messagesToAdd;
-      
-      this.refsToRemove = refsToRemove;
-      
-      this.containsPersistent = containsPersistent;
-   }
-   
-   public TransactionImpl(Xid xid, List<Message> messagesToAdd, List<MessageReference> refsToRemove,
-                          boolean containsPersistent)
-   {
-      this(messagesToAdd, refsToRemove, containsPersistent);
-      
-      this.xid = xid;
    }
    
    // Transaction implementation -----------------------------------------------------------
    
-   //FIXME temp
-   
-   
-   public void addAllSends(List<Message> msgs)
+   public void addMessage(Message message)
    {
-      messagesToAdd.addAll(msgs);
+      messagesToAdd.add(message);
+      
+      if (message.getNumDurableReferences() != 0)
+      {
+         containsPersistent = true;
+      }
    }
    
-   public void addAllAcks(List<MessageReference> refs)
+   public void addAcknowledgement(MessageReference acknowledgement)
    {
-      refsToRemove.addAll(refs);
+      acknowledgements.add(acknowledgement);
+       
+      if (acknowledgement.getMessage().isDurable() && acknowledgement.getQueue().isDurable())
+      {
+         containsPersistent = true;
+      }
    }
    
-   //End FIXME
    
    public void addSynchronization(TransactionSynchronization sync)
    {
@@ -124,7 +105,7 @@ public class TransactionImpl implements Transaction
       }
       else if (containsPersistent)
       {
-         persistenceManager.prepareTransaction(xid, messagesToAdd, refsToRemove);
+         persistenceManager.prepareTransaction(xid, messagesToAdd, acknowledgements);
          
          prepared = true;
       }
@@ -133,14 +114,14 @@ public class TransactionImpl implements Transaction
    public void commit(PersistenceManager persistenceManager) throws Exception
    {
       callSynchronizations(SyncType.BEFORE_COMMIT);
-            
+      
       if (containsPersistent)
       {
          if (xid == null)
          {
             //1PC commit
             
-            persistenceManager.commitTransaction(messagesToAdd, refsToRemove);
+            persistenceManager.commitTransaction(messagesToAdd, acknowledgements);
          }
          else
          {
@@ -155,52 +136,40 @@ public class TransactionImpl implements Transaction
          } 
       }
             
-      //Now add to queue(s)
-      
       for (Message msg: messagesToAdd)
       {
-         for (MessageReference ref: msg.getReferences())
-         {
-            ref.getQueue().addLast(ref);
-         }
+         msg.send();
       }
       
-      //And acknowledge
-      
-      //TODO find better transactional abstraction so don't have to manually do this
-      
-      for (MessageReference ref: refsToRemove)
+      for (MessageReference reference: acknowledgements)
       {
-         ref.getQueue().referenceAcknowledged();
+         reference.getQueue().referenceAcknowledged();
       }
       
       callSynchronizations(SyncType.AFTER_COMMIT);
+      
+      clear();      
    }
    
    public void rollback(PersistenceManager persistenceManager) throws Exception
    {
       callSynchronizations(SyncType.BEFORE_ROLLBACK);
-      
-      if (xid == null)
+        
+      if (xid != null && containsPersistent)
       {
-         //1PC rollback - nothing to do
-      }
-      else
-      {
-         persistenceManager.unprepareTransaction(xid, messagesToAdd, refsToRemove);
-         
-         //Now we need to add the refs back on the tx
-         
-         for (MessageReference ref: refsToRemove)
-         {
-            if (ref.getMessage().isDurable() && ref.getQueue().isDurable())
-            {
-               ref.getMessage().addBackDurableReference(ref);
-            }
-         }
+         persistenceManager.unprepareTransaction(xid, messagesToAdd, acknowledgements);             
       }
       
-      callSynchronizations(SyncType.AFTER_ROLLBACK);      
+      cancelDeliveries(persistenceManager);
+                        
+      callSynchronizations(SyncType.AFTER_ROLLBACK);  
+      
+      clear();      
+   }      
+   
+   public int getAcknowledgementsCount()
+   {
+      return acknowledgements.size();
    }
    
    // Private -------------------------------------------------------------------
@@ -225,6 +194,54 @@ public class TransactionImpl implements Transaction
          {
             sync.afterRollback();
          }            
+      }
+   }
+
+   private void clear()
+   {
+      messagesToAdd.clear();
+      
+      acknowledgements.clear();
+      
+      synchronizations.clear();
+      
+      containsPersistent = false;
+   }
+   
+   private void cancelDeliveries(PersistenceManager persistenceManager) throws Exception
+   {
+      Map<Queue, LinkedList<MessageReference>> queueMap = new HashMap<Queue, LinkedList<MessageReference>>();
+      
+      //Need to sort into lists - one for each queue involved.
+      //Then cancelling back atomicly for each queue adding list on front to guarantee ordering is preserved      
+      
+      for (MessageReference ref: acknowledgements)
+      {
+         Queue queue = ref.getQueue();
+         
+         LinkedList<MessageReference> list = queueMap.get(queue);
+         
+         if (list == null)
+         {
+            list = new LinkedList<MessageReference>();
+            
+            queueMap.put(queue, list);
+         }
+                 
+         list.add(ref);
+      }
+      
+      for (Map.Entry<Queue, LinkedList<MessageReference>> entry: queueMap.entrySet())
+      {                  
+         LinkedList<MessageReference> refs = entry.getValue();
+         
+         for (MessageReference ref: refs)
+         {
+            //Need to update delivery counts
+            ref.cancel(persistenceManager);
+         }
+                  
+         entry.getKey().addListFirst(refs);
       }
    }
    

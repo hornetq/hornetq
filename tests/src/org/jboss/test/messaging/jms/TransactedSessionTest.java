@@ -29,8 +29,6 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.management.ObjectName;
 
-import org.jboss.jms.tx.ResourceManagerFactory;
-
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
@@ -513,18 +511,22 @@ public class TransactedSessionTest extends JMSTestCase
          assertFalse(tm.getJMSRedelivered());
          assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
 
+         log.info("rolling back");
          sess.rollback();
+         
+         log.info("closing");
          sess.close();
+         log.info("Closed");
 
          Session sess2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          cons = sess2.createConsumer(queue1);
 
-         tm = (TextMessage)cons.receive();
+         tm = (TextMessage)cons.receive(1000);
 
          assertEquals("a message", tm.getText());
 
-         assertEquals(2, tm.getIntProperty("JMSXDeliveryCount"));
+         assertEquals(3, tm.getIntProperty("JMSXDeliveryCount"));
 
          assertTrue(tm.getJMSRedelivered());
       }
@@ -761,10 +763,14 @@ public class TransactedSessionTest extends JMSTestCase
          assertEquals(NUM_MESSAGES, count);
 
          conn.stop();
+         log.info("closing consumer");
          consumer.close();
-
+         log.info("closed consumer");
+         
+         log.info("closing connection");
          conn.close();
-
+         log.info("closed connection");
+         
          conn = cf.createConnection();
 
          consumerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
@@ -772,12 +778,17 @@ public class TransactedSessionTest extends JMSTestCase
          conn.start();
 
          count = 0;
+         
+         log.info("Receiving...");
+         
          while (true)
          {
             Message m = consumer.receive(500);
             if (m == null) break;
             count++;
          }
+         
+         log.info("Done receive");
 
          assertEquals(NUM_MESSAGES, count);
       }
@@ -812,7 +823,7 @@ public class TransactedSessionTest extends JMSTestCase
          Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer producer = producerSess.createProducer(queue1);
 
-         Session consumerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
+         Session consumerSess = conn.createSession(true, Session.SESSION_TRANSACTED);
          MessageConsumer consumer = consumerSess.createConsumer(queue1);
          conn.start();
 
@@ -835,7 +846,9 @@ public class TransactedSessionTest extends JMSTestCase
 
          assertEquals(NUM_MESSAGES, count);
 
+         log.info("Comitting sesion");
          consumerSess.commit();
+         log.info("Committed session");
 
          conn.stop();
          consumer.close();
@@ -1083,14 +1096,6 @@ public class TransactedSessionTest extends JMSTestCase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
-   protected void setUp() throws Exception
-	{
-		super.setUp();
-
-		ResourceManagerFactory.instance.clear();
-	}
-
 
    // Private -------------------------------------------------------
 

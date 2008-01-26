@@ -33,6 +33,7 @@ import javax.jms.JMSException;
 import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 
+import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.exception.MessagingJMSException;
 
 /**
@@ -76,10 +77,9 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       super(JBossBytesMessage.TYPE);
    }
 
-   public JBossBytesMessage(org.jboss.messaging.core.Message message,
-         long deliveryID, int deliveryCount)
+   public JBossBytesMessage(org.jboss.messaging.core.Message message, ClientSession session)
    {
-      super(message, deliveryID, deliveryCount);
+      super(message, session);
    }
 
    public JBossBytesMessage(BytesMessage foreign) throws JMSException
