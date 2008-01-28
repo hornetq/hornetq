@@ -50,8 +50,6 @@ public class MinaClientTest extends ClientTestBase
       AbstractPacket packet = new TextPacket("testSendBlockingWithTimeout");
       packet.setTargetID(serverPacketHandler.getID());
       
-      packet.setVersion((byte) 1);
-
       try
       {
          client.sendBlocking(packet);
@@ -78,7 +76,7 @@ public class MinaClientTest extends ClientTestBase
    @Override
    protected PacketDispatcher startServer() throws Exception
    {
-      service = new MinaService(TCP, "localhost", PORT);
+      service = new MinaService(TCP.toString(), "localhost", PORT);
       service.start();
       return service.getDispatcher();
    }

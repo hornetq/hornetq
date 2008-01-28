@@ -73,7 +73,7 @@ public class MinaHandlerTest extends TestCase
    @Override
    protected void setUp() throws Exception
    {
-      handler = new MinaHandler(PacketDispatcher.client);
+      handler = new MinaHandler(PacketDispatcher.client, null);
 
       packetHandler = new TestPacketHandler();
       PacketDispatcher.client.register(packetHandler);

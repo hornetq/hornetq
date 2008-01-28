@@ -53,7 +53,7 @@ public class PacketStressTest extends TestCase
    @Override
    protected void setUp() throws Exception
    {
-      service = new MinaService(TCP, "localhost", PORT);
+      service = new MinaService(TCP.toString(), "localhost", PORT);
       service.start();
       connector = new MinaConnector(TCP, "localhost", PORT);
       
@@ -88,7 +88,6 @@ public class PacketStressTest extends TestCase
       
       byte[] payloadBytes = generatePayload(PAYLOAD);
       AbstractPacket packet = new BytesPacket(payloadBytes);
-      packet.setVersion((byte) 19);
       packet.setTargetID(handlerID);
 
       long start = System.currentTimeMillis();

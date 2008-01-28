@@ -122,7 +122,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
       MessagingRemotingConnection remotingConnection = null;
       try
       {
-         remotingConnection = new MessagingRemotingConnection(version, serverLocatorURI);
+         remotingConnection = new MessagingRemotingConnection(serverLocatorURI);
        
          remotingConnection.start();
          

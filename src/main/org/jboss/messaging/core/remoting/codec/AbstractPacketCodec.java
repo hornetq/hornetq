@@ -10,7 +10,6 @@ import static org.jboss.messaging.core.remoting.codec.DecoderStatus.NEED_DATA;
 import static org.jboss.messaging.core.remoting.codec.DecoderStatus.NOT_OK;
 import static org.jboss.messaging.core.remoting.codec.DecoderStatus.OK;
 import static org.jboss.messaging.core.remoting.wireformat.AbstractPacket.NO_ID_SET;
-import static org.jboss.messaging.core.remoting.wireformat.AbstractPacket.NO_VERSION_SET;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -37,6 +36,8 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
    public static final byte TRUE = (byte) 0;
 
    public static final byte FALSE = (byte) 1;
+
+   public static final int BOOLEAN_LENGTH = 1;
 
    public static final int INT_LENGTH = 4;
 
@@ -101,12 +102,6 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
       assert packet != null;
       assert buf != null;
 
-      byte version = packet.getVersion();
-      if (version == NO_VERSION_SET)
-      {
-         throw new IllegalStateException("packet must be versioned: " + packet);
-      }
-
       long correlationID = packet.getCorrelationID();
       // to optimize the size of the packets, if the targetID
       // or the callbackID are not set, they are encoded as null
@@ -121,14 +116,14 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
       {
          callbackID = null;
       }
-      int headerLength = LONG_LENGTH + sizeof(targetID) + sizeof(callbackID);
+      int headerLength = LONG_LENGTH + sizeof(targetID) + sizeof(callbackID) + BOOLEAN_LENGTH;
 
       buf.put(packet.getType().byteValue());
-      buf.put(version);
       buf.putInt(headerLength);
       buf.putLong(correlationID);
       buf.putNullableString(targetID);
       buf.putNullableString(callbackID);
+      buf.putBoolean(packet.isOneWay());
 
       encodeBody(packet, buf);
    }
@@ -149,9 +144,9 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
 
    public DecoderStatus decodable(RemotingBuffer buffer)
    {
-      if (buffer.remaining() < 2)
+      if (buffer.remaining() < 1)
       {
-         // can not read packet type & version
+         // can not read packet type
          return NEED_DATA;
       }
       byte t = buffer.get();
@@ -159,7 +154,6 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
       {
          return NOT_OK;
       }
-      buffer.get(); // version
       if (buffer.remaining() < INT_LENGTH)
       {
          if (log.isDebugEnabled())
@@ -189,7 +183,7 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
       {
          return NOT_OK;
       }
-
+      buffer.getBoolean(); // oneWay boolean
       if (buffer.remaining() < INT_LENGTH)
       {
          if (log.isDebugEnabled())
@@ -214,19 +208,18 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
    public P decode(RemotingBuffer wrapper) throws Exception
    {
       wrapper.get(); // skip message type
-      byte version = wrapper.get();
       wrapper.getInt(); // skip header length
       long correlationID = wrapper.getLong();
       String targetID = wrapper.getNullableString();
       String callbackID = wrapper.getNullableString();
-
+      boolean oneWay = wrapper.getBoolean();
+      
       P packet = decodeBody(wrapper);
 
       if (packet == null)
       {
          return null;
       }
-      packet.setVersion(version);
       if (targetID == null)
          targetID = NO_ID_SET;
       packet.setTargetID(targetID);
@@ -234,6 +227,7 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
       if (callbackID == null)
          callbackID = NO_ID_SET;
       packet.setCallbackID(callbackID);
+      packet.setOneWay(oneWay);
 
       return packet;
    }

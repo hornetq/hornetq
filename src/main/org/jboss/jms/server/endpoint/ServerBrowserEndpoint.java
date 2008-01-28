@@ -45,7 +45,6 @@ import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.BrowserHasNextMessageResponse;
 import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageResponse;
-import org.jboss.messaging.core.remoting.wireformat.ClosingMessage;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
@@ -306,19 +305,12 @@ public class ServerBrowserEndpoint
             } else if (type == MSG_BROWSER_RESET)
             {
                reset();
-
-               response = new NullPacket();
             } else if (type == PacketType.MSG_CLOSING)
             {
-               ClosingMessage request = (ClosingMessage) packet;
                closing();
-
-               response = new NullPacket();
             } else if (type == MSG_CLOSE)
             {
                close();
-
-               response = new NullPacket();
             } else
             {
                response = new JMSExceptionMessage(new MessagingJMSException(
@@ -326,12 +318,16 @@ public class ServerBrowserEndpoint
             }
 
             // reply if necessary
+            if (response == null && packet.isOneWay() == false)
+            {
+               response = new NullPacket();               
+            }
+            
             if (response != null)
             {
                response.normalize(packet);
                sender.send(response);
             }
-
          } catch (JMSException e)
          {
             JMSExceptionMessage message = new JMSExceptionMessage(e);

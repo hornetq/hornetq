@@ -72,8 +72,6 @@ public class DeliveryImpl implements Delivery
                                                   reference.getDeliveryCount() + 1);
       
       message.setTargetID(consumerID);
-                  
-      message.setVersion((byte)0);
       
       sender.send(message);
    }

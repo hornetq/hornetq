@@ -35,6 +35,7 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
+import org.jboss.messaging.core.remoting.ConnectionExceptionListener;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.Logger;
@@ -47,7 +48,7 @@ import org.jboss.messaging.util.Util;
  *
  * $Id$
  */
-public class SimpleConnectionManager implements ConnectionManager
+public class SimpleConnectionManager implements ConnectionManager, ConnectionExceptionListener
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -197,6 +198,13 @@ public class SimpleConnectionManager implements ConnectionManager
       //NOOP
    }
 
+   // ConnectionExceptionListener ------------------------------------------------------------------
+   
+   public void handleConnectionException(Exception e, String clientSessionID)
+   {
+      handleClientFailure(clientSessionID , true);
+   }
+   
    // Public ---------------------------------------------------------------------------------------
 
    /*
@@ -268,7 +276,7 @@ public class SimpleConnectionManager implements ConnectionManager
          {
             try
             {
-      			log.debug("clPearing up state for connection " + sce);
+      			log.debug("clearing up state for connection " + sce);
                sce.closing();
                sce.close();
                log.debug("cleared up state for connection " + sce);

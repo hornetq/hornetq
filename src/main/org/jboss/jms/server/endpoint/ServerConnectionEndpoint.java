@@ -583,18 +583,12 @@ public class ServerConnectionEndpoint
             } else if (type == MSG_STOPCONNECTION)
             {
                stop();
-
-               response = new NullPacket();
             } else if (type == PacketType.MSG_CLOSING)
             {              
                closing();
-
-               response = new NullPacket();
             } else if (type == MSG_CLOSE)
             {
                close();
-
-               response = new NullPacket();
             } 
             else if (type == REQ_GETCLIENTID)
             {
@@ -603,8 +597,6 @@ public class ServerConnectionEndpoint
             {
                SetClientIDMessage message = (SetClientIDMessage) packet;
                setClientID(message.getClientID());
-
-               response = new NullPacket();
             } else
             {
                response = new JMSExceptionMessage(new MessagingJMSException(
@@ -612,12 +604,16 @@ public class ServerConnectionEndpoint
             }
 
             // reply if necessary
+            if (response == null && packet.isOneWay() == false)
+            {
+               response = new NullPacket();               
+            }
+            
             if (response != null)
             {
                response.normalize(packet);
                sender.send(response);
             }
-
          } catch (JMSException e)
          {
             JMSExceptionMessage message = new JMSExceptionMessage(e);

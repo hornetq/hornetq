@@ -4,57 +4,42 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.core.remoting.wireformat;
+package org.jboss.messaging.core.remoting.impl.mina;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CANCEL;
-
+import org.jboss.messaging.core.remoting.KeepAliveFactory;
+import org.jboss.messaging.core.remoting.wireformat.Ping;
+import org.jboss.messaging.core.remoting.wireformat.Pong;
 
 /**
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ *
  * @version <tt>$Revision$</tt>
+ *
  */
-public class SessionCancelMessage extends AbstractPacket
+public class ClientKeepAliveFactory implements KeepAliveFactory
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
-   private long deliveryID;
-   
-   private boolean expired;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionCancelMessage(long deliveryID, boolean expired)
-   {
-      super(MSG_CANCEL);
-      
-      this.deliveryID = deliveryID;
-      
-      this.expired = expired;
-   }
-
    // Public --------------------------------------------------------
+
+   // KeepAliveFactory implementation -------------------------------
    
-   public long getDeliveryID()
+   public Ping ping()
    {
-      return deliveryID;
-   }
-   
-   public boolean isExpired()
-   {
-      return expired;
+      return new Ping();
    }
 
-   @Override
-   public String toString()
+   public Pong pong()
    {
-      return getParentString() + ", deliveryID=" + deliveryID + ", expired=" + expired + "]";
+      return new Pong();
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -63,4 +48,3 @@ public class SessionCancelMessage extends AbstractPacket
 
    // Inner classes -------------------------------------------------
 }
-

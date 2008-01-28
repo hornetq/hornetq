@@ -4,9 +4,10 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.core.remoting;
+package org.jboss.messaging.core.remoting.impl.mina;
 
-import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import java.util.concurrent.TimeoutException;
+
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -14,9 +15,7 @@ import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
  * @version <tt>$Revision$</tt>
  *
  */
-public interface PacketSender
+public interface KeepAliveNotifier
 {
-   void send(AbstractPacket packet);
-
-   String getSessionID();
+   public abstract void notifyKeepAliveTimeout(TimeoutException e, String remoteSessionID);
 }

@@ -1540,37 +1540,26 @@ public class ServerSessionEndpoint
             else if (type == PacketType.MSG_CLOSING)
             {
                closing();
-
-               response = new NullPacket();
             } else if (type == MSG_CLOSE)
             {
                close();
-
-               response = new NullPacket();
             } else if (type == MSG_UNSUBSCRIBE)
             {
                UnsubscribeMessage message = (UnsubscribeMessage) packet;
                unsubscribe(message.getSubscriptionName());
-
-               response = new NullPacket();
             } else if (type == MSG_ADDTEMPORARYDESTINATION)
             {
                AddTemporaryDestinationMessage message = (AddTemporaryDestinationMessage) packet;
                addTemporaryDestination(message.getDestination());
-
-               response = new NullPacket();
             } else if (type == MSG_DELETETEMPORARYDESTINATION)
             {
                DeleteTemporaryDestinationMessage message = (DeleteTemporaryDestinationMessage) packet;
                deleteTemporaryDestination(message.getDestination());
-
-               response = new NullPacket();
             }            
             else if (type == PacketType.MSG_ACKNOWLEDGE)
             {
                SessionAcknowledgeMessage message = (SessionAcknowledgeMessage)packet;
                acknowledge(message.getDeliveryID(), message.isAllUpTo());
-               response = new NullPacket();
             }
             else if (type == PacketType.MSG_COMMIT)
             {
@@ -1592,12 +1581,16 @@ public class ServerSessionEndpoint
             }
 
             // reply if necessary
+            if (response == null && packet.isOneWay() == false)
+            {
+               response = new NullPacket();               
+            }
+            
             if (response != null)
             {
                response.normalize(packet);
                sender.send(response);
             }
-
          } catch (JMSException e)
          {
             JMSExceptionMessage message = new JMSExceptionMessage(e);

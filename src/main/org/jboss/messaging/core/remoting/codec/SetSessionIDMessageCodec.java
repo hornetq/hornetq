@@ -6,14 +6,15 @@
  */
 package org.jboss.messaging.core.remoting.codec;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.BYTES;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SETSESSIONID;
 
-import org.jboss.messaging.core.remoting.wireformat.BytesPacket;
+import org.jboss.messaging.core.remoting.wireformat.SetSessionIDMessage;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
  */
-public class BytesPacketCodec extends AbstractPacketCodec<BytesPacket>
+public class SetSessionIDMessageCodec extends
+      AbstractPacketCodec<SetSessionIDMessage>
 {
 
    // Constants -----------------------------------------------------
@@ -24,9 +25,9 @@ public class BytesPacketCodec extends AbstractPacketCodec<BytesPacket>
 
    // Constructors --------------------------------------------------
 
-   public BytesPacketCodec()
+   public SetSessionIDMessageCodec()
    {
-      super(BYTES);
+      super(MSG_SETSESSIONID);
    }
 
    // Public --------------------------------------------------------
@@ -34,32 +35,26 @@ public class BytesPacketCodec extends AbstractPacketCodec<BytesPacket>
    // AbstractPacketCodec overrides ---------------------------------
 
    @Override
-   protected void encodeBody(BytesPacket packet, RemotingBuffer out)
+   protected void encodeBody(SetSessionIDMessage message, RemotingBuffer out)
          throws Exception
    {
-      byte[] bytes = packet.getBytes();
-      
-      int bodyLength = INT_LENGTH + bytes.length;
-      
-      out.putInt(bodyLength);
-      out.putInt(bytes.length);
-      out.put(bytes);
+      String sessionID = message.getSessionID();
+
+      out.putInt(sizeof(sessionID));
+      out.putNullableString(sessionID);
    }
 
    @Override
-   protected BytesPacket decodeBody(RemotingBuffer in)
-         throws Exception
+   protected SetSessionIDMessage decodeBody(RemotingBuffer in) throws Exception
    {
       int bodyLength = in.getInt();
       if (bodyLength > in.remaining())
       {
          return null;
       }
-      int byteLength = in.getInt();
-      byte[] bytes = new byte[byteLength];
-      in.get(bytes);
+      String sessionID = in.getNullableString();
 
-      return new BytesPacket(bytes);
+      return new SetSessionIDMessage(sessionID);
    }
 
    // Package protected ---------------------------------------------

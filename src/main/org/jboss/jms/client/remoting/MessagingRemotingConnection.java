@@ -70,14 +70,10 @@ public class MessagingRemotingConnection
    // explicitly remove it from the remoting client
    private ConsolidatedRemotingConnectionListener remotingConnectionListener;
    
-   private Version version;
-     
    // Constructors ---------------------------------------------------------------------------------
 
-   public MessagingRemotingConnection(Version version, String serverLocatorURI) throws Exception
+   public MessagingRemotingConnection(String serverLocatorURI) throws Exception
    {
-      this.version = version;
-      
       serverLocator = new ServerLocator(serverLocatorURI);
       
       log.trace(this + " created");
@@ -130,17 +126,12 @@ public class MessagingRemotingConnection
    public void sendOneWay(String id, AbstractPacket packet) throws JMSException
    {
       packet.setTargetID(id);
-      
-      packet.setVersion(version.getProviderIncrementingVersion());
-      
       client.sendOneWay(packet);      
    }
    
    public AbstractPacket sendBlocking(String id, AbstractPacket packet) throws JMSException
    {
       packet.setTargetID(id);
-      
-      packet.setVersion(version.getProviderIncrementingVersion());
       
       try
       {
@@ -166,6 +157,9 @@ public class MessagingRemotingConnection
    public synchronized void addConnectionListener(ConsolidatedRemotingConnectionListener listener)
    {
       this.remotingConnectionListener = listener;
+      if (client != null)
+         client.addConnectionListener(remotingConnectionListener);
+      
    }
 
    public synchronized ConsolidatedRemotingConnectionListener getConnectionListener()

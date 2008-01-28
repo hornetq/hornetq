@@ -41,6 +41,8 @@ public abstract class ClientTestBase extends TestCase
 
    protected PacketDispatcher serverDispatcher;
 
+   private NIOConnector connector;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -49,7 +51,8 @@ public abstract class ClientTestBase extends TestCase
 
    public void testConnected() throws Exception
    {
-      Client client = new ClientImpl(createNIOConnector(), createServerLocator());
+      NIOConnector connector = createNIOConnector();
+      Client client = new ClientImpl(connector, createServerLocator());
       
       assertFalse(client.isConnected());
 
@@ -59,6 +62,8 @@ public abstract class ClientTestBase extends TestCase
       assertTrue(client.disconnect());
       assertFalse(client.isConnected());
       assertFalse(client.disconnect());
+      
+      connector.disconnect();
    }    
       
    public void testSendOneWay() throws Exception
@@ -66,7 +71,6 @@ public abstract class ClientTestBase extends TestCase
       serverPacketHandler.expectMessage(1);
 
       TextPacket packet = new TextPacket("testSendOneWay");
-      packet.setVersion((byte) 1);
       packet.setTargetID(serverPacketHandler.getID());
       client.sendOneWay(packet);
 
@@ -86,7 +90,6 @@ public abstract class ClientTestBase extends TestCase
       for (int i = 0; i < MANY_MESSAGES; i++)
       {
          packets[i] = new TextPacket("testSendManyOneWay " + i);
-         packets[i].setVersion((byte) 1);
          packets[i].setTargetID(serverPacketHandler.getID());
          client.sendOneWay(packets[i]);
       }
@@ -110,7 +113,6 @@ public abstract class ClientTestBase extends TestCase
       PacketDispatcher.client.register(callbackHandler);
 
       TextPacket packet = new TextPacket("testSendOneWayWithCallbackHandler");
-      packet.setVersion((byte) 1);
       packet.setTargetID(serverPacketHandler.getID());
       packet.setCallbackID(callbackHandler.getID());
 
@@ -126,7 +128,6 @@ public abstract class ClientTestBase extends TestCase
    public void testSendBlocking() throws Exception
    {
       TextPacket request = new TextPacket("testSendBlocking");
-      request.setVersion((byte) 1);
       request.setTargetID(serverPacketHandler.getID());
 
       AbstractPacket receivedPacket = client.sendBlocking(request);
@@ -140,7 +141,6 @@ public abstract class ClientTestBase extends TestCase
    public void testCorrelationCounter() throws Exception
    {
       TextPacket request = new TextPacket("testSendBlocking");
-      request.setVersion((byte) 1);
       request.setTargetID(serverPacketHandler.getID());
 
       AbstractPacket receivedPacket = client.sendBlocking(request);
@@ -164,7 +164,6 @@ public abstract class ClientTestBase extends TestCase
 
       TextPacket packet = new TextPacket(
             "testClientHandlePacketSentByServer from client");
-      packet.setVersion((byte) 1);
       packet.setTargetID(serverPacketHandler.getID());
       // send a packet to create a sender when the server
       // handles the packet
@@ -176,7 +175,6 @@ public abstract class ClientTestBase extends TestCase
       PacketSender sender = serverPacketHandler.getLastSender();
       TextPacket packetFromServer = new TextPacket(
             "testClientHandlePacketSentByServer from server");
-      packetFromServer.setVersion((byte) 1);
       packetFromServer.setTargetID(clientHandler.getID());
       sender.send(packetFromServer);
 
@@ -196,7 +194,7 @@ public abstract class ClientTestBase extends TestCase
       serverDispatcher = startServer();
       
       ServerLocator serverLocator = createServerLocator();
-      NIOConnector connector = createNIOConnector();
+      connector = createNIOConnector();
       client = new ClientImpl(connector, serverLocator);
       client.connect();
       
@@ -209,6 +207,7 @@ public abstract class ClientTestBase extends TestCase
    {
       serverDispatcher.unregister(serverPacketHandler.getID());
 
+      connector.disconnect();
       client.disconnect();
       stopServer();
       

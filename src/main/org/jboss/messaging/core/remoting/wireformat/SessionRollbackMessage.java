@@ -6,6 +6,8 @@
  */
 package org.jboss.messaging.core.remoting.wireformat;
 
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_ROLLBACK;
+
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -24,7 +26,7 @@ public class SessionRollbackMessage extends AbstractPacket
 
    public SessionRollbackMessage()
    {
-      super(PacketType.MSG_ROLLBACK);
+      super(MSG_ROLLBACK);
    }
 
    // Public --------------------------------------------------------

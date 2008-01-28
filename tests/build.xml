@@ -512,7 +512,7 @@
                <exclude name="**/jms/MemLeakTest.class"/>
                <exclude name="**/jms/RemotingConnectionConfigurationTest.class"/>
                <exclude name="**/jms/stress/**"/>
-               <exclude name="**/jms/crash/**"/>
+               <exclude name="**/jms/crash/ClientCrashTest.class"/>
                <exclude name="**/jms/bridge/**"/>
                <exclude name="**/jms/manual/**"/>
                <exclude name="**/jms/clustering/**"/>

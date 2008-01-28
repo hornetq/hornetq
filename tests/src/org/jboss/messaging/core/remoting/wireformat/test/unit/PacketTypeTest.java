@@ -6,6 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.wireformat.test.unit;
 
+import static org.jboss.messaging.core.remoting.codec.AbstractPacketCodec.BOOLEAN_LENGTH;
 import static org.jboss.messaging.core.remoting.codec.AbstractPacketCodec.FALSE;
 import static org.jboss.messaging.core.remoting.codec.AbstractPacketCodec.INT_LENGTH;
 import static org.jboss.messaging.core.remoting.codec.AbstractPacketCodec.LONG_LENGTH;
@@ -17,19 +18,28 @@ import static org.jboss.messaging.core.remoting.impl.mina.MinaPacketCodec.NULL_B
 import static org.jboss.messaging.core.remoting.impl.mina.MinaPacketCodec.NULL_STRING;
 import static org.jboss.messaging.core.remoting.impl.mina.MinaPacketCodec.UTF_8_ENCODER;
 import static org.jboss.messaging.core.remoting.wireformat.AbstractPacket.NO_ID_SET;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.BYTES;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_ACKNOWLEDGE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_ADDTEMPORARYDESTINATION;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_BROWSER_RESET;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CANCEL;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CHANGERATE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CLOSE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_COMMIT;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_DELETETEMPORARYDESTINATION;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_DELIVERMESSAGE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_JMSEXCEPTION;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_RECOVER;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_ROLLBACK;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SENDMESSAGE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SETCLIENTID;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SETSESSIONID;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_STARTCONNECTION;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_STOPCONNECTION;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_UNSUBSCRIBE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.NULL;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.PING;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.PONG;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_BROWSER_HASNEXTMESSAGE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_BROWSER_NEXTMESSAGE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_BROWSER_NEXTMESSAGEBLOCK;
@@ -51,6 +61,7 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_GETCL
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.TEXT;
 import static org.jboss.messaging.core.remoting.wireformat.test.unit.CodecAssert.assertEqualsByteArrays;
 import static org.jboss.messaging.test.unit.RandomUtil.randomByte;
+import static org.jboss.messaging.test.unit.RandomUtil.randomBytes;
 import static org.jboss.messaging.test.unit.RandomUtil.randomLong;
 import static org.jboss.messaging.test.unit.RandomUtil.randomString;
 
@@ -77,6 +88,7 @@ import org.jboss.messaging.core.remoting.codec.BrowserHasNextMessageResponseCode
 import org.jboss.messaging.core.remoting.codec.BrowserNextMessageBlockRequestCodec;
 import org.jboss.messaging.core.remoting.codec.BrowserNextMessageBlockResponseCodec;
 import org.jboss.messaging.core.remoting.codec.BrowserNextMessageResponseCodec;
+import org.jboss.messaging.core.remoting.codec.BytesPacketCodec;
 import org.jboss.messaging.core.remoting.codec.ConnectionFactoryCreateConnectionRequestCodec;
 import org.jboss.messaging.core.remoting.codec.ConnectionFactoryCreateConnectionResponseCodec;
 import org.jboss.messaging.core.remoting.codec.ConsumerChangeRateMessageCodec;
@@ -93,8 +105,11 @@ import org.jboss.messaging.core.remoting.codec.DeliverMessageCodec;
 import org.jboss.messaging.core.remoting.codec.GetClientIDResponseCodec;
 import org.jboss.messaging.core.remoting.codec.JMSExceptionMessageCodec;
 import org.jboss.messaging.core.remoting.codec.RemotingBuffer;
+import org.jboss.messaging.core.remoting.codec.SessionAcknowledgeMessageCodec;
+import org.jboss.messaging.core.remoting.codec.SessionCancelMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SessionSendMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SetClientIDMessageCodec;
+import org.jboss.messaging.core.remoting.codec.SetSessionIDMessageCodec;
 import org.jboss.messaging.core.remoting.codec.TextPacketCodec;
 import org.jboss.messaging.core.remoting.codec.UnsubscribeMessageCodec;
 import org.jboss.messaging.core.remoting.impl.mina.PacketCodecFactory;
@@ -108,6 +123,7 @@ import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageBlockRespo
 import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageRequest;
 import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageResponse;
 import org.jboss.messaging.core.remoting.wireformat.BrowserResetMessage;
+import org.jboss.messaging.core.remoting.wireformat.BytesPacket;
 import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
 import org.jboss.messaging.core.remoting.wireformat.ClosingMessage;
 import org.jboss.messaging.core.remoting.wireformat.ConsumerChangeRateMessage;
@@ -128,12 +144,21 @@ import org.jboss.messaging.core.remoting.wireformat.GetClientIDResponse;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
+import org.jboss.messaging.core.remoting.wireformat.Ping;
+import org.jboss.messaging.core.remoting.wireformat.Pong;
+import org.jboss.messaging.core.remoting.wireformat.SessionAcknowledgeMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionCancelMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionCommitMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionRecoverMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionRollbackMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.wireformat.SetClientIDMessage;
+import org.jboss.messaging.core.remoting.wireformat.SetSessionIDMessage;
 import org.jboss.messaging.core.remoting.wireformat.StartConnectionMessage;
 import org.jboss.messaging.core.remoting.wireformat.StopConnectionMessage;
 import org.jboss.messaging.core.remoting.wireformat.TextPacket;
 import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
+import org.jboss.messaging.util.Logger;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -145,15 +170,11 @@ public class PacketTypeTest extends TestCase
 
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(PacketTypeTest.class);
+
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
-
-   private static void addVersion(AbstractPacket packet)
-   {
-      byte version = (byte) 19;
-      packet.setVersion(version);
-   }
 
    private static ByteBuffer encode(int length, Object... args)
    {
@@ -161,37 +182,34 @@ public class PacketTypeTest extends TestCase
       for (Object arg : args)
       {
          if (arg instanceof Byte)
-            buffer.put(((Byte)arg).byteValue());
+            buffer.put(((Byte) arg).byteValue());
          else if (arg instanceof Boolean)
          {
             Boolean bool = (Boolean) arg;
             buffer.put(bool ? TRUE : FALSE);
-         }
-         else if (arg instanceof Integer)
-            buffer.putInt(((Integer)arg).intValue());
+         } else if (arg instanceof Integer)
+            buffer.putInt(((Integer) arg).intValue());
          else if (arg instanceof Long)
-            buffer.putLong(((Long)arg).longValue());
+            buffer.putLong(((Long) arg).longValue());
          else if (arg instanceof Float)
-            buffer.putFloat(((Float)arg).floatValue());
+            buffer.putFloat(((Float) arg).floatValue());
          else if (arg instanceof String)
-            putNullableString((String)arg, buffer);
+            putNullableString((String) arg, buffer);
          else if (arg == null)
             putNullableString(null, buffer);
          else if (arg instanceof byte[])
          {
-            byte[] b = (byte[])arg;
+            byte[] b = (byte[]) arg;
             buffer.putInt(b.length);
             buffer.put(b);
-         }
-         else if (arg instanceof long[])
+         } else if (arg instanceof long[])
          {
-            long[] longs = (long[])arg;
+            long[] longs = (long[]) arg;
             for (long l : longs)
             {
                buffer.putLong(l);
             }
-         }
-         else
+         } else
          {
             fail("no encoding defined for " + arg);
          }
@@ -205,7 +223,7 @@ public class PacketTypeTest extends TestCase
       if (string == null)
       {
          buffer.put(NULL_STRING);
-      } else 
+      } else
       {
          buffer.put(NOT_NULL_STRING);
          UTF_8_ENCODER.reset();
@@ -220,7 +238,6 @@ public class PacketTypeTest extends TestCase
       checkHeaderBytes(packet, buffer.buffer().buf());
 
       assertEquals(buffer.get(), packet.getType().byteValue());
-      assertEquals(buffer.get(), packet.getVersion());
 
       String targetID = packet.getTargetID();
       if (NO_ID_SET.equals(packet.getTargetID()))
@@ -229,7 +246,8 @@ public class PacketTypeTest extends TestCase
       if (NO_ID_SET.equals(packet.getCallbackID()))
          callbackID = null;
 
-      int headerLength = LONG_LENGTH + sizeof(targetID) + sizeof(callbackID);
+      int headerLength = LONG_LENGTH + sizeof(targetID) + sizeof(callbackID)
+            + BOOLEAN_LENGTH;
       assertEquals(buffer.getInt(), headerLength);
       assertEquals(buffer.getLong(), packet.getCorrelationID());
 
@@ -239,28 +257,35 @@ public class PacketTypeTest extends TestCase
       String bufferCallbackID = buffer.getNullableString();
       if (bufferCallbackID == null)
          bufferCallbackID = NO_ID_SET;
+      boolean oneWay = buffer.getBoolean();
 
       assertEquals(bufferTargetID, packet.getTargetID());
       assertEquals(bufferCallbackID, packet.getCallbackID());
+      assertEquals(oneWay, packet.isOneWay());
    }
 
    private static void checkHeaderBytes(AbstractPacket packet, ByteBuffer actual)
    {
-      String targetID = (packet.getTargetID().equals(NO_ID_SET)? null : packet.getTargetID());
-      String callbackID = (packet.getCallbackID().equals(NO_ID_SET)? null : packet.getCallbackID());
+      String targetID = (packet.getTargetID().equals(NO_ID_SET) ? null : packet
+            .getTargetID());
+      String callbackID = (packet.getCallbackID().equals(NO_ID_SET) ? null
+            : packet.getCallbackID());
 
-      int headerLength = LONG_LENGTH + sizeof(targetID) + sizeof(callbackID);
-      ByteBuffer expected = ByteBuffer.allocate(1 + 1 + INT_LENGTH + headerLength);
+      int headerLength = LONG_LENGTH + sizeof(targetID) + sizeof(callbackID)
+            + BOOLEAN_LENGTH;
+      ByteBuffer expected = ByteBuffer.allocate(1 + 1 + INT_LENGTH
+            + headerLength);
       expected.put(packet.getType().byteValue());
-      expected.put(packet.getVersion());
-      
+
       expected.putInt(headerLength);
       expected.putLong(packet.getCorrelationID());
       putNullableString(targetID, expected);
       putNullableString(callbackID, expected);
+      expected.put(packet.isOneWay() ? TRUE : FALSE);
       expected.flip();
 
-      assertEqualsByteArrays(expected.remaining(), expected.array(), actual.array());
+      assertEqualsByteArrays(expected.remaining(), expected.array(), actual
+            .array());
    }
 
    private static void checkBodyIsEmpty(RemotingBuffer buffer)
@@ -287,7 +312,6 @@ public class PacketTypeTest extends TestCase
    public void testNullPacket() throws Exception
    {
       NullPacket packet = new NullPacket();
-      packet.setVersion(randomByte());
       packet.setCallbackID(randomString());
       packet.setCorrelationID(randomLong());
       packet.setTargetID(randomString());
@@ -305,7 +329,6 @@ public class PacketTypeTest extends TestCase
       NullPacket p = (NullPacket) decodedPacket;
 
       assertEquals(NULL, p.getType());
-      assertEquals(packet.getVersion(), p.getVersion());
       assertEquals(packet.getCallbackID(), p.getCallbackID());
       assertEquals(packet.getCorrelationID(), p.getCorrelationID());
       assertEquals(packet.getTargetID(), p.getTargetID());
@@ -316,7 +339,6 @@ public class PacketTypeTest extends TestCase
       JMSException e = new InvalidDestinationException(
             "testJMSExceptionMessage");
       JMSExceptionMessage message = new JMSExceptionMessage(e);
-      addVersion(message);
 
       AbstractPacketCodec<JMSExceptionMessage> codec = new JMSExceptionMessageCodec();
       SimpleRemotingBuffer buffer = encode(message, codec);
@@ -334,15 +356,48 @@ public class PacketTypeTest extends TestCase
             .getException().getMessage());
    }
 
+   public void testPing() throws Exception
+   {
+      Ping packet = new Ping();
+      AbstractPacketCodec<AbstractPacket> codec = PacketCodecFactory
+            .createCodecForEmptyPacket(PING, Ping.class);
+
+      SimpleRemotingBuffer buffer = encode(packet, codec);
+      checkHeader(buffer, packet);
+      checkBodyIsEmpty(buffer);
+      buffer.rewind();
+
+      AbstractPacket decodedPacket = codec.decode(buffer);
+
+      assertTrue(decodedPacket instanceof Ping);
+      assertEquals(PING, decodedPacket.getType());
+   }
+
+   public void testPong() throws Exception
+   {
+      Pong packet = new Pong();
+      AbstractPacketCodec<AbstractPacket> codec = PacketCodecFactory
+            .createCodecForEmptyPacket(PONG, Pong.class);
+
+      SimpleRemotingBuffer buffer = encode(packet, codec);
+      checkHeader(buffer, packet);
+      checkBodyIsEmpty(buffer);
+      buffer.rewind();
+
+      AbstractPacket decodedPacket = codec.decode(buffer);
+
+      assertTrue(decodedPacket instanceof Pong);
+      assertEquals(PONG, decodedPacket.getType());
+   }
+
    public void testTextPacket() throws Exception
    {
       TextPacket packet = new TextPacket("testTextPacket");
-      addVersion(packet);
       AbstractPacketCodec<TextPacket> codec = new TextPacketCodec();
 
       SimpleRemotingBuffer buffer = encode(packet, codec);
       checkHeader(buffer, packet);
-      checkBody(buffer, packet.getText());      
+      checkBody(buffer, packet.getText());
       buffer.rewind();
 
       AbstractPacket decodedPacket = codec.decode(buffer);
@@ -353,7 +408,44 @@ public class PacketTypeTest extends TestCase
       assertEquals(TEXT, p.getType());
       assertEquals(packet.getText(), p.getText());
    }
+   
+   public void testBytesPacket() throws Exception
+   {
+      BytesPacket packet = new BytesPacket(randomBytes());
 
+      AbstractPacketCodec codec = new BytesPacketCodec();
+      SimpleRemotingBuffer buffer = encode(packet, codec);
+      checkHeader(buffer, packet);
+      checkBody(buffer, packet.getBytes());
+      buffer.rewind();
+
+      AbstractPacket decodedPacket = codec.decode(buffer);
+
+      assertTrue(decodedPacket instanceof BytesPacket);
+      BytesPacket p = (BytesPacket) decodedPacket;
+
+      assertEquals(BYTES, p.getType());
+      assertEqualsByteArrays(packet.getBytes(), p.getBytes());
+   }
+
+   public void testSetSessionIDMessage() throws Exception
+   {
+      SetSessionIDMessage message = new SetSessionIDMessage(randomString());
+
+      AbstractPacketCodec codec = new SetSessionIDMessageCodec();
+      SimpleRemotingBuffer buffer = encode(message, codec);
+      checkHeader(buffer, message);
+      checkBody(buffer, message.getSessionID());
+      buffer.rewind();
+
+      AbstractPacket decodedPacket = codec.decode(buffer);
+
+      assertTrue(decodedPacket instanceof SetSessionIDMessage);
+      SetSessionIDMessage decodedMessage = (SetSessionIDMessage) decodedPacket;
+      assertEquals(MSG_SETSESSIONID, decodedMessage.getType());
+      assertEquals(message.getSessionID(), decodedMessage.getSessionID());
+   }
+   
    public void testCreateConnectionRequest() throws Exception
    {
       byte version = randomByte();
@@ -366,13 +458,14 @@ public class PacketTypeTest extends TestCase
       String clientID = null;
 
       CreateConnectionRequest request = new CreateConnectionRequest(version,
-            remotingSessionID, clientVMID, username, password, prefetchSize, dupsOkBatchSize, null);
-      addVersion(request);
-      
+            remotingSessionID, clientVMID, username, password, prefetchSize,
+            dupsOkBatchSize, null);
+
       AbstractPacketCodec<CreateConnectionRequest> codec = new ConnectionFactoryCreateConnectionRequestCodec();
       SimpleRemotingBuffer buffer = encode(request, codec);
       checkHeader(buffer, request);
-      checkBody(buffer, version, remotingSessionID, clientVMID, username, password, prefetchSize, dupsOkBatchSize, clientID);      
+      checkBody(buffer, version, remotingSessionID, clientVMID, username,
+            password, prefetchSize, dupsOkBatchSize, clientID);
       buffer.rewind();
 
       AbstractPacket decodedPacket = codec.decode(buffer);
@@ -388,13 +481,12 @@ public class PacketTypeTest extends TestCase
       assertEquals(request.getUsername(), decodedRequest.getUsername());
       assertEquals(request.getPassword(), decodedRequest.getPassword());
    }
-   
+
    public void testCreateConnectionResponse() throws Exception
    {
       CreateConnectionResponse response = new CreateConnectionResponse(
             randomString());
-      addVersion(response);
-      
+
       AbstractPacketCodec<CreateConnectionResponse> codec = new ConnectionFactoryCreateConnectionResponseCodec();
       SimpleRemotingBuffer buffer = encode(response, codec);
       checkHeader(buffer, response);
@@ -409,16 +501,16 @@ public class PacketTypeTest extends TestCase
       assertEquals(response.getConnectionID(), decodedResponse
             .getConnectionID());
    }
-   
+
    public void testCreateSessionRequest() throws Exception
    {
       CreateSessionRequest request = new CreateSessionRequest(true, 0, false);
-      addVersion(request);
-      
+
       AbstractPacketCodec codec = new CreateSessionRequestCodec();
       SimpleRemotingBuffer buffer = encode(request, codec);
       checkHeader(buffer, request);
-      checkBody(buffer, request.isTransacted(), request.getAcknowledgementMode(), request.isXA());
+      checkBody(buffer, request.isTransacted(), request
+            .getAcknowledgementMode(), request.isXA());
       buffer.rewind();
 
       AbstractPacket decodedPacket = codec.decode(buffer);
@@ -436,8 +528,7 @@ public class PacketTypeTest extends TestCase
    {
       CreateSessionResponse response = new CreateSessionResponse(
             randomString(), 23);
-      addVersion(response);
-      
+
       AbstractPacketCodec codec = new CreateSessionResponseCodec();
       SimpleRemotingBuffer buffer = encode(response, codec);
       checkHeader(buffer, response);
@@ -457,8 +548,7 @@ public class PacketTypeTest extends TestCase
    public void testSendMessage() throws Exception
    {
       SessionSendMessage packet = new SessionSendMessage(new MessageImpl());
-      addVersion(packet);
-      
+
       AbstractPacketCodec codec = new SessionSendMessageCodec();
       SimpleRemotingBuffer buffer = encode(packet, codec);
       checkHeader(buffer, packet);
@@ -476,16 +566,17 @@ public class PacketTypeTest extends TestCase
 
    public void testCreateConsumerRequest() throws Exception
    {
-      Destination destination = new DestinationImpl(DestinationType.QUEUE, "testCreateConsumerRequest", false);
+      Destination destination = new DestinationImpl(DestinationType.QUEUE,
+            "testCreateConsumerRequest", false);
       CreateConsumerRequest request = new CreateConsumerRequest(destination,
             "color = 'red'", false, "subscription", false);
-      addVersion(request);
-      
+
       AbstractPacketCodec codec = new CreateConsumerRequestCodec();
       SimpleRemotingBuffer buffer = encode(request, codec);
       checkHeader(buffer, request);
-      checkBody(buffer, AbstractPacketCodec.encode(destination), request.getSelector(),
-            request.isNoLocal(), request.getSubscriptionName(), request.isConnectionConsumer());
+      checkBody(buffer, AbstractPacketCodec.encode(destination), request
+            .getSelector(), request.isNoLocal(), request.getSubscriptionName(),
+            request.isConnectionConsumer());
       buffer.rewind();
 
       AbstractPacket decodedPacket = codec.decode(buffer);
@@ -499,15 +590,15 @@ public class PacketTypeTest extends TestCase
       assertEquals(request.getSubscriptionName(), decodedRequest
             .getSubscriptionName());
       assertEquals(request.isConnectionConsumer(), decodedRequest
-            .isConnectionConsumer());;
+            .isConnectionConsumer());
+      ;
    }
 
    public void testCreateDestinationRequest() throws Exception
    {
       CreateDestinationRequest request = new CreateDestinationRequest(
             "testCreateDestinationRequest", false);
-      addVersion(request);
-      
+
       AbstractPacketCodec codec = new CreateDestinationRequestCodec();
       SimpleRemotingBuffer buffer = encode(request, codec);
       checkHeader(buffer, request);
@@ -529,8 +620,7 @@ public class PacketTypeTest extends TestCase
 
       CreateDestinationResponse response = new CreateDestinationResponse(
             destination);
-      addVersion(response);
-      
+
       AbstractPacketCodec codec = new CreateDestinationResponseCodec();
       SimpleRemotingBuffer buffer = encode(response, codec);
       checkHeader(buffer, response);
@@ -548,12 +638,12 @@ public class PacketTypeTest extends TestCase
 
    public void testCreateDestinationResponseForTopic() throws Exception
    {
-      JBossTopic destination = new JBossTopic("testCreateDestinationResponseForTopic");
+      JBossTopic destination = new JBossTopic(
+            "testCreateDestinationResponseForTopic");
 
       CreateDestinationResponse response = new CreateDestinationResponse(
             destination);
-      addVersion(response);
-      
+
       AbstractPacketCodec codec = new CreateDestinationResponseCodec();
       SimpleRemotingBuffer buffer = encode(response, codec);
       checkHeader(buffer, response);
@@ -574,8 +664,7 @@ public class PacketTypeTest extends TestCase
 
       CreateConsumerResponse response = new CreateConsumerResponse(
             randomString(), 23, 42, randomLong());
-      addVersion(response);
-      
+
       AbstractPacketCodec codec = new CreateConsumerResponseCodec();
       SimpleRemotingBuffer buffer = encode(response, codec);
       checkHeader(buffer, response);
@@ -598,7 +687,6 @@ public class PacketTypeTest extends TestCase
    public void testStartConnectionMessage() throws Exception
    {
       StartConnectionMessage packet = new StartConnectionMessage();
-      addVersion(packet);
 
       AbstractPacketCodec codec = PacketCodecFactory.createCodecForEmptyPacket(
             MSG_STARTCONNECTION, StartConnectionMessage.class);
@@ -616,7 +704,6 @@ public class PacketTypeTest extends TestCase
    public void testStopConnectionMessage() throws Exception
    {
       StopConnectionMessage packet = new StopConnectionMessage();
-      addVersion(packet);
 
       AbstractPacketCodec codec = PacketCodecFactory.createCodecForEmptyPacket(
             MSG_STOPCONNECTION, StopConnectionMessage.class);
@@ -634,7 +721,6 @@ public class PacketTypeTest extends TestCase
    public void testChangeRateMessage() throws Exception
    {
       ConsumerChangeRateMessage message = new ConsumerChangeRateMessage(0.63f);
-      addVersion(message);
       AbstractPacketCodec codec = new ConsumerChangeRateMessageCodec();
       SimpleRemotingBuffer buffer = encode(message, codec);
       checkHeader(buffer, message);
@@ -653,13 +739,12 @@ public class PacketTypeTest extends TestCase
    {
       Message msg = new MessageImpl();
       DeliverMessage message = new DeliverMessage(msg, randomLong(), 23);
-      addVersion(message);
-      
+
       AbstractPacketCodec codec = new DeliverMessageCodec();
       SimpleRemotingBuffer buffer = encode(message, codec);
       checkHeader(buffer, message);
-      checkBody(buffer, encodeMessage(msg),
-            message.getDeliveryID(), message.getDeliveryCount());
+      checkBody(buffer, encodeMessage(msg), message.getDeliveryID(), message
+            .getDeliveryCount());
       buffer.rewind();
 
       AbstractPacket decodedPacket = codec.decode(buffer);
@@ -674,31 +759,122 @@ public class PacketTypeTest extends TestCase
             .getDeliveryCount());
    }
 
+   public void testSessionAcknowledgeMessage() throws Exception
+   {
+      SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(
+            randomLong(), true);
+
+      AbstractPacketCodec codec = new SessionAcknowledgeMessageCodec();
+      SimpleRemotingBuffer buffer = encode(message, codec);
+      checkHeader(buffer, message);
+      checkBody(buffer, message.getDeliveryID(), message.isAllUpTo());
+      buffer.rewind();
+
+      AbstractPacket decodedPacket = codec.decode(buffer);
+
+      assertTrue(decodedPacket instanceof SessionAcknowledgeMessage);
+      SessionAcknowledgeMessage decodedMessage = (SessionAcknowledgeMessage) decodedPacket;
+      assertEquals(MSG_ACKNOWLEDGE, decodedMessage.getType());
+      assertEquals(message.getDeliveryID(), decodedMessage.getDeliveryID());
+      assertEquals(message.isAllUpTo(), decodedMessage.isAllUpTo());
+   }
+
+   public void testSessionCancelMessage() throws Exception
+   {
+      SessionCancelMessage message = new SessionCancelMessage(randomLong(),
+            true);
+
+      AbstractPacketCodec codec = new SessionCancelMessageCodec();
+      SimpleRemotingBuffer buffer = encode(message, codec);
+      checkHeader(buffer, message);
+      checkBody(buffer, message.getDeliveryID(), message.isExpired());
+      buffer.rewind();
+
+      AbstractPacket decodedPacket = codec.decode(buffer);
+
+      assertTrue(decodedPacket instanceof SessionCancelMessage);
+      SessionCancelMessage decodedMessage = (SessionCancelMessage) decodedPacket;
+      assertEquals(MSG_CANCEL, decodedMessage.getType());
+      assertEquals(message.getDeliveryID(), decodedMessage.getDeliveryID());
+      assertEquals(message.isExpired(), decodedMessage.isExpired());
+   }
+
+   public void testSessionCommitMessage() throws Exception
+   {
+      SessionCommitMessage message = new SessionCommitMessage();
+
+      AbstractPacketCodec codec = PacketCodecFactory.createCodecForEmptyPacket(
+            MSG_COMMIT, SessionCommitMessage.class);
+      SimpleRemotingBuffer buffer = encode(message, codec);
+      checkHeader(buffer, message);
+      checkBodyIsEmpty(buffer);
+
+      buffer.rewind();
+
+      AbstractPacket decodedPacket = codec.decode(buffer);
+
+      assertTrue(decodedPacket instanceof SessionCommitMessage);
+      assertEquals(MSG_COMMIT, decodedPacket.getType());
+   }
+
+   public void testSessionRollbackMessage() throws Exception
+   {
+      SessionRollbackMessage message = new SessionRollbackMessage();
+
+      AbstractPacketCodec codec = PacketCodecFactory.createCodecForEmptyPacket(
+            MSG_ROLLBACK, SessionRollbackMessage.class);
+      SimpleRemotingBuffer buffer = encode(message, codec);
+      checkHeader(buffer, message);
+      checkBodyIsEmpty(buffer);
+
+      buffer.rewind();
+
+      AbstractPacket decodedPacket = codec.decode(buffer);
+
+      assertTrue(decodedPacket instanceof SessionRollbackMessage);
+      assertEquals(MSG_ROLLBACK, decodedPacket.getType());
+   }
+   
+   public void testSessionRecoverMessage() throws Exception
+   {
+      SessionRecoverMessage message = new SessionRecoverMessage();
+
+      AbstractPacketCodec codec = PacketCodecFactory.createCodecForEmptyPacket(
+            MSG_RECOVER, SessionRecoverMessage.class);
+      SimpleRemotingBuffer buffer = encode(message, codec);
+      checkHeader(buffer, message);
+      checkBodyIsEmpty(buffer);
+
+      buffer.rewind();
+
+      AbstractPacket decodedPacket = codec.decode(buffer);
+
+      assertTrue(decodedPacket instanceof SessionRecoverMessage);
+      assertEquals(MSG_RECOVER, decodedPacket.getType());
+   }
 
    public void testClosingMessage() throws Exception
    {
       ClosingMessage request = new ClosingMessage();
-      addVersion(request);
-      
-      AbstractPacketCodec codec =  PacketCodecFactory.createCodecForEmptyPacket(
+
+      AbstractPacketCodec codec = PacketCodecFactory.createCodecForEmptyPacket(
             PacketType.MSG_CLOSING, ClosingMessage.class);
       SimpleRemotingBuffer buffer = encode(request, codec);
       checkHeader(buffer, request);
       checkBodyIsEmpty(buffer);
+
       buffer.rewind();
 
       AbstractPacket decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof ClosingMessage);
       ClosingMessage decodedRequest = (ClosingMessage) decodedPacket;
-      assertEquals(PacketType.MSG_CLOSING, decodedRequest.getType());     
+      assertEquals(PacketType.MSG_CLOSING, decodedRequest.getType());
    }
-
 
    public void testCloseMessage() throws Exception
    {
       CloseMessage message = new CloseMessage();
-      addVersion(message);
 
       AbstractPacketCodec codec = PacketCodecFactory.createCodecForEmptyPacket(
             MSG_CLOSE, CloseMessage.class);
@@ -714,11 +890,9 @@ public class PacketTypeTest extends TestCase
       assertEquals(MSG_CLOSE, decodedMessage.getType());
    }
 
-
    public void testGetClientIDRequest() throws Exception
    {
       GetClientIDRequest request = new GetClientIDRequest();
-      addVersion(request);
 
       AbstractPacketCodec codec = PacketCodecFactory.createCodecForEmptyPacket(
             REQ_GETCLIENTID, GetClientIDRequest.class);
@@ -736,8 +910,7 @@ public class PacketTypeTest extends TestCase
    public void testGetClientIDResponse() throws Exception
    {
       GetClientIDResponse response = new GetClientIDResponse(randomString());
-      addVersion(response);
-      
+
       AbstractPacketCodec codec = new GetClientIDResponseCodec();
       SimpleRemotingBuffer buffer = encode(response, codec);
       checkHeader(buffer, response);
@@ -755,8 +928,7 @@ public class PacketTypeTest extends TestCase
    public void testSetClientIDMessage() throws Exception
    {
       SetClientIDMessage message = new SetClientIDMessage(randomString());
-      addVersion(message);
-      
+
       AbstractPacketCodec codec = new SetClientIDMessageCodec();
       SimpleRemotingBuffer buffer = encode(message, codec);
       checkHeader(buffer, message);
@@ -770,18 +942,19 @@ public class PacketTypeTest extends TestCase
       assertEquals(MSG_SETCLIENTID, decodedMessage.getType());
       assertEquals(message.getClientID(), decodedMessage.getClientID());
    }
- 
+
    public void testCreateBrowserRequest() throws Exception
    {
-      Destination destination = new DestinationImpl(DestinationType.QUEUE, "testCreateBrowserRequest", false);
+      Destination destination = new DestinationImpl(DestinationType.QUEUE,
+            "testCreateBrowserRequest", false);
       CreateBrowserRequest request = new CreateBrowserRequest(destination,
             "color = 'red'");
-      addVersion(request);
-      
+
       AbstractPacketCodec codec = new CreateBrowserRequestCodec();
       SimpleRemotingBuffer buffer = encode(request, codec);
       checkHeader(buffer, request);
-      checkBody(buffer, AbstractPacketCodec.encode(destination), request.getSelector());
+      checkBody(buffer, AbstractPacketCodec.encode(destination), request
+            .getSelector());
       buffer.rewind();
 
       AbstractPacket decodedPacket = codec.decode(buffer);
@@ -796,8 +969,7 @@ public class PacketTypeTest extends TestCase
    public void testCreateBrowserResponse() throws Exception
    {
       CreateBrowserResponse response = new CreateBrowserResponse(randomString());
-      addVersion(response);
-      
+
       AbstractPacketCodec codec = new CreateBrowserResponseCodec();
       SimpleRemotingBuffer buffer = encode(response, codec);
       checkHeader(buffer, response);
@@ -815,7 +987,6 @@ public class PacketTypeTest extends TestCase
    public void testBrowserResetMessage() throws Exception
    {
       BrowserResetMessage message = new BrowserResetMessage();
-      addVersion(message);
 
       AbstractPacketCodec codec = PacketCodecFactory.createCodecForEmptyPacket(
             MSG_BROWSER_RESET, BrowserResetMessage.class);
@@ -833,7 +1004,6 @@ public class PacketTypeTest extends TestCase
    public void testBrowserHasNextMessageRequest() throws Exception
    {
       BrowserHasNextMessageRequest request = new BrowserHasNextMessageRequest();
-      addVersion(request);
 
       AbstractPacketCodec codec = PacketCodecFactory.createCodecForEmptyPacket(
             REQ_BROWSER_HASNEXTMESSAGE, BrowserHasNextMessageRequest.class);
@@ -852,7 +1022,6 @@ public class PacketTypeTest extends TestCase
    {
       BrowserHasNextMessageResponse response = new BrowserHasNextMessageResponse(
             false);
-      addVersion(response);
       AbstractPacketCodec codec = new BrowserHasNextMessageResponseCodec();
       SimpleRemotingBuffer buffer = encode(response, codec);
       checkHeader(buffer, response);
@@ -870,7 +1039,6 @@ public class PacketTypeTest extends TestCase
    public void testBrowserNextMessageRequest() throws Exception
    {
       BrowserNextMessageRequest request = new BrowserNextMessageRequest();
-      addVersion(request);
 
       AbstractPacketCodec codec = PacketCodecFactory.createCodecForEmptyPacket(
             REQ_BROWSER_NEXTMESSAGE, BrowserNextMessageRequest.class);
@@ -889,8 +1057,7 @@ public class PacketTypeTest extends TestCase
    {
       Message msg = new MessageImpl();
       BrowserNextMessageResponse response = new BrowserNextMessageResponse(msg);
-      addVersion(response);
-      
+
       AbstractPacketCodec codec = new BrowserNextMessageResponseCodec();
       SimpleRemotingBuffer buffer = encode(response, codec);
       checkHeader(buffer, response);
@@ -910,8 +1077,7 @@ public class PacketTypeTest extends TestCase
    {
       BrowserNextMessageBlockRequest request = new BrowserNextMessageBlockRequest(
             randomLong());
-      addVersion(request);
-      
+
       AbstractPacketCodec codec = new BrowserNextMessageBlockRequestCodec();
       SimpleRemotingBuffer buffer = encode(request, codec);
       checkHeader(buffer, request);
@@ -931,12 +1097,12 @@ public class PacketTypeTest extends TestCase
       Message[] messages = new Message[] { new MessageImpl(), new MessageImpl() };
       BrowserNextMessageBlockResponse response = new BrowserNextMessageBlockResponse(
             messages);
-      addVersion(response);
-      
+
       AbstractPacketCodec codec = new BrowserNextMessageBlockResponseCodec();
       SimpleRemotingBuffer buffer = encode(response, codec);
       checkHeader(buffer, response);
-      checkBody(buffer, messages.length, BrowserNextMessageBlockResponseCodec.encode(messages));
+      checkBody(buffer, messages.length, BrowserNextMessageBlockResponseCodec
+            .encode(messages));
       buffer.rewind();
 
       AbstractPacket decodedPacket = codec.decode(buffer);
@@ -954,8 +1120,7 @@ public class PacketTypeTest extends TestCase
    {
       UnsubscribeMessage message = new UnsubscribeMessage(
             "testUnsubscribeMessage");
-      addVersion(message);
-      
+
       AbstractPacketCodec codec = new UnsubscribeMessageCodec();
       SimpleRemotingBuffer buffer = encode(message, codec);
       checkHeader(buffer, message);
@@ -973,11 +1138,11 @@ public class PacketTypeTest extends TestCase
 
    public void testAddTemporaryDestinationMessage() throws Exception
    {
-      Destination destination = new DestinationImpl(DestinationType.QUEUE, "testAddTemporaryDestinationMessage", false);
+      Destination destination = new DestinationImpl(DestinationType.QUEUE,
+            "testAddTemporaryDestinationMessage", false);
       AddTemporaryDestinationMessage message = new AddTemporaryDestinationMessage(
             destination);
-      addVersion(message);
-      
+
       AbstractPacketCodec codec = new AddTemporaryDestinationMessageCodec();
       SimpleRemotingBuffer buffer = encode(message, codec);
       checkHeader(buffer, message);
@@ -994,11 +1159,12 @@ public class PacketTypeTest extends TestCase
 
    public void testDeleteTemporaryDestinationMessage() throws Exception
    {
-      Destination destination = new DestinationImpl(DestinationType.QUEUE, "testDeleteTemporaryDestinationMessage", false);;
+      Destination destination = new DestinationImpl(DestinationType.QUEUE,
+            "testDeleteTemporaryDestinationMessage", false);
+      ;
       DeleteTemporaryDestinationMessage message = new DeleteTemporaryDestinationMessage(
             destination);
-      addVersion(message);
-      
+
       AbstractPacketCodec codec = new DeleteTemporaryDestinationMessageCodec();
       SimpleRemotingBuffer buffer = encode(message, codec);
       checkHeader(buffer, message);
@@ -1021,6 +1187,8 @@ public class PacketTypeTest extends TestCase
    private SimpleRemotingBuffer encode(AbstractPacket packet,
          AbstractPacketCodec codec) throws Exception
    {
+      log.debug("encode " + packet);
+
       IoBuffer b = IoBuffer.allocate(256);
       b.setAutoExpand(true);
 

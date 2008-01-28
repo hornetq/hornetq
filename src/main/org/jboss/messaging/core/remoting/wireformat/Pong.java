@@ -6,55 +6,31 @@
  */
 package org.jboss.messaging.core.remoting.wireformat;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CANCEL;
-
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.PONG;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionCancelMessage extends AbstractPacket
+public class Pong extends AbstractPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
-   private long deliveryID;
-   
-   private boolean expired;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionCancelMessage(long deliveryID, boolean expired)
+   public Pong()
    {
-      super(MSG_CANCEL);
-      
-      this.deliveryID = deliveryID;
-      
-      this.expired = expired;
+      super(PONG);
    }
-
+   
    // Public --------------------------------------------------------
-   
-   public long getDeliveryID()
-   {
-      return deliveryID;
-   }
-   
-   public boolean isExpired()
-   {
-      return expired;
-   }
 
-   @Override
-   public String toString()
-   {
-      return getParentString() + ", deliveryID=" + deliveryID + ", expired=" + expired + "]";
-   }
-   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -63,4 +39,3 @@ public class SessionCancelMessage extends AbstractPacket
 
    // Inner classes -------------------------------------------------
 }
-

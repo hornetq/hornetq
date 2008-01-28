@@ -17,6 +17,9 @@ public enum PacketType
    MSG_JMSEXCEPTION               ((byte) 2),
    TEXT                           ((byte) 3),
    BYTES                          ((byte) 4),
+   PING                           ((byte) 5),
+   PONG                           ((byte) 6),
+   MSG_SETSESSIONID               ((byte) 7),
 
    // Connection factory
    REQ_CREATECONNECTION           ((byte)10),

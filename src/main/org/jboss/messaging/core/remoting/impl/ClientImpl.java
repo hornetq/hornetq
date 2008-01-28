@@ -99,26 +99,22 @@ public class ClientImpl implements Client
       return session.getID();
    }
 
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.remoting.Client#sendOneWay(org.jboss.messaging.core.remoting.wireformat.AbstractPacket)
-    */
    public void sendOneWay(AbstractPacket packet) throws JMSException
    {
       assert packet != null;
       checkConnected();
-
+      packet.setOneWay(true);
+      
       session.write(packet);
    }
 
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.remoting.Client#sendBlocking(org.jboss.messaging.core.remoting.wireformat.AbstractPacket)
-    */
    public AbstractPacket sendBlocking(AbstractPacket packet)
          throws IOException, JMSException
    {
       assert packet != null;
       checkConnected();
 
+      packet.setOneWay(false);
       try
       {
          AbstractPacket response = (AbstractPacket) session.writeAndBlock(packet, 

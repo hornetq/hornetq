@@ -6,7 +6,8 @@
  */
 package org.jboss.messaging.core.remoting;
 
-import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.wireformat.Ping;
+import org.jboss.messaging.core.remoting.wireformat.Pong;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -14,9 +15,10 @@ import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
  * @version <tt>$Revision$</tt>
  *
  */
-public interface PacketSender
+public interface KeepAliveFactory
 {
-   void send(AbstractPacket packet);
 
-   String getSessionID();
+   Ping ping();
+   
+   Pong pong();
 }

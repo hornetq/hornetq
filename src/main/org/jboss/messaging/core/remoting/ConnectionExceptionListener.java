@@ -6,17 +6,14 @@
  */
 package org.jboss.messaging.core.remoting;
 
-import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
-
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  * @version <tt>$Revision$</tt>
  *
  */
-public interface PacketSender
+public interface ConnectionExceptionListener
 {
-   void send(AbstractPacket packet);
+   void handleConnectionException(Exception e, String sessionID);
 
-   String getSessionID();
 }

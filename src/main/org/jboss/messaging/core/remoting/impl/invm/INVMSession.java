@@ -70,10 +70,14 @@ public class INVMSession implements NIOSession
       serverDispatcher.dispatch((AbstractPacket) object,
             new PacketSender()
             {
-
                public void send(AbstractPacket response)
                {
                   PacketDispatcher.client.dispatch(response, null);
+               }
+               
+               public String getSessionID()
+               {
+                  return getID();
                }
             });
    }
@@ -91,9 +95,17 @@ public class INVMSession implements NIOSession
                {
                   responses[0] = response;
                }
+
+               public String getSessionID()
+               {
+                  return getID();
+               }
             });
 
-      assert responses[0] != null;
+      if (responses[0] == null)
+      {
+         throw new IllegalStateException("No response received for request " + request);
+      }
 
       return responses[0];
    }

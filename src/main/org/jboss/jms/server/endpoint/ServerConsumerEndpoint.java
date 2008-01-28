@@ -44,7 +44,6 @@ import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.ConsumerChangeRateMessage;
-import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
@@ -569,14 +568,10 @@ public class ServerConsumerEndpoint implements Consumer
             } else if (type == PacketType.MSG_CLOSING)
             {
                closing();
-               
-               response = new NullPacket();
             } else if (type == MSG_CLOSE)
             {
                close();
                setReplier(null);
-               
-               response = new NullPacket();
             } else
             {
                response = new JMSExceptionMessage(new MessagingJMSException(
@@ -584,6 +579,11 @@ public class ServerConsumerEndpoint implements Consumer
             }
 
             // reply if necessary
+            if (response == null && packet.isOneWay() == false)
+            {
+               response = new NullPacket();               
+            }
+            
             if (response != null)
             {
                response.normalize(packet);

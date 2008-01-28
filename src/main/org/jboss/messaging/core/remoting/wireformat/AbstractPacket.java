@@ -8,6 +8,8 @@ package org.jboss.messaging.core.remoting.wireformat;
 
 import static org.jboss.messaging.core.remoting.Assert.assertValidID;
 
+import org.jboss.messaging.core.remoting.Client;
+
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
  * 
@@ -21,11 +23,7 @@ public class AbstractPacket
 
    public static final long NO_CORRELATION_ID = -1L;
 
-   public static final byte NO_VERSION_SET = (byte)-1;
-
    // Attributes ----------------------------------------------------
-
-   private byte version = NO_VERSION_SET;
 
    private long correlationID = NO_CORRELATION_ID;
 
@@ -35,6 +33,14 @@ public class AbstractPacket
 
    private final PacketType type;
 
+   /**
+    * <code>oneWay</code> is <code>true</code> when the packet is sent "one way"
+    * by the client which does not expect any response to it.
+    * 
+    * @see Client#sendOneWay(AbstractPacket)
+    */
+   private boolean oneWay = false;
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -51,18 +57,6 @@ public class AbstractPacket
    public PacketType getType()
    {
       return type;
-   }
-
-   public void setVersion(byte version)
-   {
-      assert version != NO_VERSION_SET;
-
-      this.version = version;
-   }
-
-   public byte getVersion()
-   {
-      return version;
    }
 
    public void setCorrelationID(long correlationID)
@@ -99,11 +93,20 @@ public class AbstractPacket
       return callbackID;
    }
 
+   public void setOneWay(boolean oneWay)
+   {
+      this.oneWay = oneWay;
+   }
+
+   public boolean isOneWay()
+   {
+      return oneWay;
+   }
+   
    public void normalize(AbstractPacket other)
    {
       assert other != null;
 
-      setVersion(other.getVersion());
       setCorrelationID(other.getCorrelationID());
       setTargetID(other.getCallbackID());
    }
@@ -126,9 +129,9 @@ public class AbstractPacket
 
    protected String getParentString()
    {
-      return "PACKET[type=" + type + ", version=" + version
+      return "PACKET[type=" + type
             + ", correlationID=" + correlationID + ", targetID=" + targetID
-            + ", callbackID=" + callbackID;
+            + ", callbackID=" + callbackID + ", oneWay=" + oneWay;
    }
 
    // Protected -----------------------------------------------------

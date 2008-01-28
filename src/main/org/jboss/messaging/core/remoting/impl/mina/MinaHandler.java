@@ -6,12 +6,16 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
+import java.util.concurrent.TimeoutException;
+
 import org.apache.mina.common.IoHandlerAdapter;
 import org.apache.mina.common.IoSession;
+import org.apache.mina.filter.keepalive.KeepAliveTimeoutException;
 import org.apache.mina.filter.reqres.Response;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.wireformat.Ping;
 import org.jboss.messaging.util.Logger;
 
 /**
@@ -30,13 +34,16 @@ public class MinaHandler extends IoHandlerAdapter
 
    private final PacketDispatcher dispatcher;
 
+   private KeepAliveNotifier keepAliveManager;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
    
-   public MinaHandler(PacketDispatcher dispatcher)
+   public MinaHandler(PacketDispatcher dispatcher, KeepAliveNotifier keepAliveManager)
    {
       this.dispatcher = dispatcher;
+      this.keepAliveManager = keepAliveManager;
    }
 
    // Public --------------------------------------------------------
@@ -47,6 +54,13 @@ public class MinaHandler extends IoHandlerAdapter
    public void exceptionCaught(IoSession session, Throwable cause)
          throws Exception
    {
+      if (cause instanceof KeepAliveTimeoutException && keepAliveManager != null)
+      {
+         String serverSessionID = Long.toString(session.getId());
+         TimeoutException e = new TimeoutException();
+         e.initCause(cause);
+         keepAliveManager.notifyKeepAliveTimeout(e, serverSessionID);
+      }
       // FIXME ugly way to know we're on the server side
       // close session only on the server side
       if (dispatcher != PacketDispatcher.client)
@@ -66,6 +80,14 @@ public class MinaHandler extends IoHandlerAdapter
          // do nothing
          return;
       }
+      
+      if (message instanceof Ping)
+      {
+         log.trace("received ping " + message);
+         // response is handled by the keep-alive filter.
+         // do nothing
+         return;
+      }
 
       if (!(message instanceof AbstractPacket))
       {
@@ -78,6 +100,11 @@ public class MinaHandler extends IoHandlerAdapter
          public void send(AbstractPacket p)
          {
             session.write(p);
+         }
+         
+         public String getSessionID()
+         {
+            return Long.toString(session.getId());
          }
       };
 
