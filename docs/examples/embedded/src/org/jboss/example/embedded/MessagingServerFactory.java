@@ -36,6 +36,8 @@ import org.jboss.messaging.microcontainer.AuthenticationManager;
  */
 public class MessagingServerFactory
 {
+   private static final String HOME_DIR = System.getProperty("user.home");
+   
    public static MessagingServer createMessagingServer() throws Exception
    {
       MinaService minaService = new MinaService("tcp", "localhost", 5400);
@@ -64,10 +66,10 @@ public class MessagingServerFactory
          }
       });
       BDBJEPersistenceManager persistenceManager = new BDBJEPersistenceManager();
-      persistenceManager.setLargeMessageRepository("${user.home}/bdbje/large");
+      persistenceManager.setLargeMessageRepository( HOME_DIR + "/bdbje/large");
       persistenceManager.setMinLargeMessageSize(1000000);
       BDBJEEnvironment bdbjeEnvironment = new RealBDBJEEnvironment();
-      bdbjeEnvironment.setEnvironmentPath("${user.home}/bdbje/env");
+      bdbjeEnvironment.setEnvironmentPath(HOME_DIR + "/bdbje/env");
       bdbjeEnvironment.setCreateEnvironment(true);
       bdbjeEnvironment.setSyncVM(true);
       bdbjeEnvironment.setSyncOS(false);
@@ -78,5 +80,12 @@ public class MessagingServerFactory
       messagingServer.setPersistenceManager(persistenceManager);
       messagingServer.setAuthenticationManager(new AuthenticationManager());
       return messagingServer;
+   }
+   
+   public static void stop(MessagingServer server) throws Exception
+   {
+      server.stop();
+      server.getMinaService().stop();
+      server.getPersistenceManager().stop();
    }
 }
