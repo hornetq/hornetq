@@ -177,7 +177,6 @@ public class MinaService implements KeepAliveNotifier
       {
          acceptor.unbind();
          acceptor.dispose();
-         System.err.println(acceptor.isDisposed());
          acceptor = null;
 
          REGISTRY.unregister(getLocator());
