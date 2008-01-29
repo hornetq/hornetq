@@ -32,6 +32,7 @@ import org.jboss.messaging.core.remoting.wireformat.BrowserHasNextMessageRequest
 import org.jboss.messaging.core.remoting.wireformat.BrowserHasNextMessageResponse;
 import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageBlockRequest;
 import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageBlockResponse;
+import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageRequest;
 import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageResponse;
 import org.jboss.messaging.core.remoting.wireformat.BrowserResetMessage;
 import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
@@ -84,7 +85,7 @@ public class ClientBrowserImpl implements ClientBrowser
       
       try
       {
-         remotingConnection.sendBlocking(id, new CloseMessage());
+         remotingConnection.send(id, new CloseMessage());
       }
       finally
       {
@@ -101,14 +102,14 @@ public class ClientBrowserImpl implements ClientBrowser
          return;
       }
       
-      remotingConnection.sendBlocking(id, new ClosingMessage());
+      remotingConnection.send(id, new ClosingMessage());
    }
 
    public void reset() throws JMSException
    {
       checkClosed();
       
-      remotingConnection.sendBlocking(id, new BrowserResetMessage());
+      remotingConnection.send(id, new BrowserResetMessage());
    }
 
    public boolean hasNextMessage() throws JMSException
@@ -116,7 +117,7 @@ public class ClientBrowserImpl implements ClientBrowser
       checkClosed();
       
       BrowserHasNextMessageResponse response =
-         (BrowserHasNextMessageResponse)remotingConnection.sendBlocking(id, new BrowserHasNextMessageRequest());
+         (BrowserHasNextMessageResponse)remotingConnection.send(id, new BrowserHasNextMessageRequest());
       
       return response.hasNext();
    }
@@ -126,7 +127,7 @@ public class ClientBrowserImpl implements ClientBrowser
       checkClosed();
       
       BrowserNextMessageResponse response =
-         (BrowserNextMessageResponse)remotingConnection.sendBlocking(id, new org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageRequest());
+         (BrowserNextMessageResponse)remotingConnection.send(id, new BrowserNextMessageRequest());
       
       return response.getMessage();
    }
@@ -136,7 +137,7 @@ public class ClientBrowserImpl implements ClientBrowser
       checkClosed();
       
       BrowserNextMessageBlockResponse response =
-         (BrowserNextMessageBlockResponse)remotingConnection.sendBlocking(id, new BrowserNextMessageBlockRequest(maxMessages));
+         (BrowserNextMessageBlockResponse)remotingConnection.send(id, new BrowserNextMessageBlockRequest(maxMessages));
       return response.getMessages();
    }
 

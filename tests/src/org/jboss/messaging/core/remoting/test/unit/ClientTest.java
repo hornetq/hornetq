@@ -156,7 +156,7 @@ public class ClientTest extends TestCase
       Client client = new ClientImpl(connector, serverLocator);
       try
       {
-         client.sendOneWay(new NullPacket());
+         client.send(new NullPacket(), true);
          fail("can not send a packet if the dispatcher is not connected");
       } catch (IllegalStateException e)
       {

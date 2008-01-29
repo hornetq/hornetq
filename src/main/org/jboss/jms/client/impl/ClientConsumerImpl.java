@@ -114,7 +114,7 @@ public class ClientConsumerImpl implements ClientConsumer
       
       try
       {
-         remotingConnection.sendBlocking(id, new CloseMessage());
+         remotingConnection.send(id, new CloseMessage());
       }
       finally
       {
@@ -134,7 +134,7 @@ public class ClientConsumerImpl implements ClientConsumer
      
       try
       {
-         remotingConnection.sendBlocking(id, new ClosingMessage());
+         remotingConnection.send(id, new ClosingMessage());
          
          //Important! We set the handler to null so the next ListenerRunner won't run
          if (handler != null)
@@ -185,7 +185,7 @@ public class ClientConsumerImpl implements ClientConsumer
    {
       checkClosed();
       
-      remotingConnection.sendOneWay(id, new ConsumerChangeRateMessage(newRate));
+      remotingConnection.send(id, new ConsumerChangeRateMessage(newRate), true);
    }
    
    public MessageHandler getMessageHandler() throws JMSException

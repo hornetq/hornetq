@@ -133,7 +133,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
                   prefetchSize, dupsOKBatchSize, clientID);
          
          CreateConnectionResponse response =
-            (CreateConnectionResponse)remotingConnection.sendBlocking(id, request);
+            (CreateConnectionResponse)remotingConnection.send(id, request);
          
          ClientConnectionImpl connection =
             new ClientConnectionImpl(response.getConnectionID(), serverID, strictTck, version, remotingConnection);

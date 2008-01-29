@@ -96,7 +96,7 @@ public class ServerKeepAliveTest extends TestCase
       NIOSession session = connector.connect();
 
       boolean firedKeepAliveNotification = latch.await(KEEP_ALIVE_INTERVAL
-            + KEEP_ALIVE_TIMEOUT + 1, SECONDS);
+            + KEEP_ALIVE_TIMEOUT + 2, SECONDS);
       assertTrue(firedKeepAliveNotification);
       assertEquals(session.getID(), sessionIDNotResponding[0]);
       

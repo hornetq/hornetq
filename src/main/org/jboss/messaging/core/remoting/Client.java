@@ -33,10 +33,23 @@ public interface Client
 
    String getSessionID();
 
-   void sendOneWay(AbstractPacket packet) throws JMSException;
-
-   AbstractPacket sendBlocking(AbstractPacket packet) throws IOException,
-         JMSException;
+   /**
+    * @param packet
+    *           The packet which is sent
+    * @param oneWay
+    *           if the packet must be sent one-way (i.e. do not wait for a
+    *           response)
+    * @return an {@link AbstractPacket} (if <code>oneWay</code> was set to
+    *         <code>false</code>) or <code>null</code> (if
+    *         <code>oneWay</code> was set to <code>true</code>)
+    * 
+    * @throws JMSException
+    *            if an exception has occured on the server
+    * @throws IOException
+    *            if an exception has occured on the network
+    */
+   AbstractPacket send(AbstractPacket packet, boolean oneWay)
+         throws JMSException, IOException;
 
    void setBlockingRequestTimeout(int timeout, TimeUnit unit);
 

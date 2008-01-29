@@ -52,7 +52,7 @@ public class MinaClientTest extends ClientTestBase
       
       try
       {
-         client.sendBlocking(packet);
+         client.send(packet, false);
          fail("a IOException should be thrown");
       } catch (IOException e)
       {

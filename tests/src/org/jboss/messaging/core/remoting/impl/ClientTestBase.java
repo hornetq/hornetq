@@ -72,7 +72,7 @@ public abstract class ClientTestBase extends TestCase
 
       TextPacket packet = new TextPacket("testSendOneWay");
       packet.setTargetID(serverPacketHandler.getID());
-      client.sendOneWay(packet);
+      client.send(packet, true);
 
       assertTrue(serverPacketHandler.await(2, SECONDS));
 
@@ -91,7 +91,7 @@ public abstract class ClientTestBase extends TestCase
       {
          packets[i] = new TextPacket("testSendManyOneWay " + i);
          packets[i].setTargetID(serverPacketHandler.getID());
-         client.sendOneWay(packets[i]);
+         client.send(packets[i], true);
       }
 
       assertTrue(serverPacketHandler.await(10, SECONDS));
@@ -116,7 +116,7 @@ public abstract class ClientTestBase extends TestCase
       packet.setTargetID(serverPacketHandler.getID());
       packet.setCallbackID(callbackHandler.getID());
 
-      client.sendOneWay(packet);
+      client.send(packet, true);
 
       assertTrue(callbackHandler.await(5, SECONDS));
 
@@ -130,7 +130,7 @@ public abstract class ClientTestBase extends TestCase
       TextPacket request = new TextPacket("testSendBlocking");
       request.setTargetID(serverPacketHandler.getID());
 
-      AbstractPacket receivedPacket = client.sendBlocking(request);
+      AbstractPacket receivedPacket = client.send(request, false);
 
       assertNotNull(receivedPacket);
       assertTrue(receivedPacket instanceof TextPacket);
@@ -143,13 +143,13 @@ public abstract class ClientTestBase extends TestCase
       TextPacket request = new TextPacket("testSendBlocking");
       request.setTargetID(serverPacketHandler.getID());
 
-      AbstractPacket receivedPacket = client.sendBlocking(request);
+      AbstractPacket receivedPacket = client.send(request, false);
       long correlationID = request.getCorrelationID();
       
       assertNotNull(receivedPacket);      
       assertEquals(request.getCorrelationID(), receivedPacket.getCorrelationID());
       
-      receivedPacket = client.sendBlocking(request);
+      receivedPacket = client.send(request, false);
       assertEquals(correlationID + 1, request.getCorrelationID());
       assertEquals(correlationID + 1, receivedPacket.getCorrelationID());      
    }
@@ -167,7 +167,7 @@ public abstract class ClientTestBase extends TestCase
       packet.setTargetID(serverPacketHandler.getID());
       // send a packet to create a sender when the server
       // handles the packet
-      client.sendOneWay(packet);
+      client.send(packet, true);
 
       assertTrue(serverPacketHandler.await(2, SECONDS));
 

@@ -93,7 +93,7 @@ public class PacketStressTest extends TestCase
       long start = System.currentTimeMillis();
       for (int i = 0; i < MANY_MESSAGES; i++)
       {
-       client.sendOneWay(packet); 
+       client.send(packet, true); 
        if (i % spinner == 0)
           System.out.print('#');
       }

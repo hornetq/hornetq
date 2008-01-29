@@ -7,6 +7,7 @@
 package org.jboss.messaging.core.remoting.impl;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.jboss.messaging.core.remoting.impl.mina.MinaService.TIMEOUT_KEY;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -57,9 +58,9 @@ public class ClientImpl implements Client
       
       this.connector = connector;
       this.serverLocator = locator;
-      if (locator.getParameters().containsKey("timeout"))
+      if (locator.getParameters().containsKey(TIMEOUT_KEY))
       {
-         int timeout = Integer.parseInt(locator.getParameters().get("timeout"));
+         int timeout = Integer.parseInt(locator.getParameters().get(TIMEOUT_KEY));
          setBlockingRequestTimeout(timeout, SECONDS);
       }
    }
@@ -99,32 +100,20 @@ public class ClientImpl implements Client
       return session.getID();
    }
 
-   public void sendOneWay(AbstractPacket packet) throws JMSException
+   public AbstractPacket send(AbstractPacket packet, boolean oneWay)
+         throws JMSException, IOException
    {
       assert packet != null;
       checkConnected();
-      packet.setOneWay(true);
-      
-      session.write(packet);
-   }
+      packet.setOneWay(oneWay);
 
-   public AbstractPacket sendBlocking(AbstractPacket packet)
-         throws IOException, JMSException
-   {
-      assert packet != null;
-      checkConnected();
-
-      packet.setOneWay(false);
-      try
+      if (oneWay)
       {
-         AbstractPacket response = (AbstractPacket) session.writeAndBlock(packet, 
-               blockingRequestTimeout, blockingRequestTimeUnit);
-         return response;
-      } catch (Throwable t)
+         sendOneWay(packet);
+         return null;
+      } else 
       {
-         IOException ioe = new IOException();
-         ioe.initCause(t);
-         throw ioe;
+         return sendBlocking(packet);
       }
    }
 
@@ -197,6 +186,27 @@ public class ClientImpl implements Client
       {
          throw new MessagingNetworkFailureException("Client " + this
                + " is not connected.");
+      }
+   }
+   
+   private void sendOneWay(AbstractPacket packet) throws JMSException
+   {
+      session.write(packet);
+   }
+
+   private AbstractPacket sendBlocking(AbstractPacket packet)
+         throws IOException, JMSException
+   {
+      try
+      {
+         AbstractPacket response = (AbstractPacket) session.writeAndBlock(packet, 
+               blockingRequestTimeout, blockingRequestTimeUnit);
+         return response;
+      } catch (Throwable t)
+      {
+         IOException ioe = new IOException();
+         ioe.initCause(t);
+         throw ioe;
       }
    }
 

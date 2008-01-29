@@ -124,7 +124,7 @@ public class ClientConnectionImpl implements ClientConnection
       
       try
       {
-         remotingConnection.sendBlocking(id, new CloseMessage());
+         remotingConnection.send(id, new CloseMessage());
       }
       finally
       {
@@ -153,7 +153,7 @@ public class ClientConnectionImpl implements ClientConnection
       
       closeChildren();
       
-      remotingConnection.sendBlocking(id, new ClosingMessage());
+      remotingConnection.send(id, new ClosingMessage());
    }
    
    // ClientConnection implementation ------------------------------------------------------------
@@ -187,7 +187,7 @@ public class ClientConnectionImpl implements ClientConnection
 
       CreateSessionRequest request = new CreateSessionRequest(transacted, acknowledgementMode, isXA);
       
-      CreateSessionResponse response = (CreateSessionResponse)remotingConnection.sendBlocking(id, request);   
+      CreateSessionResponse response = (CreateSessionResponse)remotingConnection.send(id, request);   
       
       int ackBatchSize;
       
@@ -227,7 +227,7 @@ public class ClientConnectionImpl implements ClientConnection
       if (clientID == null)
       {
          //Get from the server
-         clientID = ((GetClientIDResponse)remotingConnection.sendBlocking(id, new GetClientIDRequest())).getClientID();
+         clientID = ((GetClientIDResponse)remotingConnection.send(id, new GetClientIDRequest())).getClientID();
       }
       return clientID;
    }
@@ -278,7 +278,7 @@ public class ClientConnectionImpl implements ClientConnection
       
       this.justCreated = false;
 
-      remotingConnection.sendBlocking(id, new SetClientIDMessage(clientID));  
+      remotingConnection.send(id, new SetClientIDMessage(clientID));  
    }
    
    
@@ -301,7 +301,7 @@ public class ClientConnectionImpl implements ClientConnection
       
       justCreated = false;
       
-      remotingConnection.sendOneWay(id, new StartConnectionMessage());
+      remotingConnection.send(id, new StartConnectionMessage(), true);
    }
    
    public void stop() throws JMSException
@@ -310,7 +310,7 @@ public class ClientConnectionImpl implements ClientConnection
       
       justCreated = false;
       
-      remotingConnection.sendBlocking(id, new StopConnectionMessage());
+      remotingConnection.send(id, new StopConnectionMessage());
    }
 
    public MessagingRemotingConnection getRemotingConnection()

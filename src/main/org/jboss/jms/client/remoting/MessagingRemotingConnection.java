@@ -36,7 +36,6 @@ import org.jboss.messaging.core.remoting.impl.ClientImpl;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.util.Version;
 import org.jgroups.persistence.CannotConnectException;
 
 /**
@@ -122,20 +121,28 @@ public class MessagingRemotingConnection
    {
       return client.getSessionID();
    }
-   
-   public void sendOneWay(String id, AbstractPacket packet) throws JMSException
+ 
+   /**
+    * send the packet and block until a response is received (<code>oneWay</code> is set to <code>false</code>)
+    */
+   public AbstractPacket send(String id, AbstractPacket packet) throws JMSException
    {
-      packet.setTargetID(id);
-      client.sendOneWay(packet);      
+      return send(id, packet, false);
    }
    
-   public AbstractPacket sendBlocking(String id, AbstractPacket packet) throws JMSException
+   public AbstractPacket send(String id, AbstractPacket packet, boolean oneWay) throws JMSException
    {
+      assert packet != null;
+
       packet.setTargetID(id);
-      
       try
       {
-         AbstractPacket response = (AbstractPacket) client.sendBlocking(packet);
+         AbstractPacket response = (AbstractPacket) client.send(packet, oneWay);
+         
+         if (oneWay == false && response == null)
+         {
+            throw new IllegalStateException("No response received for " + packet);
+         }
          
          if (response instanceof JMSExceptionMessage)
          {
@@ -151,7 +158,7 @@ public class MessagingRemotingConnection
       catch (Throwable t)
       {
          throw handleThrowable(t);
-      }
+      }     
    }
    
    public synchronized void addConnectionListener(ConsolidatedRemotingConnectionListener listener)

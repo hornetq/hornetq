@@ -155,7 +155,7 @@ public class ClientSessionImpl implements ClientSession
 
       try
       {
-         remotingConnection.sendBlocking(id, new CloseMessage());
+         remotingConnection.send(id, new CloseMessage());
    
          executor.shutdownNow();
       }
@@ -182,7 +182,7 @@ public class ClientSessionImpl implements ClientSession
                  
       ClosingMessage request = new ClosingMessage();
       
-      remotingConnection.sendBlocking(id, request);
+      remotingConnection.send(id, request);
    }
 
    public ClientConnection getConnection()
@@ -194,7 +194,7 @@ public class ClientSessionImpl implements ClientSession
    {
       checkClosed();
       
-      remotingConnection.sendBlocking(id, new AddTemporaryDestinationMessage(destination));
+      remotingConnection.send(id, new AddTemporaryDestinationMessage(destination), false);
    }
 
    public void commit() throws JMSException
@@ -210,7 +210,7 @@ public class ClientSessionImpl implements ClientSession
       //instead of this we could possibly add the lastDeliveryID in the SessionCommitMessage
       acknowledgeInternal(false);
       
-      remotingConnection.sendBlocking(id, new SessionCommitMessage());
+      remotingConnection.send(id, new SessionCommitMessage());
    }
    
    public void rollback() throws JMSException
@@ -234,7 +234,7 @@ public class ClientSessionImpl implements ClientSession
       //instead of this we could possibly add the lastDeliveryID in the SessionRollbackMessage
       acknowledgeInternal(false);      
 
-      remotingConnection.sendBlocking(id, new SessionRollbackMessage());
+      remotingConnection.send(id, new SessionRollbackMessage());
    }
 
    public ClientBrowser createClientBrowser(Destination queue, String messageSelector)
@@ -246,7 +246,7 @@ public class ClientSessionImpl implements ClientSession
       
       CreateBrowserRequest request = new CreateBrowserRequest(queue, coreSelector);
       
-      CreateBrowserResponse response = (CreateBrowserResponse)remotingConnection.sendBlocking(id, request);
+      CreateBrowserResponse response = (CreateBrowserResponse)remotingConnection.send(id, request);
       
       ClientBrowser browser = new ClientBrowserImpl(remotingConnection, this, response.getBrowserID());  
       
@@ -265,7 +265,7 @@ public class ClientSessionImpl implements ClientSession
       CreateConsumerRequest request =
          new CreateConsumerRequest(destination, coreSelector, noLocal, subscriptionName, false);
       
-      CreateConsumerResponse response = (CreateConsumerResponse)remotingConnection.sendBlocking(id, request);
+      CreateConsumerResponse response = (CreateConsumerResponse)remotingConnection.send(id, request);
       
       ClientConsumer consumer =
          new ClientConsumerImpl(this, response.getConsumerID(), response.getBufferSize(),             
@@ -301,7 +301,7 @@ public class ClientSessionImpl implements ClientSession
       
       CreateDestinationRequest request = new CreateDestinationRequest(queueName, true);  
       
-      CreateDestinationResponse response = (CreateDestinationResponse)remotingConnection.sendBlocking(id, request);
+      CreateDestinationResponse response = (CreateDestinationResponse)remotingConnection.send(id, request);
       
       return (JBossQueue) response.getDestination();
    }
@@ -312,7 +312,7 @@ public class ClientSessionImpl implements ClientSession
       
       CreateDestinationRequest request = new CreateDestinationRequest(topicName, false); 
       
-      CreateDestinationResponse response = (CreateDestinationResponse)remotingConnection.sendBlocking(id, request);
+      CreateDestinationResponse response = (CreateDestinationResponse)remotingConnection.send(id, request);
       
       return (JBossTopic) response.getDestination();
    }
@@ -321,7 +321,7 @@ public class ClientSessionImpl implements ClientSession
    {
       checkClosed();
       
-      remotingConnection.sendBlocking(id, new DeleteTemporaryDestinationMessage(destination));
+      remotingConnection.send(id, new DeleteTemporaryDestinationMessage(destination));
    }
    
    //Internal method to be called from consumerImpl - should not expose this publicly
@@ -348,7 +348,7 @@ public class ClientSessionImpl implements ClientSession
        
       if (deliveryExpired)
       {
-         remotingConnection.sendOneWay(id, new SessionCancelMessage(lastID, true));
+         remotingConnection.send(id, new SessionCancelMessage(lastID, true), true);
          
          toAckCount = 0;
       }
@@ -377,28 +377,8 @@ public class ClientSessionImpl implements ClientSession
          return;
       }
       
-      if (broken)
-      {
-         if (block)
-         {
-            remotingConnection.sendBlocking(id, new SessionAcknowledgeMessage(lastID, false));
-         }
-         else
-         {
-            remotingConnection.sendOneWay(id, new SessionAcknowledgeMessage(lastID, false));
-         }
-      }
-      else
-      {
-         if (block)
-         {
-            remotingConnection.sendBlocking(id, new SessionAcknowledgeMessage(lastID, true));
-         }
-         else
-         {
-            remotingConnection.sendOneWay(id, new SessionAcknowledgeMessage(lastID, true));
-         }
-      }
+      SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(lastID, !broken);
+      remotingConnection.send(id, message, !block);
       
       acked = true;
    }
@@ -407,7 +387,7 @@ public class ClientSessionImpl implements ClientSession
    {
       checkClosed();
       
-      remotingConnection.sendBlocking(id, new UnsubscribeMessage(subscriptionName));
+      remotingConnection.send(id, new UnsubscribeMessage(subscriptionName));
    }
 
    public XAResource getXAResource()
@@ -421,14 +401,7 @@ public class ClientSessionImpl implements ClientSession
       
       SessionSendMessage message = new SessionSendMessage(m);
       
-      if (m.isDurable())
-      {
-         remotingConnection.sendBlocking(id, message);
-      }
-      else
-      {
-         remotingConnection.sendOneWay(id, message);
-      }
+      remotingConnection.send(id, message, !m.isDurable());
    }
    
    public void removeConsumer(ClientConsumer consumer) throws JMSException
@@ -441,7 +414,7 @@ public class ClientSessionImpl implements ClientSession
       
       //2. cancel all deliveries on server but not in tx
             
-      remotingConnection.sendBlocking(id, new SessionCancelMessage(-1, false));      
+      remotingConnection.send(id, new SessionCancelMessage(-1, false));      
    }
    
    public void removeProducer(ClientProducer producer)

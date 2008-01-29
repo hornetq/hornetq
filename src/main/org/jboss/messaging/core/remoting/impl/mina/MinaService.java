@@ -44,6 +44,7 @@ public class MinaService implements KeepAliveNotifier
 
    private static final Logger log = Logger.getLogger(MinaService.class);
 
+   public static final String TIMEOUT_KEY = "timeout";
    public static final String KEEP_ALIVE_INTERVAL_KEY = "keepAliveInterval";
    public static final String KEEP_ALIVE_TIMEOUT_KEY = "keepAliveTimeout";
    public static final String DISABLE_INVM_KEY = "disable-invm";
