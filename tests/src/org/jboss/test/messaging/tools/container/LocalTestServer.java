@@ -21,7 +21,13 @@
 */
 package org.jboss.test.messaging.tools.container;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -42,12 +48,14 @@ import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
+import org.apache.tools.ant.util.ReaderInputStream;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.api.ClientConnectionFactory;
 import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.server.security.Role;
+import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Binding;
 import org.jboss.messaging.core.Condition;
@@ -286,16 +294,64 @@ public class LocalTestServer implements Server, Runnable
       stop();
    }
 
-   public ObjectName deploy(String mbeanConfiguration) throws Exception
+   public KernelDeployment deploy(String resourceName) throws Exception
    {
-      /*Element mbeanElement = XMLUtil.stringToElement(mbeanConfiguration);
-      MBeanConfigurationElement mbc = new MBeanConfigurationElement(mbeanElement);*/
-      return null;// sc.registerAndConfigureService(mbc);
+      try
+      {
+         return bootstrap.deploy(resourceName);
+      }
+      catch (Throwable e)
+      {
+         // RMI can only throw Exception or its subclasses... This is case we ever implement Server as remote again
+         if (e instanceof Exception)
+         {
+            throw (Exception)e;
+         }
+         else
+         {
+            throw new Exception (e.toString(), e);
+         }
+      }
+   }
+   
+   public KernelDeployment deployXML(String name, String xml) throws Exception
+   {
+      try
+      {
+         return bootstrap.deploy(name, xml);
+      }
+      catch (Throwable e)
+      {
+         // RMI can only throw Exception or its subclasses... This is case we ever implement Server as remote again
+         if (e instanceof Exception)
+         {
+            throw (Exception)e;
+         }
+         else
+         {
+            throw new Exception (e.toString(), e);
+         }
+      }
    }
 
-   public void undeploy(ObjectName on) throws Exception
+   public void undeploy(KernelDeployment deployment) throws Exception
    {
-      //sc.unregisterService(on);
+      try
+      {
+         bootstrap.undeploy(deployment);
+      }
+      catch (Throwable e)
+      {
+         // RMI can only throw Exception or its subclasses... This is case we ever implement Server as remote again
+         if (e instanceof Exception)
+         {
+            throw (Exception)e;
+         }
+         else
+         {
+            throw new Exception (e.toString(), e);
+         }
+      }
    }
 
    public Object getAttribute(ObjectName on, String attribute) throws Exception

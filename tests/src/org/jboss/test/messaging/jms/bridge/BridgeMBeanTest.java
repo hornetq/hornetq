@@ -642,7 +642,9 @@ public class BridgeMBeanTest extends BridgeTestBase
       config += "<attribute name=\"AddMessageIDInHeader\">" + addMessageIDInHeader + "</attribute>";
       config += "</mbean>";
       
-      return ServerManagement.getServer(server).deploy(config);            
+      // TODO: this has to be fixed
+      // return ServerManagement.getServer(server).deploy(config);
+      return null;
    }
    
    private void checkBridged(InitialContext icSource, InitialContext icTarget,
@@ -731,7 +733,8 @@ public class BridgeMBeanTest extends BridgeTestBase
    	
    	log.info("Installing bridge: " + config);
 
-   	ServerManagement.getServer(0).deploy(config);
+      // TODO: this has to be fixed
+      // ServerManagement.getServer(0).deploy(config);
    }
 
 }

@@ -22,6 +22,7 @@
 package org.jboss.test.messaging.tools.container;
 
 import org.jboss.jms.server.security.Role;
+import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.MessagingServerManagement;
 
@@ -73,15 +74,13 @@ public interface Server extends Remote
     */
    void ping() throws Exception;
 
-   /**
-    * Deploys and registers a service based on the MBean service descriptor element, specified as
-    * a String. Supports XMBeans. The implementing class and the ObjectName are inferred from the
-    * mbean element. If there are configuration attributed specified in the deployment descriptor,
-    * they are applied to the service instance.
-    */
-   ObjectName deploy(String mbeanConfiguration) throws Exception;
+   
+   /** Deploys a XML on the MicroContainer */
+   KernelDeployment deployXML(String name, String xml) throws Exception;
+   
+   KernelDeployment deploy(String resource) throws Exception;
 
-   void undeploy(ObjectName on) throws Exception;
+   void undeploy(KernelDeployment undeploy) throws Exception;
 
    Object getAttribute(ObjectName on, String attribute) throws Exception;
 

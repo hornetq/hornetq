@@ -21,6 +21,9 @@
    */
 package org.jboss.messaging.microcontainer;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.net.URL;
 import java.util.List;
 import java.util.ListIterator;
@@ -151,55 +154,28 @@ public class JBMBootstrapServer extends BasicBootstrap
       //System.setProperty("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
       this.args = args;
    }
+   
    public void bootstrap() throws Throwable
    {
       super.bootstrap();
       deployer = new BeanXMLDeployer(getKernel());
       Runtime.getRuntime().addShutdownHook(new Shutdown());
-      ClassLoader cl = Thread.currentThread().getContextClassLoader();
 
       for (String arg : args)
       {
-         URL url = cl.getResource(arg);
-         if (url == null)
-         {
-            url = cl.getResource("META-INF/" + arg);
-         }
-         //try the system classpath
-         if(url == null)
-         {
-            url = getClass().getClassLoader().getResource(arg);
-         }
-         if (url == null)
-         {
-            throw new RuntimeException("Unable to find resource:" + arg);
-         }
-         deploy(url);
+         deploy(arg);
       }
 
       deployer.validate();
    }
 
-   /**
-    * Deploy a url
-    *
-    * @param url the deployment url
-    * @throws Throwable for any error
-    */
-   protected void deploy(URL url) throws Throwable
-   {
-      log.debug("Deploying " + url);
-      KernelDeployment deployment = deployer.deploy(url);
-      deployments.add(deployment);
-      log.debug("Deployed " + url);
-   }
-
+   
    /**
     * Undeploy a deployment
     *
     * @param deployment the deployment
     */
-   protected void undeploy(KernelDeployment deployment)
+   public void undeploy(KernelDeployment deployment) throws Throwable
    {
       log.debug("Undeploying " + deployment.getName());
       deployments.remove(deployment);
@@ -214,6 +190,62 @@ public class JBMBootstrapServer extends BasicBootstrap
       }
    }
 
+   public KernelDeployment deploy(String arg) throws Throwable
+   {
+      ClassLoader cl = Thread.currentThread().getContextClassLoader();
+      URL url = cl.getResource(arg);
+      if (url == null)
+      {
+         url = cl.getResource("META-INF/" + arg);
+      }
+      //try the system classpath
+      if(url == null)
+      {
+         url = getClass().getClassLoader().getResource(arg);
+      }
+      if (url == null)
+      {
+         throw new RuntimeException("Unable to find resource:" + arg);
+      }
+      return deploy(url);
+   }
+   
+   /**
+    * Deploys a XML on the container
+    * @author clebert.suconic@jboss.com
+    */
+   public KernelDeployment deploy(String name, String xml) throws Throwable
+   {
+      ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+      PrintStream printOut = new PrintStream(byteOut);
+      printOut.print(xml);
+      printOut.flush();
+      ByteArrayInputStream is = new ByteArrayInputStream(byteOut.toByteArray());
+    
+      KernelDeployment deployment = deployer.deploy(name, is);
+      
+      deployments.add(deployment);
+      
+      return deployment;
+   }
+
+   
+   
+   /**
+    * Deploy a url
+    *
+    * @param url the deployment url
+    * @throws Throwable for any error
+    */
+   protected KernelDeployment deploy(URL url) throws Throwable
+   {
+      log.debug("Deploying " + url);
+      KernelDeployment deployment = deployer.deploy(url);
+      deployments.add(deployment);
+      log.debug("Deployed " + url);
+      return deployment;
+   }
+
    public void shutDown()
    {
       log.info("Shutting down");
@@ -221,7 +253,7 @@ public class JBMBootstrapServer extends BasicBootstrap
       while (iterator.hasPrevious())
       {
          KernelDeployment deployment = (KernelDeployment) iterator.previous();
-         undeploy(deployment);
+         try {undeploy(deployment);} catch (Throwable ignored){}
       }
    }
 
@@ -238,13 +270,7 @@ public class JBMBootstrapServer extends BasicBootstrap
    {
       public void run()
       {
-         log.info("Shutting down");
-         ListIterator iterator = deployments.listIterator(deployments.size());
-         while (iterator.hasPrevious())
-         {
-            KernelDeployment deployment = (KernelDeployment) iterator.previous();
-            undeploy(deployment);
-         }
+         JBMBootstrapServer.this.shutDown();
       }
    }
 }

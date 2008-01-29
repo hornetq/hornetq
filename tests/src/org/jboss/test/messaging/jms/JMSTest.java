@@ -50,8 +50,6 @@ public class JMSTest extends JMSTestCase
 
    // Attributes ----------------------------------------------------
 
-   InitialContext ic;
-
    // Constructors --------------------------------------------------
 
    public JMSTest(String name)

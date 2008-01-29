@@ -9,6 +9,8 @@ package org.jboss.messaging.core.remoting;
 import static org.jboss.messaging.core.remoting.Assert.assertValidID;
 import static org.jboss.messaging.core.remoting.wireformat.AbstractPacket.NO_ID_SET;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,6 +32,7 @@ public class PacketDispatcher
    // Attributes ----------------------------------------------------
 
    private Map<String, PacketHandler> handlers;
+   private List<PacketFilter> filters;
 
    // Static --------------------------------------------------------
 
@@ -43,7 +46,15 @@ public class PacketDispatcher
       handlers = new ConcurrentHashMap<String, PacketHandler>();
    }
 
+   public PacketDispatcher(List<PacketFilter> filters)
+   {
+      this();
+      this.filters = filters;
+   }
+
    // Public --------------------------------------------------------
+   
+   
 
    public void register(PacketHandler handler)
    {
@@ -103,7 +114,10 @@ public class PacketDispatcher
          if (log.isTraceEnabled())
             log.trace(handler + " handles " + packet);
 
-         handler.handle(packet, sender);
+         if (fireFilter(packet, handler, sender))
+         {
+            handler.handle(packet, sender);
+         }
       } else
       {
          log.error("Unhandled packet " + packet);
@@ -114,6 +128,33 @@ public class PacketDispatcher
 
    // Protected -----------------------------------------------------
 
+   protected boolean fireFilter(AbstractPacket packet, PacketHandler handler, PacketSender sender)
+   {
+     if (filters == null)
+     {
+        return true;
+     }
+     else
+     {
+        for (PacketFilter filter: filters)
+        {
+           try
+           {
+              if (!filter.filterMessage(packet, handler, sender))
+              {
+                 log.info("Filter " + filter.getClass().getName() + " Cancelled packet " + packet);
+                 return false;
+              }
+           }
+           catch (Exception ignored)
+           {
+           }
+        }
+        
+        return true;
+     }
+   }
+   
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

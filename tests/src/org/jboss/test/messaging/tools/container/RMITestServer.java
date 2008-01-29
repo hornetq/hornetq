@@ -37,6 +37,7 @@ import javax.naming.InitialContext;
 import javax.transaction.UserTransaction;
 
 import org.jboss.jms.server.security.Role;
+import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.MessagingServerManagement;
 import org.jboss.messaging.util.Logger;
@@ -182,15 +183,23 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       //noop - nothing to be done
    }
 
-   public ObjectName deploy(String mbeanConfiguration) throws Exception
+   public KernelDeployment deploy(String mbeanConfiguration) throws Exception
    {
       return server.deploy(mbeanConfiguration);
    }
 
-   public void undeploy(ObjectName on) throws Exception
+   public void undeploy(KernelDeployment deployment) throws Exception
    {
-      server.undeploy(on);
+      server.undeploy(deployment);
    }
+   
+   public KernelDeployment deployXML(String name, String xml) throws Exception
+   {
+      return server.deployXML(name, xml);
+   }
+
+
+   
 
    public Object getAttribute(ObjectName on, String attribute) throws Exception
    {
@@ -607,7 +616,6 @@ public class RMITestServer extends UnicastRemoteObject implements Server
 
       return new InitialContext(env);
    }
-
 
    // Inner classes -------------------------------------------------
 }

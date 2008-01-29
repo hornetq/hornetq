@@ -15,14 +15,19 @@ import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.add
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.mina.common.DefaultIoFilterChainBuilder;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
+import org.jboss.beans.metadata.api.annotations.Install;
+import org.jboss.beans.metadata.api.annotations.Uninstall;
 import org.jboss.messaging.core.remoting.ConnectionExceptionListener;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.PacketFilter;
 import org.jboss.messaging.core.remoting.ServerLocator;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.util.Logger;
@@ -60,6 +65,8 @@ public class MinaService implements KeepAliveNotifier
    private ConnectionExceptionListener listener;
 
    private KeepAliveFactory factory;
+   
+   private List<PacketFilter> filters = new CopyOnWriteArrayList<PacketFilter>();
 
    // Static --------------------------------------------------------
 
@@ -82,7 +89,20 @@ public class MinaService implements KeepAliveNotifier
       this.port = port;
       this.parameters = new HashMap<String, String>();
       this.factory = factory;
-      this.dispatcher = new PacketDispatcher();
+      this.dispatcher = new PacketDispatcher(this.filters);
+   }
+   
+   
+   @Install
+   public void addFilter(PacketFilter filter)
+   {
+      this.filters.add(filter);
+   }
+
+   @Uninstall
+   public void removeFilter(PacketFilter filter)
+   {
+      this.filters.remove(filter);
    }
 
    public void setConnectionExceptionListener(ConnectionExceptionListener listener)

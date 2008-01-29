@@ -41,7 +41,7 @@ public class JNDITest extends MessagingTestCase
 
    // Public ---------------------------------------------------------------------------------------
 
-   public void testInterServerJNDI() throws Exception
+   public void testInterServerJNDI() throws Throwable
    {
       // this test doesn't make sense in a colocated topology.
 

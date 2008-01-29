@@ -36,6 +36,7 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.transaction.UserTransaction;
 
+import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.tools.container.InVMInitialContextFactory;
 import org.jboss.test.messaging.tools.container.LocalTestServer;
@@ -522,13 +523,13 @@ public class ServerManagement
    }
 
 
-   public static ObjectName deploy(String mbeanConfiguration) throws Exception
+   public static KernelDeployment deploy(String resource) throws Throwable
    {
 
-      return servers.get(0).deploy(mbeanConfiguration);
+      return servers.get(0).deploy(resource);
    }
 
-   public static void undeploy(ObjectName on) throws Exception
+   public static void undeploy(KernelDeployment on) throws Throwable
    {
 
       servers.get(0).undeploy(on);
