@@ -104,9 +104,9 @@ public class JNDIObjectDeployer extends Deployer
    /**
     * lifecycle method
     */
-   public void stop()
+   public void stop() throws Exception
    {
-
+      DeploymentManager.getInstance().unregisterDeployable(this);   
    }
 
    /**

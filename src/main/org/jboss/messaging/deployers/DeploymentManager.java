@@ -51,6 +51,7 @@ public class DeploymentManager implements Runnable
    private static ArrayList<URL> toUndeploy = new ArrayList<URL>();
    //the list of URL's to redeploy if changed
    private static ArrayList<URL> toRedeploy = new ArrayList<URL>();
+   private static ScheduledExecutorService scheduler;
 
    //we want to use a singleton
    private DeploymentManager()
@@ -78,11 +79,9 @@ public class DeploymentManager implements Runnable
          }
 
          // Get the scheduler
-         ScheduledExecutorService scheduler =
-                 Executors.newSingleThreadScheduledExecutor();
+         scheduler = Executors.newSingleThreadScheduledExecutor();
 
          scheduler.scheduleAtFixedRate(singleton, 10, 5, TimeUnit.SECONDS);
-
       }
       return singleton;
    }
@@ -146,6 +145,15 @@ public class DeploymentManager implements Runnable
       }
    }
 
+   public void unregisterDeployable(Deployable deployable)
+   {
+      deployables.remove(deployable);
+      if(deployables.size() == 0)
+      {
+         scheduler.shutdown();
+         scheduler = null;
+      }
+   }
    /**
     * called by the ExecutorService every n seconds
     */

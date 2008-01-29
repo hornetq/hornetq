@@ -215,10 +215,11 @@ public abstract class Deployer implements Deployable, MessagingComponent
             }
             catch (Exception e)
             {
-               log.warn("problem deploying " + node, e);
+               log.warn("problem undeploying " + node, e);
             }
          }
       }
+      DeploymentManager.getInstance().unregisterDeployable(this);  
    }
 
    /**
