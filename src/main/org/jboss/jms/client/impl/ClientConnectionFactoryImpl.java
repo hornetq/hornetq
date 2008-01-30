@@ -31,6 +31,7 @@ import org.jboss.jms.client.plugin.LoadBalancingFactory;
 import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
 import org.jboss.jms.client.remoting.MessagingRemotingConnection;
 import org.jboss.jms.exception.MessagingJMSException;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.util.Logger;
@@ -62,7 +63,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
 
    // Attributes -----------------------------------------------------------------------------------
    
-   private String serverLocatorURI;
+   private RemotingConfiguration remotingConfig;
 
    private Version serverVersion;
  
@@ -87,11 +88,11 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
    // Constructors ---------------------------------------------------------------------------------
 
    public ClientConnectionFactoryImpl(int serverID,
-         String serverLocatorURI, Version serverVersion, boolean strictTck,
+         RemotingConfiguration remotingConfig, Version serverVersion, boolean strictTck,
          int prefetchSize, int dupsOKBatchSize, String clientID)
    {
       this.serverID = serverID;
-      this.serverLocatorURI = serverLocatorURI;
+      this.remotingConfig = remotingConfig;
       this.serverVersion = serverVersion;
       this.strictTck = strictTck;
       this.prefetchSize = prefetchSize;
@@ -99,9 +100,9 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
       this.clientID = clientID;
    }
 
-   public ClientConnectionFactoryImpl(String serverLocatorURI)
+   public ClientConnectionFactoryImpl(RemotingConfiguration remotingConfig)
    {
-      this.serverLocatorURI = serverLocatorURI;
+      this.remotingConfig = remotingConfig;
    }
 
    public ClientConnectionFactoryImpl()
@@ -122,7 +123,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
       MessagingRemotingConnection remotingConnection = null;
       try
       {
-         remotingConnection = new MessagingRemotingConnection(serverLocatorURI);
+         remotingConnection = new MessagingRemotingConnection(remotingConfig);
        
          remotingConnection.start();
          
@@ -169,9 +170,9 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
    
    // ClientConnectionFactory implementation ---------------------------------------------
    
-   public String getServerLocatorURI()
+   public RemotingConfiguration getRemotingConfiguration()
    {
-      return serverLocatorURI;
+      return remotingConfig;
    }
    
    public int getServerID()

@@ -24,7 +24,7 @@ public class ConnectorRegistrySingleton
 
    /**
     * This singleton is used to get NIOConnectors.
-    * It also check if the server locator has been locally registered so that the client
+    * It also check if the RemotingConfiguration has been locally registered so that the client
     * can use an in-vm connection to the server directly and skip the network.
     */
    public static final ConnectorRegistry REGISTRY = new ConnectorRegistryImpl();

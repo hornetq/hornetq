@@ -14,9 +14,7 @@ import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.add
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addMDCFilter;
 
 import java.net.InetSocketAddress;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeoutException;
 
@@ -28,8 +26,8 @@ import org.jboss.messaging.core.remoting.ConnectionExceptionListener;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketFilter;
-import org.jboss.messaging.core.remoting.ServerLocator;
-import org.jboss.messaging.core.remoting.TransportType;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
+import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.util.Logger;
 
 /**
@@ -38,27 +36,18 @@ import org.jboss.messaging.util.Logger;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class MinaService implements KeepAliveNotifier
+public class MinaService implements RemotingService, KeepAliveNotifier
 {
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(MinaService.class);
 
-   public static final String TIMEOUT_KEY = "timeout";
-   public static final String KEEP_ALIVE_INTERVAL_KEY = "keepAliveInterval";
-   public static final String KEEP_ALIVE_TIMEOUT_KEY = "keepAliveTimeout";
    public static final String DISABLE_INVM_KEY = "disable-invm";
 
    // Attributes ----------------------------------------------------
 
-   private TransportType transport;
-
-   private final String host;
-
-   private final int port;
-
-   private Map<String, String> parameters;
-
+   private RemotingConfiguration remotingConfig;
+   
    private NioSocketAcceptor acceptor;
 
    private PacketDispatcher dispatcher;
@@ -72,27 +61,21 @@ public class MinaService implements KeepAliveNotifier
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-
-   public MinaService(String transport, String host, int port)
+   
+   public MinaService(RemotingConfiguration remotingConfig)
    {
-      this(TransportType.valueOf(transport.toUpperCase()), host, port, new ServerKeepAliveFactory());
+      this(remotingConfig, new ServerKeepAliveFactory());
    }
 
-   public MinaService(TransportType transport, String host, int port, KeepAliveFactory factory)
+   public MinaService(RemotingConfiguration remotingConfig, KeepAliveFactory factory)
    {
-      assert transport != null;
-      assert host != null;
-      assert port > 0;
+      assert remotingConfig != null;
       assert factory != null;
 
-      this.transport = transport;
-      this.host = host;
-      this.port = port;
-      this.parameters = new HashMap<String, String>();
+      this.remotingConfig = remotingConfig;
       this.factory = factory;
       this.dispatcher = new PacketDispatcher(this.filters);
    }
-   
    
    @Install
    public void addFilter(PacketFilter filter)
@@ -113,6 +96,65 @@ public class MinaService implements KeepAliveNotifier
       this.listener = listener;
    }
    
+   // TransportService implementation -------------------------------
+
+   public void start() throws Exception
+   {
+      if (log.isDebugEnabled())
+         log.debug("Start MinaService with configuration:" + remotingConfig);
+      
+      if (acceptor == null)
+      {
+         acceptor = new NioSocketAcceptor();
+         DefaultIoFilterChainBuilder filterChain = acceptor.getFilterChain();
+
+         addMDCFilter(filterChain);
+         addCodecFilter(filterChain);
+         addLoggingFilter(filterChain);
+         addKeepAliveFilter(filterChain, factory,
+               remotingConfig.getKeepAliveInterval(), remotingConfig.getKeepAliveTimeout());
+         addExecutorFilter(filterChain);
+
+         // Bind
+         acceptor.setLocalAddress(new InetSocketAddress(remotingConfig.getHost(), remotingConfig.getPort()));
+         acceptor.setReuseAddress(true);
+         acceptor.getSessionConfig().setReuseAddress(true);
+         acceptor.getSessionConfig().setKeepAlive(true);
+         acceptor.setDisconnectOnUnbind(false);
+
+         acceptor.setHandler(new MinaHandler(dispatcher, this));
+         acceptor.bind();
+
+         boolean disableInvm = remotingConfig.isInvmDisabled();
+         if (log.isDebugEnabled())
+            log.debug("invm optimization for remoting is " + (disableInvm ? "disabled" : "enabled"));
+         if (!disableInvm)
+            REGISTRY.register(remotingConfig, dispatcher);
+      }
+   }
+
+   public void stop()
+   {
+      if (acceptor != null)
+      {
+         acceptor.unbind();
+         acceptor.dispose();
+         acceptor = null;
+      }
+      
+      REGISTRY.unregister();
+   }
+
+   public PacketDispatcher getDispatcher()
+   {
+      return dispatcher;
+   }
+   
+   public RemotingConfiguration getRemotingConfiguration()
+   {
+      return remotingConfig;
+   }
+
    // KeepAliveManager implementation -------------------------------
 
    public void notifyKeepAliveTimeout(TimeoutException e, String remoteSessionID)
@@ -126,82 +168,11 @@ public class MinaService implements KeepAliveNotifier
 
    // Public --------------------------------------------------------
 
-   public void setParameters(Map<String, String> parameters)
-   {
-      assert parameters != null;
-
-      this.parameters = parameters;
-   }
-
    public void setKeepAliveFactory(KeepAliveFactory factory)
    {
       assert factory != null;
       
       this.factory = factory;
-   }
-
-   public ServerLocator getLocator()
-   {
-      return new ServerLocator(transport, host, port, parameters);
-   }
-
-   public PacketDispatcher getDispatcher()
-   {
-      return dispatcher;
-   }
-
-   public void start() throws Exception
-   {
-      if (acceptor == null)
-      {
-         acceptor = new NioSocketAcceptor();
-         DefaultIoFilterChainBuilder filterChain = acceptor.getFilterChain();
-
-         addMDCFilter(filterChain);
-         addCodecFilter(filterChain);
-         addLoggingFilter(filterChain);
-         if (parameters.containsKey(KEEP_ALIVE_INTERVAL_KEY)
-               && parameters.containsKey(KEEP_ALIVE_TIMEOUT_KEY))
-         {
-            int keepAliveInterval = Integer.parseInt(parameters
-                  .get(KEEP_ALIVE_INTERVAL_KEY));
-            int keepAliveTimeout = Integer.parseInt(parameters
-                  .get(KEEP_ALIVE_TIMEOUT_KEY));
-            addKeepAliveFilter(filterChain, factory,
-                  keepAliveInterval, keepAliveTimeout);
-         }
-         addExecutorFilter(filterChain);
-
-         // Bind
-         acceptor.setLocalAddress(new InetSocketAddress(host, port));
-         acceptor.setReuseAddress(true);
-         acceptor.getSessionConfig().setReuseAddress(true);
-         acceptor.getSessionConfig().setKeepAlive(true);
-         acceptor.setDisconnectOnUnbind(false);
-
-         acceptor.setHandler(new MinaHandler(dispatcher, this));
-         acceptor.bind();
-
-         boolean disableInvm = false;
-         if (parameters.containsKey(DISABLE_INVM_KEY))
-               disableInvm = Boolean.valueOf(parameters.get(DISABLE_INVM_KEY)).booleanValue();
-         if (log.isDebugEnabled())
-            log.debug("invm optimization for remoting is " + (disableInvm ? "disabled" : "enabled"));
-         if (!disableInvm)
-            REGISTRY.register(getLocator(), dispatcher);
-      }
-   }
-
-   public void stop()
-   {
-      if (acceptor != null)
-      {
-         acceptor.unbind();
-         acceptor.dispose();
-         acceptor = null;
-
-         REGISTRY.unregister(getLocator());
-      }
    }
 
    // Package protected ---------------------------------------------

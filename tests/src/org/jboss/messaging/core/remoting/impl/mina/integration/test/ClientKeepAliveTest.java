@@ -12,14 +12,10 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
-import static org.jboss.messaging.core.remoting.impl.mina.MinaService.KEEP_ALIVE_INTERVAL_KEY;
-import static org.jboss.messaging.core.remoting.impl.mina.MinaService.KEEP_ALIVE_TIMEOUT_KEY;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.KEEP_ALIVE_INTERVAL;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.KEEP_ALIVE_TIMEOUT;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.PORT;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import junit.framework.TestCase;
@@ -27,6 +23,7 @@ import junit.framework.TestCase;
 import org.jboss.messaging.core.remoting.ConnectionExceptionListener;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.NIOSession;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.wireformat.Ping;
@@ -55,11 +52,10 @@ public class ClientKeepAliveTest extends TestCase
    @Override
    protected void setUp() throws Exception
    {
-      service = new MinaService(TCP.toString(), "localhost", PORT);
-      Map<String, String> parameters = new HashMap<String, String>();
-      parameters.put(KEEP_ALIVE_INTERVAL_KEY, Integer.toString(KEEP_ALIVE_INTERVAL));
-      parameters.put(KEEP_ALIVE_TIMEOUT_KEY, Integer.toString(KEEP_ALIVE_TIMEOUT));
-      service.setParameters(parameters);
+      RemotingConfiguration remotingConfig = new RemotingConfiguration(TCP, "localhost", PORT);
+      remotingConfig.setKeepAliveInterval(KEEP_ALIVE_INTERVAL);
+      remotingConfig.setKeepAliveTimeout(KEEP_ALIVE_TIMEOUT);
+      service = new MinaService(remotingConfig);
       service.start();
    }
 
@@ -81,8 +77,6 @@ public class ClientKeepAliveTest extends TestCase
 
       replay(factory);
 
-      MinaConnector connector = new MinaConnector(service.getLocator(), factory);
-      connector.connect();
       
       final CountDownLatch latch = new CountDownLatch(1);
 
@@ -93,6 +87,9 @@ public class ClientKeepAliveTest extends TestCase
             latch.countDown();
          }
       });
+
+      MinaConnector connector = new MinaConnector(service.getRemotingConfiguration(), factory);
+      connector.connect();
 
       boolean firedKeepAliveNotification = latch.await(KEEP_ALIVE_INTERVAL
             + KEEP_ALIVE_TIMEOUT + 1, SECONDS);
@@ -114,11 +111,6 @@ public class ClientKeepAliveTest extends TestCase
 
       replay(factory);
 
-      MinaConnector connector = new MinaConnector(service.getLocator(), factory);
-
-      NIOSession session = connector.connect();
-      String clientSessionID = session.getID();
-
       final String[] clientSessionIDNotResponding = new String[1];
       final CountDownLatch latch = new CountDownLatch(1);
 
@@ -130,6 +122,11 @@ public class ClientKeepAliveTest extends TestCase
             latch.countDown();
          }
       });
+      
+      MinaConnector connector = new MinaConnector(service.getRemotingConfiguration(), factory);
+
+      NIOSession session = connector.connect();
+      String clientSessionID = session.getID();
 
       boolean firedKeepAliveNotification = latch.await(KEEP_ALIVE_INTERVAL
             + KEEP_ALIVE_TIMEOUT + 2, SECONDS);
@@ -167,7 +164,7 @@ public class ClientKeepAliveTest extends TestCase
 
       try
       {
-         MinaConnector connector = new MinaConnector(service.getLocator(),
+         MinaConnector connector = new MinaConnector(service.getRemotingConfiguration(),
                factory);
 
          NIOSession session = connector.connect();
@@ -216,17 +213,6 @@ public class ClientKeepAliveTest extends TestCase
 
       replay(notRespondingfactory, respondingfactory);
 
-      MinaConnector connectorNotResponding = new MinaConnector(service
-            .getLocator(), notRespondingfactory);
-      MinaConnector connectorResponding = new MinaConnector(service
-            .getLocator(), respondingfactory);
-
-      NIOSession sessionNotResponding = connectorNotResponding.connect();
-      String clientSessionIDNotResponding = sessionNotResponding.getID();
-
-      NIOSession sessionResponding = connectorResponding.connect();
-      String clientSessionIDResponding = sessionResponding.getID();
-
       final String[] sessionIDNotResponding = new String[1];
       final CountDownLatch latch = new CountDownLatch(1);
 
@@ -238,6 +224,18 @@ public class ClientKeepAliveTest extends TestCase
             latch.countDown();
          }
       });
+      
+      MinaConnector connectorNotResponding = new MinaConnector(service
+            .getRemotingConfiguration(), notRespondingfactory);
+      MinaConnector connectorResponding = new MinaConnector(service
+            .getRemotingConfiguration(), respondingfactory);
+
+      NIOSession sessionNotResponding = connectorNotResponding.connect();
+      String clientSessionIDNotResponding = sessionNotResponding.getID();
+
+      
+      NIOSession sessionResponding = connectorResponding.connect();
+      String clientSessionIDResponding = sessionResponding.getID();
 
       boolean firedKeepAliveNotification = latch.await(KEEP_ALIVE_INTERVAL
             + KEEP_ALIVE_TIMEOUT + 2, SECONDS);

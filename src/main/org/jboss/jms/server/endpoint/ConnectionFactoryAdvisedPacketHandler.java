@@ -170,7 +170,7 @@ public class ConnectionFactoryAdvisedPacketHandler implements
 
       String connectionID = endpoint.getConnectionID();
 
-      messagingServer.getMinaService().getDispatcher().register(endpoint.newHandler());
+      messagingServer.getRemotingService().getDispatcher().register(endpoint.newHandler());
 
       log.trace("created and registered " + endpoint);
 

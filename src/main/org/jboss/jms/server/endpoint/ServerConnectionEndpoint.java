@@ -235,7 +235,7 @@ public class ServerConnectionEndpoint
 
          messagingServer.addSession(sessionID, ep);
 
-         messagingServer.getMinaService().getDispatcher().register(ep.newHandler());
+         messagingServer.getRemotingService().getDispatcher().register(ep.newHandler());
          
          return new CreateSessionResponse(sessionID, dupsOKBatchSize);
       }
@@ -389,7 +389,7 @@ public class ServerConnectionEndpoint
 
          cm.unregisterConnection(jmsClientVMID, remotingClientSessionID);
 
-         messagingServer.getMinaService().getDispatcher().unregister(id);
+         messagingServer.getRemotingService().getDispatcher().unregister(id);
 
          closed = true;
       }

@@ -29,6 +29,7 @@ import org.jboss.messaging.core.impl.bdbje.BDBJEEnvironment;
 import org.jboss.messaging.core.impl.bdbje.BDBJEPersistenceManager;
 import org.jboss.messaging.core.impl.bdbje.integration.RealBDBJEEnvironment;
 import org.jboss.messaging.core.impl.server.MessagingServerImpl;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 
 /**
@@ -38,13 +39,13 @@ public class MessagingServerFactory
 {
    private static final String HOME_DIR = System.getProperty("user.home");
    
-   public static MessagingServer createMessagingServer() throws Exception
+   public static MessagingServer createMessagingServer(RemotingConfiguration remotingConf) throws Exception
    {
-      MinaService minaService = new MinaService("tcp", "localhost", 5400);
+      MinaService minaService = new MinaService(remotingConf);
       minaService.start();
       MessagingServerImpl messagingServer = new MessagingServerImpl();
       
-      messagingServer.setMinaService(minaService);
+      messagingServer.setRemotingService(minaService);
       Configuration configuration = new Configuration();
       configuration.setMessagingServerID(0);
       messagingServer.setConfiguration(configuration);
@@ -84,7 +85,7 @@ public class MessagingServerFactory
    public static void stop(MessagingServer server) throws Exception
    {
       server.stop();
-      server.getMinaService().stop();
+      server.getRemotingService().stop();
       server.getPersistenceManager().stop();
    }
 }

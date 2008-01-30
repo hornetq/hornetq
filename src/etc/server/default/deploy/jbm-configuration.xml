@@ -56,6 +56,7 @@ You can safely comment them out if your post office is non clustered -->
       <data-channel-name>udp</data-channel-name>
       <channel-partition-name>${jboss.partition.name:DefaultPartition}-JMS</channel-partition-name>-->
 
+      <remoting-transport>TCP</remoting-transport>
       <remoting-bind-address>5400</remoting-bind-address>
       <!--  timeout in seconds -->
       <remoting-timeout>5</remoting-timeout>

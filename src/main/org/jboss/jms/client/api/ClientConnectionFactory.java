@@ -23,6 +23,7 @@ package org.jboss.jms.client.api;
 
 import javax.jms.JMSException;
 
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.util.Version;
 
 /**
@@ -34,7 +35,7 @@ import org.jboss.messaging.util.Version;
  */
 public interface ClientConnectionFactory
 {      
-   String getServerLocatorURI();
+   RemotingConfiguration getRemotingConfiguration();
       
    int getServerID();
    

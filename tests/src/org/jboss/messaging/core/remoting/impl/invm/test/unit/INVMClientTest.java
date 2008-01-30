@@ -11,7 +11,7 @@ import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestS
 
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.ServerLocator;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.ClientTestBase;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
 
@@ -43,9 +43,9 @@ public class INVMClientTest extends ClientTestBase
    }
    
    @Override
-   protected ServerLocator createServerLocator()
+   protected RemotingConfiguration createRemotingConfiguration()
    {
-      return new ServerLocator(INVM, "localhost", PORT);
+      return new RemotingConfiguration(INVM, "localhost", PORT);
    }
    
    @Override

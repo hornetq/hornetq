@@ -23,7 +23,7 @@ import junit.framework.TestCase;
 import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
-import org.jboss.messaging.core.remoting.ServerLocator;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.ClientImpl;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 
@@ -44,7 +44,7 @@ public class ClientTest extends TestCase
 
    // Public --------------------------------------------------------
 
-   private ServerLocator serverLocator;
+   private RemotingConfiguration remotingConfig;
 
    public void testConnected() throws Exception
    {
@@ -58,7 +58,7 @@ public class ClientTest extends TestCase
       
       replay(connector, session1, session2);
 
-      Client client = new ClientImpl(connector, serverLocator);
+      Client client = new ClientImpl(connector, remotingConfig);
       client.connect();
       assertTrue(client.isConnected());
       assertTrue(client.disconnect());
@@ -81,7 +81,7 @@ public class ClientTest extends TestCase
 
       replay(connector);
 
-      Client client = new ClientImpl(connector, serverLocator);
+      Client client = new ClientImpl(connector, remotingConfig);
       
       try
       {
@@ -107,7 +107,7 @@ public class ClientTest extends TestCase
       
       replay(connector, session);
       
-      Client client = new ClientImpl(connector, serverLocator);
+      Client client = new ClientImpl(connector, remotingConfig);
       
       assertNull(client.getSessionID());
       client.connect();
@@ -135,7 +135,7 @@ public class ClientTest extends TestCase
       
       replay(connector, session);
       
-      Client client = new ClientImpl(connector, serverLocator);
+      Client client = new ClientImpl(connector, remotingConfig);
       
       assertNull(client.getURI());
       client.connect();
@@ -153,7 +153,7 @@ public class ClientTest extends TestCase
       // connector is not expected to be called at all;
       replay(connector);
       
-      Client client = new ClientImpl(connector, serverLocator);
+      Client client = new ClientImpl(connector, remotingConfig);
       try
       {
          client.send(new NullPacket(), true);
@@ -171,13 +171,13 @@ public class ClientTest extends TestCase
    {
       super.setUp();
       
-      this.serverLocator = new ServerLocator(TCP, "localhost", PORT);
+      this.remotingConfig = new RemotingConfiguration(TCP, "localhost", PORT);
    }
    
    @Override
    protected void tearDown() throws Exception
    {
-      serverLocator = null;
+      remotingConfig = null;
 
       super.tearDown();
    }

@@ -19,6 +19,7 @@ import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.ClientImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
@@ -53,9 +54,10 @@ public class PacketStressTest extends TestCase
    @Override
    protected void setUp() throws Exception
    {
-      service = new MinaService(TCP.toString(), "localhost", PORT);
+      RemotingConfiguration remotingConfig = new RemotingConfiguration(TCP, "localhost", PORT);
+      service = new MinaService(remotingConfig);
       service.start();
-      connector = new MinaConnector(TCP, "localhost", PORT);
+      connector = new MinaConnector(remotingConfig);
       
    }
    
@@ -83,7 +85,7 @@ public class PacketStressTest extends TestCase
       CountDownLatch latch = new CountDownLatch(1);
       
       service.getDispatcher().register(new ServerHandler(handlerID, latch, spinner));
-      Client client = new ClientImpl(connector, service.getLocator());
+      Client client = new ClientImpl(connector, service.getRemotingConfiguration());
       client.connect();
       
       byte[] payloadBytes = generatePayload(PAYLOAD);

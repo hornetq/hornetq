@@ -7,7 +7,6 @@
 package org.jboss.messaging.core.remoting.impl;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.jboss.messaging.core.remoting.impl.mina.MinaService.TIMEOUT_KEY;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -20,7 +19,7 @@ import org.jboss.jms.exception.MessagingNetworkFailureException;
 import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
-import org.jboss.messaging.core.remoting.ServerLocator;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.util.Logger;
 
@@ -37,7 +36,7 @@ public class ClientImpl implements Client
 
    // Attributes ----------------------------------------------------
 
-   private ServerLocator serverLocator;
+   private RemotingConfiguration remotingConfig;
 
    private final NIOConnector connector;
 
@@ -51,18 +50,14 @@ public class ClientImpl implements Client
 
    // Constructors --------------------------------------------------
 
-   public ClientImpl(NIOConnector connector, ServerLocator locator)
+   public ClientImpl(NIOConnector connector, RemotingConfiguration remotingConfig)
    {
       assert connector != null;
-      assert locator != null;
+      assert remotingConfig != null;
       
       this.connector = connector;
-      this.serverLocator = locator;
-      if (locator.getParameters().containsKey(TIMEOUT_KEY))
-      {
-         int timeout = Integer.parseInt(locator.getParameters().get(TIMEOUT_KEY));
-         setBlockingRequestTimeout(timeout, SECONDS);
-      }
+      this.remotingConfig = remotingConfig;
+      setBlockingRequestTimeout(remotingConfig.getTimeout(), SECONDS);
    }
 
    // Public --------------------------------------------------------

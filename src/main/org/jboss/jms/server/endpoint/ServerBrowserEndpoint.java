@@ -251,7 +251,7 @@ public class ServerBrowserEndpoint
       
       iterator = null;
       
-      session.getConnectionEndpoint().getMessagingServer().getMinaService().getDispatcher().unregister(id);
+      session.getConnectionEndpoint().getMessagingServer().getRemotingService().getDispatcher().unregister(id);
       
       closed = true;
    }

@@ -21,6 +21,14 @@
   */
 package org.jboss.messaging.core.impl.server;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.jboss.aop.microcontainer.aspects.jmx.JMX;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.MessagingTimeoutFactory;
@@ -34,13 +42,22 @@ import org.jboss.jms.server.security.Role;
 import org.jboss.jms.server.security.SecurityMetadataStore;
 import org.jboss.jms.server.security.NullAuthenticationManager;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.*;
+import org.jboss.messaging.core.Binding;
+import org.jboss.messaging.core.Condition;
+import org.jboss.messaging.core.Configuration;
+import org.jboss.messaging.core.DestinationType;
+import org.jboss.messaging.core.MemoryManager;
+import org.jboss.messaging.core.MessagingServer;
+import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.PostOffice;
+import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.QueueSettings;
 import org.jboss.messaging.core.impl.ConditionImpl;
 import org.jboss.messaging.core.impl.QueueFactoryImpl;
 import org.jboss.messaging.core.impl.memory.SimpleMemoryManager;
 import org.jboss.messaging.core.impl.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.impl.postoffice.PostOfficeImpl;
-import org.jboss.messaging.core.remoting.impl.mina.MinaService;
+import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.deployers.queue.QueueSettingsDeployer;
 import org.jboss.messaging.deployers.security.SecurityDeployer;
 import org.jboss.messaging.util.ExceptionUtil;
@@ -48,14 +65,6 @@ import org.jboss.messaging.util.HierarchicalObjectRepository;
 import org.jboss.messaging.util.HierarchicalRepository;
 import org.jboss.messaging.util.Version;
 import org.jboss.security.AuthenticationManager;
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A Messaging Server
@@ -106,7 +115,7 @@ public class MessagingServerImpl implements MessagingServer
 
    private JMSUserManager jmsUserManager;
 
-   private MinaService minaService;
+   private RemotingService remotingService;
 
    private Configuration configuration;
    private HierarchicalObjectRepository<HashSet<Role>> securityRepository = new HierarchicalObjectRepository<HashSet<Role>>();
@@ -179,7 +188,7 @@ public class MessagingServerImpl implements MessagingServer
          postOffice.start();
          ConnectionFactoryAdvisedPacketHandler connectionFactoryAdvisedPacketHandler =
                  new ConnectionFactoryAdvisedPacketHandler(this);
-         getMinaService().getDispatcher().register(connectionFactoryAdvisedPacketHandler);
+         getRemotingService().getDispatcher().register(connectionFactoryAdvisedPacketHandler);
          started = true;
          log.info("JBoss Messaging " + getVersion().getProviderVersion() + " server [" +
                  configuration.getMessagingServerID() + "] started");
@@ -248,14 +257,14 @@ public class MessagingServerImpl implements MessagingServer
       this.configuration = configuration;
    }
 
-   public void setMinaService(MinaService minaService)
+   public void setRemotingService(RemotingService remotingService)
    {
-      this.minaService = minaService;
+      this.remotingService = remotingService;
    }
 
-   public MinaService getMinaService()
+   public RemotingService getRemotingService()
    {
-      return minaService;
+      return remotingService;
    }
 
    public ServerSessionEndpoint getSession(String sessionID)

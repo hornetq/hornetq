@@ -27,7 +27,7 @@ import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessagingServer;
-import org.jboss.messaging.core.remoting.ServerLocator;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.deployers.Deployer;
 import org.jboss.messaging.deployers.DeploymentManager;
 import org.jboss.messaging.util.JNDIUtil;
@@ -177,9 +177,9 @@ public class JNDIObjectDeployer extends Deployer
    {
       if (node.getNodeName().equals(CONNECTION_FACTORY_NODE_NAME))
       {
-         ServerLocator serverLocator = messagingServer.getMinaService().getLocator();
+         RemotingConfiguration remotingConfig = messagingServer.getRemotingService().getRemotingConfiguration();
 
-         log.info("Server locator is " + serverLocator);
+         log.info("Remoting configuration is " + remotingConfig);
          log.info(this + " started");
          // See http://www.jboss.com/index.html?module=bb&op=viewtopic&p=4076040#4076040
          final String id = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
@@ -227,7 +227,7 @@ public class JNDIObjectDeployer extends Deployer
 
          ClientConnectionFactoryImpl delegate =
                  new ClientConnectionFactoryImpl(messagingServer.getConfiguration().getMessagingServerID(),
-                         serverLocator.getURI(), version, useStrict, prefetchSize, dupsOKBatchSize, clientID);
+                         remotingConfig, version, useStrict, prefetchSize, dupsOKBatchSize, clientID);
 
          log.debug(this + " created local delegate " + delegate);
 

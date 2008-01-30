@@ -469,7 +469,7 @@ public class ServerSessionEndpoint
 
          connectionEndpoint.removeSession(id);
 
-         connectionEndpoint.getMessagingServer().getMinaService().getDispatcher().unregister(id);
+         connectionEndpoint.getMessagingServer().getRemotingService().getDispatcher().unregister(id);
       }
       catch (Throwable t)
       {
@@ -1268,7 +1268,7 @@ public class ServerSessionEndpoint
 //
 //      	rep.put(queue.getName(), DUR_SUB_STATE_CONSUMERS);
 //      }
-      connectionEndpoint.getMessagingServer().getMinaService().getDispatcher().register(ep.newHandler());
+      connectionEndpoint.getMessagingServer().getRemotingService().getDispatcher().register(ep.newHandler());
 
       CreateConsumerResponse response = new CreateConsumerResponse(consumerID, prefetchSize,
                                                                    maxDeliveryAttemptsToUse, redeliveryDelayToUse );
@@ -1327,7 +1327,7 @@ public class ServerSessionEndpoint
          browsers.put(browserID, ep);
       }
 
-      connectionEndpoint.getMessagingServer().getMinaService().getDispatcher().register(ep.newHandler());
+      connectionEndpoint.getMessagingServer().getRemotingService().getDispatcher().register(ep.newHandler());
 
       
       log.trace(this + " created and registered " + ep);

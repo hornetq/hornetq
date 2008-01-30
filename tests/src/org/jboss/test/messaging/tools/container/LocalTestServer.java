@@ -21,13 +21,7 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -48,7 +42,6 @@ import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
-import org.apache.tools.ant.util.ReaderInputStream;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.api.ClientConnectionFactory;
 import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
@@ -63,7 +56,7 @@ import org.jboss.messaging.core.DestinationType;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.MessagingServerManagement;
 import org.jboss.messaging.core.impl.ConditionImpl;
-import org.jboss.messaging.core.remoting.ServerLocator;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.microcontainer.JBMBootstrapServer;
 import org.jboss.messaging.util.JNDIUtil;
 import org.jboss.messaging.util.Version;
@@ -697,9 +690,9 @@ public class LocalTestServer implements Server, Runnable
      // connectionFactory.setSupportsFailover(supportsFailover);
       //connectionFactory.setSupportsLoadBalancing(supportsLoadBalancing);
       //connectionFactory.setStrictTck(strictTck);
-      ServerLocator serverLocator = getMessagingServer().getMinaService().getLocator();
+      RemotingConfiguration remotingConfiguration = getMessagingServer().getRemotingService().getRemotingConfiguration();
 
-      log.info("Server locator is " + serverLocator);
+      log.info("Remoting configuration is " + remotingConfiguration);
       log.info(this + " started");
       // See http://www.jboss.com/index.html?module=bb&op=viewtopic&p=4076040#4076040
       final String id = objectName;
@@ -719,7 +712,7 @@ public class LocalTestServer implements Server, Runnable
 
       ClientConnectionFactory delegate =
               new ClientConnectionFactoryImpl( getMessagingServer().getConfiguration().getMessagingServerID(),
-                      serverLocator.getURI(), version, useStrict, prefetchSize, dupsOkBatchSize, clientId);
+                      remotingConfiguration, version, useStrict, prefetchSize, dupsOkBatchSize, clientId);
 
       log.debug(this + " created local delegate " + delegate);
 
@@ -737,7 +730,7 @@ public class LocalTestServer implements Server, Runnable
 
    public void undeployConnectionFactory(String objectName) throws Exception
    {
-      getMessagingServer().getMinaService().getDispatcher().unregister(objectName);
+      getMessagingServer().getRemotingService().getDispatcher().unregister(objectName);
       List<String> bindings = allBindings.get(objectName);
       for (String binding : bindings)
       {

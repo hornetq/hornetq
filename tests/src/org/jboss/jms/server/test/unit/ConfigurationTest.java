@@ -29,6 +29,8 @@ import junit.framework.TestCase;
 
 import org.jboss.jms.server.security.Role;
 import org.jboss.messaging.core.Configuration;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
+import org.jboss.messaging.core.remoting.TransportType;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -177,9 +179,12 @@ public class ConfigurationTest extends TestCase
       assertEquals("failed to set channel partition name", "JMStest", configuration.getChannelPartitionName());
    }
 
-   public void testSetRemoteBindAddress() throws Exception
+   public void testSetRemotingConfiguration() throws Exception
    {
-      assertEquals("failed to set bin address", new Integer(10000), configuration.getRemotingBindAddress());
+      RemotingConfiguration remotingConfig = configuration.getRemotingConfiguration();
+      assertEquals(TransportType.TCP, remotingConfig.getTransport());
+      assertEquals(10000, remotingConfig.getPort());
+      assertEquals(100, remotingConfig.getTimeout());
    }
 
    public void testPropertyChangeListener() throws Exception

@@ -21,6 +21,8 @@
    */
 package org.jboss.example.embedded;
 
+import static org.jboss.messaging.core.remoting.TransportType.TCP;
+
 import javax.jms.Session;
 
 import org.jboss.jms.client.api.ClientConnection;
@@ -34,6 +36,7 @@ import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.impl.DestinationImpl;
 import org.jboss.messaging.core.impl.MessageImpl;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -42,10 +45,11 @@ public class EmbeddedExample
 {
    public static void main(String args[]) throws Exception
    {
-      MessagingServer messagingServer = MessagingServerFactory.createMessagingServer();
+      RemotingConfiguration remotingConf = new RemotingConfiguration(TCP, "localhost", 5400);
+      MessagingServer messagingServer = MessagingServerFactory.createMessagingServer(remotingConf);
       messagingServer.start();
       messagingServer.createQueue("Queue1");
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl("tcp://localhost:5400");
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(remotingConf);
       ClientConnection clientConnection = cf.createConnection(null, null);
       ClientSession clientSession = clientConnection.createClientSession(false, Session.AUTO_ACKNOWLEDGE, false);
 

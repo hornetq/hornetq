@@ -12,14 +12,10 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
-import static org.jboss.messaging.core.remoting.impl.mina.MinaService.KEEP_ALIVE_INTERVAL_KEY;
-import static org.jboss.messaging.core.remoting.impl.mina.MinaService.KEEP_ALIVE_TIMEOUT_KEY;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.KEEP_ALIVE_INTERVAL;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.KEEP_ALIVE_TIMEOUT;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.PORT;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import junit.framework.TestCase;
@@ -27,6 +23,7 @@ import junit.framework.TestCase;
 import org.jboss.messaging.core.remoting.ConnectionExceptionListener;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.NIOSession;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 
@@ -73,14 +70,13 @@ public class ServerKeepAliveTest extends TestCase
 
       replay(factory);
       
-      service = new MinaService(TCP, "localhost", PORT, factory);
-      Map<String, String> parameters = new HashMap<String, String>();
-      parameters.put(KEEP_ALIVE_INTERVAL_KEY, Integer.toString(KEEP_ALIVE_INTERVAL));
-      parameters.put(KEEP_ALIVE_TIMEOUT_KEY, Integer.toString(KEEP_ALIVE_TIMEOUT));
-      service.setParameters(parameters);
+      RemotingConfiguration remotingConfig = new RemotingConfiguration(TCP, "localhost", PORT);
+      remotingConfig.setKeepAliveInterval(KEEP_ALIVE_INTERVAL);
+      remotingConfig.setKeepAliveTimeout(KEEP_ALIVE_TIMEOUT);
+      service = new MinaService(remotingConfig, factory);
       service.start();
 
-      MinaConnector connector = new MinaConnector(service.getLocator());
+      MinaConnector connector = new MinaConnector(service.getRemotingConfiguration());
       final String[] sessionIDNotResponding = new String[1];
       final CountDownLatch latch = new CountDownLatch(1);
  

@@ -6,15 +6,12 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addBlockingRequestResponseFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addExecutorFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addKeepAliveFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addLoggingFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addMDCFilter;
-import static org.jboss.messaging.core.remoting.impl.mina.MinaService.KEEP_ALIVE_INTERVAL_KEY;
-import static org.jboss.messaging.core.remoting.impl.mina.MinaService.KEEP_ALIVE_TIMEOUT_KEY;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -33,13 +30,12 @@ import org.apache.mina.common.IoServiceListener;
 import org.apache.mina.common.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
-import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.ConnectionExceptionListener;
+import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.ServerLocator;
-import org.jboss.messaging.core.remoting.TransportType;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.SetSessionIDMessage;
 import org.jboss.messaging.util.Logger;
@@ -55,12 +51,10 @@ public class MinaConnector implements NIOConnector, KeepAliveNotifier
    // Constants -----------------------------------------------------
 
    private final Logger log = Logger.getLogger(MinaConnector.class);
-
+   
    // Attributes ----------------------------------------------------
 
-   private String host;
-
-   private int port;
+   private RemotingConfiguration configuration;
 
    private NioSocketConnector connector;
 
@@ -78,53 +72,27 @@ public class MinaConnector implements NIOConnector, KeepAliveNotifier
 
    // Public --------------------------------------------------------
 
-   public MinaConnector(ServerLocator locator)
+   public MinaConnector(RemotingConfiguration configuration)
    {
-      this(locator.getTransport(), locator.getHost(), locator.getPort(),
-            locator.getParameters(), new ClientKeepAliveFactory());
+      this(configuration, new ClientKeepAliveFactory());
    }
 
-   public MinaConnector(ServerLocator locator, KeepAliveFactory keepAliveFactory)
+   public MinaConnector(RemotingConfiguration configuration, KeepAliveFactory keepAliveFactory)
    {
-      this(locator.getTransport(), locator.getHost(), locator.getPort(),
-            locator.getParameters(), keepAliveFactory);
-   }
-
-   public MinaConnector(TransportType transport, String host, int port)
-   {
-      this(transport, host, port, new HashMap<String, String>(),
-            new ClientKeepAliveFactory());
-   }
-
-   private MinaConnector(TransportType transport, String host, int port,
-         Map<String, String> parameters, KeepAliveFactory keepAliveFactory)
-   {
-      assert transport == TCP;
-      assert host != null;
-      assert port > 0;
-      assert parameters != null;
+      assert configuration != null;
       assert keepAliveFactory != null;
 
-      this.host = host;
-      this.port = port;
+      this.configuration = configuration;
 
       this.connector = new NioSocketConnector();
       DefaultIoFilterChainBuilder filterChain = connector.getFilterChain();
-
-      // FIXME no hard-coded values
-      int keepAliveInterval = parameters.containsKey(KEEP_ALIVE_INTERVAL_KEY) ? Integer
-            .parseInt(parameters.get(KEEP_ALIVE_INTERVAL_KEY))
-            : 10;
-      int keepAliveTimeout = parameters.containsKey(KEEP_ALIVE_TIMEOUT_KEY) ? Integer
-            .parseInt(parameters.get(KEEP_ALIVE_TIMEOUT_KEY))
-            : 5;
 
       addMDCFilter(filterChain);
       addCodecFilter(filterChain);
       addLoggingFilter(filterChain);
       blockingScheduler = addBlockingRequestResponseFilter(filterChain);
-      addKeepAliveFilter(filterChain, keepAliveFactory, keepAliveInterval,
-            keepAliveTimeout);
+      addKeepAliveFilter(filterChain, keepAliveFactory, configuration.getKeepAliveInterval(),
+            configuration.getKeepAliveTimeout());
       addExecutorFilter(filterChain);
 
       connector.setHandler(new MinaHandler(PacketDispatcher.client, this));
@@ -140,7 +108,7 @@ public class MinaConnector implements NIOConnector, KeepAliveNotifier
       {
          return new MinaSession(session);
       }
-      InetSocketAddress address = new InetSocketAddress(host, port);
+      InetSocketAddress address = new InetSocketAddress(configuration.getHost(), configuration.getPort());
       ConnectFuture future = connector.connect(address);
       connector.setDefaultRemoteAddress(address);
 
@@ -205,19 +173,8 @@ public class MinaConnector implements NIOConnector, KeepAliveNotifier
    }
 
    public String getServerURI()
-   {
-      if (connector == null)
-      {
-         return TCP + "://" + host + ":" + port;
-      }
-      InetSocketAddress address = connector.getDefaultRemoteAddress();
-      if (address != null)
-      {
-         return TCP + "://" + address.toString();
-      } else
-      {
-         return TCP + "://" + host + ":" + port;
-      }
+   { 
+      return configuration.getURI();
    }
 
    public void setConnectionExceptionListener(ConnectionExceptionListener listener)
@@ -242,6 +199,13 @@ public class MinaConnector implements NIOConnector, KeepAliveNotifier
       }
    }
 
+   // Public --------------------------------------------------------
+   
+   @Override
+   public String toString()
+   {
+      return "MinaConnector@" + System.identityHashCode(this) + "[configuration=" + configuration + "]"; 
+   }
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

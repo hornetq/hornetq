@@ -21,7 +21,11 @@
  */
 package org.jboss.messaging.core;
 
+import static org.jboss.messaging.core.remoting.TransportType.TCP;
+
 import org.jboss.jms.server.security.Role;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
+import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -95,9 +99,11 @@ public class Configuration implements Serializable
 
    private String _channelPartitionName;
 
+   private TransportType _remotingTransport = TCP;
+
    private Integer _remotingBindAddress;
    
-   private String _remotingTimeout;
+   private Integer _remotingTimeout;
 
    //default confog file location
    private String configurationUrl = "jbm-configuration.xml";
@@ -129,8 +135,9 @@ public class Configuration implements Serializable
       _controlChannelName = getString(e, "control-channel-name", _controlChannelName);
       _dataChannelName = getString(e, "data-channel-name", _dataChannelName);
       _channelPartitionName = getString(e, "channel-partition-name", _channelPartitionName);
+      _remotingTransport = TransportType.valueOf(getString(e, "remoting-transport", _remotingTransport.name()));
       _remotingBindAddress = getInteger(e, "remoting-bind-address", _remotingBindAddress);
-      _remotingTimeout = getString(e, "remoting-timeout", _remotingTimeout);
+      _remotingTimeout = getInteger(e, "remoting-timeout", _remotingTimeout);
       NodeList security = e.getElementsByTagName("default-security-config");
       if (security.getLength() > 0)
       {
@@ -418,19 +425,21 @@ public class Configuration implements Serializable
       _channelPartitionName = channelPartitionName;
    }
 
-   public Integer getRemotingBindAddress()
+   public int getRemotingBindAddress()
    {
       return _remotingBindAddress;
    }
 
-   public void setRemotingBindAddress(Integer remotingBindAddress)
+   public void setRemotingBindAddress(int remotingBindAddress)
    {
       this._remotingBindAddress = remotingBindAddress;
    }
-   
-   public String getRemotingTimeout()
+
+   public RemotingConfiguration getRemotingConfiguration() 
    {
-       return _remotingTimeout;
+      RemotingConfiguration configuration = new RemotingConfiguration(_remotingTransport, "localhost", _remotingBindAddress);
+      configuration.setTimeout(_remotingTimeout);
+      return configuration;
    }
 
    public String getConfigurationUrl()
@@ -443,3 +452,4 @@ public class Configuration implements Serializable
       this.configurationUrl = configurationUrl;
    }
 }
+ 

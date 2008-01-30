@@ -31,7 +31,7 @@ import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.exception.MessagingNetworkFailureException;
 import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.NIOConnector;
-import org.jboss.messaging.core.remoting.ServerLocator;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.ClientImpl;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
@@ -61,7 +61,7 @@ public class MessagingRemotingConnection
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private ServerLocator serverLocator;
+   private RemotingConfiguration remotingConfig;
 
    private Client client;
 
@@ -71,11 +71,13 @@ public class MessagingRemotingConnection
    
    // Constructors ---------------------------------------------------------------------------------
 
-   public MessagingRemotingConnection(String serverLocatorURI) throws Exception
+   public MessagingRemotingConnection(RemotingConfiguration remotingConfig) throws Exception
    {
-      serverLocator = new ServerLocator(serverLocatorURI);
+      assert remotingConfig != null;
       
-      log.trace(this + " created");
+      this.remotingConfig = remotingConfig;
+      
+      log.trace(this + " created with configuration " + remotingConfig);
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -86,12 +88,12 @@ public class MessagingRemotingConnection
 
       //callbackManager = new CallbackManager();
 
-      NIOConnector connector = REGISTRY.getConnector(serverLocator);
-      client = new ClientImpl(connector, serverLocator);
+      NIOConnector connector = REGISTRY.getConnector(remotingConfig);
+      client = new ClientImpl(connector, remotingConfig);
       client.connect();
 
       if (log.isDebugEnabled())
-         log.debug("Using " + connector.getServerURI() + " to connect to " + serverLocator);
+         log.debug("Using " + connector + " to connect to " + remotingConfig);
 
       log.trace(this + " started");
    }
@@ -103,7 +105,7 @@ public class MessagingRemotingConnection
       try
       {
          client.disconnect();
-         NIOConnector connector = REGISTRY.removeConnector(serverLocator);
+         NIOConnector connector = REGISTRY.removeConnector(remotingConfig);
          if (connector != null)
             connector.disconnect();
       }

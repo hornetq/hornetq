@@ -14,7 +14,7 @@ import java.io.IOException;
 
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.ServerLocator;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.ClientTestBase;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
@@ -64,19 +64,19 @@ public class MinaClientTest extends ClientTestBase
    @Override
    protected NIOConnector createNIOConnector()
    {
-      return new MinaConnector(TCP, "localhost", PORT);
+      return new MinaConnector(createRemotingConfiguration());
    }
    
    @Override
-   protected ServerLocator createServerLocator()
+   protected RemotingConfiguration createRemotingConfiguration()
    {
-      return new ServerLocator(TCP, "localhost", PORT);
+      return new RemotingConfiguration(TCP, "localhost", PORT);
    }
 
    @Override
    protected PacketDispatcher startServer() throws Exception
    {
-      service = new MinaService(TCP.toString(), "localhost", PORT);
+      service = new MinaService(createRemotingConfiguration());
       service.start();
       return service.getDispatcher();
    }

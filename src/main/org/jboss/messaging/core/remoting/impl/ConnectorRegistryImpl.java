@@ -16,7 +16,7 @@ import java.util.Set;
 import org.jboss.messaging.core.remoting.ConnectorRegistry;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.ServerLocator;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
@@ -36,78 +36,97 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
 
    // Attributes ----------------------------------------------------
 
-   public Map<ServerLocator, PacketDispatcher> locators = new HashMap<ServerLocator, PacketDispatcher>();
-
-   public Map<ServerLocator, NIOConnectorHolder> connectors = new HashMap<ServerLocator, NIOConnectorHolder>();
+   private RemotingConfiguration localConfiguration = null;
+   private PacketDispatcher localDispatcher = null;
+   
+   public Map<RemotingConfiguration, NIOConnectorHolder> connectors = new HashMap<RemotingConfiguration, NIOConnectorHolder>();
 
    // Static --------------------------------------------------------
 
    /**
-    * @return <code>true</code> if this locator has not already been registered,
+    * @return <code>true</code> if this RemotingConfiguration has not already been registered,
     *         <code>false</code> else
     */
-   public boolean register(ServerLocator locator, PacketDispatcher serverDispatcher)
+   public boolean register(RemotingConfiguration remotingConfig, PacketDispatcher serverDispatcher)
    {
-      assert locator != null;
+      assert remotingConfig != null;
       assert serverDispatcher != null;
       
-      PacketDispatcher previousDispatcher = locators.put(locator, serverDispatcher);
+      PacketDispatcher previousDispatcher = localDispatcher;
+      
+      this.localConfiguration = remotingConfig;
+      this.localDispatcher = serverDispatcher;
+      
+      if(log.isDebugEnabled())
+      {
+         log.debug("registered " + localDispatcher + " for " + localConfiguration);
+      }
       return (previousDispatcher == null);
    }
 
    /**
-    * @return <code>true</code> if this locator was registered,
+    * @return <code>true</code> if this RemotingConfiguration was registered,
     *         <code>false</code> else
     */  
-   public boolean unregister(ServerLocator locator)
+   public boolean unregister()
    {
-       PacketDispatcher dispatcher = locators.remove(locator);
+       PacketDispatcher dispatcher = localDispatcher;
+
+       localConfiguration = null;
+       localDispatcher = null;
+       
+       if(log.isDebugEnabled())
+       {
+          log.debug("unregistered " + dispatcher);
+       }
+
        return (dispatcher != null);
    }
 
-   public synchronized NIOConnector getConnector(ServerLocator locator)
+   public synchronized NIOConnector getConnector(RemotingConfiguration remotingConfig)
    {
-      assert locator != null;
+      assert remotingConfig != null;
 
-      if (connectors.containsKey(locator))
+      if (connectors.containsKey(remotingConfig))
       {
-         NIOConnectorHolder holder = connectors.get(locator);
+         NIOConnectorHolder holder = connectors.get(remotingConfig);
          holder.increment();
          NIOConnector connector = holder.getConnector();
 
          if (log.isDebugEnabled())
-            log.debug("Reuse " + connector.getServerURI() + " to connect to "
-                  + locator + " [count=" + holder.getCount() + "]");
+            log.debug("Reuse " + connector + " to connect to "
+                  + remotingConfig + " [count=" + holder.getCount() + "]");
 
          return connector;
       }
 
       // check if the server is in the same vm than the client
-      if (locators.containsKey(locator))
+      if (remotingConfig.equals(localConfiguration))
       {
-         NIOConnector connector = new INVMConnector(locator.getHost(), locator
-               .getPort(), locators.get(locator));
+         NIOConnector connector = new INVMConnector(localConfiguration.getHost(), localConfiguration
+               .getPort(), localDispatcher);
 
          if (log.isDebugEnabled())
-            log.debug("Created " + connector.getServerURI() + " to connect to "
-                  + locator);
+            log.debug("Created " + connector + " to connect to "
+                  + remotingConfig);
 
          NIOConnectorHolder holder = new NIOConnectorHolder(connector);
-         connectors.put(locator, holder);
+         connectors.put(remotingConfig, holder);
          return connector;
       }
 
       NIOConnector connector = null;
 
-      TransportType transport = locator.getTransport();
+      TransportType transport = remotingConfig.getTransport();
 
       if (transport == TCP)
       {
-         connector = new MinaConnector(locator.getTransport(), locator
-               .getHost(), locator.getPort());
+         connector = new MinaConnector(remotingConfig);
       } else if (transport == INVM)
       {
-         connector = new INVMConnector(locator.getHost(), locator.getPort(), locators.get(locator));
+         assert localDispatcher != null;
+         
+         connector = new INVMConnector(remotingConfig.getHost(), remotingConfig.getPort(), localDispatcher);
       }
 
       if (connector == null)
@@ -117,65 +136,65 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
       }
 
       if (log.isDebugEnabled())
-         log.debug("Created " + connector.getServerURI() + " to connect to "
-               + locator);
+         log.debug("Created " + connector + " to connect to "
+               + remotingConfig);
       
       NIOConnectorHolder holder = new NIOConnectorHolder(connector);
-      connectors.put(locator, holder);
+      connectors.put(remotingConfig, holder);
       return connector;
    }
 
    /**
     * Decrement the number of references on the NIOConnector corresponding to
-    * the locator.
+    * the RemotingConfiguration.
     * 
     * If there is only one reference, remove it from the connectors Map and
     * returns it. Otherwise return null.
     * 
-    * @param locator
-    *           a ServerLocator
+    * @param remotingConfiguration
+    *           a RemotingConfiguration
     * @return the NIOConnector if there is no longer any references to it or
     *         <code>null</code>
     * @throws IllegalStateException
-    *            if no NIOConnector were created for the given locator
+    *            if no NIOConnector were created for the given RemotingConfiguration
     */
-   public synchronized NIOConnector removeConnector(ServerLocator locator)
+   public synchronized NIOConnector removeConnector(RemotingConfiguration remotingConfiguration)
    {
-      assert locator != null;
+      assert remotingConfiguration != null;
 
-      NIOConnectorHolder holder = connectors.get(locator);
+      NIOConnectorHolder holder = connectors.get(remotingConfiguration);
       if (holder == null)
       {
          throw new IllegalStateException("No Connector were created for "
-               + locator);
+               + remotingConfiguration);
       }
 
       if (holder.getCount() == 1)
       {
          if (log.isDebugEnabled())
-            log.debug("Removed connector for " + locator);
-         connectors.remove(locator);
+            log.debug("Removed connector for " + remotingConfiguration);
+         connectors.remove(remotingConfiguration);
          return holder.getConnector();
       } else
       {
          holder.decrement();
          if (log.isDebugEnabled())
-            log.debug(holder.getCount() + " remaining reference to "
-                  + holder.getConnector().getServerURI() + " to " + locator);
+            log.debug(holder.getCount() + " remaining references to "
+                  + holder.getConnector().getServerURI());
          return null;
       }
    }
 
-   public ServerLocator[] getRegisteredLocators()
+   public RemotingConfiguration[] getRegisteredRemotingConfigurations()
    {
-      Set<ServerLocator> registeredLocators = connectors.keySet();
-      return (ServerLocator[]) registeredLocators
-            .toArray(new ServerLocator[registeredLocators.size()]);
+      Set<RemotingConfiguration> registeredRemotingConfigs = connectors.keySet();
+      return (RemotingConfiguration[]) registeredRemotingConfigs
+            .toArray(new RemotingConfiguration[registeredRemotingConfigs.size()]);
    }
 
-   public int getConnectorCount(ServerLocator locator)
+   public int getConnectorCount(RemotingConfiguration remotingConfig)
    {
-      NIOConnectorHolder holder = connectors.get(locator);
+      NIOConnectorHolder holder = connectors.get(remotingConfig);
       if (holder == null)
       {
          return 0;

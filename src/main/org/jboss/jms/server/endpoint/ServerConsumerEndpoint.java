@@ -433,7 +433,7 @@ public class ServerConsumerEndpoint implements Consumer
 
       messageQueue.removeConsumer(this);
       
-      sessionEndpoint.getConnectionEndpoint().getMessagingServer().getMinaService().getDispatcher().unregister(id);
+      sessionEndpoint.getConnectionEndpoint().getMessagingServer().getRemotingService().getDispatcher().unregister(id);
             
       // If this is a consumer of a non durable subscription then we want to unbind the
       // subscription and delete all its data.

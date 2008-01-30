@@ -31,7 +31,7 @@ import org.jboss.jms.server.TransactionRepository;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
 import org.jboss.jms.server.security.Role;
-import org.jboss.messaging.core.remoting.impl.mina.MinaService;
+import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.util.HierarchicalRepository;
 import org.jboss.messaging.util.Version;
 
@@ -63,9 +63,9 @@ public interface MessagingServer extends MessagingComponent
    
    void setConfiguration(Configuration configuration);
    
-   void setMinaService(MinaService minaService);
+   void setRemotingService(RemotingService remotingService);
    
-   MinaService getMinaService();
+   RemotingService getRemotingService();
 
    ServerSessionEndpoint getSession(String sessionID);
 

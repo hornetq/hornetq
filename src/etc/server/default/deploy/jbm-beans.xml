@@ -23,8 +23,8 @@
       <property name="jmsUserManager">
          <inject bean="JMSUserManager"/>
       </property>
-      <property name="minaService">
-         <inject bean="MinaService"/>
+      <property name="remotingService">
+         <inject bean="RemotingService"/>
       </property> 
       <property name="configuration">
          <inject bean="Configuration"/>
@@ -91,28 +91,13 @@
          </map>
       </property>
    </bean>
-
    
-   
-   
-   <bean name="MinaService" class="org.jboss.messaging.core.remoting.impl.mina.MinaService">
+   <bean name="RemotingService" class="org.jboss.messaging.core.remoting.impl.mina.MinaService">
       <constructor>
-         <parameter>tcp</parameter>      
-         <parameter>localhost</parameter>      
          <parameter>
-            <inject bean="Configuration" property="remotingBindAddress"/>
+            <inject bean="Configuration" property="remotingConfiguration"/>
          </parameter>
       </constructor>
-      <property name="parameters">
-         <map class="java.util.HashMap" keyClass="java.lang.String" valueClass="java.lang.String">
-            <entry>
-               <key>timeout</key>
-               <value>
-                 <inject bean="Configuration" property="remotingTimeout" />
-               </value>
-            </entry>
-          </map>
-      </property>
    </bean> 
    
    <bean name="JNDIObjectDeployer" class="org.jboss.jms.jndi.JNDIObjectDeployer">

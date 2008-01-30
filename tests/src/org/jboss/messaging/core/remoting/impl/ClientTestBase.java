@@ -18,7 +18,7 @@ import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.ServerLocator;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.mina.integration.test.ReversePacketHandler;
 import org.jboss.messaging.core.remoting.test.unit.TestPacketHandler;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
@@ -52,7 +52,7 @@ public abstract class ClientTestBase extends TestCase
    public void testConnected() throws Exception
    {
       NIOConnector connector = createNIOConnector();
-      Client client = new ClientImpl(connector, createServerLocator());
+      Client client = new ClientImpl(connector, createRemotingConfiguration());
       
       assertFalse(client.isConnected());
 
@@ -193,9 +193,9 @@ public abstract class ClientTestBase extends TestCase
    {
       serverDispatcher = startServer();
       
-      ServerLocator serverLocator = createServerLocator();
+      RemotingConfiguration remotingConfig = createRemotingConfiguration();
       connector = createNIOConnector();
-      client = new ClientImpl(connector, serverLocator);
+      client = new ClientImpl(connector, remotingConfig);
       client.connect();
       
       serverPacketHandler = new ReversePacketHandler();
@@ -215,7 +215,7 @@ public abstract class ClientTestBase extends TestCase
       serverDispatcher = null;
    }
    
-   protected abstract ServerLocator createServerLocator();
+   protected abstract RemotingConfiguration createRemotingConfiguration();
    
    protected abstract NIOConnector createNIOConnector();
 

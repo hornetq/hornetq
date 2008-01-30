@@ -14,7 +14,7 @@ import junit.framework.TestCase;
 import org.jboss.messaging.core.remoting.ConnectorRegistry;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.ServerLocator;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.ConnectorRegistryImpl;
 
 /**
@@ -43,131 +43,131 @@ public class ConnectorRegistryTest extends TestCase
    {
       registry = new ConnectorRegistryImpl();
       dispatcher = new PacketDispatcher();
-      assertEquals(0, registry.getRegisteredLocators().length);
+      assertEquals(0, registry.getRegisteredRemotingConfigurations().length);
    }
    
    @Override
    protected void tearDown() throws Exception
    {
-      assertEquals(0, registry.getRegisteredLocators().length);
+      assertEquals(0, registry.getRegisteredRemotingConfigurations().length);
       registry = null;
    }
    
-   public void testLocatorRegistration() throws Exception
+   public void testRemotingConfigurationRegistration() throws Exception
    {
-      ServerLocator locator = new ServerLocator(TCP, "localhost", PORT);
+      RemotingConfiguration remotingConfig = new RemotingConfiguration(TCP, "localhost", PORT);
       
-      assertTrue(registry.register(locator, dispatcher));
-      assertFalse(registry.register(locator, dispatcher));
+      assertTrue(registry.register(remotingConfig, dispatcher));
+      assertFalse(registry.register(remotingConfig, dispatcher));
       
-      assertTrue(registry.unregister(locator));
-      assertFalse(registry.unregister(locator));
+      assertTrue(registry.unregister());
+      assertFalse(registry.unregister());
 
-      assertTrue(registry.register(locator, dispatcher));
-      assertTrue(registry.unregister(locator));
+      assertTrue(registry.register(remotingConfig, dispatcher));
+      assertTrue(registry.unregister());
    }
    
-   public void testINVMConnectorFromTCPLocator() throws Exception
+   public void testINVMConnectorFromTCPRemotingConfiguration() throws Exception
    {
-      ServerLocator locator = new ServerLocator(TCP, "localhost", PORT);
+      RemotingConfiguration remotingConfig = new RemotingConfiguration(TCP, "localhost", PORT);
       
-      // locator is registered -> client and server are in the same vm
-      assertTrue(registry.register(locator, dispatcher));
+      // remotingConfig is registered -> client and server are in the same vm
+      assertTrue(registry.register(remotingConfig, dispatcher));
       
-      NIOConnector connector = registry.getConnector(locator);
+      NIOConnector connector = registry.getConnector(remotingConfig);
       
       assertTrue(connector.getServerURI().startsWith(INVM.toString()));
       
-      assertTrue(registry.unregister(locator));
+      assertTrue(registry.unregister());
       
-      assertNotNull(registry.removeConnector(locator));
+      assertNotNull(registry.removeConnector(remotingConfig));
    }
    
    
-   public void testTCPConnectorFromTCPLocator() throws Exception
+   public void testTCPConnectorFromTCPRemotingConfiguration() throws Exception
    {
-      ServerLocator locator = new ServerLocator(TCP, "localhost", PORT);
+      RemotingConfiguration remotingConfig = new RemotingConfiguration(TCP, "localhost", PORT);
       
-      // locator is not registered -> client and server are not in the same vm
+      // remotingConfig is not registered -> client and server are not in the same vm
       
-      NIOConnector connector = registry.getConnector(locator);
+      NIOConnector connector = registry.getConnector(remotingConfig);
       
       assertNotNull(connector);
-      assertEquals(locator.getURI(), connector.getServerURI());
+      assertEquals(remotingConfig.getURI(), connector.getServerURI());
       
-      assertNotNull(registry.removeConnector(locator));
+      assertNotNull(registry.removeConnector(remotingConfig));
    }
    
    public void testConnectorCount() throws Exception
    {
-      ServerLocator locator = new ServerLocator(TCP, "localhost", PORT);
-      assertEquals(0, registry.getConnectorCount(locator));
+      RemotingConfiguration remotingConfig = new RemotingConfiguration(TCP, "localhost", PORT);
+      assertEquals(0, registry.getConnectorCount(remotingConfig));
 
-      NIOConnector connector1 = registry.getConnector(locator);
-      assertEquals(1, registry.getConnectorCount(locator));
+      NIOConnector connector1 = registry.getConnector(remotingConfig);
+      assertEquals(1, registry.getConnectorCount(remotingConfig));
 
-      NIOConnector connector2 = registry.getConnector(locator);
-      assertEquals(2, registry.getConnectorCount(locator));
+      NIOConnector connector2 = registry.getConnector(remotingConfig);
+      assertEquals(2, registry.getConnectorCount(remotingConfig));
 
       assertSame(connector1, connector2);
       
-      assertNull(registry.removeConnector(locator));
-      assertEquals(1, registry.getConnectorCount(locator));
+      assertNull(registry.removeConnector(remotingConfig));
+      assertEquals(1, registry.getConnectorCount(remotingConfig));
 
-      NIOConnector connector3 = registry.getConnector(locator);
-      assertEquals(2, registry.getConnectorCount(locator));
+      NIOConnector connector3 = registry.getConnector(remotingConfig);
+      assertEquals(2, registry.getConnectorCount(remotingConfig));
 
       assertSame(connector1, connector3);
       
-      assertNull(registry.removeConnector(locator));
-      assertNotNull(registry.removeConnector(locator));
-      assertEquals(0, registry.getConnectorCount(locator));
+      assertNull(registry.removeConnector(remotingConfig));
+      assertNotNull(registry.removeConnector(remotingConfig));
+      assertEquals(0, registry.getConnectorCount(remotingConfig));
    }
    
    public void testConnectorCount_2() throws Exception
    {
-      ServerLocator locator1 = new ServerLocator(TCP, "localhost", PORT);
-      ServerLocator locator2 = new ServerLocator(TCP, "127.0.0.1", PORT);
+      RemotingConfiguration remotingConfig1 = new RemotingConfiguration(TCP, "localhost", PORT);
+      RemotingConfiguration remotingConfig2 = new RemotingConfiguration(TCP, "127.0.0.1", PORT);
 
-      assertNotSame(locator1, locator2);
+      assertNotSame(remotingConfig1, remotingConfig2);
       
-      assertEquals(0, registry.getConnectorCount(locator1));
-      assertEquals(0, registry.getConnectorCount(locator2));
+      assertEquals(0, registry.getConnectorCount(remotingConfig1));
+      assertEquals(0, registry.getConnectorCount(remotingConfig2));
 
-      NIOConnector connector1 = registry.getConnector(locator1);
-      assertEquals(1, registry.getConnectorCount(locator1));
+      NIOConnector connector1 = registry.getConnector(remotingConfig1);
+      assertEquals(1, registry.getConnectorCount(remotingConfig1));
 
-      NIOConnector connector2 = registry.getConnector(locator2);
-      assertEquals(1, registry.getConnectorCount(locator2));
+      NIOConnector connector2 = registry.getConnector(remotingConfig2);
+      assertEquals(1, registry.getConnectorCount(remotingConfig2));
       
       assertNotSame(connector1, connector2);
       
-      assertNotNull(registry.removeConnector(locator1));
-      assertNotNull(registry.removeConnector(locator2));
+      assertNotNull(registry.removeConnector(remotingConfig1));
+      assertNotNull(registry.removeConnector(remotingConfig2));
    }
    
    /**
-    * Check that 2 ServerLocators which are equals (but not the same object) will
+    * Check that 2 RemotingConfiguration which are equals (but not the same object) will
     * return the same NIOConnector
     */
-   public void testServerLocatorEquality() throws Exception
+   public void testRemotingConfigurationEquality() throws Exception
    {
-      ServerLocator locator1 = new ServerLocator(TCP, "localhost", PORT);
-      ServerLocator locator2 = new ServerLocator(TCP, "localhost", PORT);
+      RemotingConfiguration remotingConfig1 = new RemotingConfiguration(TCP, "localhost", PORT);
+      RemotingConfiguration remotingConfig2 = new RemotingConfiguration(TCP, "localhost", PORT);
 
-      assertNotSame(locator1, locator2);
-      assertEquals(locator1, locator2);
+      assertNotSame(remotingConfig1, remotingConfig2);
+      assertEquals(remotingConfig1, remotingConfig2);
 
-      NIOConnector connector1 = registry.getConnector(locator1);
-      assertEquals(1, registry.getConnectorCount(locator1));
+      NIOConnector connector1 = registry.getConnector(remotingConfig1);
+      assertEquals(1, registry.getConnectorCount(remotingConfig1));
 
-      NIOConnector connector2 = registry.getConnector(locator2);
-      assertEquals(2, registry.getConnectorCount(locator2));
+      NIOConnector connector2 = registry.getConnector(remotingConfig2);
+      assertEquals(2, registry.getConnectorCount(remotingConfig2));
 
       assertSame(connector1, connector2);
 
-      assertNull(registry.removeConnector(locator1));
-      assertNotNull(registry.removeConnector(locator2));
+      assertNull(registry.removeConnector(remotingConfig1));
+      assertNotNull(registry.removeConnector(remotingConfig2));
    }
 
    // Package protected ---------------------------------------------
