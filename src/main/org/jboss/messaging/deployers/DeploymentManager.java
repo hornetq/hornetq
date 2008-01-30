@@ -150,8 +150,11 @@ public class DeploymentManager implements Runnable
       deployables.remove(deployable);
       if(deployables.size() == 0)
       {
-         scheduler.shutdown();
-         scheduler = null;
+         if (scheduler != null)
+         {
+            scheduler.shutdown();
+            scheduler = null;
+         }
       }
    }
    /**
