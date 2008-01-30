@@ -46,6 +46,7 @@ import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.ConsumerChangeRateMessage;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
+import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.Logger;
@@ -552,11 +553,11 @@ public class ServerConsumerEndpoint implements Consumer
          return ServerConsumerEndpoint.this.id;
       }
 
-      public void handle(AbstractPacket packet, PacketSender sender)
+      public void handle(Packet packet, PacketSender sender)
       {
          try
          {
-            AbstractPacket response = null;
+            Packet response = null;
 
             PacketType type = packet.getType();
             if (type == MSG_CHANGERATE)

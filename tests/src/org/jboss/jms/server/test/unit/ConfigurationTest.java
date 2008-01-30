@@ -186,6 +186,13 @@ public class ConfigurationTest extends TestCase
       assertEquals(10000, remotingConfig.getPort());
       assertEquals(100, remotingConfig.getTimeout());
    }
+   public void testSetInterceptorsList() throws Exception
+   {
+      assertEquals("Didn't get the correct number of elements on interceptors", 2, configuration.getDefaultInterceptors().size());
+      assertEquals("org.jboss.tst", configuration.getDefaultInterceptors().get(0));
+      assertEquals("org.jboss.tst2", configuration.getDefaultInterceptors().get(1));
+   }
+   
 
    public void testPropertyChangeListener() throws Exception
    {

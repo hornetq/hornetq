@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting;
 
-import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.wireformat.Packet;
 
 /**
  * A PacketHandler handles packets (as defined by {@link AbstractPacket} and its
@@ -34,5 +34,5 @@ public interface PacketHandler
     */
    String getID();
 
-   void handle(AbstractPacket packet, PacketSender sender);
+   void handle(Packet packet, PacketSender sender);
 }

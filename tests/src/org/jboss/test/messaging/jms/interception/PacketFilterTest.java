@@ -7,8 +7,13 @@
 
 package org.jboss.test.messaging.jms.interception;
 
+import java.util.UUID;
+
 import javax.jms.Connection;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
 import javax.jms.Session;
+import javax.jms.TextMessage;
 
 import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.test.messaging.jms.JMSTestCase;
@@ -26,66 +31,160 @@ public class PacketFilterTest  extends JMSTestCase
    
    public void testFilter() throws Throwable
    {
-      KernelDeployment packetFilterDeployment = servers.get(0).deployXML("packetFilterDeployment", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><deployment xmlns=\"urn:jboss:bean-deployer:2.0\"><bean name=\"DummyInterceptionTest\" class=\"org.jboss.test.messaging.jms.interception.DummyInterceptor\"/></deployment>");
-      
-      
-      DummyInterceptor.status=false;
+      DummyInterceptor interceptorA = null;
+      KernelDeployment packetFilterDeploymentB = null;
+      Connection conn = null;
+        
       try
       {
-         Connection conn = cf.createConnection();
-         fail("Exception expected");
+         
+         // Deploy using the API
+         interceptorA = new DummyInterceptor();
+         servers.get(0).getMessagingServer().getRemotingService().addInterceptor(interceptorA);
+         
+         
+         interceptorA.sendException=true;
+         try
+         {
+            conn = cf.createConnection();
+            fail("Exception expected");
+         }
+         catch (Exception e)
+         {
+            conn = null;
+         }
+         
+         interceptorA.sendException=false;
+         
+         conn = cf.createConnection();
+         conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         conn.close();
+         conn = null;
+         
+         
+         assertEquals(0, DummyInterceptorB.getCounter());
+         assertTrue(interceptorA.getCounter() > 0);
+         
+         interceptorA.clearCounter();
+         DummyInterceptorB.clearCounter();
+         
+   
+         // deploy using MC
+         packetFilterDeploymentB = servers.get(0).deployXML("packetFilterDeploymentB", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><deployment xmlns=\"urn:jboss:bean-deployer:2.0\"><bean name=\"DummyInterceptionTestB\" class=\"org.jboss.test.messaging.jms.interception.DummyInterceptorB\"/></deployment>");
+   
+         conn = cf.createConnection();
+         conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         conn.close();
+         conn = null;
+         
+         assertTrue(DummyInterceptorB.getCounter() > 0);
+         assertTrue(interceptorA.getCounter() > 0);
+         
+         interceptorA.clearCounter();
+         DummyInterceptorB.clearCounter();
+   
+         servers.get(0).getMessagingServer().getRemotingService().removeInterceptor(interceptorA);
+   
+         conn = cf.createConnection();
+         conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         conn.close();
+         conn = null;
+         
+         assertTrue(DummyInterceptorB.getCounter() > 0);
+         assertTrue(interceptorA.getCounter() == 0);
+         
+         
+         log.info("Undeploying server");
+         servers.get(0).undeploy(packetFilterDeploymentB);
+         packetFilterDeploymentB = null;
+         interceptorA.clearCounter();
+         DummyInterceptorB.clearCounter();
+         
+         conn = cf.createConnection();
+         conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         conn.close();
+         conn = null;
+         
+         assertEquals(0, interceptorA.getCounter());
+         assertEquals(0, DummyInterceptorB.getCounter());
+
+         interceptorA = null;
       }
-      catch (Exception e)
+      finally
       {
+         if (conn != null)
+         {
+            try{conn.close();} catch (Exception ignored){}
+         }
+         if (interceptorA != null)
+         {
+            servers.get(0).getMessagingServer().getRemotingService().removeInterceptor(interceptorA);
+         }
+         if (packetFilterDeploymentB != null)
+         {
+            try{servers.get(0).undeploy(packetFilterDeploymentB);} catch (Exception ignored){}
+         }
       }
-      
-      DummyInterceptor.status=true;
-      
-      Connection conn = cf.createConnection();
-      conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      conn.close();
-      
-      
-      assertEquals(0, DummyInterceptorB.getCounter());
-      assertTrue(DummyInterceptor.getCounter() > 0);
-      
-      DummyInterceptor.clearCounter();
-      DummyInterceptorB.clearCounter();
-      
-
-      KernelDeployment packetFilterDeploymentB = servers.get(0).deployXML("packetFilterDeploymentB", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><deployment xmlns=\"urn:jboss:bean-deployer:2.0\"><bean name=\"DummyInterceptionTestB\" class=\"org.jboss.test.messaging.jms.interception.DummyInterceptorB\"/></deployment>");
-
-      conn = cf.createConnection();
-      conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      conn.close();
-      
-      assertTrue(DummyInterceptorB.getCounter() > 0);
-      assertTrue(DummyInterceptor.getCounter() > 0);
-      
-      DummyInterceptor.clearCounter();
-      DummyInterceptorB.clearCounter();
-
-      servers.get(0).undeploy(packetFilterDeployment);
-
-      conn = cf.createConnection();
-      conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      conn.close();
-      
-      assertTrue(DummyInterceptorB.getCounter() > 0);
-      assertTrue(DummyInterceptor.getCounter() == 0);
-      
-      
-      log.info("Undeploying server");
-      servers.get(0).undeploy(packetFilterDeploymentB);
-      DummyInterceptor.clearCounter();
-      DummyInterceptorB.clearCounter();
-      
-      conn = cf.createConnection();
-      conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      conn.close();
-      
-      assertEquals(0, DummyInterceptor.getCounter());
-      assertEquals(0, DummyInterceptorB.getCounter());
    }
 
+   public void testReceiveMessages() throws Throwable
+   {
+      
+      DummyInterceptor interceptor = null;
+      Connection conn = null;
+        
+      try
+      {
+         
+         interceptor = new DummyInterceptor();
+         servers.get(0).getMessagingServer().getRemotingService().addInterceptor(interceptor);
+         
+         
+         interceptor.sendException=false;
+
+         conn = cf.createConnection();
+         conn.start();
+         
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer producer = session.createProducer(queue1);
+         String msg = "msg " + UUID.randomUUID().toString();
+         
+         interceptor.changeMessage = true;
+
+         producer.send(session.createTextMessage(msg));
+         
+         MessageConsumer consumer = session.createConsumer(queue1);
+         TextMessage jmsMsg = (TextMessage)consumer.receive(100000);
+         assertEquals(jmsMsg.getStringProperty("DummyInterceptor"), "was here");
+         
+         
+         assertNotNull(jmsMsg);
+         
+         assertEquals(msg, jmsMsg.getText());
+      }
+      finally
+      {
+         try
+         {
+            if (conn != null)
+            {
+               conn.close();
+            }
+         }
+         catch (Exception ignored)
+         {
+         }
+
+         try
+         {
+            if (interceptor != null)
+            {
+               servers.get(0).getMessagingServer().getRemotingService().removeInterceptor(interceptor);
+            }
+         }
+         catch (Exception ignored)
+         {
+         }
+      }
+   }
 }

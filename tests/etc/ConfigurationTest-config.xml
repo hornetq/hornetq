@@ -4,6 +4,10 @@
       <default-queue-jndi-context>/queuetest</default-queue-jndi-context>
       <default-topic-jndi-context>/topictest</default-topic-jndi-context>
       <security-domain>java:/jaas/messagingtest</security-domain>
+      <default-interceptors-config>
+         <interceptor class="org.jboss.tst"/>
+         <interceptor class="org.jboss.tst2"/>
+      </default-interceptors-config>
       <default-security-config>
          <role name="guest1" read="true" write="true" create="true"/>
          <role name="guest2" read="true" write="true" create="false"/>

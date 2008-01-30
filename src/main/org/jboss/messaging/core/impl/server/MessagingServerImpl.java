@@ -57,6 +57,8 @@ import org.jboss.messaging.core.impl.QueueFactoryImpl;
 import org.jboss.messaging.core.impl.memory.SimpleMemoryManager;
 import org.jboss.messaging.core.impl.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.impl.postoffice.PostOfficeImpl;
+import org.jboss.messaging.core.remoting.Interceptor;
+import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.deployers.queue.QueueSettingsDeployer;
 import org.jboss.messaging.deployers.security.SecurityDeployer;
@@ -189,6 +191,21 @@ public class MessagingServerImpl implements MessagingServer
          ConnectionFactoryAdvisedPacketHandler connectionFactoryAdvisedPacketHandler =
                  new ConnectionFactoryAdvisedPacketHandler(this);
          getRemotingService().getDispatcher().register(connectionFactoryAdvisedPacketHandler);
+         
+         ClassLoader loader = Thread.currentThread().getContextClassLoader();
+         for (String interceptorClass: configuration.getDefaultInterceptors())
+         {
+            try
+            {
+               Class clazz = loader.loadClass(interceptorClass);
+               getRemotingService().addInterceptor((Interceptor)clazz.newInstance());
+            }
+            catch (Exception e)
+            {
+               log.warn("Error instantiating interceptor \"" + interceptorClass + "\"", e);
+            }
+         }
+         
          started = true;
          log.info("JBoss Messaging " + getVersion().getProviderVersion() + " server [" +
                  configuration.getMessagingServerID() + "] started");

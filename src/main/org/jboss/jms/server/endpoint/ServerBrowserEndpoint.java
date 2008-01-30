@@ -47,6 +47,7 @@ import org.jboss.messaging.core.remoting.wireformat.BrowserHasNextMessageRespons
 import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageResponse;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
+import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.Logger;
@@ -288,11 +289,11 @@ public class ServerBrowserEndpoint
          return ServerBrowserEndpoint.this.id;
       }
       
-      public void handle(AbstractPacket packet, PacketSender sender)
+      public void handle(Packet packet, PacketSender sender)
       {
          try
          {
-            AbstractPacket response = null;
+            Packet response = null;
 
             PacketType type = packet.getType();
             if (type == REQ_BROWSER_HASNEXTMESSAGE)

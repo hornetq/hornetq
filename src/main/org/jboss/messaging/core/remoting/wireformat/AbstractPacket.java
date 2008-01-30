@@ -15,7 +15,7 @@ import org.jboss.messaging.core.remoting.Client;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class AbstractPacket
+public class AbstractPacket implements Packet
 {
    // Constants -----------------------------------------------------
 
@@ -103,7 +103,7 @@ public class AbstractPacket
       return oneWay;
    }
    
-   public void normalize(AbstractPacket other)
+   public void normalize(Packet other)
    {
       assert other != null;
 

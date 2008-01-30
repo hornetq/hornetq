@@ -19,4 +19,9 @@ public interface RemotingService extends MessagingComponent
    PacketDispatcher getDispatcher();
 
    RemotingConfiguration getRemotingConfiguration();
+   
+   void addInterceptor(Interceptor interceptor);
+
+   void removeInterceptor(Interceptor interceptor);
+   
 }

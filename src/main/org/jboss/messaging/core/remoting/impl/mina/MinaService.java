@@ -25,7 +25,7 @@ import org.jboss.beans.metadata.api.annotations.Uninstall;
 import org.jboss.messaging.core.remoting.ConnectionExceptionListener;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.PacketFilter;
+import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.util.Logger;
@@ -56,7 +56,7 @@ public class MinaService implements RemotingService, KeepAliveNotifier
 
    private KeepAliveFactory factory;
    
-   private List<PacketFilter> filters = new CopyOnWriteArrayList<PacketFilter>();
+   private List<Interceptor> filters = new CopyOnWriteArrayList<Interceptor>();
 
    // Static --------------------------------------------------------
 
@@ -78,13 +78,13 @@ public class MinaService implements RemotingService, KeepAliveNotifier
    }
    
    @Install
-   public void addFilter(PacketFilter filter)
+   public void addInterceptor(Interceptor filter)
    {
       this.filters.add(filter);
    }
 
    @Uninstall
-   public void removeFilter(PacketFilter filter)
+   public void removeInterceptor(Interceptor filter)
    {
       this.filters.remove(filter);
    }

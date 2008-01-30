@@ -35,6 +35,7 @@ import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
+import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
 import org.jboss.messaging.util.ExceptionUtil;
 
@@ -68,7 +69,7 @@ public class ConnectionFactoryAdvisedPacketHandler implements
       return ClientConnectionFactoryImpl.id;
    }
 
-   public void handle(AbstractPacket packet, PacketSender sender)
+   public void handle(Packet packet, PacketSender sender)
       {
          try
          {

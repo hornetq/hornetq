@@ -34,7 +34,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * This is the JBM configuration. It is used to configure the MessagingServer.
@@ -65,6 +67,7 @@ public class Configuration implements Serializable
    private String _defaultTopicJNDIContext = "";
    private String _securityDomain;
    private HashSet<Role> _securityConfig;
+   private List<String> defaultInterceptors;
    private String _defaultDLQ;
    // The default maximum number of delivery attempts before sending to DLQ - can be overridden on
    // the destination
@@ -160,6 +163,25 @@ public class Configuration implements Serializable
          }
          _securityConfig = securityConfig;
       }
+      
+      NodeList defaultInterceptors = e.getElementsByTagName("default-interceptors-config");
+
+      ArrayList<String> interceptorList = new ArrayList<String>();
+      if (defaultInterceptors.getLength() > 0)
+      {
+         
+         NodeList interceptors = defaultInterceptors.item(0).getChildNodes();
+         for (int k = 0; k < interceptors.getLength(); k++)
+         {
+            if ("interceptor".equalsIgnoreCase(interceptors.item(k).getNodeName()))
+            {
+               String clazz = interceptors.item(k).getAttributes().getNamedItem("class").getNodeValue();
+               interceptorList.add(clazz);
+            }
+         }
+      }
+      this.defaultInterceptors = interceptorList;
+      
    }
 
    private  Boolean getBoolean(Element e, String name, Boolean def)
@@ -255,6 +277,11 @@ public class Configuration implements Serializable
    public  HashSet<Role> getSecurityConfig()
    {
       return _securityConfig;
+   }
+   
+   public List<String> getDefaultInterceptors()
+   {
+      return defaultInterceptors;
    }
 
    public  void setSecurityConfig(HashSet<Role> securityConfig)

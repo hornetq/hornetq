@@ -25,6 +25,7 @@ import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.BytesPacket;
+import org.jboss.messaging.core.remoting.wireformat.Packet;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -152,7 +153,7 @@ public class PacketStressTest extends TestCase
          return handlerID;
       }
 
-      public void handle(AbstractPacket packet, PacketSender sender)
+      public void handle(Packet packet, PacketSender sender)
       {
          messagesReceived++;
          if (messagesReceived % spinner == 0)

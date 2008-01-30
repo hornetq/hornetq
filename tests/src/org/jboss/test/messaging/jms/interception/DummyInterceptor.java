@@ -7,38 +7,49 @@
 
 package org.jboss.test.messaging.jms.interception;
 
-import org.jboss.messaging.core.remoting.PacketFilter;
-import org.jboss.messaging.core.remoting.PacketHandler;
-import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.jms.exception.MessagingJMSException;
+import org.jboss.messaging.core.remoting.Interceptor;
+import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
+import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.util.Logger;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
-public class DummyInterceptor implements PacketFilter
+public class DummyInterceptor implements Interceptor
 {
    protected Logger log = Logger.getLogger(DummyInterceptor.class);
 
-   static boolean status = true;
-   static SynchronizedInt syncCounter = new SynchronizedInt(0);
+   boolean sendException = false;
+   boolean changeMessage = false;
+   SynchronizedInt syncCounter = new SynchronizedInt(0);
    
-   public static int getCounter()
+   public int getCounter()
    {
       return syncCounter.get();
    }
    
-   public static void clearCounter()
+   public void clearCounter()
    {
       syncCounter.set(0);
    }
    
-   public boolean filterMessage(AbstractPacket packet, PacketHandler handler,
-         PacketSender sender)
+   public void intercept(Packet packet) throws MessagingJMSException
    {
+      log.info("DummyFilter packet = " + packet.getClass().getName());
       syncCounter.add(1);
-      log.info("DummyFilter packet = " + packet + " handler = " + handler + " sender = " + sender);
-      
-      return status;
+      if (sendException)
+      {
+         throw new MessagingJMSException("Test");
+      }
+      if (changeMessage)
+      {
+         if (packet instanceof DeliverMessage)
+         {
+            DeliverMessage deliver = (DeliverMessage)packet;
+            log.info("msg = " + deliver.getMessage().getClass().getName());
+            deliver.getMessage().getHeaders().put("DummyInterceptor", "was here");
+         }
+      }
    }
 
 }

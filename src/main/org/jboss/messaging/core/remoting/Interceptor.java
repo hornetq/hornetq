@@ -7,7 +7,8 @@
 
 package org.jboss.messaging.core.remoting;
 
-import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.jms.exception.MessagingJMSException;
+import org.jboss.messaging.core.remoting.wireformat.Packet;
 
 /**
  *
@@ -29,7 +30,7 @@ import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
  *  
  * @author clebert.suconic@jboss.com
  */
-public interface PacketFilter
+public interface Interceptor
 {
    /**
     * If you need to intercept a return value, you could create your own implementation of PacketSender and recover the return value.
@@ -39,5 +40,5 @@ public interface PacketFilter
     * @param sender
     * @return false if the Packet transmission should be interrupted after this call
     */
-   boolean filterMessage(AbstractPacket packet, PacketHandler handler, PacketSender sender);
+   void intercept(Packet packet) throws MessagingJMSException;
 }

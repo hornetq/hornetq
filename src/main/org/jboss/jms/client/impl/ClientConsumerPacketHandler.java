@@ -6,7 +6,9 @@ import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
+import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
+import org.jboss.messaging.util.Logger;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -16,6 +18,8 @@ import org.jboss.messaging.core.remoting.wireformat.PacketType;
  */
 public class ClientConsumerPacketHandler implements PacketHandler
 {
+   private static final Logger log = Logger.getLogger(ClientConsumerImpl.class);
+
    private final ClientConsumer clientConsumer;
 
    private final String consumerID;
@@ -37,7 +41,7 @@ public class ClientConsumerPacketHandler implements PacketHandler
       return consumerID;
    }
 
-   public void handle(AbstractPacket packet, PacketSender sender)
+   public void handle(Packet packet, PacketSender sender)
    {
       try
       {
@@ -51,8 +55,8 @@ public class ClientConsumerPacketHandler implements PacketHandler
       }
       catch (Exception e)
       {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
+         // TODO: Is there anything else to be done here if an exception happens?
+         log.error(e.getMessage(), e);
       }
    }
 

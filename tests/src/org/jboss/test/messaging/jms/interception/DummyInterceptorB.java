@@ -7,15 +7,14 @@
 
 package org.jboss.test.messaging.jms.interception;
 
-import org.jboss.messaging.core.remoting.PacketFilter;
-import org.jboss.messaging.core.remoting.PacketHandler;
-import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.jms.exception.MessagingJMSException;
+import org.jboss.messaging.core.remoting.Interceptor;
+import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.util.Logger;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
-public class DummyInterceptorB implements PacketFilter
+public class DummyInterceptorB implements Interceptor
 {
 
    protected Logger log = Logger.getLogger(DummyInterceptorB.class);
@@ -31,13 +30,11 @@ public class DummyInterceptorB implements PacketFilter
    {
       syncCounter.set(0);
    }
-
-   public boolean filterMessage(AbstractPacket packet, PacketHandler handler,
-         PacketSender sender)
+   
+   public void intercept(Packet packet) throws MessagingJMSException
    {
-      log.info("InterceptorB received " + packet);
       syncCounter.add(1);
-      return true;
+      log.info("DummyFilter packet = " + packet);
    }
 
 }

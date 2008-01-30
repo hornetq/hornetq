@@ -18,6 +18,7 @@ import junit.framework.Assert;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.test.unit.TestPacketHandler;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.core.remoting.wireformat.TextPacket;
 
 /**
@@ -56,7 +57,7 @@ public class ReversePacketHandler extends TestPacketHandler
    // TestPacketHandler overrides -----------------------------------
    
    @Override
-   protected void doHandle(AbstractPacket packet, PacketSender sender)
+   protected void doHandle(Packet packet, PacketSender sender)
    {
       Assert.assertTrue(packet instanceof TextPacket);
 

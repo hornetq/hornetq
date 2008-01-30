@@ -77,6 +77,7 @@ import org.jboss.messaging.core.remoting.wireformat.CreateDestinationResponse;
 import org.jboss.messaging.core.remoting.wireformat.DeleteTemporaryDestinationMessage;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
+import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCancelMessage;
@@ -1493,11 +1494,11 @@ public class ServerSessionEndpoint
          return ServerSessionEndpoint.this.id;
       }
 
-      public void handle(AbstractPacket packet, PacketSender sender)
+      public void handle(Packet packet, PacketSender sender)
       {
          try
          {
-            AbstractPacket response = null;
+            Packet response = null;
 
             PacketType type = packet.getType();
             if (type == MSG_SENDMESSAGE)

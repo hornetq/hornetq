@@ -64,6 +64,7 @@ import org.jboss.messaging.core.remoting.wireformat.CreateSessionResponse;
 import org.jboss.messaging.core.remoting.wireformat.GetClientIDResponse;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
+import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.wireformat.SetClientIDMessage;
 import org.jboss.messaging.core.tx.MessagingXid;
@@ -564,11 +565,11 @@ public class ServerConnectionEndpoint
          return ServerConnectionEndpoint.this.id;
       }
 
-      public void handle(AbstractPacket packet, PacketSender sender)
+      public void handle(Packet packet, PacketSender sender)
       {
          try
          {
-            AbstractPacket response = null;
+            Packet response = null;
 
             PacketType type = packet.getType();
             if (type == REQ_CREATESESSION)

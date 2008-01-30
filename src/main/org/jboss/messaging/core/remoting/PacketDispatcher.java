@@ -9,12 +9,14 @@ package org.jboss.messaging.core.remoting;
 import static org.jboss.messaging.core.remoting.Assert.assertValidID;
 import static org.jboss.messaging.core.remoting.wireformat.AbstractPacket.NO_ID_SET;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
+import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.core.remoting.wireformat.SetSessionIDMessage;
 import org.jboss.messaging.util.Logger;
 
@@ -32,7 +34,7 @@ public class PacketDispatcher
    // Attributes ----------------------------------------------------
 
    private Map<String, PacketHandler> handlers;
-   private List<PacketFilter> filters;
+   private List<Interceptor> filters;
 
    // Static --------------------------------------------------------
 
@@ -46,7 +48,7 @@ public class PacketDispatcher
       handlers = new ConcurrentHashMap<String, PacketHandler>();
    }
 
-   public PacketDispatcher(List<PacketFilter> filters)
+   public PacketDispatcher(List<Interceptor> filters)
    {
       this();
       this.filters = filters;
@@ -88,7 +90,7 @@ public class PacketDispatcher
       return handlers.get(handlerID);
    }
    
-   public void dispatch(AbstractPacket packet, PacketSender sender)
+   public void dispatch(Packet packet, PacketSender sender)
    {
       //FIXME better separation between client and server PacketDispatchers
       if (this != client)
@@ -114,47 +116,38 @@ public class PacketDispatcher
          if (log.isTraceEnabled())
             log.trace(handler + " handles " + packet);
 
-         if (fireFilter(packet, handler, sender))
+         try
          {
+            callFilters(packet);
             handler.handle(packet, sender);
          }
+         catch (MessagingJMSException e)
+         {
+            sender.send(new JMSExceptionMessage(e));
+         }
+
       } else
       {
          log.error("Unhandled packet " + packet);
       }
    }
 
+   /** Call filters on a package */
+   public void callFilters(Packet packet) throws MessagingJMSException
+   {
+     if (filters != null)
+     {
+        for (Interceptor filter: filters)
+        {
+              filter.intercept(packet);
+        }
+     }
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
-   protected boolean fireFilter(AbstractPacket packet, PacketHandler handler, PacketSender sender)
-   {
-     if (filters == null)
-     {
-        return true;
-     }
-     else
-     {
-        for (PacketFilter filter: filters)
-        {
-           try
-           {
-              if (!filter.filterMessage(packet, handler, sender))
-              {
-                 log.info("Filter " + filter.getClass().getName() + " Cancelled packet " + packet);
-                 return false;
-              }
-           }
-           catch (Exception ignored)
-           {
-           }
-        }
-        
-        return true;
-     }
-   }
-   
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
