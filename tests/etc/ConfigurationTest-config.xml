@@ -33,7 +33,10 @@
       <control-channel-name>udp-synctest</control-channel-name>
       <data-channel-name>udptest</data-channel-name>
       <channel-partition-name>JMStest</channel-partition-name>
+      
+      <remoting-transport>TCP</remoting-transport>      
       <remoting-bind-address>10000</remoting-bind-address>
+      <remoting-timeout>100</remoting-timeout>
 
    </configuration>
 
