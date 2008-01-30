@@ -19,7 +19,7 @@
    * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
    * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
    */
-package org.jboss.messaging.microcontainer;
+package org.jboss.jms.server.security;
 
 import java.security.Principal;
 import java.util.Map;
@@ -31,11 +31,11 @@ import org.jboss.security.RealmMapping;
 
 /**
  * This is an implementation of AuthenticationManager and RealmMapping to use when we run embedded. The one we use when in jBoss
- * is not available. currently this does not have any functionality. This needs implementing or aleternatively a user can
- * provide their own implementation
+ * is not available. currently this does not have any functionality. A user can
+ * provide their own implementation if security is needed
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class AuthenticationManager implements org.jboss.security.AuthenticationManager, RealmMapping
+public class NullAuthenticationManager implements org.jboss.security.AuthenticationManager, RealmMapping
 {
     public String getSecurityDomain()
     {

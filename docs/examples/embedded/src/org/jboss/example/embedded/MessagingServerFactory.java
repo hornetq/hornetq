@@ -22,6 +22,7 @@
 package org.jboss.example.embedded;
 
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
+import org.jboss.jms.server.security.NullAuthenticationManager;
 import org.jboss.messaging.core.Configuration;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.impl.bdbje.BDBJEEnvironment;
@@ -29,7 +30,6 @@ import org.jboss.messaging.core.impl.bdbje.BDBJEPersistenceManager;
 import org.jboss.messaging.core.impl.bdbje.integration.RealBDBJEEnvironment;
 import org.jboss.messaging.core.impl.server.MessagingServerImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
-import org.jboss.messaging.microcontainer.AuthenticationManager;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -78,7 +78,6 @@ public class MessagingServerFactory
       bdbjeEnvironment.start();
       persistenceManager.start();
       messagingServer.setPersistenceManager(persistenceManager);
-      messagingServer.setAuthenticationManager(new AuthenticationManager());
       return messagingServer;
    }
    

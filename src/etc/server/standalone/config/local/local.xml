@@ -27,7 +27,7 @@
       <property name="bindTo">java:/jaas/messaging</property>
    </bean>
 
-   <bean name="Jaas" class="org.jboss.messaging.microcontainer.AuthenticationManager"/>
+   <bean name="Jaas" class="org.jboss.jms.server.security.NullAuthenticationManager"/>
 
    <bean name="jboss.jca:name=DefaultDS,service=DataSourceBinding" class="com.mysql.jdbc.jdbc2.optional.MysqlDataSource">
       <property name="url">jdbc:mysql://localhost/messaging</property>

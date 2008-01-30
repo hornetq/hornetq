@@ -32,6 +32,7 @@ import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
 import org.jboss.jms.server.security.Role;
 import org.jboss.jms.server.security.SecurityMetadataStore;
+import org.jboss.jms.server.security.NullAuthenticationManager;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.*;
 import org.jboss.messaging.core.impl.ConditionImpl;
@@ -91,13 +92,13 @@ public class MessagingServerImpl implements MessagingServer
 
    private SecurityMetadataStore securityStore;
    private SimpleConnectionManager connectionManager;
-   private MemoryManager memoryManager;
+   private MemoryManager memoryManager = new SimpleMemoryManager();
    private MessageCounterManager messageCounterManager;
    private TransactionRepository transactionRepository = new TransactionRepository();
    private PostOffice postOffice;
    private SecurityDeployer securityDeployer;
    private QueueSettingsDeployer queueSettingsDeployer;
-   private AuthenticationManager authenticationManager;
+   private AuthenticationManager authenticationManager = new NullAuthenticationManager();
 
    // plugins
 
