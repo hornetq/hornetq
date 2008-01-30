@@ -55,7 +55,6 @@ import javax.jms.XATopicSession;
 import javax.transaction.xa.XAResource;
 
 import org.jboss.jms.client.api.ClientConsumer;
-import org.jboss.jms.client.api.ClientProducer;
 import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
@@ -286,14 +285,16 @@ public class JBossSession implements
 
    public MessageProducer createProducer(Destination d) throws JMSException
    {
+      if (session.isClosed())
+      {
+         throw new IllegalStateException("Session is closed");
+      }
       if (d != null && !(d instanceof JBossDestination))
       {
          throw new InvalidDestinationException("Not a JBossDestination:" + d);
       }
            
-      ClientProducer producerDelegate = session.createClientProducer((JBossDestination)d);
-      
-      return new JBossMessageProducer(producerDelegate);
+      return new JBossMessageProducer(session, d);
    }
 
   public MessageConsumer createConsumer(Destination d) throws JMSException

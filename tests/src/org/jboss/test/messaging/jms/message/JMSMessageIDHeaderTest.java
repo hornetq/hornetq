@@ -49,6 +49,7 @@ public class JMSMessageIDHeaderTest extends MessageHeaderTestBase
       Message m = queueProducerSession.createMessage();
       queueProducer.send(m);
       String messageID = queueConsumer.receive().getJMSMessageID();
+      assertNotNull(messageID);
       // JMS1.1 specs 3.4.3
       assertTrue(messageID.startsWith("ID:"));
    }

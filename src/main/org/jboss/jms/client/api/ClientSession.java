@@ -32,8 +32,6 @@ public interface ClientSession
    
    ClientBrowser createClientBrowser(Destination queue, String messageSelector) throws JMSException;
    
-   ClientProducer createClientProducer(JBossDestination destination) throws JMSException;
-
    JBossQueue createQueue(String queueName) throws JMSException;
 
    JBossTopic createTopic(String topicName) throws JMSException;
@@ -46,7 +44,7 @@ public interface ClientSession
 
    void unsubscribe(String subscriptionName) throws JMSException;
 
-   void send(Message message) throws JMSException;
+   void send(Message message, Destination destination) throws JMSException;
 
    XAResource getXAResource();
 
@@ -57,8 +55,6 @@ public interface ClientSession
    boolean isXA() throws JMSException;
    
    void removeConsumer(ClientConsumer consumer) throws JMSException;
-   
-   void removeProducer(ClientProducer producer);
    
    void removeBrowser(ClientBrowser browser);
    

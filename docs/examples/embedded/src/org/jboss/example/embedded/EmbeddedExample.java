@@ -55,9 +55,8 @@ public class EmbeddedExample
 
       MessageImpl message = new MessageImpl();
       Destination destination = new DestinationImpl(DestinationType.QUEUE, "Queue1", false);
-      message.putHeader(org.jboss.messaging.core.Message.TEMP_DEST_HEADER_NAME, destination);
       message.setPayload("hello".getBytes());
-      clientSession.send(message);
+      clientSession.send(message, destination);
 
       ClientConsumer clientConsumer = clientSession.createClientConsumer(destination, null, false, null);
       clientConnection.start();

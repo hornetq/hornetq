@@ -106,7 +106,7 @@ public class ConnectionClosedTest extends JMSTestCase
       int count = 0;
       while (true)
       {
-         TextMessage tm = (TextMessage)sub1.receive(10000);
+         TextMessage tm = (TextMessage)sub1.receive(500);
          if (tm == null)
          {
             break;
@@ -125,7 +125,7 @@ public class ConnectionClosedTest extends JMSTestCase
       count = 0;
       while (true)
       {
-         TextMessage tm = (TextMessage)sub2.receive(10000);
+         TextMessage tm = (TextMessage)sub2.receive(500);
          if (tm == null)
          {
             break;
