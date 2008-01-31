@@ -21,42 +21,22 @@
   */
 package org.jboss.jms.client;
 
-import java.util.UUID;
-
-import javax.jms.BytesMessage;
-import javax.jms.DeliveryMode;
 import javax.jms.Destination;
-import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
-import javax.jms.MapMessage;
 import javax.jms.Message;
-import javax.jms.MessageFormatException;
 import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 import javax.jms.QueueSender;
-import javax.jms.StreamMessage;
-import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicPublisher;
 
-import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.message.JBossBytesMessage;
-import org.jboss.jms.message.JBossMapMessage;
-import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.message.JBossObjectMessage;
-import org.jboss.jms.message.JBossStreamMessage;
-import org.jboss.jms.message.JBossTextMessage;
-import org.jboss.messaging.core.DestinationType;
-import org.jboss.messaging.core.impl.DestinationImpl;
 import org.jboss.messaging.util.Logger;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -71,119 +51,84 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
    
    // Attributes ----------------------------------------------------
    
-   private boolean trace = log.isTraceEnabled();
-   
-   private ClientSession session;
-
-   private Destination destination;
-
-   private volatile boolean closed;
-   
-   private boolean disableMessageID = false;
-   
-   private boolean disableMessageTimestamp = false;
-   
-   private int priority = 4;
-   
-   private long timeToLive = 0;
-   
-   private int deliveryMode = DeliveryMode.PERSISTENT;
-   
+   protected org.jboss.jms.client.api.ClientProducer producer;
 
    // Constructors --------------------------------------------------
    
-   public JBossMessageProducer(org.jboss.jms.client.api.ClientSession session, Destination destination)
+   public JBossMessageProducer(org.jboss.jms.client.api.ClientProducer producer)
    {
-      this.session = session;
-      this.destination = destination;
+      this.producer = producer;     
    }
    
    // MessageProducer implementation --------------------------------
    
    public void setDisableMessageID(boolean value) throws JMSException
    {
-      checkClosed();
       log.warn("JBoss Messaging does not support disabling message ID generation");
 
-      this.disableMessageID = value;
+      producer.setDisableMessageID(value);
    }
    
    public boolean getDisableMessageID() throws JMSException
    {
-      checkClosed();
-      return disableMessageID;
+      return producer.isDisableMessageID();
    }
    
    public void setDisableMessageTimestamp(boolean value) throws JMSException
    {
-      checkClosed();
-      this.disableMessageTimestamp = value;
+      producer.setDisableMessageTimestamp(value);
    }
    
    public boolean getDisableMessageTimestamp() throws JMSException
    {
-      checkClosed();
-      return disableMessageTimestamp;
+      return producer.isDisableMessageTimestamp();
    }
    
    public void setDeliveryMode(int deliveryMode) throws JMSException
    {
-      checkClosed();
-      this.deliveryMode = deliveryMode;
+      producer.setDeliveryMode(deliveryMode);
    }
    
    public int getDeliveryMode() throws JMSException
    {
-      checkClosed();
-      return deliveryMode;
+      return producer.getDeliveryMode();
    }
    
    public void setPriority(int defaultPriority) throws JMSException
    {
-      checkClosed();
-      
-      if (defaultPriority < 0 || defaultPriority > 9)
-      {
-         throw new JMSException("Invalid message priority (" + priority + "). " +
-                                          "Valid priorities are 0-9");
-      }
-      
-      this.priority = defaultPriority;
+      producer.setPriority(defaultPriority);
    }
    
    public int getPriority() throws JMSException
    {
-      checkClosed();
-      return this.priority;
+      return producer.getPriority();
    }
    
    public void setTimeToLive(long timeToLive) throws JMSException
    {
-      checkClosed();
-      this.timeToLive = timeToLive;
+      producer.setTimeToLive(timeToLive);
    }
    
    public long getTimeToLive() throws JMSException
    {
-      checkClosed();
-      return this.timeToLive;
+      return producer.getTimeToLive();
    }
    
    public Destination getDestination() throws JMSException
    {
-      checkClosed();
-      return this.destination;
+      return producer.getDestination();
    }
    
    public void close() throws JMSException
    {
-      closed = true;
+      producer.closing();
+      producer.close();
    }
    
    public void send(Message message) throws JMSException
    {
       // by default the message never expires
-      send(message, this.deliveryMode, this.priority, timeToLive);
+      send(message, -1, -1, Long.MIN_VALUE);
    }
    
    /**
@@ -197,7 +142,7 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
    
    public void send(Destination destination, Message message) throws JMSException
    {      
-      send(destination, message, deliveryMode, priority, timeToLive);
+      send(destination, message, -1, -1, Long.MIN_VALUE);
    }
 
    public void send(Destination destination,
@@ -210,132 +155,10 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
       {
          throw new InvalidDestinationException("Not a JBossDestination:" + destination);
       }
-      
-      
-      checkClosed();
-      
-      m.setJMSDeliveryMode(deliveryMode);
 
-      if (priority < 0 || priority > 9)
-      {
-         throw new MessageFormatException("Invalid message priority (" + priority + "). " +
-                                          "Valid priorities are 0-9");
-      }
-      m.setJMSPriority(priority);
-
-      if (this.getDisableMessageTimestamp())
-      {
-         m.setJMSTimestamp(0l);
-      }
-      else
-      {
-         m.setJMSTimestamp(System.currentTimeMillis());
-      }
-
-      if (timeToLive == 0)
-      {
-         // Zero implies never expires
-         m.setJMSExpiration(0);
-      }
-      else
-      {
-         m.setJMSExpiration(System.currentTimeMillis() + timeToLive);
-      }
-
-      if (destination == null)
-      {
-         // use destination from producer
-         destination = (JBossDestination)getDestination();
-
-         if (destination == null)
-         {
-            throw new UnsupportedOperationException("Destination not specified");
-         }
-
-         if (trace) { log.trace("Using producer's default destination: " + destination); }
-      }
-      else
-      {
-         // if a default destination was already specified then this must be same destination as
-         // that specified in the arguments
-
-         if (getDestination() != null &&
-             !getDestination().equals(destination))
-         {
-            throw new UnsupportedOperationException("Where a default destination is specified " +
-                                                    "for the sender and a destination is " +
-                                                    "specified in the arguments to the send, " +
-                                                    "these destinations must be equal");
-         }
-      }
-
-      JBossMessage jbm;
-
-      boolean foreign = false;
-
-      //First convert from foreign message if appropriate
-      if (!(m instanceof JBossMessage))
-      {
-         // it's a foreign message
-
-         // JMS 1.1 Sect. 3.11.4: A provider must be prepared to accept, from a client,
-         // a message whose implementation is not one of its own.
-
-         // create a matching JBossMessage Type from JMS Type
-         jbm = convertMessage(destination, m);
-
-         foreign = true;
-      }
-      else
-      {
-         jbm = (JBossMessage)m;
-      }
-
-      try
-      {
-         jbm.doBeforeSend();
-      }
-      catch (Exception e)
-      {
-         JMSException exthrown = new JMSException (e.toString());
-         exthrown.initCause(e);
-         throw exthrown;
-      }
-
-      final boolean keepID = false;
-      
-      if (!keepID)
-      {
-         //Generate an id
-         
-         String id = UUID.randomUUID().toString();
-         
-         jbm.setJMSMessageID("ID:" + id);
-      }
-
-      if (foreign)
-      {
-         m.setJMSMessageID(jbm.getJMSMessageID());
-      }
-
-      jbm.setJMSDestination(destination);
-
-      JBossDestination dest = (JBossDestination)destination;
-
-      //Set the destination on the core message - TODO temp for refactoring
-      org.jboss.messaging.core.Destination coreDest =
-         new DestinationImpl(dest.isQueue() ? DestinationType.QUEUE : DestinationType.TOPIC, dest.getName(), dest.isTemporary());
-      
-      //TODO - can optimise this copy to do copy lazily.
-      org.jboss.messaging.core.Message messageToSend = jbm.getCoreMessage().copy();
-
-      //FIXME - temp - for now we set destination as a header - should really be an attribute of the
-      //send packet - along with scheduleddelivery time
-
-      // we now invoke the send(Message) method on the session, which will eventually be fielded
-      // by connection endpoint
-      session.send(messageToSend, coreDest);
+      producer.send((JBossDestination)destination, m, deliveryMode, priority, timeToLive);
    }
+
 
    // TopicPublisher Implementation ---------------------------------
 
@@ -386,14 +209,14 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
    
    // Public --------------------------------------------------------
 
-   public ClientSession getDelegate()
+   public org.jboss.jms.client.api.ClientProducer getDelegate()
    {
-      return session;
+      return producer;
    }
 
    public String toString()
    {
-      return "JBossMessageProducer->" + session;
+      return "JBossMessageProducer->" + producer;
    }
 
    // Package protected ---------------------------------------------
@@ -401,51 +224,6 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
-
-
-   private void checkClosed() throws IllegalStateException
-   {
-      if (closed || session.isClosed())
-      {
-         throw new IllegalStateException("Producer is closed");
-      }
-   }
-
-   private JBossMessage convertMessage(Destination destination, Message m)
-         throws JMSException
-   {
-      JBossMessage jbm;
-      if (m instanceof BytesMessage)
-      {
-         jbm = new JBossBytesMessage((BytesMessage) m);
-      } 
-      else if (m instanceof MapMessage)
-      {
-         jbm = new JBossMapMessage((MapMessage) m);
-      } 
-      else if (m instanceof ObjectMessage)
-      {
-         jbm = new JBossObjectMessage((ObjectMessage) m);
-      } 
-      else if (m instanceof StreamMessage)
-      {
-         jbm = new JBossStreamMessage((StreamMessage) m);
-      } 
-      else if (m instanceof TextMessage)
-      {
-         jbm = new JBossTextMessage((TextMessage) m);
-      } 
-      else
-      {
-         jbm = new JBossMessage(m);
-      }
-
-      //Set the destination on the original message
-      m.setJMSDestination(destination);
-      return jbm;
-   }
-
-
    
    // Inner classes -------------------------------------------------
 }

@@ -547,14 +547,12 @@ public class PacketTypeTest extends TestCase
 
    public void testSendMessage() throws Exception
    {
-      Destination originalDestination = new DestinationImpl(DestinationType.QUEUE, java.util.UUID.randomUUID().toString(), true);
-      SessionSendMessage packet = new SessionSendMessage(new MessageImpl(), originalDestination);
+      SessionSendMessage packet = new SessionSendMessage(new MessageImpl());
 
       AbstractPacketCodec codec = new SessionSendMessageCodec();
       SimpleRemotingBuffer buffer = encode(packet, codec);
       checkHeader(buffer, packet);
-      checkBody(buffer, encodeMessage(packet.getMessage()), DestinationType.toInt(originalDestination.getType()),
-                        originalDestination.isTemporary(), originalDestination.getName());
+      checkBody(buffer, encodeMessage(packet.getMessage()));
       buffer.rewind();
 
       AbstractPacket p = codec.decode(buffer);
@@ -564,9 +562,6 @@ public class PacketTypeTest extends TestCase
       assertEquals(MSG_SENDMESSAGE, decodedPacket.getType());
       assertEquals(packet.getMessage().getMessageID(), decodedPacket
             .getMessage().getMessageID());
-      assertEquals(originalDestination.getName(), packet.getDestination().getName());
-      assertEquals(DestinationType.QUEUE, packet.getDestination().getType());
-      assertEquals(originalDestination.isTemporary(), packet.getDestination().isTemporary());
    }
 
    public void testCreateConsumerRequest() throws Exception

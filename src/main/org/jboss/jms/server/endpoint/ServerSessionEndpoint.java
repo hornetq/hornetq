@@ -478,10 +478,12 @@ public class ServerSessionEndpoint
       }
    }
 
-   private void send(Message msg, Destination dest) throws JMSException
+   private void send(Message msg) throws JMSException
    {
       try
       {
+         Destination dest = (Destination)msg.getHeader(org.jboss.messaging.core.Message.TEMP_DEST_HEADER_NAME);
+
          //Assign the message an internal id - this is used to key it in the store and also used to 
          //handle delivery
          
@@ -1503,7 +1505,7 @@ public class ServerSessionEndpoint
             {
                SessionSendMessage message = (SessionSendMessage) packet;
               
-               send(message.getMessage(), message.getDestination());
+               send(message.getMessage());
 
                if (message.getMessage().isDurable())
                {

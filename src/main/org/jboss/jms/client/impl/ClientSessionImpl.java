@@ -35,6 +35,7 @@ import org.jboss.jms.client.SelectorTranslator;
 import org.jboss.jms.client.api.ClientBrowser;
 import org.jboss.jms.client.api.ClientConnection;
 import org.jboss.jms.client.api.ClientConsumer;
+import org.jboss.jms.client.api.ClientProducer;
 import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.client.remoting.MessagingRemotingConnection;
 import org.jboss.jms.destination.JBossDestination;
@@ -114,6 +115,8 @@ public class ClientSessionImpl implements ClientSession
    private ClientConnection connection;
    
    private Set<ClientBrowser> browsers = new HashSet<ClientBrowser>();
+   
+   private Set<ClientProducer> producers = new HashSet<ClientProducer>();
    
    private Map<String, ClientConsumer> consumers = new HashMap<String, ClientConsumer>();
    
@@ -281,6 +284,17 @@ public class ClientSessionImpl implements ClientSession
       return consumer;
    }
    
+   public ClientProducer createClientProducer(JBossDestination destination) throws JMSException
+   {
+      checkClosed();
+      
+      ClientProducer producer = new ClientProducerImpl(this, destination);
+  
+      producers.add(producer);
+      
+      return producer;
+   }
+
    public JBossQueue createQueue(String queueName) throws JMSException
    {
       checkClosed();
@@ -381,11 +395,11 @@ public class ClientSessionImpl implements ClientSession
       return xaResource;
    }
 
-   public void send(Message m, Destination dest) throws JMSException
+   public void send(Message m) throws JMSException
    {
       checkClosed();
       
-      SessionSendMessage message = new SessionSendMessage(m, dest);
+      SessionSendMessage message = new SessionSendMessage(m);
       
       remotingConnection.send(id, message, !m.isDurable());
    }
@@ -401,6 +415,11 @@ public class ClientSessionImpl implements ClientSession
       //2. cancel all deliveries on server but not in tx
             
       remotingConnection.send(id, new SessionCancelMessage(-1, false));      
+   }
+   
+   public void removeProducer(ClientProducer producer)
+   {
+      producers.remove(producer);
    }
    
    public void removeBrowser(ClientBrowser browser)
@@ -453,6 +472,15 @@ public class ClientSessionImpl implements ClientSession
          consumer.closing();
          
          consumer.close();
+      }
+      
+      Set<ClientProducer> producersClone = new HashSet<ClientProducer>(producers);
+      
+      for (ClientProducer producer: producersClone)
+      {
+         producer.closing();
+         
+         producer.close();
       }
       
       Set<ClientBrowser> browsersClone = new HashSet<ClientBrowser>(browsers);
