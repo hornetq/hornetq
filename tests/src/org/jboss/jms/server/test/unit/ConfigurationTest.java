@@ -29,6 +29,7 @@ import junit.framework.TestCase;
 
 import org.jboss.jms.server.security.Role;
 import org.jboss.messaging.core.Configuration;
+import org.jboss.messaging.core.FileConfiguration;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.TransportType;
 
@@ -37,11 +38,11 @@ import org.jboss.messaging.core.remoting.TransportType;
  */
 public class ConfigurationTest extends TestCase
 {
-   private Configuration configuration;
+   private FileConfiguration configuration;
 
    protected void setUp() throws Exception
    {
-      configuration = new Configuration();
+      configuration = new FileConfiguration();
       configuration.setConfigurationUrl("ConfigurationTest-config.xml");
       configuration.start();
    }
@@ -179,7 +180,7 @@ public class ConfigurationTest extends TestCase
       assertEquals("failed to set channel partition name", "JMStest", configuration.getChannelPartitionName());
    }
 
-   public void testSetRemotingConfiguration() throws Exception
+   public void testSetRemoteBindAddress() throws Exception
    {
       RemotingConfiguration remotingConfig = configuration.getRemotingConfiguration();
       assertEquals(TransportType.TCP, remotingConfig.getTransport());

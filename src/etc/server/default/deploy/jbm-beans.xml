@@ -2,7 +2,7 @@
 
 <deployment xmlns="urn:jboss:bean-deployer:2.0">
 
-   <bean name="Configuration" class="org.jboss.messaging.core.Configuration"/>
+   <bean name="Configuration" class="org.jboss.messaging.core.FileConfiguration"/>
 
    <bean name="ServiceLocator" class="org.jboss.messaging.microcontainer.ServiceLocator">
       <demand>jboss.jca:name=DefaultDS,service=DataSourceBinding</demand>

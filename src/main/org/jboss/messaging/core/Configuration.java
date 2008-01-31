@@ -55,174 +55,51 @@ import java.util.List;
 public class Configuration implements Serializable
 {
    private static final long serialVersionUID = -95502236335483837L;
-   
-   private static final String READ_ATTR = "read";
-   private static final String WRITE_ATTR = "write";
-   private static final String CREATE_ATTR = "create";
-   private static final String NAME_ATTR = "name";
+
 
    private PropertyChangeSupport propertyChangeSupport;
-   private Integer messagingServerID = -1;
-   private String _defaultQueueJNDIContext = "";
-   private String _defaultTopicJNDIContext = "";
-   private String _securityDomain;
-   private HashSet<Role> _securityConfig;
-   private List<String> defaultInterceptors;
-   private String _defaultDLQ;
+   protected Integer messagingServerID = -1;
+   protected String _defaultQueueJNDIContext = "";
+   protected String _defaultTopicJNDIContext = "";
+   protected String _securityDomain;
+   protected HashSet<Role> _securityConfig;
+   protected List<String> defaultInterceptors;
+   protected String _defaultDLQ;
    // The default maximum number of delivery attempts before sending to DLQ - can be overridden on
    // the destination
-   private Integer _defaultMaxDeliveryAttempts = 10;
+   protected Integer _defaultMaxDeliveryAttempts = 10;
    protected String _defaultExpiryQueue;
 
-   private Long _defaultRedeliveryDelay = (long) 0;
+   protected Long _defaultRedeliveryDelay = (long) 0;
 
-   private Long _messageCounterSamplePeriod = (long) 10000;// Default is 1 minute
+   protected Long _messageCounterSamplePeriod = (long) 10000;// Default is 1 minute
 
-   private Integer _defaultMessageCounterHistoryDayLimit = 1;
+   protected Integer _defaultMessageCounterHistoryDayLimit = 1;
 
    //Global override for strict behaviour
-   private Boolean _strictTck = false;
+   protected Boolean _strictTck = false;
 
-   //From a system property - this overrides
-   private Boolean _strictTckProperty = false;
+   protected String _postOfficeName;
 
-   private String _postOfficeName;
+   protected Boolean _clustered = false;
 
-   private Boolean _clustered = false;
+   protected Long _stateTimeout = (long) 5000;
 
-   private Long _stateTimeout = (long) 5000;
+   protected Long _castTimeout = (long) 5000;
 
-   private Long _castTimeout = (long) 5000;
+   protected String _groupName;
 
-   private String _groupName;
+   protected String _controlChannelName;
 
-   private String _controlChannelName;
+   protected String _dataChannelName;
 
-   private String _dataChannelName;
+   protected String _channelPartitionName;
 
-   private String _channelPartitionName;
+   protected TransportType _remotingTransport = TCP;
 
-   private TransportType _remotingTransport = TCP;
-
-   private Integer _remotingBindAddress;
+   protected Integer _remotingBindAddress;
    
-   private Integer _remotingTimeout;
-
-   //default confog file location
-   private String configurationUrl = "jbm-configuration.xml";
-
-   public void start() throws Exception
-   {
-      propertyChangeSupport = new PropertyChangeSupport(this);
-
-      _strictTckProperty = "true".equalsIgnoreCase(System.getProperty("jboss.messaging.stricttck"));
-
-      URL url = getClass().getClassLoader().getResource(configurationUrl);
-      Element e = XMLUtil.urlToElement(url);
-      messagingServerID = getInteger(e, "server-peer-id", messagingServerID);
-      _defaultQueueJNDIContext = getString(e, "default-queue-jndi-context", _defaultQueueJNDIContext);
-      _defaultTopicJNDIContext = getString(e, "default-topic-jndi-context", _defaultTopicJNDIContext);
-      _securityDomain = getString(e, "security-domain", _securityDomain);
-      _defaultDLQ = getString(e, "default-dlq", _defaultDLQ);
-      _defaultMaxDeliveryAttempts = getInteger(e, "default-max-delivery-attempts", _defaultMaxDeliveryAttempts);
-      _defaultExpiryQueue = getString(e, "default-expiry-queue", _defaultExpiryQueue);
-      _defaultRedeliveryDelay = getLong(e, "default-redelivery-delay", _defaultRedeliveryDelay);
-      _messageCounterSamplePeriod = getLong(e, "message-counter-sample-period", _messageCounterSamplePeriod);
-      _defaultMessageCounterHistoryDayLimit = getInteger(e, "default-message-counter-history-day-limit", _defaultMessageCounterHistoryDayLimit);
-      _strictTck = getBoolean(e, "strict-tck", _strictTck);
-      _postOfficeName = getString(e, "post-office-name", _postOfficeName);
-      _clustered = getBoolean(e, "clustered", _clustered);
-      _stateTimeout = getLong(e, "state-timeout", _stateTimeout);
-      _castTimeout = getLong(e, "cast-timeout", _castTimeout);
-      _groupName = getString(e, "group-name", _groupName);
-      _controlChannelName = getString(e, "control-channel-name", _controlChannelName);
-      _dataChannelName = getString(e, "data-channel-name", _dataChannelName);
-      _channelPartitionName = getString(e, "channel-partition-name", _channelPartitionName);
-      _remotingTransport = TransportType.valueOf(getString(e, "remoting-transport", _remotingTransport.name()));
-      _remotingBindAddress = getInteger(e, "remoting-bind-address", _remotingBindAddress);
-      _remotingTimeout = getInteger(e, "remoting-timeout", _remotingTimeout);
-      NodeList security = e.getElementsByTagName("default-security-config");
-      if (security.getLength() > 0)
-      {
-         HashSet<Role> securityConfig;
-         securityConfig = new HashSet<Role>();
-         NodeList roles = security.item(0).getChildNodes();
-         for (int k = 0; k < roles.getLength(); k++)
-         {
-            if ("role".equalsIgnoreCase(roles.item(k).getNodeName()))
-            {
-               Boolean read = roles.item(k).getAttributes().getNamedItem(READ_ATTR) != null && Boolean.valueOf(roles.item(k).getAttributes().getNamedItem(READ_ATTR).getNodeValue());
-               Boolean write = roles.item(k).getAttributes().getNamedItem(WRITE_ATTR) != null && Boolean.valueOf(roles.item(k).getAttributes().getNamedItem(WRITE_ATTR).getNodeValue());
-               Boolean create = roles.item(k).getAttributes().getNamedItem(CREATE_ATTR) != null && Boolean.valueOf(roles.item(k).getAttributes().getNamedItem(CREATE_ATTR).getNodeValue());
-               Role role = new Role(roles.item(k).getAttributes().getNamedItem(NAME_ATTR).getNodeValue(),
-                     read,
-                     write,
-                     create);
-               securityConfig.add(role);
-            }
-         }
-         _securityConfig = securityConfig;
-      }
-      
-      NodeList defaultInterceptors = e.getElementsByTagName("default-interceptors-config");
-
-      ArrayList<String> interceptorList = new ArrayList<String>();
-      if (defaultInterceptors.getLength() > 0)
-      {
-         
-         NodeList interceptors = defaultInterceptors.item(0).getChildNodes();
-         for (int k = 0; k < interceptors.getLength(); k++)
-         {
-            if ("interceptor".equalsIgnoreCase(interceptors.item(k).getNodeName()))
-            {
-               String clazz = interceptors.item(k).getAttributes().getNamedItem("class").getNodeValue();
-               interceptorList.add(clazz);
-            }
-         }
-      }
-      this.defaultInterceptors = interceptorList;
-      
-   }
-
-   private  Boolean getBoolean(Element e, String name, Boolean def)
-   {
-      NodeList nl = e.getElementsByTagName(name);
-      if (nl.getLength() > 0)
-      {
-         return Boolean.valueOf(nl.item(0).getTextContent().trim());
-      }
-      return def;
-   }
-
-   private  Integer getInteger(Element e, String name, Integer def)
-   {
-      NodeList nl = e.getElementsByTagName(name);
-      if (nl.getLength() > 0)
-      {
-         return Integer.valueOf(nl.item(0).getTextContent().trim());
-      }
-      return def;
-   }
-
-   private  Long getLong(Element e, String name, Long def)
-   {
-      NodeList nl = e.getElementsByTagName(name);
-      if (nl.getLength() > 0)
-      {
-         return Long.valueOf(nl.item(0).getTextContent().trim());
-      }
-      return def;
-   }
-
-   private  String getString(Element e, String name, String def)
-   {
-      NodeList nl = e.getElementsByTagName(name);
-      if (nl.getLength() > 0)
-      {
-         return nl.item(0).getTextContent().trim();
-      }
-      return def;
-   }
+   protected Integer _remotingTimeout;
 
    public  void addPropertyChangeListener(
          PropertyChangeListener listener)
@@ -361,12 +238,12 @@ public class Configuration implements Serializable
 
    public  Boolean isStrictTck()
    {
-      return _strictTck || _strictTckProperty;
+      return _strictTck || "true".equalsIgnoreCase(System.getProperty("jboss.messaging.stricttck"));
    }
 
    public  void setStrictTck(Boolean strictTck)
    {
-      _strictTck = strictTck || _strictTckProperty;
+      _strictTck = strictTck || "true".equalsIgnoreCase(System.getProperty("jboss.messaging.stricttck"));
    }
 
    public  String getPostOfficeName()
@@ -452,12 +329,12 @@ public class Configuration implements Serializable
       _channelPartitionName = channelPartitionName;
    }
 
-   public int getRemotingBindAddress()
+   public Integer getRemotingBindAddress()
    {
       return _remotingBindAddress;
    }
 
-   public void setRemotingBindAddress(int remotingBindAddress)
+   public void setRemotingBindAddress(Integer remotingBindAddress)
    {
       this._remotingBindAddress = remotingBindAddress;
    }
@@ -469,14 +346,5 @@ public class Configuration implements Serializable
       return configuration;
    }
 
-   public String getConfigurationUrl()
-   {
-      return configurationUrl;
-   }
-
-   public void setConfigurationUrl(String configurationUrl)
-   {
-      this.configurationUrl = configurationUrl;
-   }
 }
  

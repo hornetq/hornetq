@@ -38,20 +38,12 @@ import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.endpoint.ConnectionFactoryAdvisedPacketHandler;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
+import org.jboss.jms.server.plugin.NullUserManager;
 import org.jboss.jms.server.security.Role;
 import org.jboss.jms.server.security.SecurityMetadataStore;
 import org.jboss.jms.server.security.NullAuthenticationManager;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Binding;
-import org.jboss.messaging.core.Condition;
-import org.jboss.messaging.core.Configuration;
-import org.jboss.messaging.core.DestinationType;
-import org.jboss.messaging.core.MemoryManager;
-import org.jboss.messaging.core.MessagingServer;
-import org.jboss.messaging.core.PersistenceManager;
-import org.jboss.messaging.core.PostOffice;
-import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.core.QueueSettings;
+import org.jboss.messaging.core.*;
 import org.jboss.messaging.core.impl.ConditionImpl;
 import org.jboss.messaging.core.impl.QueueFactoryImpl;
 import org.jboss.messaging.core.impl.memory.SimpleMemoryManager;
@@ -113,15 +105,15 @@ public class MessagingServerImpl implements MessagingServer
 
    // plugins
 
-   private PersistenceManager persistenceManager;
+   private PersistenceManager persistenceManager = new NullPersistenceManager();
 
-   private JMSUserManager jmsUserManager;
+   private JMSUserManager jmsUserManager = new NullUserManager();
 
    private RemotingService remotingService;
 
-   private Configuration configuration;
-   private HierarchicalObjectRepository<HashSet<Role>> securityRepository = new HierarchicalObjectRepository<HashSet<Role>>();
-   private HierarchicalObjectRepository<QueueSettings> queueSettingsRepository = new HierarchicalObjectRepository<QueueSettings>();
+   private Configuration configuration = new Configuration();
+   private HierarchicalRepository<HashSet<Role>> securityRepository = new HierarchicalObjectRepository<HashSet<Role>>();
+   private HierarchicalRepository<QueueSettings> queueSettingsRepository = new HierarchicalObjectRepository<QueueSettings>();
    private QueueFactoryImpl queueFactory = new QueueFactoryImpl();
 
    // Constructors ---------------------------------------------------------------------------------
@@ -490,11 +482,17 @@ public class MessagingServerImpl implements MessagingServer
       return securityRepository;
    }
 
+   public HierarchicalRepository<QueueSettings> getQueueSettingsRepository()
+   {
+      return queueSettingsRepository;
+   }
 
    public void setAuthenticationManager(AuthenticationManager authenticationManager)
    {
       this.authenticationManager = authenticationManager;
    }
+
+
 
    public String toString()
    {

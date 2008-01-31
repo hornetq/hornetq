@@ -19,39 +19,27 @@
    * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
    * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
    */
-package org.jboss.example.embedded;
+package org.jboss.jms.server.plugin;
 
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
-import org.jboss.jms.server.security.NullAuthenticationManager;
-import org.jboss.messaging.core.Configuration;
-import org.jboss.messaging.core.MessagingServer;
-import org.jboss.messaging.core.impl.bdbje.BDBJEEnvironment;
-import org.jboss.messaging.core.impl.bdbje.BDBJEPersistenceManager;
-import org.jboss.messaging.core.impl.bdbje.integration.RealBDBJEEnvironment;
-import org.jboss.messaging.core.impl.server.MessagingServerImpl;
-import org.jboss.messaging.core.remoting.RemotingConfiguration;
-import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class MessagingServerFactory
-{   
-   public static MessagingServer createMessagingServer(RemotingConfiguration remotingConf) throws Exception
+public class NullUserManager implements JMSUserManager
+{
+   public String getPreConfiguredClientID(String username) throws Exception
    {
-      MinaService minaService = new MinaService(remotingConf);
-      minaService.start();
-      MessagingServerImpl messagingServer = new MessagingServerImpl();
-      messagingServer.setRemotingService(minaService);
-
-   
-      return messagingServer;
+      return null;
    }
-   
-   public static void stop(MessagingServer server) throws Exception
+
+   public void start() throws Exception
    {
-      server.stop();
-      server.getRemotingService().stop();
-      server.getPersistenceManager().stop();
+      //To change body of implemented methods use File | Settings | File Templates.
+   }
+
+   public void stop() throws Exception
+   {
+      //To change body of implemented methods use File | Settings | File Templates.
    }
 }
