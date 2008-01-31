@@ -21,7 +21,7 @@ import org.jboss.messaging.core.Message;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
-public interface ClientSession
+public interface ClientSession extends XAResource
 {
    ClientConnection getConnection();
 
@@ -70,5 +70,7 @@ public interface ClientSession
    
    //TOD hide these  private api
    void delivered(long deliveryID, boolean expired);
+   
+   void flushAcks() throws JMSException;
    
 }

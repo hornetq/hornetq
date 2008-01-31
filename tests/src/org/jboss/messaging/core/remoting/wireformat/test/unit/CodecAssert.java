@@ -8,7 +8,7 @@ package org.jboss.messaging.core.remoting.wireformat.test.unit;
 
 import junit.framework.Assert;
 
-import org.jboss.messaging.core.tx.MessagingXid;
+import org.jboss.messaging.core.impl.XidImpl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -24,13 +24,13 @@ public class CodecAssert extends Assert
 
    // Static --------------------------------------------------------
 
-   static void assertSameXids(MessagingXid[] expected, MessagingXid[] actual)
+   static void assertSameXids(XidImpl[] expected, XidImpl[] actual)
    {
       assertEquals(expected.length, actual.length);
       for (int i = 0; i < expected.length; i++)
       {
-         MessagingXid expectedXid = expected[i];
-         MessagingXid actualXid = actual[i];
+         XidImpl expectedXid = expected[i];
+         XidImpl actualXid = actual[i];
          assertEqualsByteArrays(expectedXid.getBranchQualifier(), actualXid
                .getBranchQualifier());
          assertEquals(expectedXid.getFormatId(), actualXid.getFormatId());

@@ -42,7 +42,7 @@ import javax.transaction.xa.XAResource;
 
 import org.jboss.jms.exception.MessagingXAException;
 import org.jboss.jms.server.security.Role;
-import org.jboss.messaging.core.tx.MessagingXid;
+import org.jboss.messaging.core.impl.XidImpl;
 import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -1121,7 +1121,7 @@ public class SecurityTest extends JMSTestCase
 
          XASession xasession = xaconn.createXASession();
 
-         MessagingXid xid = new MessagingXid(new byte[]{1}, 1, new byte[]{1});
+         XidImpl xid = new XidImpl(new byte[]{1}, 1, new byte[]{1});
 
          XAResource resource = xasession.getXAResource();
 

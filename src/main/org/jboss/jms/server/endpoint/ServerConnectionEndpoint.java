@@ -56,6 +56,7 @@ import org.jboss.messaging.core.DestinationType;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.PostOffice;
 import org.jboss.messaging.core.impl.ConditionImpl;
+import org.jboss.messaging.core.impl.XidImpl;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
@@ -67,7 +68,6 @@ import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.wireformat.SetClientIDMessage;
-import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.Util;
@@ -227,7 +227,8 @@ public class ServerConnectionEndpoint
          
          //Note we only replicate transacted and client acknowledge sessions.
          ServerSessionEndpoint ep =
-            new ServerSessionEndpoint(sessionID, this, autoCommitSends, autoCommitAcks, xa, sender);
+            new ServerSessionEndpoint(sessionID, this, autoCommitSends, autoCommitAcks, xa, sender,
+                                      messagingServer.getResourceManager());            
 
          synchronized (sessions)
          {
@@ -409,13 +410,13 @@ public class ServerConnectionEndpoint
     * This would be used by the transaction manager in recovery or by a tool to apply
     * heuristic decisions to commit or rollback particular transactions
     */
-   public MessagingXid[] getPreparedTransactions() throws JMSException
+   public XidImpl[] getPreparedTransactions() throws JMSException
    {
       try
       {
          List<Xid> xids = messagingServer.getPersistenceManager().getInDoubtXids();
 
-         return (MessagingXid[])xids.toArray(new MessagingXid[xids.size()]);
+         return (XidImpl[])xids.toArray(new XidImpl[xids.size()]);
       }
       catch (Throwable t)
       {

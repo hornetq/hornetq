@@ -37,22 +37,35 @@ import org.jboss.jms.server.TransactionRepository;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.endpoint.ConnectionFactoryAdvisedPacketHandler;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
-import org.jboss.jms.server.plugin.contract.JMSUserManager;
 import org.jboss.jms.server.plugin.NullUserManager;
+import org.jboss.jms.server.plugin.contract.JMSUserManager;
+import org.jboss.jms.server.security.NullAuthenticationManager;
 import org.jboss.jms.server.security.Role;
 import org.jboss.jms.server.security.SecurityMetadataStore;
-import org.jboss.jms.server.security.NullAuthenticationManager;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.*;
+import org.jboss.messaging.core.Binding;
+import org.jboss.messaging.core.Condition;
+import org.jboss.messaging.core.Configuration;
+import org.jboss.messaging.core.DestinationType;
+import org.jboss.messaging.core.MemoryManager;
+import org.jboss.messaging.core.MessagingServer;
+import org.jboss.messaging.core.NullPersistenceManager;
+import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.PostOffice;
+import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.QueueFactory;
+import org.jboss.messaging.core.QueueSettings;
+import org.jboss.messaging.core.ResourceManager;
 import org.jboss.messaging.core.impl.ConditionImpl;
 import org.jboss.messaging.core.impl.QueueFactoryImpl;
+import org.jboss.messaging.core.impl.ResourceManagerImpl;
 import org.jboss.messaging.core.impl.memory.SimpleMemoryManager;
 import org.jboss.messaging.core.impl.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.impl.postoffice.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.Interceptor;
-import org.jboss.messaging.core.remoting.impl.mina.MinaService;
-import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
+import org.jboss.messaging.core.remoting.RemotingService;
+import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.deployers.queue.QueueSettingsDeployer;
 import org.jboss.messaging.deployers.security.SecurityDeployer;
 import org.jboss.messaging.util.ExceptionUtil;
@@ -116,7 +129,8 @@ public class MessagingServerImpl implements MessagingServer
    private Configuration configuration = new Configuration();
    private HierarchicalRepository<HashSet<Role>> securityRepository = new HierarchicalObjectRepository<HashSet<Role>>();
    private HierarchicalRepository<QueueSettings> queueSettingsRepository = new HierarchicalObjectRepository<QueueSettings>();
-   private QueueFactoryImpl queueFactory = new QueueFactoryImpl();
+   private QueueFactory queueFactory = new QueueFactoryImpl();
+   private ResourceManager resourceManager = new ResourceManagerImpl(0);
 
    // Constructors ---------------------------------------------------------------------------------
    /**
@@ -497,7 +511,11 @@ public class MessagingServerImpl implements MessagingServer
    {
       this.postOffice = postOffice;
    }
-
+   
+   public ResourceManager getResourceManager()
+   {
+      return resourceManager;
+   }
 
    public HierarchicalRepository<HashSet<Role>> getSecurityRepository()
    {

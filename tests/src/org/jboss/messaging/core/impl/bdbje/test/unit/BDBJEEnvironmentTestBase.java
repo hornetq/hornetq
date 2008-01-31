@@ -26,10 +26,10 @@ import java.util.List;
 
 import javax.transaction.xa.Xid;
 
+import org.jboss.messaging.core.impl.XidImpl;
 import org.jboss.messaging.core.impl.bdbje.BDBJEDatabase;
 import org.jboss.messaging.core.impl.bdbje.BDBJEEnvironment;
 import org.jboss.messaging.core.impl.bdbje.BDBJETransaction;
-import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.messaging.test.unit.UnitTestCase;
 
 import com.sleepycat.je.DatabaseException;
@@ -789,7 +789,7 @@ public abstract class BDBJEEnvironmentTestBase extends UnitTestCase
       
       assertContainsPair(id2, bytes2, 2);
       
-      MessagingXid xid = generateXid();
+      XidImpl xid = generateXid();
       
       env.startWork(xid);
       
@@ -813,7 +813,7 @@ public abstract class BDBJEEnvironmentTestBase extends UnitTestCase
    }
    
    /*
-    * As above but we use different but equal() MessagingXid instances at each point
+    * As above but we use different but equal() XidImpl instances at each point
     */
    public void testPutAndRemoveMultipleXACommitWithCopy() throws Exception
    {
@@ -843,7 +843,7 @@ public abstract class BDBJEEnvironmentTestBase extends UnitTestCase
       
       assertContainsPair(id2, bytes2, 2);
       
-      MessagingXid xid = generateXid();
+      XidImpl xid = generateXid();
       
       env.startWork(xid);
       
@@ -855,15 +855,15 @@ public abstract class BDBJEEnvironmentTestBase extends UnitTestCase
       
       database.remove(null, id2);
       
-      xid = new MessagingXid(xid);
+      xid = new XidImpl(xid);
             
       env.endWork(xid, false);
       
-      xid = new MessagingXid(xid);      
+      xid = new XidImpl(xid);      
       
       env.prepare(xid);
       
-      xid = new MessagingXid(xid);
+      xid = new XidImpl(xid);
       
       env.commit(xid);
       
@@ -900,7 +900,7 @@ public abstract class BDBJEEnvironmentTestBase extends UnitTestCase
       
       assertContainsPair(id2, bytes2, 2);
       
-      final MessagingXid xid = generateXid();
+      final XidImpl xid = generateXid();
       
       env.startWork(xid);
       

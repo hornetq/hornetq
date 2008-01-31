@@ -26,7 +26,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.XASession;
 import javax.transaction.xa.XAResource;
 
-import org.jboss.messaging.core.tx.MessagingXid;
+import org.jboss.messaging.core.impl.XidImpl;
 import org.jboss.messaging.util.Logger;
 import org.jboss.util.id.GUID;
 
@@ -84,9 +84,9 @@ public class Transactional2PCReceiver extends Receiver
       {      
          int iterations = numMessages / commitSize;
          
-         MessagingXid xid = null;
+         XidImpl xid = null;
          
-         xid = new MessagingXid("bq1".getBytes(), 1, new GUID().toString().getBytes());
+         xid = new XidImpl("bq1".getBytes(), 1, new GUID().toString().getBytes());
          xaResource.start(xid, XAResource.TMNOFLAGS);
          
          for (int outerCount = 0; outerCount < iterations; outerCount++)
@@ -141,7 +141,7 @@ public class Transactional2PCReceiver extends Receiver
                   xaResource.commit(xid, false);
                                     
                   //Starting new tx
-                  xid = new MessagingXid("bq1".getBytes(), 1, new GUID().toString().getBytes());
+                  xid = new XidImpl("bq1".getBytes(), 1, new GUID().toString().getBytes());
                   xaResource.start(xid, XAResource.TMNOFLAGS);
                  
                }
@@ -201,7 +201,7 @@ public class Transactional2PCReceiver extends Receiver
                   xaResource.prepare(xid);
                   xaResource.rollback(xid);
                   
-                  xid = new MessagingXid("bq1".getBytes(), 1, new GUID().toString().getBytes());
+                  xid = new XidImpl("bq1".getBytes(), 1, new GUID().toString().getBytes());
                   xaResource.start(xid, XAResource.TMNOFLAGS);
                }
                processingDone();

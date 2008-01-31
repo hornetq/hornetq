@@ -382,6 +382,11 @@ public class QueueImpl implements Queue
               
    public boolean equals(Object other)
    {
+      if (this == other)
+      {
+         return true;
+      }
+      
       QueueImpl qother = (QueueImpl)other;
       
       return name.equals(qother.name);

@@ -53,7 +53,7 @@ public class TransactionTest extends UnitTestCase
       
       EasyMock.replay(pm);
       
-      tx.commit(pm);
+      tx.commit(true, pm);
       
       EasyMock.verify(pm);
       
@@ -160,7 +160,7 @@ public class TransactionTest extends UnitTestCase
       
       EasyMock.replay(pm);
       
-      tx.commit(pm);
+      tx.commit(false, pm);
       
       EasyMock.verify(pm);
    }
@@ -189,7 +189,7 @@ public class TransactionTest extends UnitTestCase
       
       try
       {    
-         tx.commit(pm);
+         tx.commit(false, pm);
          
          fail ("Should throw exception");
       }
@@ -271,7 +271,7 @@ public class TransactionTest extends UnitTestCase
       
       EasyMock.replay(sync);
       
-      tx.commit(pm);
+      tx.commit(true, pm);
       
       EasyMock.verify(sync);
       
@@ -325,7 +325,7 @@ public class TransactionTest extends UnitTestCase
       EasyMock.replay(sync);
       
       tx.prepare(pm);
-      tx.commit(pm);
+      tx.commit(false, pm);
       
       EasyMock.verify(sync);
       

@@ -58,7 +58,9 @@ public class TransactionImpl implements Transaction
    
    private boolean containsPersistent;
    
-   private boolean prepared;
+   private volatile boolean prepared;
+   
+   private volatile boolean suspended;
    
    public TransactionImpl()
    {            
@@ -90,8 +92,7 @@ public class TransactionImpl implements Transaction
          containsPersistent = true;
       }
    }
-   
-   
+      
    public void addSynchronization(TransactionSynchronization sync)
    {
       synchronizations.add(sync);
@@ -106,18 +107,18 @@ public class TransactionImpl implements Transaction
       else if (containsPersistent)
       {
          persistenceManager.prepareTransaction(xid, messagesToAdd, acknowledgements);
-         
-         prepared = true;
       }
+            
+      prepared = true;
    }
    
-   public void commit(PersistenceManager persistenceManager) throws Exception
+   public void commit(boolean onePhase, PersistenceManager persistenceManager) throws Exception
    {
       callSynchronizations(SyncType.BEFORE_COMMIT);
       
       if (containsPersistent)
       {
-         if (xid == null)
+         if (xid == null || onePhase)
          {
             //1PC commit
             
@@ -155,7 +156,7 @@ public class TransactionImpl implements Transaction
    {
       callSynchronizations(SyncType.BEFORE_ROLLBACK);
         
-      if (xid != null && containsPersistent)
+      if (prepared)
       {
          persistenceManager.unprepareTransaction(xid, messagesToAdd, acknowledgements);             
       }
@@ -170,6 +171,31 @@ public class TransactionImpl implements Transaction
    public int getAcknowledgementsCount()
    {
       return acknowledgements.size();
+   }
+   
+   public void suspend()
+   {
+      suspended = true;
+   }
+   
+   public void resume()
+   {
+      suspended = false;
+   }
+   
+   public boolean isSuspended()
+   {
+      return suspended;
+   }
+   
+   public Xid getXid()
+   {
+      return xid;
+   }
+   
+   public boolean isEmpty()
+   {
+      return messagesToAdd.isEmpty() && acknowledgements.isEmpty();
    }
    
    // Private -------------------------------------------------------------------

@@ -68,11 +68,12 @@ import static org.jboss.messaging.test.unit.RandomUtil.randomString;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
-
-import junit.framework.TestCase;
+import javax.transaction.xa.Xid;
 
 import org.apache.mina.common.IoBuffer;
 import org.jboss.jms.destination.JBossQueue;
@@ -108,6 +109,19 @@ import org.jboss.messaging.core.remoting.codec.RemotingBuffer;
 import org.jboss.messaging.core.remoting.codec.SessionAcknowledgeMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SessionCancelMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SessionSendMessageCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXACommitMessageCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXAEndMessageCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXAForgetMessageCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXAGetInDoubtXidsResponseCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXAGetTimeoutResponseCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXAJoinMessageCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXAPrepareMessageCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXAResponseCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXAResumeMessageCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXARollbackMessageCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXASetTimeoutMessageCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXASetTimeoutResponseCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXAStartMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SetClientIDMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SetSessionIDMessageCodec;
 import org.jboss.messaging.core.remoting.codec.TextPacketCodec;
@@ -152,12 +166,30 @@ import org.jboss.messaging.core.remoting.wireformat.SessionCommitMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionRecoverMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionRollbackMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionSendMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXACommitMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAEndMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAForgetMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAGetInDoubtXidsRequest;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAGetInDoubtXidsResponse;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAGetTimeoutMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAGetTimeoutResponse;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAJoinMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAPrepareMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAResponse;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAResumeMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXARollbackMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXASetTimeoutMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXASetTimeoutResponse;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAStartMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXASuspendMessage;
 import org.jboss.messaging.core.remoting.wireformat.SetClientIDMessage;
 import org.jboss.messaging.core.remoting.wireformat.SetSessionIDMessage;
 import org.jboss.messaging.core.remoting.wireformat.StartConnectionMessage;
 import org.jboss.messaging.core.remoting.wireformat.StopConnectionMessage;
 import org.jboss.messaging.core.remoting.wireformat.TextPacket;
 import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
+import org.jboss.messaging.test.unit.RandomUtil;
+import org.jboss.messaging.test.unit.UnitTestCase;
 import org.jboss.messaging.util.Logger;
 
 /**
@@ -165,7 +197,7 @@ import org.jboss.messaging.util.Logger;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class PacketTypeTest extends TestCase
+public class PacketTypeTest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------
@@ -1161,7 +1193,7 @@ public class PacketTypeTest extends TestCase
    {
       Destination destination = new DestinationImpl(DestinationType.QUEUE,
             "testDeleteTemporaryDestinationMessage", false);
-      ;
+      
       DeleteTemporaryDestinationMessage message = new DeleteTemporaryDestinationMessage(
             destination);
 
@@ -1177,7 +1209,339 @@ public class PacketTypeTest extends TestCase
       assertEquals(MSG_DELETETEMPORARYDESTINATION, decodedMessage.getType());
       assertEquals(message.getDestination(), decodedMessage.getDestination());
    }
+   
+   public void testSesssionXACommitMessageOnePhase() throws Exception
+   {
+      this.testSessionXACommitMessage(true);
+   }
+   
+   public void testSessionXACommitMessageNotOnePhase() throws Exception
+   {
+      this.testSessionXACommitMessage(false);
+   }
+   
+   private void testSessionXACommitMessage(boolean onePhase) throws Exception
+   {
+      Xid xid = this.generateXid();
+      SessionXACommitMessage message = new SessionXACommitMessage(xid, onePhase);
+      AbstractPacketCodec codec = new SessionXACommitMessageCodec();
+      SimpleRemotingBuffer buffer = encode(message, codec);
+      checkHeader(buffer, message);
+      buffer.rewind();
+      
+      AbstractPacket decodedPacket = codec.decode(buffer);
+      assertTrue(decodedPacket instanceof SessionXACommitMessage);
+      SessionXACommitMessage decodedMessage = (SessionXACommitMessage)decodedPacket;
+      assertEquals(PacketType.MSG_XA_COMMIT, decodedMessage.getType());
+      assertEquals(xid, decodedMessage.getXid());      
+      assertEquals(onePhase, decodedMessage.isOnePhase());
+   }
+   
+   public void testSessionXAEndMessageFailed() throws Exception
+   {
+      this.testSessionXAEndMessage(true);
+   }
+   
+   public void testSessionXAEndMessageNotFailed() throws Exception
+   {
+      this.testSessionXACommitMessage(false);
+   }
+   
+   private void testSessionXAEndMessage(boolean failed) throws Exception
+   {
+      Xid xid = this.generateXid();
+      SessionXAEndMessage message = new SessionXAEndMessage(xid, failed);
+      AbstractPacketCodec codec = new SessionXAEndMessageCodec();
+      SimpleRemotingBuffer buffer = encode(message, codec);
+      checkHeader(buffer, message);
+      buffer.rewind();
+      
+      AbstractPacket decodedPacket = codec.decode(buffer);
+      assertTrue(decodedPacket instanceof SessionXAEndMessage);
+      SessionXAEndMessage decodedMessage = (SessionXAEndMessage)decodedPacket;
+      assertEquals(PacketType.MSG_XA_END, decodedMessage.getType());
+      assertEquals(xid, decodedMessage.getXid());      
+      assertEquals(failed, decodedMessage.isFailed());
+   }
+   
+   public void testSessionXAForgetMessage() throws Exception
+   {
+      Xid xid = this.generateXid();
+      SessionXAForgetMessage message = new SessionXAForgetMessage(xid);
+      AbstractPacketCodec codec = new SessionXAForgetMessageCodec();
+      SimpleRemotingBuffer buffer = encode(message, codec);
+      checkHeader(buffer, message);
+      buffer.rewind();
+      
+      AbstractPacket decodedPacket = codec.decode(buffer);
+      assertTrue(decodedPacket instanceof SessionXAForgetMessage);
+      SessionXAForgetMessage decodedMessage = (SessionXAForgetMessage)decodedPacket;
+      assertEquals(PacketType.MSG_XA_FORGET, decodedMessage.getType());
+      assertEquals(xid, decodedMessage.getXid());      
+   }
+   
+   public void testSessionXAGetInDoubtXidsMessage() throws Exception
+   {
+      SessionXAGetInDoubtXidsRequest request = new SessionXAGetInDoubtXidsRequest();
 
+      AbstractPacketCodec codec = PacketCodecFactory.createCodecForEmptyPacket(
+            PacketType.REQ_XA_INDOUBT_XIDS, SessionXAGetInDoubtXidsRequest.class);
+      SimpleRemotingBuffer buffer = encode(request, codec);
+      checkHeader(buffer, request);
+      checkBodyIsEmpty(buffer);
+      buffer.rewind();
+
+      AbstractPacket decodedPacket = codec.decode(buffer);
+
+      assertTrue(decodedPacket instanceof SessionXAGetInDoubtXidsRequest);
+      assertEquals(PacketType.REQ_XA_INDOUBT_XIDS, decodedPacket.getType());            
+   }
+   
+   public void testSessionGetInDoubtXidsResponse() throws Exception
+   {
+      final int numXids = 10;
+      List<Xid> xids = new ArrayList<Xid>();
+      for (int i = 0; i < numXids; i++)
+      {
+         xids.add(generateXid());
+      }
+      
+      SessionXAGetInDoubtXidsResponse message = new SessionXAGetInDoubtXidsResponse(xids);
+      AbstractPacketCodec codec = new SessionXAGetInDoubtXidsResponseCodec();
+      SimpleRemotingBuffer buffer = encode(message, codec);
+      checkHeader(buffer, message);
+      buffer.rewind();
+      
+      AbstractPacket decodedPacket = codec.decode(buffer);
+      assertTrue(decodedPacket instanceof SessionXAGetInDoubtXidsResponse);
+      SessionXAGetInDoubtXidsResponse decodedMessage = (SessionXAGetInDoubtXidsResponse)decodedPacket;
+      assertEquals(PacketType.RESP_XA_INDOUBT_XIDS, decodedMessage.getType());
+           
+      List<Xid> decodedXids = decodedMessage.getXids();
+      assertNotNull(decodedXids);
+      assertEquals(xids.size(), decodedXids.size());
+      
+      for (int i = 0; i < numXids; i++)
+      {
+         assertEquals(xids.get(i), decodedXids.get(i));
+      }
+   }
+   
+   public void testSessionXAGetTimeoutMessage() throws Exception
+   {
+      SessionXAGetTimeoutMessage message = new SessionXAGetTimeoutMessage();
+
+      AbstractPacketCodec codec = PacketCodecFactory.createCodecForEmptyPacket(
+            PacketType.MSG_XA_GET_TIMEOUT, SessionXAGetTimeoutMessage.class);
+      SimpleRemotingBuffer buffer = encode(message, codec);
+      checkHeader(buffer, message);
+      checkBodyIsEmpty(buffer);
+      buffer.rewind();
+
+      AbstractPacket decodedPacket = codec.decode(buffer);
+
+      assertTrue(decodedPacket instanceof SessionXAGetTimeoutMessage);
+      assertEquals(PacketType.MSG_XA_GET_TIMEOUT, decodedPacket.getType());     
+   }
+   
+   public void testSessionXAGetTimeoutResponse() throws Exception
+   {
+      final int timeout = RandomUtil.randomInt();
+      
+      SessionXAGetTimeoutResponse message = new SessionXAGetTimeoutResponse(timeout);
+      AbstractPacketCodec codec = new SessionXAGetTimeoutResponseCodec();
+      SimpleRemotingBuffer buffer = encode(message, codec);
+      checkHeader(buffer, message);
+      buffer.rewind();
+      
+      AbstractPacket decodedPacket = codec.decode(buffer);
+      assertTrue(decodedPacket instanceof SessionXAGetTimeoutResponse);
+      SessionXAGetTimeoutResponse decodedMessage = (SessionXAGetTimeoutResponse)decodedPacket;
+      assertEquals(PacketType.MSG_XA_GET_TIMEOUT_RESPONSE, decodedMessage.getType());
+           
+      assertEquals(timeout, decodedMessage.getTimeoutSeconds());
+   }
+
+   public void testSessionXAJoinMessage() throws Exception
+   {
+      Xid xid = this.generateXid();
+      SessionXAJoinMessage message = new SessionXAJoinMessage(xid);
+      AbstractPacketCodec codec = new SessionXAJoinMessageCodec();
+      SimpleRemotingBuffer buffer = encode(message, codec);
+      checkHeader(buffer, message);
+      buffer.rewind();
+      
+      AbstractPacket decodedPacket = codec.decode(buffer);
+      assertTrue(decodedPacket instanceof SessionXAJoinMessage);
+      SessionXAJoinMessage decodedMessage = (SessionXAJoinMessage)decodedPacket;
+      assertEquals(PacketType.MSG_XA_JOIN, decodedMessage.getType());
+      assertEquals(xid, decodedMessage.getXid());      
+   }
+   
+   public void testSessionXAPrepareMessage() throws Exception
+   {
+      Xid xid = this.generateXid();
+      SessionXAPrepareMessage message = new SessionXAPrepareMessage(xid);
+      AbstractPacketCodec codec = new SessionXAPrepareMessageCodec();
+      SimpleRemotingBuffer buffer = encode(message, codec);
+      checkHeader(buffer, message);
+      buffer.rewind();
+      
+      AbstractPacket decodedPacket = codec.decode(buffer);
+      assertTrue(decodedPacket instanceof SessionXAPrepareMessage);
+      SessionXAPrepareMessage decodedMessage = (SessionXAPrepareMessage)decodedPacket;
+      assertEquals(PacketType.REQ_XA_PREPARE, decodedMessage.getType());
+      assertEquals(xid, decodedMessage.getXid());      
+   }
+   
+   public void testSessionXAResponseErrorNullString() throws Exception
+   {
+      testSessionXAResponse(true, true);
+   }
+   
+   public void testSessionXAResponseErrorNotNullString() throws Exception
+   {
+      testSessionXAResponse(true, false);
+   }
+   
+   public void testSessionXAResponseNoErrorNullString() throws Exception
+   {
+      testSessionXAResponse(false, true);
+   }
+   
+   public void testSessionXAResponseNoErrorNotNullString() throws Exception
+   {
+      testSessionXAResponse(false, false);
+   }
+   
+   private void testSessionXAResponse(boolean error, boolean nullString) throws Exception
+   {
+      int responseCode = RandomUtil.randomInt();
+      
+      String str = nullString ? null : RandomUtil.randomString();
+      
+      SessionXAResponse message = new SessionXAResponse(error, responseCode, str);
+      AbstractPacketCodec codec = new SessionXAResponseCodec();
+      SimpleRemotingBuffer buffer = encode(message, codec);
+      checkHeader(buffer, message);
+      buffer.rewind();
+      
+      AbstractPacket decodedPacket = codec.decode(buffer);
+      assertTrue(decodedPacket instanceof SessionXAResponse);
+      SessionXAResponse decodedMessage = (SessionXAResponse)decodedPacket;
+      assertEquals(PacketType.RESP_XA, decodedMessage.getType());
+      assertEquals(error, decodedMessage.isError());
+      assertEquals(responseCode, decodedMessage.getResponseCode());
+      assertEquals(str, decodedMessage.getMessage());
+   }
+   
+   public void testSessionXAResumeMessage() throws Exception
+   {
+      Xid xid = this.generateXid();
+      SessionXAResumeMessage message = new SessionXAResumeMessage(xid);
+      AbstractPacketCodec codec = new SessionXAResumeMessageCodec();
+      SimpleRemotingBuffer buffer = encode(message, codec);
+      checkHeader(buffer, message);
+      buffer.rewind();
+      
+      AbstractPacket decodedPacket = codec.decode(buffer);
+      assertTrue(decodedPacket instanceof SessionXAResumeMessage);
+      SessionXAResumeMessage decodedMessage = (SessionXAResumeMessage)decodedPacket;
+      assertEquals(PacketType.MSG_XA_RESUME, decodedMessage.getType());
+      assertEquals(xid, decodedMessage.getXid());      
+   }
+   
+   public void testSessionXARollbackMessage() throws Exception
+   {
+      Xid xid = this.generateXid();
+      SessionXARollbackMessage message = new SessionXARollbackMessage(xid);
+      AbstractPacketCodec codec = new SessionXARollbackMessageCodec();
+      SimpleRemotingBuffer buffer = encode(message, codec);
+      checkHeader(buffer, message);
+      buffer.rewind();
+      
+      AbstractPacket decodedPacket = codec.decode(buffer);
+      assertTrue(decodedPacket instanceof SessionXARollbackMessage);
+      SessionXARollbackMessage decodedMessage = (SessionXARollbackMessage)decodedPacket;
+      assertEquals(PacketType.MSG_XA_ROLLBACK, decodedMessage.getType());
+      assertEquals(xid, decodedMessage.getXid());      
+   }
+   
+   public void testSessionXASetTimeoutMessage() throws Exception
+   {
+      final int timeout = RandomUtil.randomInt();
+      SessionXASetTimeoutMessage message = new SessionXASetTimeoutMessage(timeout);
+      AbstractPacketCodec codec = new SessionXASetTimeoutMessageCodec();
+      SimpleRemotingBuffer buffer = encode(message, codec);
+      checkHeader(buffer, message);
+      buffer.rewind();
+      
+      AbstractPacket decodedPacket = codec.decode(buffer);
+      assertTrue(decodedPacket instanceof SessionXASetTimeoutMessage);
+      SessionXASetTimeoutMessage decodedMessage = (SessionXASetTimeoutMessage)decodedPacket;
+      assertEquals(PacketType.MSG_XA_SET_TIMEOUT, decodedMessage.getType());
+      assertEquals(timeout, decodedMessage.getTimeoutSeconds());      
+   }
+   
+   public void testSessionXASetTimeoutResponseMessageOK() throws Exception
+   {
+      testSessionXASetTimeoutResponseMessage(true);
+   }
+   
+   public void testSessionXASetTimeoutResponseMessageNotOK() throws Exception
+   {
+      testSessionXASetTimeoutResponseMessage(false);
+   }
+   
+   private void testSessionXASetTimeoutResponseMessage(boolean ok) throws Exception
+   {
+      final int timeout = RandomUtil.randomInt();
+      SessionXASetTimeoutResponse message = new SessionXASetTimeoutResponse(ok);
+      AbstractPacketCodec codec = new SessionXASetTimeoutResponseCodec();
+      SimpleRemotingBuffer buffer = encode(message, codec);
+      checkHeader(buffer, message);
+      buffer.rewind();
+      
+      AbstractPacket decodedPacket = codec.decode(buffer);
+      assertTrue(decodedPacket instanceof SessionXASetTimeoutResponse);
+      SessionXASetTimeoutResponse decodedMessage = (SessionXASetTimeoutResponse)decodedPacket;
+      assertEquals(PacketType.MSG_XA_SET_TIMEOUT_RESPONSE, decodedMessage.getType());
+      assertEquals(ok, decodedMessage.isOK());      
+   }
+   
+   public void testSessionXAStartMessage() throws Exception
+   {
+      Xid xid = this.generateXid();
+      SessionXAStartMessage message = new SessionXAStartMessage(xid);
+      AbstractPacketCodec codec = new SessionXAStartMessageCodec();
+      SimpleRemotingBuffer buffer = encode(message, codec);
+      checkHeader(buffer, message);
+      buffer.rewind();
+      
+      AbstractPacket decodedPacket = codec.decode(buffer);
+      assertTrue(decodedPacket instanceof SessionXAStartMessage);
+      SessionXAStartMessage decodedMessage = (SessionXAStartMessage)decodedPacket;
+      assertEquals(PacketType.MSG_XA_START, decodedMessage.getType());
+      assertEquals(xid, decodedMessage.getXid());      
+   }
+   
+   public void testSessionXASuspendMessage() throws Exception
+   {
+      SessionXASuspendMessage message = new SessionXASuspendMessage();
+
+      AbstractPacketCodec codec = PacketCodecFactory.createCodecForEmptyPacket(
+            PacketType.MSG_XA_SUSPEND, SessionXASuspendMessage.class);
+      SimpleRemotingBuffer buffer = encode(message, codec);
+      checkHeader(buffer, message);
+      checkBodyIsEmpty(buffer);
+      buffer.rewind();
+
+      AbstractPacket decodedPacket = codec.decode(buffer);
+
+      assertTrue(decodedPacket instanceof SessionXASuspendMessage);
+      assertEquals(PacketType.MSG_XA_SUSPEND, decodedPacket.getType());     
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

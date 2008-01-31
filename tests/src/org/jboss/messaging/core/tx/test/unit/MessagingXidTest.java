@@ -28,7 +28,7 @@ import java.io.ObjectOutputStream;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.tx.MessagingXid;
+import org.jboss.messaging.core.impl.XidImpl;
 import org.jboss.messaging.test.unit.RandomUtil;
 import org.jboss.messaging.test.unit.UnitTestCase;
 
@@ -43,7 +43,7 @@ public class MessagingXidTest extends UnitTestCase
 {
    public void testSerialize() throws Exception
    {
-      MessagingXid xid = new MessagingXid(RandomUtil.randomBytes(), RandomUtil.randomInt(),
+      XidImpl xid = new XidImpl(RandomUtil.randomBytes(), RandomUtil.randomInt(),
                                           RandomUtil.randomBytes());
       
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -58,9 +58,9 @@ public class MessagingXidTest extends UnitTestCase
       
       Object obj = ois.readObject();
       
-      assertTrue(obj instanceof MessagingXid);
+      assertTrue(obj instanceof XidImpl);
       
-      MessagingXid xid2 = (MessagingXid)obj;
+      XidImpl xid2 = (XidImpl)obj;
       
       assertXidsEquivalent(xid, xid2);
       
@@ -75,7 +75,7 @@ public class MessagingXidTest extends UnitTestCase
       
       int formatID = RandomUtil.randomInt();
       
-      MessagingXid xid1 = new MessagingXid(bq, formatID, globalTXID);
+      XidImpl xid1 = new XidImpl(bq, formatID, globalTXID);
       
       assertByteArraysEquivalent(bq, xid1.getBranchQualifier());
       
@@ -86,10 +86,10 @@ public class MessagingXidTest extends UnitTestCase
    
    public void testCopyConstructor()
    {
-      MessagingXid xid1 = new MessagingXid(RandomUtil.randomBytes(), RandomUtil.randomInt(),
+      XidImpl xid1 = new XidImpl(RandomUtil.randomBytes(), RandomUtil.randomInt(),
                                           RandomUtil.randomBytes());
       
-      MessagingXid xid2 = new MessagingXid(xid1);
+      XidImpl xid2 = new XidImpl(xid1);
       
       assertXidsEquivalent(xid1, xid2);
       
@@ -98,7 +98,7 @@ public class MessagingXidTest extends UnitTestCase
    
    public void testDefaultConstructor()
    {
-      MessagingXid xid1 = new MessagingXid();
+      XidImpl xid1 = new XidImpl();
       
       assertNull(xid1.getBranchQualifier());
       
@@ -109,7 +109,7 @@ public class MessagingXidTest extends UnitTestCase
    
    public void testEqualsWithForeign()
    {
-      MessagingXid xid1 = new MessagingXid(RandomUtil.randomBytes(), RandomUtil.randomInt(),
+      XidImpl xid1 = new XidImpl(RandomUtil.randomBytes(), RandomUtil.randomInt(),
             RandomUtil.randomBytes());
 
       Xid foreign = new ForeignXid(xid1.getBranchQualifier(), xid1.getFormatId(), xid1.getGlobalTransactionId());

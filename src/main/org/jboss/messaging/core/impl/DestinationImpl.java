@@ -101,6 +101,11 @@ public class DestinationImpl implements Destination, Serializable
    
    public boolean equals(Object other)
    {
+      if (this == other)
+      {
+         return true;
+      }
+      
       Destination dother = (Destination)other;
       
       return dother.getType() == this.type && dother.getName().equals(this.name) &&

@@ -33,7 +33,7 @@ import javax.jms.XASession;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.tx.MessagingXid;
+import org.jboss.messaging.core.impl.XidImpl;
 
 import com.arjuna.ats.arjuna.common.Uid;
 import com.arjuna.ats.jta.xa.XidImple;
@@ -123,7 +123,7 @@ public class XARecoveryTest extends JMSTestCase
          
          XAResource res = sess2.getXAResource();
          
-         Xid xid1 = new MessagingXid("bq1".getBytes(), 42, "eemeli".getBytes());
+         Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
          
          res.start(xid1, XAResource.TMNOFLAGS);
          
@@ -355,7 +355,7 @@ public class XARecoveryTest extends JMSTestCase
          
          XAResource res = sess2.getXAResource();
          
-         Xid xid1 = new MessagingXid("bq1".getBytes(), 42, "eemeli".getBytes());
+         Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
          
          res.start(xid1, XAResource.TMNOFLAGS);
          
@@ -606,7 +606,7 @@ public class XARecoveryTest extends JMSTestCase
          
          XAResource res = sess2.getXAResource();
          
-         Xid xid1 = new MessagingXid("bq1".getBytes(), 42, "eemeli".getBytes());
+         Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
          
          res.start(xid1, XAResource.TMNOFLAGS);
          
@@ -874,7 +874,7 @@ public class XARecoveryTest extends JMSTestCase
          
          XAResource res = sess2.getXAResource();
          
-         Xid xid1 = new MessagingXid("bq1".getBytes(), 42, "eemeli".getBytes());
+         Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
          
          res.start(xid1, XAResource.TMNOFLAGS);
          
@@ -1131,7 +1131,7 @@ public class XARecoveryTest extends JMSTestCase
          
          XAResource res = sess2.getXAResource();
          
-         Xid xid1 = new MessagingXid("bq1".getBytes(), 42, "eemeli".getBytes());
+         Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
          
          res.start(xid1, XAResource.TMNOFLAGS);
          
@@ -1326,7 +1326,7 @@ public class XARecoveryTest extends JMSTestCase
          XAResource res1 = sess1.getXAResource();
    
          //Pretend to be a transaction manager by interacting through the XAResources
-         Xid xid1 = new MessagingXid("bq1".getBytes(), 42, "eemeli".getBytes());
+         Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
    
          log.trace("Sending message");
          
@@ -1460,7 +1460,7 @@ public class XARecoveryTest extends JMSTestCase
          XAResource res1 = sess1.getXAResource();
    
          //Pretend to be a transaction manager by interacting through the XAResources
-         Xid xid1 = new MessagingXid("bq1".getBytes(), 42, "eemeli".getBytes());
+         Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
    
          log.trace("Sending message");
          
@@ -1638,7 +1638,7 @@ public class XARecoveryTest extends JMSTestCase
          XAResource res1 = sess2.getXAResource();
    
          //Pretend to be a transaction manager by interacting through the XAResources
-         Xid xid1 = new MessagingXid("bq1".getBytes(), 42, "eemeli".getBytes());
+         Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
          
          res1.start(xid1, XAResource.TMNOFLAGS);
          
@@ -1775,7 +1775,7 @@ public class XARecoveryTest extends JMSTestCase
          XAResource res1 = sess2.getXAResource();
    
          //Pretend to be a transaction manager by interacting through the XAResources
-         Xid xid1 = new MessagingXid("bq1".getBytes(), 42, "eemeli".getBytes());
+         Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
          
          res1.start(xid1, XAResource.TMNOFLAGS);
          
@@ -1949,7 +1949,7 @@ public class XARecoveryTest extends JMSTestCase
          
          XAResource res = sess2.getXAResource();
          
-         Xid xid1 = new MessagingXid("bq1".getBytes(), 42, "eemeli".getBytes());
+         Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
          
          res.start(xid1, XAResource.TMNOFLAGS);
          
@@ -2208,7 +2208,7 @@ public class XARecoveryTest extends JMSTestCase
          
          XAResource res = sess2.getXAResource();
          
-         Xid xid1 = new MessagingXid("bq1".getBytes(), 42, "eemeli".getBytes());
+         Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
          
          res.start(xid1, XAResource.TMNOFLAGS);
          
@@ -2454,8 +2454,8 @@ public class XARecoveryTest extends JMSTestCase
          XAResource res2 = sess2.getXAResource();
    
          //Pretend to be a transaction manager by interacting through the XAResources
-         Xid xid1 = new MessagingXid("bq1".getBytes(), 42, "eemeli".getBytes());
-         Xid xid2 = new MessagingXid("bq2".getBytes(), 42, "frigtard".getBytes());
+         Xid xid1 = new XidImpl("bq1".getBytes(), 42, "eemeli".getBytes());
+         Xid xid2 = new XidImpl("bq2".getBytes(), 42, "frigtard".getBytes());
    
          log.trace("Sending messages");
          
@@ -2659,8 +2659,8 @@ public class XARecoveryTest extends JMSTestCase
          XAResource res2 = sess2.getXAResource();
    
          //Pretend to be a transaction manager by interacting through the XAResources
-         Xid xid1 = new MessagingXid("bq1".getBytes(), 42, "aapeli".getBytes());
-         Xid xid2 = new MessagingXid("bq2".getBytes(), 42, "belsebub".getBytes());
+         Xid xid1 = new XidImpl("bq1".getBytes(), 42, "aapeli".getBytes());
+         Xid xid2 = new XidImpl("bq2".getBytes(), 42, "belsebub".getBytes());
    
          //    Send a message in each tx
    
@@ -2961,8 +2961,8 @@ public class XARecoveryTest extends JMSTestCase
          XAResource res2 = sess2.getXAResource();
    
          //Pretend to be a transaction manager by interacting through the XAResources
-         Xid xid1 = new MessagingXid("bq1".getBytes(), 123, "gbtxid1".getBytes());
-         Xid xid2 = new MessagingXid("bq2".getBytes(), 124, "gbtxid2".getBytes());
+         Xid xid1 = new XidImpl("bq1".getBytes(), 123, "gbtxid1".getBytes());
+         Xid xid2 = new XidImpl("bq2".getBytes(), 124, "gbtxid2".getBytes());
    
          //    Send a message in each tx
    
@@ -3102,8 +3102,8 @@ public class XARecoveryTest extends JMSTestCase
          XAResource res2 = sess2.getXAResource();
    
          //Pretend to be a transaction manager by interacting through the XAResources
-         Xid xid1 = new MessagingXid("bq1".getBytes(), 123, "gbtxid1".getBytes());
-         Xid xid2 = new MessagingXid("bq2".getBytes(), 124, "gbtxid2".getBytes());
+         Xid xid1 = new XidImpl("bq1".getBytes(), 123, "gbtxid1".getBytes());
+         Xid xid2 = new XidImpl("bq2".getBytes(), 124, "gbtxid2".getBytes());
    
          //    Send a message in each tx
    

@@ -23,13 +23,16 @@ package org.jboss.jms.client.impl;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.TransactionInProgressException;
+import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.SelectorTranslator;
 import org.jboss.jms.client.api.ClientBrowser;
@@ -44,6 +47,7 @@ import org.jboss.jms.destination.JBossTopic;
 import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.AddTemporaryDestinationMessage;
 import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
 import org.jboss.messaging.core.remoting.wireformat.ClosingMessage;
@@ -59,6 +63,22 @@ import org.jboss.messaging.core.remoting.wireformat.SessionCancelMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCommitMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionRollbackMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionSendMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXACommitMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAEndMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAForgetMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAGetInDoubtXidsRequest;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAGetInDoubtXidsResponse;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAGetTimeoutMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAGetTimeoutResponse;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAJoinMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAPrepareMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAResponse;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAResumeMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXARollbackMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXASetTimeoutMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXASetTimeoutResponse;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAStartMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXASuspendMessage;
 import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
 import org.jboss.messaging.util.ClearableQueuedExecutor;
 import org.jboss.messaging.util.Logger;
@@ -91,8 +111,6 @@ public class ClientSessionImpl implements ClientSession
 
    private int lazyAckBatchSize;
    
-   private XAResource xaResource;
-           
    private volatile boolean closed;
       
    private boolean acked = true;
@@ -120,6 +138,8 @@ public class ClientSessionImpl implements ClientSession
    
    private Map<String, ClientConsumer> consumers = new HashMap<String, ClientConsumer>();
    
+   //For testing only
+   private boolean setForceNotSameRM;
       
    // Constructors ---------------------------------------------------------------------------------
    
@@ -136,7 +156,7 @@ public class ClientSessionImpl implements ClientSession
  
       executor = new ClearableQueuedExecutor(new LinkedQueue());
       
-      this.lazyAckBatchSize = lazyAckBatchSize;   
+      this.lazyAckBatchSize = lazyAckBatchSize;         
    }
    
    // ClientSession implementation ----------------------------------------------------
@@ -392,7 +412,7 @@ public class ClientSessionImpl implements ClientSession
 
    public XAResource getXAResource()
    {
-      return xaResource;
+      return this;
    }
 
    public void send(Message m) throws JMSException
@@ -445,9 +465,259 @@ public class ClientSessionImpl implements ClientSession
    {
       return closed;
    }
+   
+   public void flushAcks() throws JMSException
+   {
+      this.acknowledgeInternal(false);
+   }
+   
+   // XAResource implementation --------------------------------------------------------------------
+   
+   public void commit(Xid xid, boolean onePhase) throws XAException
+   {
+      try
+      { 
+         SessionXACommitMessage packet = new SessionXACommitMessage(xid, onePhase);
+                  
+         SessionXAResponse response = (SessionXAResponse)remotingConnection.send(id, packet);
+         
+         if (response.isError())
+         {
+            throw new XAException(response.getResponseCode());
+         }
+      }
+      catch (JMSException e)
+      {
+         log.error("Caught jmsexecptione ", e);
+         //This should never occur
+         throw new XAException(XAException.XAER_RMERR);
+      }
+   }
+
+   public void end(Xid xid, int flags) throws XAException
+   {
+      try
+      {
+         AbstractPacket packet;
+         
+         if (flags == XAResource.TMSUSPEND)
+         {
+            packet = new SessionXASuspendMessage();                  
+         }
+         else if (flags == XAResource.TMSUCCESS)
+         {
+            packet = new SessionXAEndMessage(xid, false);
+         }
+         else if (flags == XAResource.TMFAIL)
+         {
+            packet = new SessionXAEndMessage(xid, true);
+         }
+         else
+         {
+            throw new XAException(XAException.XAER_INVAL);
+         }
+               
+         //Need to flush any acks to server first
+         acknowledgeInternal(false);
+         
+         SessionXAResponse response = (SessionXAResponse)remotingConnection.send(id, packet);
+         
+         if (response.isError())
+         {
+            throw new XAException(response.getResponseCode());
+         }
+      }
+      catch (JMSException e)
+      {
+         log.error("Caught jmsexecptione ", e);
+         //This should never occur
+         throw new XAException(XAException.XAER_RMERR);
+      }
+   }
+
+   public void forget(Xid xid) throws XAException
+   {
+      try
+      {                              
+         SessionXAResponse response = (SessionXAResponse)remotingConnection.send(id, new SessionXAForgetMessage(xid));
+         
+         if (response.isError())
+         {
+            throw new XAException(response.getResponseCode());
+         }
+      }
+      catch (JMSException e)
+      {
+         //This should never occur
+         throw new XAException(XAException.XAER_RMERR);
+      }
+   }
+
+   public int getTransactionTimeout() throws XAException
+   {
+      try
+      {                              
+         SessionXAGetTimeoutResponse response =
+            (SessionXAGetTimeoutResponse)remotingConnection.send(id, new SessionXAGetTimeoutMessage());
+         
+         return response.getTimeoutSeconds();
+      }
+      catch (JMSException e)
+      {
+         //This should never occur
+         throw new XAException(XAException.XAER_RMERR);
+      }
+   }
+
+   public boolean isSameRM(XAResource xares) throws XAException
+   {
+      if (!(xares instanceof ClientSessionImpl))
+      {
+         return false;
+      }
+      
+      if (forceNotSameRM)
+      {
+         return false;
+      }
+      
+      ClientSessionImpl other = (ClientSessionImpl)xares;
+      
+      return this.connection.getServerID() == other.getConnection().getServerID();
+   }
+
+   public int prepare(Xid xid) throws XAException
+   {
+      try
+      {
+         SessionXAPrepareMessage packet = new SessionXAPrepareMessage(xid);
+         
+         SessionXAResponse response = (SessionXAResponse)remotingConnection.send(id, packet);
+         
+         if (response.isError())
+         {
+            throw new XAException(response.getResponseCode());
+         }
+         else
+         {
+            return response.getResponseCode();
+         }
+      }
+      catch (JMSException e)
+      {
+         log.error("Caught jmsexecptione ", e);
+         //This should never occur
+         throw new XAException(XAException.XAER_RMERR);
+      }
+   }
+
+   public Xid[] recover(int flag) throws XAException
+   {
+      try
+      {
+         SessionXAGetInDoubtXidsRequest packet = new SessionXAGetInDoubtXidsRequest();
+         
+         SessionXAGetInDoubtXidsResponse response = (SessionXAGetInDoubtXidsResponse)remotingConnection.send(id, packet);
+         
+         List<Xid> xids = response.getXids();
+         
+         Xid[] xidArray = xids.toArray(new Xid[xids.size()]);
+         
+         return xidArray;
+      }
+      catch (JMSException e)
+      {
+         //This should never occur
+         throw new XAException(XAException.XAER_RMERR);
+      }
+   }
+
+   public void rollback(Xid xid) throws XAException
+   {
+      try
+      {
+
+         SessionXARollbackMessage packet = new SessionXARollbackMessage(xid);
+         
+         SessionXAResponse response = (SessionXAResponse)remotingConnection.send(id, packet);
+         
+         if (response.isError())
+         {
+            throw new XAException(response.getResponseCode());
+         }
+      }
+      catch (JMSException e)
+      {
+         log.error("Caught jmsexecptione ", e);
+         //This should never occur
+         throw new XAException(XAException.XAER_RMERR);
+      }
+   }
+
+   public boolean setTransactionTimeout(int seconds) throws XAException
+   {
+      try
+      {                              
+         SessionXASetTimeoutResponse response =
+            (SessionXASetTimeoutResponse)remotingConnection.send(id, new SessionXASetTimeoutMessage(seconds));
+         
+         return response.isOK();
+      }
+      catch (JMSException e)
+      {
+         //This should never occur
+         throw new XAException(XAException.XAER_RMERR);
+      }
+   }
+
+   public void start(Xid xid, int flags) throws XAException
+   {
+      try
+      {
+         AbstractPacket packet;
+         
+         if (flags == XAResource.TMJOIN)
+         {
+            packet = new SessionXAJoinMessage(xid);                  
+         }
+         else if (flags == XAResource.TMRESUME)
+         {
+            packet = new SessionXAResumeMessage(xid);
+         }
+         else if (flags == XAResource.TMNOFLAGS)
+         {
+            packet = new SessionXAStartMessage(xid);
+         }
+         else
+         {
+            throw new XAException(XAException.XAER_INVAL);
+         }
+                     
+         SessionXAResponse response = (SessionXAResponse)remotingConnection.send(id, packet);
+         
+         if (response.isError())
+         {
+            log.error("XA operation failed " + response.getMessage() +" code:" + response.getResponseCode());
+            throw new XAException(response.getResponseCode());
+         }
+      }
+      catch (JMSException e)
+      {
+         log.error("Caught jmsexecptione ", e);
+         //This should never occur
+         throw new XAException(XAException.XAER_RMERR);
+      }
+   }
 
    // Public ---------------------------------------------------------------------------------------
   
+   private boolean forceNotSameRM;
+   
+   public void setForceNotSameRM(boolean force)
+   {
+      this.forceNotSameRM = force;
+   }
+   
    // Protected ------------------------------------------------------------------------------------
 
    // Package Private ------------------------------------------------------------------------------

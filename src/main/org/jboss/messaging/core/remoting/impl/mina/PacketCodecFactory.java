@@ -37,6 +37,19 @@ import org.jboss.messaging.core.remoting.codec.RemotingBuffer;
 import org.jboss.messaging.core.remoting.codec.SessionAcknowledgeMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SessionCancelMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SessionSendMessageCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXACommitMessageCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXAEndMessageCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXAForgetMessageCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXAGetInDoubtXidsResponseCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXAGetTimeoutResponseCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXAJoinMessageCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXAPrepareMessageCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXAResponseCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXAResumeMessageCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXARollbackMessageCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXASetTimeoutMessageCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXASetTimeoutResponseCodec;
+import org.jboss.messaging.core.remoting.codec.SessionXAStartMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SetClientIDMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SetSessionIDMessageCodec;
 import org.jboss.messaging.core.remoting.codec.TextPacketCodec;
@@ -79,6 +92,22 @@ import org.jboss.messaging.core.remoting.wireformat.SessionCommitMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionRecoverMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionRollbackMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionSendMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXACommitMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAEndMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAForgetMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAGetInDoubtXidsRequest;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAGetInDoubtXidsResponse;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAGetTimeoutMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAGetTimeoutResponse;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAJoinMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAPrepareMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAResponse;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAResumeMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXARollbackMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXASetTimeoutMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXASetTimeoutResponse;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAStartMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXASuspendMessage;
 import org.jboss.messaging.core.remoting.wireformat.SetClientIDMessage;
 import org.jboss.messaging.core.remoting.wireformat.SetSessionIDMessage;
 import org.jboss.messaging.core.remoting.wireformat.StartConnectionMessage;
@@ -175,8 +204,7 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
       addCodecForEmptyPacket(PacketType.MSG_CLOSING, ClosingMessage.class);
       
       addCodecForEmptyPacket(PacketType.MSG_RECOVER, SessionRecoverMessage.class);
-      
-      
+            
       addCodecForEmptyPacket(PacketType.MSG_BROWSER_RESET,
             BrowserResetMessage.class);
 
@@ -205,6 +233,39 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
 
       addCodec(DeleteTemporaryDestinationMessage.class,
             DeleteTemporaryDestinationMessageCodec.class);
+      
+      addCodec(SessionXACommitMessage.class, SessionXACommitMessageCodec.class);
+      
+      addCodec(SessionXAEndMessage.class, SessionXAEndMessageCodec.class);
+      
+      addCodec(SessionXAForgetMessage.class, SessionXAForgetMessageCodec.class);
+      
+      addCodecForEmptyPacket(PacketType.REQ_XA_INDOUBT_XIDS,
+            SessionXAGetInDoubtXidsRequest.class);
+      
+      addCodec(SessionXAGetInDoubtXidsResponse.class, SessionXAGetInDoubtXidsResponseCodec.class);
+      
+      addCodecForEmptyPacket(PacketType.MSG_XA_GET_TIMEOUT, SessionXAGetTimeoutMessage.class);
+      
+      addCodec(SessionXAGetTimeoutResponse.class, SessionXAGetTimeoutResponseCodec.class);
+      
+      addCodec(SessionXAJoinMessage.class, SessionXAJoinMessageCodec.class);
+      
+      addCodec(SessionXAPrepareMessage.class, SessionXAPrepareMessageCodec.class);
+      
+      addCodec(SessionXAResponse.class, SessionXAResponseCodec.class);
+      
+      addCodec(SessionXAResumeMessage.class, SessionXAResumeMessageCodec.class);
+      
+      addCodec(SessionXARollbackMessage.class, SessionXARollbackMessageCodec.class);
+      
+      addCodec(SessionXASetTimeoutMessage.class, SessionXASetTimeoutMessageCodec.class);
+      
+      addCodec(SessionXASetTimeoutResponse.class, SessionXASetTimeoutResponseCodec.class);
+      
+      addCodec(SessionXAStartMessage.class, SessionXAStartMessageCodec.class);
+      
+      addCodecForEmptyPacket(PacketType.MSG_XA_SUSPEND, SessionXASuspendMessage.class);
    }
 
    // Public --------------------------------------------------------

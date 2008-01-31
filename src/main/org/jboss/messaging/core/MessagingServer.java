@@ -96,6 +96,8 @@ public interface MessagingServer extends MessagingComponent
    void setJmsUserManager(JMSUserManager jmsUserManager);
 
    PostOffice getPostOffice();
+   
+   ResourceManager getResourceManager();
 
    HierarchicalRepository<HashSet<Role>> getSecurityRepository();
 

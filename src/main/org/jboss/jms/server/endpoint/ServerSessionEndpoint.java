@@ -41,6 +41,9 @@ import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
@@ -59,6 +62,7 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.PostOffice;
 import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.ResourceManager;
 import org.jboss.messaging.core.Transaction;
 import org.jboss.messaging.core.impl.ConditionImpl;
 import org.jboss.messaging.core.impl.DeliveryImpl;
@@ -82,6 +86,19 @@ import org.jboss.messaging.core.remoting.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCancelMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionSendMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXACommitMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAEndMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAForgetMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAGetInDoubtXidsResponse;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAGetTimeoutResponse;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAJoinMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAPrepareMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAResponse;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAResumeMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXARollbackMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXASetTimeoutMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionXASetTimeoutResponse;
+import org.jboss.messaging.core.remoting.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.Logger;
@@ -161,12 +178,14 @@ public class ServerSessionEndpoint
    private boolean autoCommitSends;
    
    private boolean autoCommitAcks;
+   
+   private ResourceManager resourceManager;
 
    // Constructors ---------------------------------------------------------------------------------
 
    ServerSessionEndpoint(String sessionID, ServerConnectionEndpoint connectionEndpoint,
                          boolean autoCommitSends, boolean autoCommitAcks, boolean xa,
-                         PacketSender sender) throws Exception
+                         PacketSender sender, ResourceManager resourceManager) throws Exception
    {
       this.id = sessionID;
 
@@ -188,9 +207,11 @@ public class ServerSessionEndpoint
       
       this.xa = xa;
       
-      tx = new TransactionImpl();
-      
-      
+      if (!xa)
+      {
+         tx = new TransactionImpl();
+      }
+            
       this.sender = sender;
       
       //this.transactionalSends = transactionalSends;
@@ -198,6 +219,8 @@ public class ServerSessionEndpoint
       this.autoCommitSends = autoCommitSends;
       
       this.autoCommitAcks = autoCommitAcks;
+      
+      this.resourceManager = resourceManager;
    }
    
    
@@ -806,6 +829,13 @@ public class ServerSessionEndpoint
    {     
       try
       {                        
+         if (tx == null)
+         {
+            //Might be null if XA
+            
+            tx = new TransactionImpl();
+         }
+         
          //Synchronize to prevent any new deliveries arriving during this recovery
          synchronized (this)
          {                     
@@ -883,7 +913,7 @@ public class ServerSessionEndpoint
    {
       try
       {
-         tx.commit(sp.getPersistenceManager());      
+         tx.commit(true, sp.getPersistenceManager());      
       }
       catch (Throwable t)
       {
@@ -891,6 +921,332 @@ public class ServerSessionEndpoint
       }
    }
          
+   private SessionXAResponse XACommit(boolean onePhase, Xid xid)
+   {      
+      try
+      {
+         if (tx != null)
+         {
+            final String msg = "Cannot commit, session is currently doing work in a transaction " + tx.getXid();
+            
+            return new SessionXAResponse(true, XAException.XAER_PROTO, msg);            
+         }
+         
+         Transaction theTx = resourceManager.getTransaction(xid);
+         
+         if (theTx == null)
+         {
+            final String msg = "Cannot find xid in resource manager: " + xid;
+            
+            return new SessionXAResponse(true, XAException.XAER_NOTA, msg);
+         }
+         
+         if (theTx.isSuspended())
+         { 
+            return new SessionXAResponse(true, XAException.XAER_PROTO, "Cannot commit transaction, it is suspended " + xid);
+         }
+         
+         theTx.commit(onePhase, sp.getPersistenceManager());      
+         
+         boolean removed = resourceManager.removeTransaction(xid);
+         
+         if (!removed)
+         {
+            final String msg = "Failed to remove transaction: " + xid;
+            
+            return new SessionXAResponse(true, XAException.XAER_PROTO, msg);
+         }
+         
+         return new SessionXAResponse(false, XAResource.XA_OK, null);
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to commit transaction branch", e);
+         
+         //Returning retry allows the tx manager to try again - otherwise heuristic action will
+         //be needed
+         return new SessionXAResponse(true, XAException.XA_RETRY, "Consult server logs for exception logging");
+      }
+   }
+   
+   private SessionXAResponse XAEnd(Xid xid, boolean failed)
+   {  
+      if (tx != null && tx.getXid().equals(xid))
+      {
+         if (tx.isSuspended())
+         {
+            final String msg = "Cannot end, transaction is suspended";
+            
+            return new SessionXAResponse(true, XAException.XAER_PROTO, msg);   
+         }
+         
+         tx = null;
+      }
+      else
+      {
+         //It's also legal for the TM to call end for a Xid in the suspended state
+         //See JTA 1.1 spec 3.4.4 - state diagram
+         //Although in practice TMs rarely do this.
+         Transaction theTx = resourceManager.getTransaction(xid);
+         
+         if (theTx == null)
+         {
+            final String msg = "Cannot find suspended transaction to end " + xid;
+            
+            return new SessionXAResponse(true, XAException.XAER_NOTA, msg);
+         }
+         
+         if (!theTx.isSuspended())
+         {
+            final String msg = "Transaction is not suspended " + xid;
+            
+            return new SessionXAResponse(true, XAException.XAER_PROTO, msg);
+         }
+         
+         theTx.resume();                  
+      }
+
+      return new SessionXAResponse(false, XAResource.XA_OK, null);
+   }
+   
+   private SessionXAResponse XAForget(Xid xid)
+   {      
+      //Do nothing since we don't support heuristic commits / rollback from the resource manager
+      
+      return new SessionXAResponse(false, XAResource.XA_OK, null);
+   }
+   
+   private SessionXAResponse XAJoin(Xid xid)
+   {   
+      try
+      {
+         Transaction theTx = resourceManager.getTransaction(xid);
+         
+         if (theTx == null)
+         {
+            final String msg = "Cannot find xid in resource manager: " + xid;
+            
+            return new SessionXAResponse(true, XAException.XAER_NOTA, msg);
+         }
+         
+         if (theTx.isSuspended())
+         {
+            return new SessionXAResponse(true, XAException.XAER_PROTO, "Cannot join tx, it is suspended " + xid);
+         }
+         
+         tx = theTx;
+         
+         return new SessionXAResponse(false, XAResource.XA_OK, null);
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to join transaction branch", e);
+
+         return new SessionXAResponse(true, XAException.XAER_RMERR, "Consult server logs for exception logging");
+      }          
+   }
+   
+   private SessionXAResponse XAPrepare(Xid xid)
+   {      
+      try
+      {
+         if (tx != null)
+         {
+            final String msg = "Cannot commit, session is currently doing work in a transaction " + tx.getXid();
+            
+            return new SessionXAResponse(true, XAException.XAER_PROTO, msg);            
+         }
+         
+         Transaction theTx = resourceManager.getTransaction(xid);
+         
+         if (theTx == null)
+         {
+            final String msg = "Cannot find xid in resource manager: " + xid;
+            
+            return new SessionXAResponse(true, XAException.XAER_NOTA, msg);
+         }
+         
+         if (theTx.isSuspended())
+         { 
+            return new SessionXAResponse(true, XAException.XAER_PROTO, "Cannot prepare transaction, it is suspended " + xid);
+         }
+         
+         if (theTx.isEmpty())
+         {
+            //Nothing to do - remove it
+            
+            boolean removed = resourceManager.removeTransaction(xid);
+            
+            if (!removed)
+            {
+               final String msg = "Failed to remove transaction: " + xid;
+               
+               return new SessionXAResponse(true, XAException.XAER_PROTO, msg);
+            }
+            
+            return new SessionXAResponse(false, XAResource.XA_RDONLY, null);
+         }
+         else
+         {         
+            theTx.prepare(sp.getPersistenceManager());
+            
+            return new SessionXAResponse(false, XAResource.XA_OK, null);
+         }
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to prepare transaction branch", e);
+         
+         return new SessionXAResponse(true, XAException.XAER_RMERR, "Consult server logs for exception logging");
+      }
+   }
+   
+   private SessionXAResponse XAResume(Xid xid)
+   {            
+      try
+      {
+         if (tx != null)
+         {
+            final String msg = "Cannot resume, session is currently doing work in a transaction " + tx.getXid();
+            
+            return new SessionXAResponse(true, XAException.XAER_PROTO, msg);            
+         }
+         
+         Transaction theTx = resourceManager.getTransaction(xid);
+         
+         if (theTx == null)
+         {
+            final String msg = "Cannot find xid in resource manager: " + xid;
+            
+            return new SessionXAResponse(true, XAException.XAER_NOTA, msg);
+         }
+         
+         if (!theTx.isSuspended())
+         { 
+            return new SessionXAResponse(true, XAException.XAER_PROTO, "Cannot resume transaction, it is not suspended " + xid);
+         }
+         
+         tx = theTx;
+         
+         tx.resume();
+         
+         return new SessionXAResponse(false, XAResource.XA_OK, null);
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to join transaction branch", e);
+
+         return new SessionXAResponse(true, XAException.XAER_RMERR, "Consult server logs for exception logging");
+      }         
+   }
+    
+   private SessionXAResponse XARollback(Xid xid)
+   {      
+      try
+      {
+         if (tx != null)
+         {
+            final String msg = "Cannot roll back, session is currently doing work in a transaction " + tx.getXid();
+            
+            return new SessionXAResponse(true, XAException.XAER_PROTO, msg);            
+         }
+         
+         Transaction theTx = resourceManager.getTransaction(xid);
+         
+         if (theTx == null)
+         {
+            final String msg = "Cannot find xid in resource manager: " + xid;
+            
+            return new SessionXAResponse(true, XAException.XAER_NOTA, msg);
+         }
+         
+         if (theTx.isSuspended())
+         { 
+            return new SessionXAResponse(true, XAException.XAER_PROTO, "Cannot rollback transaction, it is suspended " + xid);
+         }
+                  
+         theTx.rollback(sp.getPersistenceManager());
+         
+         boolean removed = resourceManager.removeTransaction(xid);
+         
+         if (!removed)
+         {
+            final String msg = "Failed to remove transaction: " + xid;
+            
+            return new SessionXAResponse(true, XAException.XAER_PROTO, msg);
+         }
+         
+         return new SessionXAResponse(false, XAResource.XA_OK, null);                  
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to roll back transaction branch", e);
+
+         return new SessionXAResponse(true, XAException.XAER_RMERR, "Consult server logs for exception logging");
+      }         
+   }
+   
+   private SessionXAResponse XAStart(Xid xid)
+   {      
+      if (tx != null)
+      {
+         final String msg = "Cannot start, session is already doing work in a transaction " + tx.getXid();
+         
+         return new SessionXAResponse(true, XAException.XAER_PROTO, msg);            
+      }
+      
+      tx = new TransactionImpl(xid);
+      
+      boolean added = resourceManager.putTransaction(xid, tx);
+      
+      if (!added)
+      {
+         final String msg = "Cannot start, there is already a xid " + tx.getXid();
+         
+         return new SessionXAResponse(true, XAException.XAER_DUPID, msg);          
+      }
+      
+      return new SessionXAResponse(false, XAResource.XA_OK, null);     
+   }
+   
+   private SessionXAResponse XASuspend() throws JMSException
+   {      
+      if (tx == null)
+      {
+         final String msg = "Cannot suspend, session is not doing work in a transaction " + tx.getXid();
+         
+         return new SessionXAResponse(true, XAException.XAER_PROTO, msg);            
+      }  
+      
+      if (tx.isSuspended())
+      {
+         final String msg = "Cannot suspend, transaction is already suspended " + tx.getXid();
+         
+         return new SessionXAResponse(true, XAException.XAER_PROTO, msg);   
+      }
+      
+      tx.suspend();
+      
+      tx = null;
+      
+      return new SessionXAResponse(false, XAResource.XA_OK, null);   
+   }
+   
+   private List<Xid> getInDoubtXids() throws JMSException
+   {
+      return null;
+   }
+   
+   private int getXATimeout()
+   {
+      return resourceManager.getTimeoutSeconds();
+   }
+   
+   private boolean setXATimeout(int timeoutSeconds)
+   {
+      return resourceManager.setTimeoutSeconds(timeoutSeconds);
+   }
+      
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
@@ -1348,140 +1704,15 @@ public class ServerSessionEndpoint
          security.check(dest, CheckType.CREATE, this.getConnectionEndpoint());
       }
    }
+    
 
-
-   // Inner classes --------------------------------------------------------------------------------
-
-//   /*
-//    * Holds a record of a delivery - we need to store the consumer id as well
-//    * hence this class
-//    * We can't rely on the cancel being driven from the ClientConsumer since
-//    * the deliveries may have got lost in transit (ignored) since the consumer might have closed
-//    * when they were in transit.
-//    * In such a case we might otherwise end up with the consumer closing but not all it's deliveries being
-//    * cancelled, which would mean they wouldn't be cancelled until the session is closed which is too late
-//    *
-//    * We need to store various pieces of information, such as consumer id, dlq, expiry queue
-//    * since we need this at cancel time, but by then the actual consumer might have closed
-//    */
-//   private static class DeliveryRecord
-//   {
-//   	// We need to cache the attributes here  since the consumer may get gc'd BEFORE the delivery is acked
-//
-//      MessageReference ref;
-//
-//      Queue dlq;
-//
-//      Queue expiryQueue;
-//
-//      long redeliveryDelay;
-//
-//      int maxDeliveryAttempts;
-//
-//      WeakReference consumerRef;
-//
-//      String queueName;
-//
-//      long deliveryID;
-//
-//      ServerConsumerEndpoint getConsumer()
-//      {
-//      	if (consumerRef != null)
-//      	{
-//      		return (ServerConsumerEndpoint)consumerRef.get();
-//      	}
-//      	else
-//      	{
-//      		return null;
-//      	}
-//      }
-//
-//      private DeliveryRecord(MessageReference ref, Queue dlq, Queue expiryQueue, long redeliveryDelay, int maxDeliveryAttempts,
-//      		                 String queueName, long deliveryID)
-//      {
-//      	this.ref = ref;
-//
-//      	this.dlq = dlq;
-//
-//      	this.expiryQueue = expiryQueue;
-//
-//      	this.redeliveryDelay = redeliveryDelay;
-//
-//      	this.maxDeliveryAttempts = maxDeliveryAttempts;
-//
-//      	this.queueName = queueName;
-//
-//      	this.deliveryID = deliveryID;
-//      }
-//
-//      DeliveryRecord(MessageReference ref, ServerConsumerEndpoint consumer, long deliveryID)
-//      {
-//      	this (ref, consumer.getDLQ(), consumer.getExpiryQueue(), consumer.getRedliveryDelay(), consumer.getMaxDeliveryAttempts(),
-//      			consumer.getQueueName(), deliveryID);
-//
-//      	// We need to cache the attributes here  since the consumer may get gc'd BEFORE the delivery is acked
-//
-//
-//         //We hold a WeakReference to the consumer - this is only needed when replicating - where we store the delivery then wait
-//         //for the response to come back from the replicant before actually performing delivery
-//         //We need a weak ref since when the consumer closes deliveries may still and remain and we don't want that to prevent
-//         //the consumer being gc'd
-//
-//      	//FIXME - do we still need this??
-//         this.consumerRef = new WeakReference(consumer);
-//      }
-//
-//   	public String toString()
-//   	{
-//   		return "DeliveryRecord " + System.identityHashCode(this) + " ref: " + ref + " queueName: " + queueName;
-//   	}
-//   }
-
-//   /**
-//    *
-//    * The purpose of this class is to remove deliveries from the delivery list on commit
-//    * Each transaction has once instance of this per SCE
-//    *
-//    */
-//   private class DeliveryCallback implements TransactionSynchronization
-//   {
-//      private long deliveryId;
-//
-//      DeliveryCallback(long deliveryId)
-//      {
-//         this.deliveryId = deliveryId;
-//      }
-//
-//      public void afterCommit() throws Exception
-//      {
-//         //deliveries.remove(deliveryId);
-//      }
-//
-//      public void afterRollback() throws Exception
-//      {
-//       //One phase rollbacks never hit the server - they are dealt with locally only
-//         //so this would only ever be executed for a two phase rollback.
-//
-//         //We don't do anything since cancellation is driven from the client.
-//      }
-//
-//      public void beforeCommit() throws Exception
-//      {
-//      }
-//
-//      public void beforeRollback() throws Exception
-//      {
-//      }
-//   }
-//
-         
    public PacketHandler newHandler()
    {
       return new SessionAdvisedPacketHandler();
    }
 
-
-   // INNER CLASSES
+   
+   // Inner classes --------------------------------------------------------------------------------   
 
    private class SessionAdvisedPacketHandler implements PacketHandler
    {
@@ -1501,6 +1732,8 @@ public class ServerSessionEndpoint
             Packet response = null;
 
             PacketType type = packet.getType();
+            
+            //TODO use a switch for this
             if (type == MSG_SENDMESSAGE)
             {
                SessionSendMessage message = (SessionSendMessage) packet;
@@ -1575,6 +1808,74 @@ public class ServerSessionEndpoint
                SessionCancelMessage message = (SessionCancelMessage)packet;
                cancel(message.getDeliveryID(), message.isExpired());
             }
+            else if (type == PacketType.MSG_XA_COMMIT)
+            {
+               SessionXACommitMessage message = (SessionXACommitMessage)packet;
+               
+               response = XACommit(message.isOnePhase(), message.getXid());
+            }
+            else if (type == PacketType.MSG_XA_END)
+            { 
+               SessionXAEndMessage message = (SessionXAEndMessage)packet;
+               
+               response = XAEnd(message.getXid(), message.isFailed());
+            }
+            else if (type == PacketType.MSG_XA_FORGET)
+            {
+               SessionXAForgetMessage message = (SessionXAForgetMessage)packet;
+               
+               response = XAForget(message.getXid());
+            }
+            else if (type == PacketType.MSG_XA_JOIN)
+            {
+               SessionXAJoinMessage message = (SessionXAJoinMessage)packet;
+               
+               response = XAJoin(message.getXid());
+            }
+            else if (type == PacketType.MSG_XA_RESUME)
+            {
+               SessionXAResumeMessage message = (SessionXAResumeMessage)packet;
+               
+               response = XAResume(message.getXid());
+            }
+            else if (type == PacketType.MSG_XA_ROLLBACK)
+            {
+               SessionXARollbackMessage message = (SessionXARollbackMessage)packet;
+               
+               response = XARollback(message.getXid());
+            }
+            else if (type == PacketType.MSG_XA_START)
+            {
+               SessionXAStartMessage message = (SessionXAStartMessage)packet;
+               
+               response = XAStart(message.getXid());
+            }
+            else if (type == PacketType.MSG_XA_SUSPEND)
+            {
+               response = XASuspend();
+            }   
+            else if (type == PacketType.REQ_XA_PREPARE)
+            {
+               SessionXAPrepareMessage message = (SessionXAPrepareMessage)packet;
+               
+               response = XAPrepare(message.getXid());
+            }
+            else if (type == PacketType.REQ_XA_INDOUBT_XIDS)
+            {
+               List<Xid> xids = getInDoubtXids();
+               
+               response = new SessionXAGetInDoubtXidsResponse(xids);
+            }
+            else if (type == PacketType.MSG_XA_GET_TIMEOUT)
+            {
+               response = new SessionXAGetTimeoutResponse(getXATimeout());
+            }
+            else if (type == PacketType.MSG_XA_SET_TIMEOUT)
+            {
+               SessionXASetTimeoutMessage message = (SessionXASetTimeoutMessage)packet;
+               
+               response = new SessionXASetTimeoutResponse(setXATimeout(message.getTimeoutSeconds()));
+            }
             else
             {
                response = new JMSExceptionMessage(new MessagingJMSException(
@@ -1606,5 +1907,7 @@ public class ServerSessionEndpoint
          return "SessionAdvisedPacketHandler[id=" + id + "]";
       }
    }
+   
+   
 
 }

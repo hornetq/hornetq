@@ -31,7 +31,18 @@ import org.jboss.messaging.util.Logger;
 /**
 * This class implements a JBoss Messaging filter
 * 
-* @author     <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+* @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+* 
+* JBM filters have the same syntax as JMS 1.1 selectors, but the identifiers are different.
+* 
+* Valid identifiers that can be used are:
+* 
+* JBMessageID - the message id of the message
+* JBMPriority - the priority of the message
+* JBMTimestamp - the timestamp of the message
+* JBMDurable - "DURABLE" or "NON_DURABLE"
+* JBMExpiration - the expiration of the message
+* Any other identifers that appear in a filter expression represent header values for the message
 * 
 * Derived from JBoss MQ version by
 * 

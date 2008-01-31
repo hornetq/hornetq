@@ -79,6 +79,10 @@ public class BindingImpl implements Binding
      
    public boolean equals(Object other)
    {
+      if (this == other)
+      {
+         return true;
+      }
       Binding bother = (Binding)other;
       
       return (this.nodeID == bother.getNodeID()) && (this.allNodes == bother.isAllNodes()) &&

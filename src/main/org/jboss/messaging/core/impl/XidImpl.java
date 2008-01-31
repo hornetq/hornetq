@@ -19,15 +19,11 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.tx;
+package org.jboss.messaging.core.impl;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.Serializable;
 
 import javax.transaction.xa.Xid;
-
-import org.jboss.messaging.util.Streamable;
 
 /**
  * 
@@ -39,9 +35,9 @@ import org.jboss.messaging.util.Streamable;
  * 
  * @version $Revision 1.1 $
  */
-public class MessagingXid implements Xid, Serializable, Streamable
+public class XidImpl implements Xid, Serializable
 {
-   private static final long serialVersionUID = -1893120702576869245L;
+   private static final long serialVersionUID = 407053232840068514L;
 
    private byte[] branchQualifier;
    
@@ -56,7 +52,7 @@ public class MessagingXid implements Xid, Serializable, Streamable
    /**
     * For serialization only
     */
-   public MessagingXid()
+   public XidImpl()
    {      
    }
    
@@ -66,7 +62,7 @@ public class MessagingXid implements Xid, Serializable, Streamable
     * @param formatId
     * @param globalTransactionId
     */
-   public MessagingXid(byte[] branchQualifier, int formatId, byte[] globalTransactionId)
+   public XidImpl(byte[] branchQualifier, int formatId, byte[] globalTransactionId)
    {
       this.branchQualifier = branchQualifier;
       this.formatId = formatId;
@@ -77,7 +73,7 @@ public class MessagingXid implements Xid, Serializable, Streamable
     * Copy constructor
     * @param other
     */
-   public MessagingXid(Xid other)
+   public XidImpl(Xid other)
    {
       this.branchQualifier = copyBytes(other.getBranchQualifier());
       this.formatId = other.getFormatId();
@@ -114,6 +110,10 @@ public class MessagingXid implements Xid, Serializable, Streamable
    
    public boolean equals(Object other)
    {
+      if (this == other)
+      {
+         return true;
+      }
       if (!(other instanceof Xid))
       {
          return false;
@@ -152,35 +152,8 @@ public class MessagingXid implements Xid, Serializable, Streamable
 
    public String toString()
    {
-     	return "MessagingXid (" + System.identityHashCode(this) + " bq:" + stringRep(branchQualifier) +
+     	return "XidImpl (" + System.identityHashCode(this) + " bq:" + stringRep(branchQualifier) +
      	" formatID:" + formatId + " gtxid:" + stringRep(globalTransactionId);
-   }
-   
-      
-   // Streamable implementation ------------------------------------------------------------
-
-   public void read(DataInputStream in) throws Exception
-   {
-      int len = in.readInt();      
-      branchQualifier = new byte[len];      
-      in.readFully(branchQualifier);
-      
-      formatId = in.readInt();
-      
-      len = in.readInt();      
-      globalTransactionId = new byte[len];      
-      in.readFully(globalTransactionId);            
-   }
-
-   public void write(DataOutputStream out) throws Exception
-   {
-      out.writeInt(branchQualifier.length);
-      out.write(branchQualifier);
-      
-      out.writeInt(formatId);
-      
-      out.writeInt(globalTransactionId.length);
-      out.write(globalTransactionId);
    }
    
    // Private -------------------------------------------------------------------------------

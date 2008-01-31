@@ -38,7 +38,7 @@ import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.impl.MessageImpl;
-import org.jboss.messaging.core.tx.MessagingXid;
+import org.jboss.messaging.core.impl.XidImpl;
 
 /**
  * 
@@ -286,7 +286,7 @@ public class UnitTestCase extends TestCase
       }
    }
    
-   protected MessagingXid generateXid()
+   protected XidImpl generateXid()
    {      
       String id1 = java.util.UUID.randomUUID().toString();
       
@@ -294,7 +294,7 @@ public class UnitTestCase extends TestCase
       
       int id = (int)(Math.random() * 100);
       
-      MessagingXid xid = new MessagingXid(id1.getBytes(), id, id2.getBytes());
+      XidImpl xid = new XidImpl(id1.getBytes(), id, id2.getBytes());
       
       return xid;
    }

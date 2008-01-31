@@ -17,11 +17,14 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.nio.charset.CharacterCodingException;
 
+import javax.transaction.xa.Xid;
+
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.impl.DestinationImpl;
 import org.jboss.messaging.core.impl.MessageImpl;
+import org.jboss.messaging.core.impl.XidImpl;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
 import org.jboss.messaging.util.Logger;
@@ -45,8 +48,7 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
 
    public static final int LONG_LENGTH = 8;
 
-   private static final Logger log = Logger
-         .getLogger(AbstractPacketCodec.class);
+   private static final Logger log = Logger.getLogger(AbstractPacketCodec.class);
 
    // Attributes ----------------------------------------------------
 
@@ -139,6 +141,11 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
          // NULL_BYTE
       }
    }
+   
+   public static int getXidLength(Xid xid)
+   {
+      return 1 + 1 + xid.getBranchQualifier().length + 1 + xid.getGlobalTransactionId().length;
+   }
 
    // MessageDecoder implementation ---------------------------------
 
@@ -230,8 +237,8 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
       packet.setOneWay(oneWay);
 
       return packet;
-   }
-
+   }   
+   
    // Protected -----------------------------------------------------
 
    protected abstract void encodeBody(P packet, RemotingBuffer buf)
@@ -266,6 +273,28 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
       msg.read(new DataInputStream(bais));
       return msg;
    }
+   
+   protected static void encodeXid(Xid xid, RemotingBuffer out)
+   {
+      out.putInt(xid.getFormatId());
+      out.putInt(xid.getBranchQualifier().length);
+      out.put(xid.getBranchQualifier());
+      out.putInt(xid.getGlobalTransactionId().length);
+      out.put(xid.getGlobalTransactionId());
+   }
+   
+   protected static Xid decodeXid(RemotingBuffer in)
+   {
+      int formatID = in.getInt();
+      byte[] bq = new byte[in.getInt()];
+      in.get(bq);
+      byte[] gtxid = new byte[in.getInt()];
+      in.get(gtxid);      
+      Xid xid = new XidImpl(bq, formatID, gtxid);      
+      return xid;
+   }
+   
+   
 
    // Private -------------------------------------------------------
 

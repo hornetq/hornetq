@@ -23,38 +23,22 @@ package org.jboss.messaging.core;
 
 import javax.transaction.xa.Xid;
 
-
-
 /**
  * 
- * A JBoss Messaging internal transaction
+ * A ResourceManager
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface Transaction
-{   
-   void addSynchronization(TransactionSynchronization sync);
+public interface ResourceManager
+{
+   boolean putTransaction(Xid xid, Transaction tx);
    
-   void prepare(PersistenceManager persistenceManager) throws Exception;
+   Transaction getTransaction(Xid xid);
    
-   void commit(boolean onePhase, PersistenceManager persistenceManager) throws Exception;
+   boolean removeTransaction(Xid xid);
    
-   void rollback(PersistenceManager persistenceManager) throws Exception;   
+   int getTimeoutSeconds();
    
-   void addMessage(Message message);
-   
-   void addAcknowledgement(MessageReference acknowledgement);   
-   
-   int getAcknowledgementsCount();
-   
-   Xid getXid();
-   
-   boolean isEmpty();
-   
-   void suspend();
-   
-   void resume();
-   
-   boolean isSuspended();
+   boolean setTimeoutSeconds(int timeoutSeconds);
 }

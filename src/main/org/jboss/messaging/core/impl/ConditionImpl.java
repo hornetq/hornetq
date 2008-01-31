@@ -67,6 +67,11 @@ public class ConditionImpl implements Condition
    
    public boolean equals(Object other)
    {
+      if (this == other)
+      {
+         return true;
+      }
+      
       Condition cond = (Condition)other;
 
       return ((cond.getType() == this.type) && (cond.getKey().equals(this.key)));

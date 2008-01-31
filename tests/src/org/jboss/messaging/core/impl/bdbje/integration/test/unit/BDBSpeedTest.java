@@ -556,7 +556,7 @@ public class BDBSpeedTest extends UnitTestCase
 //   {      
 //      String id = java.util.UUID.randomUUID().toString();
 //      
-//      Xid xid = new MessagingXid("blah".getBytes(), 123, id.getBytes());
+//      Xid xid = new XidImpl("blah".getBytes(), 123, id.getBytes());
 //      
 //      return xid;
 //   }
