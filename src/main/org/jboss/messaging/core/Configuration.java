@@ -58,12 +58,12 @@ public class Configuration implements Serializable
 
 
    private PropertyChangeSupport propertyChangeSupport;
-   protected Integer messagingServerID = -1;
+   protected Integer messagingServerID = 0;
    protected String _defaultQueueJNDIContext = "";
    protected String _defaultTopicJNDIContext = "";
    protected String _securityDomain;
    protected HashSet<Role> _securityConfig;
-   protected List<String> defaultInterceptors;
+   protected List<String> defaultInterceptors = new ArrayList<String>();
    protected String _defaultDLQ;
    // The default maximum number of delivery attempts before sending to DLQ - can be overridden on
    // the destination

@@ -52,6 +52,7 @@ import org.jboss.messaging.core.impl.postoffice.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.RemotingService;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.deployers.queue.QueueSettingsDeployer;
 import org.jboss.messaging.deployers.security.SecurityDeployer;
 import org.jboss.messaging.util.ExceptionUtil;
@@ -110,6 +111,7 @@ public class MessagingServerImpl implements MessagingServer
    private JMSUserManager jmsUserManager = new NullUserManager();
 
    private RemotingService remotingService;
+   private boolean createTransport = false;
 
    private Configuration configuration = new Configuration();
    private HierarchicalRepository<HashSet<Role>> securityRepository = new HierarchicalObjectRepository<HashSet<Role>>();
@@ -117,7 +119,10 @@ public class MessagingServerImpl implements MessagingServer
    private QueueFactoryImpl queueFactory = new QueueFactoryImpl();
 
    // Constructors ---------------------------------------------------------------------------------
-   public MessagingServerImpl() throws Exception
+   /**
+    * typically called by the MC framework or embedded if the user want to create and start their own RemotingService
+    */
+   public MessagingServerImpl()
    {
       // Some wired components need to be started here
 
@@ -128,6 +133,16 @@ public class MessagingServerImpl implements MessagingServer
       started = false;
    }
 
+   /**
+    * called when the usewr wants the MessagingServer to handle the creation of the RemotingTransport
+    * @param remotingConfiguration the RemotingConfiguration
+    */
+   public MessagingServerImpl(RemotingConfiguration remotingConfiguration)
+   {
+      this();
+      createTransport = true;
+      remotingService = new MinaService(remotingConfiguration);
+   }
    // lifecycle methods ----------------------------------------------------------------
 
    public synchronized void start() throws Exception
@@ -174,6 +189,10 @@ public class MessagingServerImpl implements MessagingServer
          postOffice = new PostOfficeImpl(configuration.getMessagingServerID(),
                                          persistenceManager, queueFactory);
 
+         if(createTransport)
+         {
+            remotingService.start();
+         }
          // Start the wired components
          securityDeployer.start();
          queueSettingsDeployer.start();
@@ -232,7 +251,10 @@ public class MessagingServerImpl implements MessagingServer
          messageCounterManager = null;
          postOffice.stop();
          postOffice = null;
-
+         if(createTransport)
+         {
+            remotingService.stop();
+         }
          MessagingTimeoutFactory.instance.reset();
 
          log.info("JMS " + this + " stopped");

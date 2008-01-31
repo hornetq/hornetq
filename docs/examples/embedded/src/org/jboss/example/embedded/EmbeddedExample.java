@@ -36,6 +36,7 @@ import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.impl.DestinationImpl;
 import org.jboss.messaging.core.impl.MessageImpl;
+import org.jboss.messaging.core.impl.server.MessagingServerImpl;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
 
 /**
@@ -46,7 +47,7 @@ public class EmbeddedExample
    public static void main(String args[]) throws Exception
    {
       RemotingConfiguration remotingConf = new RemotingConfiguration(TCP, "localhost", 5400);
-      MessagingServer messagingServer = MessagingServerFactory.createMessagingServer(remotingConf);
+      MessagingServer messagingServer = new MessagingServerImpl(remotingConf);
       messagingServer.start();
       messagingServer.createQueue("Queue1");
       ClientConnectionFactory cf = new ClientConnectionFactoryImpl(remotingConf);
@@ -64,6 +65,6 @@ public class EmbeddedExample
       System.out.println("m = " + new String(m.getPayload()));
       clientConnection.close();
 
-      MessagingServerFactory.stop(messagingServer);
+      messagingServer.stop();
    }
 }
