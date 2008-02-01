@@ -21,59 +21,106 @@
    */
 package org.jboss.messaging.util;
 
-import java.util.HashMap;
+import org.jboss.messaging.core.Mergeable;
+
+import java.util.*;
+import java.lang.reflect.ParameterizedType;
 
 /**
  * allows objects to be mapped against a regex pattern and held in order in a list
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class HierarchicalObjectRepository<E> implements HierarchicalRepository<E>
+public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T>
 {
    /**
     * The default Match to fall back to
     */
-   E defaultmatch;
+   T defaultmatch;
 
    /**
     * all the matches
     */
-   HashMap<String, Match> matches = new HashMap<String, Match>();
+   HashMap<String, Match<T>> matches = new HashMap<String, Match<T>>();
+
+   /**
+    * a regex comparator
+    */
+   MatchComparator<String> matchComparator = new MatchComparator<String>();
 
    /**
     * Add a new match to the repository
+    *
     * @param match The regex to use to match against
     * @param value the value to hold agains the match
     */
-   public void addMatch(String match, E value)
+   public void addMatch(String match, T value)
    {
-      //create a match and add it to the list
-      if(match.equals("*"))
-      {
-         defaultmatch = value;   
-      }
-      else
-      {
-         Match<E> match1 = new Match<E>(match);
-         match1.setValue(value);
-         matches.put(match, match1);
-      }
+      Match.verify(match);
+      Match<T> match1 = new Match<T>(match);
+      match1.setValue(value);
+      matches.put(match, match1);
+
    }
 
    /**
     * return the value held against the nearest match
+    *
     * @param match the match to look for
     * @return the value
     */
-   public E getMatch(String match)
+   public T getMatch(String match)
    {
-      HashMap<String, Match<E>> possibleMatches = getPossibleMatches(match);
-      E actualMatch  = getActualMatch(match, possibleMatches);
-      return actualMatch != null ? actualMatch:defaultmatch;
+      T actualMatch;
+      HashMap<String, Match<T>> possibleMatches = getPossibleMatches(match);
+      List<Match<T>> orderedMatches = sort(possibleMatches);
+      actualMatch = merge(orderedMatches);
+      return actualMatch != null ? actualMatch : defaultmatch;
+   }
+
+   /**
+    * merge all the possible matches, if  the values implement Mergeable then a full merge is done
+    * @param orderedMatches
+    * @return
+    */
+   private T merge(List<Match<T>> orderedMatches)
+   {
+      T actualMatch = null;
+      for (Match<T> match : orderedMatches)
+      {
+         if (actualMatch == null || !Mergeable.class.isAssignableFrom(actualMatch.getClass()))
+         {
+            actualMatch = match.getValue();
+         }
+         else
+         {
+            ((Mergeable) actualMatch).merge(match.getValue());
+
+         }
+      }
+      return actualMatch;
+   }
+
+   /**
+    * sort the matches in order of precedence
+    * @param possibleMatches
+    * @return
+    */
+   private List<Match<T>> sort(HashMap<String, Match<T>> possibleMatches)
+   {
+      List<String> keys = new ArrayList<String>(possibleMatches.keySet());
+      Collections.sort(keys, matchComparator);
+      List<Match<T>> matches = new ArrayList<Match<T>>();
+      for (String key : keys)
+      {
+         matches.add(possibleMatches.get(key));
+      }
+      return matches;
    }
 
    /**
     * remove a match from the repository
+    *
     * @param match the match to remove
     */
    public void removeMatch(String match)
@@ -83,83 +130,81 @@ public class HierarchicalObjectRepository<E> implements HierarchicalRepository<E
 
    /**
     * set the default value to fallback to if none found
+    *
     * @param defaultValue the value
     */
-   public void setDefault(E defaultValue)
+   public void setDefault(T defaultValue)
    {
       defaultmatch = defaultValue;
    }
 
-   private HashMap<String, Match<E>> getPossibleMatches(String match)
+   /**
+    * return any possible matches
+    * @param match
+    * @return
+    */
+   private HashMap<String, Match<T>> getPossibleMatches(String match)
    {
-      HashMap<String, Match<E>> possibleMatches = new HashMap<String, Match<E>>();
-      for(String key : matches.keySet())
+      HashMap<String, Match<T>> possibleMatches = new HashMap<String, Match<T>>();
+      for (String key : matches.keySet())
       {
-         if(matches.get(key).getPattern().matcher(match).matches())
+         if (matches.get(key).getPattern().matcher(match).matches())
          {
-            //noinspection unchecked
             possibleMatches.put(key, matches.get(key));
          }
       }
       return possibleMatches;
    }
 
-
-   private E getActualMatch(String match, HashMap<String, Match<E>> possibleMatches)
+   /**
+    * compares to matches to seew hich one is more specific
+    */
+   class MatchComparator<T extends String> implements Comparator<T>
    {
-      E value = null;
-      Match<E> currentVal = null;
-      for(String key : possibleMatches.keySet())
-      {
-         currentVal = compareMatches(match, currentVal, possibleMatches.get(key));
-      }
-      if(currentVal != null)
-      {
-         value = currentVal.getValue();
-      }
-      return value;
-   }
 
-   private Match<E> compareMatches(String match, Match<E> currentVal, Match<E> replacementVal)
-   {
-      boolean moreSpecific = false;
-      if(currentVal == null)
+      public int compare(String o1, String o2)
       {
-         moreSpecific = true;
-      }
-      else
-      {
-         String[] parts = match.split("\\.");
-         for(int i = 0; i < parts.length; i++)
+         if (o1.contains(Match.WILDCARD) && !o2.contains(Match.WILDCARD))
          {
-            String left = getPart(i, currentVal.getMatch());
-            String right = getPart(i, replacementVal.getMatch());
-            if(!left.equals(right) && parts[i].equals(right))
+            return -1;
+         }
+         else if (!o1.contains(Match.WILDCARD) && o2.contains(Match.WILDCARD))
+         {
+            return +1;
+         }
+         else if (o1.contains(Match.WILDCARD) && o2.contains(Match.WILDCARD))
+         {
+            return o1.length() - o2.length();
+         }
+         else if (o1.contains(Match.WORD_WILDCARD) && !o2.contains(Match.WORD_WILDCARD))
+         {
+            return -1;
+         }
+         else if (!o1.contains(Match.WORD_WILDCARD) && o2.contains(Match.WORD_WILDCARD))
+         {
+            return +1;
+         }
+         else if (o1.contains(Match.WORD_WILDCARD) && o2.contains(Match.WORD_WILDCARD))
+         {
+            String[] leftSplits = o1.split("\\.");
+            String[] rightSplits = o2.split("\\.");
+            for (int i = 0; i < leftSplits.length; i++)
             {
-               moreSpecific = true;
-               if("*".equals(left))
+               String left = leftSplits[i];
+               if (left.equals(Match.WORD_WILDCARD))
                {
-                  break;
+                  if (rightSplits.length < i || !rightSplits[i].equals(Match.WORD_WILDCARD))
+                  {
+                     return +1;
+                  }
+                  else
+                  {
+                     return -1;
+                  }
                }
             }
-            else
-            {
-               moreSpecific = false;
-            }
          }
+         return o1.length() - o2.length();
       }
-      return moreSpecific? replacementVal : currentVal;
    }
-
-   private String getPart(int i, String match)
-   {
-      String[] parts = match.split("\\.");
-      if(parts != null &&  parts.length > i)
-      {
-         return parts[i];
-      }
-      return null;
-   }
-
-
 }

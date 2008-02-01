@@ -25,8 +25,11 @@ import junit.framework.TestCase;
 import org.jboss.jms.server.security.Role;
 import org.jboss.messaging.util.HierarchicalObjectRepository;
 import org.jboss.messaging.util.HierarchicalRepository;
+import org.jboss.messaging.core.Mergeable;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -67,7 +70,8 @@ public class RepositoryTest extends TestCase
       roles2.add(new Role("test1"));
       roles2.add(new Role("test2"));
       roles2.add(new Role("test3"));
-      securityRepository.addMatch("queues.another.andanother.*", roles2);
+      securityRepository.addMatch("queues.another.andanother", roles2);
+      
       HashSet<Role> hashSet = securityRepository.getMatch("queues.another.andanother");
       assertEquals(hashSet.size(), 3);
    }
@@ -86,22 +90,25 @@ public class RepositoryTest extends TestCase
    public void testMultipleWildcards()
    {
       HierarchicalRepository<String> repository = new HierarchicalObjectRepository<String>();
+      repository.addMatch("*", "*");
       repository.addMatch("a", "a");
       repository.addMatch("a.*", "a.*");
+      repository.addMatch("a.^", "a.^");
       repository.addMatch("a.b.c", "a.b.c");
-      repository.addMatch("a.*.c", "a.*.c");
+      repository.addMatch("a.^.c", "a.^.c");
       repository.addMatch("a.d.c", "a.d.c");
       repository.addMatch("a.b.*", "a.b.*");
       repository.addMatch("a.b", "a.b");
-
       repository.addMatch("a.b.c.*", "a.b.c.*");
       repository.addMatch("a.b.c.d", "a.b.c.d");
-      repository.addMatch("a.*.*.d", "a.*.*.d");
-      repository.addMatch("a.*.d.*", "a.*.d.*");
-      String val = repository.getMatch("a.b");
+      repository.addMatch("a.^.^.d", "a.^.^.d");
+      repository.addMatch("a.^.d.*", "a.^.d.*");
+      String val = repository.getMatch("a");
+      assertEquals("a", val);
+      val = repository.getMatch("a.b");
       assertEquals("a.b", val);
       val = repository.getMatch("a.x");
-      assertEquals("a.*", val);
+      assertEquals("a.^", val);
       val = repository.getMatch("a.b.x");
       assertEquals("a.b.*", val);
       val = repository.getMatch("a.b.c");
@@ -109,15 +116,98 @@ public class RepositoryTest extends TestCase
       val = repository.getMatch("a.d.c");
       assertEquals("a.d.c", val);
       val = repository.getMatch("a.x.c");
-      assertEquals("a.*.c", val);
+      assertEquals("a.^.c", val);
       val = repository.getMatch("a.b.c.d");
       assertEquals("a.b.c.d", val);
       val = repository.getMatch("a.x.c.d");
-      assertEquals("a.*.*.d", val);
+      assertEquals("a.^.^.d", val);
       val = repository.getMatch("a.b.x.d");
-      assertEquals("a.b.*", val);
+      assertEquals("a.^.^.d", val);
       val = repository.getMatch("a.d.x.d");
-      assertEquals("a.*.*.d", val);
+      assertEquals("a.^.^.d", val);
+      val = repository.getMatch("a.d.d.g");
+      assertEquals("a.^.d.*", val);
+      val = repository.getMatch("zzzz.z.z.z.d.r.g.f.sd.s.fsdfd.fsdfs");
+      assertEquals("*", val);
+   }
 
+   public void testRepositoryMerge()
+   {
+      HierarchicalRepository<DummyMergeable> repository = new HierarchicalObjectRepository<DummyMergeable>();
+      repository.addMatch("*", new DummyMergeable(1));
+      repository.addMatch("a.*", new DummyMergeable(2));
+      repository.addMatch("b.*", new DummyMergeable(3));
+      repository.addMatch("a.b.*", new DummyMergeable(4));
+      repository.addMatch("b.c.*", new DummyMergeable(5));
+      repository.addMatch("a.b.c.*", new DummyMergeable(6));
+      repository.addMatch("a.b.^.d", new DummyMergeable(7));
+      repository.addMatch("a.b.c.^", new DummyMergeable(8));
+      repository.getMatch("a.b.c.d");
+      assertEquals(5, DummyMergeable.timesMerged);
+      assertTrue(DummyMergeable.contains(1));
+      assertTrue(DummyMergeable.contains(2));
+      assertTrue(DummyMergeable.contains(4));
+      assertTrue(DummyMergeable.contains(7));
+      assertTrue(DummyMergeable.contains(8));
+      DummyMergeable.reset();
+      repository.getMatch("a.b.c");
+      assertEquals(2, DummyMergeable.timesMerged);
+      assertTrue(DummyMergeable.contains(1));
+      assertTrue(DummyMergeable.contains(2));
+      assertTrue(DummyMergeable.contains(4));
+      DummyMergeable.reset();
+      repository.getMatch("a");
+      assertEquals(0, DummyMergeable.timesMerged);
+      DummyMergeable.reset();
+   }
+
+   public void testIllegalMatches()
+   {
+      HierarchicalRepository<String> repository = new HierarchicalObjectRepository<String>();
+      try
+      {
+         repository.addMatch("hjhjhjhjh.*.hhh", "test");
+      }
+      catch (IllegalArgumentException e)
+      {
+         //pass
+      }
+      try
+      {
+         repository.addMatch(null, "test");
+      }
+      catch (IllegalArgumentException e)
+      {
+         //pass
+      }
+   }
+
+   static class DummyMergeable implements Mergeable
+   {
+      static int timesMerged = 0;
+      static ArrayList<Integer> merged = new ArrayList<Integer>();
+      private Integer id;
+
+      static void reset()
+      {
+          timesMerged = 0;
+         DummyMergeable.merged = new ArrayList<Integer>();
+      }
+
+      static boolean contains(Integer i)
+      {
+         return DummyMergeable.merged.contains(i);
+      }
+      public DummyMergeable(Integer id)
+      {
+         this.id = id;
+      }
+
+      public void merge(Object merged)
+      {
+         timesMerged++;
+         DummyMergeable.merged.add(id);
+         DummyMergeable.merged.add(((DummyMergeable)merged).id);
+      }
    }
 }

@@ -21,29 +21,46 @@
    */
 package org.jboss.messaging.util;
 
+import org.jboss.messaging.core.Mergeable;
+
 import java.util.regex.Pattern;
 
 /**
     * a Match is the holder for the match string and the object to hold against it.
  */
-public class Match<E>
+public class Match<T>
 {
+
+   public static String WORD_WILDCARD = "^";
+   private static String WORD_WILDCARD_REPLACEMENT = "[*[^.]]";
+   public static String WILDCARD = "*";
+   private static String WILDCARD_REPLACEMENT = ".+";
+   private static final String DOT = ".";
+   private static final String DOT_REPLACEMENT = "\\.";
+   
    private String match;
    private Pattern pattern;
-   private E value;
+   private T value;
+
 
 
    public Match(String match)
    {
       this.match = match;
-      //compile in advance for performance reasons
-      //check for dangling characters
-      if(match.length() > 1)
-         pattern = Pattern.compile(match);
+      String actMatch = match;
+      //replace any regex characters
+      if(WILDCARD.equals(match))
+      {
+         actMatch = WILDCARD_REPLACEMENT;
+      }
       else
       {
-         pattern = Pattern.compile(new StringBuilder("[").append(match).append("]").toString());
+         actMatch = actMatch.replace(WORD_WILDCARD, WORD_WILDCARD_REPLACEMENT);
+         actMatch = actMatch.replace(DOT, DOT_REPLACEMENT);
+         actMatch = actMatch.replace(WILDCARD,  WILDCARD_REPLACEMENT);
       }
+      pattern = Pattern.compile(actMatch);
+
    }
 
 
@@ -63,12 +80,12 @@ public class Match<E>
    }
 
 
-   public E getValue()
+   public T getValue()
    {
       return value;
    }
 
-   public void setValue(E value)
+   public void setValue(T value)
    {
       this.value = value;
    }
@@ -89,4 +106,22 @@ public class Match<E>
    {
       return (match != null ? match.hashCode() : 0);
    }
+
+   /**
+    * utility method to verify consistency of match
+    * @param match
+    * @throws IllegalArgumentException
+    */
+   public static void verify(String match) throws IllegalArgumentException
+   {
+      if(match == null)
+      {
+         throw new IllegalArgumentException("match can not be null");
+      }
+      if(match.contains("*") && match.indexOf("*") < match.length() - 1)
+      {
+         throw new IllegalArgumentException("* can only be at end of match");
+      }
+   }
+
 }

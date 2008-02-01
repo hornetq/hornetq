@@ -59,7 +59,7 @@ public class QueueSettingsDeployerTest extends TestCase
       queueSettings.setClustered(false);
       queueSettings.setDLQ("DLQtest");
       queueSettings.setExpiryQueue("ExpiryQueueTest");
-      queueSettings.setRedeliveryDelay(100);
+      queueSettings.setRedeliveryDelay((long)100);
       queueSettings.setMaxSize(-100);
       queueSettings.setDistributionPolicyClass("org.jboss.messaging.core.impl.RoundRobinDistributionPolicy");
       queueSettings.setMessageCounterHistoryDayLimit(1000);

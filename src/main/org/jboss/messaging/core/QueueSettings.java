@@ -29,66 +29,75 @@ import org.jboss.messaging.core.impl.RoundRobinDistributionPolicy;
  * 
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class QueueSettings
+public class QueueSettings implements Mergeable<QueueSettings>
 {
    private static Logger log = Logger.getLogger(QueueSettings.class);
-   private static final DistributionPolicy DEFAULT_DISTRIBUTION_POLICY = new RoundRobinDistributionPolicy();
-   boolean clustered = false;
-   int maxSize = -1;
-   String distributionPolicyClass = null;
-   int maxDeliveryAttempts = 10;
-   int messageCounterHistoryDayLimit = 0;
-   long redeliveryDelay = 500;
-   private String DLQ;
-   private String ExpiryQueue;
+   /**
+    * defaults used if null, this allows merging
+    */
+   public static final DistributionPolicy DEFAULT_DISTRIBUTION_POLICY = new RoundRobinDistributionPolicy();
+   public static final Boolean DEFAULT_CLUSTERED = false;
+   public static final Integer DEFAULT_MAX_SIZE = -1;
+   public static final Integer DEFAULT_MAX_DELIVERY_ATTEMPTS = 10;
+   public static final Integer DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT = 0;
+   public static final Long DEFAULT_REDELIVER_DELAY = (long) 500;
+
+   private Boolean clustered = false;
+   private Integer maxSize = null;
+   private String distributionPolicyClass = null;
+   private Integer maxDeliveryAttempts = null;
+   private Integer messageCounterHistoryDayLimit = null;
+   private Long redeliveryDelay = null;
+   private String DLQ = null;
+   private String ExpiryQueue = null;
 
 
-   public boolean isClustered()
+   public Boolean isClustered()
    {
-      return clustered;
+      return clustered != null?clustered:DEFAULT_CLUSTERED;
    }
 
-   public void setClustered(boolean clustered)
+   public void setClustered(Boolean clustered)
    {
       this.clustered = clustered;
    }
 
-   public int getMaxSize()
+   public Integer getMaxSize()
    {
-      return maxSize;
+      return maxSize != null?maxSize:DEFAULT_MAX_SIZE;
    }
 
-   public void setMaxSize(int maxSize)
+   public void setMaxSize(Integer maxSize)
    {
       this.maxSize = maxSize;
    }
 
-   public int getMaxDeliveryAttempts()
+   public Integer getMaxDeliveryAttempts()
    {
-      return maxDeliveryAttempts;
+      return maxDeliveryAttempts != null?maxDeliveryAttempts:DEFAULT_MAX_DELIVERY_ATTEMPTS;
    }
 
-   public void setMaxDeliveryAttempts(int maxDeliveryAttempts)
+   public void setMaxDeliveryAttempts(Integer maxDeliveryAttempts)
    {
       this.maxDeliveryAttempts = maxDeliveryAttempts;
    }
 
-   public int getMessageCounterHistoryDayLimit()
+   public Integer getMessageCounterHistoryDayLimit()
    {
-      return messageCounterHistoryDayLimit;
+      return messageCounterHistoryDayLimit!=null?messageCounterHistoryDayLimit:DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT;
    }
 
-   public void setMessageCounterHistoryDayLimit(int messageCounterHistoryDayLimit)
+   public void setMessageCounterHistoryDayLimit(Integer messageCounterHistoryDayLimit)
    {
       this.messageCounterHistoryDayLimit = messageCounterHistoryDayLimit;
    }
 
-   public long getRedeliveryDelay()
+   public Long getRedeliveryDelay()
    {
-      return redeliveryDelay;
+      return redeliveryDelay!=null?redeliveryDelay:DEFAULT_REDELIVER_DELAY;
    }
 
-   public void setRedeliveryDelay(long redeliveryDelay)
+   public void setRedeliveryDelay(Long redeliveryDelay)
    {
       this.redeliveryDelay = redeliveryDelay;
    }
@@ -173,5 +182,45 @@ public class QueueSettings
       result = 31 * result + (DLQ != null ? DLQ.hashCode() : 0);
       result = 31 * result + (ExpiryQueue != null ? ExpiryQueue.hashCode() : 0);
       return result;
+   }
+
+   /**
+    * merge 2 objects in to 1
+    * @param merged
+    */
+   public void merge(QueueSettings merged)
+   {
+      if(!DEFAULT_CLUSTERED.equals(merged.clustered))
+      {
+         clustered = merged.clustered;
+      }
+      if(!DEFAULT_MAX_DELIVERY_ATTEMPTS.equals(merged.maxDeliveryAttempts) && merged.maxDeliveryAttempts != null)
+      {
+         maxDeliveryAttempts = merged.maxDeliveryAttempts;
+      }
+      if(!DEFAULT_MAX_SIZE.equals(merged.maxSize) && merged.maxSize != null)
+      {
+         maxSize = merged.maxSize;
+      }
+      if(!DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT.equals(merged.messageCounterHistoryDayLimit) && merged.messageCounterHistoryDayLimit != null)
+      {
+         messageCounterHistoryDayLimit = merged.messageCounterHistoryDayLimit;
+      }
+      if(!DEFAULT_REDELIVER_DELAY.equals(merged.redeliveryDelay) && merged.redeliveryDelay != null && merged.redeliveryDelay != null)
+      {
+         redeliveryDelay = merged.redeliveryDelay;
+      }
+      if(merged.distributionPolicyClass != null)
+      {
+         distributionPolicyClass = merged.distributionPolicyClass;
+      }
+      if(merged.DLQ != null)
+      {
+         DLQ = merged.DLQ;
+      }
+      if(merged.ExpiryQueue != null)
+      {
+         ExpiryQueue = merged.ExpiryQueue;
+      }
    }
 }
