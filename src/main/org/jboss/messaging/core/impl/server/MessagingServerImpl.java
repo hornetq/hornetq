@@ -211,6 +211,7 @@ public class MessagingServerImpl implements MessagingServer
          securityDeployer.start();
          queueSettingsDeployer.start();
          connectionManager.start();
+         remotingService.addConnectionExceptionListener(connectionManager);
          memoryManager.start();
          postOffice.start();
          ConnectionFactoryAdvisedPacketHandler connectionFactoryAdvisedPacketHandler =
@@ -258,6 +259,7 @@ public class MessagingServerImpl implements MessagingServer
          securityDeployer.stop();
          queueSettingsDeployer.stop();
          connectionManager.stop();
+         remotingService.removeConnectionExceptionListener(connectionManager);
          connectionManager = null;
          memoryManager.stop();
          memoryManager = null;

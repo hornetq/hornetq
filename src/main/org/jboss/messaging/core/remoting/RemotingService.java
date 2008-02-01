@@ -23,5 +23,8 @@ public interface RemotingService extends MessagingComponent
    void addInterceptor(Interceptor interceptor);
 
    void removeInterceptor(Interceptor interceptor);
-   
+
+   void addConnectionExceptionListener(ConnectionExceptionListener listener);
+
+   void removeConnectionExceptionListener(ConnectionExceptionListener listener);  
 }

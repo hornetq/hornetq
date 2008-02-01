@@ -200,7 +200,7 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionExc
 
    // ConnectionExceptionListener ------------------------------------------------------------------
    
-   public void handleConnectionException(Exception e, String clientSessionID)
+   public void handleConnectionException(Throwable t, String clientSessionID)
    {
       handleClientFailure(clientSessionID , true);
    }

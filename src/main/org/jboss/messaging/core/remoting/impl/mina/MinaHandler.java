@@ -6,6 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
+import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.mina.common.IoHandlerAdapter;
@@ -36,16 +37,16 @@ public class MinaHandler extends IoHandlerAdapter
 
    private final PacketDispatcher dispatcher;
 
-   private KeepAliveNotifier keepAliveManager;
+   private ConnectionExceptionNotifier connectionExceptionNotifier;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
    
-   public MinaHandler(PacketDispatcher dispatcher, KeepAliveNotifier keepAliveManager)
+   public MinaHandler(PacketDispatcher dispatcher, ConnectionExceptionNotifier keepAliveNotifier)
    {
       this.dispatcher = dispatcher;
-      this.keepAliveManager = keepAliveManager;
+      this.connectionExceptionNotifier = keepAliveNotifier;
    }
 
    // Public --------------------------------------------------------
@@ -56,12 +57,10 @@ public class MinaHandler extends IoHandlerAdapter
    public void exceptionCaught(IoSession session, Throwable cause)
          throws Exception
    {
-      if (cause instanceof KeepAliveTimeoutException && keepAliveManager != null)
+      if (connectionExceptionNotifier != null)
       {
          String serverSessionID = Long.toString(session.getId());
-         TimeoutException e = new TimeoutException();
-         e.initCause(cause);
-         keepAliveManager.notifyKeepAliveTimeout(e, serverSessionID);
+         connectionExceptionNotifier.fireConnectionException(cause, serverSessionID);
       }
       // FIXME ugly way to know we're on the server side
       // close session only on the server side

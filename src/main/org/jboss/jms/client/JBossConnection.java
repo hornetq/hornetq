@@ -122,8 +122,16 @@ public class JBossConnection implements
 
    public void close() throws JMSException
    {
-      connection.closing();
-      connection.close();
+      try
+      {
+         connection.closing();
+         connection.close();
+      } finally
+      {
+         // FIXME regardless of the pb when closing/close the connection, we must ensure
+         // the remoting connection is properly stopped
+         connection.getRemotingConnection().stop();
+      }
    }
 
    public ConnectionConsumer createConnectionConsumer(Destination destination,

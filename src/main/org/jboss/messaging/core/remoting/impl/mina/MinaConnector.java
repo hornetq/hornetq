@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.mina.common.CloseFuture;
 import org.apache.mina.common.ConnectFuture;
@@ -46,7 +45,7 @@ import org.jboss.messaging.util.Logger;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class MinaConnector implements NIOConnector, KeepAliveNotifier
+public class MinaConnector implements NIOConnector, ConnectionExceptionNotifier
 {
    // Constants -----------------------------------------------------
 
@@ -104,7 +103,7 @@ public class MinaConnector implements NIOConnector, KeepAliveNotifier
 
    public NIOSession connect() throws IOException
    {
-      if (session != null)
+      if (session != null && session.isConnected())
       {
          return new MinaSession(session);
       }
@@ -184,9 +183,9 @@ public class MinaConnector implements NIOConnector, KeepAliveNotifier
       this.listener = listener;
    }
    
-   // KeepAliveManager implementation -------------------------------
+   // ConnectionExceptionNotifier implementation -------------------------------
    
-   public void notifyKeepAliveTimeout(TimeoutException cause, String remoteSessionID)
+   public void fireConnectionException(Throwable cause, String remoteSessionID)
    {
       if (listener != null)
          listener.handleConnectionException(cause, remoteSessionID);

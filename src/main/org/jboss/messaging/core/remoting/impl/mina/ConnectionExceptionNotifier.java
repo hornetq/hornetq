@@ -6,7 +6,6 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -15,7 +14,7 @@ import java.util.concurrent.TimeoutException;
  * @version <tt>$Revision$</tt>
  *
  */
-public interface KeepAliveNotifier
+public interface ConnectionExceptionNotifier
 {
-   public abstract void notifyKeepAliveTimeout(TimeoutException e, String remoteSessionID);
+   public abstract void fireConnectionException(Throwable t, String remoteSessionID);
 }

@@ -77,12 +77,11 @@ public class ClientKeepAliveTest extends TestCase
 
       replay(factory);
 
-      
       final CountDownLatch latch = new CountDownLatch(1);
 
-      service.setConnectionExceptionListener(new ConnectionExceptionListener()
+      service.addConnectionExceptionListener(new ConnectionExceptionListener()
       {
-         public void handleConnectionException(Exception e, String sessionID)
+         public void handleConnectionException(Throwable e, String sessionID)
          {
             latch.countDown();
          }
@@ -114,9 +113,9 @@ public class ClientKeepAliveTest extends TestCase
       final String[] clientSessionIDNotResponding = new String[1];
       final CountDownLatch latch = new CountDownLatch(1);
 
-      service.setConnectionExceptionListener(new ConnectionExceptionListener()
+      service.addConnectionExceptionListener(new ConnectionExceptionListener()
       {
-         public void handleConnectionException(Exception e, String sessionID)
+         public void handleConnectionException(Throwable t, String sessionID)
          {
             clientSessionIDNotResponding[0] = sessionID;
             latch.countDown();
@@ -173,9 +172,9 @@ public class ClientKeepAliveTest extends TestCase
          final String[] clientSessionIDNotResponding = new String[1];
          final CountDownLatch latch = new CountDownLatch(1);
 
-         service.setConnectionExceptionListener(new ConnectionExceptionListener()
+         service.addConnectionExceptionListener(new ConnectionExceptionListener()
          {
-            public void handleConnectionException(Exception e, String sessionID)
+            public void handleConnectionException(Throwable t, String sessionID)
             {
                clientSessionIDNotResponding[0] = sessionID;
                latch.countDown();
@@ -216,9 +215,9 @@ public class ClientKeepAliveTest extends TestCase
       final String[] sessionIDNotResponding = new String[1];
       final CountDownLatch latch = new CountDownLatch(1);
 
-      service.setConnectionExceptionListener(new ConnectionExceptionListener()
+      service.addConnectionExceptionListener(new ConnectionExceptionListener()
       {
-         public void handleConnectionException(Exception e, String sessionID)
+         public void handleConnectionException(Throwable t, String sessionID)
          {
             sessionIDNotResponding[0] = sessionID;
             latch.countDown();

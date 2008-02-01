@@ -82,7 +82,7 @@ public class ServerKeepAliveTest extends TestCase
  
       connector.setConnectionExceptionListener(new ConnectionExceptionListener()
       {
-         public void handleConnectionException(Exception e, String sessionID)
+         public void handleConnectionException(Throwable t, String sessionID)
          {
             sessionIDNotResponding[0] = sessionID;
             latch.countDown();

@@ -14,18 +14,18 @@ import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.add
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addMDCFilter;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.mina.common.DefaultIoFilterChainBuilder;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.jboss.beans.metadata.api.annotations.Install;
 import org.jboss.beans.metadata.api.annotations.Uninstall;
 import org.jboss.messaging.core.remoting.ConnectionExceptionListener;
+import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.util.Logger;
@@ -36,23 +36,23 @@ import org.jboss.messaging.util.Logger;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class MinaService implements RemotingService, KeepAliveNotifier
+public class MinaService implements RemotingService, ConnectionExceptionNotifier
 {
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(MinaService.class);
 
-   public static final String DISABLE_INVM_KEY = "disable-invm";
-
    // Attributes ----------------------------------------------------
 
+   private boolean started = false;
+   
    private RemotingConfiguration remotingConfig;
    
    private NioSocketAcceptor acceptor;
 
    private PacketDispatcher dispatcher;
 
-   private ConnectionExceptionListener listener;
+   private List<ConnectionExceptionListener> listeners = new ArrayList<ConnectionExceptionListener>();
 
    private KeepAliveFactory factory;
    
@@ -89,13 +89,20 @@ public class MinaService implements RemotingService, KeepAliveNotifier
       this.filters.remove(filter);
    }
 
-   public void setConnectionExceptionListener(ConnectionExceptionListener listener)
+   public void addConnectionExceptionListener(ConnectionExceptionListener listener)
    {
       assert listener != null;
 
-      this.listener = listener;
+      listeners.add(listener);
    }
-   
+
+   public void removeConnectionExceptionListener(ConnectionExceptionListener listener)
+   {
+      assert listener != null;
+
+      listeners.remove(listener);
+   }
+
    // TransportService implementation -------------------------------
 
    public void start() throws Exception
@@ -131,6 +138,8 @@ public class MinaService implements RemotingService, KeepAliveNotifier
          if (!disableInvm)
             REGISTRY.register(remotingConfig, dispatcher);
       }
+      
+      started = true;
    }
 
    public void stop()
@@ -143,6 +152,8 @@ public class MinaService implements RemotingService, KeepAliveNotifier
       }
       
       REGISTRY.unregister();
+      
+      started = false;
    }
 
    public PacketDispatcher getDispatcher()
@@ -154,15 +165,23 @@ public class MinaService implements RemotingService, KeepAliveNotifier
    {
       return remotingConfig;
    }
-
-   // KeepAliveManager implementation -------------------------------
-
-   public void notifyKeepAliveTimeout(TimeoutException e, String remoteSessionID)
+   
+   public DefaultIoFilterChainBuilder getFilterChain() 
    {
-      if (listener != null)
+      assert started == true;
+      assert acceptor != null;
+      
+      return acceptor.getFilterChain();
+   }
+
+   // ConnectionExceptionNotifier implementation -------------------------------
+
+   public void fireConnectionException(Throwable t, String remoteSessionID)
+   {
+      for (ConnectionExceptionListener listener : listeners)
       {
          String clientSessionID = PacketDispatcher.sessions.get(remoteSessionID);
-         listener.handleConnectionException(e, clientSessionID);
+         listener.handleConnectionException(t, clientSessionID);
       }
    }
 
@@ -173,6 +192,13 @@ public class MinaService implements RemotingService, KeepAliveNotifier
       assert factory != null;
       
       this.factory = factory;
+   }
+
+   public void setRemotingConfiguration(RemotingConfiguration remotingConfig)
+   {
+      assert started == false;
+      
+      this.remotingConfig = remotingConfig;
    }
 
    // Package protected ---------------------------------------------

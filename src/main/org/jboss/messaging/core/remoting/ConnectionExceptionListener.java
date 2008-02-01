@@ -14,6 +14,6 @@ package org.jboss.messaging.core.remoting;
  */
 public interface ConnectionExceptionListener
 {
-   void handleConnectionException(Exception e, String sessionID);
+   void handleConnectionException(Throwable t, String sessionID);
 
 }
