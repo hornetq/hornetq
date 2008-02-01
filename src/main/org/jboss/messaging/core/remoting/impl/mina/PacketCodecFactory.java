@@ -197,7 +197,7 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
       
       addCodecForEmptyPacket(PacketType.MSG_COMMIT, SessionCommitMessage.class);
       
-      addCodecForEmptyPacket(PacketType.MSG_COMMIT, SessionRollbackMessage.class);
+      addCodecForEmptyPacket(PacketType.MSG_ROLLBACK, SessionRollbackMessage.class);
 
       addCodecForEmptyPacket(PacketType.MSG_CLOSE, CloseMessage.class);
       

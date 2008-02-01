@@ -82,8 +82,8 @@ public enum PacketType
    RESP_BROWSER_NEXTMESSAGE       ((byte)96),
 
    // Misc
-   MSG_CLOSING                    ((byte)90),  
-   MSG_CLOSE                      ((byte)91);
+   MSG_CLOSING                    ((byte)100),  
+   MSG_CLOSE                      ((byte)101);
    
    private final byte type;
 
