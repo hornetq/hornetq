@@ -75,6 +75,7 @@ public class FileConfiguration extends Configuration
       _remotingTransport = TransportType.valueOf(getString(e, "remoting-transport", _remotingTransport.name()));
       _remotingBindAddress = getInteger(e, "remoting-bind-address", _remotingBindAddress);
       _remotingTimeout = getInteger(e, "remoting-timeout", _remotingTimeout);
+      _remotingDisableInvm = getBoolean(e, "remoting-disable-invm", _remotingDisableInvm);
       NodeList security = e.getElementsByTagName("default-security-config");
       if (security.getLength() > 0)
       {

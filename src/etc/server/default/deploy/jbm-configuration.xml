@@ -60,6 +60,8 @@ You can safely comment them out if your post office is non clustered -->
       <remoting-bind-address>5400</remoting-bind-address>
       <!--  timeout in seconds -->
       <remoting-timeout>5</remoting-timeout>
+      <!-- true to disable invm communication when the client and the server are in the same JVM -->
+      <remoting-disable-invm>false</remoting-disable-invm>
 
    </configuration>
 

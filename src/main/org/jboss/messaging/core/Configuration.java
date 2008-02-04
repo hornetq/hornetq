@@ -23,20 +23,16 @@ package org.jboss.messaging.core;
 
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 
-import org.jboss.jms.server.security.Role;
-import org.jboss.messaging.core.remoting.RemotingConfiguration;
-import org.jboss.messaging.core.remoting.TransportType;
-import org.jboss.messaging.util.XMLUtil;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+
+import org.jboss.jms.server.security.Role;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
+import org.jboss.messaging.core.remoting.TransportType;
 
 /**
  * This is the JBM configuration. It is used to configure the MessagingServer.
@@ -100,6 +96,8 @@ public class Configuration implements Serializable
    protected Integer _remotingBindAddress;
    
    protected Integer _remotingTimeout;
+
+   protected Boolean _remotingDisableInvm = false;
 
    public  void addPropertyChangeListener(
          PropertyChangeListener listener)
@@ -343,6 +341,7 @@ public class Configuration implements Serializable
    {
       RemotingConfiguration configuration = new RemotingConfiguration(_remotingTransport, "localhost", _remotingBindAddress);
       configuration.setTimeout(_remotingTimeout);
+      configuration.setInvmDisabled(_remotingDisableInvm);
       return configuration;
    }
 
