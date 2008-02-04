@@ -22,6 +22,12 @@
       <permission type="write" roles="guest,publisher"/>
    </security>
 
+   <!--this will catch any word i.e. queues.anything-->
+   <security match="queues.^">
+      <permission type="read" roles="guest,publisher"/>
+      <permission type="write" roles="guest,publisher"/>
+   </security>
+
    <!--default security to catch all-->
    <security match="*">
       <permission type="create" roles="guest"/>
