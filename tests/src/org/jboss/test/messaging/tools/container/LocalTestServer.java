@@ -556,13 +556,19 @@ public class LocalTestServer implements Server, Runnable
    public void destroyQueue(String name, String jndiName) throws Exception
    {
       this.getMessagingServerManagement().destroyQueue(name);
-      getInitialContext().unbind(jndiName);
+      if (jndiName != null)
+      {
+         getInitialContext().unbind(jndiName);
+      }
    }
 
    public void destroyTopic(String name, String jndiName) throws Exception
    {
       this.getMessagingServerManagement().destroyTopic(name);
-      getInitialContext().unbind(jndiName);
+      if (jndiName != null)
+      {
+         getInitialContext().unbind(jndiName);
+      }
    }
 
    public void createQueue(String name, String jndiName) throws Exception
