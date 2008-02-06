@@ -21,7 +21,6 @@
    */
 package org.jboss.messaging.util;
 
-import org.jboss.messaging.core.Mergeable;
 
 import java.util.regex.Pattern;
 
@@ -32,7 +31,7 @@ public class Match<T>
 {
 
    public static String WORD_WILDCARD = "^";
-   private static String WORD_WILDCARD_REPLACEMENT = "[*[^.]]";
+   private static String WORD_WILDCARD_REPLACEMENT = "[^.]+";
    public static String WILDCARD = "*";
    private static String WILDCARD_REPLACEMENT = ".+";
    private static final String DOT = ".";
@@ -55,9 +54,9 @@ public class Match<T>
       }
       else
       {
-         actMatch = actMatch.replace(WORD_WILDCARD, WORD_WILDCARD_REPLACEMENT);
          actMatch = actMatch.replace(DOT, DOT_REPLACEMENT);
          actMatch = actMatch.replace(WILDCARD,  WILDCARD_REPLACEMENT);
+         actMatch = actMatch.replace(WORD_WILDCARD, WORD_WILDCARD_REPLACEMENT);
       }
       pattern = Pattern.compile(actMatch);
 
@@ -97,9 +96,8 @@ public class Match<T>
 
       Match that = (Match) o;
 
-      if (match != null ? !match.equals(that.match) : that.match != null) return false;
+      return !(match != null ? !match.equals(that.match) : that.match != null);
 
-      return true;
    }
 
    public int hashCode()
@@ -109,8 +107,8 @@ public class Match<T>
 
    /**
     * utility method to verify consistency of match
-    * @param match
-    * @throws IllegalArgumentException
+    * @param match the match to validate
+    * @throws IllegalArgumentException if a match isnt valid
     */
    public static void verify(String match) throws IllegalArgumentException
    {
