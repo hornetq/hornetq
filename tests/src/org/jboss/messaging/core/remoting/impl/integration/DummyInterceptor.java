@@ -7,11 +7,11 @@
 
 package org.jboss.messaging.core.remoting.impl.integration;
 
-import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
 import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.util.MessagingException;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
@@ -33,13 +33,13 @@ public class DummyInterceptor implements Interceptor
       syncCounter.set(0);
    }
    
-   public void intercept(Packet packet) throws MessagingJMSException
+   public void intercept(Packet packet) throws MessagingException
    {
       log.info("DummyFilter packet = " + packet.getClass().getName());
       syncCounter.add(1);
       if (sendException)
       {
-         throw new MessagingJMSException("Test");
+         throw new MessagingException(MessagingException.INTERNAL_ERROR);
       }
       if (changeMessage)
       {
