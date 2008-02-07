@@ -13,20 +13,10 @@ import org.jboss.messaging.core.remoting.wireformat.Packet;
 /**
  *
  * This is class is a simple way to intercepting server calls on JBoss Messaging.
- * Deploying it to the POJO Container (Micro Container) is then all you need to do.
  * 
- * This gives you the option of deploying it on any package you like, as long as you define your Filter.
+ * To Add this interceptor, you have to modify jbm-configuration.xml, or call MinaService.addInterceptor manually.
  * 
- * Example of configuration file:
- * 
- * <code>
-      <?xml version="1.0" encoding="UTF-8"?>
-      <deployment xmlns="urn:jboss:bean-deployer:2.0">
-             <bean name="MyInterceptor" class="a.b.MyClassImplementingPacketFilter"/>
-      </deployment>
-  </code>
- * 
- * Note: This interface only captures messages from client2Server. If you need to capture server@client calls you should substitute the sender parameter by an inner class.
+ * If you deploy any Interceptor as a POJO on the Microcontainer, MinaService.addInterceptor is called automagically.
  *  
  * @author clebert.suconic@jboss.com
  */
