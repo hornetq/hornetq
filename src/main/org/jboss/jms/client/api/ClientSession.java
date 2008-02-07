@@ -7,70 +7,48 @@
 
 package org.jboss.jms.client.api;
 
-import javax.jms.JMSException;
 import javax.transaction.xa.XAResource;
 
-import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.destination.JBossTopic;
-import org.jboss.messaging.core.Destination;
-import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.remoting.wireformat.SessionBindingQueryResponseMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionQueueQueryResponseMessage;
+import org.jboss.messaging.util.MessagingException;
 
 /**
+ *  
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public interface ClientSession extends XAResource
-{
-   ClientConnection getConnection();
-
-   String getID();
-
-   ClientConsumer createClientConsumer(Destination destination, String selector,
-                                       boolean noLocal, String subscriptionName) throws JMSException;
+{   
+   void createQueue(String address, String queueName, String filterString, boolean durable, boolean temporary)
+                    throws MessagingException;
    
-   ClientBrowser createClientBrowser(Destination queue, String messageSelector) throws JMSException;
+   void deleteQueue(String queueName) throws MessagingException;
    
-   ClientProducer createClientProducer(JBossDestination destination) throws JMSException;
-
-   JBossQueue createQueue(String queueName) throws JMSException;
-
-   JBossTopic createTopic(String topicName) throws JMSException;
-
-   void delivered() throws JMSException;
+   void addAddress(String address) throws MessagingException;
    
-   void addTemporaryDestination(Destination destination) throws JMSException;
-
-   void deleteTemporaryDestination(Destination destination) throws JMSException;
-
-   void unsubscribe(String subscriptionName) throws JMSException;
-
-   void send(Message message) throws JMSException;
-
+   void removeAddress(String address) throws MessagingException;
+   
+   SessionQueueQueryResponseMessage queueQuery(String queueName) throws MessagingException;
+   
+   SessionBindingQueryResponseMessage bindingQuery(String address) throws MessagingException;
+   
+   ClientConsumer createConsumer(String queueName, String filterString,
+                                 boolean noLocal, boolean autoDeleteQueue) throws MessagingException;
+   
+   ClientBrowser createBrowser(String queueName, String messageSelector) throws MessagingException;
+   
+   ClientProducer createProducer() throws MessagingException;
+   
    XAResource getXAResource();
 
-   void commit() throws JMSException;
+   void commit() throws MessagingException;
 
-   void rollback() throws JMSException;
-
-   boolean isXA() throws JMSException;
+   void rollback() throws MessagingException;
+      
+   void acknowledge() throws MessagingException;
    
-   void removeConsumer(ClientConsumer consumer) throws JMSException;
+   void close() throws MessagingException;
    
-   void removeProducer(ClientProducer producer);
-   
-   void removeBrowser(ClientBrowser browser);
-   
-   boolean isClosed();
-   
-   void closing() throws JMSException;
-   
-   void close() throws JMSException;
-   
-   //TOD hide these  private api
-   void delivered(long deliveryID, boolean expired);
-   
-   void flushAcks() throws JMSException;
-   
+   boolean isClosed();        
 }

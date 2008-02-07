@@ -23,13 +23,12 @@ package org.jboss.jms.server;
 
 import java.util.HashSet;
 
-import javax.jms.JMSSecurityException;
 import javax.security.auth.Subject;
 
 import org.jboss.jms.server.security.CheckType;
 import org.jboss.jms.server.security.Role;
-import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.util.HierarchicalRepository;
+import org.jboss.messaging.util.MessagingException;
 
 
 /**
@@ -40,27 +39,10 @@ import org.jboss.messaging.util.HierarchicalRepository;
  */
 public interface SecurityStore
 {
-   /**
-    * Authenticate the specified user with the given password. Implementations are most likely to
-    * delegates to a JBoss AuthenticationManager.
-    *
-    * Successful autentication will place a new SubjectContext on thread local, which will be used
-    * in the authorization process. However, we need to make sure we clean up thread local
-    * immediately after we used the information, otherwise some other people security my be screwed
-    * up, on account of thread local security stack being corrupted.
-    *
-    * @throws JMSSecurityException if the user is not authenticated
-    */
-   Subject authenticate(String user, String password) throws JMSSecurityException;
 
-   /**
-    * Authorize that the subject has at least one of the specified roles. Implementations are most
-    * likely to delegates to a JBoss AuthenticationManager.
-    *
-    * @param rolePrincipals - The set of roles allowed to read/write/create the destination.
-    * @return true if the subject is authorized, or false if not.
-    */
-   boolean authorize(String user,  Destination destination, CheckType checkType);
+   Subject authenticate(String user, String password) throws MessagingException;
+
+   boolean authorize(String user, String destination, CheckType checkType);
 
    void setSecurityRepository(HierarchicalRepository<HashSet<Role>> securityRepository);
 }

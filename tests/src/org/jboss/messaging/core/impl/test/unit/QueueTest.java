@@ -506,7 +506,7 @@ public class QueueTest extends UnitTestCase
       
       for (int i = 0; i < numMessages; i++)
       {
-         queue.referenceAcknowledged();
+         queue.decrementDeliveringCount();
       }
       
       for (int i = 0; i < 2 * numMessages; i++)
@@ -531,7 +531,7 @@ public class QueueTest extends UnitTestCase
       refs.clear();
       for (int i = 0; i < 2 * numMessages; i++)
       {
-         queue.referenceAcknowledged();
+         queue.decrementDeliveringCount();
       }
       
       FakeConsumer cons3 = new FakeConsumer();
@@ -566,7 +566,7 @@ public class QueueTest extends UnitTestCase
       refs.clear();
       for (int i = 0; i < 3 * numMessages; i++)
       {
-         queue.referenceAcknowledged();
+         queue.decrementDeliveringCount();
       }
       
       for (int i = 0; i < 2 * numMessages; i++)
@@ -592,7 +592,7 @@ public class QueueTest extends UnitTestCase
       refs.clear();
       for (int i = 0; i < 2 * numMessages; i++)
       {
-         queue.referenceAcknowledged();
+         queue.decrementDeliveringCount();
       }
       
       for (int i = 0; i < numMessages; i++)
@@ -1041,7 +1041,7 @@ public class QueueTest extends UnitTestCase
             
       assertRefListsIdenticalRefs(refs, consumer.getReferences()); 
       
-      queue.referenceAcknowledged();
+      queue.decrementDeliveringCount();
 
       queue.removeConsumer(consumer);
             
@@ -1149,8 +1149,8 @@ public class QueueTest extends UnitTestCase
             
       assertRefListsIdenticalRefs(refs, consumer.getReferences()); 
       
-      queue.referenceAcknowledged();
-      queue.referenceAcknowledged();
+      queue.decrementDeliveringCount();
+      queue.decrementDeliveringCount();
       
       queue.removeConsumer(consumer);
       

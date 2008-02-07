@@ -65,7 +65,7 @@ public class DeliveryImpl implements Delivery
       return deliveryID;
    }
    
-   public void deliver()
+   public void deliver() throws Exception
    {
       DeliverMessage message = new DeliverMessage(reference.getMessage(),
                                                   deliveryID,

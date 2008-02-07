@@ -60,13 +60,6 @@ public class Configuration implements Serializable
    protected String _securityDomain;
    protected HashSet<Role> _securityConfig;
    protected List<String> defaultInterceptors = new ArrayList<String>();
-   protected String _defaultDLQ;
-   // The default maximum number of delivery attempts before sending to DLQ - can be overridden on
-   // the destination
-   protected Integer _defaultMaxDeliveryAttempts = 10;
-   protected String _defaultExpiryQueue;
-
-   protected Long _defaultRedeliveryDelay = (long) 0;
 
    protected Long _messageCounterSamplePeriod = (long) 10000;// Default is 1 minute
 
@@ -163,46 +156,6 @@ public class Configuration implements Serializable
    {
       propertyChangeSupport.firePropertyChange("securityConfig", _securityConfig, securityConfig);
       _securityConfig = securityConfig;
-   }
-
-   public  String getDefaultDLQ()
-   {
-      return _defaultDLQ;
-   }
-
-   public  void setDefaultDLQ(String defaultDLQ)
-   {
-      _defaultDLQ = defaultDLQ;
-   }
-
-   public  Integer getDefaultMaxDeliveryAttempts()
-   {
-      return _defaultMaxDeliveryAttempts;
-   }
-
-   public  void setDefaultMaxDeliveryAttempts(Integer defaultMaxDeliveryAttempts)
-   {
-      _defaultMaxDeliveryAttempts = defaultMaxDeliveryAttempts;
-   }
-
-   public  String getDefaultExpiryQueue()
-   {
-      return _defaultExpiryQueue;
-   }
-
-   public  void setDefaultExpiryQueue(String defaultExpiryQueue)
-   {
-      _defaultExpiryQueue = defaultExpiryQueue;
-   }
-
-   public  long getDefaultRedeliveryDelay()
-   {
-      return _defaultRedeliveryDelay;
-   }
-
-   public  void setDefaultRedeliveryDelay(long defaultRedeliveryDelay)
-   {
-      _defaultRedeliveryDelay = defaultRedeliveryDelay;
    }
 
    public  long getMessageCounterSamplePeriod()

@@ -33,26 +33,26 @@ import java.util.List;
  */
 public interface MessagingServerManagement
 {
-   String getServerVersion();
-   
-   Configuration getConfiguration();
-   
+//   String getServerVersion();
+//   
+//   Configuration getConfiguration();
+//   
    int getMessageCountForQueue(String queue) throws Exception;
-   
+//   
    void removeAllMessagesForQueue(String queueName) throws Exception;
-   
+//   
    void removeAllMessagesForTopic(String topicName) throws Exception;
-   
+//   
    List<SubscriptionInfo> listAllSubscriptionsForTopic(String topicName) throws Exception;
-   
+//   
    void createQueue(String name) throws Exception;
-   
+//   
    void createTopic(String name) throws Exception;
-   
+//   
    void destroyQueue(String name) throws Exception;
-   
+//   
    void destroyTopic(String name) throws Exception;
-   
+//   
    boolean isStarted();
 //
 //   /**

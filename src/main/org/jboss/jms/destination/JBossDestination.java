@@ -21,9 +21,6 @@
   */
 package org.jboss.jms.destination;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.io.Serializable;
 
 import javax.jms.Destination;
@@ -31,8 +28,6 @@ import javax.naming.NamingException;
 import javax.naming.Reference;
 
 import org.jboss.jms.referenceable.SerializableObjectRefAddr;
-import org.jboss.messaging.core.DestinationType;
-import org.jboss.messaging.core.impl.DestinationImpl;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -45,130 +40,21 @@ public abstract class JBossDestination implements Destination, Serializable /*, 
 {
    // Constants -----------------------------------------------------
 
-   private final static long serialVersionUID = -3483274922186827576L;
-   
-   private static final byte NULL = 0;
-   
-   private static final byte QUEUE = 1;
-   
-   private static final byte TOPIC = 2;
-   
-   private static final byte TEMP_QUEUE = 3;
-   
-   private static final byte TEMP_TOPIC = 4;
-   
    // Static --------------------------------------------------------
-   
-   public static JBossDestination fromCoreDestination(org.jboss.messaging.core.Destination destination)
-   {
-      if (destination.isTemporary())
-      {
-         if (destination.getType() == DestinationType.QUEUE)
-         {
-            return new JBossQueue(destination.getName());
-         }
-         else
-         {
-            return new JBossTopic(destination.getName());
-         }
-      }
-      else
-      {
-         if (destination.getType() == DestinationType.QUEUE)
-         {
-            return new JBossTemporaryQueue(destination.getName());
-         }
-         else
-         {
-            return new JBossTemporaryTopic(destination.getName());
-         }
-      }
-   }
-   
-   public static void writeDestination(DataOutputStream out, Destination dest) throws IOException
-   {
-      JBossDestination jb = (JBossDestination)dest;
-            
-      if (dest == null)
-      {
-         out.writeByte(NULL);
-      }
-      else
-      {
-         if (!jb.isTemporary())
-         {
-            if (jb.isQueue())
-            {
-               out.writeByte(QUEUE);
-            }
-            else 
-            {
-               out.writeByte(TOPIC);
-            }
-         }
-         else
-         {
-            if (jb.isQueue())
-            {
-               out.writeByte(TEMP_QUEUE);
-            }
-            else 
-            {
-               out.writeByte(TEMP_TOPIC);
-            }
-         }
-         out.writeUTF(jb.getName());
-      }
-   }
-   
-   public static JBossDestination readDestination(DataInputStream in) throws IOException
-   {
-      byte b = in.readByte();
       
-      if (b == NULL)
-      {
-         return null;
-      }
-      else
-      {
-         String name = in.readUTF();
-         
-         JBossDestination dest;
-         
-         if (b == QUEUE)
-         {
-            dest = new JBossQueue(name);
-         }
-         else if (b == TOPIC)
-         {
-            dest = new JBossTopic(name);
-         }
-         else if (b == TEMP_QUEUE)
-         {
-            dest = new JBossTemporaryQueue(name);
-         }
-         else if (b == TEMP_TOPIC)
-         {
-            dest = new JBossTemporaryTopic(name);
-         }
-         else
-         {
-            throw new IllegalStateException("Invalid value:" + b);
-         }
-         
-         return dest;
-      }
-   }
-
-   
    // Attributes ----------------------------------------------------
 
    protected String name;
    
+   private String address;
+   
+      
    // Constructors --------------------------------------------------
 
-   public JBossDestination(String name)
+   public JBossDestination(String address, String name)
    {
+      this.address = address;
+      
       this.name = name;
    }
    
@@ -184,65 +70,38 @@ public abstract class JBossDestination implements Destination, Serializable /*, 
 
    // Public --------------------------------------------------------
    
+   public String getAddress()
+   {
+      return address;
+   }
+   
    public String getName()
    {
       return name;
    }
+   
+   public abstract boolean isTemporary();
 
-   public abstract boolean isTopic();
-   
-   public abstract boolean isQueue();
-   
-   public boolean isTemporary()
-   {
-      return false;
-   }
-   
    public boolean equals(Object o)
    {
       if (this == o)
       {
          return true;
       }
+      
       if (!(o instanceof JBossDestination))
       {
          return false;
       }
+      
       JBossDestination that = (JBossDestination)o;
-      if (name == null)
-      {
-         return isTopic() == that.isTopic() && that.name == null;
-      }
-      return isTopic() == that.isTopic() && this.name.equals(that.name);
+      
+      return this.address.equals(that.address);      
    }
 
-   //Cache the hashCode
-   private int hash;
-   
    public int hashCode()
    {
-      if (hash != 0)
-      {
-         return hash;
-      }
-      else
-      {
-         int code = 0;
-         if (name != null)
-         {
-            code = name.hashCode();
-         }
-         hash = code + (isTopic() ? 37 : 71);
-         return hash;
-      }           
-   }
-   
-   public org.jboss.messaging.core.Destination toCoreDestination()
-   {
-      org.jboss.messaging.core.Destination dest =
-         new DestinationImpl(this.isQueue() ? DestinationType.QUEUE: DestinationType.TOPIC, name, isTemporary());
-      
-      return dest;
+      return address.hashCode();      
    }
    
    // Package protected ---------------------------------------------

@@ -27,6 +27,7 @@ import java.util.Map;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.util.MessagingException;
 
 /**
 * This class implements a JBoss Messaging filter
@@ -68,7 +69,7 @@ public class FilterImpl implements Filter
   
   private FilterParser parser = new FilterParser();
   
-  public FilterImpl(String filterString) throws Exception
+  public FilterImpl(String filterString) throws MessagingException
   {
      this.filterString = filterString;
 
@@ -78,7 +79,7 @@ public class FilterImpl implements Filter
      }
      catch (Throwable e)
      {
-        throw new IllegalArgumentException("Invalid filter: " + filterString);
+        throw new MessagingException(MessagingException.INVALID_FILTER_EXPRESSION, "Invalid filter: " + filterString);
      }
   }
   

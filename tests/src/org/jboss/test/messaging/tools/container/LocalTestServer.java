@@ -51,11 +51,8 @@ import org.jboss.jms.server.security.Role;
 import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Binding;
-import org.jboss.messaging.core.Condition;
-import org.jboss.messaging.core.DestinationType;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.MessagingServerManagement;
-import org.jboss.messaging.core.impl.ConditionImpl;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.microcontainer.JBMBootstrapServer;
 import org.jboss.messaging.util.JNDIUtil;
@@ -445,7 +442,6 @@ public class LocalTestServer implements Server, Runnable
       }
    }
 
-
    public boolean isServerPeerStarted() throws Exception
    {
       return this.getMessagingServerManagement().isStarted();
@@ -678,7 +674,7 @@ public class LocalTestServer implements Server, Runnable
                                        boolean strictTck,
                                        int dupsOkBatchSize) throws Exception
    {
-      log.trace("deploying connection factory with name: " + objectName);
+      log.info("deploying connection factory with name: " + objectName + " and dupsok: " + dupsOkBatchSize);
       //ConnectionFactory connectionFactory = new ConnectionFactory(clientId);
       List<String> bindings = new ArrayList<String>();
       if (jndiBindings != null)
@@ -718,15 +714,15 @@ public class LocalTestServer implements Server, Runnable
 
       ClientConnectionFactory delegate =
               new ClientConnectionFactoryImpl( getMessagingServer().getConfiguration().getMessagingServerID(),
-                      remotingConfiguration, version, useStrict, prefetchSize, dupsOkBatchSize, clientId);
+                      remotingConfiguration, version, useStrict, prefetchSize);
 
-      log.debug(this + " created local delegate " + delegate);
+      log.debug(this + " created local connectionFactory " + delegate);
 
       // Registering with the dispatcher should always be the last thing otherwise a client could
       // use a partially initialised object
 
       //getMessagingServer().getMinaService().getDispatcher().register(endpoint.newHandler());
-      JBossConnectionFactory jBossConnectionFactory = new JBossConnectionFactory(delegate);
+      JBossConnectionFactory jBossConnectionFactory = new JBossConnectionFactory(delegate, clientId, dupsOkBatchSize);
       for (String binding : bindings)
       {
          bindObject(binding, jBossConnectionFactory);
@@ -912,19 +908,11 @@ public class LocalTestServer implements Server, Runnable
 
    public void setRedeliveryDelayOnDestination(String dest, boolean queue, long delay) throws Exception
    {
-      //getMessagingServer().getDestinationManager().getDestination(dest, queue).setRedeliveryDelay(delay);
-
-      Condition condition = new ConditionImpl(queue ? DestinationType.QUEUE : DestinationType.TOPIC, dest);
-
-      List<Binding> bindings = this.getMessagingServer().getPostOffice().getBindingsForCondition(condition);
+      String condition = (queue ? "queue." : "topic.") + dest;
+      
+      List<Binding> bindings = this.getMessagingServer().getPostOffice().getBindingsForAddress(condition);
 
       bindings.get(0).getQueue().setRedeliveryDelay(delay);
-   }
-
-
-   public void setDefaultRedeliveryDelay(long delay) throws Exception
-   {
-      getMessagingServer().getConfiguration().setDefaultRedeliveryDelay(delay);
    }
 
 

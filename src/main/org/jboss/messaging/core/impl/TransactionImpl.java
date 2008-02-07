@@ -144,7 +144,7 @@ public class TransactionImpl implements Transaction
       
       for (MessageReference reference: acknowledgements)
       {
-         reference.getQueue().referenceAcknowledged();
+         reference.getQueue().decrementDeliveringCount();
       }
       
       callSynchronizations(SyncType.AFTER_COMMIT);
@@ -263,7 +263,6 @@ public class TransactionImpl implements Transaction
          
          for (MessageReference ref: refs)
          {
-            //Need to update delivery counts
             ref.cancel(persistenceManager);
          }
                   

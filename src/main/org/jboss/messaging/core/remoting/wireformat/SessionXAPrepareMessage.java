@@ -28,7 +28,7 @@ public class SessionXAPrepareMessage extends AbstractPacket
 
    public SessionXAPrepareMessage(Xid xid)
    {
-      super(PacketType.REQ_XA_PREPARE);
+      super(PacketType.SESS_XA_PREPARE);
       
       this.xid = xid;
    }

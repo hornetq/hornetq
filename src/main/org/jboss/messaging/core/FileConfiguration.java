@@ -21,16 +21,15 @@
    */
 package org.jboss.messaging.core;
 
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashSet;
+
+import org.jboss.jms.server.security.Role;
+import org.jboss.messaging.core.remoting.TransportType;
+import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.jboss.messaging.util.XMLUtil;
-import org.jboss.messaging.core.remoting.TransportType;
-import org.jboss.jms.server.security.Role;
-
-import java.net.URL;
-import java.util.HashSet;
-import java.util.ArrayList;
-import java.beans.PropertyChangeSupport;
 
 /**
  * This class allows the Configuration class to be configured via a config file.
@@ -57,10 +56,6 @@ public class FileConfiguration extends Configuration
       _defaultQueueJNDIContext = getString(e, "default-queue-jndi-context", _defaultQueueJNDIContext);
       _defaultTopicJNDIContext = getString(e, "default-topic-jndi-context", _defaultTopicJNDIContext);
       _securityDomain = getString(e, "security-domain", _securityDomain);
-      _defaultDLQ = getString(e, "default-dlq", _defaultDLQ);
-      _defaultMaxDeliveryAttempts = getInteger(e, "default-max-delivery-attempts", _defaultMaxDeliveryAttempts);
-      _defaultExpiryQueue = getString(e, "default-expiry-queue", _defaultExpiryQueue);
-      _defaultRedeliveryDelay = getLong(e, "default-redelivery-delay", _defaultRedeliveryDelay);
       _messageCounterSamplePeriod = getLong(e, "message-counter-sample-period", _messageCounterSamplePeriod);
       _defaultMessageCounterHistoryDayLimit = getInteger(e, "default-message-counter-history-day-limit", _defaultMessageCounterHistoryDayLimit);
       _strictTck = getBoolean(e, "strict-tck", _strictTck);

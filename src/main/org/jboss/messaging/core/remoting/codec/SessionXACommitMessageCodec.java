@@ -30,7 +30,7 @@ public class SessionXACommitMessageCodec extends AbstractPacketCodec<SessionXACo
 
    public SessionXACommitMessageCodec()
    {
-      super(PacketType.MSG_XA_COMMIT);
+      super(PacketType.SESS_XA_COMMIT);
    }
 
    // Public --------------------------------------------------------

@@ -299,5 +299,5 @@ public interface Server extends Remote
 
    void setRedeliveryDelayOnDestination(String dest, boolean queue, long delay) throws Exception;
 
-   void setDefaultRedeliveryDelay(long delay) throws Exception;
+   //void setDefaultRedeliveryDelay(long delay) throws Exception;
 }

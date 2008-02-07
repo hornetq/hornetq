@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.codec;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SENDMESSAGE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_SEND;
 
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.remoting.wireformat.SessionSendMessage;
@@ -26,7 +26,7 @@ public class SessionSendMessageCodec extends AbstractPacketCodec<SessionSendMess
 
    public SessionSendMessageCodec()
    {
-      super(MSG_SENDMESSAGE);
+      super(SESS_SEND);
    }
 
    // Public --------------------------------------------------------
@@ -36,11 +36,13 @@ public class SessionSendMessageCodec extends AbstractPacketCodec<SessionSendMess
    @Override
    protected void encodeBody(SessionSendMessage message, RemotingBuffer out) throws Exception
    {
+      String address = message.getAddress();
       byte[] encodedMsg = encodeMessage(message.getMessage());   
 
-      int bodyLength = INT_LENGTH + encodedMsg.length;
+      int bodyLength = sizeof(address) + INT_LENGTH + encodedMsg.length;
 
       out.putInt(bodyLength);
+      out.putNullableString(address);
       out.putInt(encodedMsg.length);
       out.put(encodedMsg);
    }
@@ -55,12 +57,13 @@ public class SessionSendMessageCodec extends AbstractPacketCodec<SessionSendMess
          return null;
       }
 
+      String address = in.getNullableString();
       int msgLength = in.getInt();
       byte[] encodedMsg = new byte[msgLength];
       in.get(encodedMsg);
       Message msg = decodeMessage(encodedMsg);
 
-      return new SessionSendMessage(msg);
+      return new SessionSendMessage(address, msg);
    }
 
    // Package protected ---------------------------------------------

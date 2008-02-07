@@ -34,9 +34,9 @@ public class MBeanServerBuilder extends javax.management.MBeanServerBuilder
 
    /*public MBeanServer newMBeanServer(String defaultDomain,
                                      MBeanServer outer,
-                                     MBeanServerDelegate delegate)
+                                     MBeanServerDelegate connectionFactory)
    {
-      return new MBeanServerImpl("jboss", outer, delegate);
+      return new MBeanServerImpl("jboss", outer, connectionFactory);
    }
 */
    public MBeanServerDelegate	newMBeanServerDelegate()

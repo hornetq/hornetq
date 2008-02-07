@@ -7,9 +7,8 @@
 
 package org.jboss.jms.client.api;
 
-import javax.jms.JMSException;
-
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.util.MessagingException;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -18,15 +17,15 @@ import org.jboss.messaging.core.Message;
  */
 public interface ClientBrowser
 {
-   void reset() throws JMSException;
+   void reset() throws MessagingException;
 
-   Message nextMessage() throws JMSException;
+   Message nextMessage() throws MessagingException;
    
-   boolean hasNextMessage() throws JMSException;
+   boolean hasNextMessage() throws MessagingException;
       
-   Message[] nextMessageBlock(int maxMessages) throws JMSException;
+   Message[] nextMessageBlock(int maxMessages) throws MessagingException;
    
-   void closing() throws JMSException;
+   void close() throws MessagingException;
    
-   void close() throws JMSException;
+   boolean isClosed();
  }

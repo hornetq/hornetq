@@ -39,9 +39,10 @@ import javax.jms.MessageNotReadableException;
 import javax.jms.MessageNotWriteableException;
 
 import org.jboss.jms.client.api.ClientSession;
-import org.jboss.jms.exception.MessagingJMSException;
+import org.jboss.jms.exception.JMSExceptionHelper;
 import org.jboss.messaging.core.impl.MessageImpl;
 import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.util.MessagingException;
 
 /**
  * 
@@ -73,8 +74,6 @@ public class JBossMessage implements javax.jms.Message
    private static final String CORRELATIONID_HEADER_NAME = "JMSCorrelationID";
 
    private static final String JBM_MESSAGE_ID = "JMSMessageID";
-   
-   //private static final String CORRELATIONIDBYTES_HEADER_NAME = "JMSCorre";
    
    private static final String TYPE_HEADER_NAME = "JMSType";
    
@@ -347,7 +346,7 @@ public class JBossMessage implements javax.jms.Message
       }
       else
       {
-         throw new MessagingJMSException("DeliveryImpl mode must be either DeliveryMode.PERSISTENT "
+         throw new JMSException("DeliveryImpl mode must be either DeliveryMode.PERSISTENT "
                + "or DeliveryMode.NON_PERSISTENT");
       }
    }
@@ -743,7 +742,18 @@ public class JBossMessage implements javax.jms.Message
    
    public void acknowledge() throws JMSException
    {
-      session.commit();
+      try
+      {
+         session.commit();
+      }
+      catch (MessagingException e)
+      {
+         JMSException je = new JMSException(e.toString());
+         
+         je.initCause(e);
+         
+         throw je;         
+      } 
    }
     
    // Public --------------------------------------------------------

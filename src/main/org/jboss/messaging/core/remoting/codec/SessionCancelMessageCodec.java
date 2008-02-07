@@ -28,7 +28,7 @@ public class SessionCancelMessageCodec extends AbstractPacketCodec<SessionCancel
 
    public SessionCancelMessageCodec()
    {
-      super(PacketType.MSG_CANCEL);
+      super(PacketType.SESS_CANCEL);
    }
 
    // Public --------------------------------------------------------

@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.wireformat;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_ROLLBACK;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_ROLLBACK;
 
 
 /**
@@ -26,7 +26,7 @@ public class SessionRollbackMessage extends AbstractPacket
 
    public SessionRollbackMessage()
    {
-      super(MSG_ROLLBACK);
+      super(SESS_ROLLBACK);
    }
 
    // Public --------------------------------------------------------

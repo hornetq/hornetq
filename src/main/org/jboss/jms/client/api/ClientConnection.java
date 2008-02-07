@@ -7,52 +7,26 @@
 
 package org.jboss.jms.client.api;
 
-import javax.jms.ConnectionMetaData;
-import javax.jms.Destination;
-import javax.jms.ExceptionListener;
-import javax.jms.JMSException;
-import javax.jms.ServerSessionPool;
-
-import org.jboss.jms.client.JBossConnectionConsumer;
-import org.jboss.jms.client.remoting.MessagingRemotingConnection;
+import org.jboss.messaging.util.MessagingException;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public interface ClientConnection
-{
-   ClientSession createClientSession(boolean transacted,
-                                     int acknowledgmentMode, boolean isXA) throws JMSException;
+{    
+   ClientSession createClientSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks,
+                                     int ackBatchSize) throws MessagingException;
 
-   String getClientID() throws JMSException;
+   void start() throws MessagingException;
 
-   int getServerID();
+   void stop() throws MessagingException;
+
+   FailureListener getFailureListener() throws MessagingException;
    
-   void setClientID(String id) throws JMSException;
-
-   void start() throws JMSException;
-
-   void stop() throws JMSException;
-
-   ExceptionListener getExceptionListener() throws JMSException;
-   
-   void setExceptionListener(ExceptionListener listener) throws JMSException;
+   void setFailureListener(FailureListener listener) throws MessagingException;
   
-   ConnectionMetaData getConnectionMetaData() throws JMSException;
+   void close() throws MessagingException;
    
-   JBossConnectionConsumer createConnectionConsumer(Destination dest,
-                                                    String subscriptionName,
-                                                    String messageSelector,
-                                                    ServerSessionPool sessionPool,
-                                                    int maxMessages) throws JMSException;
-
-   MessagingRemotingConnection getRemotingConnection();
-
-   void removeChild(String id) throws JMSException;
-   
-   void closing() throws JMSException;
-   
-   void close() throws JMSException;
+   boolean isClosed();
 }

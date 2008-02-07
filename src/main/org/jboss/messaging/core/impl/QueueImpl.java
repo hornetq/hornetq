@@ -344,7 +344,7 @@ public class QueueImpl implements Queue
       return deliveringCount.get();
    }
 
-   public void referenceAcknowledged()
+   public void decrementDeliveringCount()
    {
       deliveringCount.decrementAndGet();
    }

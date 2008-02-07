@@ -32,7 +32,7 @@ by a particular consumer from a particular producer? -->
            THIS SHOULD ALWAYS BE CHANGED AT INSTALL TIME TO SECURE SYSTEM
       <sucker-password></sucker-password>
       -->
-      <strict-tck>false</strict-tck>
+      <strict-tck>true</strict-tck>
       <post-office-name>JMS post office</post-office-name>
 
       <clustered>false</clustered>

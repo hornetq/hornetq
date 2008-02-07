@@ -30,7 +30,7 @@ public class SessionXAStartMessageCodec extends AbstractPacketCodec<SessionXASta
 
    public SessionXAStartMessageCodec()
    {
-      super(PacketType.MSG_XA_START);
+      super(PacketType.SESS_XA_START);
    }
 
    // Public --------------------------------------------------------

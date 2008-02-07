@@ -1,10 +1,7 @@
 package org.jboss.jms.client.impl;
 
-import org.jboss.jms.client.api.ClientConsumer;
-import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
 import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
@@ -20,16 +17,11 @@ public class ClientConsumerPacketHandler implements PacketHandler
 {
    private static final Logger log = Logger.getLogger(ClientConsumerImpl.class);
 
-   private final ClientConsumer clientConsumer;
+   private final ClientConsumerInternal clientConsumer;
 
    private final String consumerID;
 
-   /**
-    * @param messageHandler
-    * @param consumerID
-    */
-   public ClientConsumerPacketHandler(ClientConsumer clientConsumer,
-         String consumerID)
+   public ClientConsumerPacketHandler(ClientConsumerInternal clientConsumer, String consumerID)
    {
       this.clientConsumer = clientConsumer;
       
@@ -46,7 +38,7 @@ public class ClientConsumerPacketHandler implements PacketHandler
       try
       {
          PacketType type = packet.getType();
-         if (type == PacketType.MSG_DELIVERMESSAGE)
+         if (type == PacketType.SESS_DELIVER)
          {
             DeliverMessage message = (DeliverMessage) packet;
             
@@ -55,8 +47,7 @@ public class ClientConsumerPacketHandler implements PacketHandler
       }
       catch (Exception e)
       {
-         // TODO: Is there anything else to be done here if an exception happens?
-         log.error(e.getMessage(), e);
+         log.error("Failed to handle message", e);
       }
    }
 

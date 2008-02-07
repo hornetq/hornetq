@@ -28,7 +28,7 @@ public class SessionAcknowledgeMessage extends AbstractPacket
 
    public SessionAcknowledgeMessage(long deliveryID, boolean allUpTo)
    {
-      super(PacketType.MSG_ACKNOWLEDGE);
+      super(PacketType.SESS_ACKNOWLEDGE);
       
       this.deliveryID = deliveryID;
       

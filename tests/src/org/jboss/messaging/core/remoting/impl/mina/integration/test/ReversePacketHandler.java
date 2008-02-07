@@ -17,9 +17,9 @@ import junit.framework.Assert;
 
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.test.unit.TestPacketHandler;
-import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.core.remoting.wireformat.TextPacket;
+import org.jboss.messaging.util.Logger;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -30,6 +30,9 @@ import org.jboss.messaging.core.remoting.wireformat.TextPacket;
 public class ReversePacketHandler extends TestPacketHandler
 {
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(ReversePacketHandler.class);
+   
 
    // Attributes ----------------------------------------------------
 
@@ -79,7 +82,14 @@ public class ReversePacketHandler extends TestPacketHandler
       {
          TextPacket response = new TextPacket(reverse(message.getText()));
          response.normalize(message);
-         sender.send(response);
+         try
+         {
+            sender.send(response);
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to handle", e);
+         }
       }
    }
 

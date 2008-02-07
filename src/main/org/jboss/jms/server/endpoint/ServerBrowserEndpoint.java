@@ -21,10 +21,10 @@
  */
 package org.jboss.jms.server.endpoint;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_BROWSER_RESET;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CLOSE;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_BROWSER_HASNEXTMESSAGE;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_BROWSER_NEXTMESSAGE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_BROWSER_RESET;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.CLOSE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_BROWSER_HASNEXTMESSAGE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_BROWSER_NEXTMESSAGE;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -32,9 +32,7 @@ import java.util.List;
 
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidSelectorException;
-import javax.jms.JMSException;
 
-import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
@@ -42,15 +40,13 @@ import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.impl.filter.FilterImpl;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
-import org.jboss.messaging.core.remoting.wireformat.BrowserHasNextMessageResponse;
-import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageResponse;
-import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionBrowserHasNextMessageResponseMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionBrowserNextMessageResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
-import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.util.MessagingException;
 
 /**
  * Concrete implementation of BrowserEndpoint.
@@ -104,136 +100,95 @@ public class ServerBrowserEndpoint
 
    // BrowserEndpoint implementation ---------------------------------------------------------------
 
-   public void reset() throws JMSException
+   public void reset() throws Exception
    {
-      try
+      if (closed)
       {
-         if (closed)
-         {
-            throw new IllegalStateException("Browser is closed");
-         }
+         throw new IllegalStateException("Browser is closed");
+      }
 
-         log.trace(this + " is being resetted");
+      log.trace(this + " is being resetted");
 
+      iterator = createIterator();
+   }
+
+   public boolean hasNextMessage() throws Exception
+   {
+      if (closed)
+      {
+         throw new IllegalStateException("Browser is closed");
+      }
+
+      if (iterator == null)
+      {
          iterator = createIterator();
       }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " hasNextMessage");
-      }
-   }
 
-   public boolean hasNextMessage() throws JMSException
-   {
-      try
-      {
-         if (closed)
-         {
-            throw new IllegalStateException("Browser is closed");
-         }
-
-         if (iterator == null)
-         {
-            iterator = createIterator();
-         }
-
-         boolean has = iterator.hasNext();
-         if (trace) { log.trace(this + (has ? " has": " DOESN'T have") + " a next message"); }
-         return has;
-      }   
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " hasNextMessage");
-      }
+      boolean has = iterator.hasNext();
+      if (trace) { log.trace(this + (has ? " has": " DOESN'T have") + " a next message"); }
+      return has;
    }
    
-   public Message nextMessage() throws JMSException
+   public Message nextMessage() throws Exception
    {
-      try
+      if (closed)
       {
-         if (closed)
-         {
-            throw new IllegalStateException("Browser is closed");
-         }
-
-         if (iterator == null)
-         {
-            iterator = createIterator();
-         }
-
-         Message r = (Message)iterator.next();
-   
-         if (trace) { log.trace(this + " returning " + r); }
-         
-         return r;
-      }   
-      catch (Throwable t)
-      {
-         t.printStackTrace();
-         throw ExceptionUtil.handleJMSInvocation(t, this + " nextMessage");
+         throw new IllegalStateException("Browser is closed");
       }
+
+      if (iterator == null)
+      {
+         iterator = createIterator();
+      }
+
+      Message r = (Message)iterator.next();
+
+      if (trace) { log.trace(this + " returning " + r); }
+      
+      return r;
    }
 
-   public Message[] nextMessageBlock(int maxMessages) throws JMSException
+   public Message[] nextMessageBlock(int maxMessages) throws Exception
    {
-
       if (trace) { log.trace(this + " returning next message block of " + maxMessages); }
 
-      try
+      if (closed)
       {
-         if (closed)
-         {
-            throw new IllegalStateException("Browser is closed");
-         }
-         
-         if (maxMessages < 2)
-         {
-            throw new IllegalArgumentException("maxMessages must be >=2 otherwise use nextMessage");
-         }
-
-         if (iterator == null)
-         {
-            iterator = createIterator();
-         }
-
-         ArrayList messages = new ArrayList(maxMessages);
-         int i = 0;
-         while (i < maxMessages)
-         {
-            if (iterator.hasNext())
-            {
-               Message m = (Message)iterator.next();
-               messages.add(m);
-               i++;
-            }
-            else break;
-         }		
-   		return (Message[])messages.toArray(new Message[messages.size()]);	
-      }   
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " nextMessageBlock");
+         throw new IllegalStateException("Browser is closed");
       }
+      
+      if (maxMessages < 2)
+      {
+         throw new IllegalArgumentException("maxMessages must be >=2 otherwise use nextMessage");
+      }
+
+      if (iterator == null)
+      {
+         iterator = createIterator();
+      }
+
+      ArrayList messages = new ArrayList(maxMessages);
+      int i = 0;
+      while (i < maxMessages)
+      {
+         if (iterator.hasNext())
+         {
+            Message m = (Message)iterator.next();
+            messages.add(m);
+            i++;
+         }
+         else break;
+      }		
+		return (Message[])messages.toArray(new Message[messages.size()]);	
    }
    
-   public void close() throws JMSException
+   public void close() throws Exception
    {
-      try
-      {
-         localClose();
-         session.removeBrowser(id);
-         log.trace(this + " closed");
-      }   
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " close");
-      }
+      localClose();
+      session.removeBrowser(id);
+      log.trace(this + " closed");
    }
-         
-   public void closing() throws JMSException
-   {
-   }
-   
+           
    // Public ---------------------------------------------------------------------------------------
 
    public String toString()
@@ -243,7 +198,7 @@ public class ServerBrowserEndpoint
 
    // Package protected ----------------------------------------------------------------------------
    
-   void localClose() throws JMSException
+   void localClose() throws Exception
    {
       if (closed)
       {
@@ -282,59 +237,51 @@ public class ServerBrowserEndpoint
 
    // Inner classes --------------------------------------------------------------------------------
    
-   private class ServerBrowserEndpointHandler implements PacketHandler {
+   private class ServerBrowserEndpointHandler extends ServerPacketHandlerSupport
+   {
 
       public String getID()
       {
          return ServerBrowserEndpoint.this.id;
       }
       
-      public void handle(Packet packet, PacketSender sender)
+      public Packet doHandle(Packet packet, PacketSender sender) throws Exception
       {
-         try
-         {
-            Packet response = null;
+         Packet response = null;
 
-            PacketType type = packet.getType();
-            if (type == REQ_BROWSER_HASNEXTMESSAGE)
-            {
-               response = new BrowserHasNextMessageResponse(hasNextMessage());
-            } else if (type == REQ_BROWSER_NEXTMESSAGE)
-            {
-               Message message = nextMessage();
-               response = new BrowserNextMessageResponse(message);
-            } else if (type == MSG_BROWSER_RESET)
-            {
-               reset();
-            } else if (type == PacketType.MSG_CLOSING)
-            {
-               closing();
-            } else if (type == MSG_CLOSE)
-            {
-               close();
-            } else
-            {
-               response = new JMSExceptionMessage(new MessagingJMSException(
-                     "Unsupported packet for browser: " + packet));
-            }
-
-            // reply if necessary
-            if (response == null && packet.isOneWay() == false)
-            {
-               response = new NullPacket();               
-            }
-            
-            if (response != null)
-            {
-               response.normalize(packet);
-               sender.send(response);
-            }
-         } catch (JMSException e)
+         PacketType type = packet.getType();
+         
+         if (type == SESS_BROWSER_HASNEXTMESSAGE)
          {
-            JMSExceptionMessage message = new JMSExceptionMessage(e);
-            message.normalize(packet);
-            sender.send(message);
+            response = new SessionBrowserHasNextMessageResponseMessage(hasNextMessage());
          }
+         else if (type == SESS_BROWSER_NEXTMESSAGE)
+         {
+            Message message = nextMessage();
+            
+            response = new SessionBrowserNextMessageResponseMessage(message);
+         }
+         else if (type == SESS_BROWSER_RESET)
+         {
+            reset();
+         }
+         else if (type == CLOSE)
+         {
+            close();
+         }
+         else
+         {
+            throw new MessagingException(MessagingException.UNSUPPORTED_PACKET,
+                                         "Unsupported packet " + type);
+         }
+
+         // reply if necessary
+         if (response == null && packet.isOneWay() == false)
+         {
+            response = new NullPacket();               
+         }            
+         
+         return response;
       }
 
       @Override

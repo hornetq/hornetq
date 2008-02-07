@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.codec;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_DELIVERMESSAGE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_DELIVER;
 
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
@@ -26,7 +26,7 @@ public class DeliverMessageCodec extends AbstractPacketCodec<DeliverMessage>
 
    public DeliverMessageCodec()
    {
-      super(MSG_DELIVERMESSAGE);
+      super(SESS_DELIVER);
    }
 
    // Public --------------------------------------------------------

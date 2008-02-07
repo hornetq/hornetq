@@ -21,9 +21,7 @@
  */
 package org.jboss.jms.client.api;
 
-import javax.jms.JMSException;
-
-import org.jboss.messaging.core.remoting.RemotingConfiguration;
+import org.jboss.messaging.util.MessagingException;
 import org.jboss.messaging.util.Version;
 
 /**
@@ -34,14 +32,10 @@ import org.jboss.messaging.util.Version;
  *
  */
 public interface ClientConnectionFactory
-{      
-   RemotingConfiguration getRemotingConfiguration();
-      
-   int getServerID();
+{         
+   ClientConnection createConnection() throws MessagingException;
    
-   Version getServerVersion();
+   ClientConnection createConnection(String username, String password) throws MessagingException; 
    
-   ClientConnection createConnection() throws JMSException;
-   
-   ClientConnection createConnection(String username, String password) throws JMSException;      
+   Version getServerVersion();   
 }

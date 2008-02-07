@@ -28,7 +28,7 @@ public class SessionXAResumeMessage extends AbstractPacket
 
    public SessionXAResumeMessage(Xid xid)
    {
-      super(PacketType.MSG_XA_RESUME);
+      super(PacketType.SESS_XA_RESUME);
       
       this.xid = xid;
    }

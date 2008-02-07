@@ -109,27 +109,7 @@ public class ConfigurationTest extends TestCase
          }
       }
    }
-
-   public void testSetDLQ() throws Exception
-   {
-      assertEquals("failed to set DLQ", "DLQtest", configuration.getDefaultDLQ());
-   }
-
-   public void testSetDefMaxDelAtt() throws Exception
-   {
-      assertEquals("failed to set Default max delivery attempts", new Integer(100), configuration.getDefaultMaxDeliveryAttempts());
-   }
-
-   public void testSetExpiryQueue() throws Exception
-   {
-      assertEquals("failed to set DLQ", "ExpiryQueuetest", configuration.getDefaultExpiryQueue());
-   }
-
-   public void testSetDefaultRedeliveryDelay() throws Exception
-   {
-      assertEquals("failed to set Default redeliver delay", 10, configuration.getDefaultRedeliveryDelay());
-   }
-
+  
    public void testSetMessageCounterSamplePeriod() throws Exception
    {
       assertEquals("failed to set Message Counter sample period", 50000, configuration.getMessageCounterSamplePeriod());

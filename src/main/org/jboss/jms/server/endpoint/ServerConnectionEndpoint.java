@@ -21,56 +21,35 @@
   */
 package org.jboss.jms.server.endpoint;
 
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.CLOSE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.CONN_START;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.CONN_STOP;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.CONN_CREATESESSION;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CLOSE;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SETCLIENTID;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_STARTCONNECTION;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_STOPCONNECTION;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATESESSION;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_GETCLIENTID;
-
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-import javax.jms.IllegalStateException;
-import javax.jms.JMSException;
-import javax.jms.Session;
-import javax.transaction.xa.Xid;
-
-import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.SecurityStore;
-import org.jboss.jms.server.TransactionRepository;
-import org.jboss.jms.server.container.SecurityAspect;
 import org.jboss.messaging.core.Binding;
-import org.jboss.messaging.core.Condition;
-import org.jboss.messaging.core.Destination;
-import org.jboss.messaging.core.DestinationType;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.PostOffice;
-import org.jboss.messaging.core.impl.ConditionImpl;
-import org.jboss.messaging.core.impl.XidImpl;
+import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
-import org.jboss.messaging.core.remoting.wireformat.CreateSessionRequest;
-import org.jboss.messaging.core.remoting.wireformat.CreateSessionResponse;
-import org.jboss.messaging.core.remoting.wireformat.GetClientIDResponse;
-import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
+import org.jboss.messaging.core.remoting.wireformat.ConnectionCreateSessionMessage;
+import org.jboss.messaging.core.remoting.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
-import org.jboss.messaging.core.remoting.wireformat.SetClientIDMessage;
-import org.jboss.messaging.util.ExceptionUtil;
+import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.util.Util;
+import org.jboss.messaging.util.MessagingException;
 
 /**
  * Concrete implementation of ConnectionEndpoint.
@@ -94,334 +73,148 @@ public class ServerConnectionEndpoint
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private SecurityAspect security = new SecurityAspect();
-
    private String id;
 
    private volatile boolean closed;
+   
    private volatile boolean started;
 
-   private String clientID;
    private String username;
+   
    private String password;
 
    private String remotingClientSessionID;
+   
    private String jmsClientVMID;
 
-   // the server itself
    private MessagingServer messagingServer;
 
-   // access to server's extensions
    private PostOffice postOffice;
+   
    private SecurityStore sm;
+   
    private ConnectionManager cm;
-   private TransactionRepository tr;
 
-   // Map<sessionID - ServerSessionEndpoint>
-   private Map sessions;
+   private ConcurrentMap<String, ServerSessionEndpoint> sessions = new ConcurrentHashMap<String, ServerSessionEndpoint>();
 
-   // Set<?>
-   private Set temporaryDestinations;
+   private Set<Queue> temporaryQueues = new ConcurrentHashSet<Queue>();
 
    private int prefetchSize;
-   private int dupsOKBatchSize;
-
-
-   private byte usingVersion;
 
    // Constructors ---------------------------------------------------------------------------------
 
-   /**
-    * @param failedNodeID - zero or positive values mean connection creation attempt is result of
-    *        failover. Negative values are ignored (mean regular connection creation attempt).
-    */
-   public ServerConnectionEndpoint(MessagingServer messagingServer, String clientID,
+   public ServerConnectionEndpoint(MessagingServer messagingServer,
                                    String username, String password, int prefetchSize,
                                    String remotingSessionID,
-                                   String clientVMID,
-                                   byte versionToUse,
-                                   int dupsOKBatchSize) throws Exception
+                                   String clientVMID) throws Exception
    {
       this.messagingServer = messagingServer;
-
 
       sm = messagingServer.getSecurityManager();
       cm = messagingServer.getConnectionManager();
       postOffice = messagingServer.getPostOffice();
-      tr = messagingServer.getTransactionRepository();
 
       started = false;
 
       this.id = UUID.randomUUID().toString();
-      this.clientID = clientID;
+      
       this.prefetchSize = prefetchSize;
 
-      this.dupsOKBatchSize = dupsOKBatchSize;
-
-      sessions = new HashMap();
-      temporaryDestinations = new HashSet();
-
       this.username = username;
+      
       this.password = password;
 
       this.remotingClientSessionID = remotingSessionID;
 
       this.jmsClientVMID = clientVMID;
-      this.usingVersion = versionToUse;
-
-      this.messagingServer.getConnectionManager().
-         registerConnection(jmsClientVMID, remotingClientSessionID, this);
+      
+      cm.registerConnection(jmsClientVMID, remotingClientSessionID, this);
    }
 
    // ConnectionDelegate implementation ------------------------------------------------------------
 
-   public CreateSessionResponse createSession(boolean transacted,
-                                              int acknowledgementMode,
-                                              boolean xa,
+   public ConnectionCreateSessionResponseMessage createSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks,
                                               PacketSender sender)
-      throws JMSException
-   {
-      try
+      throws Exception
+   {           
+      String sessionID = UUID.randomUUID().toString();
+ 
+      ServerSessionEndpoint ep =
+         new ServerSessionEndpoint(sessionID, this, autoCommitSends, autoCommitAcks, xa, messagingServer.getResourceManager());            
+
+      synchronized (sessions)
       {
-         log.trace(this + " creating " + (transacted ? "transacted" : "non transacted") +
-            " session, " + Util.acknowledgmentMode(acknowledgementMode) + ", " +
-            (xa ? "XA": "non XA"));
-
-         if (closed)
-         {
-            throw new IllegalStateException("Connection is closed");
-         }
-
-         String sessionID = UUID.randomUUID().toString();
-
-         //TODO do this checks on the client side
-         boolean autoCommitSends;
-         
-         boolean autoCommitAcks;
-         
-         if (!transacted)
-         {
-            if (acknowledgementMode == Session.AUTO_ACKNOWLEDGE || acknowledgementMode == Session.DUPS_OK_ACKNOWLEDGE)
-            {
-               autoCommitSends = true;
-               
-               autoCommitAcks = true;
-            }
-            else if (acknowledgementMode == Session.CLIENT_ACKNOWLEDGE)
-            {
-               autoCommitSends = true;
-               
-               autoCommitAcks = false;
-            }
-            else
-            {
-               throw new IllegalArgumentException("Invalid ack mode " + acknowledgementMode);
-            }
-         }
-         else
-         {
-            autoCommitSends = false;
-            
-            autoCommitAcks = false;
-         }
-         
-         //Note we only replicate transacted and client acknowledge sessions.
-         ServerSessionEndpoint ep =
-            new ServerSessionEndpoint(sessionID, this, autoCommitSends, autoCommitAcks, xa, sender,
-                                      messagingServer.getResourceManager());            
-
-         synchronized (sessions)
-         {
-            sessions.put(sessionID, ep);
-         }
-
-         messagingServer.addSession(sessionID, ep);
-
-         messagingServer.getRemotingService().getDispatcher().register(ep.newHandler());
-         
-         return new CreateSessionResponse(sessionID, dupsOKBatchSize);
+         sessions.put(sessionID, ep);
       }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " createSessionDelegate");
-      }
+
+      messagingServer.addSession(sessionID, ep);
+
+      messagingServer.getRemotingService().getDispatcher().register(ep.newHandler());
+      
+      return new ConnectionCreateSessionResponseMessage(sessionID);
    }
    
-   public String getClientID() throws JMSException
+   public void start() throws Exception
    {
-      try
+      if (closed)
       {
-         if (closed)
-         {
-            throw new IllegalStateException("Connection is closed");
-         }
-         return clientID;
+         throw new IllegalStateException("Connection is closed");
       }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " getClientID");
-      }
+      
+      setStarted(true);
    }
 
-   public void setClientID(String clientID) throws JMSException
+   public synchronized void stop() throws Exception
    {
-      try
+      if (closed)
       {
-         if (closed)
-         {
-            throw new IllegalStateException("Connection is closed");
-         }
-
-         if (this.clientID != null)
-         {
-            throw new IllegalStateException("Cannot set clientID, already set as " + this.clientID);
-         }
-
-         log.trace(this + "setting client ID to " + clientID);
-
-         this.clientID = clientID;
+         throw new IllegalStateException("Connection is closed");
       }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " setClientID");
-      }
+
+      setStarted(false);
    }
 
-   public void start() throws JMSException
+   public void close() throws Exception
    {
-      try
+      if (closed)
       {
-         if (closed)
-         {
-            throw new IllegalStateException("Connection is closed");
-         }
-         setStarted(true);
-         log.trace(this + " started");
+         log.warn("Connection is already closed");
+         return;
       }
-      catch (Throwable t)
+
+      //We clone to avoid deadlock http://jira.jboss.org/jira/browse/JBMESSAGING-836
+      Map<String, ServerSessionEndpoint> sessionsClone = new HashMap<String, ServerSessionEndpoint>(sessions);
+      
+      for(ServerSessionEndpoint session: sessionsClone.values())
       {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " start");
+         session.localClose();
       }
-   }
 
-   public synchronized void stop() throws JMSException
-   {
-      try
+      sessions.clear();
+      
+      Set<String> addresses = new HashSet<String>();
+
+      for (Queue tempQueue: temporaryQueues)
+      {                        
+         Binding binding = postOffice.getBinding(tempQueue.getName());
+         
+         addresses.add(binding.getAddress());     
+         
+         postOffice.removeBinding(tempQueue.getName());         
+      }
+      
+      for (String address: addresses)
       {
-         if (closed)
-         {
-            throw new IllegalStateException("Connection is closed");
-         }
-
-         setStarted(false);
-
-         log.trace("Connection " + id + " stopped");
+         postOffice.removeAllowableAddress(address);
       }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " stop");
-      }
-   }
 
-   public void close() throws JMSException
-   {
-      try
-      {
-         if (trace) { log.trace(this + " close()"); }
+      temporaryQueues.clear();      
 
-         if (closed)
-         {
-            log.warn("Connection is already closed");
-            return;
-         }
+      cm.unregisterConnection(jmsClientVMID, remotingClientSessionID);
 
-         //We clone to avoid deadlock http://jira.jboss.org/jira/browse/JBMESSAGING-836
-         Map sessionsClone;
-         synchronized (sessions)
-         {
-            sessionsClone = new HashMap(sessions);
-         }
+      messagingServer.getRemotingService().getDispatcher().unregister(id);
 
-         for(Iterator i = sessionsClone.values().iterator(); i.hasNext(); )
-         {
-            ServerSessionEndpoint sess = (ServerSessionEndpoint)i.next();
-
-            sess.localClose();
-         }
-
-         sessions.clear();
-
-         synchronized (temporaryDestinations)
-         {
-            for(Iterator i = temporaryDestinations.iterator(); i.hasNext(); )
-            {
-               Destination dest = (Destination)i.next();
-               
-               Condition condition = new ConditionImpl(dest.getType(), dest.getName());
-
-               //FIXME - these comparisons belong on client side - not here
-               
-               if (dest.getType() == DestinationType.QUEUE)
-               {
-               	// Temporary queues must be unbound on ALL nodes of the cluster
-                  
-               	postOffice.removeQueue(condition, dest.getName(), messagingServer.getConfiguration().isClustered());
-               }
-               else
-               {
-                  //No need to unbind - this will already have happened, and removeAllReferences
-                  //will have already been called when the subscriptions were closed
-                  //which always happens before the connection closed (depth first close)
-               	//note there are no durable subs on a temporary topic
-
-                  List<Binding> bindings = postOffice.getBindingsForCondition(condition);
-                  
-                  if (!bindings.isEmpty())
-               	{
-                  	//This should never happen
-                  	throw new IllegalStateException("Cannot delete temporary destination if it has consumer(s)");
-               	}
-               }
-               
-               postOffice.removeCondition(condition);
-            }
-
-            temporaryDestinations.clear();
-         }
-
-         cm.unregisterConnection(jmsClientVMID, remotingClientSessionID);
-
-         messagingServer.getRemotingService().getDispatcher().unregister(id);
-
-         closed = true;
-      }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " close");
-      }
-   }
-
-   public void closing() throws JMSException
-   {
-   }
-
-   /**
-    * Get array of XA transactions in prepared state-
-    * This would be used by the transaction manager in recovery or by a tool to apply
-    * heuristic decisions to commit or rollback particular transactions
-    */
-   public XidImpl[] getPreparedTransactions() throws JMSException
-   {
-      try
-      {
-         List<Xid> xids = messagingServer.getPersistenceManager().getInDoubtXids();
-
-         return (XidImpl[])xids.toArray(new XidImpl[xids.size()]);
-      }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " getPreparedTransactions");
-      }
+      closed = true;
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -446,17 +239,6 @@ public class ServerConnectionEndpoint
       return messagingServer;
    }
 
-
-   public Collection getSessions()
-   {
-      ArrayList list = new ArrayList();
-      synchronized (sessions)
-      {
-         list.addAll(sessions.values());
-      }
-      return list;
-   }
-
    public PacketHandler newHandler()
    {
       return new ConnectionPacketHandler();
@@ -468,11 +250,6 @@ public class ServerConnectionEndpoint
    }
 
    // Package protected ----------------------------------------------------------------------------
-
-   byte getUsingVersion()
-   {
-      return usingVersion;
-   }
 
    int getPrefetchSize()
    {
@@ -491,71 +268,49 @@ public class ServerConnectionEndpoint
 
    void removeSession(String sessionId) throws Exception
    {
-      synchronized (sessions)
+      if (sessions.remove(sessionId) == null)
       {
-         if (sessions.remove(sessionId) == null)
-         {
-            throw new IllegalStateException("Cannot find session with id " + sessionId + " to remove");
-         }
-      }
+         throw new IllegalStateException("Cannot find session with id " + sessionId + " to remove");
+      }      
    }
 
-   void addTemporaryDestination(Destination dest)
+   void addTemporaryQueue(Queue queue)
    {
-      synchronized (temporaryDestinations)
-      {
-         temporaryDestinations.add(dest);
-      }
+      temporaryQueues.add(queue);      
    }
-
-   void removeTemporaryDestination(Destination dest)
+   
+   void removeTemporaryQueue(Queue queue)
    {
-      synchronized (temporaryDestinations)
-      {
-         temporaryDestinations.remove(dest);
-      }
-   }
-
-   boolean hasTemporaryDestination(Destination dest)
-   {
-      synchronized (temporaryDestinations)
-      {
-         return temporaryDestinations.contains(dest);
-      }
+      temporaryQueues.remove(queue);      
    }
 
    String getRemotingClientSessionID()
    {
       return remotingClientSessionID;
    }
-
   
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
    
-   private void setStarted(boolean s) throws Exception
+   private void setStarted(boolean started) throws Exception
    {
       //We clone to avoid deadlock http://jira.jboss.org/jira/browse/JBMESSAGING-836
-      Map sessionsClone = null;
+      Map<String, ServerSessionEndpoint> sessionsClone = null;
       
-      synchronized(sessions)
+      sessionsClone = new HashMap<String, ServerSessionEndpoint>(sessions);
+            
+      for (ServerSessionEndpoint session: sessionsClone.values() )
       {
-         sessionsClone = new HashMap(sessions);
+         session.setStarted(started);
       }
       
-      for (Iterator i = sessionsClone.values().iterator(); i.hasNext(); )
-      {
-         ServerSessionEndpoint sd = (ServerSessionEndpoint)i.next();
-         
-         sd.setStarted(s);
-      }
-      started = s;      
+      this.started = started;      
    }   
     
    // Inner classes --------------------------------------------------------------------------------
 
-   private class ConnectionPacketHandler implements PacketHandler
+   private class ConnectionPacketHandler extends ServerPacketHandlerSupport
    {
       public ConnectionPacketHandler()
       {
@@ -566,62 +321,43 @@ public class ServerConnectionEndpoint
          return ServerConnectionEndpoint.this.id;
       }
 
-      public void handle(Packet packet, PacketSender sender)
+      public Packet doHandle(Packet packet, PacketSender sender) throws Exception
       {
-         try
+         Packet response = null;
+
+         PacketType type = packet.getType();
+         
+         if (type == CONN_CREATESESSION)
          {
-            Packet response = null;
-
-            PacketType type = packet.getType();
-            if (type == REQ_CREATESESSION)
-            {
-               CreateSessionRequest request = (CreateSessionRequest) packet;
-               response = createSession(
-                     request.isTransacted(), request.getAcknowledgementMode(),
-                     request.isXA(), sender);
-            } else if (type == MSG_STARTCONNECTION)
-            {
-               start();
-            } else if (type == MSG_STOPCONNECTION)
-            {
-               stop();
-            } else if (type == PacketType.MSG_CLOSING)
-            {              
-               closing();
-            } else if (type == MSG_CLOSE)
-            {
-               close();
-            } 
-            else if (type == REQ_GETCLIENTID)
-            {
-               response = new GetClientIDResponse(getClientID());
-            } else if (type == MSG_SETCLIENTID)
-            {
-               SetClientIDMessage message = (SetClientIDMessage) packet;
-               setClientID(message.getClientID());
-            } else
-            {
-               response = new JMSExceptionMessage(new MessagingJMSException(
-                     "Unsupported packet for browser: " + packet));
-            }
-
-            // reply if necessary
-            if (response == null && packet.isOneWay() == false)
-            {
-               response = new NullPacket();               
-            }
+            ConnectionCreateSessionMessage request = (ConnectionCreateSessionMessage) packet;
             
-            if (response != null)
-            {
-               response.normalize(packet);
-               sender.send(response);
-            }
-         } catch (JMSException e)
-         {
-            JMSExceptionMessage message = new JMSExceptionMessage(e);
-            message.normalize(packet);
-            sender.send(message);
+            response = createSession(request.isXA(), request.isAutoCommitSends(), request.isAutoCommitAcks(), sender);
          }
+         else if (type == CONN_START)
+         {
+            start();
+         }
+         else if (type == CONN_STOP)
+         {
+            stop();
+         }
+         else if (type == CLOSE)
+         {
+            close();
+         }                       
+         else
+         {
+            throw new MessagingException(MessagingException.UNSUPPORTED_PACKET,
+                                         "Unsupported packet " + type);
+         }
+
+         // reply if necessary
+         if (response == null && packet.isOneWay() == false)
+         {
+            response = new NullPacket();               
+         }
+         
+         return response;
       }
 
       @Override

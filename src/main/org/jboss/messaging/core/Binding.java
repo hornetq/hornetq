@@ -33,9 +33,7 @@ public interface Binding
 {
    int getNodeID();
    
-   Condition getCondition();
+   String getAddress();
    
    Queue getQueue();
-   
-   boolean isAllNodes();
 }

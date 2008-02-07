@@ -26,6 +26,7 @@ import javax.jms.Topic;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -35,8 +36,15 @@ public class JBossTopic extends JBossDestination implements Topic
    // Constants -----------------------------------------------------
 
    private static final long serialVersionUID = 3257845497845724981L;
+   
+   private static final String JMS_TOPIC_ADDRESS_PREFIX = "topicjms.";
 
    // Static --------------------------------------------------------
+   
+   public static String createQueueNameForDurableSubscription(String clientID, String subscriptionName)
+   {
+      return clientID + "." + subscriptionName;
+   }
    
    // Attributes ----------------------------------------------------     
    
@@ -44,36 +52,29 @@ public class JBossTopic extends JBossDestination implements Topic
 
    public JBossTopic(String name)
    {
-      super(name);
+      super(JMS_TOPIC_ADDRESS_PREFIX + name, name);
    }
    
-
-   // JBossDestination overrides ------------------------------------
-
-   public boolean isTopic()
-   {
-      return true;
-   }
-
-   public boolean isQueue()
-   {
-      return false;
-   }
-
    // Topic implementation ------------------------------------------
 
    public String getTopicName() throws JMSException
    {
-      return getName();
+      return name;
    }
 
    // Public --------------------------------------------------------
 
+   public boolean isTemporary()
+   {
+      return false;
+   }   
+   
    public String toString()
    {
       return "JBossTopic[" + name + "]";
    }
-
+   
+  
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

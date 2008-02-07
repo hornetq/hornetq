@@ -111,12 +111,19 @@ public class QueueTest extends JMSTestCase
 	      
 	      conn.close();
 	      
+	      log.info("**** stopping");
 	      stop();
 	      
+	      	      
+	      log.info("*** restarting");
 	      startNoDelete();
+	      
+	      log.info("Redeploying objects");
 	      
 	      // Messaging server restart implies new ConnectionFactory lookup
 	      deployAndLookupAdministeredObjects();
+	      
+	      log.info("**** redeployed objects");
 	      
 	      conn = cf.createConnection();
 	      sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);

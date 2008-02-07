@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.wireformat;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SENDMESSAGE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_SEND;
 
 import org.jboss.messaging.core.Message;
 
@@ -22,18 +22,22 @@ public class SessionSendMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
 
+   private String address;
+   
    private final Message message;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionSendMessage(Message message)
+   public SessionSendMessage(String address, Message message)
    {
-      super(MSG_SENDMESSAGE);
+      super(SESS_SEND);
 
       assert message != null;
-
+            
+      this.address = address;
+      
       this.message = message;
    }
 
@@ -43,11 +47,16 @@ public class SessionSendMessage extends AbstractPacket
    {
       return message;
    }
+   
+   public String getAddress()
+   {
+      return address;
+   }
 
    @Override
    public String toString()
    {
-      return getParentString() + ", message=" + message
+      return getParentString() + ", message=" + message + ", address=" + address
             + "]";
    }
    

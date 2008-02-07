@@ -54,8 +54,7 @@ public class MinaSession implements NIOSession
       session.write(object);
    }
 
-   public Object writeAndBlock(AbstractPacket packet, long timeout,
-         TimeUnit timeUnit) throws Throwable
+   public Object writeAndBlock(AbstractPacket packet, long timeout, TimeUnit timeUnit) throws Exception
    {
       packet.setCorrelationID(correlationCounter++);
       Request req = new Request(packet.getCorrelationID(), packet, timeout, timeUnit);

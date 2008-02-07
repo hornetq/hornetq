@@ -30,13 +30,10 @@ import java.util.Map;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.Binding;
-import org.jboss.messaging.core.Condition;
-import org.jboss.messaging.core.DestinationType;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.impl.BindingImpl;
-import org.jboss.messaging.core.impl.ConditionImpl;
 import org.jboss.messaging.core.impl.MessageImpl;
 import org.jboss.messaging.core.impl.QueueFactoryImpl;
 import org.jboss.messaging.core.impl.QueueImpl;
@@ -673,22 +670,22 @@ public class BDBJEPersistenceManagerTest extends UnitTestCase
       
       Queue queue4 = new QueueImpl(4, "queue4", new FilterImpl("a=1"), false, true, false, -1);
       
-      Condition condition1 = new ConditionImpl(DestinationType.QUEUE, "condition1");
+      String condition1 = "queue.condition1";
       
-      Binding binding1 = new BindingImpl(1, condition1, queue1, false);
+      Binding binding1 = new BindingImpl(1, condition1, queue1);
       
-      Condition condition2 = new ConditionImpl(DestinationType.TOPIC, "condition2");
+      String condition2 = "queue.condition2";
       
-      Binding binding2 = new BindingImpl(1, condition2, queue2, true);
+      Binding binding2 = new BindingImpl(1, condition2, queue2);
       
-      Condition condition3 = new ConditionImpl(DestinationType.QUEUE, "condition3");
+      String condition3 = "queue.condition3";
       
-      Binding binding3 = new BindingImpl(3, condition3, queue3, false);
+      Binding binding3 = new BindingImpl(3, condition3, queue3);
       
       //same condition
-      Condition condition4 = new ConditionImpl(DestinationType.QUEUE, "condition3");
+      String condition4 = "queue.condition3";
       
-      Binding binding4 = new BindingImpl(3, condition4, queue4, false);
+      Binding binding4 = new BindingImpl(3, condition4, queue4);
       
       
       pm.addBinding(binding1);
@@ -762,22 +759,22 @@ public class BDBJEPersistenceManagerTest extends UnitTestCase
       
       Queue queue4 = new QueueImpl(4, "queue4", null, false, true, false, -1);
       
-      Condition condition1 = new ConditionImpl(DestinationType.QUEUE, "condition1");
+      String condition1 = "queue.condition1";
       
-      Binding binding1 = new BindingImpl(1, condition1, queue1, false);
+      Binding binding1 = new BindingImpl(1, condition1, queue1);
       
-      Condition condition2 = new ConditionImpl(DestinationType.TOPIC, "condition2");
+      String condition2 = "queue.condition2";
       
-      Binding binding2 = new BindingImpl(1, condition2, queue2, true);
+      Binding binding2 = new BindingImpl(1, condition2, queue2);
       
-      Condition condition3 = new ConditionImpl(DestinationType.QUEUE, "condition3");
+      String condition3 = "queue.condition3";
       
-      Binding binding3 = new BindingImpl(3, condition3, queue3, false);
+      Binding binding3 = new BindingImpl(3, condition3, queue3);
       
       //same condition
-      Condition condition4 = new ConditionImpl(DestinationType.QUEUE, "condition3");
+      String condition4 = "queue.condition3";
       
-      Binding binding4 = new BindingImpl(3, condition4, queue4, false);
+      Binding binding4 = new BindingImpl(3, condition4, queue4);
                         
       pm.addBinding(binding1);
       
@@ -1010,11 +1007,7 @@ public class BDBJEPersistenceManagerTest extends UnitTestCase
    {
       assertEquals(b1.getNodeID(), b2.getNodeID());
       
-      assertEquals(b1.getCondition().getType(), b2.getCondition().getType());
-      
-      assertEquals(b1.getCondition().getKey(), b2.getCondition().getKey());
-      
-      assertEquals(b1.isAllNodes(), b2.isAllNodes());
+      assertEquals(b1.getAddress(), b2.getAddress());
       
       Queue queue1 = b1.getQueue();
       

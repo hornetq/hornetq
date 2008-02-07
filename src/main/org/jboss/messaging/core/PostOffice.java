@@ -26,35 +26,43 @@ import java.util.Map;
 
 /**
  * 
- * PostOffice maintains bindings of conditions to Queue instances
- * and knows how to route messages to queues based on a Condition.
+ * A PostOffice instance maintains a mapping of a String address to a Queue. Multiple Queue instances can be bound
+ * with the same String address.
  * 
- * Conditions can also be added without queues.
+ * Given a message and an address a PostOffice instance will route that message to all the Queue instances that are
+ * registered with that address.
  * 
+ * Addresses can be any String instance.
+ * 
+ * A Queue instance can only be bound against a single address in the post office.
+ * 
+ * The PostOffice also maintains a set of "allowable addresses". These are the addresses that it is legal to
+ * route to.
+ *  
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
 public interface PostOffice extends MessagingComponent
-{
-   Queue addQueue(Condition condition, String name, Filter filter,
-                  boolean durable, boolean temporary, boolean allNodes) throws Exception;
+{   
+   void addAllowableAddress(String address);
    
-   void addCondition(Condition condition);
+   boolean removeAllowableAddress(String address);
    
-   boolean removeCondition(Condition condition);
-   
-   boolean containsCondition(Condition condition);
+   boolean containsAllowableAddress(String address);
 
-   boolean removeQueue(Condition condition, String name, boolean allNodes) throws Exception;
+   Binding addBinding(String address, String queueName, Filter filter,
+                      boolean durable, boolean temporary) throws Exception;
    
-   void route(Condition condition, Message message) throws Exception;
+   Binding removeBinding(String queueName) throws Exception;
    
-   void routeFromCluster(Condition condition, Message message) throws Exception;
+   List<Binding> getBindingsForAddress(String address) throws Exception;
    
-   List<Binding> getBindingsForQueueName(String name) throws Exception;
+   Binding getBinding(String queueName) throws Exception;
+      
+   void route(String address, Message message) throws Exception;
    
-   List<Binding> getBindingsForCondition(Condition condition) throws Exception;
-   
-   //For testing
-   Map<Condition, List<Binding>> getMappings();
+   void routeFromCluster(String address, Message message) throws Exception;
+     
+   //For testing only
+   Map<String, List<Binding>> getMappings();
 }

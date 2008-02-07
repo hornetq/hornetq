@@ -401,6 +401,7 @@ public class JBMServerTestCase extends JBMBaseTestCase
    
    public void createQueue(String name, int i) throws Exception
    {
+      log.info("********Creating queue " + name);
       servers.get(i).createQueue(name, null);      
    }
    
@@ -881,10 +882,10 @@ public class JBMServerTestCase extends JBMBaseTestCase
       servers.get(0).setRedeliveryDelayOnDestination(dest, isQueue, delay);
    }
 
-   protected void setDefaultRedeliveryDelay(long delay) throws Exception
-   {
-      servers.get(0).setDefaultRedeliveryDelay(delay);
-   }
+//   protected void setDefaultRedeliveryDelay(long delay) throws Exception
+//   {
+//      servers.get(0).setDefaultRedeliveryDelay(delay);
+//   }
 
    public TransactionManager getTransactionManager()
    {

@@ -30,7 +30,7 @@ public class SessionXAResumeMessageCodec extends AbstractPacketCodec<SessionXARe
 
    public SessionXAResumeMessageCodec()
    {
-      super(PacketType.MSG_XA_RESUME);
+      super(PacketType.SESS_XA_RESUME);
    }
 
    // Public --------------------------------------------------------

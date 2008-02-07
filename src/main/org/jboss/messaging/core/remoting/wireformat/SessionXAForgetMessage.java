@@ -28,7 +28,7 @@ public class SessionXAForgetMessage extends AbstractPacket
 
    public SessionXAForgetMessage(Xid xid)
    {
-      super(PacketType.MSG_XA_FORGET);
+      super(PacketType.SESS_XA_FORGET);
       
       this.xid = xid;
    }

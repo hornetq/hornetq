@@ -26,6 +26,7 @@ import javax.jms.Queue;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -35,6 +36,8 @@ public class JBossQueue extends JBossDestination implements Queue
    // Constants -----------------------------------------------------
    
    private static final long serialVersionUID = 4121129234371655479L;
+   
+   private static final String JMS_QUEUE_ADDRESS_PREFIX = "queuejms.";
 
    // Static --------------------------------------------------------
    
@@ -44,35 +47,28 @@ public class JBossQueue extends JBossDestination implements Queue
 
    public JBossQueue(String name)
    {
-      super(name);
+      super(JMS_QUEUE_ADDRESS_PREFIX + name, name);
    }
    
-   // JBossDestination overrides ------------------------------------
-
-   public boolean isTopic()
-   {
-      return false;
-   }
-
-   public boolean isQueue()
-   {
-      return true;
-   }
-
    // Queue implementation ------------------------------------------
 
    public String getQueueName() throws JMSException
    {
-      return getName();
+      return name;
    }
 
    // Public --------------------------------------------------------
+   
+   public boolean isTemporary()
+   {
+      return false;
+   }
    
    public String toString()
    {
       return "JBossQueue[" + name + "]";
    }
-
+   
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

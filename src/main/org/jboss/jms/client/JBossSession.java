@@ -23,10 +23,12 @@ package org.jboss.jms.client;
 
 import java.io.Serializable;
 import java.util.LinkedList;
+import java.util.UUID;
 
 import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.IllegalStateException;
+import javax.jms.InvalidClientIDException;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
@@ -49,11 +51,13 @@ import javax.jms.Topic;
 import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
+import javax.jms.TransactionInProgressException;
 import javax.jms.XAQueueSession;
 import javax.jms.XASession;
 import javax.jms.XATopicSession;
 import javax.transaction.xa.XAResource;
 
+import org.jboss.jms.client.api.ClientBrowser;
 import org.jboss.jms.client.api.ClientConsumer;
 import org.jboss.jms.client.api.ClientProducer;
 import org.jboss.jms.client.api.ClientSession;
@@ -62,13 +66,17 @@ import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTemporaryQueue;
 import org.jboss.jms.destination.JBossTemporaryTopic;
 import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.exception.JMSExceptionHelper;
 import org.jboss.jms.message.JBossBytesMessage;
 import org.jboss.jms.message.JBossMapMessage;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.JBossObjectMessage;
 import org.jboss.jms.message.JBossStreamMessage;
 import org.jboss.jms.message.JBossTextMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionBindingQueryResponseMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.util.MessagingException;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -96,6 +104,8 @@ public class JBossSession implements
    
    // Attributes ----------------------------------------------------
    
+   private JBossConnection connection;
+   
    private ClientSession session;
 
    private int sessionType;
@@ -108,12 +118,17 @@ public class JBossSession implements
    
    private boolean transacted;
    
-   private boolean recoverCalled;
+   private boolean xa;
    
+   private boolean recoverCalled;
+      
    // Constructors --------------------------------------------------
 
-   public JBossSession(boolean transacted, int ackMode, ClientSession session, int sessionType)
+   public JBossSession(JBossConnection connection, boolean transacted, boolean xa, int ackMode,
+                       ClientSession session, int sessionType)
    {      
+      this.connection = connection;
+      
       this.ackMode = ackMode;            
       
       this.session = session;
@@ -121,6 +136,8 @@ public class JBossSession implements
       this.sessionType = sessionType;
       
       this.transacted = transacted;
+      
+      this.xa = xa;
    }
 
    // Session implementation ----------------------------------------
@@ -209,7 +226,18 @@ public class JBossSession implements
       {
          throw new IllegalStateException("Cannot commit a non-transacted session");
       }
-      session.commit();
+      if (xa)
+      {
+         throw new TransactionInProgressException("Cannot call commit on an XA session");
+      }
+      try
+      {
+         session.commit();
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);     
+      }
    }
 
    public void rollback() throws JMSException
@@ -218,14 +246,31 @@ public class JBossSession implements
       {
          throw new IllegalStateException("Cannot rollback a non-transacted session");
       }
+      if (xa)
+      {
+         throw new TransactionInProgressException("Cannot call rollback on an XA session");
+      }
 
-      session.rollback();
+      try
+      {
+         session.rollback();
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);     
+      }
    }
 
    public void close() throws JMSException
    {
-      session.closing();
-      session.close();
+      try
+      {
+         session.close();
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);     
+      }
    }
 
    public void recover() throws JMSException
@@ -235,7 +280,14 @@ public class JBossSession implements
          throw new IllegalStateException("Cannot recover a transacted session");
       }
       
-      session.rollback();
+      try
+      {      
+         session.rollback();
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);     
+      }
       
       recoverCalled = true;
    }
@@ -288,56 +340,49 @@ public class JBossSession implements
    {
       if (d != null && !(d instanceof JBossDestination))
       {
-         throw new InvalidDestinationException("Not a JBossDestination:" + d);
-      }
-           
-      ClientProducer producerDelegate = session.createClientProducer((JBossDestination)d);
+         throw new InvalidDestinationException("Not a JBoss Destination:" + d);
+      }           
       
-      return new JBossMessageProducer(producerDelegate);
+      try
+      {
+         ClientProducer producer = session.createProducer();
+
+         return new JBossMessageProducer(producer, (JBossDestination)d);
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);     
+      }
    }
 
-  public MessageConsumer createConsumer(Destination d) throws JMSException
-  {
-     return createConsumer(d, null, false);
-  }
-
-  public MessageConsumer createConsumer(Destination d, String messageSelector) throws JMSException
-  {
-     return createConsumer(d, messageSelector, false);
-  }
-
-   public MessageConsumer createConsumer(Destination d, String messageSelector, boolean noLocal)
-         throws JMSException
+   public MessageConsumer createConsumer(Destination d) throws JMSException
    {
-      if (d == null)
+      return createConsumer(d, null, false);
+   }
+
+   public MessageConsumer createConsumer(Destination d, String messageSelector) throws JMSException
+   {
+      return createConsumer(d, messageSelector, false);
+   }
+
+   public MessageConsumer createConsumer(Destination dest, String messageSelector, boolean noLocal)
+      throws JMSException
+   {
+      if (dest == null)
       {
          throw new InvalidDestinationException("Cannot create a consumer with a null destination");
       }
-      if (!(d instanceof JBossDestination))
-      {
-         throw new InvalidDestinationException("Not a JBossDestination:" + d);
-      }
-                        
-      ClientConsumer cd = session.
-         createClientConsumer(((JBossDestination)d).toCoreDestination(), messageSelector, noLocal, null);
 
-      return new JBossMessageConsumer(this, cd);
-   }
-   
-   private boolean isDeliveredBeforeOnMessage()
-   {
-      boolean deliveredBeforeOnMessage;
-      
-      if (transacted || ackMode == Session.CLIENT_ACKNOWLEDGE)
+      if (!(dest instanceof JBossDestination))
       {
-         deliveredBeforeOnMessage = true;
+         throw new InvalidDestinationException("Not a JBossDestination:" + dest);
       }
-      else
-      {
-         deliveredBeforeOnMessage = false;
-      }
-      
-      return deliveredBeforeOnMessage;
+
+      JBossDestination jbdest = (JBossDestination)dest;
+
+      ClientConsumer cd = createConsumer(jbdest, null, messageSelector, noLocal);
+
+      return new JBossMessageConsumer(this, cd, noLocal, dest, messageSelector, dest instanceof Topic);
    }
 
    public Queue createQueue(String queueName) throws JMSException
@@ -347,7 +392,26 @@ public class JBossSession implements
       {
          throw new IllegalStateException("Cannot create a queue using a TopicSession");
       }
-      return session.createQueue(queueName);
+
+      JBossQueue queue = new JBossQueue(queueName);
+
+      try
+      {      
+         SessionQueueQueryResponseMessage response = session.queueQuery(queue.getAddress());
+
+         if (!response.isExists())
+         {
+            throw new JMSException("There is no queue with name " + queueName);
+         }
+         else
+         {         
+            return queue;
+         }
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);     
+      }
    }
 
    public Topic createTopic(String topicName) throws JMSException
@@ -357,7 +421,26 @@ public class JBossSession implements
       {
          throw new IllegalStateException("Cannot create a topic on a QueueSession");
       }
-      return session.createTopic(topicName);
+      
+      JBossTopic topic = new JBossTopic(topicName);
+      
+      try
+      {      
+         SessionBindingQueryResponseMessage response = session.bindingQuery(topic.getAddress());
+         
+         if (!response.isExists())
+         {
+            throw new JMSException("There is no topic with name " + topicName);
+         }
+         else
+         {         
+            return topic;
+         }
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);     
+      }
    }
 
    public TopicSubscriber createDurableSubscriber(Topic topic, String name) throws JMSException
@@ -375,11 +458,133 @@ public class JBossSession implements
       {
          throw new InvalidDestinationException("Not a JBossTopic:" + topic);
       }
+            
+      JBossDestination jbdest = (JBossDestination)topic;
+            
+      ClientConsumer cd = createConsumer(jbdest, name, null, false);
 
-      ClientConsumer cd =
-         session.createClientConsumer(((JBossTopic)topic).toCoreDestination(), null, false, name);
-
-      return new JBossMessageConsumer(this, cd);
+      return new JBossMessageConsumer(this, cd, false, topic, null, false);
+   }
+   
+   private ClientConsumer createConsumer(JBossDestination dest,
+                                         String subscriptionName, String selectorString, boolean noLocal)
+      throws JMSException
+   {      
+      try
+      {               
+         selectorString = "".equals(selectorString) ? null : selectorString;
+         
+         String coreFilterString = null;
+         
+         if (selectorString != null)
+         {
+            coreFilterString = SelectorTranslator.convertToJBMFilterString(selectorString);
+         }
+         
+         ClientConsumer consumer;
+         
+         if (dest instanceof Queue)
+         {
+            SessionQueueQueryResponseMessage response = session.queueQuery(dest.getAddress());
+            
+            if (!response.isExists())
+            {
+               throw new InvalidDestinationException("Queue " + dest.getName() + " does not exist");
+            }
+            
+            consumer = session.createConsumer(dest.getAddress(), coreFilterString, noLocal, false);
+         }
+         else
+         {
+            SessionBindingQueryResponseMessage response = session.bindingQuery(dest.getAddress());
+            
+            if (!response.isExists())
+            {
+               throw new InvalidDestinationException("Topic " + dest.getName() + " does not exist");
+            }
+                          
+            String queueName;
+            
+            if (subscriptionName == null)
+            {
+               //Non durable sub
+              
+               queueName = UUID.randomUUID().toString();
+               
+               session.createQueue(dest.getAddress(), queueName, coreFilterString, false, false);
+               
+               consumer = session.createConsumer(queueName, null, noLocal, true);
+            }
+            else
+            {
+               //Durable sub
+               
+               if (connection.getClientID() == null)
+               {
+                  throw new InvalidClientIDException("Cannot create durable subscription - client ID has not been set");
+               }
+               
+               if (dest.isTemporary())
+               {
+                  throw new InvalidDestinationException("Cannot create a durable subscription on a temporary topic");
+               }
+               
+               queueName =
+                  JBossTopic.createQueueNameForDurableSubscription(connection.getClientID(), subscriptionName);
+               
+               SessionQueueQueryResponseMessage subResponse = session.queueQuery(queueName);
+               
+               if (!subResponse.isExists())
+               {
+                  session.createQueue(dest.getAddress(), queueName, coreFilterString, true, false);
+               }
+               else
+               {
+                  //Already exists
+                  if (subResponse.getConsumerCount() > 0)
+                  {
+                     throw new IllegalStateException("Cannot create a subscriber on the durable subscription since it already has subscriber(s)");                
+                  }
+                  
+                  // From javax.jms.Session Javadoc (and also JMS 1.1 6.11.1):
+                  // A client can change an existing durable subscription by creating a durable
+                  // TopicSubscriber with the same name and a new topic and/or message selector.
+                  // Changing a durable subscriber is equivalent to unsubscribing (deleting) the old
+                  // one and creating a new one.
+                  
+                  String oldFilterString = subResponse.getFilterString();
+                  
+                  boolean selectorChanged =
+                     (coreFilterString == null && oldFilterString != null) ||
+                     (oldFilterString == null && coreFilterString != null) ||
+                     (oldFilterString != null && coreFilterString != null &&
+                              !oldFilterString.equals(coreFilterString));
+                  
+   
+                  String oldTopicName = subResponse.getAddress();
+                  
+                  boolean topicChanged = !oldTopicName.equals(dest.getAddress());
+                  
+                  if (selectorChanged || topicChanged)
+                  {
+                     // Delete the old durable sub
+                     session.deleteQueue(queueName);
+                     
+                     //Create the new one
+                     session.createQueue(dest.getAddress(), queueName, coreFilterString, true, false);        
+                  }                          
+               }
+               
+               consumer = session.createConsumer(queueName, null, noLocal, false);
+            }         
+         }
+         
+         return consumer;
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);     
+      }      
    }
 
    public TopicSubscriber createDurableSubscriber(Topic topic,
@@ -406,10 +611,11 @@ public class JBossSession implements
          messageSelector = null;
       }
 
-      ClientConsumer cd = session.
-         createClientConsumer(((JBossTopic)topic).toCoreDestination(), messageSelector, noLocal, name);
+      JBossDestination jbdest = (JBossDestination)topic;
 
-      return new JBossMessageConsumer(this, cd);
+      ClientConsumer cd = createConsumer(jbdest, name, messageSelector, noLocal);
+
+      return new JBossMessageConsumer(this, cd, noLocal, topic, messageSelector, false);
    }
 
    public QueueBrowser createBrowser(Queue queue) throws JMSException
@@ -437,10 +643,18 @@ public class JBossSession implements
          messageSelector = null;
       }
 
-      org.jboss.jms.client.api.ClientBrowser del =
-         session.createClientBrowser(((JBossQueue)queue).toCoreDestination(), messageSelector);
-
-      return new JBossQueueBrowser(queue, messageSelector, del);
+      JBossQueue jbq = (JBossQueue)queue;
+      
+      try
+      {      
+         ClientBrowser browser = session.createBrowser(jbq.getAddress(), messageSelector);
+   
+         return new JBossQueueBrowser(queue, messageSelector, browser);
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);     
+      }
    }
 
    public TemporaryQueue createTemporaryQueue() throws JMSException
@@ -450,9 +664,23 @@ public class JBossSession implements
       {
          throw new IllegalStateException("Cannot create a temporary queue using a TopicSession");
       }
-      JBossTemporaryQueue queue = new JBossTemporaryQueue(session);
-      session.addTemporaryDestination(queue.toCoreDestination());
-      return queue;
+      
+      String queueName = UUID.randomUUID().toString();
+      
+      try
+      {      
+         JBossTemporaryQueue queue = new JBossTemporaryQueue(this, queueName);
+                           
+         session.createQueue(queue.getAddress(), queue.getAddress(), null, false, true);
+         
+         session.addAddress(queue.getAddress());
+         
+         return queue;      
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);     
+      }
    }
 
    public TemporaryTopic createTemporaryTopic() throws JMSException
@@ -462,9 +690,21 @@ public class JBossSession implements
       {
          throw new IllegalStateException("Cannot create a temporary topic on a QueueSession");
       }
-      JBossTemporaryTopic topic = new JBossTemporaryTopic(session);
-      session.addTemporaryDestination(topic.toCoreDestination());
-      return topic;
+      
+      String topicName = UUID.randomUUID().toString();
+      
+      try
+      {      
+         JBossTemporaryTopic topic = new JBossTemporaryTopic(this, topicName);
+                           
+         session.addAddress(topic.getAddress());
+         
+         return topic;
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);     
+      }
    }
 
    public void unsubscribe(String name) throws JMSException
@@ -474,15 +714,37 @@ public class JBossSession implements
       {
          throw new IllegalStateException("Cannot unsubscribe using a QueueSession");
       }
-      session.unsubscribe(name);
+      
+      String queueName = JBossTopic.createQueueNameForDurableSubscription(connection.getClientID(), name);
+      
+      try
+      {      
+         SessionQueueQueryResponseMessage response = session.queueQuery(queueName);
+         
+         if (!response.isExists())
+         {
+            throw new InvalidDestinationException("Cannot unsubscribe, subscription with name " + name + " does not exist");
+         }
+         
+         if (response.getConsumerCount() != 0)
+         {
+            throw new IllegalStateException("Cannot unsubscribe durable subscription " +
+                                            name + " since it has active subscribers");
+         }
+         
+         session.deleteQueue(queueName);
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);     
+      }
    }
    
    // XASession implementation
    
    public Session getSession() throws JMSException
    {      
-
-      if (!session.isXA())
+      if (!xa)
       {
          throw new IllegalStateException("Isn't an XASession");
       }
@@ -564,6 +826,50 @@ public class JBossSession implements
    public void setRecoverCalled(boolean recoverCalled)
    {
       this.recoverCalled = recoverCalled;
+   }
+   
+   public void deleteTemporaryDestination(JBossDestination destination) throws JMSException
+   {
+      try
+      {
+         if (destination instanceof Topic)
+         {
+            SessionBindingQueryResponseMessage response = session.bindingQuery(destination.getAddress());
+            
+            if (!response.isExists())
+            {
+               throw new InvalidDestinationException("Cannot delete temporary topic " +
+                                                      destination.getName() + " does not exist");
+            }
+            
+            if (!response.getQueueNames().isEmpty())
+            {
+               throw new IllegalStateException("Cannot delete temporary topic " +
+                                               destination.getName() + " since it has subscribers");
+            }        
+         }
+         else
+         {
+            SessionQueueQueryResponseMessage response = session.queueQuery(destination.getAddress());
+            
+            if (!response.isExists())
+            {
+               throw new InvalidDestinationException("Cannot delete temporary queue " +
+                                                      destination.getName() + " does not exist");
+            }
+            
+            if (response.getConsumerCount() > 0)
+            {
+               throw new IllegalStateException("Cannot delete temporary queue " +
+                                               destination.getName() + " since it has subscribers");
+            }
+         }   
+         session.removeAddress(destination.getAddress());
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);     
+      }      
    }
 
    // Package protected ---------------------------------------------

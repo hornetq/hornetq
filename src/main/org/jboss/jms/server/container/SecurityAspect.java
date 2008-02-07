@@ -29,8 +29,8 @@ import javax.jms.JMSSecurityException;
 import org.jboss.jms.server.SecurityStore;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.security.CheckType;
-import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.util.MessagingException;
 
 /**
  * This aspect enforces the JBossMessaging JMS security policy.
@@ -62,9 +62,9 @@ public class SecurityAspect
 
    private boolean trace = log.isTraceEnabled();
 
-   private Set<Destination> readCache;
+   private Set<String> readCache;
 
-   private Set<Destination> writeCache;
+   private Set<String> writeCache;
 
    private Set createCache;
 
@@ -78,11 +78,11 @@ public class SecurityAspect
    // Public --------------------------------------------------------
    public SecurityAspect()
    {
-      readCache = new HashSet();
+      readCache = new HashSet<String>();
 
-      writeCache = new HashSet();
+      writeCache = new HashSet<String>();
 
-      createCache = new HashSet();
+      createCache = new HashSet<String>();
    }
 
    // Package protected ---------------------------------------------
@@ -91,7 +91,7 @@ public class SecurityAspect
 
    // Private -------------------------------------------------------
 
-   public boolean checkCached(Destination dest, CheckType checkType)
+   public boolean checkCached(String dest, CheckType checkType)
    {
       long now = System.currentTimeMillis();
 
@@ -136,15 +136,9 @@ public class SecurityAspect
       return granted;
    }
 
-   public void check(Destination dest, CheckType checkType, ServerConnectionEndpoint conn)
-      throws JMSSecurityException
+   public void check(String dest, CheckType checkType, ServerConnectionEndpoint conn)
+      throws MessagingException
    {
-      if (dest.isTemporary())
-      {
-         if (trace) { log.trace("skipping permission check on temporary destination " + dest); }
-         return;
-      }
-
       if (trace) { log.trace("checking access permissions to " + dest); }
 
       if (checkCached(dest, checkType))
@@ -152,8 +146,6 @@ public class SecurityAspect
          // OK
          return;
       }
-
-      String name = dest.getName();
 
       SecurityStore sm = conn.getSecurityManager();
 
@@ -173,9 +165,9 @@ public class SecurityAspect
                " is not authorized to " +
                (checkType == CheckType.READ ? "read from" :
                   checkType == CheckType.WRITE ? "write to" : "create durable sub on") +
-               " destination " + name;
+               " destination " + dest;
 
-            throw new JMSSecurityException(msg);
+            throw new MessagingException(MessagingException.SECURITY_EXCEPTION, msg);
          }
       }
       finally

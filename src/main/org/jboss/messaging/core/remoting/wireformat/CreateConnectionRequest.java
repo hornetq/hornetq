@@ -7,7 +7,7 @@
 package org.jboss.messaging.core.remoting.wireformat;
 
 import static org.jboss.messaging.core.remoting.Assert.assertValidID;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATECONNECTION;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.CREATECONNECTION;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -28,8 +28,6 @@ public class CreateConnectionRequest extends AbstractPacket
    private final String username;
    private final String password;
    private int prefetchSize;
-   private int dupsOKBatchSize;
-   private String clientID;
 
    // Static --------------------------------------------------------
 
@@ -37,9 +35,9 @@ public class CreateConnectionRequest extends AbstractPacket
 
    public CreateConnectionRequest(byte version,
          String remotingSessionID, String clientVMID, String username, String password,
-         int prefetchSize, int dupsOKBatchSize, String clientID)
+         int prefetchSize)
    {
-      super(REQ_CREATECONNECTION);
+      super(CREATECONNECTION);
 
       assertValidID(remotingSessionID);
       assertValidID(clientVMID);
@@ -50,8 +48,6 @@ public class CreateConnectionRequest extends AbstractPacket
       this.username = username;
       this.password = password;
       this.prefetchSize = prefetchSize;
-      this.dupsOKBatchSize = dupsOKBatchSize;
-      this.clientID = clientID;
    }
 
    // Public --------------------------------------------------------
@@ -103,28 +99,6 @@ public class CreateConnectionRequest extends AbstractPacket
    {
       this.prefetchSize = prefetchSize;
    }
-
-   public int getDupsOKBatchSize()
-   {
-      return dupsOKBatchSize;
-   }
-
-   public void setDupsOKBatchSize(int dupsOKBatchSize)
-   {
-      this.dupsOKBatchSize = dupsOKBatchSize;
-   }
-
-   public String getClientID()
-   {
-      return clientID;
-   }
-
-   public void setClientID(String clientID)
-   {
-      this.clientID = clientID;
-   }
-
-   // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 

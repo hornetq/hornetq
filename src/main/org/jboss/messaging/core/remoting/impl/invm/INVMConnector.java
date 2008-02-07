@@ -10,7 +10,7 @@ import static org.jboss.messaging.core.remoting.TransportType.INVM;
 
 import java.io.IOException;
 
-import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
+import org.jboss.jms.client.api.FailureListener;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
@@ -34,7 +34,7 @@ public class INVMConnector implements NIOConnector
    private INVMSession session;
 
    private PacketDispatcher serverDispatcher;
- 
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -78,16 +78,14 @@ public class INVMConnector implements NIOConnector
       return INVM + "://" + host + ":" + port;
    }
    
-   public void removeConnectionListener(
-         ConsolidatedRemotingConnectionListener listener)
-   {
+   public void addFailureListener(FailureListener listener)
+   {      
    }
    
-   public void addConnectionListener(
-         ConsolidatedRemotingConnectionListener listener)
-   {
+   public void removeFailureListener(FailureListener listener)
+   {      
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

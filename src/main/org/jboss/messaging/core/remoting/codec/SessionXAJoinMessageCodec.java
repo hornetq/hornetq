@@ -30,7 +30,7 @@ public class SessionXAJoinMessageCodec extends AbstractPacketCodec<SessionXAJoin
 
    public SessionXAJoinMessageCodec()
    {
-      super(PacketType.MSG_XA_JOIN);
+      super(PacketType.SESS_XA_JOIN);
    }
 
    // Public --------------------------------------------------------

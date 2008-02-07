@@ -7,8 +7,8 @@
 
 package org.jboss.messaging.core.remoting;
 
-import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.messaging.core.remoting.wireformat.Packet;
+import org.jboss.messaging.util.MessagingException;
 
 /**
  *
@@ -21,14 +21,6 @@ import org.jboss.messaging.core.remoting.wireformat.Packet;
  * @author clebert.suconic@jboss.com
  */
 public interface Interceptor
-{
-   /**
-    * If you need to intercept a return value, you could create your own implementation of PacketSender and recover the return value.
-    *
-    * @param packet
-    * @param handler
-    * @param sender
-    * @return false if the Packet transmission should be interrupted after this call
-    */
-   void intercept(Packet packet) throws MessagingJMSException;
+{   
+   void intercept(Packet packet) throws MessagingException;
 }

@@ -30,7 +30,7 @@ public class SessionXAForgetMessageCodec extends AbstractPacketCodec<SessionXAFo
 
    public SessionXAForgetMessageCodec()
    {
-      super(PacketType.MSG_XA_FORGET);
+      super(PacketType.SESS_XA_FORGET);
    }
 
    // Public --------------------------------------------------------

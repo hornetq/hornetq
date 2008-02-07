@@ -275,6 +275,7 @@ public class JBMBaseTestCase extends ProxyAssertSupport
       {
          return ((JBossConnection) conn).getServerID();
       }
+      
    protected Connection createConnectionOnServer(ConnectionFactory factory, int serverId)
       throws Exception
       {

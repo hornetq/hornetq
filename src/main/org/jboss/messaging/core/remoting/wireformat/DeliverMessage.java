@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.wireformat;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_DELIVERMESSAGE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_DELIVER;
 
 import org.jboss.messaging.core.Message;
 
@@ -38,7 +38,7 @@ public class DeliverMessage extends AbstractPacket
    public DeliverMessage(Message message, long deliveryID,
                          int deliveryCount)
    {
-      super(MSG_DELIVERMESSAGE);
+      super(SESS_DELIVER);
 
       assert message != null;
 

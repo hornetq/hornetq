@@ -16,7 +16,7 @@ import org.jboss.messaging.core.remoting.wireformat.Packet;
  */
 public interface PacketSender
 {
-   void send(Packet packet);
+   void send(Packet packet) throws Exception;
 
    String getSessionID();
 }

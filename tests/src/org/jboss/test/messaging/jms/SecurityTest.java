@@ -38,9 +38,9 @@ import javax.jms.XAConnection;
 import javax.jms.XAConnectionFactory;
 import javax.jms.XASession;
 import javax.management.ObjectName;
+import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 
-import org.jboss.jms.exception.MessagingXAException;
 import org.jboss.jms.server.security.Role;
 import org.jboss.messaging.core.impl.XidImpl;
 import org.jboss.messaging.util.Logger;
@@ -1141,7 +1141,7 @@ public class SecurityTest extends JMSTestCase
             resource.prepare(xid);
             fail("Didn't throw expected exception!");
          }
-         catch (MessagingXAException expected)
+         catch (XAException expected)
          {
          }
       }

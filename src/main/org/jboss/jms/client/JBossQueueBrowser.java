@@ -21,7 +21,6 @@
   */
 package org.jboss.jms.client;
 
-import java.io.Serializable;
 import java.util.Enumeration;
 
 import javax.jms.JMSException;
@@ -29,9 +28,11 @@ import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 
 import org.jboss.jms.client.api.ClientBrowser;
+import org.jboss.jms.exception.JMSExceptionHelper;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.util.MessagingException;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -48,15 +49,15 @@ public class JBossQueueBrowser implements QueueBrowser
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private ClientBrowser delegate;
+   private ClientBrowser browser;
    private Queue queue;
    private String messageSelector;
 
    // Constructors ---------------------------------------------------------------------------------
 
-   JBossQueueBrowser(Queue queue, String messageSelector, ClientBrowser delegate)
+   JBossQueueBrowser(Queue queue, String messageSelector, ClientBrowser browser)
    {
-      this.delegate = delegate;
+      this.browser = browser;
       this.queue = queue;
       this.messageSelector = messageSelector;
    }
@@ -65,14 +66,27 @@ public class JBossQueueBrowser implements QueueBrowser
 
    public void close() throws JMSException
    {
-      delegate.closing();
-      delegate.close();
+      try
+      {
+         browser.close();
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);     
+      }
    }
 
    public Enumeration getEnumeration() throws JMSException
    {
-      delegate.reset();
-      return new BrowserEnumeration();
+      try
+      {
+         browser.reset();
+         return new BrowserEnumeration();
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);     
+      }
    }
 
    public String getMessageSelector() throws JMSException
@@ -89,12 +103,12 @@ public class JBossQueueBrowser implements QueueBrowser
 
    public String toString()
    {
-      return "JBossQueueBrowser->" + delegate;
+      return "JBossQueueBrowser->" + browser;
    }
 
-   public ClientBrowser getDelegate()
+   public ClientBrowser getBrowser()
    {
-      return delegate;
+      return browser;
    }
 
    // Package protected ----------------------------------------------------------------------------
@@ -110,11 +124,10 @@ public class JBossQueueBrowser implements QueueBrowser
       public boolean hasMoreElements()
       {
          try
-         {
-            
-            return delegate.hasNextMessage();
+         {            
+            return browser.hasNextMessage();
          }
-         catch (JMSException e)
+         catch (MessagingException e)
          {
             throw new IllegalStateException(e.getMessage());
          }
@@ -124,7 +137,7 @@ public class JBossQueueBrowser implements QueueBrowser
       {
          try
          {
-            Message message = delegate.nextMessage();
+            Message message = browser.nextMessage();
 
             JBossMessage jbm = JBossMessage.createMessage(message, null);
             

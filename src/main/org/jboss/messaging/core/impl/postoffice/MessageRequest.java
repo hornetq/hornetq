@@ -24,10 +24,8 @@ package org.jboss.messaging.core.impl.postoffice;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-import org.jboss.messaging.core.Condition;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.PostOffice;
-import org.jboss.messaging.core.impl.ConditionImpl;
 import org.jboss.messaging.core.impl.MessageImpl;
 
 /**
@@ -43,7 +41,7 @@ import org.jboss.messaging.core.impl.MessageImpl;
  */
 public class MessageRequest extends ClusterRequest
 {
-   private Condition condition;   
+   private String address;   
    
    private Message message;
    
@@ -53,9 +51,9 @@ public class MessageRequest extends ClusterRequest
    {      
    }
    
-   MessageRequest(Condition condition, Message message)//, Set queueNames)
+   MessageRequest(String address, Message message)//, Set queueNames)
    {
-      this.condition = condition;
+      this.address = address;
       
       this.message = message;
       
@@ -64,7 +62,7 @@ public class MessageRequest extends ClusterRequest
    
    Object execute(PostOffice office) throws Exception
    {
-      office.routeFromCluster(condition, message);    
+      office.routeFromCluster(address, message);    
       
       return null;
    }  
@@ -76,9 +74,7 @@ public class MessageRequest extends ClusterRequest
    
    public void read(DataInputStream in) throws Exception
    {
-      condition = new ConditionImpl();
-      
-      condition.read(in);
+      address = in.readUTF();
       
       message = new MessageImpl();
       
@@ -103,7 +99,7 @@ public class MessageRequest extends ClusterRequest
    
    public void write(DataOutputStream out) throws Exception
    {
-      condition.write(out);
+      out.writeUTF(address);
       
       message.write(out);
       

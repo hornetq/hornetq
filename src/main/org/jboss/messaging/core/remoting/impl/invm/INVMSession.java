@@ -10,7 +10,7 @@ import static java.util.UUID.randomUUID;
 
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.jms.exception.MessagingJMSException;
+import org.jboss.jms.exception.JMSExceptionHelper;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketSender;
@@ -67,24 +67,17 @@ public class INVMSession implements NIOSession
       return true;
    }
 
-   public void write(final Object object)
+   public void write(final Object object) throws Exception
    {
       assert object instanceof AbstractPacket;
 
       serverDispatcher.dispatch((AbstractPacket) object,
             new PacketSender()
             {
-               public void send(Packet response)
-               {
-                  try
-                  {
-                     serverDispatcher.callFilters(response);
-                     PacketDispatcher.client.dispatch(response, null);
-                  }
-                  catch (MessagingJMSException e)
-                  {
-                     log.warn("An interceptor throwed an exception what caused the packet " + response + " to be ignored", e);
-                  }
+               public void send(Packet response) throws Exception
+               {                  
+                  serverDispatcher.callFilters(response);
+                  PacketDispatcher.client.dispatch(response, null);   
                }
                
                public String getSessionID()
@@ -94,8 +87,7 @@ public class INVMSession implements NIOSession
             });
    }
 
-   public Object writeAndBlock(final AbstractPacket request,
-         long timeout, TimeUnit timeUnit) throws Throwable
+   public Object writeAndBlock(final AbstractPacket request, long timeout, TimeUnit timeUnit) throws Exception
    {
       request.setCorrelationID(correlationCounter++);
       final Packet[] responses = new Packet[1];
@@ -103,18 +95,10 @@ public class INVMSession implements NIOSession
       serverDispatcher.dispatch(request,
             new PacketSender()
             {
-               public void send(Packet response)
+               public void send(Packet response) throws Exception
                {
-                  try
-                  {
-                     serverDispatcher.callFilters(response);
-                     responses[0] = response;
-                  }
-                  catch (MessagingJMSException e)
-                  {
-                     log.warn("An interceptor throwed an exception what caused the packet " + response + " to be ignored", e);
-                     responses[0] = null;
-                  }
+                  serverDispatcher.callFilters(response);
+                  responses[0] = response;
                }
 
                public String getSessionID()

@@ -24,7 +24,7 @@ public class SessionCommitMessage extends AbstractPacket
 
    public SessionCommitMessage()
    {
-      super(PacketType.MSG_COMMIT);
+      super(PacketType.SESS_COMMIT);
    }
 
    // Public --------------------------------------------------------

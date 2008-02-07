@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.wireformat;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CHANGERATE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.CONS_CHANGERATE;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -28,7 +28,7 @@ public class ConsumerChangeRateMessage extends AbstractPacket
 
    public ConsumerChangeRateMessage(float rate)
    {
-      super(MSG_CHANGERATE);
+      super(CONS_CHANGERATE);
 
       this.rate = rate;
    }

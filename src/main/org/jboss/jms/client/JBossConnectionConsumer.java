@@ -21,21 +21,12 @@
   */
 package org.jboss.jms.client;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.jms.ConnectionConsumer;
 import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.ServerSession;
 import javax.jms.ServerSessionPool;
-import javax.jms.Session;
 
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.util.MessageQueueNameHelper;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
@@ -103,38 +94,38 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                                   String subName, String messageSelector,
                                   ServerSessionPool sessPool, int maxMessages) throws JMSException
    {
-      this.serverSessionPool = sessPool;
-      this.maxMessages = maxMessages;
-
-      if (this.maxMessages < 1)
-      {
-         this.maxMessages = 1;
-      }
-
-      // Create a consumer. The ClientConsumer knows we are a connection consumer so will
-      // not call pre or postDeliver so messages won't be acked, or stored in session/tx.
-      sess = conn.createClientSession(false, Session.CLIENT_ACKNOWLEDGE, false);
-          
-      cons = sess.createClientConsumer(dest.toCoreDestination(), messageSelector, false, subName);
-
-      this.consumerID = cons.getID();      
-        
-      //this.maxDeliveries = cons.getMaxDeliveries();
-         
-      if (subName != null)
-      {
-         queueName = MessageQueueNameHelper.createSubscriptionName(conn.getClientID(), subName);
-      }
-      else
-      {
-         queueName = dest.getName();
-      }
-
-      id = threadId.increment();
-      internalThread = new Thread(this, "Connection ClientConsumer for dest " + dest + " id=" + id);
-      internalThread.start();
-
-      if (trace) { log.trace(this + " created"); }
+//      this.serverSessionPool = sessPool;
+//      this.maxMessages = maxMessages;
+//
+//      if (this.maxMessages < 1)
+//      {
+//         this.maxMessages = 1;
+//      }
+//
+//      // Create a consumer. The ClientConsumer knows we are a connection consumer so will
+//      // not call pre or postDeliver so messages won't be acked, or stored in session/tx.
+//      sess = conn.createClientSession(false, Session.CLIENT_ACKNOWLEDGE, false);
+//          
+//      //cons = sess.createClientConsumer(dest.toCoreDestination(), messageSelector, false, subName);
+//
+//      this.consumerID = cons.getID();      
+//        
+//      //this.maxDeliveries = cons.getMaxDeliveries();
+//         
+//      if (subName != null)
+//      {
+//         queueName = MessageQueueNameHelper.createSubscriptionName(conn.getClientID(), subName);
+//      }
+//      else
+//      {
+//         queueName = dest.getName();
+//      }
+//
+//      id = threadId.increment();
+//      internalThread = new Thread(this, "Connection ClientConsumer for dest " + dest + " id=" + id);
+//      internalThread.start();
+//
+//      if (trace) { log.trace(this + " created"); }
    }
    
    // ConnectionConsumer implementation -----------------------------
@@ -311,15 +302,15 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
    
    protected synchronized void doClose() throws JMSException
    {
-      if (closed)
-      {
-         return;
-      }
-      
-      closed = true;            
-      
-      sess.closing();
-      sess.close();
+//      if (closed)
+//      {
+//         return;
+//      }
+//      
+//      closed = true;            
+//      
+//      sess.closing();
+//      sess.close();
 
       if (trace) { log.trace(this + "Closed message handler"); }
    }

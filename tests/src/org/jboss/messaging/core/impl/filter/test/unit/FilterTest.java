@@ -25,6 +25,7 @@ import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.impl.MessageImpl;
 import org.jboss.messaging.core.impl.filter.FilterImpl;
+import org.jboss.messaging.util.MessagingException;
 import org.jboss.test.messaging.JBMBaseTestCase;
 
 /**
@@ -605,9 +606,9 @@ public class FilterTest  extends JBMBaseTestCase
          
          fail("Should throw exception");
       }
-      catch (IllegalArgumentException e)
+      catch (MessagingException e)
       {
-         assertEquals("Invalid filter: " + filterString, e.getMessage());
+         assertEquals(MessagingException.INVALID_FILTER_EXPRESSION, e.getCode());
       }            
    }
    

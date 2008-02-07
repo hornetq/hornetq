@@ -27,7 +27,6 @@ import java.util.HashSet;
 
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.SecurityStore;
-import org.jboss.jms.server.TransactionRepository;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
 import org.jboss.jms.server.security.Role;
@@ -75,18 +74,12 @@ public interface MessagingServer extends MessagingComponent
 
    void removeSession(String id);
 
-   Queue getDefaultDLQInstance() throws Exception;
-   
-   Queue getDefaultExpiryQueueInstance() throws Exception;
-
    SecurityStore getSecurityManager();
 
    ConnectionManager getConnectionManager();
 
    MemoryManager getMemoryManager();
 
-   TransactionRepository getTransactionRepository();
-   
    PersistenceManager getPersistenceManager();
 
    void setPersistenceManager(PersistenceManager persistenceManager);

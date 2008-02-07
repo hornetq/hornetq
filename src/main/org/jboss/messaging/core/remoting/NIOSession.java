@@ -21,10 +21,9 @@ public interface NIOSession
 
    String getID();
 
-   void write(Object object);
+   void write(Object object) throws Exception;
 
-   Object writeAndBlock(AbstractPacket packet, long timeout,
-         TimeUnit timeUnit) throws Throwable;
+   Object writeAndBlock(AbstractPacket packet, long timeout, TimeUnit timeUnit) throws Exception;
 
    boolean isConnected();
 }

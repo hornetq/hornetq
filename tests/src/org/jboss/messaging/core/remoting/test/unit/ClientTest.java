@@ -16,8 +16,6 @@ import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestS
 
 import java.io.IOException;
 
-import javax.jms.IllegalStateException;
-
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.remoting.Client;
@@ -158,9 +156,10 @@ public class ClientTest extends TestCase
       {
          client.send(new NullPacket(), true);
          fail("can not send a packet if the dispatcher is not connected");
-      } catch (IllegalStateException e)
+      }
+      catch (IllegalStateException e)
       {
-
+         //Ok
       }
       
       verify(connector);

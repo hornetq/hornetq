@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.wireformat;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_RECOVER;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_RECOVER;
 
 
 /**
@@ -26,7 +26,7 @@ public class SessionRecoverMessage extends AbstractPacket
 
    public SessionRecoverMessage()
    {
-      super(MSG_RECOVER);
+      super(SESS_RECOVER);
    }
 
    // Public --------------------------------------------------------

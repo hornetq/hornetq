@@ -45,6 +45,7 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 
+import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
@@ -540,7 +541,7 @@ public class MessageConsumerTest extends JMSTestCase
    // Invalid destination test
    //
 
-   public void testCreateConsumerOnInexistentDestination() throws Exception
+   public void testCreateConsumerOnNonExistentTopic() throws Exception
    {
       Connection pconn = null;
       
@@ -565,6 +566,35 @@ public class MessageConsumerTest extends JMSTestCase
          if (pconn != null)
          {
          	pconn.close();
+         }
+      }
+   }
+   
+   public void testCreateConsumerOnNonExistentQueue() throws Exception
+   {
+      Connection pconn = null;
+      
+      try
+      {
+         pconn = cf.createConnection();
+
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         try
+         {
+            ps.createConsumer(new JBossQueue("NoSuchQueue"));
+            fail("should throw exception");
+         }
+         catch(InvalidDestinationException e)
+         {
+            // OK
+         }
+      }
+      finally
+      {
+         if (pconn != null)
+         {
+            pconn.close();
          }
       }
    }
@@ -673,7 +703,7 @@ public class MessageConsumerTest extends JMSTestCase
    			queueConsumer.receive(2000);
    			fail("should throw exception");
    		}
-   		catch(javax.jms.IllegalStateException e)
+   		catch (javax.jms.IllegalStateException e)
    		{
    			// OK
    		}

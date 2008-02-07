@@ -28,7 +28,7 @@ public class RoundRobinLoadBalancingPolicy implements LoadBalancingPolicy
 
    private static final Random random = new Random();
 
-   // The index of the next delegate to be used
+   // The index of the next connectionFactory to be used
    private int next;
 
    private ClientConnectionFactoryImpl[] delegates;

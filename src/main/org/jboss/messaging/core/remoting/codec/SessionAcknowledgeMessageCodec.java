@@ -28,7 +28,7 @@ public class SessionAcknowledgeMessageCodec extends AbstractPacketCodec<SessionA
 
    public SessionAcknowledgeMessageCodec()
    {
-      super(PacketType.MSG_ACKNOWLEDGE);
+      super(PacketType.SESS_ACKNOWLEDGE);
    }
 
    // Public --------------------------------------------------------

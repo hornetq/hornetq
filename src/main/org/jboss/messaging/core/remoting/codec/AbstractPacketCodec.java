@@ -19,10 +19,7 @@ import java.nio.charset.CharacterCodingException;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.jms.destination.JBossDestination;
-import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.impl.DestinationImpl;
 import org.jboss.messaging.core.impl.MessageImpl;
 import org.jboss.messaging.core.impl.XidImpl;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
@@ -61,30 +58,6 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       message.write(new DataOutputStream(baos));
       baos.flush();
-      return baos.toByteArray();
-   }
-
-   public static byte[] encode(Destination destination)
-   throws Exception
-   {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      
-      destination.write(new DataOutputStream(baos));
-      
-      baos.flush();
-      
-      return baos.toByteArray();
-   }
-   
-   public static byte[] encodeJBossDestination(JBossDestination destination)
-   throws Exception
-   {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      
-      JBossDestination.writeDestination(new DataOutputStream(baos), destination);
-      
-      baos.flush();
-      
       return baos.toByteArray();
    }
 
@@ -245,26 +218,6 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
          throws Exception;
 
    protected abstract P decodeBody(RemotingBuffer buffer) throws Exception;
-
-   protected static Destination decode(byte[] b) throws Exception
-   {
-      ByteArrayInputStream bais = new ByteArrayInputStream(b);
-      
-      Destination destination = new DestinationImpl();
-      
-      destination.read(new DataInputStream(bais));
-      
-      return destination;
-   }
-   
-   protected static JBossDestination decodeJBossDestination(byte[] b) throws Exception
-   {
-      ByteArrayInputStream bais = new ByteArrayInputStream(b);
-      
-      JBossDestination destination = JBossDestination.readDestination(new DataInputStream(bais));
-      
-      return destination;
-   }
 
    protected static Message decodeMessage(byte[] b) throws Exception
    {     

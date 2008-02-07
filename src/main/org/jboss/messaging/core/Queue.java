@@ -71,7 +71,7 @@ public interface Queue
    
    int getDeliveringCount();
    
-   void referenceAcknowledged();
+   void decrementDeliveringCount();
    
    int getScheduledCount();
           

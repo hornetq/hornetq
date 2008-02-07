@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.codec;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CHANGERATE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.CONS_CHANGERATE;
 
 import org.jboss.messaging.core.remoting.wireformat.ConsumerChangeRateMessage;
 
@@ -26,7 +26,7 @@ public class ConsumerChangeRateMessageCodec extends
 
    public ConsumerChangeRateMessageCodec()
    {
-      super(MSG_CHANGERATE);
+      super(CONS_CHANGERATE);
    }
 
    // Public --------------------------------------------------------

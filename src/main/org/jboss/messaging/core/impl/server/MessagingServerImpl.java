@@ -30,12 +30,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.aop.microcontainer.aspects.jmx.JMX;
+import org.jboss.jms.destination.JBossDestination;
+import org.jboss.jms.destination.JBossQueue;
+import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.MessagingTimeoutFactory;
 import org.jboss.jms.server.SecurityStore;
-import org.jboss.jms.server.TransactionRepository;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
-import org.jboss.jms.server.endpoint.ConnectionFactoryAdvisedPacketHandler;
+import org.jboss.jms.server.endpoint.MessagingServerPacketHandler;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.plugin.NullUserManager;
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
@@ -44,9 +46,7 @@ import org.jboss.jms.server.security.Role;
 import org.jboss.jms.server.security.SecurityMetadataStore;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Binding;
-import org.jboss.messaging.core.Condition;
 import org.jboss.messaging.core.Configuration;
-import org.jboss.messaging.core.DestinationType;
 import org.jboss.messaging.core.MemoryManager;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.NullPersistenceManager;
@@ -56,7 +56,6 @@ import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.QueueFactory;
 import org.jboss.messaging.core.QueueSettings;
 import org.jboss.messaging.core.ResourceManager;
-import org.jboss.messaging.core.impl.ConditionImpl;
 import org.jboss.messaging.core.impl.QueueFactoryImpl;
 import org.jboss.messaging.core.impl.ResourceManagerImpl;
 import org.jboss.messaging.core.impl.memory.SimpleMemoryManager;
@@ -111,7 +110,6 @@ public class MessagingServerImpl implements MessagingServer
    private SimpleConnectionManager connectionManager;
    private MemoryManager memoryManager = new SimpleMemoryManager();
    private MessageCounterManager messageCounterManager;
-   private TransactionRepository transactionRepository = new TransactionRepository();
    private PostOffice postOffice;
    private SecurityDeployer securityDeployer;
    private QueueSettingsDeployer queueSettingsDeployer;
@@ -201,7 +199,7 @@ public class MessagingServerImpl implements MessagingServer
             }
          });
          postOffice = new PostOfficeImpl(configuration.getMessagingServerID(),
-                                         persistenceManager, queueFactory);
+                                         persistenceManager, queueFactory, configuration.isStrictTck());
 
          if(createTransport)
          {
@@ -214,9 +212,8 @@ public class MessagingServerImpl implements MessagingServer
          remotingService.addConnectionExceptionListener(connectionManager);
          memoryManager.start();
          postOffice.start();
-         ConnectionFactoryAdvisedPacketHandler connectionFactoryAdvisedPacketHandler =
-                 new ConnectionFactoryAdvisedPacketHandler(this);
-         getRemotingService().getDispatcher().register(connectionFactoryAdvisedPacketHandler);
+         MessagingServerPacketHandler serverPacketHandler =  new MessagingServerPacketHandler(this);
+         getRemotingService().getDispatcher().register(serverPacketHandler);
          
          ClassLoader loader = Thread.currentThread().getContextClassLoader();
          for (String interceptorClass: configuration.getDefaultInterceptors())
@@ -337,44 +334,6 @@ public class MessagingServerImpl implements MessagingServer
       }
    }
 
-   public synchronized Queue getDefaultDLQInstance() throws Exception
-   {
-      if (configuration.getDefaultDLQ() != null)
-      {
-         List<Binding> bindings = postOffice.getBindingsForQueueName(configuration.getDefaultDLQ());
-
-         if (bindings.isEmpty())
-         {
-            throw new IllegalStateException("Cannot find binding for queue " + configuration.getDefaultDLQ());
-         }
-
-         return bindings.get(0).getQueue();
-      }
-      else
-      {
-         return null;
-      }
-   }
-
-   public synchronized Queue getDefaultExpiryQueueInstance() throws Exception
-   {
-      if (configuration.getDefaultExpiryQueue() != null)
-      {
-         List<Binding> bindings = postOffice.getBindingsForQueueName(configuration.getDefaultExpiryQueue());
-
-         if (bindings.isEmpty())
-         {
-            throw new IllegalStateException("Cannot find binding for queue " + configuration.getDefaultExpiryQueue());
-         }
-
-         return bindings.get(0).getQueue();
-      }
-      else
-      {
-         return null;
-      }
-   }
-
    public void enableMessageCounters()
    {
       messageCounterManager.start();
@@ -391,12 +350,16 @@ public class MessagingServerImpl implements MessagingServer
 
    public void createQueue(String name) throws Exception
    {
-      Condition queueCond = new ConditionImpl(DestinationType.QUEUE, name);
-
-      if (!getPostOffice().containsCondition(queueCond))
+      JBossQueue queue = new JBossQueue(name);
+      
+      if (getPostOffice().getBinding(queue.getAddress()) == null)
       {
-         getPostOffice().addQueue(queueCond, name, null, true, false, false);
-         getPostOffice().addCondition(queueCond);
+         getPostOffice().addBinding(queue.getAddress(), queue.getAddress(), null, true, false);         
+      }
+      
+      if (!getPostOffice().containsAllowableAddress(queue.getAddress()))
+      {
+         getPostOffice().addAllowableAddress(queue.getAddress());
       }
    }
 
@@ -407,10 +370,11 @@ public class MessagingServerImpl implements MessagingServer
 
    public void createTopic(String name) throws Exception
    {
-      Condition topicCond = new ConditionImpl(DestinationType.TOPIC, name);
-      if (!getPostOffice().containsCondition(topicCond));
+      JBossTopic topic = new JBossTopic(name);
+   
+      if (!getPostOffice().containsAllowableAddress(topic.getAddress()));
       {
-         getPostOffice().addCondition(topicCond);
+         getPostOffice().addAllowableAddress(topic.getAddress());
       }
    }
 
@@ -431,9 +395,9 @@ public class MessagingServerImpl implements MessagingServer
 
    public void removeAllMessagesForQueue(String queueName) throws Exception
    {
-      Condition condition = new ConditionImpl(DestinationType.QUEUE, queueName);
-
-      List<Binding> bindings = postOffice.getBindingsForCondition(condition);
+      JBossQueue jbq = new JBossQueue(queueName);
+      
+      List<Binding> bindings = postOffice.getBindingsForAddress(jbq.getAddress());
 
       if (!bindings.isEmpty())
       {
@@ -447,9 +411,9 @@ public class MessagingServerImpl implements MessagingServer
 
    public void removeAllMessagesForTopic(String queueName) throws Exception
    {
-      Condition condition = new ConditionImpl(DestinationType.QUEUE, queueName);
-
-      List<Binding> bindings = postOffice.getBindingsForCondition(condition);
+      JBossTopic jbt = new JBossTopic(queueName);
+      
+      List<Binding> bindings = postOffice.getBindingsForAddress(jbt.getAddress());
 
       for (Binding binding: bindings)
       {
@@ -477,11 +441,6 @@ public class MessagingServerImpl implements MessagingServer
    public MemoryManager getMemoryManager()
    {
       return memoryManager;
-   }
-
-   public TransactionRepository getTransactionRepository()
-   {
-      return transactionRepository;
    }
 
    public PersistenceManager getPersistenceManager()
@@ -551,9 +510,18 @@ public class MessagingServerImpl implements MessagingServer
 
    private boolean destroyDestination(boolean isQueue, String name) throws Exception
    {
-      Condition condition = new ConditionImpl(isQueue ? DestinationType.QUEUE : DestinationType.TOPIC, name);
+      JBossDestination dest;
+      
+      if (isQueue)
+      {
+         dest = new JBossQueue(name);
+      }
+      else
+      {
+         dest = new JBossTopic(name);
+      }
 
-      List<Binding> bindings = getPostOffice().getBindingsForCondition(condition);
+      List<Binding> bindings = getPostOffice().getBindingsForAddress(dest.getAddress());
 
       boolean destroyed = false;
 
@@ -565,15 +533,12 @@ public class MessagingServerImpl implements MessagingServer
 
          queue.removeAllReferences();
 
-         //Durable subs need to be removed on all nodes
-         boolean all = !isQueue && queue.isDurable();
-
-         getPostOffice().removeQueue(condition, queue.getName(), all);
+         getPostOffice().removeBinding(queue.getName());
 
          destroyed = true;
       }
 
-      getPostOffice().removeCondition(condition);
+      getPostOffice().removeAllowableAddress(dest.getAddress());
 
       return destroyed;
    }

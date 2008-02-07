@@ -28,7 +28,7 @@ public class SessionXAStartMessage extends AbstractPacket
 
    public SessionXAStartMessage(Xid xid)
    {
-      super(PacketType.MSG_XA_START);
+      super(PacketType.SESS_XA_START);
       
       this.xid = xid;
    }

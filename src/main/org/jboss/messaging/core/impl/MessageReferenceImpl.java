@@ -123,7 +123,7 @@ public class MessageReferenceImpl implements MessageReference
          persistenceManager.deleteReference(this);
       }
       
-      queue.referenceAcknowledged();
+      queue.decrementDeliveringCount();
    }
    
    public void cancel(PersistenceManager persistenceManager) throws Exception
@@ -135,7 +135,7 @@ public class MessageReferenceImpl implements MessageReference
          persistenceManager.updateDeliveryCount(queue, this);
       }
             
-      queue.referenceAcknowledged();
+      queue.decrementDeliveringCount();
    }
    
    // Public --------------------------------------------------------

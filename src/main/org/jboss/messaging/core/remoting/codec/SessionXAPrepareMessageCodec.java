@@ -30,7 +30,7 @@ public class SessionXAPrepareMessageCodec extends AbstractPacketCodec<SessionXAP
 
    public SessionXAPrepareMessageCodec()
    {
-      super(PacketType.REQ_XA_PREPARE);
+      super(PacketType.SESS_XA_PREPARE);
    }
 
    // Public --------------------------------------------------------

@@ -66,30 +66,6 @@ public class DLQTest extends JMSTestCase
 
    // Public --------------------------------------------------------
 
-   public void testDLQAlreadyDeployed() throws Exception
-   {
-      if (ServerManagement.isRemote())
-      {
-         return;
-      }
-
-
-      assertNotNull(((MessagingServerImpl)getJmsServer()).getDefaultDLQInstance());
-
-      String name = getJmsServer().getConfiguration().getDefaultDLQ();
-
-      assertNotNull(name);
-
-      assertEquals("DLQ", name);
-
-      JBossQueue q = (JBossQueue) ic.lookup("/queue/DLQ");
-
-      assertNotNull(q);
-
-      assertEquals("DLQ", q.getName());
-   }
-
-
    public void testDefaultAndOverrideDLQ() throws Exception
    {
       if (ServerManagement.isRemote())

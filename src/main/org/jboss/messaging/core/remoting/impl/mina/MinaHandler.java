@@ -13,7 +13,7 @@ import org.apache.mina.common.IoHandlerAdapter;
 import org.apache.mina.common.IoSession;
 import org.apache.mina.filter.keepalive.KeepAliveTimeoutException;
 import org.apache.mina.filter.reqres.Response;
-import org.jboss.jms.exception.MessagingJMSException;
+import org.jboss.jms.exception.JMSExceptionHelper;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
@@ -98,18 +98,10 @@ public class MinaHandler extends IoHandlerAdapter
       AbstractPacket packet = (AbstractPacket) message;
       PacketSender sender = new PacketSender()
       {
-         public void send(Packet p)
+         public void send(Packet p) throws Exception
          {
-            try
-            {
-               dispatcher.callFilters(p);
-               session.write(p);
-            }
-            catch (MessagingJMSException e)
-            {
-               log.warn("An interceptor throwed an exception what caused the packet " + p + " to be ignored", e);
-            }
-            
+            dispatcher.callFilters(p);
+            session.write(p);            
          }
          
          public String getSessionID()

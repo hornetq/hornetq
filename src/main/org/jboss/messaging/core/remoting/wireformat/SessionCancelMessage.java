@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.wireformat;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CANCEL;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_CANCEL;
 
 
 /**
@@ -30,7 +30,7 @@ public class SessionCancelMessage extends AbstractPacket
 
    public SessionCancelMessage(long deliveryID, boolean expired)
    {
-      super(MSG_CANCEL);
+      super(SESS_CANCEL);
       
       this.deliveryID = deliveryID;
       

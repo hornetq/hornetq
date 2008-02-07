@@ -28,7 +28,7 @@ public class SessionXASetTimeoutMessageCodec extends AbstractPacketCodec<Session
 
    public SessionXASetTimeoutMessageCodec()
    {
-      super(PacketType.MSG_XA_SET_TIMEOUT);
+      super(PacketType.SESS_XA_SET_TIMEOUT);
    }
 
    // Public --------------------------------------------------------

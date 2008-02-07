@@ -24,7 +24,7 @@ public class SessionXASuspendMessage extends AbstractPacket
 
    public SessionXASuspendMessage()
    {
-      super(PacketType.MSG_XA_SUSPEND);
+      super(PacketType.SESS_XA_SUSPEND);
    }
 
    // Public --------------------------------------------------------

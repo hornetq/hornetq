@@ -30,7 +30,7 @@ public class SessionXACommitMessage extends AbstractPacket
 
    public SessionXACommitMessage(Xid xid, boolean onePhase)
    {
-      super(PacketType.MSG_XA_COMMIT);
+      super(PacketType.SESS_XA_COMMIT);
       
       this.xid = xid;
       

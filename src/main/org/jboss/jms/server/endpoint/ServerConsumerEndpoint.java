@@ -21,35 +21,25 @@
  */
 package org.jboss.jms.server.endpoint;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CHANGERATE;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CLOSE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.CONS_CHANGERATE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.CLOSE;
 
-import javax.jms.JMSException;
-
-import org.jboss.jms.exception.MessagingJMSException;
-import org.jboss.messaging.core.Condition;
 import org.jboss.messaging.core.Consumer;
-import org.jboss.messaging.core.Destination;
-import org.jboss.messaging.core.DestinationType;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.HandleStatus;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.PersistenceManager;
-import org.jboss.messaging.core.PostOffice;
 import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.core.impl.ConditionImpl;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.ConsumerChangeRateMessage;
-import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
-import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.util.MessagingException;
 
 /**
  * Concrete implementation of a ClientConsumer. 
@@ -80,23 +70,11 @@ public class ServerConsumerEndpoint implements Consumer
 
    private Queue messageQueue;
 
-   private String queueName;
-
    private ServerSessionEndpoint sessionEndpoint;
 
    private boolean noLocal;
 
    private Filter filter;
-
-   private Destination destination;
-
-   private Queue dlq;
-
-   private Queue expiryQueue;
-
-   private long redeliveryDelay;
-   
-   private int maxDeliveryAttempts;
 
    private boolean started;
 
@@ -111,20 +89,15 @@ public class ServerConsumerEndpoint implements Consumer
    private volatile int sendCount;
    
    private boolean firstTime = true;
-      
-   //FIXME temp
-   public Queue getMessageQueue()
-   {
-      return messageQueue;
-   }
    
+   private boolean autoDeleteQueue;
+
    // Constructors ---------------------------------------------------------------------------------
 
-   ServerConsumerEndpoint(MessagingServer sp, String id, Queue messageQueue, String queueName,
+   ServerConsumerEndpoint(MessagingServer sp, String id, Queue messageQueue,                          
 					           ServerSessionEndpoint sessionEndpoint, Filter filter,
-					           boolean noLocal, Destination destination, Queue dlq,
-					           Queue expiryQueue, long redeliveryDelay, int maxDeliveryAttempts,
-					           int prefetchSize)
+					           boolean noLocal, 
+					           int prefetchSize, boolean autoDeleteQueue)
    {
       if (trace)
       {
@@ -135,21 +108,9 @@ public class ServerConsumerEndpoint implements Consumer
 
       this.messageQueue = messageQueue;
 
-      this.queueName = queueName;
-
       this.sessionEndpoint = sessionEndpoint;
 
       this.noLocal = noLocal;
-
-      this.destination = destination;
-
-      this.dlq = dlq;
-
-      this.redeliveryDelay = redeliveryDelay;
-
-      this.expiryQueue = expiryQueue;
-      
-      this.maxDeliveryAttempts = maxDeliveryAttempts;
 
       // Always start as false - wait for consumer to initiate.
       this.clientAccepting = false;
@@ -161,6 +122,8 @@ public class ServerConsumerEndpoint implements Consumer
       this.filter = filter;
                 
       this.started = this.sessionEndpoint.getConnectionEndpoint().isStarted();
+      
+      this.autoDeleteQueue = autoDeleteQueue;
       
       // adding the consumer to the queue
       messageQueue.addConsumer(this);
@@ -189,24 +152,11 @@ public class ServerConsumerEndpoint implements Consumer
 
       if (ref.getMessage().isExpired())
       {         
-         sessionEndpoint.expireDelivery(ref, expiryQueue);
+         sessionEndpoint.expireDelivery(ref);
          
          return HandleStatus.HANDLED;
       }
       
-// TODO re-implement preserve ordering      
-//      if (preserveOrdering && remote)
-//      {
-//      	//If the header exists it means the message has already been sucked once - so reject.
-//      	
-//      	if (ref.getMessage().getHeader(Message.CLUSTER_SUCKED) != null)
-//      	{
-//      		if (trace) { log.trace("Message has already been sucked once - not sucking again"); }
-//      		
-//      		return null;
-//      	}      	    
-//      }
-
       synchronized (startStopLock)
       {
          // If the consumer is stopped then we don't accept the message, it should go back into the
@@ -281,90 +231,60 @@ public class ServerConsumerEndpoint implements Consumer
 
    public boolean accept(Message msg)
    {
-      boolean accept = true;
-
-      //FIXME - we shouldn't have checks like this - it should be the client side which decides whether
-      //to have a filter on the consumer
-      if (destination.getType() == DestinationType.QUEUE)
+      if (filter != null)
       {
-         // For subscriptions message selection is handled in the Subscription itself we do not want
-         // to do the check twice
-         if (filter != null)
-         {
-            accept = filter.match(msg);
+         boolean accept = filter.match(msg);
 
-            if (trace) { log.trace("message filter " + (accept ? "accepts " : "DOES NOT accept ") + "the message"); }
-         }
+         if (trace) { log.trace("message filter " + (accept ? "accepts " : "DOES NOT accept ") + "the message"); }
+         
+         return accept;
       }
-      
-      return accept;
+      else
+      {
+         return true;
+      }
    }
 
    // Closeable implementation ---------------------------------------------------------------------
 
-   public void closing() throws JMSException
+   public void close() throws Exception
    {
-      try
+      if (trace)
       {
-         if (trace) { log.trace(this + " closing");}
-
-         stop();
+         log.trace(this + " close");
       }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " closing");
-      }
-   }
+      
+      stop();
 
-   public void close() throws JMSException
-   {
-      try
-      {
-         if (trace)
-         {
-            log.trace(this + " close");
-         }
+      localClose();
 
-         localClose();
-
-         sessionEndpoint.removeConsumer(id);
-      }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " close");
-      }
+      sessionEndpoint.removeConsumer(id);
+           
    }
 
    // ConsumerEndpoint implementation --------------------------------------------------------------
 
-   public void changeRate(float newRate) throws JMSException
+   public void changeRate(float newRate) throws Exception
    {
       if (trace)
       {
          log.trace(this + " changing rate to " + newRate);
       }
 
-      try
+      if (newRate > 0)
       {
-         if (newRate > 0)
-         {
-            sendCount = 0;
-            
-            clientAccepting = true;
-         }
-         else
-         {
-            clientAccepting = false;
-         }
-
-         if (clientAccepting)
-         {
-            promptDelivery();
-         }
+         sendCount = 0;
+         
+         clientAccepting = true;
       }
-      catch (Throwable t)
+      else
       {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " changeRate");
+         clientAccepting = false;
+      }
+
+      if (clientAccepting)
+      {
+         promptDelivery();
       }
    }
 
@@ -374,16 +294,6 @@ public class ServerConsumerEndpoint implements Consumer
    {
       return "ConsumerEndpoint[" + id + "]";
    }
-
-//   public Destination getDestination()
-//   {
-//      return destination;
-//   }
-//
-//   public ServerSessionEndpoint getSessionEndpoint()
-//   {
-//      return sessionEndpoint;
-//   }
 
    public PacketHandler newHandler()
    {
@@ -402,85 +312,27 @@ public class ServerConsumerEndpoint implements Consumer
       //No need to lock since caller already has the lock
       this.started = started;      
    }
-   
-   Queue getDLQ()
-   {
-      return dlq;
-   }
-
-   Queue getExpiryQueue()
-   {
-      return expiryQueue;
-   }
-
-   long getRedliveryDelay()
-   {
-      return redeliveryDelay;
-   }
-   
-   int getMaxDeliveryAttempts()
-   {
-   	return maxDeliveryAttempts;
-   }
-   
-   String getQueueName()
-   {
-   	return queueName;
-   }
-
+    
    void localClose() throws Exception
    {
       if (trace) { log.trace(this + " grabbed the main lock in close() " + this); }
 
       messageQueue.removeConsumer(this);
       
-      sessionEndpoint.getConnectionEndpoint().getMessagingServer().getRemotingService().getDispatcher().unregister(id);
-            
-      // If this is a consumer of a non durable subscription then we want to unbind the
-      // subscription and delete all its data.
-
-      //FIXME - We shouldn't have checks like this on the server side - it should the jms client
-      //which decides whether to delete it or not
-      if (destination.getType() == DestinationType.TOPIC)
+      sessionEndpoint.getConnectionEndpoint().getMessagingServer().getRemotingService().getDispatcher().unregister(id);     
+      
+      if (autoDeleteQueue)
       {
-         PostOffice postOffice = sessionEndpoint.getConnectionEndpoint().getMessagingServer().getPostOffice();
-                  
-         MessagingServer sp = sessionEndpoint.getConnectionEndpoint().getMessagingServer();
-         
-         if (!messageQueue.isDurable())
+         if (messageQueue.getConsumerCount() == 0)
          {
-            Condition condition = new ConditionImpl(destination.getType(), destination.getName());
+            MessagingServer server = sessionEndpoint.getConnectionEndpoint().getMessagingServer();
             
-            postOffice.removeQueue(condition, messageQueue.getName(), false);
-
-            //TODO message counters are handled elsewhere
+            server.getPostOffice().removeBinding(messageQueue.getName());
             
-//            if (!messageQueue.isTemporary())
-//            {
-//	            String counterName = ManagedDestination.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queueName;
-//	
-//	            MessageCounter counter = sp.getMessageCounterManager().unregisterMessageCounter(counterName);
-//	
-//	            if (counter == null)
-//	            {
-//	               throw new IllegalStateException("Cannot find counter to remove " + counterName);
-//	            }
-//            }
-         }
-         else
-         {
-         	//Durable sub consumer
-         	
-            //TODO - how do we ensure this for JBM 2.0 ?
-            
-//         	if (queue.isClustered() && sp.getConfiguration().isClustered())
-//            {
-//            	//Clustered durable sub consumer created - we need to remove this info from the replicator
-//            	
-//            	Replicator rep = (Replicator)postOffice;
-//            	
-//            	rep.remove(queue.getName());
-//            }
+            if (messageQueue.isDurable())
+            {
+               server.getPersistenceManager().deleteAllReferences(messageQueue);
+            }
          }
       }
    }
@@ -531,71 +383,50 @@ public class ServerConsumerEndpoint implements Consumer
    {
       this.replier = replier;
    }
-//
-//   public void deliver(DeliverMessage message)
-//   {
-//      if (replier != null)
-//      {
-//         message.setTargetID(id);
-//         replier.send(message);
-//      } else
-//      {
-//         log.error("No replier to deliver message to consumer");
-//      }
-//   }
 
    // Inner classes --------------------------------------------------------------------------------
    
-   private class ServerConsumerEndpointPacketHandler implements PacketHandler {
+   private class ServerConsumerEndpointPacketHandler extends ServerPacketHandlerSupport
+   {
 
       public String getID()
       {
          return ServerConsumerEndpoint.this.id;
       }
 
-      public void handle(Packet packet, PacketSender sender)
+      public Packet doHandle(Packet packet, PacketSender sender) throws Exception
       {
-         try
+         Packet response = null;
+
+         PacketType type = packet.getType();
+         
+         if (type == CONS_CHANGERATE)
          {
-            Packet response = null;
+            setReplier(sender);
 
-            PacketType type = packet.getType();
-            if (type == MSG_CHANGERATE)
-            {
-               setReplier(sender);
-
-               ConsumerChangeRateMessage message = (ConsumerChangeRateMessage) packet;
-               changeRate(message.getRate());
-            } else if (type == PacketType.MSG_CLOSING)
-            {
-               closing();
-            } else if (type == MSG_CLOSE)
-            {
-               close();
-               setReplier(null);
-            } else
-            {
-               response = new JMSExceptionMessage(new MessagingJMSException(
-                     "Unsupported packet for browser: " + packet));
-            }
-
-            // reply if necessary
-            if (response == null && packet.isOneWay() == false)
-            {
-               response = new NullPacket();               
-            }
+            ConsumerChangeRateMessage message = (ConsumerChangeRateMessage) packet;
             
-            if (response != null)
-            {
-               response.normalize(packet);
-               sender.send(response);
-            }
-         } catch (JMSException e)
-         {
-            JMSExceptionMessage message = new JMSExceptionMessage(e);
-            message.normalize(packet);
-            sender.send(message);
+            changeRate(message.getRate());
          }
+         else if (type == CLOSE)
+         {
+            close();
+            
+            setReplier(null);
+         }
+         else
+         {
+            throw new MessagingException(MessagingException.UNSUPPORTED_PACKET,
+                  "Unsupported packet " + type);
+         }
+
+         // reply if necessary
+         if (response == null && packet.isOneWay() == false)
+         {
+            response = new NullPacket();               
+         }
+         
+         return response;
       }
 
       @Override

@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.wireformat;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CLOSE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.CLOSE;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -26,7 +26,7 @@ public class CloseMessage extends AbstractPacket
 
    public CloseMessage()
    {
-      super(MSG_CLOSE);
+      super(CLOSE);
    }
    
    // Public --------------------------------------------------------

@@ -13,11 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.jboss.jms.exception.MessagingJMSException;
-import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
-import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.core.remoting.wireformat.Packet;
-import org.jboss.messaging.core.remoting.wireformat.SetSessionIDMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionSetIDMessage;
 import org.jboss.messaging.util.Logger;
 
 /**
@@ -90,14 +87,14 @@ public class PacketDispatcher
       return handlers.get(handlerID);
    }
    
-   public void dispatch(Packet packet, PacketSender sender)
+   public void dispatch(Packet packet, PacketSender sender) throws Exception
    {
       //FIXME better separation between client and server PacketDispatchers
       if (this != client)
       {
-         if (packet instanceof SetSessionIDMessage)
+         if (packet instanceof SessionSetIDMessage)
          {
-            String clientSessionID = ((SetSessionIDMessage)packet).getSessionID();
+            String clientSessionID = ((SessionSetIDMessage)packet).getSessionID();
             if (log.isDebugEnabled())
                log.debug("associated server session " + sender.getSessionID() + " to client " + clientSessionID);
             sessions.put(sender.getSessionID(), clientSessionID);
@@ -116,15 +113,8 @@ public class PacketDispatcher
          if (log.isTraceEnabled())
             log.trace(handler + " handles " + packet);
 
-         try
-         {
-            callFilters(packet);
-            handler.handle(packet, sender);
-         }
-         catch (MessagingJMSException e)
-         {
-            sender.send(new JMSExceptionMessage(e));
-         }
+         callFilters(packet);
+         handler.handle(packet, sender);
 
       } else
       {
@@ -133,13 +123,13 @@ public class PacketDispatcher
    }
 
    /** Call filters on a package */
-   public void callFilters(Packet packet) throws MessagingJMSException
+   public void callFilters(Packet packet) throws Exception
    {
      if (filters != null)
      {
         for (Interceptor filter: filters)
         {
-              filter.intercept(packet);
+           filter.intercept(packet);          
         }
      }
    }

@@ -211,13 +211,16 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
          {
             return true;
          }
+         
          while (index >= 0)
          {                 
             if (index == 0 || currentIter.hasNext())
             {
                break;
             }                 
+            
             index--;
+            
             currentIter = linkedLists.get(index).listIterator();
          }
          return currentIter.hasNext();      

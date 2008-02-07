@@ -26,35 +26,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.jms.ConnectionMetaData;
-import javax.jms.Destination;
-import javax.jms.ExceptionListener;
-import javax.jms.IllegalStateException;
-import javax.jms.JMSException;
-import javax.jms.ServerSessionPool;
-import javax.jms.Session;
-
-import org.jboss.jms.client.JBossConnectionConsumer;
-import org.jboss.jms.client.JBossConnectionMetaData;
-import org.jboss.jms.client.api.ClientConnection;
 import org.jboss.jms.client.api.ClientSession;
-import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
+import org.jboss.jms.client.api.FailureListener;
 import org.jboss.jms.client.remoting.MessagingRemotingConnection;
-import org.jboss.jms.destination.JBossDestination;
 import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
-import org.jboss.messaging.core.remoting.wireformat.ClosingMessage;
-import org.jboss.messaging.core.remoting.wireformat.CreateSessionRequest;
-import org.jboss.messaging.core.remoting.wireformat.CreateSessionResponse;
-import org.jboss.messaging.core.remoting.wireformat.GetClientIDRequest;
-import org.jboss.messaging.core.remoting.wireformat.GetClientIDResponse;
-import org.jboss.messaging.core.remoting.wireformat.SetClientIDMessage;
-import org.jboss.messaging.core.remoting.wireformat.StartConnectionMessage;
-import org.jboss.messaging.core.remoting.wireformat.StopConnectionMessage;
+import org.jboss.messaging.core.remoting.wireformat.ConnectionCreateSessionMessage;
+import org.jboss.messaging.core.remoting.wireformat.ConnectionCreateSessionResponseMessage;
+import org.jboss.messaging.core.remoting.wireformat.ConnectionStartMessage;
+import org.jboss.messaging.core.remoting.wireformat.ConnectionStopMessage;
 import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.util.Version;
+import org.jboss.messaging.util.MessagingException;
 
 /**
- * The client-side Connection delegate class.
+ * The client-side Connection connectionFactory class.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -65,7 +49,7 @@ import org.jboss.messaging.util.Version;
  *
  * $Id: ClientConnectionImpl.java 3602 2008-01-21 17:48:32Z timfox $
  */
-public class ClientConnectionImpl implements ClientConnection
+public class ClientConnectionImpl implements ClientConnectionInternal
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -77,21 +61,13 @@ public class ClientConnectionImpl implements ClientConnection
 
    private String id;
    
-   protected JBossConnectionMetaData connMetaData;
-
    private int serverID;
 
    private MessagingRemotingConnection remotingConnection;
 
-   private Version versionToUse;
-   
    private boolean strictTck;
    
    private Map<String, ClientSession> children = new ConcurrentHashMap<String, ClientSession>();
-
-   private boolean justCreated = true;
-
-   private String clientID;
 
    private volatile boolean closed;
 
@@ -99,7 +75,7 @@ public class ClientConnectionImpl implements ClientConnection
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConnectionImpl(String id, int serverID, boolean strictTck, Version version,
+   public ClientConnectionImpl(String id, int serverID, boolean strictTck,
                                MessagingRemotingConnection connection)
    {
       this.id = id;
@@ -108,14 +84,56 @@ public class ClientConnectionImpl implements ClientConnection
       
       this.strictTck = strictTck;
       
-      this.versionToUse = version;
-      
       this.remotingConnection = connection;
    }
+   
+   // ClientConnection implementation --------------------------------------------------------------
 
-   // Closeable implementation ---------------------------------------------------------------------
+   public ClientSession createClientSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks,
+                                            int ackBatchSize) throws MessagingException
+   {
+      checkClosed();
 
-   public synchronized void close() throws JMSException
+      ConnectionCreateSessionMessage request = new ConnectionCreateSessionMessage(xa, autoCommitSends, autoCommitAcks);
+
+      ConnectionCreateSessionResponseMessage response = (ConnectionCreateSessionResponseMessage)remotingConnection.send(id, request);   
+
+      ClientSession session =  new ClientSessionImpl(this, response.getSessionID(), ackBatchSize);
+
+      children.put(response.getSessionID(), session);
+
+      return session;
+   }
+   
+   public void start() throws MessagingException
+   {
+      checkClosed();
+       
+      remotingConnection.send(id, new ConnectionStartMessage(), true);
+   }
+   
+   public void stop() throws MessagingException
+   {
+      checkClosed();
+      
+      remotingConnection.send(id, new ConnectionStopMessage());
+   }
+   
+   public FailureListener getFailureListener() throws MessagingException
+   {
+      checkClosed();
+      
+      return remotingConnection.getFailureListener();
+   }
+
+   public void setFailureListener(FailureListener listener) throws MessagingException
+   {
+      checkClosed();
+      
+      remotingConnection.setFailureListener(listener);
+   }
+   
+   public synchronized void close() throws MessagingException
    {
       if (closed)
       {
@@ -124,19 +142,14 @@ public class ClientConnectionImpl implements ClientConnection
       
       try
       {
+         closeChildren();
+         
          remotingConnection.send(id, new CloseMessage());
       }
       finally
       {
-         // remove the consolidated remoting connection listener
-
-         ConsolidatedRemotingConnectionListener l = remotingConnection.removeConnectionListener();
+         remotingConnection.setFailureListener(null);
          
-         if (l != null)
-         {
-            l.clear();
-         }
-
          // Finished with the connection - we need to shutdown callback server
          remotingConnection.stop();
 
@@ -144,189 +157,25 @@ public class ClientConnectionImpl implements ClientConnection
       }
    }
 
-   public synchronized void closing() throws JMSException
+   public boolean isClosed()
    {
-      if (closed)
-      {
-         return;
-      }
-      
-      closeChildren();
-      
-      remotingConnection.send(id, new ClosingMessage());
+      return closed;
    }
    
-   // ClientConnection implementation ------------------------------------------------------------
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public JBossConnectionConsumer createConnectionConsumer(Destination dest,
-                                                           String subscriptionName,
-                                                           String messageSelector,
-                                                           ServerSessionPool sessionPool,
-                                                           int maxMessages) throws JMSException
-   {
-      checkClosed();
-      
-      return new JBossConnectionConsumer(this, (JBossDestination)dest,
-                                         subscriptionName, messageSelector, sessionPool,
-                                         maxMessages);
-   }
-
-
-
-   public ClientSession createClientSession(boolean transacted,
-                                            int acknowledgementMode,
-                                            boolean isXA) throws JMSException
-   {
-      checkClosed();
-            
-      justCreated = false;
-
-      CreateSessionRequest request = new CreateSessionRequest(transacted, acknowledgementMode, isXA);
-      
-      CreateSessionResponse response = (CreateSessionResponse)remotingConnection.send(id, request);   
-      
-      int ackBatchSize;
-      
-      if (transacted || acknowledgementMode == Session.CLIENT_ACKNOWLEDGE)
-      {
-         ackBatchSize = -1; //Infinite
-      }
-      else if (acknowledgementMode == Session.DUPS_OK_ACKNOWLEDGE)
-      {
-         ackBatchSize = response.getDupsOKBatchSize();
-      }
-      else
-      {
-         //Auto ack
-         ackBatchSize = 1;
-      }
-       
-      ClientSession session =  new ClientSessionImpl(this, response.getSessionID(), ackBatchSize, isXA);
-                  
-      children.put(response.getSessionID(), session);
-      
-      return session;
-   }
-
-
-   public boolean isStrictTck()
-   {
-      return strictTck;
-   }
-
-   public String getClientID() throws JMSException
-   {
-      checkClosed();
-      
-      justCreated = false;
-
-      if (clientID == null)
-      {
-         //Get from the server
-         clientID = ((GetClientIDResponse)remotingConnection.send(id, new GetClientIDRequest())).getClientID();
-      }
-      return clientID;
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public ConnectionMetaData getConnectionMetaData() throws JMSException
-   {
-      checkClosed();
-      
-      justCreated = false;
-
-      if (connMetaData == null)
-      {
-         connMetaData = new JBossConnectionMetaData(versionToUse);
-      }
-
-      return connMetaData;
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public ExceptionListener getExceptionListener() throws JMSException
-   {
-      justCreated = false;
-
-      return remotingConnection.getConnectionListener().getJMSExceptionListener(); 
-   }
-
-   public void setClientID(String clientID) throws JMSException
-   {
-      checkClosed();
-      
-      if (this.clientID != null)
-      {
-         throw new javax.jms.IllegalStateException("Client id has already been set");
-      }
-      if (!justCreated)
-      {
-         throw new IllegalStateException("setClientID can only be called directly after the connection is created");
-      }
-
-      this.clientID = clientID;
-      
-      this.justCreated = false;
-
-      remotingConnection.send(id, new SetClientIDMessage(clientID));  
-   }
+   // ClientConnectionInternal implementation --------------------------------------------------------
    
-   
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void setExceptionListener(ExceptionListener listener) throws JMSException
-   {
-      checkClosed();
-      
-      justCreated = false;
-
-      remotingConnection.getConnectionListener().addJMSExceptionListener(listener);
-   }
-
-   public void start() throws JMSException
-   {
-      checkClosed();
-      
-      justCreated = false;
-      
-      remotingConnection.send(id, new StartConnectionMessage(), true);
-   }
-   
-   public void stop() throws JMSException
-   {
-      checkClosed();
-      
-      justCreated = false;
-      
-      remotingConnection.send(id, new StopConnectionMessage());
-   }
-
-   public MessagingRemotingConnection getRemotingConnection()
-   {
-      return remotingConnection;
-   }
-
    public int getServerID()
    {
       return serverID;
    }
    
-   public void removeChild(String key) throws JMSException
+   public MessagingRemotingConnection getRemotingConnection()
    {
-      checkClosed();
-      
+      return remotingConnection;
+   }
+   
+   public void removeChild(String key)
+   {
       children.remove(key);
    }
 
@@ -338,15 +187,15 @@ public class ClientConnectionImpl implements ClientConnection
 
    // Private --------------------------------------------------------------------------------------
    
-   private void checkClosed() throws IllegalStateException
+   private void checkClosed() throws MessagingException
    {
       if (closed)
       {
-         throw new IllegalStateException("Connection is closed");
+         throw new MessagingException(MessagingException.OBJECT_CLOSED, "Connection is closed");
       }
    }
    
-   private void closeChildren() throws JMSException
+   private void closeChildren() throws MessagingException
    {
       //We copy the set of children to prevent ConcurrentModificationException which would occur
       //when the child trues to remove itself from its parent
@@ -354,7 +203,6 @@ public class ClientConnectionImpl implements ClientConnection
       
       for (ClientSession session: childrenClone)
       {
-         session.closing();
          session.close(); 
       }
    }

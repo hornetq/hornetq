@@ -41,8 +41,10 @@ import javax.naming.Reference;
 
 import org.jboss.jms.client.api.ClientConnection;
 import org.jboss.jms.client.api.ClientConnectionFactory;
+import org.jboss.jms.exception.JMSExceptionHelper;
 import org.jboss.jms.referenceable.SerializableObjectRefAddr;
 import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.util.MessagingException;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -66,13 +68,21 @@ public class JBossConnectionFactory implements
    
    // Attributes -----------------------------------------------------------------------------------
    
-   protected ClientConnectionFactory delegate;
+   private ClientConnectionFactory connectionFactory;
+   
+   private String clientID;
+   
+   private int dupsOKBatchSize;
 
    // Constructors ---------------------------------------------------------------------------------
    
-   public JBossConnectionFactory(ClientConnectionFactory delegate)
+   public JBossConnectionFactory(ClientConnectionFactory connectionFactory, String clientID, int dupsOKBatchSize)
    {
-      this.delegate = delegate;      
+      this.connectionFactory = connectionFactory;     
+      
+      this.clientID = clientID;
+      
+      this.dupsOKBatchSize = dupsOKBatchSize;
    }
    
    // ConnectionFactory implementation -------------------------------------------------------------
@@ -171,12 +181,12 @@ public class JBossConnectionFactory implements
    
    public String toString()
    {
-      return "JBossConnectionFactory->" + delegate;
+      return "JBossConnectionFactory->" + connectionFactory;
    }
    
    public ClientConnectionFactory getDelegate()
    {
-      return delegate;
+      return connectionFactory;
    }
    
    // Package protected ----------------------------------------------------------------------------
@@ -187,9 +197,16 @@ public class JBossConnectionFactory implements
                                                       boolean isXA, int type)
       throws JMSException
    {
-      ClientConnection res = delegate.createConnection(username, password);
-
-      return new JBossConnection(res, type);
+      try
+      {
+         ClientConnection res = connectionFactory.createConnection(username, password);
+                    
+         return new JBossConnection(res, type, connectionFactory.getServerVersion(), clientID, dupsOKBatchSize);
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);     
+      }
    }
    
    // Private --------------------------------------------------------------------------------------

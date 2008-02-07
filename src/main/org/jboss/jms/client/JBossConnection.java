@@ -26,6 +26,7 @@ import javax.jms.ConnectionConsumer;
 import javax.jms.ConnectionMetaData;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
+import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.QueueConnection;
@@ -44,6 +45,12 @@ import javax.jms.XATopicSession;
 
 import org.jboss.jms.client.api.ClientConnection;
 import org.jboss.jms.client.api.ClientSession;
+import org.jboss.jms.client.api.FailureListener;
+import org.jboss.jms.client.impl.ClientConnectionInternal;
+import org.jboss.jms.exception.JMSExceptionHelper;
+import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.util.MessagingException;
+import org.jboss.messaging.util.Version;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -58,24 +65,50 @@ public class JBossConnection implements
 {
 
    // Constants ------------------------------------------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(JBossConnection.class);
+
 
    static final int TYPE_GENERIC_CONNECTION = 0;
+   
    static final int TYPE_QUEUE_CONNECTION = 1;
+   
    static final int TYPE_TOPIC_CONNECTION = 2;
-
+   
    // Static ---------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
 
    protected ClientConnection connection;
+   
    private int connectionType;
-
+   
+   private String clientID;
+   
+   private boolean justCreated = true;      
+   
+   private ConnectionMetaData metaData;
+   
+   private Version version;
+   
+   private ExceptionListener exceptionListener;
+   
+   private int dupsOKBatchSize;
+     
    // Constructors ---------------------------------------------------------------------------------
 
-   public JBossConnection(ClientConnection delegate, int connectionType)
+   public JBossConnection(ClientConnection connection, int connectionType, Version version,
+                          String clientID, int dupsOKBatchSize)
    {
-      this.connection = delegate;
+      this.connection = connection;
+      
       this.connectionType = connectionType;
+      
+      this.version = version;
+      
+      this.clientID = clientID;
+      
+      this.dupsOKBatchSize = dupsOKBatchSize;
    }
 
    // Connection implementation --------------------------------------------------------------------
@@ -87,50 +120,114 @@ public class JBossConnection implements
 
    public String getClientID() throws JMSException
    {
-      return connection.getClientID();
+      checkClosed();
+            
+      justCreated = false;
+      
+      return clientID;
    }
 
    public void setClientID(String clientID) throws JMSException
    {
-      connection.setClientID(clientID);
-   }
+      checkClosed();
+      
+      if (this.clientID != null)
+      {
+         throw new IllegalStateException("Client id has already been set");
+      }
+      
+      if (!justCreated)
+      {
+         throw new IllegalStateException("setClientID can only be called directly after the connection is created");
+      }
 
+      this.clientID = clientID;
+
+      justCreated = false;
+   }
+   
    public ConnectionMetaData getMetaData() throws JMSException
    {
-      return connection.getConnectionMetaData();
-   }
+      checkClosed();
+    
+      justCreated = false;
 
+      if (metaData == null)
+      {
+         metaData = new JBossConnectionMetaData(version);
+      }
+
+      return metaData;
+   }
+      
    public ExceptionListener getExceptionListener() throws JMSException
    {
-      return connection.getExceptionListener();
+      justCreated = false;
+      
+      return exceptionListener;
    }
 
    public void setExceptionListener(ExceptionListener listener) throws JMSException
    {
-      connection.setExceptionListener(listener);
+      try
+      {
+         if (listener == null)
+         {
+            connection.setFailureListener(null);                 
+         }
+         else
+         {
+            connection.setFailureListener(new JMSFailureListener());
+         }
+         
+         exceptionListener = listener;
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);     
+      }
+      
+      justCreated = false;
    }
 
    public void start() throws JMSException
    {
-      connection.start();
+      try
+      {
+         connection.start();
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);     
+      }
+      
+      justCreated = false;
    }
 
    public void stop() throws JMSException
    {
-      connection.stop();
+      try
+      {
+         connection.stop();
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);     
+      }
+      
+      justCreated = false;
    }
 
    public void close() throws JMSException
    {
+
       try
       {
-         connection.closing();
          connection.close();
-      } finally
+      }
+      catch (MessagingException e)
       {
-         // FIXME regardless of the pb when closing/close the connection, we must ensure
-         // the remoting connection is properly stopped
-         connection.getRemotingConnection().stop();
+         throw JMSExceptionHelper.convertFromMessagingException(e);     
       }
    }
 
@@ -139,8 +236,8 @@ public class JBossConnection implements
                                                       ServerSessionPool sessionPool,
                                                       int maxMessages) throws JMSException
    {
-      return connection.
-         createConnectionConsumer(destination, null, messageSelector, sessionPool, maxMessages);
+      //TODO
+      return null;
    }
 
    public ConnectionConsumer createDurableConnectionConsumer(Topic topic,
@@ -155,8 +252,9 @@ public class JBossConnection implements
          String msg = "Cannot create a durable connection consumer on a QueueConnection";
          throw new javax.jms.IllegalStateException(msg);
       }
-      return connection.createConnectionConsumer(topic, subscriptionName, messageSelector,
-                                               sessionPool, maxMessages);
+     
+      //TODO
+      return null;
    }
 
    // QueueConnection implementation ---------------------------------------------------------------
@@ -171,10 +269,11 @@ public class JBossConnection implements
    public ConnectionConsumer createConnectionConsumer(Queue queue, String messageSelector,
                                                       ServerSessionPool sessionPool,
                                                       int maxMessages) throws JMSException
-    {
-      return connection.
-         createConnectionConsumer(queue, null, messageSelector, sessionPool, maxMessages);
-    }
+   {
+      //TODO
+      
+      return null;
+   }
 
    // TopicConnection implementation ---------------------------------------------------------------
 
@@ -189,8 +288,9 @@ public class JBossConnection implements
                                                       ServerSessionPool sessionPool,
                                                       int maxMessages) throws JMSException
    {
-      return connection.
-         createConnectionConsumer(topic, null, messageSelector, sessionPool, maxMessages);
+      //TODO
+      
+      return null;
    }
 
    // XAConnection implementation ------------------------------------------------------------------
@@ -221,29 +321,25 @@ public class JBossConnection implements
 
    // Public ---------------------------------------------------------------------------------------
 
-   /* For testing only */
-   public String getRemotingClientSessionID()
-   {
-      return connection.getRemotingConnection().getSessionID();
-   }
-
-   public ClientConnection getDelegate()
+   public ClientConnection getConnection()
    {
       return connection;
-   }
-
-   /**
-    * Convenience method.
-    */
-   public int getServerID()
-   {
-      
-      return connection.getServerID(); 
    }
 
    public String toString()
    {
       return "JBossConnection->" + connection;
+   }
+   
+   //For testing only
+   public int getServerID()
+   {
+      return ((ClientConnectionInternal)connection).getServerID();
+   }
+   
+   public String getRemotingClientSessionID()
+   {
+      return ((ClientConnectionInternal)connection).getRemotingConnection().getSessionID();
    }
 
    // Package protected ----------------------------------------------------------------------------
@@ -257,13 +353,79 @@ public class JBossConnection implements
       {
          acknowledgeMode = Session.SESSION_TRANSACTED;
       }
-
-      ClientSession session =  connection.createClientSession(transacted, acknowledgeMode, isXA);
       
-      return new JBossSession(transacted, acknowledgeMode, session, type);
+      try
+      {
+         int ackBatchSize;
+         
+         if (transacted || acknowledgeMode == Session.CLIENT_ACKNOWLEDGE)
+         {
+            ackBatchSize = -1; //Infinite
+         }
+         else if (acknowledgeMode == Session.DUPS_OK_ACKNOWLEDGE)
+         {
+            ackBatchSize = dupsOKBatchSize;
+         }
+         else
+         {
+            //Auto ack
+            ackBatchSize = 1;
+         }
+
+         boolean autoCommitSends = false;
+
+         boolean autoCommitAcks = false;
+
+         if (!transacted)
+         {
+            if (acknowledgeMode == Session.AUTO_ACKNOWLEDGE || acknowledgeMode == Session.DUPS_OK_ACKNOWLEDGE)
+            {
+               autoCommitSends = true;
+
+               autoCommitAcks = true;
+            }
+            else if (acknowledgeMode == Session.CLIENT_ACKNOWLEDGE)
+            {
+               autoCommitSends = true;
+
+               autoCommitAcks = false;
+            }
+         }
+
+         ClientSession session =  connection.createClientSession(isXA, autoCommitSends, autoCommitAcks, ackBatchSize);
+
+         justCreated = false;
+         
+         return new JBossSession(this, transacted, isXA, acknowledgeMode, session, type);
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);     
+      }            
    }
 
    // Private --------------------------------------------------------------------------------------
+   
+   private void checkClosed() throws JMSException
+   {
+      if (connection.isClosed())
+      {
+         throw new IllegalStateException("Connection is closed");
+      }
+   }
 
    // Inner classes --------------------------------------------------------------------------------
+   
+   private class JMSFailureListener implements FailureListener
+   {
+      public void onFailure(MessagingException me)
+      {
+         JMSException je = new JMSException(me.toString());
+         
+         je.initCause(me);
+         
+         exceptionListener.onException(je);
+      }
+      
+   }
 }

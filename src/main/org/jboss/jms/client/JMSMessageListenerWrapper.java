@@ -21,15 +21,14 @@
    */
 package org.jboss.jms.client;
 
-import javax.jms.JMSException;
 import javax.jms.MessageListener;
 import javax.jms.Session;
 
-import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.client.api.MessageHandler;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.util.MessagingException;
 
 /**
  * 
@@ -45,8 +44,6 @@ public class JMSMessageListenerWrapper implements MessageHandler
    private JBossSession session;
    
    private MessageListener listener;
-   
-   private int ackMode;
    
    private boolean transactedOrClientAck;
    
@@ -82,9 +79,9 @@ public class JMSMessageListenerWrapper implements MessageHandler
       {
          try
          {
-            session.getCoreSession().delivered();
+            session.getCoreSession().acknowledge();
          }
-         catch (JMSException e)
+         catch (MessagingException e)
          {
             log.error("Failed to deliver message", e);
          }
@@ -122,10 +119,10 @@ public class JMSMessageListenerWrapper implements MessageHandler
             //We don't want to call this if the connection/session was closed from inside onMessage
             if (!session.getCoreSession().isClosed())
             {
-               session.getCoreSession().delivered();
+               session.getCoreSession().acknowledge();
             }
          }
-         catch (JMSException e)
+         catch (MessagingException e)
          {
             log.error("Failed to deliver message", e);
          }

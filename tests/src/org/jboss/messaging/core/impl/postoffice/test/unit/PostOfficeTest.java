@@ -27,8 +27,6 @@ import java.util.Map;
 
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.Binding;
-import org.jboss.messaging.core.Condition;
-import org.jboss.messaging.core.DestinationType;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.PersistenceManager;
@@ -37,7 +35,6 @@ import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.QueueFactory;
 import org.jboss.messaging.core.Transaction;
 import org.jboss.messaging.core.impl.BindingImpl;
-import org.jboss.messaging.core.impl.ConditionImpl;
 import org.jboss.messaging.core.impl.QueueFactoryImpl;
 import org.jboss.messaging.core.impl.QueueImpl;
 import org.jboss.messaging.core.impl.TransactionImpl;
@@ -74,7 +71,7 @@ public class PostOfficeTest extends UnitTestCase
       
       final int nodeID = 21;
       
-      PostOffice po = new PostOfficeImpl(nodeID, pm, qf);
+      PostOffice po = new PostOfficeImpl(nodeID, pm, qf, false);
       
       final long id = 324;
       final String name = "wibb22";
@@ -87,10 +84,9 @@ public class PostOfficeTest extends UnitTestCase
       
       EasyMock.expect(qf.createQueue(-1, name, filter, durable, temporary)).andReturn(queue);
             
-      final Condition condition = new ConditionImpl(DestinationType.QUEUE, "wibble");
-      final boolean allNodes = false;
-      
-      Binding expected = new BindingImpl(nodeID, condition, queue, allNodes);
+      final String condition = "queue.wibble";
+
+      Binding expected = new BindingImpl(nodeID, condition, queue);
       
       pm.addBinding(EasyMock.eq(expected));
       
@@ -98,7 +94,7 @@ public class PostOfficeTest extends UnitTestCase
       
       EasyMock.replay(pm);
       
-      po.addQueue(condition, name, filter, durable, temporary, allNodes);
+      po.addBinding(condition, name, filter, durable, temporary);
       
       EasyMock.verify(qf);
       
@@ -118,7 +114,7 @@ public class PostOfficeTest extends UnitTestCase
       
       EasyMock.replay(pm);
       
-      po.addQueue(condition, name, filter, durable2, temporary, allNodes);
+      po.addBinding(condition, name, filter, durable2, temporary);
       
       EasyMock.verify(qf);
       
@@ -133,7 +129,7 @@ public class PostOfficeTest extends UnitTestCase
       
       final int nodeID = 21;
       
-      PostOffice po = new PostOfficeImpl(nodeID, pm, qf);
+      PostOffice po = new PostOfficeImpl(nodeID, pm, qf, false);
       
       final long id = 324;
       final String name = "wibb22";
@@ -146,10 +142,9 @@ public class PostOfficeTest extends UnitTestCase
       
       EasyMock.expect(qf.createQueue(-1, name, filter, durable, temporary)).andReturn(queue);
             
-      final Condition condition = new ConditionImpl(DestinationType.QUEUE, "wibble");
-      final boolean allNodes = false;
-      
-      Binding expected = new BindingImpl(nodeID, condition, queue, allNodes);
+      final String condition = "queue.wibble";
+ 
+      Binding expected = new BindingImpl(nodeID, condition, queue);
       
       pm.addBinding(EasyMock.eq(expected));
       
@@ -159,9 +154,9 @@ public class PostOfficeTest extends UnitTestCase
       
       EasyMock.replay(pm);
       
-      po.addQueue(condition, name, filter, durable, temporary, allNodes);
+      po.addBinding(condition, name, filter, durable, temporary);
       
-      po.removeQueue(condition, name, allNodes);
+      po.removeBinding(name);
       
       EasyMock.verify(qf);
       
@@ -181,9 +176,9 @@ public class PostOfficeTest extends UnitTestCase
       
       EasyMock.replay(pm);
       
-      po.addQueue(condition, name, filter, durable2, temporary, allNodes);
+      po.addBinding(condition, name, filter, durable2, temporary);
       
-      po.removeQueue(condition, name, allNodes);
+      po.removeBinding(name);
       
       EasyMock.verify(qf);
       
@@ -198,19 +193,19 @@ public class PostOfficeTest extends UnitTestCase
       
       final int nodeID = 21;
       
-      PostOffice po = new PostOfficeImpl(nodeID, pm, qf);
+      PostOffice po = new PostOfficeImpl(nodeID, pm, qf, false);
       
-      final Condition condition1 = new ConditionImpl(DestinationType.QUEUE, "wibble");      
+      final String condition1 = "queue.wibble";      
                 
-      po.addQueue(condition1, "queue1", null, false, false, false);      
-      Map<Condition, List<Binding>> mappings = po.getMappings();      
+      po.addBinding(condition1, "queue1", null, false, false);      
+      Map<String, List<Binding>> mappings = po.getMappings();      
       assertEquals(1, mappings.size());
       
-      po.addQueue(condition1, "queue2", null, false, false, false);     
+      po.addBinding(condition1, "queue2", null, false, false);     
       mappings = po.getMappings();      
       assertEquals(1, mappings.size());
       
-      po.addQueue(condition1, "queue3", null, false, false, false); 
+      po.addBinding(condition1, "queue3", null, false, false); 
       mappings = po.getMappings();      
       assertEquals(1, mappings.size());
       
@@ -230,43 +225,43 @@ public class PostOfficeTest extends UnitTestCase
       Queue queue3 = binding3.getQueue();
       assertEquals("queue3", queue3.getName());
       
-      final Condition condition2 = new ConditionImpl(DestinationType.QUEUE, "wibble2"); 
+      final String condition2 = "queue.wibble2"; 
       
-      po.addQueue(condition2, "queue4", null, false, false, false);       
+      po.addBinding(condition2, "queue4", null, false, false);       
       mappings = po.getMappings();      
       assertEquals(2, mappings.size());
       
-      po.addQueue(condition2, "queue5", null, false, false, false); 
+      po.addBinding(condition2, "queue5", null, false, false); 
       mappings = po.getMappings();      
       assertEquals(2, mappings.size());
       
-      final Condition condition3 = new ConditionImpl(DestinationType.TOPIC, "wibblexyz"); 
+      final String condition3 = "topic.wibblexyz"; 
       
-      po.addQueue(condition3, "queue6", null, false, false, false);       
+      po.addBinding(condition3, "queue6", null, false, false);       
       mappings = po.getMappings();      
       assertEquals(3, mappings.size());
       
-      po.removeQueue(condition3, "queue6", false);
+      po.removeBinding("queue6");
       mappings = po.getMappings();      
       assertEquals(2, mappings.size());
       
-      po.removeQueue(condition2, "queue4", false);
+      po.removeBinding("queue4");
       mappings = po.getMappings();      
       assertEquals(2, mappings.size());
       
-      po.removeQueue(condition2, "queue5", false);
+      po.removeBinding("queue5");
       mappings = po.getMappings();      
       assertEquals(1, mappings.size());
       
-      po.removeQueue(condition1, "queue1", false);
+      po.removeBinding("queue1");
       mappings = po.getMappings();      
       assertEquals(1, mappings.size());
       
-      po.removeQueue(condition1, "queue2", false);
+      po.removeBinding("queue2");
       mappings = po.getMappings();      
       assertEquals(1, mappings.size());
       
-      po.removeQueue(condition1, "queue3", false);
+      po.removeBinding("queue3");
       mappings = po.getMappings();      
       assertEquals(0, mappings.size());      
    }
@@ -277,13 +272,13 @@ public class PostOfficeTest extends UnitTestCase
       
       QueueFactory qf = new QueueFactoryImpl();
       
-      PostOffice po = new PostOfficeImpl(1, pm, qf);
+      PostOffice po = new PostOfficeImpl(1, pm, qf, false);
       
       Message message = this.generateMessage(1);
       
       try
       {
-         po.route(new ConditionImpl(DestinationType.QUEUE, "eek"), message);
+         po.route("queue.eek", message);
          fail("Should throw exception");
       }
       catch (NullPointerException e)
@@ -298,11 +293,11 @@ public class PostOfficeTest extends UnitTestCase
       
       QueueFactory qf = new QueueFactoryImpl();
       
-      PostOffice po = new PostOfficeImpl(1, pm, qf);
+      PostOffice po = new PostOfficeImpl(1, pm, qf, false);
       
-      Condition condition = new ConditionImpl(DestinationType.QUEUE, "queue1");
+      String condition = "queue.queue1";
       
-      po.addQueue(condition, "queue1", null, false, false, false);
+      po.addBinding(condition, "queue1", null, false, false);
       
       Message message = this.generateMessage(1);
       
@@ -312,7 +307,7 @@ public class PostOfficeTest extends UnitTestCase
       
       msgs.add(message);
       
-      po.route(new ConditionImpl(DestinationType.QUEUE, "queue1"), message);
+      po.route("queue.queue1", message);
       
       if (message.getNumDurableReferences() != 0)
       {
@@ -322,7 +317,7 @@ public class PostOfficeTest extends UnitTestCase
       
       
       
-      Map<Condition, List<Binding>> mappings = po.getMappings();
+      Map<String, List<Binding>> mappings = po.getMappings();
       
       Binding binding = mappings.get(condition).get(0);
       

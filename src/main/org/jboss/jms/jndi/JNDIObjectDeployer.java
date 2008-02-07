@@ -62,8 +62,8 @@ public class JNDIObjectDeployer extends Deployer
    MessagingServer messagingServer;
 
    private static final String CLIENTID_ELEMENT = "client-id";
+   private static final String DUPS_OK_BATCH_SIZE_ELEMENT = "dups-ok-batch-size";
    private static final String PREFETECH_SIZE_ELEMENT = "prefetch-size";
-   private static final String DUPS_OK_BATCH_SIZE = "dups-ok-batch-size";
    private static final String SUPPORTS_FAILOVER = "supports-failover";
    private static final String SUPPORTS_LOAD_BALANCING = "supports-load-balancing";
    private static final String LOAD_BALANCING_FACTORY = "load-balancing-factory";
@@ -152,7 +152,11 @@ public class JNDIObjectDeployer extends Deployer
             try
             {
                initialContext.lookup(jndiName);
-               throw new InvalidDestinationException("Destination " + jndiName + " already exists");
+               //throw new InvalidDestinationException("Destination " + jndiName + " already exists");
+               
+               log.warn("Destination " + jndiName + " already exists");
+               
+               return;
             }
             catch (NameNotFoundException e)
             {
@@ -188,9 +192,9 @@ public class JNDIObjectDeployer extends Deployer
 
          NodeList attributes = node.getChildNodes();
          boolean cfStrictTck = false;
-         int prefetchSize = 150;
-         int dupsOKBatchSize = 1000;
+         int prefetchSize = 150;  
          String clientID = null;
+         int dupsOKBatchSize = 1000;
          for (int j = 0; j < attributes.getLength(); j++)
          {
             if (STRICT_TCK.equalsIgnoreCase(attributes.item(j).getNodeName()))
@@ -205,7 +209,7 @@ public class JNDIObjectDeployer extends Deployer
             {
                clientID = attributes.item(j).getTextContent();
             }
-            if (DUPS_OK_BATCH_SIZE.equalsIgnoreCase(attributes.item(j).getNodeName()))
+            else if (this.DUPS_OK_BATCH_SIZE_ELEMENT.equalsIgnoreCase(attributes.item(j).getNodeName()))
             {
                dupsOKBatchSize = Integer.parseInt(attributes.item(j).getTextContent().trim());
             }
@@ -222,34 +226,28 @@ public class JNDIObjectDeployer extends Deployer
                //setLoadBalancingFactory(attributes.item(j).getTextContent().trim());
             }
          }
-//       The server peer strict setting overrides the connection factory
+
          boolean useStrict = messagingServer.getConfiguration().isStrictTck() || cfStrictTck;
 
          ClientConnectionFactoryImpl delegate =
                  new ClientConnectionFactoryImpl(messagingServer.getConfiguration().getMessagingServerID(),
-                         remotingConfig, version, useStrict, prefetchSize, dupsOKBatchSize, clientID);
+                         remotingConfig, version, useStrict, prefetchSize);
 
-         log.debug(this + " created local delegate " + delegate);
+         log.debug(this + " created local connectionFactory " + delegate);
 
-         // Registering with the dispatcher should always be the last thing otherwise a client could
-         // use a partially initialised object
-
-         //messagingServer.getMinaService().getDispatcher().register(endpoint.newHandler());
-         return new JBossConnectionFactory(delegate);
+         return new JBossConnectionFactory(delegate, clientID, dupsOKBatchSize);
       }
       else if (node.getNodeName().equals(QUEUE_NODE_NAME))
       {
          String queueName = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
          messagingServer.createQueue(queueName);
          return new JBossQueue(queueName);
-
       }
       else if (node.getNodeName().equals(TOPIC_NODE_NAME))
       {
          String topicName = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
          messagingServer.createTopic(topicName);
          return new JBossTopic(topicName);
-
       }
       return null;
    }

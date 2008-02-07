@@ -9,10 +9,9 @@ package org.jboss.messaging.core.remoting;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import javax.jms.JMSException;
-
-import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
+import org.jboss.jms.client.api.FailureListener;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.util.MessagingException;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -43,18 +42,17 @@ public interface Client
     *         <code>false</code>) or <code>null</code> (if
     *         <code>oneWay</code> was set to <code>true</code>)
     * 
-    * @throws JMSException
+    * @throws MessagingException
     *            if an exception has occured on the server
     * @throws IOException
     *            if an exception has occured on the network
     */
    AbstractPacket send(AbstractPacket packet, boolean oneWay)
-         throws JMSException, IOException;
+         throws Exception;
 
    void setBlockingRequestTimeout(int timeout, TimeUnit unit);
 
-   void addConnectionListener(
-         final ConsolidatedRemotingConnectionListener listener);
-
-   void removeConnectionListener(ConsolidatedRemotingConnectionListener listener);
+   void setFailureListener(final FailureListener listener);
+   
+   FailureListener getFailureListener();
 }

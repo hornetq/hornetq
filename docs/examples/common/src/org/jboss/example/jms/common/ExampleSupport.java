@@ -39,7 +39,7 @@ public abstract class ExampleSupport
       
       JBossConnection jbconn = (JBossConnection)conn;
       
-      ClientConnection del = jbconn.getDelegate();
+      ClientConnection del = jbconn.getConnection();
       
       return del.getServerID();
    }

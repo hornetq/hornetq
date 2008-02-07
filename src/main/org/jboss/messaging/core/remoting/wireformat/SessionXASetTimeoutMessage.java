@@ -27,7 +27,7 @@ public class SessionXASetTimeoutMessage extends AbstractPacket
 
    public SessionXASetTimeoutMessage(int timeoutSeconds)
    {
-      super(PacketType.MSG_XA_SET_TIMEOUT);
+      super(PacketType.SESS_XA_SET_TIMEOUT);
       
       this.timeoutSeconds = timeoutSeconds;
    }

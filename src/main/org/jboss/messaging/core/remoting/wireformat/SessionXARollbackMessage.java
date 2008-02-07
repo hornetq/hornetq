@@ -28,7 +28,7 @@ public class SessionXARollbackMessage extends AbstractPacket
 
    public SessionXARollbackMessage(Xid xid)
    {
-      super(PacketType.MSG_XA_ROLLBACK);
+      super(PacketType.SESS_XA_ROLLBACK);
       
       this.xid = xid;
    }

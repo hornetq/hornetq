@@ -7,7 +7,7 @@
 package org.jboss.messaging.core.remoting.wireformat;
 
 import static org.jboss.messaging.core.remoting.Assert.assertValidID;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_CREATECONNECTION;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.CREATECONNECTION_RESP;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -29,7 +29,7 @@ public class CreateConnectionResponse extends AbstractPacket
 
    public CreateConnectionResponse(String connectionID)
    {
-      super(RESP_CREATECONNECTION);
+      super(CREATECONNECTION_RESP);
 
       assertValidID(connectionID);
 

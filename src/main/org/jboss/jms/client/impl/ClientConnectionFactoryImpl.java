@@ -23,18 +23,15 @@ package org.jboss.jms.client.impl;
 
 import java.io.Serializable;
 
-import javax.jms.JMSException;
-
 import org.jboss.jms.client.api.ClientConnection;
 import org.jboss.jms.client.api.ClientConnectionFactory;
 import org.jboss.jms.client.plugin.LoadBalancingFactory;
-import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
 import org.jboss.jms.client.remoting.MessagingRemotingConnection;
-import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.util.MessagingException;
 import org.jboss.messaging.util.Version;
 
 /**
@@ -69,17 +66,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
  
    private int serverID;
    
-   private String clientID;
-
    private int prefetchSize = 150;
-
-   private boolean supportsFailover;
-
-   private boolean supportsLoadBalancing;
-
-   private LoadBalancingFactory loadBalancingFactory;
-
-   private int dupsOKBatchSize = 1000;
 
    private boolean strictTck;
    
@@ -89,15 +76,13 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
 
    public ClientConnectionFactoryImpl(int serverID,
          RemotingConfiguration remotingConfig, Version serverVersion, boolean strictTck,
-         int prefetchSize, int dupsOKBatchSize, String clientID)
+         int prefetchSize)
    {
       this.serverID = serverID;
       this.remotingConfig = remotingConfig;
       this.serverVersion = serverVersion;
       this.strictTck = strictTck;
       this.prefetchSize = prefetchSize;
-      this.dupsOKBatchSize = dupsOKBatchSize;
-      this.clientID = clientID;
    }
 
    public ClientConnectionFactoryImpl(RemotingConfiguration remotingConfig)
@@ -109,12 +94,12 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
    {
    }
    
-   public ClientConnection createConnection() throws JMSException
+   public ClientConnection createConnection() throws MessagingException
    {
       return createConnection(null, null);
    }
    
-   public ClientConnection createConnection(String username, String password) throws JMSException
+   public ClientConnection createConnection(String username, String password) throws MessagingException
    {
       Version version = getVersionToUse(serverVersion);
       
@@ -131,20 +116,14 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
          
          CreateConnectionRequest request =
             new CreateConnectionRequest(v, sessionID, JMSClientVMIdentifier.instance, username, password,
-                  prefetchSize, dupsOKBatchSize, clientID);
+                  prefetchSize);
          
          CreateConnectionResponse response =
             (CreateConnectionResponse)remotingConnection.send(id, request);
          
          ClientConnectionImpl connection =
-            new ClientConnectionImpl(response.getConnectionID(), serverID, strictTck, version, remotingConnection);
-         
-         //FIXME - get rid of this stupid ConsolidatedThingamajug bollocks
-         
-         ConsolidatedRemotingConnectionListener listener = new ConsolidatedRemotingConnectionListener(connection);
-         
-         remotingConnection.addConnectionListener(listener);
-         
+            new ClientConnectionImpl(response.getConnectionID(), serverID, strictTck, remotingConnection);
+
          return connection;
       }
       catch (Throwable t)
@@ -160,11 +139,18 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
             }
          }
          
-         //TODO - we will sort out exception handling further in the refactoring
-         
-         log.error("Failed to start connection ", t);
-         
-         throw new MessagingJMSException("Failed to start connection", t);
+         if (t instanceof MessagingException)
+         {
+            throw (MessagingException)t;
+         }
+         else
+         {
+            MessagingException me = new MessagingException(MessagingException.INTERNAL_ERROR, "Failed to start connection");
+            
+            me.initCause(t);
+            
+            throw me;
+         }
       }
    }
    
@@ -173,11 +159,6 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
    public RemotingConfiguration getRemotingConfiguration()
    {
       return remotingConfig;
-   }
-   
-   public int getServerID()
-   {
-      return serverID;
    }
    
    public Version getServerVersion()

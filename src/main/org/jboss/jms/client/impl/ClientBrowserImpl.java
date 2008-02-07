@@ -21,22 +21,18 @@
   */
 package org.jboss.jms.client.impl;
 
-import javax.jms.IllegalStateException;
-import javax.jms.JMSException;
-
 import org.jboss.jms.client.api.ClientBrowser;
-import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.client.remoting.MessagingRemotingConnection;
 import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.remoting.wireformat.BrowserHasNextMessageRequest;
-import org.jboss.messaging.core.remoting.wireformat.BrowserHasNextMessageResponse;
-import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageBlockRequest;
-import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageBlockResponse;
-import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageRequest;
-import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageResponse;
-import org.jboss.messaging.core.remoting.wireformat.BrowserResetMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionBrowserHasNextMessageMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionBrowserHasNextMessageResponseMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionBrowserNextMessageBlockMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionBrowserNextMessageBlockResponseMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionBrowserNextMessageMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionBrowserNextMessageResponseMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionBrowserResetMessage;
 import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
-import org.jboss.messaging.core.remoting.wireformat.ClosingMessage;
+import org.jboss.messaging.util.MessagingException;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -55,7 +51,7 @@ public class ClientBrowserImpl implements ClientBrowser
 
    private String id;
    
-	private ClientSession session;
+	private ClientSessionInternal session;
 	
 	private MessagingRemotingConnection remotingConnection;
 	
@@ -65,7 +61,7 @@ public class ClientBrowserImpl implements ClientBrowser
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientBrowserImpl(MessagingRemotingConnection remotingConnection, ClientSession session, String id)
+   public ClientBrowserImpl(MessagingRemotingConnection remotingConnection, ClientSessionInternal session, String id)
    {
       this.remotingConnection = remotingConnection;
       
@@ -74,9 +70,9 @@ public class ClientBrowserImpl implements ClientBrowser
       this.session = session;
    }
 
-   // Closeable implementation ---------------------------------------------------------------------
-
-   public synchronized void close() throws JMSException
+   // ClientBrowser implementation -----------------------------------------------------------------
+   
+   public synchronized void close() throws MessagingException
    {
       if (closed)
       {
@@ -95,49 +91,44 @@ public class ClientBrowserImpl implements ClientBrowser
       }
    }
 
-   public synchronized void closing() throws JMSException
+   public boolean isClosed()
    {
-      if (closed)
-      {
-         return;
-      }
-      
-      remotingConnection.send(id, new ClosingMessage());
+      return closed;
    }
 
-   public void reset() throws JMSException
+   public void reset() throws MessagingException
    {
       checkClosed();
       
-      remotingConnection.send(id, new BrowserResetMessage());
+      remotingConnection.send(id, new SessionBrowserResetMessage());
    }
 
-   public boolean hasNextMessage() throws JMSException
+   public boolean hasNextMessage() throws MessagingException
    {
       checkClosed();
       
-      BrowserHasNextMessageResponse response =
-         (BrowserHasNextMessageResponse)remotingConnection.send(id, new BrowserHasNextMessageRequest());
+      SessionBrowserHasNextMessageResponseMessage response =
+         (SessionBrowserHasNextMessageResponseMessage)remotingConnection.send(id, new SessionBrowserHasNextMessageMessage());
       
       return response.hasNext();
    }
 
-   public Message nextMessage() throws JMSException
+   public Message nextMessage() throws MessagingException
    {
       checkClosed();
       
-      BrowserNextMessageResponse response =
-         (BrowserNextMessageResponse)remotingConnection.send(id, new BrowserNextMessageRequest());
+      SessionBrowserNextMessageResponseMessage response =
+         (SessionBrowserNextMessageResponseMessage)remotingConnection.send(id, new SessionBrowserNextMessageMessage());
       
       return response.getMessage();
    }
 
-   public Message[] nextMessageBlock(int maxMessages) throws JMSException
+   public Message[] nextMessageBlock(int maxMessages) throws MessagingException
    {
       checkClosed();
       
-      BrowserNextMessageBlockResponse response =
-         (BrowserNextMessageBlockResponse)remotingConnection.send(id, new BrowserNextMessageBlockRequest(maxMessages));
+      SessionBrowserNextMessageBlockResponseMessage response =
+         (SessionBrowserNextMessageBlockResponseMessage)remotingConnection.send(id, new SessionBrowserNextMessageBlockMessage(maxMessages));
       return response.getMessages();
    }
 
@@ -149,11 +140,11 @@ public class ClientBrowserImpl implements ClientBrowser
 
    // Private --------------------------------------------------------------------------------------
    
-   private void checkClosed() throws IllegalStateException
+   private void checkClosed() throws MessagingException
    {
       if (closed)
       {
-         throw new IllegalStateException("Browser is closed");
+         throw new MessagingException(MessagingException.OBJECT_CLOSED, "Browser is closed");
       }
    }
 

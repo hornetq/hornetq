@@ -39,8 +39,7 @@ import org.jboss.messaging.util.Streamable;
  */
 public interface Message extends Streamable
 {
-   //FIXME - temp
-   public static final String TEMP_DEST_HEADER_NAME = "JMSDestination";
+   public static final String HDR_ACTUAL_EXPIRY_TIME = "JBMActualExpiryTime";
    
    /**    
     * @return The unique id of the message

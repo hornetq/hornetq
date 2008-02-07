@@ -600,10 +600,10 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    }
 
 
-   public void setDefaultRedeliveryDelay(long delay) throws Exception
-   {
-      server.setDefaultRedeliveryDelay(delay);
-   }
+//   public void setDefaultRedeliveryDelay(long delay) throws Exception
+//   {
+//      server.setDefaultRedeliveryDelay(delay);
+//   }
 
    public InitialContext getInitialContext() throws Exception
    {

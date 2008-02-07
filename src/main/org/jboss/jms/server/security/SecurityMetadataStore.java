@@ -21,21 +21,20 @@
   */
 package org.jboss.jms.server.security;
 
-import org.jboss.jms.server.SecurityStore;
-import org.jboss.messaging.core.Destination;
-import org.jboss.messaging.core.DestinationType;
-import org.jboss.messaging.core.MessagingServer;
-import org.jboss.messaging.util.HierarchicalRepository;
-import org.jboss.messaging.util.Logger;
-import org.jboss.security.AuthenticationManager;
-import org.jboss.security.RealmMapping;
-import org.jboss.security.SimplePrincipal;
-
-import javax.jms.JMSSecurityException;
-import javax.security.auth.Subject;
 import java.security.Principal;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.security.auth.Subject;
+
+import org.jboss.jms.server.SecurityStore;
+import org.jboss.messaging.core.MessagingServer;
+import org.jboss.messaging.util.HierarchicalRepository;
+import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.util.MessagingException;
+import org.jboss.security.AuthenticationManager;
+import org.jboss.security.RealmMapping;
+import org.jboss.security.SimplePrincipal;
 
 /**
  * A security metadate store for JMS. Stores security information for destinations and delegates
@@ -55,8 +54,6 @@ public class SecurityMetadataStore implements SecurityStore
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(SecurityMetadataStore.class);
-
-   public static final String SUCKER_USER = "JBM.SUCKER";
 
    public static final String DEFAULT_SUCKER_USER_PASSWORD = "CHANGE ME!!";
 
@@ -84,7 +81,7 @@ public class SecurityMetadataStore implements SecurityStore
    // SecurityManager implementation --------------------------------
 
 
-   public Subject authenticate(String user, String password) throws JMSSecurityException
+   public Subject authenticate(String user, String password) throws MessagingException
    {
       if (trace) { log.trace("authenticating user " + user); }
 
@@ -97,23 +94,8 @@ public class SecurityMetadataStore implements SecurityStore
 
       Subject subject = new Subject();
 
-      boolean authenticated = false;
-
-      if (SUCKER_USER.equals(user))
-      {
-      	if (trace) { log.trace("Authenticating sucker user"); }
-
-      	checkDefaultSuckerPassword(password);
-
-      	// The special user SUCKER_USER is used for creating internal connections that suck messages between nodes
-
-      	authenticated = suckerPassword.equals(password);
-      }
-      else
-      {
-      	authenticated = authenticationManager.isValid(principal, passwordChars, subject);
-      }
-
+      boolean authenticated = authenticationManager.isValid(principal, passwordChars, subject);
+      
       if (authenticated)
       {
          // Warning! This "taints" thread local. Make sure you pop it off the stack as soon as
@@ -123,24 +105,15 @@ public class SecurityMetadataStore implements SecurityStore
       }
       else
       {
-         throw new JMSSecurityException("User " + user + " is NOT authenticated");
+         throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "User " + user + " is NOT authenticated");
       }
    }
 
-   public boolean authorize(String user, Destination destination, CheckType checkType)
+   public boolean authorize(String user, String destination, CheckType checkType)
    {
-      if (trace) { log.trace("authorizing user " + user + " for destination " + destination.getName()); }
+      if (trace) { log.trace("authorizing user " + user + " for destination " + destination); }
 
-      if (SUCKER_USER.equals(user))
-      {
-      	//The special user SUCKER_USER is used for creating internal connections that suck messages between nodes
-      	//It has automatic read/write access to all destinations
-      	return (checkType.equals(CheckType.READ) || checkType.equals(CheckType.WRITE));
-      }
-      StringBuilder match = new StringBuilder(destination.getType().equals(DestinationType.QUEUE) ? "queues/" : "topics/")
-              .append(destination.getName());
-
-      HashSet<Role> roles = securityRepository.getMatch(match.toString());
+      HashSet<Role> roles = securityRepository.getMatch(destination);
 
       Principal principal = user == null ? null : new SimplePrincipal(user);
       Set rolePrincipals = getRolePrincipals(checkType, roles);

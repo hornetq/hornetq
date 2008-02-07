@@ -31,8 +31,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.jms.JMSException;
-
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.messaging.core.remoting.ConnectionExceptionListener;
@@ -277,11 +275,10 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionExc
             try
             {
       			log.debug("clearing up state for connection " + sce);
-               sce.closing();
                sce.close();
                log.debug("cleared up state for connection " + sce);
             }
-            catch (JMSException e)
+            catch (Exception e)
             {
                log.error("Failed to close connection", e);
             }          

@@ -23,7 +23,7 @@ public class SessionXARollbackMessageCodec extends AbstractPacketCodec<SessionXA
 
    public SessionXARollbackMessageCodec()
    {
-      super(PacketType.MSG_XA_ROLLBACK);
+      super(PacketType.SESS_XA_ROLLBACK);
    }
 
    // Public --------------------------------------------------------

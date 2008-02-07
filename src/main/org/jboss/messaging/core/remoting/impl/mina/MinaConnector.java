@@ -16,7 +16,6 @@ import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.add
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -28,7 +27,7 @@ import org.apache.mina.common.IoService;
 import org.apache.mina.common.IoServiceListener;
 import org.apache.mina.common.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
-import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
+import org.jboss.jms.client.api.FailureListener;
 import org.jboss.messaging.core.remoting.ConnectionExceptionListener;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.NIOConnector;
@@ -36,8 +35,9 @@ import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
-import org.jboss.messaging.core.remoting.wireformat.SetSessionIDMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionSetIDMessage;
 import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.util.MessagingException;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -62,7 +62,7 @@ public class MinaConnector implements NIOConnector, ConnectionExceptionNotifier
    private IoSession session;
 
    // FIXME clean up this listener mess
-   private Map<ConsolidatedRemotingConnectionListener, IoServiceListener> listeners = new HashMap<ConsolidatedRemotingConnectionListener, IoServiceListener>();
+   private Map<FailureListener, IoServiceListener> listeners = new HashMap<FailureListener, IoServiceListener>();
    private ConnectionExceptionListener listener;
 
    // Static --------------------------------------------------------
@@ -117,7 +117,7 @@ public class MinaConnector implements NIOConnector, ConnectionExceptionNotifier
          throw new IOException("Cannot connect to " + address.toString());
       }
       this.session = future.getSession();
-      AbstractPacket packet = new SetSessionIDMessage(Long.toString(session
+      AbstractPacket packet = new SessionSetIDMessage(Long.toString(session
             .getId()));
       session.write(packet);
 
@@ -144,8 +144,7 @@ public class MinaConnector implements NIOConnector, ConnectionExceptionNotifier
       return closed;
    }
 
-   public void addConnectionListener(
-         final ConsolidatedRemotingConnectionListener listener)
+   public void addFailureListener(final FailureListener listener)
    {
       assert listener != null;
       assert connector != null;
@@ -158,8 +157,7 @@ public class MinaConnector implements NIOConnector, ConnectionExceptionNotifier
          log.trace("added listener " + listener + " to " + this);
    }
 
-   public void removeConnectionListener(
-         ConsolidatedRemotingConnectionListener listener)
+   public void removeFailureListener(FailureListener listener)
    {
       assert listener != null;
       assert connector != null;
@@ -190,11 +188,11 @@ public class MinaConnector implements NIOConnector, ConnectionExceptionNotifier
       if (listener != null)
          listener.handleConnectionException(cause, remoteSessionID);
       
-      Iterator<ConsolidatedRemotingConnectionListener> set = listeners.keySet().iterator();
-      while (set.hasNext())
+      for (FailureListener listener: listeners.keySet())
       {
-         ConsolidatedRemotingConnectionListener listener = set.next();
-         listener.handleConnectionException(cause);
+         MessagingException me = new MessagingException(MessagingException.CONNECTION_TIMEDOUT, "Timed out");
+         
+         listener.onFailure(me);
       }
    }
 
@@ -218,10 +216,9 @@ public class MinaConnector implements NIOConnector, ConnectionExceptionNotifier
       private final Logger log = Logger
             .getLogger(IoServiceListenerAdapter.class);
 
-      private final ConsolidatedRemotingConnectionListener listener;
+      private final FailureListener listener;
 
-      private IoServiceListenerAdapter(
-            ConsolidatedRemotingConnectionListener listener)
+      private IoServiceListenerAdapter(FailureListener listener)
       {
          this.listener = listener;
       }
@@ -254,8 +251,10 @@ public class MinaConnector implements NIOConnector, ConnectionExceptionNotifier
       {
          log.warn("destroyed session " + session);
 
-         Throwable t = new Throwable("MINA session has been destroyed");
-         listener.handleConnectionException(t);
+         MessagingException me =
+            new MessagingException(MessagingException.INTERNAL_ERROR, "MINA session has been destroyed");
+         
+         listener.onFailure(me);
       }
    }
 }

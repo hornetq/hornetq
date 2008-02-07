@@ -30,7 +30,7 @@ public class SessionXAEndMessageCodec extends AbstractPacketCodec<SessionXAEndMe
 
    public SessionXAEndMessageCodec()
    {
-      super(PacketType.MSG_XA_END);
+      super(PacketType.SESS_XA_END);
    }
 
    // Public --------------------------------------------------------

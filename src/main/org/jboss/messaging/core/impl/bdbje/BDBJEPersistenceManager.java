@@ -35,7 +35,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.Binding;
-import org.jboss.messaging.core.Condition;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
@@ -43,7 +42,6 @@ import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.QueueFactory;
 import org.jboss.messaging.core.impl.BindingImpl;
-import org.jboss.messaging.core.impl.ConditionImpl;
 import org.jboss.messaging.core.impl.MessageImpl;
 import org.jboss.messaging.core.impl.filter.FilterImpl;
 import org.jboss.messaging.util.Logger;
@@ -388,7 +386,7 @@ public class BDBJEPersistenceManager implements PersistenceManager
          * Office name
          * Node id
          * Queue name
-         * Condition string
+         * Address string
          * All nodes?
          * Filter string
      */
@@ -405,9 +403,7 @@ public class BDBJEPersistenceManager implements PersistenceManager
       
       daos.writeUTF(queue.getName());
       
-      binding.getCondition().write(daos);
-      
-      daos.writeBoolean(binding.isAllNodes());
+      daos.writeUTF(binding.getAddress());
       
       Filter filter = queue.getFilter();
       
@@ -466,12 +462,8 @@ public class BDBJEPersistenceManager implements PersistenceManager
             
             String queueName = dais.readUTF();
             
-            Condition condition = new ConditionImpl();
-            
-            condition.read(dais);
-            
-            boolean allNodes = dais.readBoolean();
-            
+            String address = dais.readUTF();
+               
             Filter filter = null;
             
             if (dais.readBoolean())
@@ -483,7 +475,7 @@ public class BDBJEPersistenceManager implements PersistenceManager
             
             maxChannelID = Math.max(maxChannelID, queueID);
             
-            Binding binding = new BindingImpl(nodeID, condition, queue, allNodes);
+            Binding binding = new BindingImpl(nodeID, address, queue);
             
             bindings.put(queueID, binding);            
          }
@@ -738,7 +730,12 @@ public class BDBJEPersistenceManager implements PersistenceManager
       {
          if (ref.getQueue().isDurable())
          {
-            buff.putLong(ref.getQueue().getPersistenceID());
+            long queueID = ref.getQueue().getPersistenceID();
+            if (queueID == -1)
+            {
+               throw new IllegalStateException("Cannot persist - queue binding hasn't been persisted!");
+            }
+            buff.putLong(queueID);
             buff.putInt(ref.getDeliveryCount());
             buff.putLong(ref.getScheduledDeliveryTime());   
          }

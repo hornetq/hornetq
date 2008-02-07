@@ -28,7 +28,7 @@ public class SessionXAJoinMessage extends AbstractPacket
 
    public SessionXAJoinMessage(Xid xid)
    {
-      super(PacketType.MSG_XA_JOIN);
+      super(PacketType.SESS_XA_JOIN);
       
       this.xid = xid;
    }

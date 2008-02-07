@@ -30,7 +30,7 @@ public class SessionXAEndMessage extends AbstractPacket
 
    public SessionXAEndMessage(Xid xid, boolean failed)
    {
-      super(PacketType.MSG_XA_END);
+      super(PacketType.SESS_XA_END);
       
       this.xid = xid;
       

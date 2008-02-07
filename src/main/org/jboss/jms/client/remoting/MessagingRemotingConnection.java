@@ -23,20 +23,15 @@ package org.jboss.jms.client.remoting;
 
 import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGISTRY;
 
-import java.io.IOException;
-
-import javax.jms.JMSException;
-
-import org.jboss.jms.exception.MessagingJMSException;
-import org.jboss.jms.exception.MessagingNetworkFailureException;
+import org.jboss.jms.client.api.FailureListener;
 import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.ClientImpl;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
-import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
+import org.jboss.messaging.core.remoting.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.util.Logger;
-import org.jgroups.persistence.CannotConnectException;
+import org.jboss.messaging.util.MessagingException;
 
 /**
  * 
@@ -65,10 +60,6 @@ public class MessagingRemotingConnection
 
    private Client client;
 
-   // Maintaining a reference to the remoting connection listener for cases when we need to
-   // explicitly remove it from the remoting client
-   private ConsolidatedRemotingConnectionListener remotingConnectionListener;
-   
    // Constructors ---------------------------------------------------------------------------------
 
    public MessagingRemotingConnection(RemotingConfiguration remotingConfig) throws Exception
@@ -127,71 +118,65 @@ public class MessagingRemotingConnection
    /**
     * send the packet and block until a response is received (<code>oneWay</code> is set to <code>false</code>)
     */
-   public AbstractPacket send(String id, AbstractPacket packet) throws JMSException
+   public AbstractPacket send(String id, AbstractPacket packet) throws MessagingException
    {
       return send(id, packet, false);
    }
    
-   public AbstractPacket send(String id, AbstractPacket packet, boolean oneWay) throws JMSException
+   public AbstractPacket send(String id, AbstractPacket packet, boolean oneWay) throws MessagingException
    {
       assert packet != null;
 
       packet.setTargetID(id);
+      
+      AbstractPacket response;
+      
       try
-      {
-         AbstractPacket response = (AbstractPacket) client.send(packet, oneWay);
-         
-         if (oneWay == false && response == null)
-         {
-            throw new IllegalStateException("No response received for " + packet);
-         }
-         
-         if (response instanceof JMSExceptionMessage)
-         {
-            JMSExceptionMessage message = (JMSExceptionMessage) response;
-            
-            throw message.getException();
-         }
-         else
-         {
-            return response;
-         }
+      {      
+         response = (AbstractPacket) client.send(packet, oneWay);
       }
-      catch (Throwable t)
+      catch (Exception e)
       {
-         throw handleThrowable(t);
-      }     
+         log.error("Caught unexpected exception", e);
+         
+         throw new MessagingException(MessagingException.INTERNAL_ERROR);
+      }
+      
+      if (oneWay == false && response == null)
+      {
+         throw new IllegalStateException("No response received for " + packet);
+      }
+      
+      if (response instanceof MessagingExceptionMessage)
+      {
+         MessagingExceptionMessage message = (MessagingExceptionMessage) response;
+         
+         throw message.getException();
+      }
+      else
+      {
+         return response;
+      } 
    }
    
-   public synchronized void addConnectionListener(ConsolidatedRemotingConnectionListener listener)
+   public synchronized void setFailureListener(FailureListener listener)
    {
-      this.remotingConnectionListener = listener;
       if (client != null)
-         client.addConnectionListener(remotingConnectionListener);
-      
+      {
+         client.setFailureListener(listener);
+      }
    }
 
-   public synchronized ConsolidatedRemotingConnectionListener getConnectionListener()
+   public synchronized FailureListener getFailureListener()
    {
-      return remotingConnectionListener;
-   }
-
-   /**
-    * May return null, if no connection listener was previously installed.
-    */
-   public synchronized ConsolidatedRemotingConnectionListener removeConnectionListener()
-   {
-      if (remotingConnectionListener == null)
+      if (client != null)
+      {
+         return client.getFailureListener();
+      }
+      else
       {
          return null;
       }
-
-      client.removeConnectionListener(remotingConnectionListener);
-
-      log.trace(this + " removed consolidated connection listener from " + client);
-      ConsolidatedRemotingConnectionListener toReturn = remotingConnectionListener;
-      remotingConnectionListener = null;
-      return toReturn;
    }
 
    // Package protected ----------------------------------------------------------------------------
@@ -199,47 +184,6 @@ public class MessagingRemotingConnection
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
-   
-   private JMSException handleThrowable(Throwable t)
-   {
-      // ConnectionFailedException could happen during ConnectionFactory.createConnection.
-      // IOException could happen during an interrupted exception.
-      // CannotConnectionException could happen during a communication error between a connected
-      // remoting client and the server (what means any new invocation).
-
-      if (t instanceof JMSException)
-      {
-         return (JMSException)t;
-      }
-      else if ((t instanceof IOException))
-      {
-         return new MessagingNetworkFailureException((Exception)t);
-      }
-      //This can occur if failure happens when Client.connect() is called
-      //Ideally remoting should have a consistent API
-      else if (t instanceof RuntimeException)
-      {
-         RuntimeException re = (RuntimeException)t;
-
-         Throwable initCause = re.getCause();
-
-         if (initCause != null)
-         {
-            do
-            {
-               if ((initCause instanceof CannotConnectException) ||
-                        (initCause instanceof IOException))
-               {
-                  return new MessagingNetworkFailureException((Exception)initCause);
-               }
-               initCause = initCause.getCause();
-            }
-            while (initCause != null);
-         }
-      }
-
-      return new MessagingJMSException("Failed to invoke", t);
-   }  
    
    // Inner classes --------------------------------------------------------------------------------
 

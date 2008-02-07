@@ -8,20 +8,16 @@ package org.jboss.messaging.core.remoting.impl;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import javax.jms.IllegalStateException;
-import javax.jms.JMSException;
-
-import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
-import org.jboss.jms.exception.MessagingNetworkFailureException;
+import org.jboss.jms.client.api.FailureListener;
 import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.util.MessagingException;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -36,15 +32,16 @@ public class ClientImpl implements Client
 
    // Attributes ----------------------------------------------------
 
-   private RemotingConfiguration remotingConfig;
-
    private final NIOConnector connector;
 
    private NIOSession session;
 
    // By default, a blocking request will timeout after 5 seconds
    private int blockingRequestTimeout = 5;
+   
    private TimeUnit blockingRequestTimeUnit = SECONDS;
+   
+   private FailureListener failureListener;
    
    // Static --------------------------------------------------------
 
@@ -56,7 +53,6 @@ public class ClientImpl implements Client
       assert remotingConfig != null;
       
       this.connector = connector;
-      this.remotingConfig = remotingConfig;
       setBlockingRequestTimeout(remotingConfig.getTimeout(), SECONDS);
    }
 
@@ -96,7 +92,7 @@ public class ClientImpl implements Client
    }
 
    public AbstractPacket send(AbstractPacket packet, boolean oneWay)
-         throws JMSException, IOException
+         throws Exception
    {
       assert packet != null;
       checkConnected();
@@ -121,22 +117,29 @@ public class ClientImpl implements Client
       this.blockingRequestTimeUnit = unit;
    }
 
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.remoting.Client#addConnectionListener(org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener)
-    */
-   public void addConnectionListener(
-         final ConsolidatedRemotingConnectionListener listener)
+   public void setFailureListener(final FailureListener listener)
    {
-      connector.addConnectionListener(listener);
+      if (listener == null && failureListener != null)
+      {
+         connector.removeFailureListener(failureListener);
+         
+         failureListener = null;
+      }
+      else
+      {
+         if (failureListener != null)
+         {
+            throw new IllegalStateException("Cannot set FailureListener - already has one set");
+         }
+         connector.addFailureListener(listener);
+         
+         failureListener = listener;
+      }
    }
 
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.remoting.Client#removeConnectionListener(org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener)
-    */
-   public void removeConnectionListener(
-         ConsolidatedRemotingConnectionListener listener)
+   public FailureListener getFailureListener()
    {
-      connector.removeConnectionListener(listener);
+      return failureListener;
    }
 
    /* (non-Javadoc)
@@ -170,7 +173,7 @@ public class ClientImpl implements Client
 
    // Private -------------------------------------------------------
 
-   private void checkConnected() throws JMSException
+   private void checkConnected() throws MessagingException
    {
       if (session == null)
       {
@@ -179,30 +182,20 @@ public class ClientImpl implements Client
       }
       if (!session.isConnected())
       {
-         throw new MessagingNetworkFailureException("Client " + this
-               + " is not connected.");
+         throw new MessagingException(MessagingException.NOT_CONNECTED);
       }
    }
    
-   private void sendOneWay(AbstractPacket packet) throws JMSException
+   private void sendOneWay(AbstractPacket packet) throws Exception
    {
       session.write(packet);
    }
 
-   private AbstractPacket sendBlocking(AbstractPacket packet)
-         throws IOException, JMSException
+   private AbstractPacket sendBlocking(AbstractPacket packet) throws Exception
    {
-      try
-      {
-         AbstractPacket response = (AbstractPacket) session.writeAndBlock(packet, 
-               blockingRequestTimeout, blockingRequestTimeUnit);
-         return response;
-      } catch (Throwable t)
-      {
-         IOException ioe = new IOException();
-         ioe.initCause(t);
-         throw ioe;
-      }
+      AbstractPacket response = (AbstractPacket) session.writeAndBlock(packet, 
+                                               blockingRequestTimeout, blockingRequestTimeUnit);
+      return response;
    }
 
    // Inner classes -------------------------------------------------

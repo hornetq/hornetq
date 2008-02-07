@@ -700,7 +700,9 @@ public class AcknowledgementTest extends JMSTestCase
    {       
       final int BATCH_SIZE = 10;
 
+      log.info("*********** DEPLOYING CF");
       deployConnectionFactory(null,"mycf", new String[]{"mycf"}, -1, -1, -1, -1, false, false, false, BATCH_SIZE);
+      log.info("************ DONE DEPLOY");
       Connection conn = null;
       
       try
@@ -734,6 +736,8 @@ public class AcknowledgementTest extends JMSTestCase
 	         m = consumer.receive(200);
 	         
 	         assertNotNull(m);
+	         
+	         log.info("Got message " + i);
 	          
 	         if (i == 9)
 	         {

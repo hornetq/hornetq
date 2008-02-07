@@ -61,7 +61,7 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
    /** The connection */
    private XAConnection connection;
    
-   /** The delegate XAResource */
+   /** The connectionFactory XAResource */
    private XAResource delegate;
    
    private String username;
@@ -236,14 +236,14 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
 
    public void onException(JMSException exception)
    {
-      log.warn("Notified of connection failure in recovery delegate for provider " + providerName, exception);
+      log.warn("Notified of connection failure in recovery connectionFactory for provider " + providerName, exception);
       close();
    }
    
    /**
-    * Get the delegate XAResource
+    * Get the connectionFactory XAResource
     * 
-    * @return the delegate
+    * @return the connectionFactory
     * @throws XAException for any problem
     */
    public XAResource getDelegate() throws XAException
@@ -266,7 +266,7 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
          xae.errorCode = XAException.XAER_RMERR;
          if (error != null)
             xae.initCause(error);
-         log.debug("Cannot get delegate XAResource", xae);
+         log.debug("Cannot get connectionFactory XAResource", xae);
          throw xae;
       }
       
@@ -276,12 +276,12 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
    /**
     * Connect to the server if not already done so
     * 
-    * @return the delegate XAResource
+    * @return the connectionFactory XAResource
     * @throws Exception for any problem
     */
    protected XAResource connect() throws Exception
    {
-      // Do we already have a valid delegate?
+      // Do we already have a valid connectionFactory?
       synchronized (lock)
       {
          if (delegate != null)
@@ -305,7 +305,7 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
          connection = xaConnection;
       }
 
-      // Retrieve the delegate XAResource
+      // Retrieve the connectionFactory XAResource
       try
       {
          XASession session = connection.createXASession();

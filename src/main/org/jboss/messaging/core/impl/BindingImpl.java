@@ -22,7 +22,6 @@
 package org.jboss.messaging.core.impl;
 
 import org.jboss.messaging.core.Binding;
-import org.jboss.messaging.core.Condition;
 import org.jboss.messaging.core.Queue;
 
 /**
@@ -36,30 +35,26 @@ public class BindingImpl implements Binding
 {
    private int nodeID;
    
-   private Condition condition;
+   private String address;
    
    private Queue queue;
-   
-   private boolean allNodes;
    
    private boolean hashAssigned;
    
    private int hash;
       
-   public BindingImpl(int nodeID, Condition condition, Queue queue, boolean allNodes)
+   public BindingImpl(int nodeID, String address, Queue queue)
    {
       this.nodeID = nodeID;
       
-      this.condition = condition;
+      this.address = address;
       
       this.queue = queue;
-      
-      this.allNodes = allNodes;
    }
    
-   public Condition getCondition()
+   public String getAddress()
    {
-      return condition;
+      return address;
    }
 
    public int getNodeID()
@@ -72,11 +67,6 @@ public class BindingImpl implements Binding
       return queue;
    }
 
-   public boolean isAllNodes()
-   {
-      return allNodes;
-   }
-     
    public boolean equals(Object other)
    {
       if (this == other)
@@ -85,8 +75,8 @@ public class BindingImpl implements Binding
       }
       Binding bother = (Binding)other;
       
-      return (this.nodeID == bother.getNodeID()) && (this.allNodes == bother.isAllNodes()) &&
-              this.condition.equals(bother.getCondition()) &&
+      return (this.nodeID == bother.getNodeID()) &&
+              this.address.equals(bother.getAddress()) &&
               this.queue.equals(bother.getQueue());
    }
    
@@ -96,10 +86,9 @@ public class BindingImpl implements Binding
       {
          hash = 17;
          hash = 37 * hash + nodeID;
-         hash = 37 * hash + condition.hashCode();
+         hash = 37 * hash + address.hashCode();
          hash = 37 * hash + queue.hashCode();
-         hash = 37 * hash + (allNodes ? 0 : 1);
-         
+                
          hashAssigned = true;
       }
 
