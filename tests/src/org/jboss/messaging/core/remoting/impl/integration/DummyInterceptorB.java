@@ -5,7 +5,7 @@
  * See terms of license at gnu.org.
  */
 
-package org.jboss.test.messaging.jms.interception;
+package org.jboss.messaging.core.remoting.impl.integration;
 
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.messaging.core.remoting.Interceptor;

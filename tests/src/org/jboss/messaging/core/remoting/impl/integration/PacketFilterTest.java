@@ -5,7 +5,7 @@
  * See terms of license at gnu.org.
  */
 
-package org.jboss.test.messaging.jms.interception;
+package org.jboss.messaging.core.remoting.impl.integration;
 
 import java.util.UUID;
 
@@ -70,7 +70,10 @@ public class PacketFilterTest  extends JMSTestCase
          
    
          // deploy using MC
-         packetFilterDeploymentB = servers.get(0).deployXML("packetFilterDeploymentB", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><deployment xmlns=\"urn:jboss:bean-deployer:2.0\"><bean name=\"DummyInterceptionTestB\" class=\"org.jboss.test.messaging.jms.interception.DummyInterceptorB\"/></deployment>");
+         packetFilterDeploymentB = servers.get(0).deployXML("packetFilterDeploymentB", 
+               "<?xml version=\"1.0\" encoding=\"UTF-8\"?><deployment " +
+               "xmlns=\"urn:jboss:bean-deployer:2.0\"><bean name=\"DummyInterceptionTestB\" " +
+               "class=\"org.jboss.messaging.core.remoting.impl.integration.DummyInterceptorB\"/></deployment>");
    
          conn = cf.createConnection();
          conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
