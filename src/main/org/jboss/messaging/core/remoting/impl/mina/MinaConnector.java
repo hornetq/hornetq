@@ -253,8 +253,8 @@ public class MinaConnector implements NIOConnector, ConnectionExceptionNotifier
 
          MessagingException me =
             new MessagingException(MessagingException.INTERNAL_ERROR, "MINA session has been destroyed");
-         
-         listener.onFailure(me);
+         if (listener != null)
+            listener.onFailure(me);
       }
    }
 }

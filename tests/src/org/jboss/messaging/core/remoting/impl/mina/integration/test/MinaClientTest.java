@@ -10,8 +10,6 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.PORT;
 
-import java.io.IOException;
-
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
@@ -53,8 +51,8 @@ public class MinaClientTest extends ClientTestBase
       try
       {
          client.send(packet, false);
-         fail("a IOException should be thrown");
-      } catch (IOException e)
+         fail("a Throwable should be thrown");
+      } catch (Throwable t)
       {
       }
    }

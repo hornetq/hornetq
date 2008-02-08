@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.codec;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_CREATEQUEUE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_QUEUEQUERY_RESP;
 
 import org.jboss.messaging.core.remoting.wireformat.SessionQueueQueryResponseMessage;
 
@@ -29,7 +29,7 @@ public class SessionQueueQueryResponseMessageCodec extends AbstractPacketCodec<S
 
    public SessionQueueQueryResponseMessageCodec()
    {
-      super(SESS_CREATEQUEUE);
+      super(SESS_QUEUEQUERY_RESP);
    }
 
    // Public --------------------------------------------------------
