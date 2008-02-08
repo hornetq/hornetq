@@ -100,7 +100,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
          if (!transactedOrClientAck)
          {            
             try
-            {
+            {                              
                session.getCoreSession().rollback();
                
                session.setRecoverCalled(true);

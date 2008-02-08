@@ -39,7 +39,6 @@ import org.jboss.messaging.util.Version;
  */
 public class JBossConnectionMetaData implements ConnectionMetaData
 {
-
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------

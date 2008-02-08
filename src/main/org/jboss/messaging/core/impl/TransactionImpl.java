@@ -254,18 +254,16 @@ public class TransactionImpl implements Transaction
             queueMap.put(queue, list);
          }
                  
-         list.add(ref);
+         if (ref.cancel(persistenceManager))
+         {
+            list.add(ref);
+         }
       }
       
       for (Map.Entry<Queue, LinkedList<MessageReference>> entry: queueMap.entrySet())
       {                  
          LinkedList<MessageReference> refs = entry.getValue();
-         
-         for (MessageReference ref: refs)
-         {
-            ref.cancel(persistenceManager);
-         }
-                  
+                
          entry.getKey().addListFirst(refs);
       }
    }

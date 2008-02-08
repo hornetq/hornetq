@@ -21,17 +21,14 @@
  */
 package org.jboss.jms.server.endpoint;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_BROWSER_RESET;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.CLOSE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_BROWSER_HASNEXTMESSAGE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_BROWSER_NEXTMESSAGE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_BROWSER_RESET;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.jms.IllegalStateException;
-import javax.jms.InvalidSelectorException;
 
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Message;
@@ -40,11 +37,11 @@ import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.impl.filter.FilterImpl;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.wireformat.SessionBrowserHasNextMessageResponseMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionBrowserNextMessageResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
+import org.jboss.messaging.core.remoting.wireformat.SessionBrowserHasNextMessageResponseMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionBrowserNextMessageResponseMessage;
 import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.MessagingException;
 
@@ -69,10 +66,10 @@ public class ServerBrowserEndpoint
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private String id;
-   private ServerSessionEndpoint session;
-   private Queue destination;
-   private Filter filter;
+   private final String id;
+   private final ServerSessionEndpoint session;
+   private final Queue destination;
+   private final Filter filter;
    private Iterator iterator;
 
    // Constructors ---------------------------------------------------------------------------------
@@ -86,14 +83,11 @@ public class ServerBrowserEndpoint
 
 		if (messageFilter != null)
 		{	
-		   try
-		   {
-		      filter = new FilterImpl(messageFilter);
-		   }
-		   catch (Exception e)
-		   {
-		      throw new InvalidSelectorException("Invalid selector " + messageFilter);
-		   }
+		   filter = new FilterImpl(messageFilter);
+		}
+		else
+		{
+		   filter = null;
 		}
    }
 

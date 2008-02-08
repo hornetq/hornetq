@@ -53,12 +53,8 @@ public class MessageReferenceImpl implements MessageReference
    
    // Constructors --------------------------------------------------
 
-   /**
-    * Required by externalization.
-    */
    public MessageReferenceImpl()
    {
-      if (trace) { log.trace("Creating using default constructor"); }
    }
 
    public MessageReferenceImpl(MessageReferenceImpl other, Queue queue)
@@ -96,6 +92,11 @@ public class MessageReferenceImpl implements MessageReference
       this.deliveryCount = deliveryCount;
    }
    
+   public void incrementDeliveryCount()
+   {
+      deliveryCount++;
+   }
+   
    public long getScheduledDeliveryTime()
    {
       return scheduledDeliveryTime;
@@ -126,10 +127,8 @@ public class MessageReferenceImpl implements MessageReference
       queue.decrementDeliveringCount();
    }
    
-   public void cancel(PersistenceManager persistenceManager) throws Exception
+   public boolean cancel(PersistenceManager persistenceManager) throws Exception
    {      
-      deliveryCount++;
-      
       if (message.isDurable() && queue.isDurable())
       {
          persistenceManager.updateDeliveryCount(queue, this);
@@ -154,7 +153,13 @@ public class MessageReferenceImpl implements MessageReference
             log.warn("Message has reached maximum delivery attempts, no DLQ is configured so dropping it");
             
             acknowledge(persistenceManager);
-         }         
+         }       
+         
+         return false;
+      }
+      else
+      {
+         return true;
       }
    }
    

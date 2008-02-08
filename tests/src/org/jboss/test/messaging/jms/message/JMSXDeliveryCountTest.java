@@ -550,8 +550,7 @@ public class JMSXDeliveryCountTest extends JBMServerTestCase
          
          assertEquals(tm.getText(), rm.getText());
          
-         //Delivery count is not hard and fast - is best effort
-         assertEquals(5, rm.getIntProperty("JMSXDeliveryCount"));
+         assertEquals(4, rm.getIntProperty("JMSXDeliveryCount"));
          
          assertTrue(rm.getJMSRedelivered());
          
@@ -575,8 +574,7 @@ public class JMSXDeliveryCountTest extends JBMServerTestCase
          	catch (Exception ignore)
          	{         		
          	}
-         }
-         
+         }         
          if (xaConn != null)
          {
             xaConn.close();               

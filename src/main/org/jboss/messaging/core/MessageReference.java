@@ -56,11 +56,13 @@ public interface MessageReference
    
    void setDeliveryCount(int deliveryCount);        
    
+   void incrementDeliveryCount();
+   
    Queue getQueue();
    
    void acknowledge(PersistenceManager persistenceManager) throws Exception;  
    
-   void cancel(PersistenceManager persistenceManager) throws Exception;  
+   boolean cancel(PersistenceManager persistenceManager) throws Exception;  
    
    void expire(PersistenceManager persistenceManager) throws Exception;
 }

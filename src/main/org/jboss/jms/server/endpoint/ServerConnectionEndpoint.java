@@ -73,31 +73,31 @@ public class ServerConnectionEndpoint
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private String id;
+   private final String id;
 
    private volatile boolean started;
 
-   private String username;
+   private final String username;
    
-   private String password;
+   private final String password;
 
-   private String remotingClientSessionID;
+   private final String remotingClientSessionID;
    
-   private String jmsClientVMID;
+   private final String jmsClientVMID;
 
-   private MessagingServer messagingServer;
+   private final MessagingServer messagingServer;
 
-   private PostOffice postOffice;
+   private final PostOffice postOffice;
    
-   private SecurityStore sm;
+   private final SecurityStore sm;
    
-   private ConnectionManager cm;
+   private final ConnectionManager cm;
 
-   private ConcurrentMap<String, ServerSessionEndpoint> sessions = new ConcurrentHashMap<String, ServerSessionEndpoint>();
+   private final ConcurrentMap<String, ServerSessionEndpoint> sessions = new ConcurrentHashMap<String, ServerSessionEndpoint>();
 
-   private Set<Queue> temporaryQueues = new ConcurrentHashSet<Queue>();
+   private final Set<Queue> temporaryQueues = new ConcurrentHashSet<Queue>();
 
-   private int prefetchSize;
+   private final int prefetchSize;
 
    // Constructors ---------------------------------------------------------------------------------
 

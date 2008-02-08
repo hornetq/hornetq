@@ -139,35 +139,35 @@ public class ServerSessionEndpoint
    // Attributes
    // -----------------------------------------------------------------------------------
 
-   private SecurityAspect security = new SecurityAspect();
+   private final SecurityAspect security = new SecurityAspect();
 
-   private boolean trace = log.isTraceEnabled();
+   private final boolean trace = log.isTraceEnabled();
 
-   private String id;
+   private final String id;
 
-   private ServerConnectionEndpoint connectionEndpoint;
+   private final ServerConnectionEndpoint connectionEndpoint;
 
-   private MessagingServer sp;
+   private final MessagingServer sp;
 
-   private Map<String, ServerConsumerEndpoint> consumers = new ConcurrentHashMap<String, ServerConsumerEndpoint>();
+   private final Map<String, ServerConsumerEndpoint> consumers = new ConcurrentHashMap<String, ServerConsumerEndpoint>();
 
-   private Map<String, ServerBrowserEndpoint> browsers = new ConcurrentHashMap<String, ServerBrowserEndpoint>();
+   private final Map<String, ServerBrowserEndpoint> browsers = new ConcurrentHashMap<String, ServerBrowserEndpoint>();
 
-   private PostOffice postOffice;
+   private final PostOffice postOffice;
 
-   private volatile LinkedList<Delivery> deliveries = new LinkedList<Delivery>();
+   private final LinkedList<Delivery> deliveries = new LinkedList<Delivery>();
 
    private long deliveryIDSequence = 0;
 
-   ExecutorService executor = Executors.newSingleThreadExecutor();
+   private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
    private Transaction tx;
 
-   private boolean autoCommitSends;
+   private final boolean autoCommitSends;
 
-   private boolean autoCommitAcks;
+   private final boolean autoCommitAcks;
 
-   private ResourceManager resourceManager;
+   private final ResourceManager resourceManager;
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -378,6 +378,9 @@ public class ServerSessionEndpoint
                else
                {
                   tx.addAcknowledgement(ref);
+                  
+                  //Del count is not actually updated in storage unless it's cancelled
+                  ref.incrementDeliveryCount();
                }
 
                if (rec.getDeliveryID() == deliveryID)
@@ -413,6 +416,9 @@ public class ServerSessionEndpoint
                else
                {
                   tx.addAcknowledgement(ref);
+                  
+                  //Del count is not actually updated in storage unless it's cancelled
+                  ref.incrementDeliveryCount();
                }
 
                break;
@@ -800,17 +806,19 @@ public class ServerSessionEndpoint
 
    private void addAddress(String address) throws Exception
    {
-      if (postOffice.containsAllowableAddress(address)) { throw new MessagingException(
-            MessagingException.ADDRESS_EXISTS, "Address already exists: "
-                  + address); }
+      if (postOffice.containsAllowableAddress(address))
+      {
+         throw new MessagingException(MessagingException.ADDRESS_EXISTS, "Address already exists: " + address);
+      }
       postOffice.addAllowableAddress(address);
    }
 
    private void removeAddress(String address) throws Exception
    {
-      if (!postOffice.removeAllowableAddress(address)) { throw new MessagingException(
-            MessagingException.ADDRESS_DOES_NOT_EXIST,
-            "Address does not exist: " + address); }
+      if (!postOffice.removeAllowableAddress(address))
+      {
+         throw new MessagingException(MessagingException.ADDRESS_DOES_NOT_EXIST, "Address does not exist: " + address);
+      }
    }
 
    private void createQueue(String address, String queueName,
@@ -819,8 +827,10 @@ public class ServerSessionEndpoint
    {
       Binding binding = postOffice.getBinding(queueName);
 
-      if (binding != null) { throw new MessagingException(
-            MessagingException.QUEUE_EXISTS); }
+      if (binding != null)
+      {
+         throw new MessagingException(MessagingException.QUEUE_EXISTS);
+      }
 
       if (temporary)
       {
@@ -849,7 +859,10 @@ public class ServerSessionEndpoint
    {
       Binding binding = postOffice.removeBinding(queueName);
 
-      if (binding == null) { throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST); }
+      if (binding == null)
+      {
+         throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
+      }
 
       Queue queue = binding.getQueue();
 
@@ -869,7 +882,10 @@ public class ServerSessionEndpoint
    {
       Binding binding = postOffice.getBinding(queueName);
 
-      if (binding == null) { throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST); }
+      if (binding == null)
+      {
+         throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
+      }
 
       int prefetchSize = connectionEndpoint.getPrefetchSize();
 
@@ -961,8 +977,10 @@ public class ServerSessionEndpoint
    {
       Binding binding = postOffice.getBinding(queueName);
 
-      if (binding == null) { throw new MessagingException(
-            MessagingException.QUEUE_DOES_NOT_EXIST); }
+      if (binding == null)
+      {
+         throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
+      }
 
       String browserID = UUID.randomUUID().toString();
 
@@ -1170,8 +1188,7 @@ public class ServerSessionEndpoint
          }
          else
          {
-            throw new MessagingException(MessagingException.UNSUPPORTED_PACKET,
-                  "Unsupported packet " + type);
+            throw new MessagingException(MessagingException.UNSUPPORTED_PACKET, "Unsupported packet " + type);
          }
 
          // reply if necessary
