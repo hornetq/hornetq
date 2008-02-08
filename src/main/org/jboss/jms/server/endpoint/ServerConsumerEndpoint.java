@@ -21,8 +21,10 @@
  */
 package org.jboss.jms.server.endpoint;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.CONS_CHANGERATE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.CLOSE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.CONS_FLOWTOKEN;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.Consumer;
 import org.jboss.messaging.core.Filter;
@@ -34,7 +36,7 @@ import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.wireformat.ConsumerChangeRateMessage;
+import org.jboss.messaging.core.remoting.wireformat.ConsumerFlowTokenMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
@@ -66,44 +68,33 @@ public class ServerConsumerEndpoint implements Consumer
 
    private boolean trace = log.isTraceEnabled();
 
-   private String id;
+   private final String id;
 
-   private Queue messageQueue;
+   private final Queue messageQueue;
 
-   private ServerSessionEndpoint sessionEndpoint;
+   private final ServerSessionEndpoint sessionEndpoint;
 
-   private boolean noLocal;
+   private final boolean noLocal;
 
-   private Filter filter;
+   private final Filter filter;
 
    private boolean started;
 
    // This lock protects starting and stopping
-   private Object startStopLock;
+   private final Object startStopLock;
 
-   // Must be volatile
-   private volatile boolean clientAccepting;
-
-   private int prefetchSize;
+   private final AtomicInteger availableTokens = new AtomicInteger(0);
    
-   private volatile int sendCount;
+   private final boolean autoDeleteQueue;
    
-   private boolean firstTime = true;
-   
-   private boolean autoDeleteQueue;
+   private final boolean enableFlowControl;
 
    // Constructors ---------------------------------------------------------------------------------
 
    ServerConsumerEndpoint(MessagingServer sp, String id, Queue messageQueue,                          
 					           ServerSessionEndpoint sessionEndpoint, Filter filter,
-					           boolean noLocal, 
-					           int prefetchSize, boolean autoDeleteQueue)
+					           boolean noLocal, boolean autoDeleteQueue, boolean enableFlowControl)
    {
-      if (trace)
-      {
-         log.trace("constructing consumer endpoint " + id);
-      }
-
       this.id = id;
 
       this.messageQueue = messageQueue;
@@ -112,38 +103,29 @@ public class ServerConsumerEndpoint implements Consumer
 
       this.noLocal = noLocal;
 
-      // Always start as false - wait for consumer to initiate.
-      this.clientAccepting = false;
-      
       this.startStopLock = new Object();
 
-      this.prefetchSize = prefetchSize;
-      
       this.filter = filter;
                 
       this.started = this.sessionEndpoint.getConnectionEndpoint().isStarted();
       
       this.autoDeleteQueue = autoDeleteQueue;
       
+      log.info("Enable flow control is " + enableFlowControl);
+      
+      this.enableFlowControl = enableFlowControl;
+      
       // adding the consumer to the queue
       messageQueue.addConsumer(this);
       
       messageQueue.deliver();
-
-      log.trace(this + " constructed");
    }
 
    // Receiver implementation ----------------------------------------------------------------------
 
    public HandleStatus handle(MessageReference ref) throws Exception
    {
-      if (trace)
-      {
-         log.trace(this + " receives " + ref + " for delivery");
-      }
-      
-      // This is ok to have outside lock - is volatile
-      if (!clientAccepting)
+      if (enableFlowControl && availableTokens.get() == 0)
       {
          if (trace) { log.trace(this + " is NOT accepting messages!"); }
 
@@ -163,16 +145,12 @@ public class ServerConsumerEndpoint implements Consumer
          // queue for delivery later.
          if (!started)
          {
-            if (trace) { log.trace(this + " NOT started"); }
-
             return HandleStatus.BUSY;
          }
          
-         if (trace) { log.trace(this + " has startStopLock lock, preparing the message for delivery"); }
-
          Message message = ref.getMessage();
          
-         if (!accept(message))
+         if (filter != null && !filter.match(message))
          {
             return HandleStatus.NO_MATCH;
          }
@@ -181,12 +159,8 @@ public class ServerConsumerEndpoint implements Consumer
          {
             String conId = message.getConnectionID();
 
-            if (trace) { log.trace("message connection id: " + conId + " current connection connection id: " + sessionEndpoint.getConnectionEndpoint().getConnectionID()); }
-
             if (sessionEndpoint.getConnectionEndpoint().getConnectionID().equals(conId))
             {
-            	if (trace) { log.trace("Message from local connection so rejecting"); }
-            	
             	PersistenceManager pm = sessionEndpoint.getConnectionEndpoint().getMessagingServer().getPersistenceManager();
             	            	            	
             	ref.acknowledge(pm);
@@ -194,23 +168,11 @@ public class ServerConsumerEndpoint implements Consumer
              	return HandleStatus.HANDLED;
             }            
          }
-                  
-         sendCount++;
-         
-         int num = prefetchSize;
-         
-         if (firstTime)
+                         
+         if (enableFlowControl)
          {
-            //We make sure we have a little extra buffer on the client side
-            num = num + num / 3 ;
+            availableTokens.decrementAndGet();
          }
-         
-         if (sendCount == num)
-         {
-            clientAccepting = false;
-            
-            firstTime = false;
-         }          
                    
          try
          {
@@ -220,31 +182,13 @@ public class ServerConsumerEndpoint implements Consumer
          {
          	log.error("Failed to handle delivery", e);
          	
-         	this.started = false; // DO NOT return null or the message might get delivered more than once
+         	started = false; // DO NOT return null or the message might get delivered more than once
          }
                           
          return HandleStatus.HANDLED;
       }
    }
    
-   // Filter implementation ------------------------------------------------------------------------
-
-   public boolean accept(Message msg)
-   {
-      if (filter != null)
-      {
-         boolean accept = filter.match(msg);
-
-         if (trace) { log.trace("message filter " + (accept ? "accepts " : "DOES NOT accept ") + "the message"); }
-         
-         return accept;
-      }
-      else
-      {
-         return true;
-      }
-   }
-
    // Closeable implementation ---------------------------------------------------------------------
 
    public void close() throws Exception
@@ -254,38 +198,37 @@ public class ServerConsumerEndpoint implements Consumer
          log.trace(this + " close");
       }
       
-      stop();
+      setStarted(false);
 
-      localClose();
-
-      sessionEndpoint.removeConsumer(id);
-           
+      messageQueue.removeConsumer(this);
+      
+      sessionEndpoint.getConnectionEndpoint().getMessagingServer().getRemotingService().getDispatcher().unregister(id);     
+      
+      if (autoDeleteQueue)
+      {
+         if (messageQueue.getConsumerCount() == 0)
+         {
+            MessagingServer server = sessionEndpoint.getConnectionEndpoint().getMessagingServer();
+            
+            server.getPostOffice().removeBinding(messageQueue.getName());
+            
+            if (messageQueue.isDurable())
+            {
+               server.getPersistenceManager().deleteAllReferences(messageQueue);
+            }
+         }
+      }
+      
+      sessionEndpoint.removeConsumer(id);           
    }
 
    // ConsumerEndpoint implementation --------------------------------------------------------------
 
-   public void changeRate(float newRate) throws Exception
+   public void receiveTokens(int tokens) throws Exception
    {
-      if (trace)
-      {
-         log.trace(this + " changing rate to " + newRate);
-      }
+      availableTokens.addAndGet(tokens);
 
-      if (newRate > 0)
-      {
-         sendCount = 0;
-         
-         clientAccepting = true;
-      }
-      else
-      {
-         clientAccepting = false;
-      }
-
-      if (clientAccepting)
-      {
-         promptDelivery();
-      }
+      promptDelivery();      
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -309,62 +252,45 @@ public class ServerConsumerEndpoint implements Consumer
 
    void setStarted(boolean started)
    {
-      //No need to lock since caller already has the lock
-      this.started = started;      
+      boolean useStarted;
+      
+      synchronized (startStopLock)
+      {
+         this.started = started;   
+         
+         useStarted = started;         
+      }
+      
+      //Outside the lock
+      if (useStarted)
+      {
+         promptDelivery();
+      }
    }
     
-   void localClose() throws Exception
-   {
-      if (trace) { log.trace(this + " grabbed the main lock in close() " + this); }
-
-      messageQueue.removeConsumer(this);
-      
-      sessionEndpoint.getConnectionEndpoint().getMessagingServer().getRemotingService().getDispatcher().unregister(id);     
-      
-      if (autoDeleteQueue)
-      {
-         if (messageQueue.getConsumerCount() == 0)
-         {
-            MessagingServer server = sessionEndpoint.getConnectionEndpoint().getMessagingServer();
-            
-            server.getPostOffice().removeBinding(messageQueue.getName());
-            
-            if (messageQueue.isDurable())
-            {
-               server.getPersistenceManager().deleteAllReferences(messageQueue);
-            }
-         }
-      }
-   }
-
-   void start()
-   {
-      synchronized (startStopLock)
-      {
-         if (started)
-         {
-            return;
-         }
-
-         started = true;
-      }
-
-      // Prompt delivery
-      promptDelivery();
-   }
-
-   void stop() throws Exception
-   {
-      synchronized (startStopLock)
-      {
-         if (!started)
-         {
-            return;
-         }
-
-         started = false;         
-      }
-   }
+//   void localClose() throws Exception
+//   {
+//      if (trace) { log.trace(this + " grabbed the main lock in close() " + this); }
+//
+//      messageQueue.removeConsumer(this);
+//      
+//      sessionEndpoint.getConnectionEndpoint().getMessagingServer().getRemotingService().getDispatcher().unregister(id);     
+//      
+//      if (autoDeleteQueue)
+//      {
+//         if (messageQueue.getConsumerCount() == 0)
+//         {
+//            MessagingServer server = sessionEndpoint.getConnectionEndpoint().getMessagingServer();
+//            
+//            server.getPostOffice().removeBinding(messageQueue.getName());
+//            
+//            if (messageQueue.isDurable())
+//            {
+//               server.getPersistenceManager().deleteAllReferences(messageQueue);
+//            }
+//         }
+//      }
+//   }
 
    // Protected ------------------------------------------------------------------------------------
 
@@ -400,13 +326,13 @@ public class ServerConsumerEndpoint implements Consumer
 
          PacketType type = packet.getType();
          
-         if (type == CONS_CHANGERATE)
+         if (type == CONS_FLOWTOKEN)
          {
             setReplier(sender);
 
-            ConsumerChangeRateMessage message = (ConsumerChangeRateMessage) packet;
+            ConsumerFlowTokenMessage message = (ConsumerFlowTokenMessage) packet;
             
-            changeRate(message.getRate());
+            receiveTokens(message.getTokens());
          }
          else if (type == CLOSE)
          {

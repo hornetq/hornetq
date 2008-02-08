@@ -23,11 +23,8 @@ package org.jboss.messaging.core.impl.server;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.aop.microcontainer.aspects.jmx.JMX;
 import org.jboss.jms.destination.JBossDestination;
@@ -38,7 +35,6 @@ import org.jboss.jms.server.MessagingTimeoutFactory;
 import org.jboss.jms.server.SecurityStore;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.endpoint.MessagingServerPacketHandler;
-import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.plugin.NullUserManager;
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
 import org.jboss.jms.server.security.NullAuthenticationManager;
@@ -98,11 +94,7 @@ public class MessagingServerImpl implements MessagingServer
 
    private Version version;
 
-   private boolean started;
-
-   //private boolean supportsFailover = true;
-
-   private Map<String, ServerSessionEndpoint> sessions;
+   private volatile boolean started;
 
    // wired components
 
@@ -139,8 +131,6 @@ public class MessagingServerImpl implements MessagingServer
       // Some wired components need to be started here
 
       version = Version.instance();
-
-      sessions = new ConcurrentHashMap<String, ServerSessionEndpoint>();
 
       started = false;
    }
@@ -311,29 +301,7 @@ public class MessagingServerImpl implements MessagingServer
       return remotingService;
    }
 
-   public ServerSessionEndpoint getSession(String sessionID)
-   {
-      return (ServerSessionEndpoint) sessions.get(sessionID);
-   }
-
-   public Collection<ServerSessionEndpoint> getSessions()
-   {
-      return sessions.values();
-   }
-
-   public void addSession(String id, ServerSessionEndpoint session)
-   {
-      sessions.put(id, session);
-   }
-
-   public void removeSession(String id)
-   {
-      if (sessions.remove(id) == null)
-      {
-         throw new IllegalStateException("Cannot find session with id " + id + " to remove");
-      }
-   }
-
+  
    public void enableMessageCounters()
    {
       messageCounterManager.start();

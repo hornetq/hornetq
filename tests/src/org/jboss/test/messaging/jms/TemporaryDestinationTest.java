@@ -68,10 +68,8 @@ public class TemporaryDestinationTest extends JMSTestCase
    		
    		Session consumerSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
    		
-   		log.info("** creating temp topic");
 	      TemporaryTopic tempTopic = producerSession.createTemporaryTopic();
-	      log.info("** created temp topic");
-	
+
 	      MessageProducer producer = producerSession.createProducer(tempTopic);
 	
 	      MessageConsumer consumer = consumerSession.createConsumer(tempTopic);

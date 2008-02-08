@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.wireformat;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.CONS_CHANGERATE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.CONS_FLOWTOKEN;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -14,36 +14,36 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.CONS_CHANG
  * 
  * @version <tt>$Revision$</tt>
  */
-public class ConsumerChangeRateMessage extends AbstractPacket
+public class ConsumerFlowTokenMessage extends AbstractPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final float rate;
+   private final int tokens;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ConsumerChangeRateMessage(float rate)
+   public ConsumerFlowTokenMessage(int tokens)
    {
-      super(CONS_CHANGERATE);
+      super(CONS_FLOWTOKEN);
 
-      this.rate = rate;
+      this.tokens = tokens;
    }
 
    // Public --------------------------------------------------------
 
-   public float getRate()
+   public int getTokens()
    {
-      return rate;
+      return tokens;
    }
 
    @Override
    public String toString()
    {
-      return getParentString() + ", rate=" + rate + "]";
+      return getParentString() + ", tokens=" + tokens + "]";
    }
    // Package protected ---------------------------------------------
 

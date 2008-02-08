@@ -23,7 +23,7 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_ACKNO
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_ADD_ADDRESS;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_BROWSER_RESET;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_CANCEL;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.CONS_CHANGERATE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.CONS_FLOWTOKEN;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.CLOSE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_COMMIT;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_DELIVER;
@@ -102,7 +102,7 @@ import org.jboss.messaging.core.remoting.codec.SessionBrowserNextMessageResponse
 import org.jboss.messaging.core.remoting.codec.BytesPacketCodec;
 import org.jboss.messaging.core.remoting.codec.CreateConnectionMessageCodec;
 import org.jboss.messaging.core.remoting.codec.CreateConnectionResponseMessageCodec;
-import org.jboss.messaging.core.remoting.codec.ConsumerChangeRateMessageCodec;
+import org.jboss.messaging.core.remoting.codec.ConsumerFlowTokenMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SessionCreateBrowserMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SessionCreateBrowserResponseMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SessionCreateConsumerMessageCodec;
@@ -149,7 +149,7 @@ import org.jboss.messaging.core.remoting.wireformat.SessionBrowserNextMessageRes
 import org.jboss.messaging.core.remoting.wireformat.SessionBrowserResetMessage;
 import org.jboss.messaging.core.remoting.wireformat.BytesPacket;
 import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
-import org.jboss.messaging.core.remoting.wireformat.ConsumerChangeRateMessage;
+import org.jboss.messaging.core.remoting.wireformat.ConsumerFlowTokenMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCreateBrowserMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCreateBrowserResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
@@ -610,7 +610,7 @@ public class PacketTypeTest extends UnitTestCase
       AbstractPacketCodec codec = new SessionCreateConsumerResponseMessageCodec();
       SimpleRemotingBuffer buffer = encode(response, codec);
       checkHeader(buffer, response);
-      checkBody(buffer, response.getConsumerID(), response.getBufferSize());
+      checkBody(buffer, response.getConsumerID(), response.getPrefetchSize());
       buffer.rewind();
 
       AbstractPacket decodedPacket = codec.decode(buffer);
@@ -618,7 +618,7 @@ public class PacketTypeTest extends UnitTestCase
       assertTrue(decodedPacket instanceof SessionCreateConsumerResponseMessage);
       SessionCreateConsumerResponseMessage decodedResponse = (SessionCreateConsumerResponseMessage) decodedPacket;
       assertEquals(SESS_CREATECONSUMER_RESP, decodedResponse.getType());
-      assertEquals(response.getBufferSize(), decodedResponse.getBufferSize());
+      assertEquals(response.getPrefetchSize(), decodedResponse.getPrefetchSize());
    }
 
    public void testStartConnectionMessage() throws Exception
@@ -657,19 +657,19 @@ public class PacketTypeTest extends UnitTestCase
 
    public void testChangeRateMessage() throws Exception
    {
-      ConsumerChangeRateMessage message = new ConsumerChangeRateMessage(0.63f);
-      AbstractPacketCodec codec = new ConsumerChangeRateMessageCodec();
+      ConsumerFlowTokenMessage message = new ConsumerFlowTokenMessage(10);
+      AbstractPacketCodec codec = new ConsumerFlowTokenMessageCodec();
       SimpleRemotingBuffer buffer = encode(message, codec);
       checkHeader(buffer, message);
-      checkBody(buffer, message.getRate());
+      checkBody(buffer, message.getTokens());
       buffer.rewind();
 
       AbstractPacket decodedPacket = codec.decode(buffer);
 
-      assertTrue(decodedPacket instanceof ConsumerChangeRateMessage);
-      ConsumerChangeRateMessage decodedMessage = (ConsumerChangeRateMessage) decodedPacket;
-      assertEquals(CONS_CHANGERATE, decodedMessage.getType());
-      assertEquals(message.getRate(), decodedMessage.getRate());
+      assertTrue(decodedPacket instanceof ConsumerFlowTokenMessage);
+      ConsumerFlowTokenMessage decodedMessage = (ConsumerFlowTokenMessage) decodedPacket;
+      assertEquals(CONS_FLOWTOKEN, decodedMessage.getType());
+      assertEquals(message.getTokens(), decodedMessage.getTokens());
    }
 
    public void testDeliverMessage() throws Exception

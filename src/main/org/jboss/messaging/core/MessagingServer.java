@@ -65,15 +65,7 @@ public interface MessagingServer extends MessagingComponent
    void setRemotingService(RemotingService remotingService);
    
    RemotingService getRemotingService();
-
-   ServerSessionEndpoint getSession(String sessionID);
-
-   Collection getSessions();
-
-   void addSession(String id, ServerSessionEndpoint session);
-
-   void removeSession(String id);
-
+  
    SecurityStore getSecurityManager();
 
    ConnectionManager getConnectionManager();

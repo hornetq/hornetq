@@ -33,7 +33,7 @@ import java.util.Map;
  */
 public abstract class AbstractHashSet<Key> extends AbstractSet<Key>
 {
-   private Map theMap;
+   private Map<Key, Object> theMap;
 
    private static Object dummy = new Object();
 
@@ -42,7 +42,7 @@ public abstract class AbstractHashSet<Key> extends AbstractSet<Key>
       theMap = buildInternalHashMap();
    }
 
-   protected abstract Map buildInternalHashMap();
+   protected abstract Map<Key, Object> buildInternalHashMap();
 
    public int size()
    {

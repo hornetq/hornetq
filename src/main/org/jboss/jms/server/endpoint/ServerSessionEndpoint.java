@@ -21,30 +21,30 @@
  */
 package org.jboss.jms.server.endpoint;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_ACKNOWLEDGE;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_CANCEL;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.CLOSE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_ACKNOWLEDGE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_BINDINGQUERY;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_CANCEL;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_COMMIT;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_CREATEBROWSER;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_CREATECONSUMER;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_CREATEQUEUE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_DELETE_QUEUE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_QUEUEQUERY;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_ROLLBACK;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_SEND;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_COMMIT;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_END;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_FORGET;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_GET_TIMEOUT;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_INDOUBT_XIDS;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_JOIN;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_PREPARE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_RESUME;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_ROLLBACK;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_SET_TIMEOUT;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_START;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_SUSPEND;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_BINDINGQUERY;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_CREATEBROWSER;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_CREATECONSUMER;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_CREATEQUEUE;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_DELETE_QUEUE;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_QUEUEQUERY;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_INDOUBT_XIDS;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_PREPARE;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,6 +53,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
@@ -75,22 +78,22 @@ import org.jboss.messaging.core.impl.TransactionImpl;
 import org.jboss.messaging.core.impl.filter.FilterImpl;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.wireformat.NullPacket;
+import org.jboss.messaging.core.remoting.wireformat.Packet;
+import org.jboss.messaging.core.remoting.wireformat.PacketType;
+import org.jboss.messaging.core.remoting.wireformat.SessionAcknowledgeMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionAddAddressMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionBindingQueryResponseMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionCancelMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCreateBrowserMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCreateBrowserResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCreateConsumerMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCreateConsumerResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCreateQueueMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionDeleteQueueMessage;
-import org.jboss.messaging.core.remoting.wireformat.NullPacket;
-import org.jboss.messaging.core.remoting.wireformat.Packet;
-import org.jboss.messaging.core.remoting.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionQueueQueryResponseMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionAcknowledgeMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionAddAddressMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionCancelMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionRemoveAddressMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionXACommitMessage;
@@ -108,9 +111,6 @@ import org.jboss.messaging.core.remoting.wireformat.SessionXASetTimeoutResponseM
 import org.jboss.messaging.core.remoting.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.MessagingException;
-
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
  * Session implementation
@@ -131,8 +131,7 @@ public class ServerSessionEndpoint
    // Constants
    // ------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger
-         .getLogger(ServerSessionEndpoint.class);
+   private static final Logger log = Logger.getLogger(ServerSessionEndpoint.class);
 
    // Static
    // ---------------------------------------------------------------------------------------
@@ -146,15 +145,13 @@ public class ServerSessionEndpoint
 
    private String id;
 
-   private volatile boolean closed;
-
    private ServerConnectionEndpoint connectionEndpoint;
 
    private MessagingServer sp;
 
-   private Map<String, ServerConsumerEndpoint> consumers = new HashMap<String, ServerConsumerEndpoint>();
+   private Map<String, ServerConsumerEndpoint> consumers = new ConcurrentHashMap<String, ServerConsumerEndpoint>();
 
-   private Map<String, ServerBrowserEndpoint> browsers = new HashMap<String, ServerBrowserEndpoint>();
+   private Map<String, ServerBrowserEndpoint> browsers = new ConcurrentHashMap<String, ServerBrowserEndpoint>();
 
    private PostOffice postOffice;
 
@@ -162,8 +159,7 @@ public class ServerSessionEndpoint
 
    private long deliveryIDSequence = 0;
 
-   // Temporary until we have our own NIO transport
-   QueuedExecutor executor = new QueuedExecutor(new LinkedQueue());
+   ExecutorService executor = Executors.newSingleThreadExecutor();
 
    private Transaction tx;
 
@@ -172,8 +168,6 @@ public class ServerSessionEndpoint
    private boolean autoCommitAcks;
 
    private ResourceManager resourceManager;
-
-   private boolean strict;
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -201,8 +195,6 @@ public class ServerSessionEndpoint
       this.autoCommitAcks = autoCommitAcks;
 
       this.resourceManager = resourceManager;
-
-      strict = sp.getConfiguration().isStrictTck();
    }
 
    // Public
@@ -225,27 +217,15 @@ public class ServerSessionEndpoint
    {
       Queue expiryQueue = ref.getQueue().getExpiryQueue();
 
-      if (trace)
-      {
-         log.trace(this + " detected expired message " + ref);
-      }
-
       if (expiryQueue != null)
       {
-         if (trace)
-         {
-            log.trace(this + " sending expired message to expiry queue "
-                  + expiryQueue);
-         }
-
          Message copy = makeCopyForDLQOrExpiry(true, ref);
 
          moveInTransaction(copy, ref, expiryQueue, true);
       }
       else
       {
-         log.warn("No expiry queue has been configured so removing expired "
-               + ref);
+         log.warn("No expiry queue has been configured so removing expired " + ref);
 
          // TODO - tidy up these references - ugly
          ref.acknowledge(this.getConnectionEndpoint().getMessagingServer()
@@ -257,82 +237,54 @@ public class ServerSessionEndpoint
 
    void removeBrowser(String browserId) throws Exception
    {
-      synchronized (browsers)
+      if (browsers.remove(browserId) == null)
       {
-         if (browsers.remove(browserId) == null) { throw new IllegalStateException(
-               "Cannot find browser with id " + browserId + " to remove"); }
-      }
+         throw new IllegalStateException("Cannot find browser with id " + browserId + " to remove");
+      }      
    }
 
    void removeConsumer(String consumerId) throws Exception
    {
-      synchronized (consumers)
+      if (consumers.remove(consumerId) == null)
       {
-         if (consumers.remove(consumerId) == null) { throw new IllegalStateException(
-               "Cannot find consumer with id " + consumerId + " to remove"); }
-      }
+         throw new IllegalStateException("Cannot find consumer with id " + consumerId + " to remove");
+      }      
    }
 
-   void localClose() throws Exception
-   {
-      if (closed) { throw new IllegalStateException("Session is already closed"); }
+//   void localClose() throws Exception
+//   {
+//      Map<String, ServerConsumerEndpoint> consumersClone = new HashMap<String, ServerConsumerEndpoint>(consumers);
+//      
+//      for (ServerConsumerEndpoint consumer: consumersClone.values())
+//      {
+//         consumer.close();
+//      }
+//
+//      consumers.clear();
+//
+//      Map<String, ServerBrowserEndpoint> browsersClone = new HashMap<String, ServerBrowserEndpoint>(browsers);
+//      
+//      for (ServerBrowserEndpoint browser: browsersClone.values())
+//      {
+//         browser.close();
+//      }
+//
+//      consumers.clear();
+//
+//      browsers.clear();
+//
+//      rollback();
+//
+//      executor.shutdown();
+//
+//      deliveries.clear();
+//
+//      sp.removeSession(id);
+//
+//      closed = true;
+//   }
 
-      if (trace) log.trace(this + " close()");
-
-      // We clone to avoid deadlock
-      // http://jira.jboss.org/jira/browse/JBMESSAGING-836
-      Map consumersClone;
-      synchronized (consumers)
-      {
-         consumersClone = new HashMap(consumers);
-      }
-
-      for (Iterator i = consumersClone.values().iterator(); i.hasNext();)
-      {
-         ((ServerConsumerEndpoint) i.next()).localClose();
-      }
-
-      consumers.clear();
-
-      // We clone to avoid deadlock
-      // http://jira.jboss.org/jira/browse/JBMESSAGING-836
-      Map browsersClone;
-      synchronized (browsers)
-      {
-         browsersClone = new HashMap(browsers);
-      }
-
-      for (Iterator i = browsersClone.values().iterator(); i.hasNext();)
-      {
-         ((ServerBrowserEndpoint) i.next()).localClose();
-      }
-
-      browsers.clear();
-
-      rollback();
-
-      // Close down the executor
-
-      // Note we need to wait for ALL tasks to complete NOT just one otherwise
-      // we can end up with the following situation
-      // prompter is queued and starts to execute
-      // prompter almost finishes executing then a message is cancelled due to
-      // this session closing
-      // this causes another prompter to be queued
-      // shutdownAfterProcessingCurrentTask is then called
-      // this means the second prompter never runs and the cancelled message
-      // doesn't get redelivered
-      executor.shutdownAfterProcessingCurrentlyQueuedTasks();
-
-      deliveries.clear();
-
-      sp.removeSession(id);
-
-      closed = true;
-   }
-
-   synchronized void handleDelivery(MessageReference ref,
-         ServerConsumerEndpoint consumer, PacketSender sender) throws Exception
+   synchronized void handleDelivery(MessageReference ref, ServerConsumerEndpoint consumer, PacketSender sender) throws Exception
    {
       // FIXME - we shouldn't have to pass in the packet Sender - this should be
       // creatable
@@ -345,61 +297,55 @@ public class ServerSessionEndpoint
       delivery.deliver();
    }
 
-   /**
-    * Starts this session's Consumers
-    */
    void setStarted(boolean s) throws Exception
    {
-      // We clone to prevent deadlock
-      // http://jira.jboss.org/jira/browse/JBMESSAGING-836
-      Map consumersClone;
-      synchronized (consumers)
+      Map<String, ServerConsumerEndpoint> consumersClone = new HashMap<String, ServerConsumerEndpoint>(consumers);
+      
+      for (ServerConsumerEndpoint consumer: consumersClone.values())
       {
-         consumersClone = new HashMap(consumers);
-      }
-
-      for (Iterator i = consumersClone.values().iterator(); i.hasNext();)
-      {
-         ServerConsumerEndpoint sce = (ServerConsumerEndpoint) i.next();
-         if (s)
-         {
-            sce.start();
-         }
-         else
-         {
-            sce.stop();
-         }
+         consumer.setStarted(s);
       }
    }
 
    void promptDelivery(final Queue queue)
    {
-      if (trace)
+      // TODO - do we really need to prompt on a different thread?
+      executor.execute(new Runnable()
       {
-         log.trace("Prompting delivery on " + queue);
-      }
-
-      try
-      {
-         // TODO - do we really need to prompt on a different thread?
-         this.executor.execute(new Runnable()
+         public void run()
          {
-            public void run()
-            {
-               queue.deliver();
-            }
-         });
-
-      }
-      catch (Throwable t)
-      {
-         log.error("Failed to prompt delivery", t);
-      }
+            queue.deliver();
+         }
+      });
    }
 
-   private void close() throws Exception
+   public void close() throws Exception
    {
-      localClose();
+      Map<String, ServerConsumerEndpoint> consumersClone = new HashMap<String, ServerConsumerEndpoint>(consumers);
+      
+      for (ServerConsumerEndpoint consumer: consumersClone.values())
+      {
+         consumer.close();
+      }
+
+      consumers.clear();
+
+      Map<String, ServerBrowserEndpoint> browsersClone = new HashMap<String, ServerBrowserEndpoint>(browsers);
+      
+      for (ServerBrowserEndpoint browser: browsersClone.values())
+      {
+         browser.close();
+      }
+
+      consumers.clear();
+
+      browsers.clear();
+
+      rollback();
+
+      executor.shutdown();
+
+      deliveries.clear();
 
       connectionEndpoint.removeSession(id);
 
@@ -1119,7 +1065,7 @@ public class ServerSessionEndpoint
       }
 
       ServerConsumerEndpoint ep = new ServerConsumerEndpoint(sp, consumerID,
-            binding.getQueue(), this, filter, noLocal, prefetchSize, autoDeleteQueue);
+            binding.getQueue(), this, filter, noLocal, autoDeleteQueue, prefetchSize > 0);
 
       connectionEndpoint.getMessagingServer().getRemotingService()
             .getDispatcher().register(ep.newHandler());
@@ -1195,8 +1141,6 @@ public class ServerSessionEndpoint
    private SessionCreateBrowserResponseMessage createBrowser(String queueName, String selector)
          throws Exception
    {
-      if (closed) { throw new IllegalStateException("Session is closed"); }
-
       Binding binding = postOffice.getBinding(queueName);
 
       if (binding == null) { throw new MessagingException(

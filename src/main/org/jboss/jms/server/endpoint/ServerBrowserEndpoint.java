@@ -70,7 +70,6 @@ public class ServerBrowserEndpoint
    // Attributes -----------------------------------------------------------------------------------
 
    private String id;
-   private boolean closed;
    private ServerSessionEndpoint session;
    private Queue destination;
    private Filter filter;
@@ -102,40 +101,23 @@ public class ServerBrowserEndpoint
 
    public void reset() throws Exception
    {
-      if (closed)
-      {
-         throw new IllegalStateException("Browser is closed");
-      }
-
-      log.trace(this + " is being resetted");
-
       iterator = createIterator();
    }
 
    public boolean hasNextMessage() throws Exception
    {
-      if (closed)
-      {
-         throw new IllegalStateException("Browser is closed");
-      }
-
       if (iterator == null)
       {
          iterator = createIterator();
       }
 
       boolean has = iterator.hasNext();
-      if (trace) { log.trace(this + (has ? " has": " DOESN'T have") + " a next message"); }
+
       return has;
    }
    
    public Message nextMessage() throws Exception
    {
-      if (closed)
-      {
-         throw new IllegalStateException("Browser is closed");
-      }
-
       if (iterator == null)
       {
          iterator = createIterator();
@@ -143,20 +125,11 @@ public class ServerBrowserEndpoint
 
       Message r = (Message)iterator.next();
 
-      if (trace) { log.trace(this + " returning " + r); }
-      
       return r;
    }
 
    public Message[] nextMessageBlock(int maxMessages) throws Exception
    {
-      if (trace) { log.trace(this + " returning next message block of " + maxMessages); }
-
-      if (closed)
-      {
-         throw new IllegalStateException("Browser is closed");
-      }
-      
       if (maxMessages < 2)
       {
          throw new IllegalArgumentException("maxMessages must be >=2 otherwise use nextMessage");
@@ -184,8 +157,12 @@ public class ServerBrowserEndpoint
    
    public void close() throws Exception
    {
-      localClose();
+      iterator = null;
+      
+      session.getConnectionEndpoint().getMessagingServer().getRemotingService().getDispatcher().unregister(id);
+
       session.removeBrowser(id);
+      
       log.trace(this + " closed");
    }
            
@@ -198,20 +175,6 @@ public class ServerBrowserEndpoint
 
    // Package protected ----------------------------------------------------------------------------
    
-   void localClose() throws Exception
-   {
-      if (closed)
-      {
-         throw new IllegalStateException("Browser is already closed");
-      }
-      
-      iterator = null;
-      
-      session.getConnectionEndpoint().getMessagingServer().getRemotingService().getDispatcher().unregister(id);
-      
-      closed = true;
-   }
-
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------

@@ -21,8 +21,6 @@ public interface ClientConsumerInternal extends ClientConsumer
 {   
    String getID();
    
-   void changeRate(float newRate) throws MessagingException;
-
    void handleMessage(DeliverMessage message) throws Exception;
    
    void recover(long lastDeliveryID) throws MessagingException;

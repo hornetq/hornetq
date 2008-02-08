@@ -26,6 +26,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
@@ -39,9 +41,14 @@ import org.jboss.jms.client.remoting.MessagingRemotingConnection;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
+import org.jboss.messaging.core.remoting.wireformat.ConsumerFlowTokenMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionAcknowledgeMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionAddAddressMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionBindingQueryResponseMessage;
-import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionCancelMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionCommitMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCreateBrowserMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCreateBrowserResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCreateConsumerMessage;
@@ -50,10 +57,6 @@ import org.jboss.messaging.core.remoting.wireformat.SessionCreateQueueMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionDeleteQueueMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionQueueQueryResponseMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionAcknowledgeMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionAddAddressMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionCancelMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionCommitMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionRemoveAddressMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionRollbackMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionSendMessage;
@@ -73,11 +76,8 @@ import org.jboss.messaging.core.remoting.wireformat.SessionXASetTimeoutMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionXASetTimeoutResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionXASuspendMessage;
-import org.jboss.messaging.util.ClearableQueuedExecutor;
 import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.MessagingException;
-
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -117,8 +117,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    private boolean deliveryExpired;   
 
-   // Executor used for executing onMessage methods
-   private ClearableQueuedExecutor executor;
+   private ExecutorService executor;
 
    private MessagingRemotingConnection remotingConnection;
          
@@ -144,7 +143,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       
       this.remotingConnection = connection.getRemotingConnection();
       
-      executor = new ClearableQueuedExecutor(new LinkedQueue());
+      executor = Executors.newSingleThreadExecutor();
       
       this.lazyAckBatchSize = lazyAckBatchSize;   
    }
@@ -209,7 +208,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    }
    
    public ClientConsumer createConsumer(String queueName, String filterString, boolean noLocal,
-                                        boolean autoDeleteQueue) throws MessagingException
+                                        boolean autoDeleteQueue, boolean direct) throws MessagingException
    {
       checkClosed();
     
@@ -218,17 +217,31 @@ public class ClientSessionImpl implements ClientSessionInternal
       
       SessionCreateConsumerResponseMessage response = (SessionCreateConsumerResponseMessage)remotingConnection.send(id, request);
       
+      int prefetchSize = response.getPrefetchSize();
+            
       ClientConsumerInternal consumer =
-         new ClientConsumerImpl(this, response.getConsumerID(), response.getBufferSize(),             
-                                executor, remotingConnection, queueName);
+         new ClientConsumerImpl(this, response.getConsumerID(),             
+                                executor, remotingConnection, direct, response.getPrefetchSize());
 
       consumers.put(response.getConsumerID(), consumer);
 
       PacketDispatcher.client.register(new ClientConsumerPacketHandler(consumer, response.getConsumerID()));
 
-      //Now we have finished creating the client consumer, we can tell the SCD
-      //we are ready
-      consumer.changeRate(1);
+      if (prefetchSize > 0) // 0 ==> flow control is disabled
+      {
+         //Now give the server consumer some initial tokens (1.5 * prefetchSize)
+         
+         int initialTokens = prefetchSize + prefetchSize >>> 1;
+         
+         remotingConnection.send(response.getConsumerID(), new ConsumerFlowTokenMessage(initialTokens), true);
+      }
+      else
+      {
+         //FIXME
+         //FIXME - for now we need to send a flow control token to ensure the return packet sender gets set
+         //FIXME
+         remotingConnection.send(response.getConsumerID(), new ConsumerFlowTokenMessage(1), true);
+      }
       
       return consumer;
    }
@@ -676,6 +689,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
       
       SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(lastID, !broken);
+      
       remotingConnection.send(id, message, !block);
       
       acked = true;

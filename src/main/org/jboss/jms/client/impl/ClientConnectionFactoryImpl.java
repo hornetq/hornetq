@@ -25,7 +25,6 @@ import java.io.Serializable;
 
 import org.jboss.jms.client.api.ClientConnection;
 import org.jboss.jms.client.api.ClientConnectionFactory;
-import org.jboss.jms.client.plugin.LoadBalancingFactory;
 import org.jboss.jms.client.remoting.MessagingRemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;

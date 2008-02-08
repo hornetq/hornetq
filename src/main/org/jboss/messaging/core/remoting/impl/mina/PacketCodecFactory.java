@@ -15,7 +15,7 @@ import org.jboss.messaging.core.remoting.codec.AbstractPacketCodec;
 import org.jboss.messaging.core.remoting.codec.BytesPacketCodec;
 import org.jboss.messaging.core.remoting.codec.ConnectionCreateSessionMessageCodec;
 import org.jboss.messaging.core.remoting.codec.ConnectionCreateSessionResponseMessageCodec;
-import org.jboss.messaging.core.remoting.codec.ConsumerChangeRateMessageCodec;
+import org.jboss.messaging.core.remoting.codec.ConsumerFlowTokenMessageCodec;
 import org.jboss.messaging.core.remoting.codec.CreateConnectionMessageCodec;
 import org.jboss.messaging.core.remoting.codec.CreateConnectionResponseMessageCodec;
 import org.jboss.messaging.core.remoting.codec.DeliverMessageCodec;
@@ -62,7 +62,7 @@ import org.jboss.messaging.core.remoting.wireformat.ConnectionCreateSessionMessa
 import org.jboss.messaging.core.remoting.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.ConnectionStartMessage;
 import org.jboss.messaging.core.remoting.wireformat.ConnectionStopMessage;
-import org.jboss.messaging.core.remoting.wireformat.ConsumerChangeRateMessage;
+import org.jboss.messaging.core.remoting.wireformat.ConsumerFlowTokenMessage;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
@@ -172,7 +172,7 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
       addCodecForEmptyPacket(PacketType.CONN_STOP,
             ConnectionStopMessage.class);
 
-      addCodec(ConsumerChangeRateMessage.class, ConsumerChangeRateMessageCodec.class);
+      addCodec(ConsumerFlowTokenMessage.class, ConsumerFlowTokenMessageCodec.class);
 
       addCodec(DeliverMessage.class, DeliverMessageCodec.class);
 

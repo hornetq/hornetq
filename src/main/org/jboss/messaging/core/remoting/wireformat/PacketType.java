@@ -80,7 +80,7 @@ public enum PacketType
    SESS_XA_GET_TIMEOUT_RESP            ((byte)82),
        
    // Consumer 
-   CONS_CHANGERATE                     ((byte)90);
+   CONS_FLOWTOKEN                      ((byte)90);
    
 
    private final byte type;

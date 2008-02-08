@@ -24,8 +24,6 @@ public interface ClientConsumer
 
    void setMessageHandler(MessageHandler handler) throws MessagingException;
    
-   String getQueueName();
-        
    void close() throws MessagingException;
    
    boolean isClosed();      

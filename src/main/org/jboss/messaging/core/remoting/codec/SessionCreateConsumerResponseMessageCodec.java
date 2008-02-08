@@ -38,13 +38,13 @@ public class SessionCreateConsumerResponseMessageCodec extends
          RemotingBuffer out) throws Exception
    {
       String consumerID = response.getConsumerID();
-      int bufferSize = response.getBufferSize();
+      int prefetchSize = response.getPrefetchSize();
 
       int bodyLength = sizeof(consumerID) + INT_LENGTH;
        
       out.putInt(bodyLength);
       out.putNullableString(consumerID);
-      out.putInt(bufferSize);
+      out.putInt(prefetchSize);
    }
 
    @Override
@@ -58,9 +58,9 @@ public class SessionCreateConsumerResponseMessageCodec extends
       }
 
       String consumerID = in.getNullableString();
-      int bufferSize = in.getInt();
+      int prefetchSize = in.getInt();
  
-      return new SessionCreateConsumerResponseMessage(consumerID, bufferSize);
+      return new SessionCreateConsumerResponseMessage(consumerID, prefetchSize);
    }
 
    // Package protected ---------------------------------------------

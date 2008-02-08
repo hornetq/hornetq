@@ -22,9 +22,9 @@
 package org.jboss.jms.server.endpoint;
 
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.CLOSE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.CONN_CREATESESSION;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.CONN_START;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.CONN_STOP;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.CONN_CREATESESSION;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -75,8 +75,6 @@ public class ServerConnectionEndpoint
 
    private String id;
 
-   private volatile boolean closed;
-   
    private volatile boolean started;
 
    private String username;
@@ -147,8 +145,6 @@ public class ServerConnectionEndpoint
          sessions.put(sessionID, ep);
       }
 
-      messagingServer.addSession(sessionID, ep);
-
       messagingServer.getRemotingService().getDispatcher().register(ep.newHandler());
       
       return new ConnectionCreateSessionResponseMessage(sessionID);
@@ -156,38 +152,21 @@ public class ServerConnectionEndpoint
    
    public void start() throws Exception
    {
-      if (closed)
-      {
-         throw new IllegalStateException("Connection is closed");
-      }
-      
       setStarted(true);
    }
 
    public synchronized void stop() throws Exception
    {
-      if (closed)
-      {
-         throw new IllegalStateException("Connection is closed");
-      }
-
       setStarted(false);
    }
 
    public void close() throws Exception
    {
-      if (closed)
-      {
-         log.warn("Connection is already closed");
-         return;
-      }
-
-      //We clone to avoid deadlock http://jira.jboss.org/jira/browse/JBMESSAGING-836
       Map<String, ServerSessionEndpoint> sessionsClone = new HashMap<String, ServerSessionEndpoint>(sessions);
       
-      for(ServerSessionEndpoint session: sessionsClone.values())
+      for (ServerSessionEndpoint session: sessionsClone.values())
       {
-         session.localClose();
+         session.close();
       }
 
       sessions.clear();
@@ -213,8 +192,6 @@ public class ServerConnectionEndpoint
       cm.unregisterConnection(jmsClientVMID, remotingClientSessionID);
 
       messagingServer.getRemotingService().getDispatcher().unregister(id);
-
-      closed = true;
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -295,7 +272,6 @@ public class ServerConnectionEndpoint
    
    private void setStarted(boolean started) throws Exception
    {
-      //We clone to avoid deadlock http://jira.jboss.org/jira/browse/JBMESSAGING-836
       Map<String, ServerSessionEndpoint> sessionsClone = null;
       
       sessionsClone = new HashMap<String, ServerSessionEndpoint>(sessions);

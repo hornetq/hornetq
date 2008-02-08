@@ -23,20 +23,20 @@ public class SessionCreateConsumerResponseMessage extends AbstractPacket
    // Attributes ----------------------------------------------------
 
    private final String consumerID;
-   private final int bufferSize;
+   private final int prefetchSize;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateConsumerResponseMessage(String consumerID, int bufferSize)
+   public SessionCreateConsumerResponseMessage(String consumerID, int prefetchSize)
    {
       super(SESS_CREATECONSUMER_RESP);
 
       Assert.assertValidID(consumerID);
 
       this.consumerID = consumerID;
-      this.bufferSize = bufferSize;
+      this.prefetchSize = prefetchSize;
    }
 
    // Public --------------------------------------------------------
@@ -46,9 +46,9 @@ public class SessionCreateConsumerResponseMessage extends AbstractPacket
       return consumerID;
    }
 
-   public int getBufferSize()
+   public int getPrefetchSize()
    {
-      return bufferSize;
+      return prefetchSize;
    }
 
    @Override
@@ -56,7 +56,7 @@ public class SessionCreateConsumerResponseMessage extends AbstractPacket
    {
       StringBuffer buf = new StringBuffer(getParentString());
       buf.append(", consumerID=" + consumerID);
-      buf.append(", bufferSize=" + bufferSize);
+      buf.append(", prefetchSize=" + prefetchSize);
       buf.append("]");
       return buf.toString();
    }

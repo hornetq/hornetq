@@ -305,13 +305,7 @@ public class MessageImpl implements Message
          return false;
       }
       
-      long overtime = System.currentTimeMillis() - expiration;
-      
-      if (overtime >= 0)
-      {
-         return true;
-      }
-      return false;
+      return System.currentTimeMillis() - expiration >= 0;
    }
    
    public MessageReference createReference(Queue queue)

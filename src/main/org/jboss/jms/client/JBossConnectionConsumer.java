@@ -21,14 +21,14 @@
   */
 package org.jboss.jms.client;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.jms.ConnectionConsumer;
 import javax.jms.JMSException;
 import javax.jms.ServerSessionPool;
 
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.messaging.util.Logger;
-
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
 /**
  * This class implements javax.jms.ConnectionConsumer
@@ -80,7 +80,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
    private int id;
    
    /** The thread id generator */
-   private static SynchronizedInt threadId = new SynchronizedInt(0);
+   private static AtomicInteger threadId = new AtomicInteger(0);
    
    private int maxDeliveries;
    

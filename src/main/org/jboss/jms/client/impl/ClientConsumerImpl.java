@@ -21,6 +21,8 @@
  */
 package org.jboss.jms.client.impl;
 
+import java.util.concurrent.ExecutorService;
+
 import org.jboss.jms.client.api.MessageHandler;
 import org.jboss.jms.client.remoting.MessagingRemotingConnection;
 import org.jboss.messaging.core.Message;
@@ -28,13 +30,11 @@ import org.jboss.messaging.core.PriorityLinkedList;
 import org.jboss.messaging.core.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
-import org.jboss.messaging.core.remoting.wireformat.ConsumerChangeRateMessage;
+import org.jboss.messaging.core.remoting.wireformat.ConsumerFlowTokenMessage;
 import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
 import org.jboss.messaging.util.Future;
 import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.MessagingException;
-
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -59,23 +59,35 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // -----------------------------------------------------------------------------------
 
    private String id;
+   
    private ClientSessionInternal session;
-   private int bufferSize;
-   private PriorityLinkedList<DeliverMessage> buffer = new PriorityLinkedListImpl<DeliverMessage>(
-         10);
+   
+   private PriorityLinkedList<DeliverMessage> buffer = new PriorityLinkedListImpl<DeliverMessage>(10);
+   
    private volatile Thread receiverThread;
+   
    private MessageHandler handler;
+   
    private volatile boolean closed;
+   
    private Object mainLock = new Object();
-   private QueuedExecutor sessionExecutor;
+   
+   private ExecutorService sessionExecutor;
+   
    private boolean listenerRunning;
-   private int consumeCount;
+   
    private MessagingRemotingConnection remotingConnection;
-   private String queueName;
+   
    private long ignoreDeliveryMark = -1;
-
-   // FIXME - revisit closed and closing flags
-
+   
+   private boolean direct;
+   
+   private Thread onMessageThread;
+   
+   private int tokensToSend;
+   
+   private int tokenBatchSize;
+   
    // Static
    // ---------------------------------------------------------------------------------------
 
@@ -83,15 +95,16 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // ---------------------------------------------------------------------------------
 
    public ClientConsumerImpl(ClientSessionInternal session, String id,
-         int bufferSize, QueuedExecutor sessionExecutor,
-         MessagingRemotingConnection remotingConnection, String queueName)
+                             ExecutorService sessionExecutor,
+                             MessagingRemotingConnection remotingConnection,
+                             boolean direct, int tokenBatchSize)
    {
       this.id = id;
       this.session = session;
-      this.bufferSize = bufferSize;
       this.sessionExecutor = sessionExecutor;
       this.remotingConnection = remotingConnection;
-      this.queueName = queueName;
+      this.direct = direct;
+      this.tokenBatchSize = tokenBatchSize;
    }
 
    // ClientConsumer implementation
@@ -101,16 +114,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       checkClosed();
 
-      DeliverMessage m = null;
-
       synchronized (mainLock)
       {
-         if (closed) { return null; }
-
          if (handler != null)
          {
-            throw new MessagingException(
-               MessagingException.ILLEGAL_STATE, "Cannot call receive(...) - a MessageHandler is set");
+            throw new MessagingException(MessagingException.ILLEGAL_STATE, "Cannot call receive(...) - a MessageHandler is set");
          }
 
          receiverThread = Thread.currentThread();
@@ -148,13 +156,13 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                        
                if (!closed && !buffer.isEmpty())
                {                              
-                  m = buffer.removeFirst();
+                  DeliverMessage m = buffer.removeFirst();
                   
                   boolean expired = m.getMessage().isExpired();
                   
                   session.delivered(m.getDeliveryID(), expired);
                   
-                  checkSendChangeRate();
+                  flowControl();
                                     
                   if (expired)
                   {
@@ -198,46 +206,39 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    public void setMessageHandler(MessageHandler handler) throws MessagingException
    {
       checkClosed();
+      
+      if (receiverThread != null)
+      {
+         throw new MessagingException(MessagingException.ILLEGAL_STATE,"Cannot set MessageHandler - consumer is in receive(...)");
+      }
 
       synchronized (mainLock)
-      {
-         if (receiverThread != null) { throw new MessagingException(
-               MessagingException.ILLEGAL_STATE,
-               "Cannot set MessageHandler - consumer is in receive(...)"); }
-
+      {         
          this.handler = handler;
 
          if (handler != null && !buffer.isEmpty())
          {
             listenerRunning = true;
 
-            this.queueRunner(new ListenerRunner());
+            queueRunner();
          }
       }
    }
 
-   public String getQueueName()
+   public void close() throws MessagingException
    {
-      return queueName;
-   }
-
-   public synchronized void close() throws MessagingException
-   {
-      if (closed) { return; }
+      if (closed)
+      {
+         return;
+      }
 
       try
       {
-         // Important! We set the handler to null so the next ListenerRunner
-         // won't run
-         if (handler != null)
-         {
-            setMessageHandler(null);
-         }
+         // We set the handler to null so the next ListenerRunner won't run
+         handler = null;
 
          // Now we wait for any current handler runners to run.
          waitForOnMessageToComplete();
-
-         // TODO sort out these close and closing flags
 
          synchronized (mainLock)
          {
@@ -248,25 +249,16 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                // Wake up any receive() thread that might be waiting
                mainLock.notify();
             }
-
-            this.handler = null;
          }
 
          remotingConnection.send(id, new CloseMessage());
 
          PacketDispatcher.client.unregister(id);
-
-         if (trace)
-         {
-            log.trace(this + " closed");
-         }
-
       }
       finally
       {
          session.removeConsumer(this);
       }
-
    }
 
    public boolean isClosed()
@@ -282,12 +274,12 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       return id;
    }
 
-   public void changeRate(float newRate) throws MessagingException
-   {
-      checkClosed();
-
-      remotingConnection.send(id, new ConsumerChangeRateMessage(newRate), true);
-   }
+//   public void changeRate(float newRate) throws MessagingException
+//   {
+//      checkClosed();
+//
+//      remotingConnection.send(id, new ConsumerFlowTokenMessage(newRate), true);
+//   }
 
    public void handleMessage(final DeliverMessage message) throws Exception
    {
@@ -324,13 +316,34 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
          buffer.addLast(message, coreMessage.getPriority());
 
-         if (trace)
+         if (receiverThread != null)
          {
-            log.trace(this + " added message(s) to the buffer are now "
-                  + buffer.size() + " messages");
+            mainLock.notify();
          }
+         else if (handler != null)
+         {
+            if (direct)
+            {
+               //Dispatch it directly on remoting thread
+               
+               boolean expired = message.getMessage().isExpired();
 
-         messageAdded();
+               session.delivered(message.getDeliveryID(), expired);
+               
+               flowControl();
+
+               if (!expired)
+               {
+                  handler.onMessage(message.getMessage());
+               }
+            }
+            else if (!listenerRunning)
+            {
+               listenerRunning = true;
+
+               queueRunner();
+            }
+         }
       }
    }
 
@@ -356,118 +369,107 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // Private
    // --------------------------------------------------------------------------------------
 
-   private void checkSendChangeRate() throws MessagingException
+   private void flowControl() throws MessagingException
    {
-      consumeCount++;
-
-      if (consumeCount == bufferSize)
+      if (tokenBatchSize > 0)
       {
-         consumeCount = 0;
-
-         changeRate(1.0f);
+         tokensToSend++;
+   
+         if (tokensToSend == tokenBatchSize)
+         {
+            tokensToSend = 0;
+            
+            remotingConnection.send(id, new ConsumerFlowTokenMessage(tokenBatchSize), true);                  
+         }
       }
    }
-
+   
    private void waitForOnMessageToComplete()
    {
       // Wait for any onMessage() executions to complete
 
-      if (Thread.currentThread().equals(sessionExecutor.getThread()))
+      if (Thread.currentThread() == onMessageThread)
       {
-         // the current thread already closing this ClientConsumer (this happens
-         // when the
-         // session is closed from within the MessageListener.onMessage(), for
-         // example), so no need
-         // to register another Closer (see
-         // http://jira.jboss.org/jira/browse/JBMESSAGING-542)
+         // If called from inside onMessage then return immediately - otherwise would block forever
          return;
       }
 
       Future result = new Future();
 
-      try
-      {
-         sessionExecutor.execute(new Closer(result));
+      sessionExecutor.execute(new Closer(result));
 
-         result.getResult();
-      }
-      catch (InterruptedException e)
-      {
-      }
+      result.getResult();
    }
 
-   private void queueRunner(ListenerRunner runner)
+   private void queueRunner()
    {
-      try
-      {
-         this.sessionExecutor.execute(runner);
-      }
-      catch (InterruptedException e)
-      {
-      }
+      sessionExecutor.execute(new ListenerRunner());
    }
-
-   private void messageAdded()
-   {
-      boolean notified = false;
-
-      if (trace)
-      {
-         log.trace("Receiver thread:" + receiverThread + " handler:" + handler
-               + " listenerRunning:" + listenerRunning + " sessionExecutor:"
-               + sessionExecutor);
-      }
-
-      // If we have a thread waiting on receive() we notify it
-      if (receiverThread != null)
-      {
-         if (trace)
-         {
-            log.trace(this + " notifying receiver/waiter thread");
-         }
-
-         mainLock.notifyAll();
-
-         notified = true;
-      }
-      else if (handler != null)
-      {
-         // We have a message handler
-         if (!listenerRunning)
-         {
-            listenerRunning = true;
-
-            if (trace)
-            {
-               log.trace(this + " scheduled a new ListenerRunner");
-            }
-
-            this.queueRunner(new ListenerRunner());
-         }
-
-         // TODO - Execute onMessage on same thread for even better throughput
-      }
-
-      // Make sure we notify any thread waiting for last delivery
-      if (!notified)
-      {
-         if (trace)
-         {
-            log.trace("Notifying");
-         }
-
-         mainLock.notifyAll();
-      }
-   }
-
-  
 
    private void checkClosed() throws MessagingException
    {
-      if (closed) { throw new MessagingException(
-            MessagingException.OBJECT_CLOSED, "Consumer is closed"); }
+      if (closed)
+      {
+         throw new MessagingException(MessagingException.OBJECT_CLOSED, "Consumer is closed");
+      }
    }
+   
+   private void onMessageLoop()
+   {
+      try
+      {
+         onMessageThread = Thread.currentThread();
 
+         DeliverMessage msg = null;
+
+         MessageHandler theListener = null;
+                  
+         synchronized (mainLock)
+         {
+            if (handler == null || buffer.isEmpty())
+            {
+               listenerRunning = false;
+
+               return;
+            }
+
+            theListener = handler;
+
+            msg = buffer.removeFirst();              
+         }
+
+         if (msg != null)
+         {
+            boolean expired = msg.getMessage().isExpired();
+
+            session.delivered(msg.getDeliveryID(), expired);
+            
+            flowControl();
+
+            if (!expired)
+            {
+               theListener.onMessage(msg.getMessage());
+            }
+         }
+
+         synchronized (mainLock)
+         {
+            if (!buffer.isEmpty())
+            {
+               queueRunner();
+            }
+            else
+            {
+               listenerRunning = false;
+            }
+         }
+      }
+      catch (MessagingException e)
+      {
+         log.error("Failure in ListenerRunner", e);
+      }
+   }
+   
    // Inner classes
    // --------------------------------------------------------------------------------
 
@@ -489,107 +491,12 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          result.setResult(null);
       }
    }
-
-   /*
-    * This class handles the execution of onMessage methods
-    */
+     
    private class ListenerRunner implements Runnable
    {
       public void run()
       {
-         try
-         {
-            DeliverMessage msg = null;
-
-            MessageHandler theListener = null;
-
-            synchronized (mainLock)
-            {
-               if (handler == null || buffer.isEmpty())
-               {
-                  listenerRunning = false;
-
-                  if (trace)
-                  {
-                     log.trace("no handler or buffer is empty, returning");
-                  }
-
-                  return;
-               }
-
-               theListener = handler;
-
-               // remove a message from the buffer
-
-               msg = buffer.removeFirst();
-
-               checkSendChangeRate();
-            }
-
-            /*
-             * Bug here is as follows: The next runner gets scheduled BEFORE the
-             * on message is executed so if the onmessage fails on acking it
-             * will be put on hold and failover will kick in, this will clear
-             * the executor so the next queud one disappears at everything
-             * grinds to a halt
-             * 
-             * Solution - don't use a session executor - have a session thread
-             * instead much nicer
-             */
-
-            if (msg != null)
-            {
-               boolean expired = msg.getMessage().isExpired();
-
-               session.delivered(msg.getDeliveryID(), expired);
-
-               if (!expired)
-               {
-                  theListener.onMessage(msg.getMessage());
-               }
-            }
-
-            synchronized (mainLock)
-            {
-               if (!buffer.isEmpty())
-               {
-                  // Queue up the next runner to run
-
-                  if (trace)
-                  {
-                     log
-                           .trace("More messages in buffer so queueing next onMessage to run");
-                  }
-
-                  queueRunner(this);
-
-                  if (trace)
-                  {
-                     log.trace("Queued next onMessage to run");
-                  }
-               }
-               else
-               {
-                  if (trace)
-                  {
-                     log
-                           .trace("no more messages in buffer, marking handler as not running");
-                  }
-
-                  listenerRunning = false;
-               }
-            }
-
-            if (trace)
-            {
-               log.trace("Exiting run()");
-            }
-         }
-         catch (MessagingException e)
-         {
-            log.error("Failure in ListenerRunner", e);
-         }
+         onMessageLoop();
       }
    }
-
 }

@@ -6,15 +6,15 @@
  */
 package org.jboss.messaging.core.remoting.codec;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.CONS_CHANGERATE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.CONS_FLOWTOKEN;
 
-import org.jboss.messaging.core.remoting.wireformat.ConsumerChangeRateMessage;
+import org.jboss.messaging.core.remoting.wireformat.ConsumerFlowTokenMessage;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class ConsumerChangeRateMessageCodec extends
-      AbstractPacketCodec<ConsumerChangeRateMessage>
+public class ConsumerFlowTokenMessageCodec extends AbstractPacketCodec<ConsumerFlowTokenMessage>
 {
    // Constants -----------------------------------------------------
 
@@ -24,9 +24,9 @@ public class ConsumerChangeRateMessageCodec extends
 
    // Constructors --------------------------------------------------
 
-   public ConsumerChangeRateMessageCodec()
+   public ConsumerFlowTokenMessageCodec()
    {
-      super(CONS_CHANGERATE);
+      super(CONS_FLOWTOKEN);
    }
 
    // Public --------------------------------------------------------
@@ -34,14 +34,14 @@ public class ConsumerChangeRateMessageCodec extends
    // AbstractPacketCodec overrides ---------------------------------
 
    @Override
-   protected void encodeBody(ConsumerChangeRateMessage message, RemotingBuffer out) throws Exception
+   protected void encodeBody(ConsumerFlowTokenMessage message, RemotingBuffer out) throws Exception
    {
-      out.putInt(FLOAT_LENGTH);
-      out.putFloat(message.getRate());
+      out.putInt(INT_LENGTH);
+      out.putFloat(message.getTokens());
    }
 
    @Override
-   protected ConsumerChangeRateMessage decodeBody(RemotingBuffer in)
+   protected ConsumerFlowTokenMessage decodeBody(RemotingBuffer in)
          throws Exception
    {
       int bodyLength = in.getInt();
@@ -50,9 +50,7 @@ public class ConsumerChangeRateMessageCodec extends
          return null;
       }
 
-      float rate = in.getFloat();
-
-      return new ConsumerChangeRateMessage(rate);
+      return new ConsumerFlowTokenMessage(in.getInt());
    }
 
    // Package protected ---------------------------------------------
