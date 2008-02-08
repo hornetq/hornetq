@@ -250,40 +250,7 @@ public class ServerSessionEndpoint
          throw new IllegalStateException("Cannot find consumer with id " + consumerId + " to remove");
       }      
    }
-
-//   void localClose() throws Exception
-//   {
-//      Map<String, ServerConsumerEndpoint> consumersClone = new HashMap<String, ServerConsumerEndpoint>(consumers);
-//      
-//      for (ServerConsumerEndpoint consumer: consumersClone.values())
-//      {
-//         consumer.close();
-//      }
-//
-//      consumers.clear();
-//
-//      Map<String, ServerBrowserEndpoint> browsersClone = new HashMap<String, ServerBrowserEndpoint>(browsers);
-//      
-//      for (ServerBrowserEndpoint browser: browsersClone.values())
-//      {
-//         browser.close();
-//      }
-//
-//      consumers.clear();
-//
-//      browsers.clear();
-//
-//      rollback();
-//
-//      executor.shutdown();
-//
-//      deliveries.clear();
-//
-//      sp.removeSession(id);
-//
-//      closed = true;
-//   }
-
+   
    synchronized void handleDelivery(MessageReference ref, ServerConsumerEndpoint consumer, PacketSender sender) throws Exception
    {
       // FIXME - we shouldn't have to pass in the packet Sender - this should be

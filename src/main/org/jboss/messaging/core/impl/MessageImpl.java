@@ -95,10 +95,6 @@ public class MessageImpl implements Message
     */
    private Semaphore refsLock = new Semaphore(1);
    
-      
-   //FIXME - does scheduledDeliveryTime belong on message? surely on SessionSendMessage
-  // private long scheduledDeliveryTime;
-         
    // Constructors --------------------------------------------------
 
    /*

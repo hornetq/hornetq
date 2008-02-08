@@ -23,20 +23,15 @@ public class DeliverMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
 
-   //FIXME - we do not need all these fields
-   
    private final Message message;
 
    private final long deliveryID;
-
-   private final int deliveryCount;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public DeliverMessage(Message message, long deliveryID,
-                         int deliveryCount)
+   public DeliverMessage(Message message, long deliveryID)
    {
       super(SESS_DELIVER);
 
@@ -44,7 +39,6 @@ public class DeliverMessage extends AbstractPacket
 
       this.message = message;
       this.deliveryID = deliveryID;
-      this.deliveryCount = deliveryCount;
    }
 
    // Public --------------------------------------------------------
@@ -59,18 +53,12 @@ public class DeliverMessage extends AbstractPacket
       return deliveryID;
    }
 
-   public int getDeliveryCount()
-   {
-      return deliveryCount;
-   }
-
    @Override
    public String toString()
    {
       StringBuffer buf = new StringBuffer(getParentString());
       buf.append(", message=" + message);
-      buf.append(", deliveryID=" + deliveryID);
-      buf.append(", deliveryCount=" + deliveryCount);
+      buf.append(", deliveryID=" + deliveryID);   
       buf.append("]");
       return buf.toString();
    }

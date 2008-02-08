@@ -111,8 +111,6 @@ public class ServerConsumerEndpoint implements Consumer
       
       this.autoDeleteQueue = autoDeleteQueue;
       
-      log.info("Enable flow control is " + enableFlowControl);
-      
       this.enableFlowControl = enableFlowControl;
       
       // adding the consumer to the queue

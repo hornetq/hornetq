@@ -38,16 +38,14 @@ public class DeliverMessageCodec extends AbstractPacketCodec<DeliverMessage>
    {
       byte[] encodedMsg = encodeMessage(message.getMessage());
       long deliveryID = message.getDeliveryID();
-      int deliveryCount = message.getDeliveryCount();
 
-      int bodyLength = INT_LENGTH + encodedMsg.length
+      int bodyLength = encodedMsg.length
             + LONG_LENGTH + INT_LENGTH;
       out.putInt(bodyLength);
 
       out.putInt(encodedMsg.length);
       out.put(encodedMsg);
       out.putLong(deliveryID);
-      out.putInt(deliveryCount);
    }
 
    @Override
@@ -65,9 +63,8 @@ public class DeliverMessageCodec extends AbstractPacketCodec<DeliverMessage>
       in.get(encodedMsg);
       Message msg = decodeMessage(encodedMsg);
       long deliveryID = in.getLong();
-      int deliveryCount = in.getInt();
 
-      return new DeliverMessage(msg, deliveryID, deliveryCount);
+      return new DeliverMessage(msg, deliveryID);
    }
 
    // Package protected ---------------------------------------------

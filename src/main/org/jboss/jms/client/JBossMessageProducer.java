@@ -332,10 +332,10 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
 
       if (this.defaultDestination != null && !this.defaultDestination.equals(destination))
       {
-         throw new UnsupportedOperationException("Where a default destination is specified " +
-                                                 "for the sender and a destination is " +
-                                                 "specified in the arguments to the send, " +
-                                                 "these destinations must be equal");
+         throw new JMSException("Where a default destination is specified " +
+                                "for the sender and a destination is " +
+                                "specified in the arguments to the send, " +
+                                "these destinations must be equal");
       }
       
       JBossMessage jbm;

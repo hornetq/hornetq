@@ -274,13 +274,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       return id;
    }
 
-//   public void changeRate(float newRate) throws MessagingException
-//   {
-//      checkClosed();
-//
-//      remotingConnection.send(id, new ConsumerFlowTokenMessage(newRate), true);
-//   }
-
    public void handleMessage(final DeliverMessage message) throws Exception
    {
       synchronized (mainLock)
@@ -311,8 +304,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
          // Add it to the buffer
          Message coreMessage = message.getMessage();
-
-         coreMessage.setDeliveryCount(message.getDeliveryCount());
 
          buffer.addLast(message, coreMessage.getPriority());
 

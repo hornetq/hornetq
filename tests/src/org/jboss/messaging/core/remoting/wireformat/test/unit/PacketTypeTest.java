@@ -675,13 +675,12 @@ public class PacketTypeTest extends UnitTestCase
    public void testDeliverMessage() throws Exception
    {
       Message msg = new MessageImpl();
-      DeliverMessage message = new DeliverMessage(msg, randomLong(), 23);
+      DeliverMessage message = new DeliverMessage(msg, randomLong());
 
       AbstractPacketCodec codec = new DeliverMessageCodec();
       SimpleRemotingBuffer buffer = encode(message, codec);
       checkHeader(buffer, message);
-      checkBody(buffer, encodeMessage(msg), message.getDeliveryID(), message
-            .getDeliveryCount());
+      checkBody(buffer, encodeMessage(msg), message.getDeliveryID());
       buffer.rewind();
 
       AbstractPacket decodedPacket = codec.decode(buffer);
@@ -692,8 +691,6 @@ public class PacketTypeTest extends UnitTestCase
       assertEquals(message.getMessage().getMessageID(), decodedMessage
             .getMessage().getMessageID());
       assertEquals(message.getDeliveryID(), decodedMessage.getDeliveryID());
-      assertEquals(message.getDeliveryCount(), decodedMessage
-            .getDeliveryCount());
    }
 
    public void testSessionAcknowledgeMessage() throws Exception

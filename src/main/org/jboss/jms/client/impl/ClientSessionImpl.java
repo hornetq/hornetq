@@ -498,6 +498,9 @@ public class ClientSessionImpl implements ClientSessionInternal
    {
       try
       {                              
+         //Need to flush any acks to server first
+         acknowledgeInternal(false);
+                  
          SessionXAResponseMessage response = (SessionXAResponseMessage)remotingConnection.send(id, new SessionXAForgetMessage(xid));
          
          if (response.isError())
@@ -595,7 +598,6 @@ public class ClientSessionImpl implements ClientSessionInternal
    {
       try
       {
-
          SessionXARollbackMessage packet = new SessionXARollbackMessage(xid);
          
          SessionXAResponseMessage response = (SessionXAResponseMessage)remotingConnection.send(id, packet);
@@ -637,10 +639,16 @@ public class ClientSessionImpl implements ClientSessionInternal
          
          if (flags == XAResource.TMJOIN)
          {
+            //Need to flush any acks to server first
+            acknowledgeInternal(false);
+                        
             packet = new SessionXAJoinMessage(xid);                  
          }
          else if (flags == XAResource.TMRESUME)
          {
+            //Need to flush any acks to server first
+            acknowledgeInternal(false);
+                        
             packet = new SessionXAResumeMessage(xid);
          }
          else if (flags == XAResource.TMNOFLAGS)

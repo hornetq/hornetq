@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.impl;
 
 import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
@@ -67,9 +68,18 @@ public class DeliveryImpl implements Delivery
    
    public void deliver() throws Exception
    {
-      DeliverMessage message = new DeliverMessage(reference.getMessage(),
-                                                  deliveryID,
-                                                  reference.getDeliveryCount() + 1);
+      /*
+      Note we copy the message before sending.
+      This is because delivery count may be different for the same message sent to different topic subscribers
+      And invm the same message instance would otherwise be passed to all consumers
+      For the non INVM case this copy is unncessary and can be optimised away TODO - although the overhead of
+      copying is actually quite small
+      */
+      Message copy = reference.getMessage().copy();
+      
+      copy.setDeliveryCount(reference.getDeliveryCount() + 1);
+      
+      DeliverMessage message = new DeliverMessage(copy, deliveryID);
       
       message.setTargetID(consumerID);
       
