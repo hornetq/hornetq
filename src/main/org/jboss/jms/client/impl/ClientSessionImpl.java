@@ -405,10 +405,10 @@ public class ClientSessionImpl implements ClientSessionInternal
       //1. flush any unacked message to the server
       
       acknowledgeInternal(false);
-      
+
       //2. cancel all deliveries on server but not in tx
             
-      remotingConnection.send(id, new SessionCancelMessage(-1, false));      
+      remotingConnection.send(id, new SessionCancelMessage(-1, false));
    }
    
    public void removeProducer(ClientProducer producer)

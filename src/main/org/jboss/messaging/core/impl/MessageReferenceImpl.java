@@ -43,7 +43,7 @@ public class MessageReferenceImpl implements MessageReference
 
    private boolean trace = log.isTraceEnabled();
    
-   private int deliveryCount;   
+   private volatile int deliveryCount;   
    
    private long scheduledDeliveryTime;
    
