@@ -526,7 +526,7 @@ public class TransactedSessionTest extends JMSTestCase
 
          assertEquals("a message", tm.getText());
 
-         assertEquals(3, tm.getIntProperty("JMSXDeliveryCount"));
+         assertEquals(2, tm.getIntProperty("JMSXDeliveryCount"));
 
          assertTrue(tm.getJMSRedelivered());
       }
