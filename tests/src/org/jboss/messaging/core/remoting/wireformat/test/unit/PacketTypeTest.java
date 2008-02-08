@@ -655,7 +655,7 @@ public class PacketTypeTest extends UnitTestCase
       assertEquals(CONN_STOP, decodedPacket.getType());
    }
 
-   public void testChangeRateMessage() throws Exception
+   public void testConsumerFlowTokenMessage() throws Exception
    {
       ConsumerFlowTokenMessage message = new ConsumerFlowTokenMessage(10);
       AbstractPacketCodec codec = new ConsumerFlowTokenMessageCodec();

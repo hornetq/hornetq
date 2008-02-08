@@ -37,7 +37,7 @@ public class ConsumerFlowTokenMessageCodec extends AbstractPacketCodec<ConsumerF
    protected void encodeBody(ConsumerFlowTokenMessage message, RemotingBuffer out) throws Exception
    {
       out.putInt(INT_LENGTH);
-      out.putFloat(message.getTokens());
+      out.putInt(message.getTokens());
    }
 
    @Override
