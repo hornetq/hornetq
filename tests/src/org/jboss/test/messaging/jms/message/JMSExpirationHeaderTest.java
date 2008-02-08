@@ -290,7 +290,9 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
       receiverThread.start();
 
       Thread.sleep(3000);
-      receiverThread.interrupt();
+      //receiverThread.interrupt();
+      
+      queueConsumer.close();
 
       // wait for the reading thread to conclude
       latch.acquire();

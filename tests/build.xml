@@ -508,6 +508,9 @@
 	       <exclude name="**/jms/ClientExitTest.class"/>
 	       <exclude name="**/jms/ConnectionConsumerTest.class"/>
 	       
+	       
+	       <exclude name="**/messaging/core/remoting/impl/**/*Test.class"/>
+	       
                <include name="**/messaging/util/**/${test-mask}.class"/>
                <exclude name="**/jms/MemLeakTest.class"/>
                <exclude name="**/jms/RemotingConnectionConfigurationTest.class"/>
