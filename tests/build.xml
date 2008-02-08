@@ -520,8 +520,6 @@
                <exclude name="**/jms/bridge/**"/>
                <exclude name="**/jms/manual/**"/>
                <exclude name="**/jms/clustering/**"/>
-               <exclude name="**/jms/ExpiryQueueTest.class"/>
-               <exclude name="**/jms/DLQTest.class"/>
                <exclude name="**/postoffice/**"/>
                <exclude name="**/jms/JCAWrapperTest.class"/>
                <exclude name="**/jms/server/ServerPeerTest.class"/>
@@ -643,8 +641,6 @@
                <exclude name="**/jms/JCAWrapperTest.class"/>
                <exclude name="**/jms/ClientExitTest.class"/>
 
-               <exclude name="**/jms/ExpiryQueueTest.class"/>
-               <exclude name="**/jms/DLQTest.class"/>
                <exclude name="**/jms/SecurityTest.class"/>
                <exclude name="**/jms/crash/*Test.class"/>
 	       

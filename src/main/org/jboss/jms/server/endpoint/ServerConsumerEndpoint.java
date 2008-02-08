@@ -88,6 +88,8 @@ public class ServerConsumerEndpoint implements Consumer
    private final boolean autoDeleteQueue;
    
    private final boolean enableFlowControl;
+   
+   private final PersistenceManager persistenceManager;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -113,6 +115,8 @@ public class ServerConsumerEndpoint implements Consumer
       
       this.enableFlowControl = enableFlowControl;
       
+      this.persistenceManager = sessionEndpoint.getConnectionEndpoint().getMessagingServer().getPersistenceManager();
+      
       // adding the consumer to the queue
       messageQueue.addConsumer(this);
       
@@ -132,7 +136,7 @@ public class ServerConsumerEndpoint implements Consumer
 
       if (ref.getMessage().isExpired())
       {         
-         sessionEndpoint.expireDelivery(ref);
+         ref.expire(persistenceManager);
          
          return HandleStatus.HANDLED;
       }

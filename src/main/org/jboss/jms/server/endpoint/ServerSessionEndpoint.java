@@ -213,28 +213,6 @@ public class ServerSessionEndpoint
    // Package protected
    // ----------------------------------------------------------------------------
 
-   void expireDelivery(MessageReference ref) throws Exception
-   {
-      Queue expiryQueue = ref.getQueue().getExpiryQueue();
-
-      if (expiryQueue != null)
-      {
-         Message copy = makeCopyForDLQOrExpiry(true, ref);
-
-         moveInTransaction(copy, ref, expiryQueue, true);
-      }
-      else
-      {
-         log.warn("No expiry queue has been configured so removing expired " + ref);
-
-         // TODO - tidy up these references - ugly
-         ref.acknowledge(this.getConnectionEndpoint().getMessagingServer()
-               .getPersistenceManager());
-      }
-
-      // TODO
-   }
-
    void removeBrowser(String browserId) throws Exception
    {
       if (browsers.remove(browserId) == null)
@@ -497,8 +475,10 @@ public class ServerSessionEndpoint
       }
       else if (expired)
       {
-         if (deliveryID == -1) { throw new IllegalArgumentException(
-               "Invalid delivery id"); }
+         if (deliveryID == -1)
+         {
+            throw new IllegalArgumentException("Invalid delivery id");
+         }
 
          // Expire a single reference
 
@@ -508,8 +488,7 @@ public class ServerSessionEndpoint
 
             if (delivery.getDeliveryID() == deliveryID)
             {
-               // TODO - send to expiry queue
-               delivery.getReference().acknowledge(sp.getPersistenceManager());
+               delivery.getReference().expire(sp.getPersistenceManager());
 
                iter.remove();
 
@@ -818,134 +797,6 @@ public class ServerSessionEndpoint
 
    // Private
    // --------------------------------------------------------------------------------------
-
-   // private void cancelDeliveryInternal(Cancel cancel) throws Exception
-   // {
-   // DeliveryRecord rec =
-   // (DeliveryRecord)deliveries.remove(cancel.getDeliveryId());
-   //
-   // if (rec == null)
-   // {
-   // //The delivery might not be found, if the session is not replicated (i.e.
-   // auto_ack or dups_ok)
-   // //and has failed over since recoverDeliveries won't have been called
-   // if (trace)
-   // {
-   // log.trace("Cannot find delivery to cancel, session probably failed over
-   // and is not replicated");
-   // }
-   // return;
-   // }
-   //
-   // MessageReference ref = rec.ref;
-   //
-   // //Note we check the flag *and* evaluate again, this is because the server
-   // and client clocks may
-   // //be out of synch and don't want to send back to the client a message it
-   // thought it has sent to
-   // //the expiry queue
-   // boolean expired = cancel.isExpired() || ref.getMessage().isExpired();
-   //
-   // //Note we check the flag *and* evaluate again, this is because the server
-   // value of maxDeliveries
-   // //might get changed after the client has sent the cancel - and we don't
-   // want to end up cancelling
-   // //back to the original queue
-   // boolean reachedMaxDeliveryAttempts =
-   // cancel.isReachedMaxDeliveryAttempts() || cancel.getDeliveryCount() >=
-   // rec.maxDeliveryAttempts;
-   //
-   // if (!expired && !reachedMaxDeliveryAttempts)
-   // {
-   // //Normal cancel back to the queue
-   //
-   // ref.setDeliveryCount(cancel.getDeliveryCount());
-   //
-   // //Do we need to set a redelivery delay?
-   //
-   // if (rec.redeliveryDelay != 0)
-   // {
-   // ref.setScheduledDeliveryTime(System.currentTimeMillis() +
-   // rec.redeliveryDelay);
-   // }
-   //
-   // if (trace) { log.trace("Cancelling delivery " + cancel.getDeliveryId()); }
-   //
-   // ref.cancel(sp.getPersistenceManager());
-   //
-   // }
-   // else
-   // {
-   // if (expired)
-   // {
-   // //Sent to expiry queue
-   //
-   // Message copy = makeCopyForDLQOrExpiry(true, ref);
-   //
-   // moveInTransaction(copy, ref, rec.expiryQueue, false);
-   // }
-   // else
-   // {
-   // //Send to DLQ
-   //
-   // Message copy = makeCopyForDLQOrExpiry(false, ref);
-   //
-   // moveInTransaction(copy, ref, rec.dlq, true);
-   // }
-   // }
-   // }
-
-   private Message makeCopyForDLQOrExpiry(boolean expiry, MessageReference ref)
-         throws Exception
-   {
-      // We copy the message and send that to the dlq/expiry queue - this is
-      // because
-      // otherwise we may end up with a ref with the same message id in the
-      // queue more than once
-      // which would barf - this might happen if the same message had been
-      // expire from multiple
-      // subscriptions of a topic for example
-      // We set headers that hold the original message destination, expiry time
-      // and original message id
-
-      if (trace)
-      {
-         log.trace("Making copy of message for DLQ or expiry " + ref);
-      }
-
-      Message msg = ref.getMessage();
-
-      Message copy = msg.copy();
-
-      long newMessageId = sp.getPersistenceManager().generateMessageID();
-
-      copy.setMessageID(newMessageId);
-
-      // reset expiry
-      copy.setExpiration(0);
-
-      if (expiry)
-      {
-         long actualExpiryTime = System.currentTimeMillis();
-
-         copy.putHeader(Message.HDR_ACTUAL_EXPIRY_TIME, actualExpiryTime);
-      }
-
-      return copy;
-   }
-
-   private void moveInTransaction(Message msg, MessageReference ref,
-         Queue queue, boolean dlq) throws Exception
-   {
-      Transaction tx = new TransactionImpl();
-
-      tx.addMessage(msg);
-
-      tx.addAcknowledgement(ref);
-
-      tx.commit(true, getConnectionEndpoint().getMessagingServer()
-            .getPersistenceManager());
-   }
 
    private void addAddress(String address) throws Exception
    {

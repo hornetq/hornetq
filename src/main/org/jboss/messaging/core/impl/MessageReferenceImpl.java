@@ -136,8 +136,44 @@ public class MessageReferenceImpl implements MessageReference
       }
             
       queue.decrementDeliveringCount();
+      
+      int maxDeliveries = queue.getMaxDeliveryAttempts();
+      
+      if (maxDeliveries > 0 && deliveryCount >= maxDeliveries)
+      {
+         if (queue.getDLQ() != null)
+         {
+            Message copyMessage = makeCopyForDLQOrExpiry(false, persistenceManager);
+            
+            moveInTransaction(queue.getDLQ(), copyMessage, persistenceManager);
+         }
+         else
+         {
+            //No DLQ
+            
+            log.warn("Message has reached maximum delivery attempts, no DLQ is configured so dropping it");
+            
+            acknowledge(persistenceManager);
+         }         
+      }
    }
    
+   public void expire(PersistenceManager persistenceManager) throws Exception
+   {
+      if (queue.getExpiryQueue() != null)
+      {
+         Message copyMessage = makeCopyForDLQOrExpiry(false, persistenceManager);
+         
+         moveInTransaction(queue.getExpiryQueue(), copyMessage, persistenceManager);
+      }
+      else
+      {
+         log.warn("Message has expired, no expiry queue is configured so dropping it");
+         
+         acknowledge(persistenceManager);
+      }
+   }
+         
    // Public --------------------------------------------------------
 
    public String toString()
@@ -150,6 +186,50 @@ public class MessageReferenceImpl implements MessageReference
    // Protected -----------------------------------------------------   
    
    // Private -------------------------------------------------------
+   
+   private void moveInTransaction(Queue destinationQueue, Message copyMessage,
+                                  PersistenceManager persistenceManager) throws Exception
+   {
+      copyMessage.createReference(queue.getExpiryQueue());
+      
+      TransactionImpl tx = new TransactionImpl();
+      
+      tx.addMessage(copyMessage);
+      
+      tx.addAcknowledgement(this);
+      
+      tx.commit(true, persistenceManager);
+   }
+   
+   private Message makeCopyForDLQOrExpiry(boolean expiry, PersistenceManager pm) throws Exception
+   {
+      /*
+       We copy the message and send that to the dlq/expiry queue - this is
+       because otherwise we may end up with a ref with the same message id in the
+       queue more than once which would barf - this might happen if the same message had been
+       expire from multiple subscriptions of a topic for example
+       We set headers that hold the original message destination, expiry time
+       and original message id
+      */
+
+      Message copy = message.copy();
+      
+      long newMessageId = pm.generateMessageID();
+      
+      copy.setMessageID(newMessageId);
+      
+      // reset expiry
+      copy.setExpiration(0);
+      
+      if (expiry)
+      {
+         long actualExpiryTime = System.currentTimeMillis();
+      
+         copy.putHeader(Message.HDR_ACTUAL_EXPIRY_TIME, actualExpiryTime);
+      }
+      
+      return copy;
+   }
 
    // Inner classes -------------------------------------------------
    
