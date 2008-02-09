@@ -445,15 +445,7 @@ public class ServerSessionEndpoint
 
          for (Delivery del : deliveries)
          {
-            tx.addAcknowledgement(del.getReference());
-            
-            //We need this - since with auto commit acks, the last ack is considered delivered before it
-            //is acked - e.g. a JMS MessageListener where a RuntimException is thrown from onMessage
-            //in this case we want to ensure that the redelivered flag is set
-            if (autoCommitAcks)
-            {
-               del.getReference().incrementDeliveryCount();
-            }
+            tx.addAcknowledgement(del.getReference());           
          }
 
          deliveries.clear();

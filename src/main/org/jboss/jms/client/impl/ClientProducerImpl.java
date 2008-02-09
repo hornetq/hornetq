@@ -21,6 +21,7 @@
   */
 package org.jboss.jms.client.impl;
 
+import org.jboss.jms.client.api.AcknowledgementHandler;
 import org.jboss.jms.client.api.ClientProducer;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.util.Logger;
@@ -68,6 +69,16 @@ public class ClientProducerImpl implements ClientProducer
       session.send(address, message);
    }
    
+   public void registerAcknowledgementHandler(AcknowledgementHandler handler)
+   {
+      // TODO      
+   }
+
+   public void unregisterAcknowledgementHandler(AcknowledgementHandler handler)
+   {
+      // TODO  
+   }
+
    public synchronized void close() throws MessagingException
    {
       if (closed)
