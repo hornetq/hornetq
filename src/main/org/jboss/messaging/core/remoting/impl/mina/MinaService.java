@@ -151,7 +151,7 @@ public class MinaService implements RemotingService, ConnectionExceptionNotifier
          acceptor = null;
       }
       
-      REGISTRY.unregister();
+      REGISTRY.unregister(remotingConfig);
       
       started = false;
    }

@@ -6,7 +6,6 @@
  */
 package org.jboss.messaging.core.remoting.impl;
 
-import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 
 import java.util.HashMap;
@@ -36,8 +35,7 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
 
    // Attributes ----------------------------------------------------
 
-   private RemotingConfiguration localConfiguration = null;
-   private PacketDispatcher localDispatcher = null;
+   private Map<RemotingConfiguration, PacketDispatcher> localDispatchers = new HashMap<RemotingConfiguration, PacketDispatcher>();
    
    public Map<RemotingConfiguration, NIOConnectorHolder> connectors = new HashMap<RemotingConfiguration, NIOConnectorHolder>();
 
@@ -52,15 +50,14 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
       assert remotingConfig != null;
       assert serverDispatcher != null;
       
-      PacketDispatcher previousDispatcher = localDispatcher;
-      
-      this.localConfiguration = remotingConfig;
-      this.localDispatcher = serverDispatcher;
-      
+      PacketDispatcher previousDispatcher = localDispatchers.get(remotingConfig);
+
+      localDispatchers.put(remotingConfig, serverDispatcher);
       if(log.isDebugEnabled())
       {
-         log.debug("registered " + localDispatcher + " for " + localConfiguration);
+         log.debug("registered " + remotingConfig + " for " + serverDispatcher);
       }
+      
       return (previousDispatcher == null);
    }
 
@@ -68,13 +65,10 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
     * @return <code>true</code> if this RemotingConfiguration was registered,
     *         <code>false</code> else
     */  
-   public boolean unregister()
-   {
-       PacketDispatcher dispatcher = localDispatcher;
+   public boolean unregister(RemotingConfiguration remotingConf)
+   {      
+       PacketDispatcher dispatcher = localDispatchers.remove(remotingConf);
 
-       localConfiguration = null;
-       localDispatcher = null;
-       
        if(log.isDebugEnabled())
        {
           log.debug("unregistered " + dispatcher);
@@ -101,9 +95,10 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
       }
 
       // check if the server is in the same vm than the client
-      if (remotingConfig.equals(localConfiguration))
+      if (localDispatchers.containsKey(remotingConfig))
       {
-         NIOConnector connector = new INVMConnector(localConfiguration.getHost(), localConfiguration
+         PacketDispatcher localDispatcher = localDispatchers.get(remotingConfig);
+         NIOConnector connector = new INVMConnector(remotingConfig.getHost(), remotingConfig
                .getPort(), localDispatcher);
 
          if (log.isDebugEnabled())
@@ -122,11 +117,6 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
       if (transport == TCP)
       {
          connector = new MinaConnector(remotingConfig);
-      } else if (transport == INVM)
-      {
-         assert localDispatcher != null;
-         
-         connector = new INVMConnector(remotingConfig.getHost(), remotingConfig.getPort(), localDispatcher);
       }
 
       if (connector == null)

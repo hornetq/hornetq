@@ -60,11 +60,25 @@ public class ConnectorRegistryTest extends TestCase
       assertTrue(registry.register(remotingConfig, dispatcher));
       assertFalse(registry.register(remotingConfig, dispatcher));
       
-      assertTrue(registry.unregister());
-      assertFalse(registry.unregister());
+      assertTrue(registry.unregister(remotingConfig));
+      assertFalse(registry.unregister(remotingConfig));
 
       assertTrue(registry.register(remotingConfig, dispatcher));
-      assertTrue(registry.unregister());
+      assertTrue(registry.unregister(remotingConfig));
+   }
+   
+   public void testRegistrationForTwoRemotingConfigurations() throws Exception
+   {
+      RemotingConfiguration remotingConfig_1 = new RemotingConfiguration(TCP, "localhost", PORT);
+      RemotingConfiguration remotingConfig_2 = new RemotingConfiguration(TCP, "localhost", PORT + 1);     
+      PacketDispatcher dispatcher_1 = new PacketDispatcher();      
+      PacketDispatcher dispatcher_2 = new PacketDispatcher();
+      
+      assertTrue(registry.register(remotingConfig_1, dispatcher_1));
+      assertTrue(registry.register(remotingConfig_2, dispatcher_2));
+      
+      assertTrue(registry.unregister(remotingConfig_1));
+      assertTrue(registry.unregister(remotingConfig_2));
    }
    
    public void testINVMConnectorFromTCPRemotingConfiguration() throws Exception
@@ -78,7 +92,7 @@ public class ConnectorRegistryTest extends TestCase
       
       assertTrue(connector.getServerURI().startsWith(INVM.toString()));
       
-      assertTrue(registry.unregister());
+      assertTrue(registry.unregister(remotingConfig));
       
       assertNotNull(registry.removeConnector(remotingConfig));
    }

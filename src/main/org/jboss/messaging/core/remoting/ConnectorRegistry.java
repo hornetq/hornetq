@@ -41,7 +41,7 @@ public interface ConnectorRegistry
     * @return <code>true</code> if this RemotingConfiguration was registered,
     *         <code>false</code> else
     */
-   boolean unregister();
+   boolean unregister(RemotingConfiguration remotingConfig);
 
    NIOConnector getConnector(RemotingConfiguration remotingConfig);
 
