@@ -28,19 +28,13 @@ import org.jboss.jms.destination.JBossTopic;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
-import org.jboss.messaging.core.remoting.Interceptor;
-import org.jboss.messaging.core.remoting.wireformat.Packet;
-import org.jboss.messaging.core.remoting.wireformat.PacketType;
-import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.deployers.Deployer;
 import org.jboss.messaging.deployers.DeploymentManager;
 import org.jboss.messaging.util.JNDIUtil;
 import org.jboss.messaging.util.Version;
-import org.jboss.messaging.util.MessagingException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import javax.jms.InvalidDestinationException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
@@ -268,7 +262,6 @@ public class JNDIObjectDeployer extends Deployer
     */
    public void undeploy(Node node) throws Exception
    {
-      System.out.println("JNDIObjectDeployer.undeploy");
    }
 
    /**
