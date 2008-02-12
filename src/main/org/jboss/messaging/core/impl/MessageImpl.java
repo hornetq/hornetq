@@ -440,6 +440,8 @@ public class MessageImpl implements Message
       StreamUtils.writeMap(out, headers, true);
 
       out.writeByte(priority);
+      
+      out.writeInt(deliveryCount);
 
       if (payload != null)
       {
@@ -469,6 +471,8 @@ public class MessageImpl implements Message
 
       priority = in.readByte();
 
+      deliveryCount = in.readInt();
+      
       int length = in.readInt();
 
       if (length == 0)
