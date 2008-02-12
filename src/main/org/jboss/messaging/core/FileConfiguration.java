@@ -71,30 +71,8 @@ public class FileConfiguration extends Configuration
       _remotingBindAddress = getInteger(e, "remoting-bind-address", _remotingBindAddress);
       _remotingTimeout = getInteger(e, "remoting-timeout", _remotingTimeout);
       _remotingDisableInvm = getBoolean(e, "remoting-disable-invm", _remotingDisableInvm);
-      NodeList security = e.getElementsByTagName("default-security-config");
-      if (security.getLength() > 0)
-      {
-         HashSet<Role> securityConfig;
-         securityConfig = new HashSet<Role>();
-         NodeList roles = security.item(0).getChildNodes();
-         for (int k = 0; k < roles.getLength(); k++)
-         {
-            if ("role".equalsIgnoreCase(roles.item(k).getNodeName()))
-            {
-               Boolean read = roles.item(k).getAttributes().getNamedItem(READ_ATTR) != null && Boolean.valueOf(roles.item(k).getAttributes().getNamedItem(READ_ATTR).getNodeValue());
-               Boolean write = roles.item(k).getAttributes().getNamedItem(WRITE_ATTR) != null && Boolean.valueOf(roles.item(k).getAttributes().getNamedItem(WRITE_ATTR).getNodeValue());
-               Boolean create = roles.item(k).getAttributes().getNamedItem(CREATE_ATTR) != null && Boolean.valueOf(roles.item(k).getAttributes().getNamedItem(CREATE_ATTR).getNodeValue());
-               Role role = new Role(roles.item(k).getAttributes().getNamedItem(NAME_ATTR).getNodeValue(),
-                       read,
-                       write,
-                       create);
-               securityConfig.add(role);
-            }
-         }
-         _securityConfig = securityConfig;
-      }
 
-            NodeList defaultInterceptors = e.getElementsByTagName("default-interceptors-config");
+      NodeList defaultInterceptors = e.getElementsByTagName("default-interceptors-config");
 
       ArrayList<String> interceptorList = new ArrayList<String>();
       if (defaultInterceptors.getLength() > 0)

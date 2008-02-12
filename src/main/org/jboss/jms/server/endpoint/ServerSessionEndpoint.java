@@ -61,7 +61,7 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.jboss.jms.server.container.SecurityAspect;
+import org.jboss.jms.server.container.SecurityManager;
 import org.jboss.jms.server.security.CheckType;
 import org.jboss.messaging.core.Binding;
 import org.jboss.messaging.core.Delivery;
@@ -114,16 +114,16 @@ import org.jboss.messaging.util.MessagingException;
 
 /**
  * Session implementation
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> Parts derived from
  *         JBM 1.x ServerSessionEndpoint by
- * 
+ *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @version <tt>$Revision$</tt>
- * 
+ *
  * $Id$
  */
 public class ServerSessionEndpoint
@@ -131,7 +131,8 @@ public class ServerSessionEndpoint
    // Constants
    // ------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(ServerSessionEndpoint.class);
+   private static final Logger log = Logger
+         .getLogger(ServerSessionEndpoint.class);
 
    // Static
    // ---------------------------------------------------------------------------------------
@@ -139,7 +140,7 @@ public class ServerSessionEndpoint
    // Attributes
    // -----------------------------------------------------------------------------------
 
-   private final SecurityAspect security = new SecurityAspect();
+   private final SecurityManager security = new SecurityManager();
 
    private final boolean trace = log.isTraceEnabled();
 
@@ -218,7 +219,7 @@ public class ServerSessionEndpoint
       if (browsers.remove(browserId) == null)
       {
          throw new IllegalStateException("Cannot find browser with id " + browserId + " to remove");
-      }      
+      }
    }
 
    void removeConsumer(String consumerId) throws Exception
@@ -226,9 +227,9 @@ public class ServerSessionEndpoint
       if (consumers.remove(consumerId) == null)
       {
          throw new IllegalStateException("Cannot find consumer with id " + consumerId + " to remove");
-      }      
+      }
    }
-   
+
    synchronized void handleDelivery(MessageReference ref, ServerConsumerEndpoint consumer, PacketSender sender) throws Exception
    {
       // FIXME - we shouldn't have to pass in the packet Sender - this should be
@@ -245,7 +246,7 @@ public class ServerSessionEndpoint
    void setStarted(boolean s) throws Exception
    {
       Map<String, ServerConsumerEndpoint> consumersClone = new HashMap<String, ServerConsumerEndpoint>(consumers);
-      
+
       for (ServerConsumerEndpoint consumer: consumersClone.values())
       {
          consumer.setStarted(s);
@@ -267,7 +268,7 @@ public class ServerSessionEndpoint
    public void close() throws Exception
    {
       Map<String, ServerConsumerEndpoint> consumersClone = new HashMap<String, ServerConsumerEndpoint>(consumers);
-      
+
       for (ServerConsumerEndpoint consumer: consumersClone.values())
       {
          consumer.close();
@@ -276,7 +277,7 @@ public class ServerSessionEndpoint
       consumers.clear();
 
       Map<String, ServerBrowserEndpoint> browsersClone = new HashMap<String, ServerBrowserEndpoint>(browsers);
-      
+
       for (ServerBrowserEndpoint browser: browsersClone.values())
       {
          browser.close();
@@ -300,8 +301,22 @@ public class ServerSessionEndpoint
 
    private boolean send(String address, Message msg) throws Exception
    {
+      //check the address exists, if it doesnt add if the user has the correct privileges
+      if(!postOffice.containsAllowableAddress(address))
+      {
+         try
+         {
+            security.check(address, CheckType.CREATE, getConnectionEndpoint());
+            postOffice.addAllowableAddress(address);
+         }
+         catch (MessagingException e)
+         {
+            throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
+         }
+      }
+      //check the user has write access to this address
+      security.check(address, CheckType.WRITE, getConnectionEndpoint());
       // Assign the message an internal id - this is used to key it in the store
-
       msg.setMessageID(sp.getPersistenceManager().generateMessageID());
 
       // This allows the no-local consumers to filter out the messages that come
@@ -378,7 +393,7 @@ public class ServerSessionEndpoint
                else
                {
                   tx.addAcknowledgement(ref);
-                  
+
                   //Del count is not actually updated in storage unless it's cancelled
                   ref.incrementDeliveryCount();
                }
@@ -416,7 +431,7 @@ public class ServerSessionEndpoint
                else
                {
                   tx.addAcknowledgement(ref);
-                  
+
                   //Del count is not actually updated in storage unless it's cancelled
                   ref.incrementDeliveryCount();
                }
@@ -445,7 +460,7 @@ public class ServerSessionEndpoint
 
          for (Delivery del : deliveries)
          {
-            tx.addAcknowledgement(del.getReference());           
+            tx.addAcknowledgement(del.getReference());
          }
 
          deliveries.clear();
@@ -809,6 +824,7 @@ public class ServerSessionEndpoint
       {
          throw new MessagingException(MessagingException.ADDRESS_EXISTS, "Address already exists: " + address);
       }
+      security.check(address, CheckType.CREATE, getConnectionEndpoint());
       postOffice.addAllowableAddress(address);
    }
 
@@ -824,6 +840,19 @@ public class ServerSessionEndpoint
          String filterString, boolean durable, boolean temporary)
          throws Exception
    {
+      //make sure the user has privileges to create this address
+      if(!postOffice.containsAllowableAddress(address))
+      {
+         try
+         {
+            security.check(address, CheckType.CREATE, getConnectionEndpoint());
+            postOffice.addAllowableAddress(address);
+         }
+         catch (MessagingException e)
+         {
+            throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
+         }
+      }
       Binding binding = postOffice.getBinding(queueName);
 
       if (binding != null)
@@ -885,7 +914,7 @@ public class ServerSessionEndpoint
       {
          throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
       }
-
+      security.check(binding.getAddress(), CheckType.READ, getConnectionEndpoint());
       int prefetchSize = connectionEndpoint.getPrefetchSize();
 
       String consumerID = UUID.randomUUID().toString();
@@ -917,24 +946,24 @@ public class ServerSessionEndpoint
    }
 
    public SessionQueueQueryResponseMessage executeQueueQuery(SessionQueueQueryMessage request) throws Exception
-   {      
+   {
       if (request.getQueueName() == null)
       {
          throw new IllegalArgumentException("Queue name is null");
       }
-      
+
       Binding binding = postOffice.getBinding(request.getQueueName());
 
       SessionQueueQueryResponseMessage response;
-      
+
       if (binding != null)
       {
          Queue queue = binding.getQueue();
-         
+
          Filter filter = queue.getFilter();
 
          String filterString = filter == null ? null : filter.getFilterString();
-         
+
          response = new SessionQueueQueryResponseMessage(queue.isDurable(), queue.isTemporary(), queue.getMaxSize(),
                                            queue.getConsumerCount(), queue.getMessageCount(),
                                            filterString, binding.getAddress());
@@ -942,45 +971,57 @@ public class ServerSessionEndpoint
       else
       {
          response = new SessionQueueQueryResponseMessage();
-      }      
-      
+      }
+
       return response;
    }
-   
+
    public SessionBindingQueryResponseMessage executeBindingQuery(SessionBindingQueryMessage request) throws Exception
-   {      
+   {
       if (request.getAddress() == null)
       {
          throw new IllegalArgumentException("Address is null");
       }
-      
+
       boolean exists = postOffice.containsAllowableAddress(request.getAddress());
 
       List<String> queueNames = new ArrayList<String>();
-      
+
       if (exists)
       {
          List<Binding> bindings = postOffice.getBindingsForAddress(request.getAddress());
-         
+
          for (Binding binding: bindings)
          {
             queueNames.add(binding.getQueue().getName());
          }
       }
-      
+
       return new SessionBindingQueryResponseMessage(exists, queueNames);
    }
 
    private SessionCreateBrowserResponseMessage createBrowser(String queueName, String selector)
          throws Exception
    {
+      if(!postOffice.containsAllowableAddress(queueName))
+      {
+         try
+         {
+            security.check(queueName, CheckType.CREATE, this.getConnectionEndpoint());
+            postOffice.addAllowableAddress(queueName);
+         }
+         catch (MessagingException e)
+         {
+            throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
+         }
+      }
       Binding binding = postOffice.getBinding(queueName);
 
       if (binding == null)
       {
          throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
       }
-
+      security.check(binding.getAddress(), CheckType.READ, this.getConnectionEndpoint());
       String browserID = UUID.randomUUID().toString();
 
       ServerBrowserEndpoint ep = new ServerBrowserEndpoint(this, browserID,
@@ -999,12 +1040,6 @@ public class ServerSessionEndpoint
       log.trace(this + " created and registered " + ep);
 
       return new SessionCreateBrowserResponseMessage(browserID);
-   }
-
-   private void checkSecurityCreateConsumerDelegate(String address,
-         String subscriptionName) throws Exception
-   {
-      security.check(address, CheckType.READ, this.getConnectionEndpoint());
    }
 
    public PacketHandler newHandler()
@@ -1070,7 +1105,7 @@ public class ServerSessionEndpoint
          else if (type == SESS_BINDINGQUERY)
          {
             SessionBindingQueryMessage request = (SessionBindingQueryMessage)packet;
-            
+
             response = executeBindingQuery(request);
          }
          else if (type == SESS_CREATEBROWSER)

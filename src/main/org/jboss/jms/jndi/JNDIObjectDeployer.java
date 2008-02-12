@@ -28,10 +28,15 @@ import org.jboss.jms.destination.JBossTopic;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
+import org.jboss.messaging.core.remoting.Interceptor;
+import org.jboss.messaging.core.remoting.wireformat.Packet;
+import org.jboss.messaging.core.remoting.wireformat.PacketType;
+import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.deployers.Deployer;
 import org.jboss.messaging.deployers.DeploymentManager;
 import org.jboss.messaging.util.JNDIUtil;
 import org.jboss.messaging.util.Version;
+import org.jboss.messaging.util.MessagingException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -60,6 +65,8 @@ public class JNDIObjectDeployer extends Deployer
     * The messagingserver used for creating the objects
     */
    MessagingServer messagingServer;
+
+//   UserManager userManager = new UserManager();
 
    private static final String CLIENTID_ELEMENT = "client-id";
    private static final String DUPS_OK_BATCH_SIZE_ELEMENT = "dups-ok-batch-size";
@@ -106,7 +113,8 @@ public class JNDIObjectDeployer extends Deployer
     */
    public void stop() throws Exception
    {
-      DeploymentManager.getInstance().unregisterDeployable(this);   
+      super.stop();
+      DeploymentManager.getInstance().unregisterDeployable(this);
    }
 
    /**
@@ -153,9 +161,9 @@ public class JNDIObjectDeployer extends Deployer
             {
                initialContext.lookup(jndiName);
                //throw new InvalidDestinationException("Destination " + jndiName + " already exists");
-               
+
                log.warn("Destination " + jndiName + " already exists");
-               
+
                return;
             }
             catch (NameNotFoundException e)
@@ -192,7 +200,7 @@ public class JNDIObjectDeployer extends Deployer
 
          NodeList attributes = node.getChildNodes();
          boolean cfStrictTck = false;
-         int prefetchSize = 150;  
+         int prefetchSize = 150;
          String clientID = null;
          int dupsOKBatchSize = 1000;
          for (int j = 0; j < attributes.getLength(); j++)

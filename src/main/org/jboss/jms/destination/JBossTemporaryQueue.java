@@ -37,7 +37,8 @@ public class JBossTemporaryQueue extends JBossQueue implements TemporaryQueue
    // Constants -----------------------------------------------------
    
    private static final long serialVersionUID = 8957042889037273330L;
-   
+
+    private static final String JMS_TEMP_QUEUE_ADDRESS_PREFIX = "queuetempjms.";
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
@@ -48,7 +49,7 @@ public class JBossTemporaryQueue extends JBossQueue implements TemporaryQueue
 
    public JBossTemporaryQueue(JBossSession session, String name)
    {
-      super(name);
+      super(JMS_TEMP_QUEUE_ADDRESS_PREFIX + name, name);
       
       this.session = session;
    }

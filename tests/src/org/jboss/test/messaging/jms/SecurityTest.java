@@ -37,11 +37,11 @@ import javax.jms.Topic;
 import javax.jms.XAConnection;
 import javax.jms.XAConnectionFactory;
 import javax.jms.XASession;
-import javax.management.ObjectName;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 
 import org.jboss.jms.server.security.Role;
+import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.core.impl.XidImpl;
 import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -450,7 +450,7 @@ public class SecurityTest extends JMSTestCase
       {
          deployConnectionFactory("dilbert-id", "preConfcf", new String[]{"preConfcf"});
          ConnectionFactory cf = (ConnectionFactory) getInitialContext().lookup("preConfcf");
-         setSecurityConfig(oldDefaultConfig);
+         //setSecurityConfig(oldDefaultConfig);
          conn = cf.createConnection("dilbert", "dogbert");
          assertTrue(this.canCreateDurableSub(conn, topic1, "sub2"));
       }
@@ -459,25 +459,6 @@ public class SecurityTest extends JMSTestCase
          if (conn != null)
             conn.close();
          undeployConnectionFactory("preConfcf");
-      }
-   }
-
-   /*
-    * Test invalid durable subscription creation for connection preconfigured with client id
-    */
-
-   public void testInvalidDurableSubscriptionCreationPreConf() throws Exception
-   {
-      Connection conn = null;
-      try
-      {
-         conn = cf.createConnection("dilbert", "dogbert");
-         assertFalse(this.canCreateDurableSub(conn, topic2, "sub3"));
-      }
-      finally
-      {
-         if (conn != null)
-            conn.close();
       }
    }
 
@@ -499,23 +480,6 @@ public class SecurityTest extends JMSTestCase
       }
    }
 
-   /*
-    * Test invalid durable subscription creation for connection not preconfigured with client id
-    */
-   public void testInvalidDurableSubscriptionCreationNotPreConf() throws Exception
-   {
-      Connection conn = null;
-      try
-      {
-         conn = cf.createConnection("dynsub", "dynsub");
-         conn.setClientID("myID2");
-         assertFalse(this.canCreateDurableSub(conn, topic2, "sub5"));
-      }
-      finally
-      {
-         if (conn != null) conn.close();
-      }
-   }
 
    public void testDefaultSecurityValid() throws Exception
    {
@@ -595,128 +559,6 @@ public class SecurityTest extends JMSTestCase
             conn.close();
          }
          setSecurityConfig(defSecConf);
-      }
-   }
-
-   /**
-    * This test makes sure that changing the queue security configuration on the server has effect
-    * over destinations when they are stopped (this is what happens in a real deployment - the security config
-    * gets set before the queue/topic is started
-    * See http://jira.jboss.com/jira/browse/JBMESSAGING-976
-    */
-   public void testQueueSecurityUpdateStopped() throws Exception
-   {
-      // "john" has the role def, so he should be able to create a producer and a consumer on a queue
-
-      ObjectName on = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue2");
-
-      Connection conn = null;
-
-      try
-      {
-         conn = cf.createConnection("john", "needle");
-         assertTrue(canReadDestination(conn, queue2));
-         assertTrue(canWriteDestination(conn, queue2));
-
-         String newSecurityConfig =
-            "<security><role name=\"someotherrole\" read=\"true\" write=\"true\" create=\"false\"/></security>";
-
-         ServerManagement.invoke(on, "stop", null, null);
-         ServerManagement.configureSecurityForDestination("Queue2", newSecurityConfig);
-         ServerManagement.invoke(on, "start", null, null);
-
-         assertFalse(canReadDestination(conn, queue2));
-         // non transacted to avoid evict timeout
-         assertFalse(canWriteDestination(conn, queue2, false));
-
-
-         newSecurityConfig =
-            "<security><role name=\"def\" read=\"true\" write=\"false\" create=\"false\"/></security>";
-
-         ServerManagement.invoke(on, "stop", null, null);
-         ServerManagement.configureSecurityForDestination("Queue2", newSecurityConfig);
-         ServerManagement.invoke(on, "start", null, null);
-
-         assertTrue(canReadDestination(conn, queue2));
-         assertFalse(canWriteDestination(conn, queue2, false));
-
-         newSecurityConfig =
-            "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"false\"/></security>";
-
-         ServerManagement.invoke(on, "stop", null, null);
-         ServerManagement.configureSecurityForDestination("Queue2", newSecurityConfig);
-         ServerManagement.invoke(on, "start", null, null);
-
-         assertTrue(canReadDestination(conn, queue2));
-         assertTrue(canWriteDestination(conn, queue2, false));
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-   }
-
-   /**
-    * This test makes sure that changing the topic security configuration on the server has effect
-    * over destinations when they are stopped (this is what happens in a real deployment - the security config
-    * gets set before the queue/topic is started
-    * See http://jira.jboss.com/jira/browse/JBMESSAGING-976
-    */
-   public void testTopicSecurityUpdateStopped() throws Exception
-   {
-      // "john" has the role def, so he should be able to create a producer and a consumer on a queue
-
-      ObjectName on = new ObjectName("jboss.messaging.destination:service=Topic,name=Topic2");
-
-      Connection conn = null;
-
-      try
-      {
-         conn = cf.createConnection("john", "needle");
-         assertTrue(canReadDestination(conn, topic2));
-         assertTrue(canWriteDestination(conn, topic2));
-
-
-         String newSecurityConfig =
-            "<security><role name=\"someotherrole\" read=\"true\" write=\"true\" create=\"false\"/></security>";
-
-         ServerManagement.invoke(on, "stop", null, null);
-         ServerManagement.configureSecurityForDestination("Topic2", newSecurityConfig);
-         ServerManagement.invoke(on, "start", null, null);
-
-         assertFalse(canReadDestination(conn, topic2));
-         assertFalse(canWriteDestination(conn, topic2, false));
-
-
-         newSecurityConfig =
-            "<security><role name=\"def\" read=\"true\" write=\"false\" create=\"false\"/></security>";
-
-         ServerManagement.invoke(on, "stop", null, null);
-         ServerManagement.configureSecurityForDestination("Topic2", newSecurityConfig);
-         ServerManagement.invoke(on, "start", null, null);
-
-         assertTrue(canReadDestination(conn, topic2));
-         assertFalse(canWriteDestination(conn, topic2, false));
-
-         newSecurityConfig =
-            "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"false\"/></security>";
-
-         ServerManagement.invoke(on, "stop", null, null);
-         ServerManagement.configureSecurityForDestination("Topic2", newSecurityConfig);
-         ServerManagement.invoke(on, "start", null, null);
-
-         assertTrue(canReadDestination(conn, topic2));
-         assertTrue(canWriteDestination(conn, topic2, false));
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
       }
    }
 
@@ -835,13 +677,13 @@ public class SecurityTest extends JMSTestCase
          //Should fall back to the default config
          HashSet<Role> lockedConf = new HashSet<Role>();
          lockedConf.add(new Role("alien", true, true, true)) ;
-
+         HashSet<Role> orig = getSecurityConfig();
          setSecurityConfig(lockedConf);
 
          assertFalse(canReadDestination(conn, topic2));
          assertFalse(canWriteDestination(conn, topic2, false));
 
-         setSecurityConfig(defConfig);
+         setSecurityConfig(orig);
 
          assertTrue(canReadDestination(conn, topic2));
          assertTrue(canWriteDestination(conn, topic2, false));
@@ -914,14 +756,15 @@ public class SecurityTest extends JMSTestCase
       oldDefaultConfig = getSecurityConfig();
 
       HashSet<Role> roles = new HashSet<Role>();
-      roles.add(new Role("guest", true, true, false));
+      roles.add(new Role("guest", true, true, true));
       roles.add(new Role("publisher", true, true, false));
       roles.add(new Role("noacc", false, false, false));
+      roles.add(new Role("john", true, false, false));
       configureSecurityForDestination("Queue1", true, roles);
 
 
       HashSet<Role> roles2 = new HashSet<Role>();
-      roles2.add(new Role("guest", true, true, false));
+      roles2.add(new Role("guest", true, true, true));
       roles2.add(new Role("publisher", true, true, false));
       roles2.add(new Role("durpublisher", true, true, true));
       configureSecurityForDestination("Topic1", false, roles2);
@@ -1104,65 +947,6 @@ public class SecurityTest extends JMSTestCase
          conn.close();
       }
    }
-
-   /**
-    * This Validate sending messages on an Queue where the user don't have write authorization
-    * @throws Exception
-    */
-   public void testSecurityOnXA() throws Exception
-   {
-      XAConnection xaconn = null;
-
-      try
-      {
-         XAConnectionFactory xacf = (XAConnectionFactory)cf;
-
-         xaconn = xacf.createXAConnection("nobody", "nobody");
-
-         XASession xasession = xaconn.createXASession();
-
-         XidImpl xid = new XidImpl(new byte[]{1}, 1, new byte[]{1});
-
-         XAResource resource = xasession.getXAResource();
-
-         resource.start(xid, XAResource.TMNOFLAGS);
-
-         MessageProducer producer = xasession.createProducer(queue1);
-
-
-         for (int i=0;i<10;i++)
-         {
-            producer.send(xasession.createTextMessage("Test " + i));
-         }
-
-         try
-         {
-            resource.end(xid, XAResource.TMSUCCESS);
-            resource.prepare(xid);
-            fail("Didn't throw expected exception!");
-         }
-         catch (XAException expected)
-         {
-         }
-      }
-      finally
-      {
-         try
-         {
-            if (xaconn != null)
-            {
-               xaconn.close();
-            }
-            destroyQueue("MyQueue2");
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
-   }
-
-
-
 
    
    // Inner classes -------------------------------------------------

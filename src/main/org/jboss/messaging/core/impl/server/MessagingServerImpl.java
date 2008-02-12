@@ -27,31 +27,20 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.jboss.aop.microcontainer.aspects.jmx.JMX;
-import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.MessagingTimeoutFactory;
 import org.jboss.jms.server.SecurityStore;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.endpoint.MessagingServerPacketHandler;
-import org.jboss.jms.server.plugin.NullUserManager;
-import org.jboss.jms.server.plugin.contract.JMSUserManager;
 import org.jboss.jms.server.security.NullAuthenticationManager;
 import org.jboss.jms.server.security.Role;
 import org.jboss.jms.server.security.SecurityMetadataStore;
+import org.jboss.jms.server.security.CheckType;
+import org.jboss.jms.destination.JBossQueue;
+import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.destination.JBossDestination;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Binding;
-import org.jboss.messaging.core.Configuration;
-import org.jboss.messaging.core.MemoryManager;
-import org.jboss.messaging.core.MessagingServer;
-import org.jboss.messaging.core.NullPersistenceManager;
-import org.jboss.messaging.core.PersistenceManager;
-import org.jboss.messaging.core.PostOffice;
-import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.core.QueueFactory;
-import org.jboss.messaging.core.QueueSettings;
-import org.jboss.messaging.core.ResourceManager;
+import org.jboss.messaging.core.*;
 import org.jboss.messaging.core.impl.QueueFactoryImpl;
 import org.jboss.messaging.core.impl.ResourceManagerImpl;
 import org.jboss.messaging.core.impl.memory.SimpleMemoryManager;
@@ -68,6 +57,8 @@ import org.jboss.messaging.util.HierarchicalObjectRepository;
 import org.jboss.messaging.util.HierarchicalRepository;
 import org.jboss.messaging.util.Version;
 import org.jboss.security.AuthenticationManager;
+
+import javax.jms.Destination;
 
 /**
  * A Messaging Server
@@ -111,7 +102,6 @@ public class MessagingServerImpl implements MessagingServer
 
    private PersistenceManager persistenceManager = new NullPersistenceManager();
 
-   private JMSUserManager jmsUserManager = new NullUserManager();
 
    private RemotingService remotingService;
    private boolean createTransport = false;
@@ -167,7 +157,7 @@ public class MessagingServerImpl implements MessagingServer
 
          // Create the wired components
 
-         securityStore = new SecurityMetadataStore(this);
+         securityStore = new SecurityMetadataStore();
          securityRepository.setDefault(new HashSet<Role>());
          securityStore.setSecurityRepository(securityRepository);
          securityStore.setAuthenticationManager(authenticationManager);
@@ -204,7 +194,7 @@ public class MessagingServerImpl implements MessagingServer
          postOffice.start();
          MessagingServerPacketHandler serverPacketHandler =  new MessagingServerPacketHandler(this);
          getRemotingService().getDispatcher().register(serverPacketHandler);
-         
+
          ClassLoader loader = Thread.currentThread().getContextClassLoader();
          for (String interceptorClass: configuration.getDefaultInterceptors())
          {
@@ -218,7 +208,7 @@ public class MessagingServerImpl implements MessagingServer
                log.warn("Error instantiating interceptor \"" + interceptorClass + "\"", e);
             }
          }
-         
+
          started = true;
          log.info("JBoss Messaging " + getVersion().getProviderVersion() + " server [" +
                  configuration.getMessagingServerID() + "] started");
@@ -319,12 +309,12 @@ public class MessagingServerImpl implements MessagingServer
    public void createQueue(String name) throws Exception
    {
       JBossQueue queue = new JBossQueue(name);
-      
+
       if (getPostOffice().getBinding(queue.getAddress()) == null)
       {
-         getPostOffice().addBinding(queue.getAddress(), queue.getAddress(), null, true, false);         
+         getPostOffice().addBinding(queue.getAddress(), queue.getAddress(), null, true, false);
       }
-      
+
       if (!getPostOffice().containsAllowableAddress(queue.getAddress()))
       {
          getPostOffice().addAllowableAddress(queue.getAddress());
@@ -339,7 +329,7 @@ public class MessagingServerImpl implements MessagingServer
    public void createTopic(String name) throws Exception
    {
       JBossTopic topic = new JBossTopic(name);
-   
+
       if (!getPostOffice().containsAllowableAddress(topic.getAddress()));
       {
          getPostOffice().addAllowableAddress(topic.getAddress());
@@ -364,7 +354,7 @@ public class MessagingServerImpl implements MessagingServer
    public void removeAllMessagesForQueue(String queueName) throws Exception
    {
       JBossQueue jbq = new JBossQueue(queueName);
-      
+
       List<Binding> bindings = postOffice.getBindingsForAddress(jbq.getAddress());
 
       if (!bindings.isEmpty())
@@ -380,7 +370,7 @@ public class MessagingServerImpl implements MessagingServer
    public void removeAllMessagesForTopic(String queueName) throws Exception
    {
       JBossTopic jbt = new JBossTopic(queueName);
-      
+
       List<Binding> bindings = postOffice.getBindingsForAddress(jbt.getAddress());
 
       for (Binding binding: bindings)
@@ -421,16 +411,6 @@ public class MessagingServerImpl implements MessagingServer
       this.persistenceManager = persistenceManager;
    }
 
-   public JMSUserManager getJmsUserManagerInstance()
-   {
-      return jmsUserManager;
-   }
-
-   public void setJmsUserManager(JMSUserManager jmsUserManager)
-   {
-      this.jmsUserManager = jmsUserManager;
-   }
-
    public PostOffice getPostOffice()
    {
       return postOffice;
@@ -440,7 +420,7 @@ public class MessagingServerImpl implements MessagingServer
    {
       this.postOffice = postOffice;
    }
-   
+
    public ResourceManager getResourceManager()
    {
       return resourceManager;
@@ -462,7 +442,6 @@ public class MessagingServerImpl implements MessagingServer
    }
 
 
-
    public String toString()
    {
       return "MessagingServer[" + configuration.getMessagingServerID() + "]";
@@ -479,7 +458,7 @@ public class MessagingServerImpl implements MessagingServer
    private boolean destroyDestination(boolean isQueue, String name) throws Exception
    {
       JBossDestination dest;
-      
+
       if (isQueue)
       {
          dest = new JBossQueue(name);

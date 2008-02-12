@@ -743,8 +743,15 @@ public class LocalTestServer implements Server, Runnable
 
    public void configureSecurityForDestination(String destName, boolean isQueue, HashSet<Role> roles) throws Exception
    {
-      String prefix = isQueue ? "queues." : "topics";
-      getMessagingServer().getSecurityRepository().addMatch(prefix + destName, roles);
+      String prefix = isQueue ? "queuejms." : "topicjms.";
+      if(roles != null)
+      {
+         getMessagingServer().getSecurityRepository().addMatch(prefix + destName, roles);
+      }
+      else
+      {
+         getMessagingServer().getSecurityRepository().removeMatch(prefix + destName);
+      }
    }
 
    public void setDefaultSecurityConfig(String config) throws Exception
@@ -890,18 +897,19 @@ public class LocalTestServer implements Server, Runnable
 
    public HashSet<Role> getSecurityConfig() throws Exception
    {
-      return getMessagingServer().getConfiguration().getSecurityConfig();
+      return getMessagingServer().getSecurityRepository().getMatch("*");
    }
 
    public void setSecurityConfig(HashSet<Role> defConfig) throws Exception
    {
-      getMessagingServer().getConfiguration().setSecurityConfig(defConfig);
+      getMessagingServer().getSecurityRepository().removeMatch("*");
+      getMessagingServer().getSecurityRepository().addMatch("*", defConfig);
    }
 
 
    public void setSecurityConfigOnManager(boolean b, String s, HashSet<Role> conf) throws Exception
    {
-      String prefix = b ? "queues." : "topics";
+      String prefix = b ? "queuejms." : "topicjms.";
       getMessagingServer().getSecurityRepository().addMatch(prefix + s, conf);
    }
 

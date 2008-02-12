@@ -25,17 +25,15 @@ import static org.jboss.messaging.core.remoting.TransportType.TCP;
 
 import javax.jms.Session;
 
-import org.jboss.jms.client.api.ClientConnection;
-import org.jboss.jms.client.api.ClientConnectionFactory;
-import org.jboss.jms.client.api.ClientConsumer;
-import org.jboss.jms.client.api.ClientSession;
+import org.jboss.jms.client.api.*;
 import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.messaging.core.Destination;
+import org.jboss.jms.message.JBossTextMessage;
 import org.jboss.messaging.core.DestinationType;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessagingServer;
-import org.jboss.messaging.core.impl.DestinationImpl;
+import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.impl.MessageImpl;
+import org.jboss.messaging.core.impl.QueueImpl;
 import org.jboss.messaging.core.impl.server.MessagingServerImpl;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
 
@@ -49,19 +47,19 @@ public class EmbeddedExample
       RemotingConfiguration remotingConf = new RemotingConfiguration(TCP, "localhost", 5400);
       MessagingServer messagingServer = new MessagingServerImpl(remotingConf);
       messagingServer.start();
-      messagingServer.createQueue("Queue1");
       ClientConnectionFactory cf = new ClientConnectionFactoryImpl(remotingConf);
       ClientConnection clientConnection = cf.createConnection(null, null);
-      ClientSession clientSession = clientConnection.createClientSession(false, Session.AUTO_ACKNOWLEDGE, false);
+      ClientSession clientSession = clientConnection.createClientSession(false, true, true, 0);
+      clientSession.createQueue("Queue1", "Queue1", null, false, false);
+      ClientProducer clientProducer = clientSession.createProducer();
 
-      MessageImpl message = new MessageImpl();
-      Destination destination = new DestinationImpl(DestinationType.QUEUE, "Queue1", false);
-      message.putHeader(org.jboss.messaging.core.Message.TEMP_DEST_HEADER_NAME, destination);
-      message.setPayload("hello".getBytes());
-      clientSession.send(message);
-
-      ClientConsumer clientConsumer = clientSession.createClientConsumer(destination, null, false, null);
+      ClientConsumer clientConsumer = clientSession.createConsumer("Queue1", null, false, false, true);
       clientConnection.start();
+      MessageImpl message = new MessageImpl(JBossTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte) 1);
+      message.setPayload("Hello".getBytes());
+      clientProducer.send("Queue1", message);
+
+
       Message m = clientConsumer.receive(0);
       System.out.println("m = " + new String(m.getPayload()));
       clientConnection.close();

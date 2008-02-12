@@ -100,18 +100,18 @@ public class SecurityDeployer extends Deployer
             {
                if (Role.CREATE_NAME.equals(type))
                {
-                  create.add(role);
+                  create.add(role.trim());
                }
                else if (Role.WRITE_NAME.equals(type))
                {
-                  write.add(role);
+                  write.add(role.trim());
                }
                else if (Role.READ_NAME.equals(type))
                {
                   read.add(role);
                }
-               if (!allRoles.contains(role))
-                  allRoles.add(role);
+               if (!allRoles.contains(role.trim()))
+                  allRoles.add(role.trim());
             }
          }
 

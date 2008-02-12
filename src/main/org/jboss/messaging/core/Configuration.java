@@ -58,7 +58,6 @@ public class Configuration implements Serializable
    protected String _defaultQueueJNDIContext = "";
    protected String _defaultTopicJNDIContext = "";
    protected String _securityDomain;
-   protected HashSet<Role> _securityConfig;
    protected List<String> defaultInterceptors = new ArrayList<String>();
 
    protected Long _messageCounterSamplePeriod = (long) 10000;// Default is 1 minute
@@ -142,21 +141,12 @@ public class Configuration implements Serializable
       return _securityDomain;
    }
 
-   public  HashSet<Role> getSecurityConfig()
-   {
-      return _securityConfig;
-   }
    
    public List<String> getDefaultInterceptors()
    {
       return defaultInterceptors;
    }
 
-   public  void setSecurityConfig(HashSet<Role> securityConfig)
-   {
-      propertyChangeSupport.firePropertyChange("securityConfig", _securityConfig, securityConfig);
-      _securityConfig = securityConfig;
-   }
 
    public  long getMessageCounterSamplePeriod()
    {

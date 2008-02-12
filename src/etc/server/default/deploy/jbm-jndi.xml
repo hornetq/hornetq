@@ -27,8 +27,8 @@
       <supports-load-balancing>true</supports-load-balancing>
    </connection-factory>
 
-   <connection-factory name="jboss.messaging.connectionfactory:service=MyExampleConnectionFactory">
-      <entry name="/acme/MyExampleConnectionFactory"/>
+   <connection-factory name="MyExampleConnectionFactory">
+      <entry name="/MyExampleConnectionFactory"/>
       <entry name="/acme/MyExampleConnectionFactoryDupe"/>
       <entry name="java:/xyz/CF1"/>
       <entry name="java:/connectionfactories/acme/connection_factory"/>
@@ -105,5 +105,7 @@
    <topic name="testDistributedTopic">
       <entry name="/topic/testDistributedTopic"/>
    </topic>
+
+   <clientid name="testClientId" user="testUser" id="testId"/>
 
 </deployment>

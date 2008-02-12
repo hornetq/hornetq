@@ -24,8 +24,6 @@ package org.jboss.jms.server.container;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.jms.JMSSecurityException;
-
 import org.jboss.jms.server.SecurityStore;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.security.CheckType;
@@ -50,11 +48,11 @@ import org.jboss.messaging.util.MessagingException;
  *
  * $Id$
  */
-public class SecurityAspect
+public class SecurityManager
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(SecurityAspect.class);
+   private static final Logger log = Logger.getLogger(java.lang.SecurityManager.class);
 
    // Static --------------------------------------------------------
 
@@ -76,7 +74,7 @@ public class SecurityAspect
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   public SecurityAspect()
+   public SecurityManager()
    {
       readCache = new HashSet<String>();
 
@@ -136,12 +134,12 @@ public class SecurityAspect
       return granted;
    }
 
-   public void check(String dest, CheckType checkType, ServerConnectionEndpoint conn)
+   public void check(String address, CheckType checkType, ServerConnectionEndpoint conn)
       throws MessagingException
    {
-      if (trace) { log.trace("checking access permissions to " + dest); }
+      if (trace) { log.trace("checking access permissions to " + address); }
 
-      if (checkCached(dest, checkType))
+      if (checkCached(address, checkType))
       {
          // OK
          return;
@@ -159,15 +157,15 @@ public class SecurityAspect
       // Authorize
       try
       {
-         if (!sm.authorize(conn.getUsername(), dest, checkType))
+         if (!sm.authorize(conn.getUsername(), address, checkType))
          {
             String msg = "User: " + conn.getUsername() +
                " is not authorized to " +
                (checkType == CheckType.READ ? "read from" :
                   checkType == CheckType.WRITE ? "write to" : "create durable sub on") +
-               " destination " + dest;
+               " destination " + address;
 
-            throw new MessagingException(MessagingException.SECURITY_EXCEPTION, msg);
+           throw new MessagingException(MessagingException.SECURITY_EXCEPTION, msg);
          }
       }
       finally
@@ -182,17 +180,17 @@ public class SecurityAspect
       {
          case CheckType.TYPE_READ:
          {
-            readCache.add(dest);
+            readCache.add(address);
             break;
          }
          case CheckType.TYPE_WRITE:
          {
-            writeCache.add(dest);
+            writeCache.add(address);
             break;
          }
          case CheckType.TYPE_CREATE:
          {
-            createCache.add(dest);
+            createCache.add(address);
             break;
          }
          default:

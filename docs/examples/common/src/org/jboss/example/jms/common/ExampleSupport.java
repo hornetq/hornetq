@@ -41,7 +41,7 @@ public abstract class ExampleSupport
       
       ClientConnection del = jbconn.getConnection();
       
-      return del.getServerID();
+      return 0;
    }
    
    public static void assertEquals(Object o, Object o2)

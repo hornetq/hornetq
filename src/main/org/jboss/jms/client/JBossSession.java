@@ -673,7 +673,7 @@ public class JBossSession implements
                            
          session.createQueue(queue.getAddress(), queue.getAddress(), null, false, true);
          
-         session.addAddress(queue.getAddress());
+         //session.addAddress(queue.getAddress());
          
          return queue;      
       }

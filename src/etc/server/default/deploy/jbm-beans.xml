@@ -20,9 +20,6 @@
       <property name="persistenceManager">
          <inject bean="PersistenceManager"/>
       </property>
-      <property name="jmsUserManager">
-         <inject bean="JMSUserManager"/>
-      </property>
       <property name="remotingService">
          <inject bean="RemotingService"/>
       </property> 
@@ -61,37 +58,7 @@
       <property name="memoryCacheSize">-1</property>
             
    </bean>
-   
 
-   <bean name="JMSUserManager" class="org.jboss.jms.server.plugin.JDBCJMSUserManager">
-      <property name="createTablesOnStartup">true</property>
-      <property name="ds">
-         <inject bean="ServiceLocator" property="dataSource"/>
-      </property>
-      <property name="tm">
-         <inject bean="ServiceLocator" property="transactionManager"/>
-      </property>
-      <property name="sqlProperties">
-         <map class="java.util.Properties" keyClass="java.lang.String" valueClass="java.lang.String">
-            <entry>
-               <key>POPULATE.TABLES.1</key>
-               <value>INSERT INTO JBM_USER (USER_ID,PASSWD,CLIENTID) VALUES ('dilbert','dogbert','dilbert-id')
-               </value>
-            </entry>
-            <entry>
-               <key>POPULATE.TABLES.2</key>
-               <value>INSERT INTO JBM_USER (USER_ID,PASSWD,CLIENTID) VALUES ('guest','guest')
-               </value>
-            </entry>
-            <entry>
-               <key>POPULATE.TABLES.3</key>
-               <value>INSERT INTO JBM_ROLE (ROLE_ID, USER_ID) VALUES ('guest','guest')
-               </value>
-            </entry>
-         </map>
-      </property>
-   </bean>
-   
    <bean name="RemotingService" class="org.jboss.messaging.core.remoting.impl.mina.MinaService">
       <constructor>
          <parameter>

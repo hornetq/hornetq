@@ -1,79 +1,91 @@
 <deployment>
 
-   <security match="topics.testTopic">
+   <security match="topicjms.testTopic">
       <permission type="create" roles="durpublisher"/>
       <permission type="read" roles="guest,publisher,durpublisher"/>
       <permission type="write" roles="guest,publisher,durpublisher"/>
    </security>
 
-   <security match="topics.securedTopic">
+   <security match="topicjms.securedTopic">
       <permission type="write" roles="publisher"/>
       <permission type="read" roles="publisher"/>
    </security>
 
-   <security match="topics.testDurableTopic">
+   <security match="topicjms.testDurableTopic">
       <permission type="create" roles="durpublisher"/>
       <permission type="read" roles="guest,publisher,durpublisher"/>
       <permission type="write" roles="guest,publisher,durpublisher"/>
    </security>
 
-   <security match="queues.testQueue">
+   <security match="queuejms.testQueue">
       <permission type="read" roles="guest,publisher"/>
       <permission type="write" roles="guest,publisher"/>
    </security>
 
-   <security match="queues.NoSuchQueue">
+   <security match="queuejms.NoSuchQueue">
       <permission type="read" roles="guest,publisher"/>
       <permission type="write" roles="guest,publisher"/>
    </security>
 
-   <security match="topics.NoSuchTopic">
+   <security match="topicjms.NoSuchTopic">
       <permission type="read" roles="guest,publisher"/>
       <permission type="write" roles="guest,publisher"/>
    </security>
 
-   <!--this will catch any word i.e. queues.anything-->
-   <!--<security match="queues.^">
+   <security match="queuetempjms.*">
+      <permission type="create" roles="guest,def"/>
+      <permission type="read" roles="guest,def"/>
+      <permission type="write" roles="guest,def"/>
+   </security>
+
+   <security match="topictempjms.*">
+      <permission type="create" roles="guest,def"/>
+      <permission type="read" roles="guest,def"/>
+      <permission type="write" roles="guest,def"/>
+   </security>
+
+   <!--this will catch any word i.e. queuejms.anything-->
+   <!--<security match="queuejms.^">
       <permission type="read" roles="guest,publisher"/>
       <permission type="write" roles="guest,publisher"/>
    </security>-->
 
-   <!--this will catch any word i.e. queues.anything-->
-   <!--<security match="topics.^">
+   <!--this will catch any word i.e. queuejms.anything-->
+   <!--<security match="topicjms.^">
       <permission type="read" roles="guest,publisher"/>
       <permission type="write" roles="guest,publisher"/>
    </security>-->
 
    <!--default security to catch all-->
    <security match="*">
-      <permission type="create" roles="guest"/>
-      <permission type="read" roles="guest"/>
-      <permission type="write" roles="guest"/>
+      <permission type="create" roles="guest,def"/>
+      <permission type="read" roles="guest,def"/>
+      <permission type="write" roles="guest,def"/>
    </security>
 
-   <queue-settings match="queues.QueueWithOwnDLQAndExpiryQueue">
+   <queue-settings match="queuejms.QueueWithOwnDLQAndExpiryQueue">
       <dlq>PrivateDLQ</dlq>
       <expiry-queue>PrivateExpiryQueue</expiry-queue>
    </queue-settings>
 
-   <queue-settings match="topics.TopicWithOwnDLQAndExpiryQueue">
+   <queue-settings match="topicjms.TopicWithOwnDLQAndExpiryQueue">
       <dlq>PrivateDLQ</dlq>
       <expiry-queue>PrivateExpiryQueue</expiry-queue>
    </queue-settings>
 
-   <queue-settings match="queues.QueueWithOwnRedeliveryDelay">
+   <queue-settings match="queuejms.QueueWithOwnRedeliveryDelay">
       <redelivery-delay>5000</redelivery-delay>
    </queue-settings>
 
-   <queue-settings match="topics.TopicWithOwnRedeliveryDelay">
+   <queue-settings match="topicjms.TopicWithOwnRedeliveryDelay">
       <redelivery-delay>5000</redelivery-delay>
    </queue-settings>
 
-   <queue-settings match="queues.testDistributedQueue">
+   <queue-settings match="queuejms.testDistributedQueue">
       <clustered>true</clustered>
    </queue-settings>
 
-   <queue-settings match="topics.testDistributedTopic">
+   <queue-settings match="topicjms.testDistributedTopic">
       <clustered>true</clustered>
    </queue-settings>
 

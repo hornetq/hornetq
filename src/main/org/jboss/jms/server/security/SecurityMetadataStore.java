@@ -65,18 +65,10 @@ public class SecurityMetadataStore implements SecurityStore
    private AuthenticationManager authenticationManager;
    private RealmMapping realmMapping;
 
-   private String suckerPassword;
-
-   private MessagingServer messagingServer;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-
-   public SecurityMetadataStore(MessagingServer messagingServer)
-   {
-      this.messagingServer = messagingServer;
-   }
 
    // SecurityManager implementation --------------------------------
 
@@ -95,7 +87,7 @@ public class SecurityMetadataStore implements SecurityStore
       Subject subject = new Subject();
 
       boolean authenticated = authenticationManager.isValid(principal, passwordChars, subject);
-      
+
       if (authenticated)
       {
          // Warning! This "taints" thread local. Make sure you pop it off the stack as soon as
@@ -129,7 +121,6 @@ public class SecurityMetadataStore implements SecurityStore
       Set<SimplePrincipal> principals = new HashSet<SimplePrincipal>();
       for (Role role : roles)
       {
-         SimplePrincipal principal = new SimplePrincipal(role.getName());
          if((checkType.equals(CheckType.CREATE) && role.isCreate()) ||
                  (checkType.equals(CheckType.WRITE) && role.isWrite()) ||
                  (checkType.equals(CheckType.READ) && role.isRead()))
@@ -142,12 +133,6 @@ public class SecurityMetadataStore implements SecurityStore
 
    // Public --------------------------------------------------------
 
-   public void setSuckerPassword(String password)
-   {
-   	checkDefaultSuckerPassword(password);
-
-   	this.suckerPassword = password;
-   }
 
    public void setSecurityRepository(HierarchicalRepository<HashSet<Role>> securityRepository)
    {
@@ -160,16 +145,6 @@ public class SecurityMetadataStore implements SecurityStore
 
    // Private -------------------------------------------------------
 
-   private void checkDefaultSuckerPassword(String password)
-   {
-   	// Sanity check
-   	if (DEFAULT_SUCKER_USER_PASSWORD.equals(password))
-   	{
-   		log.warn("WARNING! POTENTIAL SECURITY RISK. It has been detected that the MessageSucker component " +
-   				   "which sucks messages from one node to another has not had its password changed from the installation default. " +
-   				   "Please see the JBoss Messaging user guide for instructions on how to do this.");
-   	}
-   }
 
    // Inner class ---------------------------------------------------      
 

@@ -49,7 +49,12 @@ public class JBossQueue extends JBossDestination implements Queue
    {
       super(JMS_QUEUE_ADDRESS_PREFIX + name, name);
    }
-   
+
+   public JBossQueue(String address, String name)
+   {
+      super(address, name);
+   }
+
    // Queue implementation ------------------------------------------
 
    public String getQueueName() throws JMSException

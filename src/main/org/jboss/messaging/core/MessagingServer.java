@@ -27,8 +27,6 @@ import java.util.HashSet;
 
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.SecurityStore;
-import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
-import org.jboss.jms.server.plugin.contract.JMSUserManager;
 import org.jboss.jms.server.security.Role;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.util.HierarchicalRepository;
@@ -75,10 +73,6 @@ public interface MessagingServer extends MessagingComponent
    PersistenceManager getPersistenceManager();
 
    void setPersistenceManager(PersistenceManager persistenceManager);
-
-   JMSUserManager getJmsUserManagerInstance();
-
-   void setJmsUserManager(JMSUserManager jmsUserManager);
 
    PostOffice getPostOffice();
    

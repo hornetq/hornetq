@@ -73,42 +73,7 @@ public class ConfigurationTest extends TestCase
       assertEquals("failed to set security domain", "java:/jaas/messagingtest", configuration.getSecurityDomain());
    }
 
-   public void testSetDefaultSecurity() throws Exception
-   {
-      assertEquals("not enough entries should be 4", 4, configuration.getSecurityConfig().size());
-      HashSet<Role> roles = configuration.getSecurityConfig();
-      for (Role role : roles)
-      {
-         if ("guest1".equals(role.getName()))
-         {
-            assertEquals("read configured incorrectly", true, role.isRead());
-            assertEquals("write configured incorrectl", true, role.isWrite());
-            assertEquals("create configured incorrectl", true, role.isCreate());
-         }
-         else if ("guest2".equals(role.getName()))
-         {
-            assertEquals("read configured incorrectly", true, role.isRead());
-            assertEquals("write configured incorrectl", true, role.isWrite());
-            assertEquals("create configured incorrectl", false, role.isCreate());
-         }
-         else if ("guest3".equals(role.getName()))
-         {
-            assertEquals("read configured incorrectly", true, role.isRead());
-            assertEquals("write configured incorrectl", false, role.isWrite());
-            assertEquals("create configured incorrectl", false, role.isCreate());
-         }
-         else if ("guest4".equals(role.getName()))
-         {
-            assertEquals("read configured incorrectly", false, role.isRead());
-            assertEquals("write configured incorrectl", false, role.isWrite());
-            assertEquals("create configured incorrectl", false, role.isCreate());
-         }
-         else
-         {
-            fail("not all roles names configured properly:" + role);
-         }
-      }
-   }
+
   
    public void testSetMessageCounterSamplePeriod() throws Exception
    {
@@ -179,8 +144,6 @@ public class ConfigurationTest extends TestCase
    {
       MyListener listener = new MyListener();
       configuration.addPropertyChangeListener(listener);
-      configuration.setSecurityConfig(null);
-      assertTrue("property change listener not fired", listener.isCalled());
       listener.setCalled(false);
       configuration.setMessageCounterSamplePeriod(1000000);
       assertTrue("property change listener not fired", listener.isCalled());
