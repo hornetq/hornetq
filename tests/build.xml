@@ -491,6 +491,7 @@
          <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
          <jvmarg value="-Xmx512M"/>
          <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
+         <!--<jvmarg value="-ea"/>-->
          <classpath refid="test.execution.classpath"/>
          <formatter type="xml" usefile="${junit.formatter.usefile}"/>
          <batchtest todir="${junit.batchtest.todir}"
@@ -505,14 +506,12 @@
 	       <exclude name="**/jms/XARecoveryTest.class"/>
 	       <exclude name="**/jms/XAResourceRecoveryTest.class"/>
 	       <exclude name="**/jms/XATest.class"/>
-	       <exclude name="**/jms/ClientExitTest.class"/>
 	       <exclude name="**/jms/ConnectionConsumerTest.class"/>
 	       
                <include name="**/messaging/util/**/${test-mask}.class"/>
                <exclude name="**/jms/MemLeakTest.class"/>
                <exclude name="**/jms/RemotingConnectionConfigurationTest.class"/>
                <exclude name="**/jms/stress/**"/>
-               <exclude name="**/jms/crash/ClientCrashTest.class"/>
                <exclude name="**/jms/bridge/**"/>
                <exclude name="**/jms/manual/**"/>
                <exclude name="**/jms/clustering/**"/>

@@ -37,9 +37,11 @@ import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
 import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.security.Role;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.MessagingServerManagement;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.microcontainer.JBMBootstrapServer;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.DatabaseClearer;
@@ -719,10 +721,20 @@ public class JBMServerTestCase extends JBMBaseTestCase
 
    protected boolean assertRemainingMessages(int expected) throws Exception
    {
+      sleepIfRemoting(500);
+      
       Integer messageCount = servers.get(0).getMessageCountForQueue("Queue1");
 
       assertEquals(expected, messageCount.intValue());
       return expected == messageCount.intValue();
+   }
+
+   protected static void assertActiveConnectionsOnTheServer(int expectedSize)
+   throws Exception
+   {
+      ConnectionManager cm = servers.get(0).getMessagingServer()
+      .getConnectionManager();
+      assertEquals(expectedSize, cm.getActiveConnections().size());
    }
 
    public static void deployConnectionFactory(String clientId, String objectName,
@@ -945,5 +957,24 @@ public class JBMServerTestCase extends JBMBaseTestCase
          log.info("server " + i + " killed and dead");
       }
    }
+   
 
+   /**
+    * Sleeps a little if invm optimization is disabled for remoting.
+    * 
+    * This little sleep is necessary due to the async behavior of our remoting code.
+    * If we send non-durable messages and checks immediately that 
+    * they've been received on the server, it may fail since these
+    * messages are sent asynchronously.
+    * 
+    * @param time sleep time in milliseconds
+    */
+   private void sleepIfRemoting(int time) throws Exception
+   {
+      RemotingConfiguration remotingConf = servers.get(0).getMessagingServer().getRemotingService().getRemotingConfiguration();
+      if (remotingConf.isInvmDisabled())
+      {
+         Thread.sleep(time);
+      }
+   }
 }

@@ -22,8 +22,6 @@
 package org.jboss.test.messaging.jms;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -89,11 +87,10 @@ public class ClientExitTest extends JBMServerTestCase
          ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
          Queue queue = (Queue)ic.lookup("/queue/Queue");
 
-         serialized = writeToFile(cf, queue);
+         serialized = SerializedClientSupport.writeToFile(SERIALIZED_CF_FILE_NAME, cf, queue);
 
          // spawn a JVM that creates a JMS client, which sends a test message
-
-         Process p = spawnVM(serialized);
+         Process p = SerializedClientSupport.spawnVM(GracefulClient.class.getName(), new String[] {serialized.getAbsolutePath()});
 
          // read the message from the queue
 
@@ -138,65 +135,7 @@ public class ClientExitTest extends JBMServerTestCase
 
    // Protected ------------------------------------------------------------------------------------
 
-
-
    // Private --------------------------------------------------------------------------------------
-
-   private Process spawnVM(File serialized) throws Exception
-   {
-      StringBuffer sb = new StringBuffer();
-
-      sb.append("java").append(' ');
-
-      String classPath = System.getProperty("java.class.path");
-
-      if (System.getProperty("os.name").equals("Linux"))
-      {
-         sb.append("-cp").append(" ").append(classPath).append(" ");
-      }
-      else
-      {
-         sb.append("-cp").append(" \"").append(classPath).append("\" ");
-      }
-
-      sb.append("org.jboss.test.messaging.jms.GracefulClient ");
-
-      // the first argument
-      sb.append(serialized.getAbsolutePath());
-
-      String commandLine = sb.toString();
-
-      Process process = Runtime.getRuntime().exec(commandLine);
-
-      log.trace("process: " + process);
-
-      return process;
-   }
-
-   private File writeToFile(ConnectionFactory cf, Queue queue) throws Exception
-   {
-      String moduleOutput = System.getProperty("module.output");
-      if (moduleOutput == null)
-      {
-         throw new Exception("Can't find 'module.output'");
-      }
-      File dir = new File(moduleOutput);
-
-      if (!dir.isDirectory() || !dir.canWrite())
-      {
-         throw new Exception(dir + " is either not a directory or not writable");
-      }
-
-      File file = new File(dir, SERIALIZED_CF_FILE_NAME);
-
-      ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file));
-      oos.writeObject(cf);
-      oos.writeObject(queue);
-      oos.flush();
-      oos.close();
-
-      return file;
-   }
 
    // Inner classes --------------------------------------------------------------------------------
 

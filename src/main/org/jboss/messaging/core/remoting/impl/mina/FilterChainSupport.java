@@ -41,11 +41,12 @@ public class FilterChainSupport
    // Public --------------------------------------------------------
 
    public static void addKeepAliveFilter(DefaultIoFilterChainBuilder filterChain,
-         KeepAliveFactory factory, int keepAliveInterval, int keepAliveTimeout)
+         KeepAliveFactory factory, int keepAliveInterval, int keepAliveTimeout, FailureNotifier notifier)
    {
       assert filterChain != null;
       assert factory != null;
-      
+      assert notifier != null; 
+     
       if (keepAliveTimeout > keepAliveInterval)
       {
          throw new IllegalArgumentException("timeout must be greater than the interval: "
@@ -54,7 +55,7 @@ public class FilterChainSupport
       }
 
       filterChain.addLast("keep-alive", new KeepAliveFilter(
-            new MinaKeepAliveFactory(factory), EXCEPTION, keepAliveInterval,
+            new MinaKeepAliveFactory(factory, notifier), EXCEPTION, keepAliveInterval,
             keepAliveTimeout));
    }
 

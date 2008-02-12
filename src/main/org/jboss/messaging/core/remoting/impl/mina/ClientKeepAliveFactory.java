@@ -21,7 +21,7 @@ public class ClientKeepAliveFactory implements KeepAliveFactory
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -30,14 +30,19 @@ public class ClientKeepAliveFactory implements KeepAliveFactory
 
    // KeepAliveFactory implementation -------------------------------
    
-   public Ping ping()
+   public Ping ping(String clientSessionID)
    {
-      return new Ping();
+      return new Ping(clientSessionID);
    }
 
-   public Pong pong()
+   public boolean isPing(String sessionID, Object message)
    {
-      return new Pong();
+      return (message instanceof Ping);
+   }
+
+   public Pong pong(String sessionID, Ping ping)
+   {
+      return new Pong(sessionID, false);
    }
 
    // Package protected ---------------------------------------------

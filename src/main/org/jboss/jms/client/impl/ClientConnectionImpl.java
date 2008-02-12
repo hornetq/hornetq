@@ -118,13 +118,6 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       
       remotingConnection.send(id, new ConnectionStopMessage());
    }
-   
-   public FailureListener getFailureListener() throws MessagingException
-   {
-      checkClosed();
-      
-      return remotingConnection.getFailureListener();
-   }
 
    public void setFailureListener(FailureListener listener) throws MessagingException
    {
@@ -148,8 +141,6 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       }
       finally
       {
-         remotingConnection.setFailureListener(null);
-         
          // Finished with the connection - we need to shutdown callback server
          remotingConnection.stop();
 

@@ -15,12 +15,11 @@ import java.util.concurrent.CountDownLatch;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.NIOConnector;
+import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
-import org.jboss.messaging.core.remoting.impl.ClientImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
@@ -86,8 +85,7 @@ public class PacketStressTest extends TestCase
       CountDownLatch latch = new CountDownLatch(1);
       
       service.getDispatcher().register(new ServerHandler(handlerID, latch, spinner));
-      Client client = new ClientImpl(connector, service.getRemotingConfiguration());
-      client.connect();
+      NIOSession session = connector.connect();
       
       byte[] payloadBytes = generatePayload(PAYLOAD);
       AbstractPacket packet = new BytesPacket(payloadBytes);
@@ -96,7 +94,7 @@ public class PacketStressTest extends TestCase
       long start = System.currentTimeMillis();
       for (int i = 0; i < MANY_MESSAGES; i++)
       {
-       client.send(packet, true); 
+       session.write(packet); 
        if (i % spinner == 0)
           System.out.print('#');
       }

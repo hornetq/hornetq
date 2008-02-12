@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.messaging.core.MessagingComponent;
-import org.jboss.messaging.core.remoting.PacketSender;
 
 
 /**
@@ -34,43 +33,29 @@ import org.jboss.messaging.core.remoting.PacketSender;
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * 
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
 public interface ConnectionManager extends MessagingComponent
 {
-   void registerConnection(String jmsClientVMId,
-                           String remotingClientSessionID,
-                           ServerConnectionEndpoint endpoint);
+   void registerConnection(String clientVMID,
+                           String remotingClientSessionID, ServerConnectionEndpoint endpoint);
 
    /**
+    * @param serverConnectionEndpoint 
     * @return null if there is no such connection.
     */
-   ServerConnectionEndpoint unregisterConnection(String jmsClientVMID, String remotingClientSessionID);
+   ServerConnectionEndpoint unregisterConnection(String remotingClientSessionID, ServerConnectionEndpoint serverConnectionEndpoint);
    
-   boolean containsRemotingSession(String remotingClientSessionID);
-
    /**
     * Returns a list of active connection endpoints currently maintained by an instance of this
     * manager. The implementation should make a copy of the list to avoid
     * ConcurrentModificationException. The list could be empty, but never null.
     *
-    * @return List<ConnectionEndpoint>
+    * @return List<ServerConnectionEndpoint>
     */
-   List getActiveConnections();
-
-   void addConnectionFactoryCallback(String uniqueName, String VMID,
-         String remotingSessionID, PacketSender sender);
-
-   void removeConnectionFactoryCallback(String uniqueName, String vmid, PacketSender sender);
-
-   PacketSender[] getConnectionFactorySenders(String uniqueName);
-
-   /**
-    * @param clientToServer - true if the failure has been detected on a direct connection from
-    *        client to this server, false if the failure has been detected while trying to send a
-    *        callback from this server to the client.
-    */
-   void handleClientFailure(String remotingSessionID, boolean clientToServer);
+   List<ServerConnectionEndpoint> getActiveConnections();
 }

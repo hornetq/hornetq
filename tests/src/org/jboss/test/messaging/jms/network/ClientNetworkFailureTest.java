@@ -32,10 +32,10 @@ import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.QueueConnection;
 
-import org.jboss.jms.server.ConnectionManager;
-import org.jboss.messaging.core.remoting.ConnectionExceptionListener;
+import org.jboss.jms.client.api.FailureListener;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
+import org.jboss.messaging.util.MessagingException;
 import org.jboss.test.messaging.jms.JMSTestCase;
 
 /**
@@ -86,11 +86,15 @@ public class ClientNetworkFailureTest extends JMSTestCase
       networkFailureFilter = new NetworkFailureFilter();
       minaService.getFilterChain().addFirst("network-failure",
             networkFailureFilter);
+
+      assertActiveConnectionsOnTheServer(0);
    }
 
    @Override
    protected void tearDown() throws Exception
    {
+      assertActiveConnectionsOnTheServer(0);
+
       minaService.getFilterChain().remove("network-failure");
 
       minaService.stop();
@@ -119,9 +123,8 @@ public class ClientNetworkFailureTest extends JMSTestCase
             exceptionLatch.countDown();
          }
       });
-      ConnectionExceptionListener listener = new ListenerWithLatch(
-            exceptionLatch);
-      minaService.addConnectionExceptionListener(listener);
+      FailureListener listener = new FailureListenerWithLatch(exceptionLatch);
+      minaService.addFailureListener(listener);
 
       networkFailureFilter.messageSentThrowsException = new IOException(
             "Client is unreachable");
@@ -140,7 +143,7 @@ public class ClientNetworkFailureTest extends JMSTestCase
       {
       }
 
-      minaService.removeConnectionExceptionListener(listener);
+      minaService.removeFailureListener(listener);
    }
 
    public void testServerResourcesCleanUpWhenClientCommDropsPacket()
@@ -153,13 +156,13 @@ public class ClientNetworkFailureTest extends JMSTestCase
       {
          public void onException(JMSException e)
          {
+            log.warn("got expected exception on the client");
             exceptionLatch.countDown();
          }
       });
 
-      ConnectionExceptionListener listener = new ListenerWithLatch(
-            exceptionLatch);
-      minaService.addConnectionExceptionListener(listener);
+      FailureListener listener = new FailureListenerWithLatch(exceptionLatch);
+      minaService.addFailureListener(listener);
 
       assertActiveConnectionsOnTheServer(1);
 
@@ -167,7 +170,7 @@ public class ClientNetworkFailureTest extends JMSTestCase
       networkFailureFilter.messageReceivedDropsPacket = true;
 
       boolean gotExceptionsOnTheServerAndTheClient = exceptionLatch.await(
-            KEEP_ALIVE_INTERVAL + KEEP_ALIVE_TIMEOUT + 2, SECONDS);
+            KEEP_ALIVE_INTERVAL + KEEP_ALIVE_TIMEOUT + 3, SECONDS);
       assertTrue(gotExceptionsOnTheServerAndTheClient);
       assertActiveConnectionsOnTheServer(0);
 
@@ -186,27 +189,18 @@ public class ClientNetworkFailureTest extends JMSTestCase
 
    // Private -------------------------------------------------------
 
-   private static void assertActiveConnectionsOnTheServer(int expectedSize)
-         throws Exception
-   {
-      ConnectionManager cm = servers.get(0).getMessagingServer()
-            .getConnectionManager();
-      assertEquals(expectedSize, cm.getActiveConnections().size());
-   }
-
-   // Inner classes -------------------------------------------------
-
-   private final class ListenerWithLatch implements ConnectionExceptionListener
+   private final class FailureListenerWithLatch implements FailureListener
    {
       private final CountDownLatch exceptionLatch;
 
-      private ListenerWithLatch(CountDownLatch exceptionLatch)
+      private FailureListenerWithLatch(CountDownLatch exceptionLatch)
       {
          this.exceptionLatch = exceptionLatch;
       }
 
-      public void handleConnectionException(Throwable e, String sessionID)
+      public void onFailure(MessagingException me)
       {
+         log.warn("got expected exception on the server");
          exceptionLatch.countDown();
       }
    }

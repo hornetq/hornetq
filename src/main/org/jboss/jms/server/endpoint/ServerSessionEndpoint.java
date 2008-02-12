@@ -170,12 +170,14 @@ public class ServerSessionEndpoint
 
    private final ResourceManager resourceManager;
 
+   private PacketSender sender;
+
    // Constructors
    // ---------------------------------------------------------------------------------
 
    ServerSessionEndpoint(String sessionID,
          ServerConnectionEndpoint connectionEndpoint, boolean autoCommitSends,
-         boolean autoCommitAcks, boolean xa, ResourceManager resourceManager)
+         boolean autoCommitAcks, boolean xa, PacketSender sender, ResourceManager resourceManager)
          throws Exception
    {
       this.id = sessionID;
@@ -194,6 +196,8 @@ public class ServerSessionEndpoint
       this.autoCommitSends = autoCommitSends;
 
       this.autoCommitAcks = autoCommitAcks;
+      
+      this.sender = sender;
 
       this.resourceManager = resourceManager;
    }
@@ -230,11 +234,8 @@ public class ServerSessionEndpoint
       }
    }
 
-   synchronized void handleDelivery(MessageReference ref, ServerConsumerEndpoint consumer, PacketSender sender) throws Exception
+   synchronized void handleDelivery(MessageReference ref, ServerConsumerEndpoint consumer) throws Exception
    {
-      // FIXME - we shouldn't have to pass in the packet Sender - this should be
-      // creatable
-      // without the consumer having to call change rate first
       Delivery delivery = new DeliveryImpl(ref, consumer.getID(),
             deliveryIDSequence++, sender);
 

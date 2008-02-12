@@ -7,8 +7,6 @@
 package org.jboss.messaging.core.remoting.impl.mina;
 
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.NULL;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.PING;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.PONG;
 
 import org.apache.mina.filter.codec.demux.DemuxingProtocolCodecFactory;
 import org.jboss.messaging.core.remoting.codec.AbstractPacketCodec;
@@ -20,6 +18,8 @@ import org.jboss.messaging.core.remoting.codec.CreateConnectionMessageCodec;
 import org.jboss.messaging.core.remoting.codec.CreateConnectionResponseMessageCodec;
 import org.jboss.messaging.core.remoting.codec.DeliverMessageCodec;
 import org.jboss.messaging.core.remoting.codec.MessagingExceptionMessageCodec;
+import org.jboss.messaging.core.remoting.codec.PingCodec;
+import org.jboss.messaging.core.remoting.codec.PongCodec;
 import org.jboss.messaging.core.remoting.codec.RemotingBuffer;
 import org.jboss.messaging.core.remoting.codec.SessionAcknowledgeMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SessionAddAddressMessageCodec;
@@ -40,7 +40,6 @@ import org.jboss.messaging.core.remoting.codec.SessionQueueQueryMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SessionQueueQueryResponseMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SessionRemoveAddressMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SessionSendMessageCodec;
-import org.jboss.messaging.core.remoting.codec.SessionSetIDMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SessionXACommitMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SessionXAEndMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SessionXAForgetMessageCodec;
@@ -96,7 +95,6 @@ import org.jboss.messaging.core.remoting.wireformat.SessionRecoverMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionRemoveAddressMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionRollbackMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionSendMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionSetIDMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionXAEndMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionXAForgetMessage;
@@ -140,9 +138,8 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
       addCodec(TextPacket.class, TextPacketCodec.class);
       addCodec(BytesPacket.class, BytesPacketCodec.class);
 
-      addCodecForEmptyPacket(PING, Ping.class);
-      addCodecForEmptyPacket(PONG, Pong.class);
-      addCodec(SessionSetIDMessage.class, SessionSetIDMessageCodec.class);
+      addCodec(Ping.class, PingCodec.class);
+      addCodec(Pong.class, PongCodec.class);
       
       addCodec(MessagingExceptionMessage.class, MessagingExceptionMessageCodec.class);
 

@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.messaging.core.remoting.wireformat.Packet;
-import org.jboss.messaging.core.remoting.wireformat.SessionSetIDMessage;
 import org.jboss.messaging.util.Logger;
 
 /**
@@ -36,7 +35,6 @@ public class PacketDispatcher
    // Static --------------------------------------------------------
 
    public static final PacketDispatcher client = new PacketDispatcher();
-   public static final Map<String, String> sessions = new ConcurrentHashMap<String, String>();
 
    // Constructors --------------------------------------------------
 
@@ -89,18 +87,6 @@ public class PacketDispatcher
    
    public void dispatch(Packet packet, PacketSender sender) throws Exception
    {
-      //FIXME better separation between client and server PacketDispatchers
-      if (this != client)
-      {
-         if (packet instanceof SessionSetIDMessage)
-         {
-            String clientSessionID = ((SessionSetIDMessage)packet).getSessionID();
-            if (log.isDebugEnabled())
-               log.debug("associated server session " + sender.getSessionID() + " to client " + clientSessionID);
-            sessions.put(sender.getSessionID(), clientSessionID);
-            return;
-         }
-      }
       String targetID = packet.getTargetID();
       if (NO_ID_SET.equals(targetID))
       {

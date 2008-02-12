@@ -22,6 +22,8 @@ public abstract class TestSupport
 
    public static final int KEEP_ALIVE_TIMEOUT = 1; // in seconds
 
+   public static final long REQRES_TIMEOUT = 2; // in seconds
+
    public static final int PORT = 9090;
 
    // Attributes ----------------------------------------------------

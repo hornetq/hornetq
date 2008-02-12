@@ -6,6 +6,8 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
+import org.jboss.messaging.util.MessagingException;
+
 
 
 /**
@@ -14,7 +16,7 @@ package org.jboss.messaging.core.remoting.impl.mina;
  * @version <tt>$Revision$</tt>
  *
  */
-public interface ConnectionExceptionNotifier
+public interface FailureNotifier
 {
-   public abstract void fireConnectionException(Throwable t, String remoteSessionID);
+   public abstract void fireFailure(MessagingException e);
 }

@@ -19,16 +19,21 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.mina.common.DefaultIoFilterChainBuilder;
+import org.apache.mina.common.IdleStatus;
+import org.apache.mina.common.IoService;
+import org.apache.mina.common.IoServiceListener;
+import org.apache.mina.common.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.jboss.beans.metadata.api.annotations.Install;
 import org.jboss.beans.metadata.api.annotations.Uninstall;
-import org.jboss.messaging.core.remoting.ConnectionExceptionListener;
+import org.jboss.jms.client.api.FailureListener;
 import org.jboss.messaging.core.remoting.Interceptor;
-import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.util.MessagingException;
+import org.jboss.messaging.util.RemotingException;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -36,7 +41,7 @@ import org.jboss.messaging.util.Logger;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class MinaService implements RemotingService, ConnectionExceptionNotifier
+public class MinaService implements RemotingService, FailureNotifier
 {
    // Constants -----------------------------------------------------
 
@@ -50,11 +55,13 @@ public class MinaService implements RemotingService, ConnectionExceptionNotifier
    
    private NioSocketAcceptor acceptor;
 
+   private IoServiceListener acceptorListener;
+
    private PacketDispatcher dispatcher;
 
-   private List<ConnectionExceptionListener> listeners = new ArrayList<ConnectionExceptionListener>();
+   private List<FailureListener> listeners = new ArrayList<FailureListener>();
 
-   private KeepAliveFactory factory;
+   private ServerKeepAliveFactory factory;
    
    private List<Interceptor> filters = new CopyOnWriteArrayList<Interceptor>();
 
@@ -67,7 +74,7 @@ public class MinaService implements RemotingService, ConnectionExceptionNotifier
       this(remotingConfig, new ServerKeepAliveFactory());
    }
 
-   public MinaService(RemotingConfiguration remotingConfig, KeepAliveFactory factory)
+   public MinaService(RemotingConfiguration remotingConfig, ServerKeepAliveFactory factory)
    {
       assert remotingConfig != null;
       assert factory != null;
@@ -89,14 +96,14 @@ public class MinaService implements RemotingService, ConnectionExceptionNotifier
       this.filters.remove(filter);
    }
 
-   public void addConnectionExceptionListener(ConnectionExceptionListener listener)
+   public void addFailureListener(FailureListener listener)
    {
       assert listener != null;
 
       listeners.add(listener);
    }
 
-   public void removeConnectionExceptionListener(ConnectionExceptionListener listener)
+   public void removeFailureListener(FailureListener listener)
    {
       assert listener != null;
 
@@ -119,7 +126,7 @@ public class MinaService implements RemotingService, ConnectionExceptionNotifier
          addCodecFilter(filterChain);
          addLoggingFilter(filterChain);
          addKeepAliveFilter(filterChain, factory,
-               remotingConfig.getKeepAliveInterval(), remotingConfig.getKeepAliveTimeout());
+               remotingConfig.getKeepAliveInterval(), remotingConfig.getKeepAliveTimeout(), this);
          addExecutorFilter(filterChain);
 
          // Bind
@@ -131,7 +138,9 @@ public class MinaService implements RemotingService, ConnectionExceptionNotifier
 
          acceptor.setHandler(new MinaHandler(dispatcher, this));
          acceptor.bind();
-
+         acceptorListener = new MinaSessionListener();
+         acceptor.addListener(acceptorListener);
+         
          boolean disableInvm = remotingConfig.isInvmDisabled();
          if (log.isDebugEnabled())
             log.debug("invm optimization for remoting is " + (disableInvm ? "disabled" : "enabled"));
@@ -146,6 +155,9 @@ public class MinaService implements RemotingService, ConnectionExceptionNotifier
    {
       if (acceptor != null)
       {
+         // remove the listener before disposing the acceptor
+         // so that we're not notified when the sessions are destroyed
+         acceptor.removeListener(acceptorListener);
          acceptor.unbind();
          acceptor.dispose();
          acceptor = null;
@@ -174,20 +186,26 @@ public class MinaService implements RemotingService, ConnectionExceptionNotifier
       return acceptor.getFilterChain();
    }
 
-   // ConnectionExceptionNotifier implementation -------------------------------
+   // FailureNotifier implementation -------------------------------
 
-   public void fireConnectionException(Throwable t, String remoteSessionID)
+   public void fireFailure(MessagingException me)
    {
-      for (ConnectionExceptionListener listener : listeners)
+      if (me instanceof RemotingException)
       {
-         String clientSessionID = PacketDispatcher.sessions.get(remoteSessionID);
-         listener.handleConnectionException(t, clientSessionID);
-      }
+         RemotingException re = (RemotingException) me;
+         String sessionID = re.getSessionID();
+         String clientSessionID = factory.getSessions().get(sessionID);
+         for (FailureListener listener : listeners)
+         {
+            listener.onFailure(new RemotingException(re.getCode(), re.getMessage(), clientSessionID));
+         }
+         factory.getSessions().remove(sessionID);  
+      }      
    }
 
    // Public --------------------------------------------------------
 
-   public void setKeepAliveFactory(KeepAliveFactory factory)
+   public void setKeepAliveFactory(ServerKeepAliveFactory factory)
    {
       assert factory != null;
       
@@ -208,4 +226,32 @@ public class MinaService implements RemotingService, ConnectionExceptionNotifier
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
+
+   private final class MinaSessionListener implements IoServiceListener {
+
+      public void serviceActivated(IoService service)
+      {
+      }
+
+      public void serviceDeactivated(IoService service)
+      {
+      }
+
+      public void serviceIdle(IoService service, IdleStatus idleStatus)
+      {
+      }
+
+      public void sessionCreated(IoSession session)
+      {
+      }
+
+      public void sessionDestroyed(IoSession session)
+      {
+         String sessionID = Long.toString(session.getId());
+         if (factory.getSessions().containsKey(sessionID))
+         {
+            fireFailure(new RemotingException(MessagingException.INTERNAL_ERROR, "MINA session destroyed", sessionID));
+         }
+      }
+   }
 }

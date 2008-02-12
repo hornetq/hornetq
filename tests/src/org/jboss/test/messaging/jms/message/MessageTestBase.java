@@ -195,7 +195,7 @@ public class MessageTestBase extends JBMServerTestCase
       assertEquals(topic1, m.getJMSReplyTo());
       assertEquals("someArbitraryType", m.getJMSType());
       assertEquals(queue1, m.getJMSDestination());
-      assertTrue(m.getJMSRedelivered() == redelivered);
+      assertEquals("JMS Redelivered property", m.getJMSRedelivered(), redelivered);
       assertEquals(mode, m.getJMSDeliveryMode());
    }
 

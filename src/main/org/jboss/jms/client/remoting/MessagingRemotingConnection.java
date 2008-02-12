@@ -21,13 +21,13 @@
   */
 package org.jboss.jms.client.remoting;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGISTRY;
 
 import org.jboss.jms.client.api.FailureListener;
-import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.NIOConnector;
+import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
-import org.jboss.messaging.core.remoting.impl.ClientImpl;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.util.Logger;
@@ -35,7 +35,6 @@ import org.jboss.messaging.util.MessagingException;
 
 /**
  * 
- * TODO: This class should disappear in favor of Connection/Client
  * Encapsulates the state and behaviour from MINA needed for a JMS connection.
  * 
  * Each JMS connection maintains a single Client instance for invoking on the server.
@@ -58,7 +57,11 @@ public class MessagingRemotingConnection
 
    private RemotingConfiguration remotingConfig;
 
-   private Client client;
+   private NIOConnector connector;
+   
+   private NIOSession session;
+   
+   private FailureListener listener;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -75,13 +78,10 @@ public class MessagingRemotingConnection
 
    public void start() throws Throwable
    {
-      if (log.isTraceEnabled()) { log.trace(this + " created client"); }
+      if (log.isTraceEnabled()) { log.trace(this + " started remoting connection"); }
 
-      //callbackManager = new CallbackManager();
-
-      NIOConnector connector = REGISTRY.getConnector(remotingConfig);
-      client = new ClientImpl(connector, remotingConfig);
-      client.connect();
+      connector = REGISTRY.getConnector(remotingConfig);
+      session = connector.connect();
 
       if (log.isDebugEnabled())
          log.debug("Using " + connector + " to connect to " + remotingConfig);
@@ -95,24 +95,32 @@ public class MessagingRemotingConnection
 
       try
       {
-         client.disconnect();
-         NIOConnector connector = REGISTRY.removeConnector(remotingConfig);
          if (connector != null)
-            connector.disconnect();
+         { 
+            if (listener != null)
+               connector.removeFailureListener(listener);
+            NIOConnector connectorFromRegistry = REGISTRY.removeConnector(remotingConfig);
+            if (connectorFromRegistry != null)
+               connectorFromRegistry.disconnect();
+         }
       }
       catch (Throwable ignore)
       {        
          log.trace(this + " failed to disconnect the new client", ignore);
       }
-
-      client = null;
-
+      
+      connector = null;
+      
       log.trace(this + " closed");
    }
    
    public String getSessionID()
    {
-      return client.getSessionID();
+      if (session == null || !session.isConnected())
+      {
+         return null;
+      }
+      return session.getID();
    }
  
    /**
@@ -133,7 +141,7 @@ public class MessagingRemotingConnection
       
       try
       {      
-         response = (AbstractPacket) client.send(packet, oneWay);
+         response = (AbstractPacket) send(packet, oneWay);
       }
       catch (Exception e)
       {
@@ -159,24 +167,22 @@ public class MessagingRemotingConnection
       } 
    }
    
-   public synchronized void setFailureListener(FailureListener listener)
+   public synchronized void setFailureListener(FailureListener newListener)
    {
-      if (client != null)
+      if (listener != null && newListener != null)
       {
-         client.setFailureListener(listener);
+         throw new IllegalStateException("FailureListener already set to " + listener);
       }
-   }
 
-   public synchronized FailureListener getFailureListener()
-   {
-      if (client != null)
+      if (newListener != null)
       {
-         return client.getFailureListener();
+         connector.addFailureListener(newListener);
       }
-      else
+      else 
       {
-         return null;
+         connector.removeFailureListener(listener);
       }
+      this.listener = newListener;
    }
 
    // Package protected ----------------------------------------------------------------------------
@@ -184,7 +190,36 @@ public class MessagingRemotingConnection
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
-   
-   // Inner classes --------------------------------------------------------------------------------
 
+   private AbstractPacket send(AbstractPacket packet, boolean oneWay)
+   throws Exception
+   {
+      assert packet != null;
+      checkConnected();
+      packet.setOneWay(oneWay);
+
+      if (oneWay)
+      {
+         session.write(packet);
+         return null;
+      } else 
+      {
+         AbstractPacket response = (AbstractPacket) session.writeAndBlock(packet, 
+               remotingConfig.getTimeout(), SECONDS);
+         return response;
+      }
+   }
+
+   private void checkConnected() throws MessagingException
+   {
+      if (session == null)
+      {
+         throw new IllegalStateException("Client " + this
+               + " is not connected.");
+      }
+      if (!session.isConnected())
+      {
+         throw new MessagingException(MessagingException.NOT_CONNECTED);
+      }
+   }
 }

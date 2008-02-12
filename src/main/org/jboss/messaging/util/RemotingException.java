@@ -4,33 +4,32 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.core.remoting.wireformat;
-
-import static org.jboss.messaging.core.remoting.Assert.assertValidID;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_SETID;
+package org.jboss.messaging.util;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
- * 
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ *
  * @version <tt>$Revision$</tt>
+ *
  */
-public class SessionSetIDMessage extends AbstractPacket
+public class RemotingException extends MessagingException
 {
+
    // Constants -----------------------------------------------------
+
+   private static final long serialVersionUID = -6849945921631932738L;
 
    // Attributes ----------------------------------------------------
 
-   private final String sessionID;
+   private String sessionID;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionSetIDMessage(String sessionID)
+   public RemotingException(int code, String message, String sessionID)
    {
-      super(SESS_SETID);
-
-      assertValidID(sessionID);
+      super(code, message);
       this.sessionID = sessionID;
    }
 
@@ -40,13 +39,7 @@ public class SessionSetIDMessage extends AbstractPacket
    {
       return sessionID;
    }
-
-   @Override
-   public String toString()
-   {
-      return getParentString() + ", sessionID=" + sessionID + "]";
-   }
-
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

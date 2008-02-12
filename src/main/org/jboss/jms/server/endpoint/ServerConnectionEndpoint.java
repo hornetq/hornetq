@@ -138,7 +138,7 @@ public class ServerConnectionEndpoint
       String sessionID = UUID.randomUUID().toString();
  
       ServerSessionEndpoint ep =
-         new ServerSessionEndpoint(sessionID, this, autoCommitSends, autoCommitAcks, xa, messagingServer.getResourceManager());            
+         new ServerSessionEndpoint(sessionID, this, autoCommitSends, autoCommitAcks, xa, sender, messagingServer.getResourceManager());            
 
       synchronized (sessions)
       {
@@ -189,7 +189,7 @@ public class ServerConnectionEndpoint
 
       temporaryQueues.clear();      
 
-      cm.unregisterConnection(jmsClientVMID, remotingClientSessionID);
+      cm.unregisterConnection(remotingClientSessionID, this);
 
       messagingServer.getRemotingService().getDispatcher().unregister(id);
    }

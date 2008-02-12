@@ -4,59 +4,61 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.core.remoting.wireformat;
+package org.jboss.messaging.core.remoting.codec;
 
-import static org.jboss.messaging.core.remoting.Assert.assertValidID;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.PONG;
 
+import org.jboss.messaging.core.remoting.wireformat.Pong;
+
 /**
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
- * 
- * @version <tt>$Revision$</tt>
  */
-public class Pong extends AbstractPacket
+public class PongCodec extends AbstractPacketCodec<Pong>
 {
+
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
-   private final String sessionID;
-
-   private final boolean sessionFailed;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public Pong(String sessionID, boolean sessionFailed)
+   public PongCodec()
    {
       super(PONG);
-
-      assertValidID(sessionID);
-
-      this.sessionID = sessionID;
-      this.sessionFailed = sessionFailed;
    }
 
    // Public --------------------------------------------------------
 
-   public String getSessionID()
-   {
-      return sessionID;
-   }
+   // AbstractPacketCodec overrides ---------------------------------
 
-   public boolean isSessionFailed()
+   @Override
+   protected void encodeBody(Pong packet, RemotingBuffer out) throws Exception
    {
-      return sessionFailed;
+      String sessionID = packet.getSessionID();
+      boolean sessionFailed = packet.isSessionFailed();
+
+      int bodyLength = sizeof(sessionID) + BOOLEAN_LENGTH;
+
+      out.putInt(bodyLength);
+      out.putNullableString(sessionID);
+      out.putBoolean(sessionFailed);
    }
 
    @Override
-   public String toString()
+   protected Pong decodeBody(RemotingBuffer in) throws Exception
    {
-      return getParentString() + ", sessionID=" + sessionID + ", sessionFailed=" + sessionFailed + "]";
+      int bodyLength = in.getInt();
+      if (bodyLength > in.remaining())
+      {
+         return null;
+      }
+      String sessionID = in.getNullableString();
+      boolean sessionFailed = in.getBoolean();
+      return new Pong(sessionID, sessionFailed);
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

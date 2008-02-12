@@ -178,7 +178,7 @@ public class ServerConsumerEndpoint implements Consumer
                    
          try
          {
-         	sessionEndpoint.handleDelivery(ref, this, replier);
+         	sessionEndpoint.handleDelivery(ref, this);
          }
          catch (Exception e)
          {
@@ -303,15 +303,6 @@ public class ServerConsumerEndpoint implements Consumer
       sessionEndpoint.promptDelivery(messageQueue);
    }
 
-   private PacketSender replier;
-
-   //FIXME - this is a hack - we shouldn't have to wait for a change rate message before we can send
-   //a message to the client
-   private void setReplier(PacketSender replier)
-   {
-      this.replier = replier;
-   }
-
    // Inner classes --------------------------------------------------------------------------------
    
    private class ServerConsumerEndpointPacketHandler extends ServerPacketHandlerSupport
@@ -330,8 +321,6 @@ public class ServerConsumerEndpoint implements Consumer
          
          if (type == CONS_FLOWTOKEN)
          {
-            setReplier(sender);
-
             ConsumerFlowTokenMessage message = (ConsumerFlowTokenMessage) packet;
             
             receiveTokens(message.getTokens());
@@ -339,8 +328,6 @@ public class ServerConsumerEndpoint implements Consumer
          else if (type == CLOSE)
          {
             close();
-            
-            setReplier(null);
          }
          else
          {

@@ -6,15 +6,14 @@
  */
 package org.jboss.messaging.core.remoting.codec;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_SETID;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.PING;
 
-import org.jboss.messaging.core.remoting.wireformat.SessionSetIDMessage;
+import org.jboss.messaging.core.remoting.wireformat.Ping;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
  */
-public class SessionSetIDMessageCodec extends
-      AbstractPacketCodec<SessionSetIDMessage>
+public class PingCodec extends AbstractPacketCodec<Ping>
 {
 
    // Constants -----------------------------------------------------
@@ -25,9 +24,9 @@ public class SessionSetIDMessageCodec extends
 
    // Constructors --------------------------------------------------
 
-   public SessionSetIDMessageCodec()
+   public PingCodec()
    {
-      super(SESS_SETID);
+      super(PING);
    }
 
    // Public --------------------------------------------------------
@@ -35,26 +34,27 @@ public class SessionSetIDMessageCodec extends
    // AbstractPacketCodec overrides ---------------------------------
 
    @Override
-   protected void encodeBody(SessionSetIDMessage message, RemotingBuffer out)
+   protected void encodeBody(Ping packet, RemotingBuffer out)
          throws Exception
    {
-      String sessionID = message.getSessionID();
+      String clientSessionID = packet.getSessionID();
 
-      out.putInt(sizeof(sessionID));
-      out.putNullableString(sessionID);
+      out.putInt(sizeof(clientSessionID));
+      out.putNullableString(clientSessionID);
    }
 
    @Override
-   protected SessionSetIDMessage decodeBody(RemotingBuffer in) throws Exception
+   protected Ping decodeBody(RemotingBuffer in)
+         throws Exception
    {
       int bodyLength = in.getInt();
       if (bodyLength > in.remaining())
       {
          return null;
       }
-      String sessionID = in.getNullableString();
+      String clientSessionID = in.getNullableString();
 
-      return new SessionSetIDMessage(sessionID);
+      return new Ping(clientSessionID);
    }
 
    // Package protected ---------------------------------------------

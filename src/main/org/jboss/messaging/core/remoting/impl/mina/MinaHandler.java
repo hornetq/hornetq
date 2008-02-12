@@ -6,20 +6,17 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import java.io.IOException;
-import java.util.concurrent.TimeoutException;
-
 import org.apache.mina.common.IoHandlerAdapter;
 import org.apache.mina.common.IoSession;
-import org.apache.mina.filter.keepalive.KeepAliveTimeoutException;
 import org.apache.mina.filter.reqres.Response;
-import org.jboss.jms.exception.JMSExceptionHelper;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.core.remoting.wireformat.Ping;
 import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.util.MessagingException;
+import org.jboss.messaging.util.RemotingException;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -37,16 +34,16 @@ public class MinaHandler extends IoHandlerAdapter
 
    private final PacketDispatcher dispatcher;
 
-   private ConnectionExceptionNotifier connectionExceptionNotifier;
+   private FailureNotifier failureNotifier;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
    
-   public MinaHandler(PacketDispatcher dispatcher, ConnectionExceptionNotifier keepAliveNotifier)
+   public MinaHandler(PacketDispatcher dispatcher, FailureNotifier failureNotifier)
    {
       this.dispatcher = dispatcher;
-      this.connectionExceptionNotifier = keepAliveNotifier;
+      this.failureNotifier = failureNotifier;
    }
 
    // Public --------------------------------------------------------
@@ -57,10 +54,14 @@ public class MinaHandler extends IoHandlerAdapter
    public void exceptionCaught(IoSession session, Throwable cause)
          throws Exception
    {
-      if (connectionExceptionNotifier != null)
+      log.error("caught exception " + cause + " for session " + session);
+      
+      if (failureNotifier != null)
       {
          String serverSessionID = Long.toString(session.getId());
-         connectionExceptionNotifier.fireConnectionException(cause, serverSessionID);
+         RemotingException re = new RemotingException(MessagingException.INTERNAL_ERROR, "unexpected exception", serverSessionID);
+         re.initCause(cause);
+         failureNotifier.fireFailure(re);
       }
       // FIXME ugly way to know we're on the server side
       // close session only on the server side

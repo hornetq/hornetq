@@ -35,7 +35,6 @@ public enum PacketType
    CONN_STOP                           ((byte)33),
 
    // Session   
-   SESS_SETID                          ((byte)40),   
    SESS_CREATECONSUMER                 ((byte)41),
    SESS_CREATECONSUMER_RESP            ((byte)42),   
    SESS_CREATEBROWSER                  ((byte)43),

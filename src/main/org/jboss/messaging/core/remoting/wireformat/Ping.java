@@ -6,6 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.wireformat;
 
+import static org.jboss.messaging.core.remoting.Assert.assertValidID;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.PING;
 
 /**
@@ -20,17 +21,34 @@ public class Ping extends AbstractPacket
 
    // Attributes ----------------------------------------------------
 
+   private final String sessionID;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public Ping()
+   public Ping(String sessionID)
    {
       super(PING);
+      
+      assertValidID(sessionID);
+      
+      this.sessionID = sessionID;
    }
    
    // Public --------------------------------------------------------
+   
+   public String getSessionID()
+   {
+      return sessionID;
+   }
 
+   @Override
+   public String toString()
+   {
+      return getParentString() + ", sessionID=" + sessionID + "]";
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

@@ -135,19 +135,4 @@ public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
 
       return new CreateConnectionResponse(connectionID);
    }
-   
-   public void addSender(String VMID, String remotingSessionID,
-         PacketSender sender) throws Exception
-   {
-      log.debug("Adding PacketSender on ConnectionFactory");
-      messagingServer.getConnectionManager().addConnectionFactoryCallback(getID(), VMID, remotingSessionID, sender);
-   }
-
-   public void removeSender(String VMID, String remotingSessionID,
-         PacketSender sender) throws Exception
-   {
-      log.debug("Removing PacketSender on ConnectionFactory");
-      messagingServer.getConnectionManager().removeConnectionFactoryCallback(getID(), VMID, sender);
-   }
-
 }

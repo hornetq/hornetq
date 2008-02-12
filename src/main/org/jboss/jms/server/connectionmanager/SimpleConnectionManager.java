@@ -22,31 +22,32 @@
 package org.jboss.jms.server.connectionmanager;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map.Entry;
 
+import org.jboss.jms.client.api.FailureListener;
+import org.jboss.jms.client.impl.JMSClientVMIdentifier;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
-import org.jboss.messaging.core.remoting.ConnectionExceptionListener;
-import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.util.MessagingException;
+import org.jboss.messaging.util.RemotingException;
 import org.jboss.messaging.util.Util;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ovidiu@feodorov.com">Ovidiu Feodorov</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * 
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class SimpleConnectionManager implements ConnectionManager, ConnectionExceptionListener
+public class SimpleConnectionManager implements ConnectionManager, FailureListener
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -54,136 +55,83 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionExc
 
    // Static ---------------------------------------------------------------------------------------
 
-   private static boolean trace = log.isTraceEnabled();
-
    // Attributes -----------------------------------------------------------------------------------
 
-   private Map</** VMID */String, Map</** RemoteSessionID */String, ServerConnectionEndpoint>> jmsClients;
+   private Map<String /* remoting session ID */, List<ServerConnectionEndpoint>> endpoints;
 
-   // Map<remotingClientSessionID<String> - jmsClientVMID<String>
-   private Map<String, String> remotingSessions;
-
-   // Set<ServerConnectionEndpoint>
    private Set<ServerConnectionEndpoint> activeServerConnectionEndpoints;
 
-   private Map</** CFUniqueName*/ String, ConnectionFactoryCallbackInformation> cfCallbackInfo;
+   // the clients maps is for information only: to better identify the clients of
+   // jboss messaging using their VM ID
+   private Map<String /* remoting session id */, String /* client vm id */> clients;
    
    // Constructors ---------------------------------------------------------------------------------
 
    public SimpleConnectionManager()
    {
-      jmsClients = new HashMap<String, Map<String, ServerConnectionEndpoint>>();
-      remotingSessions = new HashMap<String, String>();
+      endpoints = new HashMap<String, List<ServerConnectionEndpoint>>();
       activeServerConnectionEndpoints = new HashSet<ServerConnectionEndpoint>();
-      cfCallbackInfo = new ConcurrentHashMap<String, ConnectionFactoryCallbackInformation>();
+      clients = new HashMap<String, String>();
    }
 
    // ConnectionManager implementation -------------------------------------------------------------
 
-   
-   
-   public synchronized void registerConnection(String jmsClientVMID,
-                                               String remotingClientSessionID,
-                                               ServerConnectionEndpoint endpoint)
+   public synchronized void registerConnection(String clientVMID, String remotingClientSessionID,
+         ServerConnectionEndpoint endpoint)
    {    
-      Map<String, ServerConnectionEndpoint> endpoints = jmsClients.get(jmsClientVMID);
-      
-      if (endpoints == null)
+      List<ServerConnectionEndpoint> connectionEndpoints = endpoints.get(remotingClientSessionID);
+
+      if (connectionEndpoints == null)
       {
-         endpoints = new HashMap<String, ServerConnectionEndpoint>();
-         
-         jmsClients.put(jmsClientVMID, endpoints);
+         connectionEndpoints = new ArrayList<ServerConnectionEndpoint>();
+         endpoints.put(remotingClientSessionID, connectionEndpoints);
       }
-      
-      endpoints.put(remotingClientSessionID, endpoint);
-      
-      remotingSessions.put(remotingClientSessionID, jmsClientVMID);
+
+      connectionEndpoints.add(endpoint);
 
       activeServerConnectionEndpoints.add(endpoint);
-      
+
+      clients.put(remotingClientSessionID, clientVMID);
+
       log.debug("registered connection " + endpoint + " as " +
-                Util.guidToString(remotingClientSessionID));
+            Util.guidToString(remotingClientSessionID));
    }
-
-   public synchronized ServerConnectionEndpoint unregisterConnection(String jmsClientVMId,
-                                                               String remotingClientSessionID)
+   
+   public synchronized ServerConnectionEndpoint unregisterConnection(String remotingClientSessionID,
+         ServerConnectionEndpoint endpoint)
    {
-      Map<String, ServerConnectionEndpoint> endpoints = jmsClients.get(jmsClientVMId);
-      
-      if (endpoints != null)
+      List<ServerConnectionEndpoint> connectionEndpoints = endpoints.get(remotingClientSessionID);
+
+      if (connectionEndpoints != null)
       {
-         ServerConnectionEndpoint e = endpoints.remove(remotingClientSessionID);
+         boolean removed = connectionEndpoints.remove(endpoint);
 
-         if (e != null)
+         if (removed)
          {
-            endpoints.remove(e);
-            activeServerConnectionEndpoints.remove(e);
+            activeServerConnectionEndpoints.remove(endpoint);
          }
 
-         log.debug("unregistered connection " + e + " with remoting session ID " +
-               Util.guidToString(remotingClientSessionID));
-         
-         if (endpoints.isEmpty())
+         log.debug("unregistered connection " + endpoint + " with remoting session ID " + remotingClientSessionID);
+
+         if (connectionEndpoints.isEmpty())
          {
-            jmsClients.remove(jmsClientVMId);
+            endpoints.remove(remotingClientSessionID);           
+            clients.remove(remotingClientSessionID);
          }
-         
-         remotingSessions.remove(remotingClientSessionID);
-         
-         return e;
+
+         return endpoint;
       }
       return null;
    }
    
-   public synchronized List getActiveConnections()
+   public synchronized List<ServerConnectionEndpoint> getActiveConnections()
    {
       // I will make a copy to avoid ConcurrentModification
       List<ServerConnectionEndpoint> list = new ArrayList<ServerConnectionEndpoint>();
       list.addAll(activeServerConnectionEndpoints);
       return list;
-   }
+   }      
       
-   public synchronized void handleClientFailure(String remotingSessionID, boolean clientToServer)
-   {
-      String jmsClientID = (String)remotingSessions.get(remotingSessionID);
-
-      if (jmsClientID == null)
-      {
-         log.warn(this + " cannot look up remoting session ID " + remotingSessionID);
-      }
-
-      log.warn("A problem has been detected " +
-         (clientToServer ?
-            "with the connection to remote client ":
-            "trying to send a message to remote client ") +
-         remotingSessionID + ", jmsClientID=" + jmsClientID + ". It is possible the client has exited without closing " +
-         "its connection(s) or the network has failed. All connection resources " +
-         "corresponding to that client process will now be removed.");
-
-      closeConsumersForClientVMID(jmsClientID);
-   }
-   
-   /** Synchronized is not really needed.. just to be safe as this is not supposed to be highly contended */
-   public void addConnectionFactoryCallback(String uniqueName, String vmID,
-         String remotingSessionID, PacketSender sender)
-   {
-      remotingSessions.put(remotingSessionID, vmID);
-      getCFInfo(uniqueName).addClient(vmID, sender);      
-   }
-   /** Synchronized is not really needed.. just to be safe as this is not supposed to be highly contended */
-   public synchronized void removeConnectionFactoryCallback(String uniqueName, String vmid,
-         PacketSender sender)
-   {
-      getCFInfo(uniqueName).removeSender(vmid, sender);   
-   }
-   
-   /** Synchronized is not really needed.. just to be safe as this is not supposed to be highly contended */
-   public synchronized PacketSender[] getConnectionFactorySenders(String uniqueName)
-   {
-      return getCFInfo(uniqueName).getAllSenders();
-   }
-
-   
    // MessagingComponent implementation ------------------------------------------------------------
    
    public void start() throws Exception
@@ -196,31 +144,19 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionExc
       //NOOP
    }
 
-   // ConnectionExceptionListener ------------------------------------------------------------------
+   // FailureListener implementation --------------------------------------------------------------
    
-   public void handleConnectionException(Throwable t, String clientSessionID)
+   public void onFailure(MessagingException me)
    {
-      handleClientFailure(clientSessionID , true);
+      if (me instanceof RemotingException)
+      {
+         RemotingException re = (RemotingException) me;
+         handleClientFailure(re.getSessionID(), true);
+      }
    }
    
    // Public ---------------------------------------------------------------------------------------
 
-   /*
-    * Used in testing only
-    */
-   public synchronized boolean containsRemotingSession(String remotingClientSessionID)
-   {
-      return remotingSessions.containsKey(remotingClientSessionID);
-   }
-
-   /*
-    * Used in testing only
-    */
-   public synchronized Map getClients()
-   {
-      return Collections.unmodifiableMap(jmsClients);
-   }
-   
    public String toString()
    {
       return "ConnectionManager[" + Integer.toHexString(hashCode()) + "]";
@@ -232,152 +168,96 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionExc
 
    // Private --------------------------------------------------------------------------------------
 
-   private ConnectionFactoryCallbackInformation getCFInfo(String uniqueName)
+   /**
+    * @param clientToServer - true if the failure has been detected on a direct connection from
+    *        client to this server, false if the failure has been detected while trying to send a
+    *        callback from this server to the client.
+    */
+   private synchronized void handleClientFailure(String remotingSessionID, boolean clientToServer)
    {
-      ConnectionFactoryCallbackInformation callback = cfCallbackInfo.get(uniqueName);
-      if (callback == null)
-      {
-         callback = new ConnectionFactoryCallbackInformation(uniqueName);
-         cfCallbackInfo.put(uniqueName, callback);
-         callback = cfCallbackInfo.get(uniqueName);
-      }
-      return callback;
-   }
+      String clientVMID = clients.get(remotingSessionID);
 
-
-   private synchronized void closeConsumersForClientVMID(String jmsClientID)
-   {
-      if (jmsClientID == null)
+      if (clientVMID == null)
       {
          return;
       }
-      // Remoting only provides one pinger per invoker, not per connection therefore when the pinger
-      // dies we must close ALL connections corresponding to that jms client ID.
-
-      Map<String, ServerConnectionEndpoint> endpoints = jmsClients.get(jmsClientID);
-
-      if (endpoints != null)
-      {
-         List<ServerConnectionEndpoint> sces = new ArrayList<ServerConnectionEndpoint>();
-
-         for (Map.Entry<String, ServerConnectionEndpoint> entry: endpoints.entrySet())
-         {
-            ServerConnectionEndpoint sce = entry.getValue();
-            sces.add(sce);
-         }
-
-         // Now close the end points - this will result in a callback into unregisterConnection
-         // to remove the data from the jmsClients and sessions maps.
-         // Note we do this outside the loop to prevent ConcurrentModificationException
-
-         for(ServerConnectionEndpoint sce: sces )
-         {
-            try
-            {
-      			log.debug("clearing up state for connection " + sce);
-               sce.close();
-               log.debug("cleared up state for connection " + sce);
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to close connection", e);
-            }          
-         }
-      }
       
-      for (ConnectionFactoryCallbackInformation cfInfo: cfCallbackInfo.values())
-      {
-         PacketSender[] senders = cfInfo.getAllSenders(jmsClientID);
-         for (PacketSender sender: senders)
-         {
-            cfInfo.removeSender(jmsClientID, sender);
-         }
+      log.warn("A problem has been detected " +
+         (clientToServer ?
+            "with the connection to remote client ":
+            "trying to send a message to remote client ") +
+         remotingSessionID + ", client VM ID=" + clientVMID + ". It is possible the client has exited without closing " +
+         "its connection(s) or the network has failed. All connection resources " +
+         "corresponding to that client process will now be removed.");
 
-      }
-
+      closeConsumers(remotingSessionID);
+      
+      dump();
    }
 
-   // Inner classes --------------------------------------------------------------------------------
-
-   /** Class used to organize Callbacks on ClusteredConnectionFactories */
-   static class ConnectionFactoryCallbackInformation
+   private synchronized void closeConsumers(String remotingClientSessionID)
    {
-
-      // We keep two lists, one containing all clients a CF will have to maintain and another
-      //   organized by JVMId as we will need that organization when cleaning up dead clients
-      String uniqueName;
-      Map</**VMID */ String , /** Active clients*/ConcurrentHashSet<PacketSender>> clientSendersByVM;
-      ConcurrentHashSet<PacketSender> clientSenders;
-
-
-      public ConnectionFactoryCallbackInformation(String uniqueName)
-      {
-         this.uniqueName = uniqueName;
-         this.clientSendersByVM = new ConcurrentHashMap<String, ConcurrentHashSet<PacketSender>>();
-         this.clientSenders = new ConcurrentHashSet<PacketSender>();
-      }
-
-      public void addClient(String vmID, PacketSender sender)
-      {
-         clientSenders.add(sender);
-         getSendersList(vmID).add(sender);
-      }
+      assert remotingClientSessionID != null;
       
-      public PacketSender[] getAllSenders(String vmID)
+      List<ServerConnectionEndpoint> connectionEndpoints = endpoints.get(remotingClientSessionID);
+      // the connection endpoints are copied in a new list to avoid concurrent modification exception
+      List<ServerConnectionEndpoint> copy;
+      if (connectionEndpoints != null)
+         copy = new ArrayList<ServerConnectionEndpoint>(connectionEndpoints);
+      else
+         copy = new ArrayList<ServerConnectionEndpoint>();
+         
+      for (ServerConnectionEndpoint sce : copy)
       {
-         Set<PacketSender> list = getSendersList(vmID);
-         return (PacketSender[]) list.toArray(new PacketSender[list.size()]);
-      }
-
-      public PacketSender[] getAllSenders()
-      {
-         return (PacketSender[]) clientSenders.toArray(new PacketSender[clientSenders.size()]);
-      }
-
-      public void removeSender(String vmID, PacketSender sender)
-      {
-         clientSenders.remove(sender);
-         getSendersList(vmID).remove(sender);
-      }
-      
-      private ConcurrentHashSet<PacketSender> getSendersList(String vmID)
-      {
-         ConcurrentHashSet<PacketSender> perVMList = clientSendersByVM.get(vmID);
-         if (perVMList == null)
+         try
          {
-            perVMList = new ConcurrentHashSet<PacketSender>();
-            clientSendersByVM.put(vmID, perVMList);
-            perVMList = clientSendersByVM.get(vmID);
+            log.debug("clearing up state for connection " + sce);
+            sce.close();
+            log.debug("cleared up state for connection " + sce);
          }
-         return perVMList;
+         catch (Exception e)
+         {
+            log.error("Failed to close connection", e);
+         }          
       }
    }
    
    private void dump()
    {
-   	log.debug("***********Dumping conn map");
-   	for (Iterator iter = jmsClients.entrySet().iterator(); iter.hasNext(); )
-   	{
-   		Map.Entry entry = (Map.Entry)iter.next();
-   		
-   		String jmsClientVMID = (String)entry.getKey();
-   		
-   		Map endpoints = (Map)entry.getValue();
-   		
-   		log.debug(jmsClientVMID + "----->");
-   		
-   		for (Iterator iter2 = endpoints.entrySet().iterator(); iter2.hasNext(); )
-      	{
-   			Map.Entry entry2 = (Map.Entry)iter2.next();
-   			
-   			String sessionID = (String)entry2.getKey();
-   			
-   			ServerConnectionEndpoint endpoint = (ServerConnectionEndpoint)entry2.getValue();
-   			
-   			log.debug("            " + sessionID + "------>" + System.identityHashCode(endpoint));
-      	}
-   	}
-   	log.debug("*** Dumped conn map");
+      if (log.isDebugEnabled())
+      {
+         StringBuffer buff = new StringBuffer("*********** Dumping connections\n");
+         buff.append("this client VM ID: ").append(JMSClientVMIdentifier.instance).append("\n");
+         buff.append("remoting session ID <----> client VM ID:\n");
+         if (clients.size() == 0)
+         {
+            buff.append("    No registered sessions\n");
+         }
+         for (Entry<String, String> client : clients.entrySet())
+         {
+            String remotingSessionID = client.getKey();
+            String clientVMID = client.getValue();
+            buff.append("    ").append(remotingSessionID).append(" <----> ").append(clientVMID).append("\n");
+         }
+         buff.append("remoting session ID -----> server connection endpoints:\n");
+         if (endpoints.size() == 0)
+         {
+            buff.append("    No registered endpoints\n");
+         }
+         for (Entry<String, List<ServerConnectionEndpoint>> entry : endpoints.entrySet())
+         {
+            List<ServerConnectionEndpoint> connectionEndpoints = entry.getValue();
+            buff.append("    "  + entry.getKey() + "----->\n");
+            for (ServerConnectionEndpoint sce : connectionEndpoints)
+            {
+               buff.append("        " + sce + " (" + System.identityHashCode(sce) + ")\n");
+            }
+         }
+         buff.append("*** Dumped connections");
+         log.debug(buff);
+      }
    }
+   
+   // Inner classes --------------------------------------------------------------------------------
 
 }

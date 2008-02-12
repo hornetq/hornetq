@@ -337,11 +337,6 @@ public class JBossConnection implements
       return ((ClientConnectionInternal)connection).getServerID();
    }
    
-   public String getRemotingClientSessionID()
-   {
-      return ((ClientConnectionInternal)connection).getRemotingConnection().getSessionID();
-   }
-
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------

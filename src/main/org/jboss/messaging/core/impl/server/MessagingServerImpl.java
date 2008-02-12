@@ -189,7 +189,7 @@ public class MessagingServerImpl implements MessagingServer
          securityDeployer.start();
          queueSettingsDeployer.start();
          connectionManager.start();
-         remotingService.addConnectionExceptionListener(connectionManager);
+         remotingService.addFailureListener(connectionManager);
          memoryManager.start();
          postOffice.start();
          MessagingServerPacketHandler serverPacketHandler =  new MessagingServerPacketHandler(this);
@@ -236,7 +236,7 @@ public class MessagingServerImpl implements MessagingServer
          securityDeployer.stop();
          queueSettingsDeployer.stop();
          connectionManager.stop();
-         remotingService.removeConnectionExceptionListener(connectionManager);
+         remotingService.removeFailureListener(connectionManager);
          connectionManager = null;
          memoryManager.stop();
          memoryManager = null;

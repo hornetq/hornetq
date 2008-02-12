@@ -8,20 +8,24 @@ package org.jboss.messaging.core.remoting.impl;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.MANY_MESSAGES;
+import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.REQRES_TIMEOUT;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.reverse;
+import static org.jboss.messaging.test.unit.RandomUtil.randomString;
 
 import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.NIOConnector;
+import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.mina.integration.test.ReversePacketHandler;
 import org.jboss.messaging.core.remoting.test.unit.TestPacketHandler;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.core.remoting.wireformat.TextPacket;
 
 /**
@@ -29,19 +33,19 @@ import org.jboss.messaging.core.remoting.wireformat.TextPacket;
  * 
  * @version <tt>$Revision$</tt>
  */
-public abstract class ClientTestBase extends TestCase
+public abstract class SessionTestBase extends TestCase
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   protected Client client;
- 
    protected ReversePacketHandler serverPacketHandler;
 
    protected PacketDispatcher serverDispatcher;
 
-   private NIOConnector connector;
+   protected NIOConnector connector;
+
+   protected NIOSession session;
 
    // Static --------------------------------------------------------
 
@@ -52,27 +56,23 @@ public abstract class ClientTestBase extends TestCase
    public void testConnected() throws Exception
    {
       NIOConnector connector = createNIOConnector();
-      Client client = new ClientImpl(connector, createRemotingConfiguration());
-      
-      assertFalse(client.isConnected());
+      NIOSession session = connector.connect();
 
-      client.connect();
-      assertTrue(client.isConnected());
-
-      assertTrue(client.disconnect());
-      assertFalse(client.isConnected());
-      assertFalse(client.disconnect());
+      assertTrue(session.isConnected());
       
-      connector.disconnect();
+      assertTrue(connector.disconnect());
+      assertFalse(session.isConnected());
+      
    }    
       
-   public void testSendOneWay() throws Exception
+   public void testWrite() throws Exception
    {
       serverPacketHandler.expectMessage(1);
 
       TextPacket packet = new TextPacket("testSendOneWay");
       packet.setTargetID(serverPacketHandler.getID());
-      client.send(packet, true);
+      
+      session.write(packet);
 
       assertTrue(serverPacketHandler.await(2, SECONDS));
 
@@ -82,7 +82,7 @@ public abstract class ClientTestBase extends TestCase
       assertEquals(packet.getText(), response);
    }
 
-   public void testSendManyOneWay() throws Exception
+   public void testWriteMany() throws Exception
    {
       serverPacketHandler.expectMessage(MANY_MESSAGES);
 
@@ -91,7 +91,7 @@ public abstract class ClientTestBase extends TestCase
       {
          packets[i] = new TextPacket("testSendManyOneWay " + i);
          packets[i].setTargetID(serverPacketHandler.getID());
-         client.send(packets[i], true);
+         session.write(packets[i]);
       }
 
       assertTrue(serverPacketHandler.await(10, SECONDS));
@@ -105,7 +105,7 @@ public abstract class ClientTestBase extends TestCase
       }
    }
 
-   public void testSendOneWayWithCallbackHandler() throws Exception
+   public void testWriteWithCallbackHandler() throws Exception
    {
       TestPacketHandler callbackHandler = new TestPacketHandler();
       callbackHandler.expectMessage(1);
@@ -116,7 +116,7 @@ public abstract class ClientTestBase extends TestCase
       packet.setTargetID(serverPacketHandler.getID());
       packet.setCallbackID(callbackHandler.getID());
 
-      client.send(packet, true);
+      session.write(packet);
 
       assertTrue(callbackHandler.await(5, SECONDS));
 
@@ -124,13 +124,64 @@ public abstract class ClientTestBase extends TestCase
       String response = callbackHandler.getPackets().get(0).getText();
       assertEquals(reverse(packet.getText()), response);
    }
+   
+   public void testWriteAndBlockWithOneCallbackLater() throws Exception
+   {
+      final PacketSender[] serverSender = new PacketSender[1];
+      PacketHandler serverHandler = new PacketHandler() {
+         private final String id = randomString();
+         
+         public String getID()
+         {
+            return id;
+         }
 
-   public void testSendBlocking() throws Exception
+         public void handle(Packet packet, PacketSender sender)
+         {
+            serverSender[0] = sender;
+            // immediate reply
+            TextPacket response = new TextPacket("blockingResponse");
+            response.normalize(packet);
+            try
+            {
+               sender.send(packet);
+            } catch (Exception e)
+            {
+               fail(e.getMessage());
+            }
+         }
+      };
+      serverDispatcher.register(serverHandler);
+      
+      TestPacketHandler callbackHandler = new TestPacketHandler();
+      callbackHandler.expectMessage(1);
+      PacketDispatcher.client.register(callbackHandler);
+
+      TextPacket packet = new TextPacket("testSendOneWayWith2Callbacks");
+      packet.setTargetID(serverHandler.getID());
+      packet.setCallbackID(callbackHandler.getID());
+
+      AbstractPacket blockingResponse = (AbstractPacket) session.writeAndBlock(packet, REQRES_TIMEOUT, SECONDS);
+      assertNotNull(blockingResponse);
+      
+      assertEquals(0, callbackHandler.getPackets().size());
+      
+      assertNotNull(serverSender[0]);
+      TextPacket callbackResponse = new TextPacket("callbackResponse");
+      callbackResponse.setTargetID(callbackHandler.getID());
+      serverSender[0].send(callbackResponse);
+
+      assertTrue(callbackHandler.await(REQRES_TIMEOUT, SECONDS));
+      
+      assertEquals(1, callbackHandler.getPackets().size());
+   }
+
+   public void testWriteAndBlock() throws Exception
    {
       TextPacket request = new TextPacket("testSendBlocking");
       request.setTargetID(serverPacketHandler.getID());
 
-      AbstractPacket receivedPacket = client.send(request, false);
+      AbstractPacket receivedPacket = (AbstractPacket) session.writeAndBlock(request, REQRES_TIMEOUT, SECONDS);
 
       assertNotNull(receivedPacket);
       assertTrue(receivedPacket instanceof TextPacket);
@@ -143,17 +194,18 @@ public abstract class ClientTestBase extends TestCase
       TextPacket request = new TextPacket("testSendBlocking");
       request.setTargetID(serverPacketHandler.getID());
 
-      AbstractPacket receivedPacket = client.send(request, false);
+      AbstractPacket receivedPacket = (AbstractPacket) session.writeAndBlock(request, REQRES_TIMEOUT, SECONDS);
       long correlationID = request.getCorrelationID();
       
       assertNotNull(receivedPacket);      
       assertEquals(request.getCorrelationID(), receivedPacket.getCorrelationID());
       
-      receivedPacket = client.send(request, false);
+      receivedPacket = (AbstractPacket) session.writeAndBlock(request, REQRES_TIMEOUT, SECONDS);
       assertEquals(correlationID + 1, request.getCorrelationID());
       assertEquals(correlationID + 1, receivedPacket.getCorrelationID());      
    }
 
+   
    public void testClientHandlePacketSentByServer() throws Exception
    {
       TestPacketHandler clientHandler = new TestPacketHandler();
@@ -167,7 +219,7 @@ public abstract class ClientTestBase extends TestCase
       packet.setTargetID(serverPacketHandler.getID());
       // send a packet to create a sender when the server
       // handles the packet
-      client.send(packet, true);
+      session.write(packet);
 
       assertTrue(serverPacketHandler.await(2, SECONDS));
 
@@ -193,10 +245,8 @@ public abstract class ClientTestBase extends TestCase
    {
       serverDispatcher = startServer();
       
-      RemotingConfiguration remotingConfig = createRemotingConfiguration();
       connector = createNIOConnector();
-      client = new ClientImpl(connector, remotingConfig);
-      client.connect();
+      session = connector.connect();
       
       serverPacketHandler = new ReversePacketHandler();
       serverDispatcher.register(serverPacketHandler);
@@ -208,10 +258,10 @@ public abstract class ClientTestBase extends TestCase
       serverDispatcher.unregister(serverPacketHandler.getID());
 
       connector.disconnect();
-      client.disconnect();
       stopServer();
       
-      client = null;
+      connector = null;
+      session = null;
       serverDispatcher = null;
    }
    

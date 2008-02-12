@@ -13,7 +13,7 @@ import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestS
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
-import org.jboss.messaging.core.remoting.impl.ClientTestBase;
+import org.jboss.messaging.core.remoting.impl.SessionTestBase;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
@@ -25,7 +25,7 @@ import org.jboss.messaging.core.remoting.wireformat.TextPacket;
  * @version <tt>$Revision$</tt>
  *
  */
-public class MinaClientTest extends ClientTestBase
+public class MinaSessionTest extends SessionTestBase
 {
 
    private MinaService service;
@@ -40,9 +40,8 @@ public class MinaClientTest extends ClientTestBase
 
    // Public --------------------------------------------------------
 
-   public void testSendBlockingWithTimeout() throws Exception
+   public void testWriteAndBlockWithTimeout() throws Exception
    {
-      client.setBlockingRequestTimeout(500, MILLISECONDS);
       serverPacketHandler.setSleepTime(1000, MILLISECONDS);
 
       AbstractPacket packet = new TextPacket("testSendBlockingWithTimeout");
@@ -50,7 +49,7 @@ public class MinaClientTest extends ClientTestBase
       
       try
       {
-         client.send(packet, false);
+         session.writeAndBlock(packet, 500, MILLISECONDS);
          fail("a Throwable should be thrown");
       } catch (Throwable t)
       {

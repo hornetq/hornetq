@@ -21,42 +21,50 @@
   */
 package org.jboss.test.messaging.jms.crash;
 
+import java.io.File;
+
+import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
 import javax.jms.Queue;
-import javax.jms.Topic;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.server.ConnectionManager;
-import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.JBMServerTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.container.Server;
-import org.jboss.test.messaging.tools.container.ServiceContainer;
+import org.jboss.test.messaging.jms.SerializedClientSupport;
+
 
 /**
- * 
- * A ClientCrashTest.
+ * A test that makes sure that a Messaging server cleans up the associated
+ * resources when one of its client crashes.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * 
  * @version <tt>$Revision$</tt>
- *
- * $Id$
  * 
  */
 public class ClientCrashTest extends JBMServerTestCase
 {
    // Constants -----------------------------------------------------
 
+   public static final String SERIALIZED_CF_FILE_NAME = "ClientCrashTest_CFandQueue.ser";
+   public static final String MESSAGE_TEXT_FROM_SERVER = "ClientCrashTest from server";
+   public static final String MESSAGE_TEXT_FROM_CLIENT = "ClientCrashTest from client";
+
    // Static --------------------------------------------------------
-   
+
    private static final Logger log = Logger.getLogger(ClientCrashTest.class);
-   
+
    // Attributes ----------------------------------------------------
-   
-   protected Server localServer;
-   
-   protected Server remoteServer;
+
+   private File serialized;
+   private ConnectionFactory cf;
+   private Queue queue;
 
    // Constructors --------------------------------------------------
 
@@ -67,168 +75,114 @@ public class ClientCrashTest extends JBMServerTestCase
 
    // Public --------------------------------------------------------
 
-   // JIRA http://jira.jboss.org/jira/browse/JBMESSAGING-1196
-   // The tests have been disabled until a heartbeat is added to the
-   // new remoting code to check when client crashes
-   
-//   public void setUp() throws Exception
-//   {
-//   	//Server might have been left around by other tests
-//   	kill(1);
-//   	
-//      //stop();
-//      
-//      // Start the local server
-//      localServer = new LocalTestServer(1);
-//      localServer.start(getContainerConfig(), getConfiguration(), false);
-//      
-//      // Start all the services locally
-//      //localServer.start("all", true);
-//
-//      // This crash test is relying on a precise value of LeaseInterval, so we don't rely on
-//      // the default, whatever that is ...      
-//       
-//      localServer.deployQueue("Queue", null, false);
-//      
-//      localServer.deployTopic("Topic", null, false);
-//       
-//      // Connect to the remote server, but don't start a servicecontainer on it. We are only using
-//      // the remote server to open a client connection to the local server.
-//      //ServerManagement.create();
-//          
-//      remoteServer = servers.get(0);
-//
-//      super.setUp();
-//      
-//   }
-//
-//   public void tearDown() throws Exception
-//   {       
-//      localServer.stop();
-//      
-//      super.tearDown();
-//   }
-   
-   private void performCrash(long wait, boolean contains) throws Exception
+   public void testCrashClientWithOneConnection() throws Exception
    {
-   	InitialContext theIC = getInitialContext();
-      
-      ConnectionFactory cf = (ConnectionFactory)theIC.lookup("/ConnectionFactory");
-      
-      Queue queue = (Queue)theIC.lookup("/queue/Queue");
-      
-      CreateClientOnServerCommand command = new CreateClientOnServerCommand(cf, queue, true);
-      
-      String remotingSessionId = (String)remoteServer.executeCommand(command);
-      
-      ConnectionManager cm = localServer.getServerPeer().getConnectionManager();
-            
-      assertTrue(cm.containsRemotingSession(remotingSessionId));
-      
-      // Now we should have a client connection from the remote server to the local server
-      
-      ServerManagement.kill(0);
-
-      log.trace("killed remote server");
-      
-      //Wait for connection resources to be cleared up
-      Thread.sleep(wait);
-           
-      // See if we still have a connection with this id
-      assertEquals(contains, cm.containsRemotingSession(remotingSessionId));
-   }
-      
-   public void testTestsAreNotRunUntilJBMESSAGING_1196_IsDone() throws Exception
-   {
-      
-   }
-   
-   /**
-    * Test that when a remote jms client crashes, server side resources for connections are
-    * cleaned-up.
-    */
-   public void _testClientCrash() throws Exception
-   {
-   	localServer.setAttribute(ServiceContainer.REMOTING_OBJECT_NAME, "LeasePeriod", "2000");
-   	
-      performCrash(8000, false);
-   }
-   
-   public void _testClientCrashLargeLease() throws Exception
-   {
-      localServer.setAttribute(ServiceContainer.REMOTING_OBJECT_NAME, "LeasePeriod", "30000");      
-   	
-      performCrash(8000, true);
+      crashClient(1);
    }
 
-   public void _testClientCrashNegativeLease() throws Exception
+   public void testCrashClientWithTwoConnections() throws Exception
    {
-      //Set lease period to -1 --> this should disable leasing so the state won't be cleared up
-      
-      localServer.setAttribute(ServiceContainer.REMOTING_OBJECT_NAME, "LeasePeriod", "-1");       
-   	
-      performCrash(8000, true);
+      crashClient(2);
    }
-   
-   public void _testClientCrashZeroLease() throws Exception
+
+   public void crashClient(int numberOfConnectionsOnTheClient) throws Exception
    {
-      //Set lease period to 0 --> this should disable leasing so the state won't be cleared up
-      
-      localServer.setAttribute(ServiceContainer.REMOTING_OBJECT_NAME, "LeasePeriod", "0");     
-   	
-      performCrash(8000, true);
+      Connection conn = null;
+
+      try
+      {
+         assertActiveConnections(0);
+
+         // spawn a JVM that creates a JMS client, which waits to receive a test
+         // message
+         Process p = SerializedClientSupport.spawnVM(CrashClient.class
+               .getName(), new String[] { serialized.getAbsolutePath(),
+               Integer.toString(numberOfConnectionsOnTheClient) });
+
+         // send the message to the queue
+         conn = cf.createConnection();
+         conn.start();
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer producer = sess.createProducer(queue);
+         MessageConsumer consumer = sess.createConsumer(queue);
+
+         TextMessage messageFromClient = (TextMessage) consumer.receive(5000);
+         assertEquals(MESSAGE_TEXT_FROM_CLIENT, messageFromClient.getText());
+
+         // 1 local connection to the server
+         // + 1 per connection to the client
+         assertActiveConnections(1 + numberOfConnectionsOnTheClient);
+
+         producer.send(sess.createTextMessage(MESSAGE_TEXT_FROM_SERVER));
+
+         log.info("waiting for the client VM to crash ...");
+         p.waitFor();
+
+         assertEquals(9, p.exitValue());
+
+         Thread.sleep(2000);
+         // the crash must have been detected and the client resources cleaned
+         // up only the local connection remains
+         assertActiveConnections(1);
+
+         conn.close();
+
+         assertActiveConnections(0);
+      } finally
+      {
+         try
+         {
+            if (conn != null)
+               conn.close();
+         } catch (Throwable ignored)
+         {
+            log.warn("Exception ignored:" + ignored.toString(), ignored);
+         }
+      }
    }
-   
-   public void _testClientCrashWithTwoConnections() throws Exception
-   {
-      localServer.setAttribute(ServiceContainer.REMOTING_OBJECT_NAME, "LeasePeriod", "2000");      
-   	
-      InitialContext ic = getInitialContext();
-      Topic topic = (Topic)ic.lookup("/topic/Topic");
-      
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      
-      CreateTwoClientOnServerCommand command = new CreateTwoClientOnServerCommand(cf, topic, true);
-      
-      String remotingSessionId[] = (String[])remoteServer.executeCommand(command);
-      
-      ConnectionManager cm = localServer.getServerPeer().getConnectionManager();
-            
-      log.info("server(0) = " + remotingSessionId[0]);
-      log.info("server(1) = " + remotingSessionId[1]);
-      log.info("we have = " + ((SimpleConnectionManager)cm).getClients().size() + " clients registered on SimpleconnectionManager");
-      
-      assertFalse(cm.containsRemotingSession(remotingSessionId[0]));
-      assertTrue(cm.containsRemotingSession(remotingSessionId[1]));
-      
-      ServerManagement.kill(0);
-      
-      // Now we should have a client connection from the remote server to the local server
-      
-      log.info("killed remote server");
-        
-      // Wait for connection resources to be cleared up
-      Thread.sleep(8000);
-           
-      // See if we still have a connection with this id
-      
-      //Connection state should have been cleared up by now
-      assertFalse(cm.containsRemotingSession(remotingSessionId[0]));
-      assertFalse(cm.containsRemotingSession(remotingSessionId[1]));
-      
-      log.info("Servers = " + ((SimpleConnectionManager)cm).getClients().size());
-      
-      assertEquals(0,((SimpleConnectionManager)cm).getClients().size());
-   }
-   
-   
+
    // Package protected ---------------------------------------------
-   
+
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+
+      createQueue("Queue");
+
+      InitialContext ic = getInitialContext();
+      cf = (ConnectionFactory) ic.lookup("/ConnectionFactory");
+      queue = (Queue) ic.lookup("/queue/Queue");
+
+      serialized = SerializedClientSupport.writeToFile(SERIALIZED_CF_FILE_NAME,
+            cf, queue);
+   }
+
+   @Override
+   protected void tearDown() throws Exception
+   {
+      servers.get(0).destroyQueue("Queue", "/queue/Queue");
+
+      if (serialized != null)
+      {
+         serialized.delete();
+      }
+
+      super.tearDown();
+   }
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
-  
+
+   private static void assertActiveConnections(int expectedActiveConnections)
+         throws Exception
+   {
+      ConnectionManager cm = servers.get(0).getMessagingServer()
+            .getConnectionManager();
+      assertEquals(expectedActiveConnections, cm.getActiveConnections().size());
+   }
+
    // Inner classes -------------------------------------------------
 
 }

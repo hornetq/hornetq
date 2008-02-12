@@ -6,21 +6,35 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.wireformat.Ping;
 import org.jboss.messaging.core.remoting.wireformat.Pong;
+import org.jboss.messaging.util.Logger;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
+ * 
  * @version <tt>$Revision$</tt>
- *
+ * 
  */
 public class ServerKeepAliveFactory implements KeepAliveFactory
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger
+         .getLogger(ServerKeepAliveFactory.class);
+
    // Attributes ----------------------------------------------------
+
+   // FIXME session mapping must be cleaned when the server session is closed:
+   // either normally or exceptionally
+   /**
+    * Key = server session ID Value = client session ID
+    */
+   private Map<String, String> sessions = new ConcurrentHashMap<String, String>();
 
    // Static --------------------------------------------------------
 
@@ -29,15 +43,44 @@ public class ServerKeepAliveFactory implements KeepAliveFactory
    // Public --------------------------------------------------------
 
    // KeepAliveFactory implementation -------------------------------
-   
-   public Ping ping()
+
+   public Ping ping(String sessionID)
    {
-      return new Ping();
+      return new Ping(sessionID);
    }
 
-   public Pong pong()
+   public boolean isPing(String sessionID, Object message)
    {
-      return new Pong();
+      if (!(message instanceof Ping))
+      {
+         return false;
+      } else
+      {
+         Ping ping = (Ping) message;
+         String clientSessionID = ping.getSessionID();
+         if (clientSessionID.equals(sessionID))
+         {
+            return false;
+         } else
+         {
+            if (log.isDebugEnabled())
+               log.debug("associated server session " + sessionID
+                     + " to client " + clientSessionID);
+            sessions.put(sessionID, clientSessionID);
+            return true;
+         }
+      }
+   }
+
+   public Pong pong(String sessionID, Ping ping)
+   {
+      String clientSessionID = ping.getSessionID();
+      return new Pong(sessionID, sessions.containsKey(clientSessionID));
+   }
+
+   public Map<String, String> getSessions()
+   {
+      return sessions;
    }
 
    // Package protected ---------------------------------------------

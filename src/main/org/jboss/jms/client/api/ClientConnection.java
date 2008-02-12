@@ -22,8 +22,6 @@ public interface ClientConnection
 
    void stop() throws MessagingException;
 
-   FailureListener getFailureListener() throws MessagingException;
-   
    void setFailureListener(FailureListener listener) throws MessagingException;
   
    void close() throws MessagingException;

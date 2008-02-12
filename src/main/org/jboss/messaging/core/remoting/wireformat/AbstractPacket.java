@@ -8,7 +8,7 @@ package org.jboss.messaging.core.remoting.wireformat;
 
 import static org.jboss.messaging.core.remoting.Assert.assertValidID;
 
-import org.jboss.messaging.core.remoting.Client;
+import org.jboss.jms.client.remoting.MessagingRemotingConnection;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -37,7 +37,7 @@ public class AbstractPacket implements Packet
     * <code>oneWay</code> is <code>true</code> when the packet is sent "one way"
     * by the client which does not expect any response to it.
     * 
-    * @see Client#sendOneWay(AbstractPacket)
+    * @see MessagingRemotingConnection#sendOneWay(AbstractPacket)
     */
    private boolean oneWay = false;
    

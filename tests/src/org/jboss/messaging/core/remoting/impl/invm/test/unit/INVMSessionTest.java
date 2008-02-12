@@ -12,7 +12,7 @@ import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestS
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
-import org.jboss.messaging.core.remoting.impl.ClientTestBase;
+import org.jboss.messaging.core.remoting.impl.SessionTestBase;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
 
 /**
@@ -21,7 +21,7 @@ import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
  * @version <tt>$Revision$</tt>
  *
  */
-public class INVMClientTest extends ClientTestBase
+public class INVMSessionTest extends SessionTestBase
 {
    // Constants -----------------------------------------------------
 

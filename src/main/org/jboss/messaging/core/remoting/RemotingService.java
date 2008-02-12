@@ -6,6 +6,7 @@
  */
 package org.jboss.messaging.core.remoting;
 
+import org.jboss.jms.client.api.FailureListener;
 import org.jboss.messaging.core.MessagingComponent;
 
 /**
@@ -24,7 +25,7 @@ public interface RemotingService extends MessagingComponent
 
    void removeInterceptor(Interceptor interceptor);
 
-   void addConnectionExceptionListener(ConnectionExceptionListener listener);
+   void addFailureListener(FailureListener listener);
 
-   void removeConnectionExceptionListener(ConnectionExceptionListener listener);  
+   void removeFailureListener(FailureListener listener);  
 }

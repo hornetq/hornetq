@@ -10,7 +10,6 @@ import static java.util.UUID.randomUUID;
 
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.jms.exception.JMSExceptionHelper;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketSender;
@@ -33,7 +32,8 @@ public class INVMSession implements NIOSession
    private String id;
    private long correlationCounter;
    private PacketDispatcher serverDispatcher;
-
+   private boolean connected;
+   
    // Static --------------------------------------------------------
    private static final Logger log = Logger.getLogger(INVMSession.class);
 
@@ -46,12 +46,14 @@ public class INVMSession implements NIOSession
       this.id = randomUUID().toString();
       this.correlationCounter = 0;
       this.serverDispatcher = serverDispatcher;
+      connected = true;
    }
 
    // Public --------------------------------------------------------
 
    public boolean close()
    {
+      connected = false;
       return true;
    }
 
@@ -64,7 +66,7 @@ public class INVMSession implements NIOSession
 
    public boolean isConnected()
    {
-      return true;
+      return connected;
    }
 
    public void write(final Object object) throws Exception
@@ -95,10 +97,26 @@ public class INVMSession implements NIOSession
       serverDispatcher.dispatch(request,
             new PacketSender()
             {
-               public void send(Packet response) throws Exception
+               public void send(Packet response)
                {
-                  serverDispatcher.callFilters(response);
-                  responses[0] = response;
+                  try
+                  {
+                     serverDispatcher.callFilters(response);
+                     // 1st response is used to reply to the blocking request
+                     if (responses[0] == null)
+                     {
+                        responses[0] = response;
+                     } else 
+                     // other later responses are dispatched directly to the client
+                     {
+                        PacketDispatcher.client.dispatch(response, null);
+                     }
+                  }
+                  catch (Exception e)
+                  {
+                     log.warn("An interceptor throwed an exception what caused the packet " + response + " to be ignored", e);
+                     responses[0] = null;
+                  }
                }
 
                public String getSessionID()
