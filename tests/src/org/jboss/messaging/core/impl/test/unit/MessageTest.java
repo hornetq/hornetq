@@ -21,6 +21,15 @@
  */
 package org.jboss.messaging.core.impl.test.unit;
 
+import static org.jboss.messaging.test.unit.RandomUtil.randomByte;
+import static org.jboss.messaging.test.unit.RandomUtil.randomBytes;
+import static org.jboss.messaging.test.unit.RandomUtil.randomInt;
+import static org.jboss.messaging.test.unit.RandomUtil.randomLong;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -392,6 +401,30 @@ public class MessageTest extends UnitTestCase
       
       assertEquals(3, messageDurable.getDurableReferencePos(ref7));
              
+   }
+   
+   public void testMarshalling() throws Exception
+   {
+      Message msg = new MessageImpl(randomLong(), randomInt(), true, randomLong(), randomLong(), randomByte(),null, null);
+      msg.setDeliveryCount(randomInt());
+      
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      msg.write(new DataOutputStream(baos));
+      baos.flush();
+      byte[] b = baos.toByteArray();
+      
+      ByteArrayInputStream bais = new ByteArrayInputStream(b);
+      Message unmarshalledMsg = new MessageImpl();
+      unmarshalledMsg.read(new DataInputStream(bais));
+      
+      assertEquals(msg, unmarshalledMsg);
+      assertEquals("messageID", msg.getMessageID(), unmarshalledMsg.getMessageID());
+      assertEquals("type", msg.getType(), unmarshalledMsg.getType());
+      assertEquals("durable", msg.isDurable(), unmarshalledMsg.isDurable());
+      assertEquals("expiration", msg.getExpiration(), unmarshalledMsg.getExpiration());
+      assertEquals("timestamp", msg.getTimestamp(), unmarshalledMsg.getTimestamp());
+      assertEquals("priority", msg.getPriority(), unmarshalledMsg.getPriority());
+      assertEquals("deliveryCount", msg.getDeliveryCount(), unmarshalledMsg.getDeliveryCount()); 
    }
    
 }
