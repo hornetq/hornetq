@@ -22,14 +22,9 @@
 package org.jboss.messaging.core.impl.test.unit;
 
 import static org.jboss.messaging.test.unit.RandomUtil.randomByte;
-import static org.jboss.messaging.test.unit.RandomUtil.randomBytes;
 import static org.jboss.messaging.test.unit.RandomUtil.randomInt;
 import static org.jboss.messaging.test.unit.RandomUtil.randomLong;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,6 +34,7 @@ import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.impl.MessageImpl;
 import org.jboss.messaging.core.impl.QueueImpl;
 import org.jboss.messaging.test.unit.UnitTestCase;
+import org.jboss.messaging.util.StreamUtils;
 
 /**
  * 
@@ -408,14 +404,9 @@ public class MessageTest extends UnitTestCase
       Message msg = new MessageImpl(randomLong(), randomInt(), true, randomLong(), randomLong(), randomByte(),null, null);
       msg.setDeliveryCount(randomInt());
       
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      msg.write(new DataOutputStream(baos));
-      baos.flush();
-      byte[] b = baos.toByteArray();
-      
-      ByteArrayInputStream bais = new ByteArrayInputStream(b);
+      byte[] bytes = StreamUtils.toBytes(msg);
       Message unmarshalledMsg = new MessageImpl();
-      unmarshalledMsg.read(new DataInputStream(bais));
+      StreamUtils.fromBytes(unmarshalledMsg, bytes);
       
       assertEquals(msg, unmarshalledMsg);
       assertEquals("messageID", msg.getMessageID(), unmarshalledMsg.getMessageID());

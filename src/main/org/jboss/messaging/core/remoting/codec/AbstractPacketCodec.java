@@ -11,16 +11,10 @@ import static org.jboss.messaging.core.remoting.codec.DecoderStatus.NOT_OK;
 import static org.jboss.messaging.core.remoting.codec.DecoderStatus.OK;
 import static org.jboss.messaging.core.remoting.wireformat.AbstractPacket.NO_ID_SET;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.nio.charset.CharacterCodingException;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.impl.MessageImpl;
 import org.jboss.messaging.core.impl.XidImpl;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
@@ -53,16 +47,8 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
 
    // Static --------------------------------------------------------
    
-   public static byte[] encodeMessage(Message message) throws Exception
-   {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      message.write(new DataOutputStream(baos));
-      baos.flush();
-      return baos.toByteArray();
-   }
-
    // Constructors --------------------------------------------------
-
+   
    protected AbstractPacketCodec(PacketType type)
    {
       assert type != null;
@@ -219,14 +205,6 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
 
    protected abstract P decodeBody(RemotingBuffer buffer) throws Exception;
 
-   protected static Message decodeMessage(byte[] b) throws Exception
-   {     
-      ByteArrayInputStream bais = new ByteArrayInputStream(b);
-      Message msg = new MessageImpl();
-      msg.read(new DataInputStream(bais));
-      return msg;
-   }
-   
    protected static void encodeXid(Xid xid, RemotingBuffer out)
    {
       out.putInt(xid.getFormatId());

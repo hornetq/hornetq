@@ -9,7 +9,9 @@ package org.jboss.messaging.core.remoting.codec;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_DELIVER;
 
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
+import org.jboss.messaging.util.StreamUtils;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -36,7 +38,7 @@ public class DeliverMessageCodec extends AbstractPacketCodec<DeliverMessage>
    @Override
    protected void encodeBody(DeliverMessage message, RemotingBuffer out) throws Exception
    {
-      byte[] encodedMsg = encodeMessage(message.getMessage());
+      byte[] encodedMsg = StreamUtils.toBytes(message.getMessage());
       long deliveryID = message.getDeliveryID();
 
       int bodyLength = encodedMsg.length
@@ -61,10 +63,11 @@ public class DeliverMessageCodec extends AbstractPacketCodec<DeliverMessage>
       int msgLength = in.getInt();
       byte[] encodedMsg = new byte[msgLength];
       in.get(encodedMsg);
-      Message msg = decodeMessage(encodedMsg);
+      Message message = new MessageImpl();
+      StreamUtils.fromBytes(message, encodedMsg);
       long deliveryID = in.getLong();
 
-      return new DeliverMessage(msg, deliveryID);
+      return new DeliverMessage(message, deliveryID);
    }
 
    // Package protected ---------------------------------------------

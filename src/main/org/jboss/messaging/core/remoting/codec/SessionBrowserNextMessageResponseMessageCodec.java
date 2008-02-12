@@ -9,7 +9,9 @@ package org.jboss.messaging.core.remoting.codec;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_BROWSER_NEXTMESSAGE_RESP;
 
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.wireformat.SessionBrowserNextMessageResponseMessage;
+import org.jboss.messaging.util.StreamUtils;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -36,7 +38,7 @@ public class SessionBrowserNextMessageResponseMessageCodec extends AbstractPacke
    @Override
    protected void encodeBody(SessionBrowserNextMessageResponseMessage response, RemotingBuffer out) throws Exception
    {      
-      byte[] encodedMsg = encodeMessage(response.getMessage());
+      byte[] encodedMsg = StreamUtils.toBytes(response.getMessage());
 
       int bodyLength = INT_LENGTH + encodedMsg.length;
 
@@ -58,7 +60,8 @@ public class SessionBrowserNextMessageResponseMessageCodec extends AbstractPacke
       int msgLength = in.getInt();
       byte[] encodedMsg = new byte[msgLength];
       in.get(encodedMsg);
-      Message message = decodeMessage(encodedMsg);
+      Message message = new MessageImpl();
+      StreamUtils.fromBytes(message, encodedMsg);
 
       return new SessionBrowserNextMessageResponseMessage(message);
    }

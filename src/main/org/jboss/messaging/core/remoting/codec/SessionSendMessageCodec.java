@@ -9,7 +9,9 @@ package org.jboss.messaging.core.remoting.codec;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_SEND;
 
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.wireformat.SessionSendMessage;
+import org.jboss.messaging.util.StreamUtils;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -37,7 +39,7 @@ public class SessionSendMessageCodec extends AbstractPacketCodec<SessionSendMess
    protected void encodeBody(SessionSendMessage message, RemotingBuffer out) throws Exception
    {
       String address = message.getAddress();
-      byte[] encodedMsg = encodeMessage(message.getMessage());   
+      byte[] encodedMsg = StreamUtils.toBytes(message.getMessage());   
 
       int bodyLength = sizeof(address) + INT_LENGTH + encodedMsg.length;
 
@@ -61,9 +63,10 @@ public class SessionSendMessageCodec extends AbstractPacketCodec<SessionSendMess
       int msgLength = in.getInt();
       byte[] encodedMsg = new byte[msgLength];
       in.get(encodedMsg);
-      Message msg = decodeMessage(encodedMsg);
+      Message message = new MessageImpl();
+      StreamUtils.fromBytes(message, encodedMsg);
 
-      return new SessionSendMessage(address, msg);
+      return new SessionSendMessage(address, message);
    }
 
    // Package protected ---------------------------------------------

@@ -11,7 +11,6 @@ import static org.jboss.messaging.core.remoting.codec.AbstractPacketCodec.FALSE;
 import static org.jboss.messaging.core.remoting.codec.AbstractPacketCodec.INT_LENGTH;
 import static org.jboss.messaging.core.remoting.codec.AbstractPacketCodec.LONG_LENGTH;
 import static org.jboss.messaging.core.remoting.codec.AbstractPacketCodec.TRUE;
-import static org.jboss.messaging.core.remoting.codec.AbstractPacketCodec.encodeMessage;
 import static org.jboss.messaging.core.remoting.codec.AbstractPacketCodec.sizeof;
 import static org.jboss.messaging.core.remoting.impl.mina.MinaPacketCodec.NOT_NULL_STRING;
 import static org.jboss.messaging.core.remoting.impl.mina.MinaPacketCodec.NULL_BYTE;
@@ -197,6 +196,7 @@ import org.jboss.messaging.core.remoting.wireformat.TextPacket;
 import org.jboss.messaging.test.unit.RandomUtil;
 import org.jboss.messaging.test.unit.UnitTestCase;
 import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.util.StreamUtils;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -548,7 +548,7 @@ public class PacketTypeTest extends UnitTestCase
       AbstractPacketCodec codec = new SessionSendMessageCodec();
       SimpleRemotingBuffer buffer = encode(packet, codec);
       checkHeader(buffer, packet);
-      checkBody(buffer, packet.getAddress(), encodeMessage(packet.getMessage()));
+      checkBody(buffer, packet.getAddress(), StreamUtils.toBytes(packet.getMessage()));
       buffer.rewind();
 
       AbstractPacket p = codec.decode(buffer);
@@ -664,7 +664,7 @@ public class PacketTypeTest extends UnitTestCase
       AbstractPacketCodec codec = new DeliverMessageCodec();
       SimpleRemotingBuffer buffer = encode(message, codec);
       checkHeader(buffer, message);
-      checkBody(buffer, encodeMessage(msg), message.getDeliveryID());
+      checkBody(buffer, StreamUtils.toBytes(msg), message.getDeliveryID());
       buffer.rewind();
 
       AbstractPacket decodedPacket = codec.decode(buffer);
@@ -906,7 +906,7 @@ public class PacketTypeTest extends UnitTestCase
       AbstractPacketCodec codec = new SessionBrowserNextMessageResponseMessageCodec();
       SimpleRemotingBuffer buffer = encode(response, codec);
       checkHeader(buffer, response);
-      checkBody(buffer, encodeMessage(msg));
+      checkBody(buffer, StreamUtils.toBytes(msg));
       buffer.rewind();
 
       AbstractPacket decodedPacket = codec.decode(buffer);
