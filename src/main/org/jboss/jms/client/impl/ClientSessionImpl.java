@@ -360,6 +360,10 @@ public class ClientSessionImpl implements ClientSessionInternal
          remotingConnection.send(id, new CloseMessage());
    
          executor.shutdownNow();
+         // executor.shutdownNow() makes a best-effort to cancel threads using Thread.interrupt().
+         // we call Thread.interrupted() to reset the thread status.
+         // without this call, JBMESSAGING-542 happens when closing a connection from a message listener.
+         Thread.interrupted();
       }
       finally
       {
