@@ -322,16 +322,6 @@ public class JBMServerTestCase extends JBMBaseTestCase
       return servers.get(0).getMessagingServer();
    }
 
-   protected MessagingServerManagement getJmsServerStatistics() throws Exception
-   {
-      return servers.get(0).getMessagingServerManagement();
-   }
-
-   protected MessagingServerManagement getJmsServerStatistics(int serverId) throws Exception
-   {
-      return servers.get(serverId).getMessagingServerManagement();
-   }
-
    /*protected void tearDown() throws Exception
    {
       super.tearDown();
@@ -738,14 +728,14 @@ public class JBMServerTestCase extends JBMBaseTestCase
    }
 
    public static void deployConnectionFactory(String clientId, String objectName,
-                                              String[] jndiBindings)
+                                              List<String> jndiBindings)
            throws Exception
    {
       servers.get(0).deployConnectionFactory(clientId, objectName, jndiBindings);
    }
 
    public static void deployConnectionFactory(String objectName,
-                                              String[] jndiBindings,
+                                              List<String> jndiBindings,
                                               int prefetchSize)
            throws Exception
    {
@@ -753,7 +743,7 @@ public class JBMServerTestCase extends JBMBaseTestCase
    }
 
    public static void deployConnectionFactory(String objectName,
-                                              String[] jndiBindings)
+                                              List<String> jndiBindings)
            throws Exception
    {
       servers.get(0).deployConnectionFactory(objectName, jndiBindings);
@@ -761,7 +751,7 @@ public class JBMServerTestCase extends JBMBaseTestCase
 
    public static void deployConnectionFactory(int server,
                                               String objectName,
-                                              String[] jndiBindings,
+                                              List<String> jndiBindings,
                                               int prefetchSize)
            throws Exception
    {
@@ -770,20 +760,20 @@ public class JBMServerTestCase extends JBMBaseTestCase
 
    public static void deployConnectionFactory(int server,
                                               String objectName,
-                                              String[] jndiBindings)
+                                              List<String> jndiBindings)
            throws Exception
    {
       servers.get(server).deployConnectionFactory(objectName, jndiBindings);
    }
 
-   public void deployConnectionFactory(String objectName, String[] jndiBindings, boolean strictTck) throws Exception
+   public void deployConnectionFactory(String objectName, List<String> jndiBindings, boolean strictTck) throws Exception
    {
       servers.get(0).deployConnectionFactory(objectName, jndiBindings, strictTck);
    }
 
    public void deployConnectionFactory(String clientId,
                                        String objectName,
-                                       String[] jndiBindings,
+                                       List<String> jndiBindings,
                                        int prefetchSize,
                                        int defaultTempQueueFullSize,
                                        int defaultTempQueuePageSize,
@@ -798,7 +788,7 @@ public class JBMServerTestCase extends JBMBaseTestCase
    }
 
    public static void deployConnectionFactory(String objectName,
-                                              String[] jndiBindings,
+                                              List<String> jndiBindings,
                                               int prefetchSize,
                                               int defaultTempQueueFullSize,
                                               int defaultTempQueuePageSize,

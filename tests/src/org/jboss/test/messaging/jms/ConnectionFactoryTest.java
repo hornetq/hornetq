@@ -35,6 +35,7 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
+import java.util.ArrayList;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -92,8 +93,9 @@ public class ConnectionFactoryTest extends JMSTestCase
    public void testAdministrativelyConfiguredClientID() throws Exception
    {
       // deploy a connection factory that has an administatively configured clientID
-
-      deployConnectionFactory("sofiavergara", "TestConnectionFactory", new String[]{"TestConnectionFactory"} );
+      ArrayList<String> bindings = new ArrayList<String>();
+      bindings.add("TestConnectionFactory");
+      deployConnectionFactory("sofiavergara", "TestConnectionFactory", bindings );
 
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/TestConnectionFactory");
       Connection c = cf.createConnection();
@@ -146,7 +148,9 @@ public class ConnectionFactoryTest extends JMSTestCase
    // Added for http://jira.jboss.org/jira/browse/JBMESSAGING-939
    public void testDurableSubscriptionOnPreConfiguredConnectionFactory() throws Exception
    {
-      deployConnectionFactory("TestConnectionFactory1","cfTest", new String[]{"/TestDurableCF"});
+      ArrayList<String> bindings = new ArrayList<String>();
+      bindings.add("/TestDurableCF");
+      deployConnectionFactory("TestConnectionFactory1","cfTest", bindings);
 
       createTopic("TestSubscriber");
 
@@ -199,7 +203,9 @@ public class ConnectionFactoryTest extends JMSTestCase
 
    public void testSlowConsumers() throws Exception
    {
-      deployConnectionFactory(0, "TestSlowConsumersCF", new String[]{"TestSlowConsumersCF"}, 1);
+      ArrayList<String> bindings = new ArrayList<String>();
+      bindings.add("TestSlowConsumersCF");
+      deployConnectionFactory(0, "TestSlowConsumersCF", bindings, 1);
 
       Connection conn = null;
 

@@ -22,7 +22,6 @@
 package org.jboss.messaging.core;
 
 
-import java.util.Collection;
 import java.util.HashSet;
 
 import org.jboss.jms.server.ConnectionManager;
@@ -81,14 +80,16 @@ public interface MessagingServer extends MessagingComponent
    HierarchicalRepository<HashSet<Role>> getSecurityRepository();
 
    void setPostOffice(PostOffice postOffice);
+
+   void createQueue(String address, String name) throws Exception;
+
+   public boolean destroyQueue(String name) throws Exception;
+
+   public boolean destroyQueuesByAddress(String address) throws Exception;
    
-   void createQueue(String name) throws Exception;
-   
-   void createTopic(String name) throws Exception;
-   
-   void destroyQueue(String name) throws Exception;
-   
-   void destroyTopic(String name) throws Exception;
+   boolean addAddress(String address);
+
+   boolean removeAddress(String address);
    
    void enableMessageCounters();
 
@@ -98,9 +99,7 @@ public interface MessagingServer extends MessagingComponent
 
    void resetAllMessageCounterHistories();
 
-   void removeAllMessagesForQueue(String queueName) throws Exception;
+   void removeAllMessagesForAddress(String address) throws Exception;
 
-   void removeAllMessagesForTopic(String queueName) throws Exception;
-
-
+   void removeAllMessagesForBinding(String name) throws Exception;
 }

@@ -25,7 +25,6 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,21 +41,15 @@ import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.client.api.ClientConnectionFactory;
-import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.server.security.Role;
+import org.jboss.jms.server.JMSServerManager;
 import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Binding;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.MessagingServerManagement;
-import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.microcontainer.JBMBootstrapServer;
 import org.jboss.messaging.util.JNDIUtil;
-import org.jboss.messaging.util.Version;
 import org.jboss.test.messaging.tools.ConfigurationHelper;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
@@ -444,7 +437,7 @@ public class LocalTestServer implements Server, Runnable
 
    public boolean isServerPeerStarted() throws Exception
    {
-      return this.getMessagingServerManagement().isStarted();
+      return this.getJMSServerManager().isStarted();
    }
 
    public ObjectName getServerPeerObjectName()
@@ -551,40 +544,22 @@ public class LocalTestServer implements Server, Runnable
 
    public void destroyQueue(String name, String jndiName) throws Exception
    {
-      this.getMessagingServerManagement().destroyQueue(name);
-      if (jndiName != null)
-      {
-         getInitialContext().unbind(jndiName);
-      }
+      this.getJMSServerManager().destroyQueue(name);
    }
 
    public void destroyTopic(String name, String jndiName) throws Exception
    {
-      this.getMessagingServerManagement().destroyTopic(name);
-      if (jndiName != null)
-      {
-         getInitialContext().unbind(jndiName);
-      }
+      this.getJMSServerManager().destroyTopic(name);
    }
 
    public void createQueue(String name, String jndiName) throws Exception
    {
-      this.getMessagingServerManagement().createQueue(name);
-      JBossQueue jBossQueue = new JBossQueue(name);
-      bindObject("/queue/" + (jndiName != null ? jndiName : name), jBossQueue);
-      List<String> bindings = new ArrayList<String>();
-      bindings.add("/queue/" + (jndiName != null ? jndiName : name));
-      allBindings.put(name, bindings);
+      this.getJMSServerManager().createQueue(name, "/queue/" + (jndiName != null ? jndiName : name));
    }
 
    public void createTopic(String name, String jndiName) throws Exception
    {
-      this.getMessagingServerManagement().createTopic(name);
-      JBossTopic jBossTopic = new JBossTopic(name);
-      bindObject("/topic/" + (jndiName != null ? jndiName : name), jBossTopic);
-      List<String> bindings = new ArrayList<String>();
-      bindings.add("/topic/" + (jndiName != null ? jndiName : name));
-      allBindings.put(name, bindings);
+      this.getJMSServerManager().createTopic(name, "/topic/" + (jndiName != null ? jndiName : name));
    }
 
    private void bindObject(String jndiName, Object object)
@@ -618,13 +593,13 @@ public class LocalTestServer implements Server, Runnable
    }
 
    public void deployConnectionFactory(String clientId, String objectName,
-                                       String[] jndiBindings) throws Exception
+                                       List<String> jndiBindings) throws Exception
    {
       deployConnectionFactory(clientId, objectName, jndiBindings, -1, -1, -1, -1, false, false, false, -1);
    }
 
    public void deployConnectionFactory(String objectName,
-                                       String[] jndiBindings,
+                                       List<String> jndiBindings,
                                        int prefetchSize) throws Exception
    {
       deployConnectionFactory(null, objectName, jndiBindings, prefetchSize, -1, -1, -1, false, false, false, -1);
@@ -632,19 +607,19 @@ public class LocalTestServer implements Server, Runnable
 
 
    public void deployConnectionFactory(String objectName,
-                                       String[] jndiBindings) throws Exception
+                                       List<String> jndiBindings) throws Exception
    {
       deployConnectionFactory(null, objectName, jndiBindings, -1, -1, -1, -1, false, false, false, -1);
    }
 
 
-   public void deployConnectionFactory(String objectName, String[] jndiBindings, boolean strictTck) throws Exception
+   public void deployConnectionFactory(String objectName, List<String> jndiBindings, boolean strictTck) throws Exception
    {
       deployConnectionFactory(null, objectName, jndiBindings, -1, -1, -1, -1, false, false, strictTck, -1);
    }
 
    public void deployConnectionFactory(String objectName,
-                                       String[] jndiBindings,
+                                       List<String> jndiBindings,
                                        int prefetchSize,
                                        int defaultTempQueueFullSize,
                                        int defaultTempQueuePageSize,
@@ -655,7 +630,7 @@ public class LocalTestServer implements Server, Runnable
    }
 
    public void deployConnectionFactory(String objectName,
-                                       String[] jndiBindings,
+                                       List<String> jndiBindings,
                                        boolean supportsFailover, boolean supportsLoadBalancing) throws Exception
    {
       this.deployConnectionFactory(null, objectName, jndiBindings, -1, -1,
@@ -664,7 +639,7 @@ public class LocalTestServer implements Server, Runnable
 
    public void deployConnectionFactory(String clientId,
                                        String objectName,
-                                       String[] jndiBindings,
+                                       List<String> jndiBindings,
                                        int prefetchSize,
                                        int defaultTempQueueFullSize,
                                        int defaultTempQueuePageSize,
@@ -675,70 +650,13 @@ public class LocalTestServer implements Server, Runnable
                                        int dupsOkBatchSize) throws Exception
    {
       log.info("deploying connection factory with name: " + objectName + " and dupsok: " + dupsOkBatchSize);
-      //ConnectionFactory connectionFactory = new ConnectionFactory(clientId);
-      List<String> bindings = new ArrayList<String>();
-      if (jndiBindings != null)
-      {
-         for (String jndiBinding : jndiBindings)
-         {
-            bindings.add(jndiBinding);
-         }
-      }
-      //connectionFactory.setJNDIBindings(bindings);
-      //if (prefetchSize > 0)
-      //   connectionFactory.setPrefetchSize(prefetchSize);
-      //if (defaultTempQueueFullSize > 0) if (dupsOkBatchSize > 0)
-       //  connectionFactory.setDupsOKBatchSize(dupsOkBatchSize);
-     // connectionFactory.setSupportsFailover(supportsFailover);
-      //connectionFactory.setSupportsLoadBalancing(supportsLoadBalancing);
-      //connectionFactory.setStrictTck(strictTck);
-      RemotingConfiguration remotingConfiguration = getMessagingServer().getRemotingService().getRemotingConfiguration();
-
-      log.info("Remoting configuration is " + remotingConfiguration);
-      log.info(this + " started");
-      // See http://www.jboss.com/index.html?module=bb&op=viewtopic&p=4076040#4076040
-      final String id = objectName;
-
-      Version version = getMessagingServer().getVersion();
-
-      /*ServerConnectionFactoryEndpoint endpoint =
-              new ServerConnectionFactoryEndpoint(connectionFactory.getName(), id, getMessagingServer(), connectionFactory.getClientID(),
-                      connectionFactory.getPrefetchSize(),
-                      connectionFactory.getDefaultTempQueueFullSize(),
-                      connectionFactory.getDefaultTempQueuePageSize(),
-                      connectionFactory.getDefaultTempQueueDownCacheSize(),
-                      connectionFactory.getDupsOKBatchSize());*/
-
-      //The server peer strict setting overrides the connection factory
-      boolean useStrict = getMessagingServer().getConfiguration().isStrictTck() || strictTck;
-
-      ClientConnectionFactory delegate =
-              new ClientConnectionFactoryImpl( getMessagingServer().getConfiguration().getMessagingServerID(),
-                      remotingConfiguration, version, useStrict, prefetchSize);
-
-      log.debug(this + " created local connectionFactory " + delegate);
-
-      // Registering with the dispatcher should always be the last thing otherwise a client could
-      // use a partially initialised object
-
-      //getMessagingServer().getMinaService().getDispatcher().register(endpoint.newHandler());
-      JBossConnectionFactory jBossConnectionFactory = new JBossConnectionFactory(delegate, clientId, dupsOkBatchSize);
-      for (String binding : bindings)
-      {
-         bindObject(binding, jBossConnectionFactory);
-      }
-      allBindings.put(objectName, bindings);
+      getJMSServerManager().createConnectionFactory(objectName, clientId, dupsOkBatchSize, strictTck, prefetchSize, jndiBindings);
    }
+
 
    public void undeployConnectionFactory(String objectName) throws Exception
    {
-      getMessagingServer().getRemotingService().getDispatcher().unregister(objectName);
-      List<String> bindings = allBindings.get(objectName);
-      for (String binding : bindings)
-      {
-         getInitialContext().unbind(binding);
-      }
-      allBindings.remove(objectName);
+      getJMSServerManager().destroyConnectionFactory(objectName);
    }
 
    public void configureSecurityForDestination(String destName, boolean isQueue, HashSet<Role> roles) throws Exception
@@ -837,9 +755,9 @@ public class LocalTestServer implements Server, Runnable
       return (MessagingServer) bootstrap.getKernel().getRegistry().getEntry("MessagingServer").getTarget();
    }
 
-   public MessagingServerManagement getMessagingServerManagement()
+   public JMSServerManager getJMSServerManager()
    {
-      return (MessagingServerManagement) bootstrap.getKernel().getRegistry().getEntry("MessagingServerManagement").getTarget();
+      return (JMSServerManager) bootstrap.getKernel().getRegistry().getEntry("JMSServerManager").getTarget();
    }
 
    public InitialContext getInitialContext() throws Exception
@@ -875,23 +793,23 @@ public class LocalTestServer implements Server, Runnable
 
    public Integer getMessageCountForQueue(String queueName) throws Exception
    {
-      return getMessagingServerManagement().getMessageCountForQueue(queueName);
+      return getJMSServerManager().getMessageCountForQueue(queueName);
    }
 
    public void removeAllMessagesForQueue(String destName) throws Exception
    {
-      getMessagingServerManagement().removeAllMessagesForQueue(destName);
+      getJMSServerManager().removeAllMessagesForQueue(destName);
    }
 
    public void removeAllMessagesForTopic(String destName) throws Exception
    {
-      getMessagingServerManagement().removeAllMessagesForTopic(destName);
+      getJMSServerManager().removeAllMessagesForTopic(destName);
    }
 
 
    public List listAllSubscriptionsForTopic(String s) throws Exception
    {
-      return getMessagingServerManagement().listAllSubscriptionsForTopic(s);
+      return getJMSServerManager().listAllSubscriptionsForTopic(s);
    }
 
 

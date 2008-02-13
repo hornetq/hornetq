@@ -22,6 +22,7 @@
 package org.jboss.messaging.core;
 
 import org.jboss.messaging.core.impl.server.SubscriptionInfo;
+import org.jboss.jms.client.api.ClientConnectionFactory;
 
 import java.util.List;
 
@@ -37,23 +38,29 @@ public interface MessagingServerManagement
 //   
 //   Configuration getConfiguration();
 //   
-   int getMessageCountForQueue(String queue) throws Exception;
-//   
-   void removeAllMessagesForQueue(String queueName) throws Exception;
-//   
-   void removeAllMessagesForTopic(String topicName) throws Exception;
-//   
-   List<SubscriptionInfo> listAllSubscriptionsForTopic(String topicName) throws Exception;
-//   
-   void createQueue(String name) throws Exception;
-//   
-   void createTopic(String name) throws Exception;
-//   
-   void destroyQueue(String name) throws Exception;
-//   
-   void destroyTopic(String name) throws Exception;
-//   
    boolean isStarted();
+
+   void createQueue(String address,String name) throws Exception;
+
+   void destroyQueue(String name) throws Exception;
+   
+   boolean addAddress(String address);
+
+   boolean removeAddress(String address);
+
+   ClientConnectionFactory createClientConnectionFactory(boolean strictTck,int prefetchSize);
+
+   void removeAllMessagesForAddress(String address) throws Exception;
+
+   void removeAllMessagesForBinding(String name) throws Exception;
+
+   int getMessageCountForQueue(String queue) throws Exception;
+
+   List<SubscriptionInfo> listAllSubscriptionsForAddress(String address) throws Exception;
+
+   List<SubscriptionInfo> listDurableSubscriptionsForAddress(String address) throws Exception;
+
+   List<SubscriptionInfo> listNonSubscriptionsForAddress(String address) throws Exception;
 //
 //   /**
 //    * returns how many messagesd have been delivered from a specific queue
@@ -240,7 +247,7 @@ public interface MessagingServerManagement
 //    * @return
 //    * @throws Exception
 //    */
-//   List listAllSubscriptionsForTopic(String topic) throws Exception;
+//   List listAllSubscriptionsForAddress(String topic) throws Exception;
 //
 //   /**
 //    * lists all durable subscriptions for a topic
@@ -346,4 +353,6 @@ public interface MessagingServerManagement
 //   String showPreparedTransactionsAsHTML();
 //
 //   String listMessageCountersAsHTML() throws Exception;
+
+
 }

@@ -37,6 +37,7 @@ import javax.naming.InitialContext;
 import javax.transaction.UserTransaction;
 
 import org.jboss.jms.server.security.Role;
+import org.jboss.jms.server.JMSServerManager;
 import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.MessagingServerManagement;
@@ -401,25 +402,25 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       server.createTopic(name, jndiName);
    }
 
-   public void deployConnectionFactory(String objectName, String[] jndiBindings)
+   public void deployConnectionFactory(String objectName, List<String> jndiBindings)
       throws Exception
    {
       server.deployConnectionFactory(objectName, jndiBindings);
    }
 
-   public void deployConnectionFactory(String clientID, String objectName, String[] jndiBindings) throws Exception
+   public void deployConnectionFactory(String clientID, String objectName, List<String> jndiBindings) throws Exception
    {
       server.deployConnectionFactory(clientID, objectName, jndiBindings);
    }
 
-   public void deployConnectionFactory(String objectName, String[] jndiBindings, int prefetchSize)
+   public void deployConnectionFactory(String objectName, List<String> jndiBindings, int prefetchSize)
       throws Exception
    {
       server.deployConnectionFactory(objectName, jndiBindings, prefetchSize);
    }
 
 
-    public void deployConnectionFactory(String objectName, String[] jndiBindings, boolean strictTck) throws Exception
+    public void deployConnectionFactory(String objectName, List<String> jndiBindings, boolean strictTck) throws Exception
     {
         server.deployConnectionFactory(objectName, jndiBindings, strictTck);
 
@@ -427,7 +428,7 @@ public class RMITestServer extends UnicastRemoteObject implements Server
 
    public void deployConnectionFactory(String clientId,
                                         String objectName,
-                                        String[] jndiBindings,
+                                        List<String> jndiBindings,
                                         int prefetchSize,
                                         int defaultTempQueueFullSize,
                                         int defaultTempQueuePageSize,
@@ -441,7 +442,7 @@ public class RMITestServer extends UnicastRemoteObject implements Server
               supportsFailover, supportsLoadBalancing, strictTck, dupsOkBatchSize);  
    }
     public void deployConnectionFactory(String objectName,
-                                       String[] jndiBindings,
+                                       List<String> jndiBindings,
                                        int prefetchSize,
                                        int defaultTempQueueFullSize,
                                        int defaultTempQueuePageSize,
@@ -452,7 +453,7 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    }
    
    public void deployConnectionFactory(String objectName,
-         String[] jndiBindings, boolean supportsFailover, boolean supportsLoadBalancing) throws Exception
+         List<String> jndiBindings, boolean supportsFailover, boolean supportsLoadBalancing) throws Exception
    {
    	server.deployConnectionFactory(objectName, jndiBindings, supportsFailover, supportsLoadBalancing);
    }
@@ -547,12 +548,10 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return server.getMessagingServer();
    }
 
-
-   public MessagingServerManagement getMessagingServerManagement() throws Exception
+   public JMSServerManager getJMSServerManager()
    {
-      return server.getMessagingServerManagement();
+      return server.getJMSServerManager();
    }
-
 
    public void removeAllMessagesForQueue(String destName) throws Exception
    {
@@ -567,7 +566,7 @@ public class RMITestServer extends UnicastRemoteObject implements Server
 
    public Integer getMessageCountForQueue(String queueName) throws Exception
    {
-      return getMessagingServerManagement().getMessageCountForQueue(queueName);
+      return getJMSServerManager().getMessageCountForQueue(queueName);
    }
 
 

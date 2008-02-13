@@ -67,9 +67,9 @@
       </constructor>
    </bean> 
    
-   <bean name="JNDIObjectDeployer" class="org.jboss.jms.jndi.JNDIObjectDeployer">
-      <property name="messagingServer">
-         <inject bean="MessagingServer"/>
+   <bean name="JMSServerManager" class="org.jboss.jms.server.JMSServerManagerImpl">
+      <property name="messagingServerManagement">
+         <inject bean="MessagingServerManagement"/>
       </property>
    </bean>
  

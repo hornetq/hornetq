@@ -22,6 +22,7 @@
 package org.jboss.test.messaging.jms;
 
 import java.util.HashSet;
+import java.util.ArrayList;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -180,7 +181,9 @@ public class SecurityTest extends JMSTestCase
       Connection conn = null;
       try
       {
-         deployConnectionFactory("dilbert-id", "preConfcf", new String[]{"preConfcf"});
+         ArrayList<String> bindings = new ArrayList<String>();
+         bindings.add("preConfcf");
+         deployConnectionFactory("dilbert-id", "preConfcf", bindings);
          ConnectionFactory cf = (ConnectionFactory) getInitialContext().lookup("preConfcf");
          conn = cf.createConnection("dilbert", "dogbert");
          String clientID = conn.getClientID();
@@ -221,7 +224,9 @@ public class SecurityTest extends JMSTestCase
       Connection conn = null;
       try
       {
-         deployConnectionFactory("dilbert-id", "preConfcf", new String[]{"preConfcf"});
+         ArrayList<String> bindings = new ArrayList<String>();
+         bindings.add("preConfcf");
+         deployConnectionFactory("dilbert-id", "preConfcf", bindings);
          ConnectionFactory cf = (ConnectionFactory) getInitialContext().lookup("preConfcf");
          conn = cf.createConnection("dilbert", "dogbert");
          conn.setClientID("myID");
@@ -448,7 +453,9 @@ public class SecurityTest extends JMSTestCase
       Connection conn = null;
       try
       {
-         deployConnectionFactory("dilbert-id", "preConfcf", new String[]{"preConfcf"});
+         ArrayList<String> bindings = new ArrayList<String>();
+         bindings.add("preConfcf");
+         deployConnectionFactory("dilbert-id", "preConfcf", bindings);
          ConnectionFactory cf = (ConnectionFactory) getInitialContext().lookup("preConfcf");
          //setSecurityConfig(oldDefaultConfig);
          conn = cf.createConnection("dilbert", "dogbert");

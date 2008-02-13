@@ -25,8 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.aop.microcontainer.aspects.jmx.JMX;
-import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.client.api.ClientConnectionFactory;
+import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.Binding;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.MessagingServerManagement;
@@ -69,34 +69,40 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
       return messagingServer.isStarted();
    }
    
-   public void createQueue(String name) throws Exception
+   public void createQueue(String address, String name) throws Exception
    {
-      messagingServer.createQueue(name);
+      messagingServer.createQueue(address, name);
    }
-   
-   public void createTopic(String name) throws Exception
-   {
-      messagingServer.createTopic(name);
-   }
-   
+
    public void destroyQueue(String name) throws Exception
    {
       messagingServer.destroyQueue(name);
    }
-   
-   public void destroyTopic(String name) throws Exception
+
+   public boolean addAddress(String address)
    {
-      messagingServer.destroyTopic(name);
+      return messagingServer.addAddress(address);
    }
 
-   public void removeAllMessagesForQueue(String queueName) throws Exception
+   public boolean removeAddress(String address)
    {
-      messagingServer.removeAllMessagesForQueue(queueName);
+      return messagingServer.removeAddress(address);
    }
 
-   public void removeAllMessagesForTopic(String topicName) throws Exception
+   public ClientConnectionFactory createClientConnectionFactory(boolean strictTck,int prefetchSize)
    {
-      messagingServer.removeAllMessagesForTopic(topicName);
+      return new ClientConnectionFactoryImpl(messagingServer.getConfiguration().getMessagingServerID(),
+                      messagingServer.getConfiguration().getRemotingConfiguration(), messagingServer.getVersion(), messagingServer.getConfiguration().isStrictTck() || strictTck, prefetchSize);
+   }
+
+   public void removeAllMessagesForAddress(String address) throws Exception
+   {
+      messagingServer.removeAllMessagesForAddress(address);
+   }
+
+   public void removeAllMessagesForBinding(String name) throws Exception
+   {
+      messagingServer.removeAllMessagesForBinding(name);
    }
    
    public int getMessageCountForQueue(String queue) throws Exception
@@ -104,10 +110,21 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
       return getQueue(queue).getMessageCount();
    }
   
-   public List<SubscriptionInfo> listAllSubscriptionsForTopic(String topicName) throws Exception
+   public List<SubscriptionInfo> listAllSubscriptionsForAddress(String address) throws Exception
    {
-      return listAllSubscriptions(topicName);
+      return listSubscriptions(address, ListType.ALL);
    }
+
+   public List<SubscriptionInfo> listDurableSubscriptionsForAddress(String address) throws Exception
+   {
+      return listSubscriptions(address, ListType.DURABLE);
+   }
+
+   public List<SubscriptionInfo> listNonSubscriptionsForAddress(String address) throws Exception
+   {
+      return listSubscriptions(address, ListType.NON_DURABLE);
+   }
+
 //
 ////   public int getDeliveringCountForQueue(String queue) throws Exception
 ////   {
@@ -519,11 +536,7 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
 //   {
 //      return listMessages(queue, ListType.NON_DURABLE, selector);
 //   }
-//         
-   public List<SubscriptionInfo> listAllSubscriptions(String topicName) throws Exception
-   {
-      return listSubscriptions(topicName, ListType.ALL);
-   }
+//
 //   
 //   public List<SubscriptionInfo> listDurableSubscriptions(String topicName) throws Exception
 //   {
@@ -608,10 +621,7 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
 //   
    private Queue getQueue(String queueName) throws Exception
    {
-      JBossQueue jbq = new JBossQueue(queueName);
-      
-      Binding binding = messagingServer.getPostOffice().getBinding(jbq.getAddress());
-      
+      Binding binding = messagingServer.getPostOffice().getBinding(queueName);
       if (binding == null)
       {
          throw new IllegalArgumentException("No queue with name " + queueName);
@@ -786,7 +796,7 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
 //   
    private enum ListType
    {
-      ALL, DURABLE, NON_DURABLE;
+      ALL, DURABLE, NON_DURABLE
    }
 //   
 //  
@@ -836,13 +846,9 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
 //      return msgs;
 //   }
 //   
-   private List<SubscriptionInfo> listSubscriptions(String topicName, ListType type) throws Exception
+   private List<SubscriptionInfo> listSubscriptions(String address, ListType type) throws Exception
    {      
       List<SubscriptionInfo> subs = new ArrayList<SubscriptionInfo>();
-   
-      JBossTopic topic = new JBossTopic(topicName);
-      
-      String address = topic.getAddress();
       
       List<Binding> bindings = messagingServer.getPostOffice().getBindingsForAddress(address);
       

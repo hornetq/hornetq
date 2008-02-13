@@ -44,6 +44,9 @@ import org.jboss.test.messaging.jms.message.SimpleJMSMessage;
 import org.jboss.test.messaging.jms.message.SimpleJMSTextMessage;
 import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
 
+import java.util.List;
+import java.util.ArrayList;
+
 /**
  * Safeguards for previously detected TCK failures.
  *
@@ -77,7 +80,9 @@ public class CTSMiscellaneousTest extends JBMServerTestCase
 		{
 			super.setUp();
 			//Deploy a connection factory with load balancing but no failover on node0
-         deployConnectionFactory("StrictTCKConnectionFactory", new String[]{"StrictTCKConnectionFactory"}, true);
+         List<String> bindings = new ArrayList<String>();
+         bindings.add("StrictTCKConnectionFactory");
+         deployConnectionFactory("StrictTCKConnectionFactory", bindings, true);
          cf = (JBossConnectionFactory) getInitialContext().lookup("/StrictTCKConnectionFactory");
 		}
 		catch (Exception e)

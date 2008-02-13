@@ -22,6 +22,7 @@
 package org.jboss.test.messaging.tools.container;
 
 import org.jboss.jms.server.security.Role;
+import org.jboss.jms.server.JMSServerManager;
 import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.MessagingServerManagement;
@@ -188,7 +189,7 @@ public interface Server extends Remote
 
    public void deployConnectionFactory(String clientId,
                                         String objectName,
-                                        String[] jndiBindings,
+                                        List<String> jndiBindings,
                                         int prefetchSize,
                                         int defaultTempQueueFullSize,
                                         int defaultTempQueuePageSize,
@@ -199,7 +200,7 @@ public interface Server extends Remote
                                         int dupsOkBatchSize) throws Exception;
 
    void deployConnectionFactory(String objectName,
-                                String[] jndiBindings,
+                                List<String> jndiBindings,
                                 int prefetchSize,
                                 int defaultTempQueueFullSize,
                                 int defaultTempQueuePageSize,
@@ -207,21 +208,21 @@ public interface Server extends Remote
                                 ) throws Exception;
    
    void deployConnectionFactory(String objectName,
-								         String[] jndiBindings,
+								         List<String> jndiBindings,
 								         boolean supportsFailover,
 								         boolean supportsLoadBalancing       
 								         ) throws Exception;
 
    void deployConnectionFactory(String clientID,
                                 String objectName,
-                                String[] jndiBindings) throws Exception;
+                                List<String> jndiBindings) throws Exception;
 
    void deployConnectionFactory(String objectName,
-                                String[] jndiBindings,
+                                List<String> jndiBindings,
                                 int prefetchSize) throws Exception;
 
    void deployConnectionFactory(String objectName,
-                                String[] jndiBindings) throws Exception;
+                                List<String> jndiBindings) throws Exception;
 
    void undeployConnectionFactory(String objectName) throws Exception;
 
@@ -275,11 +276,9 @@ public interface Server extends Remote
 
    void flushManagedConnectionPool() throws Exception;
    
-   void deployConnectionFactory(String objectName, String[] jndiBindings, boolean strictTck) throws Exception;
+   void deployConnectionFactory(String objectName, List<String> jndiBindings, boolean strictTck) throws Exception;
 
    MessagingServer getMessagingServer() throws Exception;
-
-   MessagingServerManagement getMessagingServerManagement() throws Exception;
 
    InitialContext getInitialContext() throws Exception;
 
@@ -300,4 +299,5 @@ public interface Server extends Remote
    void setRedeliveryDelayOnDestination(String dest, boolean queue, long delay) throws Exception;
 
    //void setDefaultRedeliveryDelay(long delay) throws Exception;
+   JMSServerManager getJMSServerManager() throws Exception;
 }

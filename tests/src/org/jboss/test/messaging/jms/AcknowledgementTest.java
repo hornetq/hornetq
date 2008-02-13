@@ -40,6 +40,9 @@ import org.jboss.jms.client.api.ClientSession;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
+import java.util.List;
+import java.util.ArrayList;
+
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -701,7 +704,9 @@ public class AcknowledgementTest extends JMSTestCase
       final int BATCH_SIZE = 10;
 
       log.info("*********** DEPLOYING CF");
-      deployConnectionFactory(null,"mycf", new String[]{"mycf"}, -1, -1, -1, -1, false, false, false, BATCH_SIZE);
+      ArrayList<String> bindings = new ArrayList<String>();
+      bindings.add("mycf");
+      deployConnectionFactory(null,"mycf", bindings, -1, -1, -1, -1, false, false, false, BATCH_SIZE);
       log.info("************ DONE DEPLOY");
       Connection conn = null;
       
@@ -781,8 +786,9 @@ public class AcknowledgementTest extends JMSTestCase
    public void testDupsOKAcknowledgeTopic() throws Exception
    {       
       final int BATCH_SIZE = 10;
-
-      deployConnectionFactory(null,"mycf", new String[]{"mycf"}, -1, -1, -1, -1, false, false, false, BATCH_SIZE);
+      ArrayList<String> bindings = new ArrayList<String>();
+      bindings.add("mycf");
+      deployConnectionFactory(null,"mycf", bindings, -1, -1, -1, -1, false, false, false, BATCH_SIZE);
       Connection conn = null;
       
       try
