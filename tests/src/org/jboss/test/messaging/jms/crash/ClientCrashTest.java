@@ -160,7 +160,8 @@ public class ClientCrashTest extends JBMServerTestCase
 
    @Override
    protected void tearDown() throws Exception
-   {
+   {      
+      removeAllMessages("Queue", true);
       servers.get(0).destroyQueue("Queue", "/queue/Queue");
 
       if (serialized != null)
