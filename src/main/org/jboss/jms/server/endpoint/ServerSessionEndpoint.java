@@ -1045,15 +1045,15 @@ public class ServerSessionEndpoint
 
    public PacketHandler newHandler()
    {
-      return new SessionAdvisedPacketHandler();
+      return new ServerSessionEndpointPacketHandler();
    }
 
    // Inner classes
    // --------------------------------------------------------------------------------
 
-   private class SessionAdvisedPacketHandler extends ServerPacketHandlerSupport
+   private class ServerSessionEndpointPacketHandler extends ServerPacketHandlerSupport
    {
-      public SessionAdvisedPacketHandler()
+      public ServerSessionEndpointPacketHandler()
       {
       }
 
@@ -1238,7 +1238,7 @@ public class ServerSessionEndpoint
       @Override
       public String toString()
       {
-         return "SessionAdvisedPacketHandler[id=" + id + "]";
+         return "ServerSessionEndpointPacketHandler[id=" + id + "]";
       }
    }
 

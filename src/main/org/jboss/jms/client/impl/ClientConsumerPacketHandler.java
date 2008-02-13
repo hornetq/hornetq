@@ -54,6 +54,6 @@ public class ClientConsumerPacketHandler implements PacketHandler
    @Override
    public String toString()
    {
-      return "ConsumerAspectPacketHandler[id=" + consumerID + "]";
+      return "ClientConsumerPacketHandler[id=" + consumerID + "]";
    }
 }
