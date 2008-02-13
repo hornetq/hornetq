@@ -47,6 +47,12 @@ public class SessionAcknowledgeMessage extends AbstractPacket
       return allUpTo;
    }
 
+   @Override
+   public String toString()
+   {
+      return getParentString() + ", deliveryID=" + deliveryID + ", allUpTo=" + allUpTo + "]";
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
