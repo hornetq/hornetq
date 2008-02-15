@@ -429,7 +429,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    {
       checkClosed();
       
-      SessionSendMessage message = new SessionSendMessage(address, m);
+      SessionSendMessage message = new SessionSendMessage(address, m.copy());
       
       remotingConnection.send(id, message, !m.isDurable());
    }

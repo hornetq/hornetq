@@ -189,7 +189,7 @@ public class MessageCounterManager implements MessagingComponent
             {
                MessageCounter counter = (MessageCounter)iter.next();
                
-               counter.onTimer();
+               counter.sample();
             }
          }
       }  

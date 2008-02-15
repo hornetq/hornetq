@@ -25,12 +25,18 @@ import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.api.ClientConnectionFactory;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessagingServerManagement;
+import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.impl.server.SubscriptionInfo;
+import org.jboss.messaging.core.impl.messagecounter.MessageStatistics;
+import org.jboss.messaging.core.impl.messagecounter.MessageCounter;
 import org.jboss.messaging.deployers.Deployer;
 import org.jboss.messaging.deployers.DeploymentManager;
 import org.jboss.messaging.util.JNDIUtil;
+import org.jboss.messaging.util.MessageQueueNameHelper;
+import org.jboss.aop.microcontainer.aspects.jmx.JMX;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -38,9 +44,11 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
+import javax.jms.Message;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * A Deployer used to create and add to JNDI queues, topics and connection factories. Typically this would only be used
@@ -48,6 +56,7 @@ import java.util.ArrayList;
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
+@JMX(name = "jboss.messaging:service=MessagingServer", exposedInterface = JMSServerManager.class)
 public class JMSServerManagerImpl extends Deployer implements JMSServerManager
 {
    Logger log = Logger.getLogger(JMSServerManagerImpl.class);
@@ -64,8 +73,6 @@ public class JMSServerManagerImpl extends Deployer implements JMSServerManager
 
 
    MessagingServerManagement messagingServerManagement;
-
-//   UserManager userManager = new UserManager();
 
    private static final String CLIENTID_ELEMENT = "client-id";
    private static final String DUPS_OK_BATCH_SIZE_ELEMENT = "dups-ok-batch-size";
@@ -401,68 +408,185 @@ public class JMSServerManagerImpl extends Deployer implements JMSServerManager
       return true;
    }
 
+
+   public List<Message> listMessagesForQueue(String queue)
+   {
+      return listMessagesForQueue(queue, ListType.ALL);
+   }
+
+   public List<Message> listMessagesForQueue(String queue, ListType listType)
+   {
+      return listMessages(new JBossQueue(queue), listType);
+   }
+
+   public List<Message> listMessages(JBossQueue queue)
+   {
+      return listMessages(queue, ListType.ALL);
+   }
+
+   public List<Message> listMessagesForTopic(String topic)
+   {
+      return listMessagesForTopic(topic, ListType.ALL);
+   }
+
+   public List<Message> listMessagesForTopic(String topic, ListType listType)
+   {
+      return listMessages(new JBossTopic(topic), listType);
+   }
+
+   public List<Message> listMessages(JBossTopic topic)
+   {
+      return listMessages(topic, ListType.ALL);
+   }
+
+   public List<Message> listMessages(JBossQueue queue, ListType listType)
+   {
+      return null;  //todo
+   }
+
+   public List<Message> listMessages(JBossTopic topic, ListType listType)
+   {
+      return null;  //todo
+   }
+
    public void removeAllMessagesForQueue(String queueName) throws Exception
    {
       JBossQueue jBossQueue = new JBossQueue(queueName);
-      removeAllMessagesForQueue(jBossQueue);
+      removeAllMessages(jBossQueue);
    }
 
    public void removeAllMessagesForTopic(String topicName) throws Exception
    {
       JBossTopic jBossTopic = new JBossTopic(topicName);
-      removeAllMessagesForTopic(jBossTopic);
+      removeAllMessages(jBossTopic);
    }
 
-   public void removeAllMessagesForQueue(JBossQueue queue) throws Exception
+   public void removeAllMessages(JBossQueue queue) throws Exception
    {
       messagingServerManagement.removeAllMessagesForAddress(queue.getAddress());
    }
 
-   public void removeAllMessagesForTopic(JBossTopic topic) throws Exception
+   public void removeAllMessages(JBossTopic topic) throws Exception
    {
       messagingServerManagement.removeAllMessagesForAddress(topic.getAddress());
    }
 
    public int getMessageCountForQueue(String queue) throws Exception
    {
-      return getMessageCountForQueue(new JBossQueue(queue));
+      return getMessageCount(new JBossQueue(queue));
    }
 
-   public int getMessageCountForQueue(JBossQueue queue) throws Exception
+   public int getMessageCount(JBossQueue queue) throws Exception
    {
       return messagingServerManagement.getMessageCountForQueue(queue.getAddress());
    }
 
-   public List<SubscriptionInfo> listAllSubscriptionsForTopic(String topicName) throws Exception
+
+   public List<SubscriptionInfo> listSubscriptions(String topicName) throws Exception
    {
-      return listAllSubscriptionsForTopic(new JBossTopic(topicName));
+      return listSubscriptions(new JBossTopic(topicName));
    }
 
-   public List<SubscriptionInfo> listAllSubscriptionsForTopic(JBossTopic topicName) throws Exception
+   public List<SubscriptionInfo> listSubscriptions(JBossTopic topic) throws Exception
    {
-      return messagingServerManagement.listAllSubscriptionsForAddress(topicName.getAddress());
+      return listSubscriptions(topic, ListType.ALL);
    }
 
-   public List<SubscriptionInfo> listDurableSubscriptionsForTopic(String topicName) throws Exception
+   public List<SubscriptionInfo> listSubscriptions(String topic, ListType type) throws Exception
    {
-      return null;  //To change body of implemented methods use File | Settings | File Templates.
+      return listSubscriptions(new JBossTopic(topic), type);
+   }
+   public List<SubscriptionInfo> listSubscriptions(JBossTopic topic, ListType type) throws Exception
+   {
+      List<SubscriptionInfo> subs = new ArrayList<SubscriptionInfo>();
+
+      List<Queue> queues = messagingServerManagement.getQueuesForAddress(topic.getAddress());
+
+      for (Queue queue : queues)
+      {
+         if (type == ListType.ALL || (type == ListType.DURABLE && queue.isDurable()) || (type == ListType.NON_DURABLE && !queue.isDurable()))
+         {
+            String subName = null;
+            String clientID = null;
+
+            if (queue.isDurable())
+            {
+               MessageQueueNameHelper helper = MessageQueueNameHelper.createHelper(queue.getName());
+               subName = helper.getSubName();
+               clientID = helper.getClientId();
+            }
+
+            SubscriptionInfo info = new SubscriptionInfo(queue.getName(), queue.isDurable(), subName, clientID,
+                    queue.getFilter() == null ? null : queue.getFilter().getFilterString(), queue.getMessageCount(), queue.getMaxSize());
+
+            subs.add(info);
+         }
+      }
+
+      return subs;
    }
 
-   public List<SubscriptionInfo> listDurableSubscriptionsForTopic(JBossTopic topicName) throws Exception
+   public int getSubscriptionsCountForTopic(String topicName) throws Exception
    {
-      return null;  //To change body of implemented methods use File | Settings | File Templates.
+      return getSubscriptionsCount(new JBossTopic(topicName));
    }
 
-   public List<SubscriptionInfo> listNonDurableSubscriptionsForTopic(String topicName) throws Exception
+   public int getSubscriptionsCount(JBossTopic topic) throws Exception
    {
-      return null;  //To change body of implemented methods use File | Settings | File Templates.
+      return getSubscriptionsCount(topic, ListType.ALL);
    }
 
-   public List<SubscriptionInfo> listNonDurableSubscriptionsForTopic(JBossTopic topicName) throws Exception
+   public int getSubscriptionsCountForTopic(String topicName, ListType listType) throws Exception
    {
-      return null;  //To change body of implemented methods use File | Settings | File Templates.
+      return getSubscriptionsCount(new JBossTopic(topicName), listType);
    }
 
+   public int getSubscriptionsCount(JBossTopic topic, ListType listType) throws Exception
+   {
+       return listSubscriptions(topic, listType).size();
+   }
+
+   public int getConsumerCountForQueue(String queue) throws Exception
+   {
+      return getConsumerCountForQueue(new JBossQueue(queue));
+   }
+
+   public int getConsumerCountForQueue(JBossQueue queue) throws Exception
+   {
+       return messagingServerManagement.getConsumerCountForQueue(queue.getName());
+   }
+   //todo something!
+   public List getClients() throws Exception
+   {
+      List<ServerConnectionEndpoint> endpoints = messagingServerManagement.getClients();
+      for (ServerConnectionEndpoint endpoint : endpoints)
+      {
+         //endpoint.
+      }
+      return null;
+   }
+
+   List<MessageStatistics> getMessageStatistics(String queue) throws Exception
+   {
+      Collection<MessageCounter> counters = messagingServerManagement.getMessageCounters();
+      List<MessageStatistics> list = new ArrayList<MessageStatistics>(counters.size());
+      for (Object counter1 : counters)
+      {
+         MessageCounter counter = (MessageCounter) counter1;
+
+         MessageStatistics stats = new MessageStatistics();
+         stats.setName(counter.getDestinationName());
+         stats.setDurable(counter.getDestinationDurable());
+         stats.setCount(counter.getCount());
+         stats.setCountDelta(counter.getCountDelta());
+         stats.setDepth(counter.getMessageCount());
+         stats.setDepthDelta(counter.getMessageCountDelta());
+         stats.setTimeLastUpdate(counter.getLastUpdate());
+
+         list.add(stats);
+      }
+      return list;
+   }
    //private
 
    private void addToDestinationBindings(String destination, String jndiBinding)
@@ -473,4 +597,5 @@ public class JMSServerManagerImpl extends Deployer implements JMSServerManager
       }
       destinations.get(destination).add(jndiBinding);
    }
+
 }

@@ -21,33 +21,42 @@
    */
 package org.jboss.messaging.core.impl.server;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ScheduledFuture;
 
 import org.jboss.aop.microcontainer.aspects.jmx.JMX;
 import org.jboss.jms.client.api.ClientConnectionFactory;
 import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.messaging.core.Binding;
-import org.jboss.messaging.core.MessagingServer;
-import org.jboss.messaging.core.MessagingServerManagement;
+import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
+import org.jboss.messaging.core.*;
 import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.util.MessageQueueNameHelper;
+import org.jboss.messaging.core.impl.messagecounter.MessageCounter;
+import org.jboss.messaging.util.MessagingException;
 
 /**
  * This interface describes the properties and operations that comprise the management interface of the
  * Messaging Server.
- * 
+ * <p/>
  * It includes operations to create and destroy queues and provides various statistics measures
  * such as message count for queues and topics.
- * 
+ *
  * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>
  * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>
- * 
  */
 @JMX(name = "jboss.messaging:service=MessagingServerManagement", exposedInterface = MessagingServerManagement.class)
-public class MessagingServerManagementImpl implements MessagingServerManagement
+public class MessagingServerManagementImpl implements MessagingServerManagement, MessagingComponent
 {
    private MessagingServer messagingServer;
+
+   private HashMap<String, MessageCounter> currentCounters = new HashMap<String, MessageCounter>();
+
+   private HashMap<String, ScheduledFuture> currentRunningCounters = new HashMap<String, ScheduledFuture>();
+
+   private ScheduledExecutorService scheduler;
+   private int maxMessageCounters = 20;
 
    public void setMessagingServer(MessagingServer messagingServer)
    {
@@ -63,12 +72,13 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
 //   {
 //      return messagingServer.getConfiguration();
 //   }
-//   
+
+   //
    public boolean isStarted()
    {
       return messagingServer.isStarted();
    }
-   
+
    public void createQueue(String address, String name) throws Exception
    {
       messagingServer.createQueue(address, name);
@@ -89,10 +99,10 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
       return messagingServer.removeAddress(address);
    }
 
-   public ClientConnectionFactory createClientConnectionFactory(boolean strictTck,int prefetchSize)
+   public ClientConnectionFactory createClientConnectionFactory(boolean strictTck, int prefetchSize)
    {
       return new ClientConnectionFactoryImpl(messagingServer.getConfiguration().getMessagingServerID(),
-                      messagingServer.getConfiguration().getRemotingConfiguration(), messagingServer.getVersion(), messagingServer.getConfiguration().isStrictTck() || strictTck, prefetchSize);
+              messagingServer.getConfiguration().getRemotingConfiguration(), messagingServer.getVersion(), messagingServer.getConfiguration().isStrictTck() || strictTck, prefetchSize);
    }
 
    public void removeAllMessagesForAddress(String address) throws Exception
@@ -104,27 +114,190 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
    {
       messagingServer.removeAllMessagesForBinding(name);
    }
-   
+
+   public List<Queue> getQueuesForAddress(String address) throws Exception
+   {
+      List<Queue> queues = new ArrayList<Queue>();
+      List<Binding> bindings = messagingServer.getPostOffice().getBindingsForAddress(address);
+
+      for (Binding binding : bindings)
+      {
+         Queue queue = binding.getQueue();
+         queues.add(queue);
+      }
+      return queues;
+   }
+
    public int getMessageCountForQueue(String queue) throws Exception
    {
       return getQueue(queue).getMessageCount();
    }
-  
-   public List<SubscriptionInfo> listAllSubscriptionsForAddress(String address) throws Exception
+
+   public int getMaxMessageCounters()
    {
-      return listSubscriptions(address, ListType.ALL);
+      return maxMessageCounters;
    }
 
-   public List<SubscriptionInfo> listDurableSubscriptionsForAddress(String address) throws Exception
+   public void setMaxMessageCounters(int maxMessageCounters)
    {
-      return listSubscriptions(address, ListType.DURABLE);
+      this.maxMessageCounters = maxMessageCounters;
    }
 
-   public List<SubscriptionInfo> listNonSubscriptionsForAddress(String address) throws Exception
+   public void registerMessageCounter(final String queueName) throws Exception
    {
-      return listSubscriptions(address, ListType.NON_DURABLE);
+      if (currentCounters.get(queueName) != null)
+      {
+         throw new IllegalStateException("Message Counter Already Registered");
+      }
+      Binding binding = messagingServer.getPostOffice().getBinding(queueName);
+      if (binding == null)
+      {
+         throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
+      }
+      Queue queue = binding.getQueue();
+      currentCounters.put(queueName, new MessageCounter(queue.getName(),queue, queue.isDurable(), queue.getMessageCounterHistoryDayLimit()));
    }
 
+   public void unregisterMessageCounter(final String queueName) throws Exception
+   {
+      if (currentCounters.get(queueName) == null)
+      {
+         throw new MessagingException(MessagingException.ILLEGAL_STATE, "Counter is not registered");
+      }
+      currentCounters.remove(queueName);
+      if(currentRunningCounters.get(queueName) != null)
+      {
+         currentRunningCounters.get(queueName).cancel(true);
+         currentRunningCounters.remove(queueName);
+      }
+   }
+
+   public void startMessageCounter(final String queueName, long duration) throws Exception
+   {
+      MessageCounter messageCounter = currentCounters.get(queueName);
+      if (messageCounter == null)
+      {
+         Binding binding = messagingServer.getPostOffice().getBinding(queueName);
+         if (binding == null)
+         {
+            throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
+         }
+         Queue queue = binding.getQueue();
+         messageCounter = new MessageCounter(queue.getName(), queue,  queue.isDurable(), queue.getMessageCounterHistoryDayLimit());
+      }
+      currentCounters.put(queueName, messageCounter);
+      messageCounter.resetCounter();
+      if (duration > 0)
+      {
+
+         ScheduledFuture future = scheduler.schedule(new Runnable()
+         {
+            public void run()
+            {
+               currentCounters.get(queueName).sample();
+            }
+         }, duration, TimeUnit.SECONDS);
+         currentRunningCounters.put(queueName, future);
+      }
+   }
+
+   public MessageCounter stopMessageCounter(String queueName) throws Exception
+   {
+      MessageCounter messageCounter = currentCounters.get(queueName);
+      if (messageCounter == null)
+      {
+         throw new IllegalArgumentException(queueName + "counter not registered");
+      }
+      if(currentRunningCounters.get(queueName) != null)
+      {
+         currentRunningCounters.get(queueName).cancel(true);
+         currentRunningCounters.remove(queueName);
+      }
+      messageCounter.sample();
+      return messageCounter;
+   }
+
+   public MessageCounter getMessageCounter(String queueName)
+   {
+      MessageCounter messageCounter = currentCounters.get(queueName);
+      if(messageCounter != null && currentRunningCounters.get(queueName) == null)
+      {
+         messageCounter.sample();
+      }
+      return messageCounter;
+   }
+
+
+   public Collection<MessageCounter> getMessageCounters()
+   {
+      return currentCounters.values();
+   }
+
+   public void resetMessageCounter(String queue)
+   {
+      MessageCounter messageCounter = currentCounters.get(queue);
+      if(messageCounter != null)
+      {
+         messageCounter.resetCounter();
+      }
+   }
+
+   public void resetMessageCounters()
+   {
+      Set<String> counterNames = currentCounters.keySet();
+      for (String counterName : counterNames)
+      {
+         resetMessageCounter(counterName);
+      }
+   }
+
+   public void resetMessageCounterHistory(String queue)
+   {
+      MessageCounter messageCounter = currentCounters.get(queue);
+      if(messageCounter != null)
+      {
+         messageCounter.resetHistory();
+      }
+   }
+
+   public void resetMessageCounterHistories()
+   {
+      Set<String> counterNames = currentCounters.keySet();
+      for (String counterName : counterNames)
+      {
+         resetMessageCounterHistory(counterName);
+      }
+   }
+
+   public List<MessageCounter> stopAllMessageCounters() throws Exception
+   {
+      Set<String> counterNames = currentCounters.keySet();
+      List<MessageCounter> messageCounters = new ArrayList<MessageCounter>();
+      for (String counterName : counterNames)
+      {
+         messageCounters.add(stopMessageCounter(counterName));
+      }
+      return messageCounters;
+   }
+
+   public void unregisterAllMessageCounters() throws Exception
+   {
+      Set<String> counterNames = currentCounters.keySet();
+      for (String counterName : counterNames)
+      {
+         unregisterMessageCounter(counterName);
+      }
+   }
+
+   public int getConsumerCountForQueue(String queue) throws Exception
+   {
+      return getQueue(queue).getConsumerCount();
+   }
+
+   public  List<ServerConnectionEndpoint> getClients()
+   {
+      return messagingServer.getConnectionManager().getActiveConnections();
+   }
 //
 ////   public int getDeliveringCountForQueue(String queue) throws Exception
 ////   {
@@ -149,21 +322,6 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
 ////      List stats = MessageCounter.getMessageStatistics(counters);
 ////
 ////      return (MessageStatistics)stats.get(0);
-////   }
-//
-//   public int getConsumerCountForQueue(String queue) throws Exception
-//   {
-//      return getQueue(queue).getConsumerCount();
-//   }
-//
-////   public void resetMessageCounterForQueue(String queue) throws Exception
-////   {
-////      getMessageCounterForQueue(queue).resetCounter();
-////   }
-////
-////   public void resetMessageCounterHistoryForQueue(String queue) throws Exception
-////   {
-////      getMessageCounterForQueue(queue).resetHistory();
 ////   }
 //
 ////   public List<Message> listAllMessagesForQueue(String queue) throws Exception
@@ -221,9 +379,9 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
 //      return getNonDurableMessageCountForTopic(topicName);
 //   }
 //
-//   public int getAllSubscriptionsCountForTopic(String topicName) throws Exception
+//   public int getAllSubscriptionsCount(String topicName) throws Exception
 //   {
-//      return getAllSubscriptionsCountForTopic(topicName);
+//      return getAllSubscriptionsCount(topicName);
 //   }
 //
 //   public int getDurableSubscriptionsCountForTopic(String topicName) throws Exception
@@ -324,7 +482,7 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
 //
 //      return charArray.toString();
 //   }
-//   
+//
 ////   public String showPreparedTransactionsAsHTML()
 ////   {
 ////      List txs = messagingServer.getTxRepository().getPreparedTransactions();
@@ -526,99 +684,100 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
 //   {
 //      return listMessages(queue, ListType.ALL, selector);
 //   }
-//   
+//
 //   public List<Message> listDurableMessages(Queue queue, String selector) throws Exception
 //   {
 //      return listMessages(queue, ListType.DURABLE, selector);
 //   }
-//   
+//
 //   public List<Message> listNonDurableMessages(Queue queue, String selector) throws Exception
 //   {
 //      return listMessages(queue, ListType.NON_DURABLE, selector);
 //   }
 //
-//   
+//
 //   public List<SubscriptionInfo> listDurableSubscriptions(String topicName) throws Exception
 //   {
 //      return listSubscriptions(topicName, ListType.DURABLE);
 //   }
-//   
+//
 //   public List<SubscriptionInfo> listNonDurableSubscriptions(String topicName) throws Exception
 //   {
 //      return listSubscriptions(topicName, ListType.NON_DURABLE);
 //   }
-//   
+//
 //   public String listAllSubscriptionsAsHTML(String topicName) throws Exception
 //   {
 //      return listSubscriptionsAsHTML(topicName, ListType.ALL);
 //   }
-//   
+//
 //   public String listDurableSubscriptionsAsHTML(String topicName) throws Exception
 //   {
 //      return listSubscriptionsAsHTML(topicName, ListType.DURABLE);
 //   }
-//   
+//
 //   public String listNonDurableSubscriptionsAsHTML(String topicName) throws Exception
 //   {
 //      return listSubscriptionsAsHTML(topicName, ListType.NON_DURABLE);
 //   }
-//      
+//
 //   public List<Message> listDurableMessagesForSubscription(String subId, String selector) throws Exception
 //   {
 //      return listMessagesForSubscription(ListType.DURABLE, subId, selector);
 //   }
-//   
+//
 //   public List<Message> listNonDurableMessagesForSubscription(String subId, String selector) throws Exception
 //   {
 //      return listMessagesForSubscription(ListType.NON_DURABLE, subId, selector);
 //   }
-//   
+//
 //   public List<MessageCounter> getMessageCounters(String topicName) throws Exception
 //   {
 //      List<MessageCounter> counters = new ArrayList<MessageCounter>();
-//      
+//
 //      Condition condition = new ConditionImpl(DestinationType.TOPIC, topicName);
-//      
+//
 //      List<Binding> bindings = messagingServer.getPostOffice().getBindingsForCondition(condition);
-//      
+//
 //      for (Binding binding: bindings)
 //      {
 //         Queue queue = binding.getQueue();
-//         
+//
 //         //TODO - get message counters
-//         
+//
 ////         String counterName = SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queue.getName();
-////         
+////
 ////         MessageCounter counter = messagingServer.getMessageCounterManager().getMessageCounter(counterName);
-////         
+////
 ////         if (counter == null)
 ////         {
 ////            throw new IllegalStateException("Cannot find counter with name " + counterName);
 ////         }
-////         
+////
 ////         counters.add(counter);
 //      }
-//      
-//      return counters; 
+//
+//      return counters;
 //   }
-//   
-//   
+//
+//
 ////   public void setMessageCounterHistoryDayLimit(String topicName, int limit) throws Exception
 ////   {
 ////      Condition condition = new ConditionImpl(DestinationType.TOPIC, topicName);
-////      
+////
 ////      List<Binding> bindings = messagingServer.getPostOffice().getBindingsForCondition(condition);
-////         
+////
 ////      for (Binding binding: bindings)
 ////      {
 ////         Queue queue = binding.getQueue();
-////         
+////
 ////         queue.setMessageCounterHistoryDayLimit(limit);
-////      }      
+////      }
 ////   }
-//   
+//
 //   // Private ---------------------------------------------------------------------------
-//   
+
+   //
    private Queue getQueue(String queueName) throws Exception
    {
       Binding binding = messagingServer.getPostOffice().getBinding(queueName);
@@ -626,10 +785,10 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
       {
          throw new IllegalArgumentException("No queue with name " + queueName);
       }
-      
+
       return binding.getQueue();
    }
-//   
+//
 //    
 //   
 //   private List<Message> listMessages(Queue queue, ListType type, String jmsSelector) throws Exception
@@ -793,11 +952,9 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
 //
 //      return ret;
 //   }
-//   
-   private enum ListType
-   {
-      ALL, DURABLE, NON_DURABLE
-   }
+
+   //
+
 //   
 //  
 //   private List<Message> listMessagesForSubscription(ListType type, String subId, String jmsSelector) throws Exception
@@ -845,39 +1002,11 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
 //      
 //      return msgs;
 //   }
-//   
-   private List<SubscriptionInfo> listSubscriptions(String address, ListType type) throws Exception
-   {      
-      List<SubscriptionInfo> subs = new ArrayList<SubscriptionInfo>();
-      
-      List<Binding> bindings = messagingServer.getPostOffice().getBindingsForAddress(address);
-      
-      for (Binding binding: bindings)
-      {
-         Queue queue = binding.getQueue();
-         
-         if (type == ListType.ALL || (type == ListType.DURABLE && queue.isDurable()) || (type == ListType.NON_DURABLE && !queue.isDurable()))
-         {         
-            String subName = null;
-            String clientID = null;
-            
-            if (queue.isDurable())
-            {
-               MessageQueueNameHelper helper = MessageQueueNameHelper.createHelper(queue.getName());
-               subName = helper.getSubName();
-               clientID = helper.getClientId();
-            }
-            
-            SubscriptionInfo info = new SubscriptionInfo(queue.getName(), queue.isDurable(), subName, clientID,
-                     queue.getFilter() == null ? null : queue.getFilter().getFilterString(), queue.getMessageCount(), queue.getMaxSize());
-            
-            subs.add(info);
-         }
-      }
-      
-      return subs;
-   }
-//   
+
+   //
+
+
+//
 //   private int getMessageCount(String topicName, ListType type) throws Exception
 //   {
 //      Condition condition = new ConditionImpl(DestinationType.TOPIC, topicName);
@@ -974,6 +1103,24 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
 //      
 //      return sb.toString();                                
 //   }
-   
-   
+
+
+   public void start() throws Exception
+   {
+      scheduler = Executors.newScheduledThreadPool(maxMessageCounters);
+   }
+
+   public void stop() throws Exception
+   {
+      if(scheduler != null)
+      {
+         scheduler.shutdown();
+      }
+   }
+
+   protected void finalize() throws Throwable
+   {
+      super.finalize();
+
+   }
 }

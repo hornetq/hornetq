@@ -416,12 +416,9 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
 
       String coreDest = dest.getAddress();
 
-      // TODO - can optimise this copy to do copy lazily.
-      org.jboss.messaging.core.Message messageToSend = jbm.getCoreMessage().copy();
-
       try
       {
-         producer.send(coreDest, messageToSend);
+         producer.send(coreDest, jbm.getCoreMessage());
       }
       catch (MessagingException e)
       {

@@ -52,8 +52,6 @@ public class MessageCounter
 
    // destination related information
    private String destName;
-   private String destSubscription;
-   private boolean destTopic;
    private boolean destDurable;
 
    // destination queue
@@ -67,36 +65,31 @@ public class MessageCounter
 
    // per hour day counter history
    private int dayCounterMax;
-   private ArrayList dayCounter;
+   private ArrayList<DayCounter> dayCounter;
    
    /**
     * Get a list of message statistics from a list of message counters
-    * 
-    * @param counter the message counters
+    *
     * @return the message statistics
     * @throws Exception for any error
     */
-   public static List getMessageStatistics(List counters) throws Exception
+   public static List<? extends MessageStatistics> getMessageStatistics(List counters) throws Exception
    {
-      List list = new ArrayList(counters.size());
-      
-      Iterator iter = counters.iterator();
-      
-      while (iter.hasNext())
+      List<MessageStatistics> list = new ArrayList<MessageStatistics>(counters.size());
+
+      for (Object counter1 : counters)
       {
-         MessageCounter counter = (MessageCounter)iter.next();
-         
+         MessageCounter counter = (MessageCounter) counter1;
+
          MessageStatistics stats = new MessageStatistics();
          stats.setName(counter.getDestinationName());
-         stats.setSubscriptionID(counter.getDestinationSubscription());
-         stats.setTopic(counter.getDestinationTopic());
          stats.setDurable(counter.getDestinationDurable());
          stats.setCount(counter.getCount());
          stats.setCountDelta(counter.getCountDelta());
          stats.setDepth(counter.getMessageCount());
          stats.setDepthDelta(counter.getMessageCountDelta());
          stats.setTimeLastUpdate(counter.getLastUpdate());
-         
+
          list.add(stats);
       }
       return list;
@@ -106,23 +99,17 @@ public class MessageCounter
     *    Constructor
     *
     * @param name             destination name
-    * @param subscription     subscription name
     * @param queue            internal queue object
-    * @param topic            topic destination flag
     * @param durable          durable subsciption flag
     * @param daycountmax      max message history day count
     */
    public MessageCounter(String name,
-                         String subscription,
                          Queue queue,
-                         boolean topic,
                          boolean durable,
                          int daycountmax)
    {
       // store destination related information
       destName = name;
-      destSubscription = subscription;
-      destTopic = topic;
       destDurable = durable;
       destQueue = queue;      
 
@@ -130,7 +117,7 @@ public class MessageCounter
       resetCounter();
 
       // initialize message history
-      dayCounter = new ArrayList();
+      dayCounter = new ArrayList<DayCounter>();
 
       setHistoryLimit(daycountmax);
    }
@@ -148,13 +135,11 @@ public class MessageCounter
    /*
     * This method is called periodically to update statistics from the queue
     */
-   public synchronized void onTimer()
+   public synchronized void sample()
    {
       int latestMessagesAdded = destQueue.getMessagesAdded();
-      
-      int newMessagesAdded = latestMessagesAdded - lastMessagesAdded;
-      
-      countTotal += newMessagesAdded;
+
+      countTotal += latestMessagesAdded - lastMessagesAdded;
       
       lastMessagesAdded = latestMessagesAdded;
       
@@ -173,26 +158,6 @@ public class MessageCounter
    public String getDestinationName()
    {
       return destName;
-   }
-
-   /**
-    * Gets the related destination subscription
-    *
-    * @return String    destination name
-    */
-   public String getDestinationSubscription()
-   {
-      return destSubscription;
-   }
-
-   /**
-    * Gets the related destination topic flag
-    *
-    * @return boolean    true: topic destination, false: queue destination
-    */
-   public boolean getDestinationTopic()
-   {
-      return destTopic;
    }
 
    /**
@@ -291,45 +256,18 @@ public class MessageCounter
    {
       StringBuffer ret = new StringBuffer();
 
-      // Topic/Queue
-      if (destTopic)
-         ret.append("Topic,");
-      else
-         ret.append("Queue,");
-
       // name 
       ret.append(destName).append(",");
 
-      // subscription
-      if (destSubscription != null)
-         ret.append(destSubscription).append(",");
-      else
-         ret.append("-,");
-
-      // Durable subscription
-      if (destTopic)
-      {
-         // Topic
-         if (destDurable)
-            ret.append("true,");
-         else
-            ret.append("false,");
-      }
-      else
-      {
-         // Queue
-         ret.append("-,");
-      }
-
       // counter values
-      ret.append(getCount()).append(",").append(getCountDelta()).append(",").append(getMessageCount()).append(",").append(getMessageCountDelta()).append(",");
+      ret.append("total = ").append(getCount()).append(",").append("total delta = ").append(getCountDelta()).append(",").append("current = ").append(getMessageCount()).append(",").append("current delta = ").append(getMessageCountDelta()).append(",");
 
       // timestamp last counter update
       if (timeLastUpdate > 0)
       {
          DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
 
-         ret.append(dateFormat.format(new Date(timeLastUpdate)));
+         ret.append("last reset at ").append(dateFormat.format(new Date(timeLastUpdate)));
       }
       else
       {
@@ -414,7 +352,7 @@ public class MessageCounter
       // calculate day difference between current date and date of last day counter entry
       synchronized (dayCounter)
       {
-         DayCounter counterLast = (DayCounter) dayCounter.get(dayCounter.size() - 1);
+         DayCounter counterLast = dayCounter.get(dayCounter.size() - 1);
 
          GregorianCalendar calNow = new GregorianCalendar();
          GregorianCalendar calLast = counterLast.getDate();
@@ -468,7 +406,7 @@ public class MessageCounter
          }
 
          // update last day counter entry
-         counterLast = (DayCounter) dayCounter.get(dayCounter.size() - 1);
+         counterLast = dayCounter.get(dayCounter.size() - 1);
          counterLast.updateDayCounter(incrementCounter);
       }
    }
@@ -510,10 +448,8 @@ public class MessageCounter
          ret += dayCounter.size() + "\n";
 
          // following lines: day counter data
-         for (int i = 0; i < dayCounter.size(); i++)
+         for (DayCounter counter : dayCounter)
          {
-            DayCounter counter = (DayCounter) dayCounter.get(i);
-
             ret += counter.getDayCounterAsString() + "\n";
          }
       }
@@ -602,7 +538,7 @@ public class MessageCounter
                bUpdate = true;
             }
 
-            if (bUpdate == true)
+            if (bUpdate)
             {
                if (counters[i] == -1)
                   counters[i] = 0;

@@ -809,7 +809,7 @@ public class LocalTestServer implements Server, Runnable
 
    public List listAllSubscriptionsForTopic(String s) throws Exception
    {
-      return getJMSServerManager().listAllSubscriptionsForTopic(s);
+      return getJMSServerManager().listSubscriptions(s);
    }
 
 
