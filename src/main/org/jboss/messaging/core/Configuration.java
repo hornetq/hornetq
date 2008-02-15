@@ -27,10 +27,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
-import org.jboss.jms.server.security.Role;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.TransportType;
 
@@ -90,6 +88,8 @@ public class Configuration implements Serializable
    protected Integer _remotingTimeout;
 
    protected Boolean _remotingDisableInvm = false;
+   
+   private static final String REMOTING_DISABLE_INVM_SYSPROP_KEY = "jbm.remoting.disable.invm";
 
    public  void addPropertyChangeListener(
          PropertyChangeListener listener)
@@ -284,7 +284,13 @@ public class Configuration implements Serializable
    {
       RemotingConfiguration configuration = new RemotingConfiguration(_remotingTransport, "localhost", _remotingBindAddress);
       configuration.setTimeout(_remotingTimeout);
-      configuration.setInvmDisabled(_remotingDisableInvm);
+      if (System.getProperty(REMOTING_DISABLE_INVM_SYSPROP_KEY) != null)
+      {
+         configuration.setInvmDisabled(Boolean.parseBoolean(System.getProperty(REMOTING_DISABLE_INVM_SYSPROP_KEY)));
+      } else 
+      {
+         configuration.setInvmDisabled(_remotingDisableInvm);
+      }
       return configuration;
    }
 

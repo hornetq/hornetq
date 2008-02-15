@@ -51,6 +51,7 @@
    <property file="build.properties"/>
 
    <property name="build.tests.remote" value="false"/>
+   <property name="disable.invm" value="false"/>
    <property name="test.bind.address" value="localhost"/>
    <property name="jboss.messaging.groupname" value="MessagingPostOffice"/>
    <property name="jboss.messaging.datachanneludpport" value="45567"/>
@@ -462,7 +463,7 @@
            description="Runs all available tests an in-VM configuration">
 
       <echo message=""/>
-      <echo message="Running invm tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message="Running invm tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}, disable.invm=${disable.invm}"/>
       <echo message=""/>
 
       <junit printsummary="${junit.printsummary}"
@@ -474,6 +475,7 @@
              showoutput="${junit.showoutput}"
              timeout="${junit.timeout}">
 
+         <sysproperty key="jbm.remoting.disable.invm" value="${disable.invm}" />
          <sysproperty key="remote" value="false"/>
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
