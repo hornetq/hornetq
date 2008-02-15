@@ -280,6 +280,10 @@ public class Configuration implements Serializable
       this._remotingBindAddress = remotingBindAddress;
    }
 
+   /**
+    * If the system property <code>jbm.remoting.disable.invm</code> is set, its boolean value is used 
+    * regardless of the value of the property <code>remoting-disable-invm</code> in <code>jbm-configuration.xml</code>
+    */
    public RemotingConfiguration getRemotingConfiguration() 
    {
       RemotingConfiguration configuration = new RemotingConfiguration(_remotingTransport, "localhost", _remotingBindAddress);
