@@ -136,7 +136,7 @@ public class MinaService implements RemotingService, FailureNotifier
          acceptor.getSessionConfig().setKeepAlive(true);
          acceptor.setDisconnectOnUnbind(false);
 
-         acceptor.setHandler(new MinaHandler(dispatcher, this));
+         acceptor.setHandler(new MinaHandler(dispatcher, this, true));
          acceptor.bind();
          acceptorListener = new MinaSessionListener();
          acceptor.addListener(acceptorListener);

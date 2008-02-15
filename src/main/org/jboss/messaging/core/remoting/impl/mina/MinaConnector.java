@@ -93,7 +93,7 @@ public class MinaConnector implements NIOConnector, FailureNotifier
             configuration.getKeepAliveTimeout(), this);
       addExecutorFilter(filterChain);
 
-      connector.setHandler(new MinaHandler(PacketDispatcher.client, this));
+      connector.setHandler(new MinaHandler(PacketDispatcher.client, this, false));
       connector.getSessionConfig().setKeepAlive(true);
       connector.getSessionConfig().setReuseAddress(true);
    }

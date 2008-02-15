@@ -36,14 +36,17 @@ public class MinaHandler extends IoHandlerAdapter
 
    private FailureNotifier failureNotifier;
 
+   private boolean closeSessionOnExceptionCaught;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
    
-   public MinaHandler(PacketDispatcher dispatcher, FailureNotifier failureNotifier)
+   public MinaHandler(PacketDispatcher dispatcher, FailureNotifier failureNotifier, boolean closeSessionOnExceptionCaught)
    {
       this.dispatcher = dispatcher;
       this.failureNotifier = failureNotifier;
+      this.closeSessionOnExceptionCaught = closeSessionOnExceptionCaught;
    }
 
    // Public --------------------------------------------------------
@@ -63,9 +66,7 @@ public class MinaHandler extends IoHandlerAdapter
          re.initCause(cause);
          failureNotifier.fireFailure(re);
       }
-      // FIXME ugly way to know we're on the server side
-      // close session only on the server side
-      if (dispatcher != PacketDispatcher.client)
+      if (closeSessionOnExceptionCaught)
       {
          session.close();
       }
