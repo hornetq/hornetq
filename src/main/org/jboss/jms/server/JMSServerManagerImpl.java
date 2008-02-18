@@ -575,7 +575,58 @@ public class JMSServerManagerImpl extends Deployer implements JMSServerManager
       return null;
    }
 
-   List<MessageStatistics> getMessageStatistics() throws Exception
+
+   public void startGatheringStatistics()
+   {
+      //To change body of implemented methods use File | Settings | File Templates.
+   }
+
+   public void startGatheringStatisticsForQueue(String queue)
+   {
+      //To change body of implemented methods use File | Settings | File Templates.
+   }
+
+   public void startGatheringStatistics(JBossQueue queue)
+   {
+      //To change body of implemented methods use File | Settings | File Templates.
+   }
+
+   public void startGatheringStatisticsForTopic(String topic)
+   {
+      //To change body of implemented methods use File | Settings | File Templates.
+   }
+
+   public void startGatheringStatistics(JBossTopic topic)
+   {
+      //To change body of implemented methods use File | Settings | File Templates.
+   }
+
+   public void stopGatheringStatistics()
+   {
+      //To change body of implemented methods use File | Settings | File Templates.
+   }
+
+   public void stopGatheringStatisticsForQueue(String queue)
+   {
+      //To change body of implemented methods use File | Settings | File Templates.
+   }
+
+   public void stopGatheringStatistics(JBossQueue queue)
+   {
+      //To change body of implemented methods use File | Settings | File Templates.
+   }
+
+   public void stopGatheringStatisticsForTopic(String topic)
+   {
+      //To change body of implemented methods use File | Settings | File Templates.
+   }
+
+   public void stopGatheringStatistics(JBossTopic topic)
+   {
+      //To change body of implemented methods use File | Settings | File Templates.
+   }
+
+   public List<MessageStatistics> getStatistics() throws Exception
    {
       Collection<MessageCounter> counters = messagingServerManagement.getMessageCounters();
       List<MessageStatistics> list = new ArrayList<MessageStatistics>(counters.size());
