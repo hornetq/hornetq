@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.messaging.core.impl.messagecounter;
+package org.jboss.jms.server;
 
 import java.io.Serializable;
 import java.text.DateFormat;

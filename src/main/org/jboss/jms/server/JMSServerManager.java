@@ -3,7 +3,7 @@ package org.jboss.jms.server;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.messaging.core.impl.server.SubscriptionInfo;
-import org.jboss.messaging.core.impl.messagecounter.MessageStatistics;
+import org.jboss.jms.server.MessageStatistics;
 
 import javax.jms.Message;
 import java.util.List;
@@ -87,7 +87,7 @@ public interface JMSServerManager
 
    int getConsumerCountForQueue(JBossQueue queue) throws Exception;
 
-   List getClients() throws Exception;
+   List<ClientInfo> getClients() throws Exception;
 
    void startGatheringStatistics();
 

@@ -86,5 +86,5 @@ public interface MessagingServerManagement
 
    public int getConsumerCountForQueue(String queue) throws Exception;
 
-   List<ServerConnectionEndpoint> getClients();
+   List<ServerConnectionEndpoint> getActiveConnections();
 }

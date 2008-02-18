@@ -99,12 +99,16 @@ public class ServerConnectionEndpoint
 
    private final int prefetchSize;
 
+   private String clientAddress;
+   private long created;
+
    // Constructors ---------------------------------------------------------------------------------
 
    public ServerConnectionEndpoint(MessagingServer messagingServer,
                                    String username, String password, int prefetchSize,
                                    String remotingSessionID,
-                                   String clientVMID) throws Exception
+                                   String clientVMID,
+                                   String clientAddress) throws Exception
    {
       this.messagingServer = messagingServer;
 
@@ -125,7 +129,11 @@ public class ServerConnectionEndpoint
       this.remotingClientSessionID = remotingSessionID;
 
       this.jmsClientVMID = clientVMID;
-      
+
+      this.clientAddress = clientAddress;
+
+      created = System.currentTimeMillis();
+
       cm.registerConnection(jmsClientVMID, remotingClientSessionID, this);
    }
 
@@ -206,6 +214,16 @@ public class ServerConnectionEndpoint
       return password;
    }
 
+   public long getCreated()
+   {
+      return created;
+   }
+
+   public String getClientAddress()
+   {
+      return clientAddress;
+   }
+
    public SecurityStore getSecurityManager()
    {
       return sm;
@@ -238,7 +256,7 @@ public class ServerConnectionEndpoint
       return id;
    }
 
-   boolean isStarted()
+   public boolean isStarted()
    {
       return started;
    }

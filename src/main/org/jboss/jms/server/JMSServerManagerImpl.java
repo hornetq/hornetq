@@ -30,7 +30,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessagingServerManagement;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.impl.server.SubscriptionInfo;
-import org.jboss.messaging.core.impl.messagecounter.MessageStatistics;
+import org.jboss.jms.server.MessageStatistics;
 import org.jboss.messaging.core.impl.messagecounter.MessageCounter;
 import org.jboss.messaging.deployers.Deployer;
 import org.jboss.messaging.deployers.DeploymentManager;
@@ -564,15 +564,19 @@ public class JMSServerManagerImpl extends Deployer implements JMSServerManager
    {
        return messagingServerManagement.getConsumerCountForQueue(queue.getName());
    }
-   //todo something!
-   public List getClients() throws Exception
+
+   public List<ClientInfo> getClients() throws Exception
    {
-      List<ServerConnectionEndpoint> endpoints = messagingServerManagement.getClients();
+      List<ClientInfo> clientInfos = new ArrayList<ClientInfo>();
+      List<ServerConnectionEndpoint> endpoints = messagingServerManagement.getActiveConnections();
       for (ServerConnectionEndpoint endpoint : endpoints)
       {
-         //endpoint.
+         clientInfos.add(new ClientInfo(endpoint.getUsername(),
+                 endpoint.getClientAddress(),
+                 endpoint.isStarted(),
+                 endpoint.getCreated()));
       }
-      return null;
+      return clientInfos;
    }
 
 

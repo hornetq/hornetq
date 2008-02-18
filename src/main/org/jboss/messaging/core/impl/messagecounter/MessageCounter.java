@@ -66,34 +66,6 @@ public class MessageCounter
    // per hour day counter history
    private int dayCounterMax;
    private ArrayList<DayCounter> dayCounter;
-   
-   /**
-    * Get a list of message statistics from a list of message counters
-    *
-    * @return the message statistics
-    * @throws Exception for any error
-    */
-   public static List<? extends MessageStatistics> getMessageStatistics(List counters) throws Exception
-   {
-      List<MessageStatistics> list = new ArrayList<MessageStatistics>(counters.size());
-
-      for (Object counter1 : counters)
-      {
-         MessageCounter counter = (MessageCounter) counter1;
-
-         MessageStatistics stats = new MessageStatistics();
-         stats.setName(counter.getDestinationName());
-         stats.setDurable(counter.getDestinationDurable());
-         stats.setCount(counter.getCount());
-         stats.setCountDelta(counter.getCountDelta());
-         stats.setDepth(counter.getMessageCount());
-         stats.setDepthDelta(counter.getMessageCountDelta());
-         stats.setTimeLastUpdate(counter.getLastUpdate());
-
-         list.add(stats);
-      }
-      return list;
-   }
 
    /**
     *    Constructor

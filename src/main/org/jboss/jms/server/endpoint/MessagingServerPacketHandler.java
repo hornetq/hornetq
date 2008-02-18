@@ -76,7 +76,7 @@ public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
          
          response = createConnection(request
                .getUsername(), request.getPassword(), request.getRemotingSessionID(),
-               request.getClientVMID(), request.getPrefetchSize());
+               request.getClientVMID(), request.getPrefetchSize(), sender.getRemoteAddress());
       }     
       else
       {
@@ -90,7 +90,8 @@ public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
    private CreateConnectionResponse
       createConnection(String username,
                               String password,
-                              String remotingSessionID, String clientVMID, int prefetchSize)
+                              String remotingSessionID, String clientVMID, int prefetchSize,
+                              String address)
       throws Exception
    {
       log.trace("creating a new connection for user " + username);
@@ -125,7 +126,7 @@ public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
       // server peer's ClientManager
       final ServerConnectionEndpoint endpoint =
          new ServerConnectionEndpoint(messagingServer, username, password, prefetchSize,
-                                      remotingSessionID, clientVMID);
+                                      remotingSessionID, clientVMID, address);
 
       String connectionID = endpoint.getConnectionID();
 

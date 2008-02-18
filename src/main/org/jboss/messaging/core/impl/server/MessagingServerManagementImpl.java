@@ -294,7 +294,7 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
       return getQueue(queue).getConsumerCount();
    }
 
-   public  List<ServerConnectionEndpoint> getClients()
+   public  List<ServerConnectionEndpoint> getActiveConnections()
    {
       return messagingServer.getConnectionManager().getActiveConnections();
    }
@@ -319,7 +319,7 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
 ////      List counters = new ArrayList();
 ////      counters.add(getQueue(queue).getMessageCounter());
 ////
-////      List stats = MessageCounter.getMessageStatistics(counters);
+////      List stats = MessageCounter.getStatistics(counters);
 ////
 ////      return (MessageStatistics)stats.get(0);
 ////   }
