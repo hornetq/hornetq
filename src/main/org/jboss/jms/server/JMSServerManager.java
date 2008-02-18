@@ -62,6 +62,10 @@ public interface JMSServerManager
 
    int getMessageCount(JBossQueue queue) throws Exception;
 
+   int getMessageCountForTopic(String topic) throws Exception;
+
+   int getMessageCount(JBossTopic topic) throws Exception;
+
    List<SubscriptionInfo> listSubscriptions(String topicName) throws Exception;
 
    List<SubscriptionInfo> listSubscriptions(JBossTopic topic) throws Exception;

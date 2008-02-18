@@ -481,6 +481,15 @@ public class JMSServerManagerImpl extends Deployer implements JMSServerManager
       return messagingServerManagement.getMessageCountForQueue(queue.getAddress());
    }
 
+   public int getMessageCountForTopic(String topic) throws Exception
+   {
+      return 0;  //To change body of implemented methods use File | Settings | File Templates.
+   }
+
+   public int getMessageCount(JBossTopic topic) throws Exception
+   {
+      return 0;  //To change body of implemented methods use File | Settings | File Templates.
+   }
 
    public List<SubscriptionInfo> listSubscriptions(String topicName) throws Exception
    {
@@ -566,7 +575,7 @@ public class JMSServerManagerImpl extends Deployer implements JMSServerManager
       return null;
    }
 
-   List<MessageStatistics> getMessageStatistics(String queue) throws Exception
+   List<MessageStatistics> getMessageStatistics() throws Exception
    {
       Collection<MessageCounter> counters = messagingServerManagement.getMessageCounters();
       List<MessageStatistics> list = new ArrayList<MessageStatistics>(counters.size());
