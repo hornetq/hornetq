@@ -19,4 +19,6 @@ public interface PacketSender
    void send(Packet packet) throws Exception;
 
    String getSessionID();
+   
+   String getRemoteAddress();
 }

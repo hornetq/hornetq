@@ -86,6 +86,11 @@ public class INVMSession implements NIOSession
                {
                   return getID();
                }
+               
+               public String getRemoteAddress()
+               {
+                  return "invm";
+               }
             });
    }
 
@@ -122,6 +127,11 @@ public class INVMSession implements NIOSession
                public String getSessionID()
                {
                   return getID();
+               }
+               
+               public String getRemoteAddress()
+               {
+                  return "invm";
                }
             });
 

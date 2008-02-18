@@ -200,6 +200,9 @@ public class ServerSessionEndpoint
       this.sender = sender;
 
       this.resourceManager = resourceManager;
+      
+      if (log.isTraceEnabled())
+         log.trace("created server session endpoint for " + sender.getRemoteAddress());
    }
 
    // Public

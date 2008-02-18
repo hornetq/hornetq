@@ -110,6 +110,11 @@ public class MinaHandler extends IoHandlerAdapter
          {
             return Long.toString(session.getId());
          }
+         
+         public String getRemoteAddress()
+         {
+            return session.getRemoteAddress().toString();
+         }
       };
 
       if (log.isTraceEnabled())
