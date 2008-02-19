@@ -30,10 +30,12 @@ import java.util.concurrent.ScheduledFuture;
 import org.jboss.aop.microcontainer.aspects.jmx.JMX;
 import org.jboss.jms.client.api.ClientConnectionFactory;
 import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.jms.client.SelectorTranslator;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.messaging.core.*;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.impl.messagecounter.MessageCounter;
+import org.jboss.messaging.core.impl.filter.FilterImpl;
 import org.jboss.messaging.util.MessagingException;
 
 /**
@@ -113,6 +115,35 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
    public void removeAllMessagesForBinding(String name) throws Exception
    {
       messagingServer.removeAllMessagesForBinding(name);
+   }
+
+   public List<Message> listMessages(String queueName, Filter filter) throws Exception
+   {
+      List<Message> msgs = new ArrayList<Message>();
+      Queue queue = getQueue(queueName);
+      if(queue != null)
+      {
+         List<MessageReference> allRefs = queue.list(filter);
+         for (MessageReference allRef : allRefs)
+         {
+            msgs.add(allRef.getMessage());
+         }
+      }
+     return msgs;
+  }
+
+   public void removeMessageForBinding(String binding, Filter filter) throws Exception
+   {
+      messagingServer.removeMessageForBinding(binding, filter);
+   }
+
+   public void removeMessageForAddress(String binding, Filter filter) throws Exception
+   {
+      List<Binding> bindings = messagingServer.getPostOffice().getBindingsForAddress(binding);
+      for (Binding binding1 : bindings)
+      {
+         removeMessageForBinding(binding1.getQueue().getName(), filter);
+      }
    }
 
    public List<Queue> getQueuesForAddress(String address) throws Exception
@@ -297,6 +328,18 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
    public  List<ServerConnectionEndpoint> getActiveConnections()
    {
       return messagingServer.getConnectionManager().getActiveConnections();
+   }
+
+   public void moveMessages(String fromQueue, String toQueue, FilterImpl filter) throws Exception
+   {
+      Queue from = getQueue(fromQueue);
+      Queue to = getQueue(toQueue);
+      List<MessageReference> messageReferences = from.removeReferences(filter);
+      for (MessageReference messageReference : messageReferences)
+      {
+         to.addLast(messageReference);
+      }
+
    }
 //
 ////   public int getDeliveringCountForQueue(String queue) throws Exception

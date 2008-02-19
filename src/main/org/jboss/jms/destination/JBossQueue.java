@@ -50,7 +50,7 @@ public class JBossQueue extends JBossDestination implements Queue
       super(JMS_QUEUE_ADDRESS_PREFIX + name, name);
    }
 
-   public JBossQueue(String address, String name)
+   protected JBossQueue(String address, String name)
    {
       super(address, name);
    }

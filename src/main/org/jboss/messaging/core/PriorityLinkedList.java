@@ -55,4 +55,6 @@ public interface PriorityLinkedList<T>
    ListIterator<T> iterator();
    
    boolean isEmpty();
+
+   void remove(T messageReference, int priority);
 }

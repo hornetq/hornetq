@@ -308,6 +308,32 @@ public class QueueImpl implements Queue
       }
    }
 
+   public synchronized void removeReference(MessageReference messageReference)
+   {
+      messageReferences.remove(messageReference , messageReference.getMessage().getPriority());
+      if (!this.scheduledTimeouts.isEmpty())
+      {
+         Set<Timeout> clone = new HashSet<Timeout>(scheduledTimeouts);
+
+         for (Timeout timeout: clone)
+         {
+            timeout.cancel();
+         }
+
+         scheduledTimeouts.clear();
+      }
+   }
+
+   public synchronized List<MessageReference> removeReferences(Filter filter)
+   {
+      List<MessageReference> allRefs = list(filter);
+      for (MessageReference messageReference : allRefs)
+      {
+         removeReference(messageReference);
+      }
+      return allRefs;
+   }
+
    public long getPersistenceID()
    {
       return id;

@@ -422,6 +422,20 @@ public class MessagingServerImpl implements MessagingServer
       }
    }
 
+   public void removeMessageForBinding(String name, Filter filter) throws Exception
+   {
+      Binding binding = postOffice.getBinding(name);
+      if (binding != null)
+      {
+         Queue queue = binding.getQueue();
+         List<MessageReference> allRefs = queue.list(filter);
+         for (MessageReference messageReference : allRefs)
+         {
+            persistenceManager.deleteReference(messageReference);
+            queue.removeReference(messageReference);
+         }
+      }
+   }
 
    public SecurityStore getSecurityManager()
    {

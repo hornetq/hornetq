@@ -102,4 +102,6 @@ public interface MessagingServer extends MessagingComponent
    void removeAllMessagesForAddress(String address) throws Exception;
 
    void removeAllMessagesForBinding(String name) throws Exception;
+
+   void removeMessageForBinding(String name, Filter filter) throws Exception;
 }

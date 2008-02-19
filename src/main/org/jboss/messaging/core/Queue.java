@@ -21,6 +21,8 @@
   */
 package org.jboss.messaging.core;
 
+import org.jboss.messaging.core.impl.filter.FilterImpl;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -58,7 +60,11 @@ public interface Queue
    List<MessageReference> list(Filter filter);
    
    void removeAllReferences();
-   
+
+   void removeReference(MessageReference messageReference);
+
+   List<MessageReference> removeReferences(Filter filter);
+
    long getPersistenceID();
    
    void setPersistenceID(long id);
@@ -110,4 +116,5 @@ public interface Queue
    int getMessageCounterHistoryDayLimit();
    
    void setMessageCounterHistoryDayLimit(int limit);
+
 }

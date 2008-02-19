@@ -22,6 +22,7 @@
 package org.jboss.messaging.core;
 
 import org.jboss.messaging.core.impl.messagecounter.MessageCounter;
+import org.jboss.messaging.core.impl.filter.FilterImpl;
 import org.jboss.jms.client.api.ClientConnectionFactory;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 
@@ -58,6 +59,12 @@ public interface MessagingServerManagement
 
    void removeAllMessagesForBinding(String name) throws Exception;
 
+   List<Message> listMessages(String queueName, Filter filter) throws Exception;
+
+   void removeMessageForBinding(String binding, Filter filter) throws Exception;
+
+   void removeMessageForAddress(String binding, Filter filter) throws Exception;
+
    int getMessageCountForQueue(String queue) throws Exception;
 
    void registerMessageCounter(String queueName) throws Exception;
@@ -87,4 +94,6 @@ public interface MessagingServerManagement
    public int getConsumerCountForQueue(String queue) throws Exception;
 
    List<ServerConnectionEndpoint> getActiveConnections();
+
+   void moveMessages(String toQueue, String fromQueue, FilterImpl filter) throws Exception;
 }

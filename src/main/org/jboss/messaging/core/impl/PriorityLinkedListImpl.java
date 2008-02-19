@@ -169,7 +169,16 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
    {
       return size == 0;
    }
-   
+
+   public void remove(T messageReference, int priority)
+   {
+      LinkedList linkedList = linkedLists.get(priority);
+      if(linkedList != null)
+      {
+         linkedList.remove(messageReference);
+      }
+   }
+
    public ListIterator<T> iterator()
    {
       return new PriorityLinkedListIterator();

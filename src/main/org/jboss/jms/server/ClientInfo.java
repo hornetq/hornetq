@@ -32,7 +32,7 @@ public class ClientInfo
 {
    private static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("HH:mm:ss, EEE, MMM d, yyyy");
 
-   enum status{ STARTED, STOPPED }
+   public enum status{ STARTED, STOPPED }
 
    private String user;
    private String address;
