@@ -12,6 +12,7 @@ import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.add
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addKeepAliveFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addLoggingFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addMDCFilter;
+import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addSSLFilter;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -123,6 +124,13 @@ public class MinaService implements RemotingService, FailureNotifier
          DefaultIoFilterChainBuilder filterChain = acceptor.getFilterChain();
 
          addMDCFilter(filterChain);
+         if (remotingConfig.isSSLEnabled())
+         {
+            addSSLFilter(filterChain, false, remotingConfig.getKeyStorePath(),
+                  remotingConfig.getKeyStorePassword(), remotingConfig
+                        .getTrustStorePath(), remotingConfig
+                        .getTrustStorePassword());
+         }
          addCodecFilter(filterChain);
          addLoggingFilter(filterChain);
          addKeepAliveFilter(filterChain, factory,

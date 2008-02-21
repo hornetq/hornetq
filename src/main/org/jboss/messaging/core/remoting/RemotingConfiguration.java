@@ -25,6 +25,7 @@ public class RemotingConfiguration implements Serializable
    public static final int DEFAULT_KEEP_ALIVE_TIMEOUT = 5; // in seconds
    public static final int DEFAULT_REQRES_TIMEOUT = 5; // in seconds
    public static final boolean DEFAULT_INVM_DISABLED = false;
+   public static final boolean DEFAULT_SSL_ENABLED = false;
    
    // Attributes ----------------------------------------------------
 
@@ -36,6 +37,12 @@ public class RemotingConfiguration implements Serializable
    private int keepAliveInterval = DEFAULT_KEEP_ALIVE_INTERVAL;
    private int keepAliveTimeout = DEFAULT_KEEP_ALIVE_TIMEOUT;
    private boolean invmDisabled = DEFAULT_INVM_DISABLED;
+   private boolean sslEnabled = DEFAULT_SSL_ENABLED;
+   private String keyStorePath;
+   private String keyStorePassword;
+   private String trustStorePath;
+   private String trustStorePassword;
+   
 
    // Static --------------------------------------------------------
 
@@ -69,6 +76,11 @@ public class RemotingConfiguration implements Serializable
       this.keepAliveInterval = other.keepAliveInterval;
       this.keepAliveTimeout = other.keepAliveTimeout;
       this.invmDisabled = other.invmDisabled;
+      this.sslEnabled = other.sslEnabled;
+      this.keyStorePath = other.keyStorePath;
+      this.keyStorePassword = other.keyStorePassword;
+      this.trustStorePath = other.trustStorePath;
+      this.trustStorePassword = other.trustStorePassword;
    }
 
    // Public --------------------------------------------------------
@@ -127,7 +139,57 @@ public class RemotingConfiguration implements Serializable
    {
       return invmDisabled;
    }
- 
+   
+   public void setSSLEnabled(boolean sslEnabled)
+   {
+      this.sslEnabled = sslEnabled;
+   }
+   
+   public boolean isSSLEnabled()
+   {
+      return sslEnabled;
+   }
+
+   public String getKeyStorePath()
+   {
+      return keyStorePath;
+   }
+
+   public void setKeyStorePath(String keyStorePath)
+   {
+      this.keyStorePath = keyStorePath;
+   }
+
+   public String getKeyStorePassword()
+   {
+      return keyStorePassword;
+   }
+
+   public void setKeyStorePassword(String keyStorePassword)
+   {
+      this.keyStorePassword = keyStorePassword;
+   }
+
+   public String getTrustStorePath()
+   {
+      return trustStorePath;
+   }
+
+   public void setTrustStorePath(String trustStorePath)
+   {
+      this.trustStorePath = trustStorePath;
+   }
+
+   public String getTrustStorePassword()
+   {
+      return trustStorePassword;
+   }
+
+   public void setTrustStorePassword(String trustStorePassword)
+   {
+      this.trustStorePassword = trustStorePassword;
+   }
+
    public String getURI()
    {
       StringBuffer buff = new StringBuffer();
@@ -136,6 +198,9 @@ public class RemotingConfiguration implements Serializable
       buff.append("&").append("keepAliveInterval=").append(keepAliveInterval);
       buff.append("&").append("keepAliveTimeout=").append(keepAliveTimeout);
       buff.append("&").append("invmDisabled=").append(invmDisabled);
+      buff.append("&").append("sslEnabled=").append(sslEnabled);
+      buff.append("&").append("keyStorePath=").append(keyStorePath);
+      buff.append("&").append("trustStorePath=").append(trustStorePath);
       return buff.toString();
    }
 

@@ -12,6 +12,7 @@ import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.add
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addKeepAliveFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addLoggingFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addMDCFilter;
+import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addSSLFilter;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -26,6 +27,7 @@ import org.apache.mina.common.IdleStatus;
 import org.apache.mina.common.IoService;
 import org.apache.mina.common.IoServiceListener;
 import org.apache.mina.common.IoSession;
+import org.apache.mina.filter.ssl.SslFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.jboss.jms.client.api.FailureListener;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
@@ -86,6 +88,18 @@ public class MinaConnector implements NIOConnector, FailureNotifier
       DefaultIoFilterChainBuilder filterChain = connector.getFilterChain();
 
       addMDCFilter(filterChain);
+      if (configuration.isSSLEnabled())
+      {
+         try
+         {
+            addSSLFilter(filterChain, true, configuration.getKeyStorePath(), configuration.getKeyStorePassword(), null, null);
+         } catch (Exception e)
+         {
+            IllegalStateException ise = new IllegalStateException("Unable to create MinaConnector for " + configuration);
+            ise.initCause(e);
+            throw ise;
+         }
+      }
       addCodecFilter(filterChain);
       addLoggingFilter(filterChain);
       blockingScheduler = addBlockingRequestResponseFilter(filterChain);
@@ -131,9 +145,32 @@ public class MinaConnector implements NIOConnector, FailureNotifier
          return false;
       }
 
+      SslFilter sslFilter = (SslFilter) session.getFilterChain().get("ssl");
+      // FIXME without this hack, exceptions are thrown:
+      // "Unexpected exception from SSLEngine.closeInbound()." -> because the ssl session is not stopped
+      // "java.io.IOException: Connection reset by peer" -> on the server side
+      if (sslFilter != null)
+      {
+         try
+         {
+            sslFilter.stopSsl(session).awaitUninterruptibly();
+            Thread.sleep(500);
+         } catch (Exception e)
+         {
+            // ignore
+         }
+      }
       CloseFuture closeFuture = session.close().awaitUninterruptibly();
       boolean closed = closeFuture.isClosed();
-
+      try
+      {
+         Thread.sleep(1000);
+      } catch (InterruptedException e)
+      {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+      
       connector.removeListener(ioListener);
       connector.dispose();
       blockingScheduler.shutdown();

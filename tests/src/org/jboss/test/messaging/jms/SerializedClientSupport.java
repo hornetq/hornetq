@@ -59,6 +59,8 @@ public class SerializedClientSupport
 
       String commandLine = sb.toString();
 
+      log.trace("command line: " + commandLine);
+
       Process process = Runtime.getRuntime().exec(commandLine);
 
       log.trace("process: " + process);

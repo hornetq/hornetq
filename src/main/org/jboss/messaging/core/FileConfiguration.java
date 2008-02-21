@@ -71,6 +71,11 @@ public class FileConfiguration extends Configuration
       _remotingBindAddress = getInteger(e, "remoting-bind-address", _remotingBindAddress);
       _remotingTimeout = getInteger(e, "remoting-timeout", _remotingTimeout);
       _remotingDisableInvm = getBoolean(e, "remoting-disable-invm", _remotingDisableInvm);
+      _remotingEnableSSL = getBoolean(e, "remoting-enable-ssl", _remotingEnableSSL);
+      _remotingSSLKeyStorePath = getString(e, "remoting-ssl-keystore-path", _remotingSSLKeyStorePath);
+      _remotingSSLKeyStorePassword = getString(e, "remoting-ssl-keystore-password", _remotingSSLKeyStorePassword);
+      _remotingSSLTrustStorePath = getString(e, "remoting-ssl-truststore-path", _remotingSSLTrustStorePath);
+      _remotingSSLTrustStorePassword = getString(e, "remoting-ssl-truststore-password", _remotingSSLTrustStorePassword);
 
       NodeList defaultInterceptors = e.getElementsByTagName("default-interceptors-config");
 

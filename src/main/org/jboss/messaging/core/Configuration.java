@@ -89,7 +89,19 @@ public class Configuration implements Serializable
 
    protected Boolean _remotingDisableInvm = false;
    
+   protected Boolean _remotingEnableSSL = false;
+
+   protected String _remotingSSLKeyStorePath = null;
+
+   protected String _remotingSSLKeyStorePassword = null;
+
+   protected String _remotingSSLTrustStorePath = null;
+
+   protected String _remotingSSLTrustStorePassword = null;
+
    private static final String REMOTING_DISABLE_INVM_SYSPROP_KEY = "jbm.remoting.disable.invm";
+
+   public static final String REMOTING_ENABLE_SSL_SYSPROP_KEY = "jbm.remoting.enable.ssl";
 
    public  void addPropertyChangeListener(
          PropertyChangeListener listener)
@@ -295,6 +307,17 @@ public class Configuration implements Serializable
       {
          configuration.setInvmDisabled(_remotingDisableInvm);
       }
+      if (System.getProperty(REMOTING_ENABLE_SSL_SYSPROP_KEY) != null)
+      {
+         configuration.setSSLEnabled(Boolean.parseBoolean(System.getProperty(REMOTING_ENABLE_SSL_SYSPROP_KEY)));
+      } else 
+      {
+         configuration.setSSLEnabled(_remotingEnableSSL);
+      }
+      configuration.setKeyStorePath(_remotingSSLKeyStorePath);
+      configuration.setKeyStorePassword(_remotingSSLKeyStorePassword);
+      configuration.setTrustStorePath(_remotingSSLTrustStorePath);
+      configuration.setTrustStorePassword(_remotingSSLTrustStorePassword);      
       return configuration;
    }
 

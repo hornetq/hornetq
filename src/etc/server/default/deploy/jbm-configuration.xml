@@ -62,6 +62,12 @@ You can safely comment them out if your post office is non clustered -->
       <remoting-timeout>5</remoting-timeout>
       <!-- true to disable invm communication when the client and the server are in the same JVM -->
       <remoting-disable-invm>false</remoting-disable-invm>
+      <!--  if ssl is enabled, all remoting-ssl-* properties must be set -->
+      <remoting-enable-ssl>false</remoting-enable-ssl>
+      <remoting-ssl-keystore-path>messaging.keystore</remoting-ssl-keystore-path>      
+      <remoting-ssl-keystore-password>secureexample</remoting-ssl-keystore-password>      
+      <remoting-ssl-truststore-path>messaging.truststore</remoting-ssl-truststore-path>      
+      <remoting-ssl-truststore-password>secureexample</remoting-ssl-truststore-password>      
 
    </configuration>
 
