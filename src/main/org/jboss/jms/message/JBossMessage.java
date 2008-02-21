@@ -879,20 +879,7 @@ public class JBossMessage implements javax.jms.Message
          if (name.length() > 3)
          {
             char c = name.charAt(3);
-            if (c == 'X')
-            {
-               if (!name.equals("JMSXGroupID") &&
-                   !name.equals("JMSXGroupSeq") &&
-                   !name.equals("JMSXDeliveryCount"))
-               {
-                  throw new JMSException("Can only set JMSXGroupId, JMSXGroupSeq, JMSXDeliveryCount");
-               }    
-            }
-            else if (c == '_')
-            {
-               //OK 
-            }
-            else
+            if (c != 'X' && c != '_')
             {
                //See http://java.sun.com/javaee/5/docs/api/
                //(java.jms.Message javadoc)

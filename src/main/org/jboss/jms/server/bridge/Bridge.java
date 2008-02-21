@@ -1405,16 +1405,7 @@ public class Bridge implements MessagingComponent
 
    			String propName = (String)entry.getKey();
 
-   			//It's illegal (or pointless) to set properties beginning with JMSX
-   			//apart from JMSXGroupID, JMSXGroupSeq and JMSXDeliveryCount
-   			//Also there's no point in setting JMSXDeliveryCount since it will get reset
-   			//before the msg is received anyway
-   			if (!propName.startsWith("JMSX") ||
-   					propName.equals("JMSXGroupID") ||
-   					propName.equals("JMSXGroupSeq"));
-   			{
-   				msg.setObjectProperty(propName, entry.getValue());
-   			}
+   			msg.setObjectProperty(propName, entry.getValue());   			
    		}
    	}
 

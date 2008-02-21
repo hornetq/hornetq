@@ -82,6 +82,7 @@ public class MessageHeaderTestBase extends JBMServerTestCase
       m.setFloatProperty("floatProperty", 6);
       m.setDoubleProperty("doubleProperty", 7);
       m.setStringProperty("stringPoperty", "someString");
+      m.setStringProperty("JMSXNaughtyProperty", "aardvark");
    }
 
    /**

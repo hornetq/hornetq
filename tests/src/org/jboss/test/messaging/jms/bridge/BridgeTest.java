@@ -997,7 +997,50 @@ public class BridgeTest extends BridgeTestBase
                   
          m = cons.receive(5000);
          
-         assertNull(m);                          
+         assertNull(m);            
+         
+         tm = sessSource.createTextMessage("blahmessage3");
+
+         final boolean myBool = false;
+         final byte myByte = (byte)23;
+         final double myDouble = 17625765d;
+         final float myFloat = 87127.23f;
+         final int myInt = 123;
+         final long myLong = 81728712;
+         final short myShort = (short)88;
+         final String myString = "ojweodewj";
+         final String myJMSX = "aardvark";
+
+         tm.setBooleanProperty("mybool", myBool);
+         tm.setByteProperty("mybyte", myByte);
+         tm.setDoubleProperty("mydouble", myDouble);
+         tm.setFloatProperty("myfloat", myFloat);
+         tm.setIntProperty("myint", myInt);
+         tm.setLongProperty("mylong", myLong);
+         tm.setShortProperty("myshort", myShort);
+         tm.setStringProperty("mystring", myString);
+
+         tm.setStringProperty("JMSXMyNaughtyJMSXProperty", myJMSX);
+
+         prod.send(tm);
+
+         tm = (TextMessage)cons.receive(1000);
+
+         assertNotNull(tm);
+
+         assertEquals("blahmessage3", tm.getText());
+
+         assertEquals(myBool, tm.getBooleanProperty("mybool"));
+         assertEquals(myByte, tm.getByteProperty("mybyte"));
+         assertEquals(myDouble, tm.getDoubleProperty("mydouble"));
+         assertEquals(myFloat, tm.getFloatProperty("myfloat"));
+         assertEquals(myInt, tm.getIntProperty("myint"));
+         assertEquals(myLong, tm.getLongProperty("mylong"));
+         assertEquals(myShort, tm.getShortProperty("myshort"));
+         assertEquals(myString, tm.getStringProperty("mystring"));
+         assertEquals(myJMSX, tm.getStringProperty("JMSXMyNaughtyJMSXProperty"));
+
+         m = cons.receive(5000);
          
       }
       finally
