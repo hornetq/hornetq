@@ -37,7 +37,7 @@ import org.jboss.jms.client.SelectorTranslator;
 import org.jboss.jms.client.api.ClientBrowser;
 import org.jboss.jms.client.api.ClientConsumer;
 import org.jboss.jms.client.api.ClientProducer;
-import org.jboss.jms.client.remoting.MessagingRemotingConnection;
+import org.jboss.jms.client.remoting.RemotingConnection;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
@@ -119,7 +119,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    private ExecutorService executor;
 
-   private MessagingRemotingConnection remotingConnection;
+   private RemotingConnection remotingConnection;
          
    private ClientConnectionInternal connection;
    

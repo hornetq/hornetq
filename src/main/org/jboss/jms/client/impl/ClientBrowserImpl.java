@@ -22,8 +22,9 @@
 package org.jboss.jms.client.impl;
 
 import org.jboss.jms.client.api.ClientBrowser;
-import org.jboss.jms.client.remoting.MessagingRemotingConnection;
+import org.jboss.jms.client.remoting.RemotingConnection;
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionBrowserHasNextMessageMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionBrowserHasNextMessageResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionBrowserNextMessageBlockMessage;
@@ -31,7 +32,6 @@ import org.jboss.messaging.core.remoting.wireformat.SessionBrowserNextMessageBlo
 import org.jboss.messaging.core.remoting.wireformat.SessionBrowserNextMessageMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionBrowserNextMessageResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionBrowserResetMessage;
-import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
 import org.jboss.messaging.util.MessagingException;
 
 /**
@@ -53,7 +53,7 @@ public class ClientBrowserImpl implements ClientBrowser
    
 	private ClientSessionInternal session;
 	
-	private MessagingRemotingConnection remotingConnection;
+	private RemotingConnection remotingConnection;
 	
 	private volatile boolean closed;
 	
@@ -61,7 +61,7 @@ public class ClientBrowserImpl implements ClientBrowser
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientBrowserImpl(MessagingRemotingConnection remotingConnection, ClientSessionInternal session, String id)
+   public ClientBrowserImpl(RemotingConnection remotingConnection, ClientSessionInternal session, String id)
    {
       this.remotingConnection = remotingConnection;
       

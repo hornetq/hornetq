@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.client.api.FailureListener;
-import org.jboss.jms.client.remoting.MessagingRemotingConnection;
+import org.jboss.jms.client.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
 import org.jboss.messaging.core.remoting.wireformat.ConnectionCreateSessionMessage;
 import org.jboss.messaging.core.remoting.wireformat.ConnectionCreateSessionResponseMessage;
@@ -63,7 +63,7 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    
    private int serverID;
 
-   private MessagingRemotingConnection remotingConnection;
+   private RemotingConnection remotingConnection;
 
    private boolean strictTck;
    
@@ -76,7 +76,7 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    // Constructors ---------------------------------------------------------------------------------
 
    public ClientConnectionImpl(String id, int serverID, boolean strictTck,
-                               MessagingRemotingConnection connection)
+                               RemotingConnection connection)
    {
       this.id = id;
       
@@ -160,7 +160,7 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       return serverID;
    }
    
-   public MessagingRemotingConnection getRemotingConnection()
+   public RemotingConnection getRemotingConnection()
    {
       return remotingConnection;
    }

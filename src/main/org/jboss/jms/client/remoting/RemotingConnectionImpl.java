@@ -45,11 +45,11 @@ import org.jboss.messaging.util.MessagingException;
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public class MessagingRemotingConnection
+public class RemotingConnectionImpl implements RemotingConnection
 {
    // Constants ------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(MessagingRemotingConnection.class);
+   private static final Logger log = Logger.getLogger(RemotingConnectionImpl.class);
    
    // Static ---------------------------------------------------------------------------------------
 
@@ -65,7 +65,7 @@ public class MessagingRemotingConnection
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public MessagingRemotingConnection(RemotingConfiguration remotingConfig) throws Exception
+   public RemotingConnectionImpl(RemotingConfiguration remotingConfig) throws Exception
    {
       assert remotingConfig != null;
       
@@ -191,8 +191,7 @@ public class MessagingRemotingConnection
 
    // Private --------------------------------------------------------------------------------------
 
-   private AbstractPacket send(AbstractPacket packet, boolean oneWay)
-   throws Exception
+   private AbstractPacket send(AbstractPacket packet, boolean oneWay) throws Exception
    {
       assert packet != null;
       checkConnected();

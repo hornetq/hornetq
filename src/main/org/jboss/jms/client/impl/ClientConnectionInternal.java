@@ -7,7 +7,7 @@
 package org.jboss.jms.client.impl;
 
 import org.jboss.jms.client.api.ClientConnection;
-import org.jboss.jms.client.remoting.MessagingRemotingConnection;
+import org.jboss.jms.client.remoting.RemotingConnection;
 
 /**
  * 
@@ -20,7 +20,7 @@ public interface ClientConnectionInternal extends ClientConnection
 {
    int getServerID();
    
-   MessagingRemotingConnection getRemotingConnection();
+   RemotingConnection getRemotingConnection();
 
    void removeChild(String id);
 }

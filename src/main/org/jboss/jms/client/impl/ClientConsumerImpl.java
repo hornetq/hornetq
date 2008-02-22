@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.jms.client.api.MessageHandler;
-import org.jboss.jms.client.remoting.MessagingRemotingConnection;
+import org.jboss.jms.client.remoting.RemotingConnection;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.PriorityLinkedList;
 import org.jboss.messaging.core.impl.PriorityLinkedListImpl;
@@ -61,48 +61,50 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // Attributes
    // -----------------------------------------------------------------------------------
 
-   private String id;
+   private final ClientSessionInternal session;
+      
+   private final String id;
    
-   private ClientSessionInternal session;
+   private final ExecutorService sessionExecutor;
    
-   private PriorityLinkedList<DeliverMessage> buffer = new PriorityLinkedListImpl<DeliverMessage>(10);
+   private final RemotingConnection remotingConnection;
+   
+   private final boolean direct;
+   
+   private final int tokenBatchSize;
+   
+   private final PriorityLinkedList<DeliverMessage> buffer = new PriorityLinkedListImpl<DeliverMessage>(10);
    
    private volatile Thread receiverThread;
    
+   private volatile Thread onMessageThread;
+      
    private volatile MessageHandler handler;
    
    private volatile boolean closed;
-    
-   private ExecutorService sessionExecutor;
+      
+   private volatile long ignoreDeliveryMark = -1;
    
-   private MessagingRemotingConnection remotingConnection;
-   
-   private long ignoreDeliveryMark = -1;
-   
-   private boolean direct;
-   
-   private Thread onMessageThread;
-   
-   private int tokensToSend;
-   
-   private int tokenBatchSize;
-   
-   // Static
-   // ---------------------------------------------------------------------------------------
+   private volatile int tokensToSend;   
 
    // Constructors
    // ---------------------------------------------------------------------------------
 
-   public ClientConsumerImpl(ClientSessionInternal session, String id,
-                             ExecutorService sessionExecutor,
-                             MessagingRemotingConnection remotingConnection,
-                             boolean direct, int tokenBatchSize)
+   public ClientConsumerImpl(final ClientSessionInternal session, final String id,
+                             final ExecutorService sessionExecutor,
+                             final RemotingConnection remotingConnection,
+                             final boolean direct, final int tokenBatchSize)
    {
       this.id = id;
+      
       this.session = session;
+      
       this.sessionExecutor = sessionExecutor;
+      
       this.remotingConnection = remotingConnection;
+      
       this.direct = direct;
+      
       this.tokenBatchSize = tokenBatchSize;
    }
 
@@ -310,7 +312,10 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          {
          	//Execute using executor
          	
-         	buffer.addLast(message, message.getMessage().getPriority());
+         	synchronized (buffer)
+         	{
+         		buffer.addLast(message, message.getMessage().getPriority());
+         	}
          	            	
          	sessionExecutor.execute(new Runnable() { public void run() { callOnMessage(); } } );
          }
@@ -328,7 +333,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }      
    }
 
-   public synchronized void recover(long lastDeliveryID)
+   public void recover(long lastDeliveryID)
    {
       ignoreDeliveryMark = lastDeliveryID;
 
@@ -371,7 +376,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    	
       if (Thread.currentThread() == onMessageThread)
       {
-         // If called from inside onMessage then return immediately - otherwise would block forever
+         // If called from inside onMessage then return immediately - otherwise would block
          return;
       }
 
@@ -401,7 +406,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          throw new MessagingException(MessagingException.OBJECT_CLOSED, "Consumer is closed");
       }
    }
-   
+        
    private void callOnMessage()
    {
    	try
@@ -415,7 +420,12 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    		//ordering. If we just added a Runnable with the message to the executor immediately as we get it
    		//we could not do that
    		
-   		DeliverMessage message = buffer.removeFirst();
+   		DeliverMessage message;
+   		
+   		synchronized (buffer)
+   		{
+   		   message = buffer.removeFirst();
+   		}
    		
    		if (message != null)
    		{      		

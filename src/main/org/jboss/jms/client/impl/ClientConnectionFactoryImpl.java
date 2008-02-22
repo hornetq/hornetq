@@ -25,7 +25,8 @@ import java.io.Serializable;
 
 import org.jboss.jms.client.api.ClientConnection;
 import org.jboss.jms.client.api.ClientConnectionFactory;
-import org.jboss.jms.client.remoting.MessagingRemotingConnection;
+import org.jboss.jms.client.remoting.RemotingConnectionImpl;
+import org.jboss.jms.client.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
@@ -104,10 +105,10 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
       
       byte v = version.getProviderIncrementingVersion();
                        
-      MessagingRemotingConnection remotingConnection = null;
+      RemotingConnection remotingConnection = null;
       try
       {
-         remotingConnection = new MessagingRemotingConnection(remotingConfig);
+         remotingConnection = new RemotingConnectionImpl(remotingConfig);
        
          remotingConnection.start();
          
