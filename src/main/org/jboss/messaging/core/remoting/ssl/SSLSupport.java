@@ -124,6 +124,9 @@ public class SSLSupport
    private static KeyStore loadKeystore(String keystorePath,
          String keystorePassword) throws Exception
    {
+      assert keystorePath != null;
+      assert keystorePassword != null;
+      
       KeyStore ks = KeyStore.getInstance("JKS");
       InputStream in = null;
       try
@@ -158,6 +161,8 @@ public class SSLSupport
 
    private static URL validateStoreURL(String storePath) throws Exception
    {
+      assert storePath != null;
+      
       // First see if this is a URL
       try
       {

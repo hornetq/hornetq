@@ -78,7 +78,7 @@ public class FilterChainSupport
          DefaultIoFilterChainBuilder filterChain, boolean client,
          String keystorePath, String keystorePassword, String trustStorePath, String trustStorePassword) throws Exception
    {
-      SSLContext context = SSLSupport.getInstance(!client, keystorePath, keystorePassword,
+      SSLContext context = SSLSupport.getInstance(client, keystorePath, keystorePassword,
             trustStorePath, trustStorePassword);
       SslFilter filter = new SslFilter(context);
       if (client)
