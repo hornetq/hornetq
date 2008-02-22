@@ -21,7 +21,11 @@
  */
 package org.jboss.jms.server.bridge;
 
+import javax.jms.Destination;
+import javax.jms.Topic;
 import javax.management.ObjectName;
+import javax.naming.Context;
+import javax.naming.InitialContext;
 
 import org.jboss.messaging.core.MessagingComponent;
 import org.jboss.messaging.util.Logger;
@@ -311,10 +315,28 @@ public class BridgeService implements BridgeMBean
      // Properties sourceProps = (Properties)server.getAttribute(sourceProviderLoader, "Properties");
       
      // Properties targetProps = (Properties)server.getAttribute(targetProviderLoader, "Properties");
+
+      /* 
+      // JBMESSAGING-1183: set the factory refs according to the destinations types
+      Context icSource = new InitialContext(sourceProps);      
+      Context icTarget = new InitialContext(targetProps);
+      Destination sourceDest = (Destination)icSource.lookup(sourceDestinationLookup);
+      Destination targetDest = (Destination)icTarget.lookup(targetDestinationLookup);
+      String sourceFactoryRef = "QueueFactoryRef";
+      if(sourceDest instanceof Topic)
+      {
+         sourceFactoryRef = "TopicFactoryRef";
+      }
+      String targetFactoryRef = "QueueFactoryRef";
+      if(targetDest instanceof Topic)
+      {
+         targetFactoryRef = "TopicFactoryRef";
+      }
+
+      String sourceCFRef = (String)server.getAttribute(sourceProviderLoader, sourceFactoryRef);
       
-      //String sourceCFRef = (String)server.getAttribute(sourceProviderLoader, "FactoryRef");
-      
-      //String targetCFRef = (String)server.getAttribute(targetProviderLoader, "FactoryRef");
+      String targetCFRef = (String)server.getAttribute(targetProviderLoader, targetFactoryRef);
+      */
       
       //ConnectionFactoryFactory sourceCff =
       //   new JNDIConnectionFactoryFactory(sourceProps, sourceCFRef);
