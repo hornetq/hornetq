@@ -23,12 +23,15 @@ package org.jboss.messaging.core.impl.test.timing;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.impl.QueueImpl;
 import org.jboss.messaging.core.impl.test.unit.fakes.FakeConsumer;
 import org.jboss.messaging.test.unit.UnitTestCase;
+import org.jboss.messaging.util.Logger;
 
 /**
  * 
@@ -42,6 +45,24 @@ import org.jboss.messaging.test.unit.UnitTestCase;
 public class QueueTest extends UnitTestCase
 {
    private static final long TIMEOUT = 10000;
+   
+   private static final Logger log = Logger.getLogger(QueueTest.class);
+   
+   private ScheduledExecutorService scheduledExecutor;
+   
+   public void setUp() throws Exception
+   {
+   	super.setUp();
+   	
+   	scheduledExecutor = new ScheduledThreadPoolExecutor(1);
+   }
+   
+   public void tearDown() throws Exception
+   {
+   	super.tearDown();
+   	
+   	scheduledExecutor.shutdownNow();
+   }
    
    // The tests ----------------------------------------------------------------
 
@@ -57,7 +78,7 @@ public class QueueTest extends UnitTestCase
    
    public void testScheduledNoConsumer() throws Exception
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1);
+      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
            
       //Send one scheduled
       
@@ -123,7 +144,7 @@ public class QueueTest extends UnitTestCase
    
    private void testScheduled(boolean direct)
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1);
+      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
       
       FakeConsumer consumer = null;
       
@@ -190,7 +211,6 @@ public class QueueTest extends UnitTestCase
       refs.clear();
       consumer.getReferences().clear();
                   
-      
       MessageReference ref = consumer.waitForNextReference(TIMEOUT);
       assertEquals(ref7, ref);
       long now2 = System.currentTimeMillis();

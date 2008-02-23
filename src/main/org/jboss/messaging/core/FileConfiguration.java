@@ -61,6 +61,7 @@ public class FileConfiguration extends Configuration
       _strictTck = getBoolean(e, "strict-tck", _strictTck);
       _postOfficeName = getString(e, "post-office-name", _postOfficeName);
       _clustered = getBoolean(e, "clustered", _clustered);
+      _scheduledThreadPoolMaxSize = getInteger(e, "scheduled-executor-max-pool-size", _scheduledThreadPoolMaxSize);
       _stateTimeout = getLong(e, "state-timeout", _stateTimeout);
       _castTimeout = getLong(e, "cast-timeout", _castTimeout);
       _groupName = getString(e, "group-name", _groupName);

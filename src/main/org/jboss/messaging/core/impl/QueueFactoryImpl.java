@@ -21,6 +21,8 @@
   */
 package org.jboss.messaging.core.impl;
 
+import java.util.concurrent.ScheduledExecutorService;
+
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.QueueFactory;
@@ -37,13 +39,22 @@ import org.jboss.messaging.util.HierarchicalRepository;
  */
 public class QueueFactoryImpl implements QueueFactory
 {
-   HierarchicalRepository<QueueSettings> queueSettingsRepository;
+   private HierarchicalRepository<QueueSettings> queueSettingsRepository;
+   
+   private ScheduledExecutorService scheduledExecutor;
 
-
+   public QueueFactoryImpl(ScheduledExecutorService scheduledExecutor)
+   {
+      this();
+      
+      this.scheduledExecutor = scheduledExecutor;
+   }
+   
    public QueueFactoryImpl()
    {
       queueSettingsRepository = new HierarchicalObjectRepository<QueueSettings>();
-      queueSettingsRepository.setDefault(new QueueSettings());
+      
+      queueSettingsRepository.setDefault(new QueueSettings());      
    }
 
    public Queue createQueue(long id, String name, Filter filter,
@@ -51,11 +62,16 @@ public class QueueFactoryImpl implements QueueFactory
    {
       QueueSettings queueSettings = queueSettingsRepository.getMatch(name);
 
-      Queue queue =  new QueueImpl(id, name, filter, queueSettings.isClustered(), durable, temporary, queueSettings.getMaxSize());
+      Queue queue =  new QueueImpl(id, name, filter, queueSettings.isClustered(),
+      		                       durable, temporary, queueSettings.getMaxSize(),
+      		                       scheduledExecutor);
       
       queue.setMaxDeliveryAttempts(queueSettings.getMaxDeliveryAttempts());
+      
       queue.setMessageCounterHistoryDayLimit(queueSettings.getMessageCounterHistoryDayLimit());
+      
       queue.setRedeliveryDelay(queueSettings.getRedeliveryDelay());                           
+      
       queue.setDistributionPolicy(queueSettings.getDistributionPolicy());
 
       return queue;

@@ -68,6 +68,8 @@ public class Configuration implements Serializable
    protected String _postOfficeName;
 
    protected Boolean _clustered = false;
+   
+   protected Integer _scheduledThreadPoolMaxSize = 30;
 
    protected Long _stateTimeout = (long) 5000;
 
@@ -212,6 +214,16 @@ public class Configuration implements Serializable
    public  Boolean isClustered()
    {
       return _clustered;
+   }
+   
+   public Integer getScheduledThreadPoolMaxSize()
+   {
+   	return _scheduledThreadPoolMaxSize;
+   }
+   
+   public void setScheduledThreadPoolMaxSize(int size)
+   {
+   	this._scheduledThreadPoolMaxSize = size;
    }
 
    public  void setClustered(Boolean clustered)

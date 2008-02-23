@@ -36,6 +36,8 @@ by a particular consumer from a particular producer? -->
       <post-office-name>JMS post office</post-office-name>
 
       <clustered>false</clustered>
+      
+      <scheduled-executor-max-pool-size>30</scheduled-executor-max-pool-size>
 
       <!-- All the remaining properties only have to be specified if the post office is clustered.
 You can safely comment them out if your post office is non clustered -->

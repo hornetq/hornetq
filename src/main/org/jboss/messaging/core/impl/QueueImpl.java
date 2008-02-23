@@ -27,9 +27,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.jms.server.MessagingTimeoutFactory;
 import org.jboss.messaging.core.Consumer;
 import org.jboss.messaging.core.DistributionPolicy;
 import org.jboss.messaging.core.Filter;
@@ -38,8 +40,6 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.PriorityLinkedList;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.util.Logger;
-import org.jboss.util.timeout.Timeout;
-import org.jboss.util.timeout.TimeoutTarget;
 
 /**
  * 
@@ -74,7 +74,7 @@ public class QueueImpl implements Queue
    
    protected List<Consumer> consumers;
    
-   protected Set<Timeout> scheduledTimeouts;
+   protected Set<ScheduledDeliveryRunnable> scheduledRunnables;
    
    protected DistributionPolicy distributionPolicy;
    
@@ -87,6 +87,8 @@ public class QueueImpl implements Queue
    private AtomicInteger messagesAdded = new AtomicInteger(0);
    
    private AtomicInteger deliveringCount = new AtomicInteger(0);
+   
+   private ScheduledExecutorService scheduledExecutor;
          
    // ---------
    
@@ -100,6 +102,13 @@ public class QueueImpl implements Queue
    
    private int messageCounterHistoryDayLimit;
       
+   public QueueImpl(long id, String name, Filter filter, boolean clustered,
+                    boolean durable, boolean temporary, int maxSize, ScheduledExecutorService scheduledExecutor)
+   {
+   	this(id, name, filter, clustered, durable, temporary, maxSize);
+   	
+   	this.scheduledExecutor = scheduledExecutor;
+   }
    
    public QueueImpl(long id, String name, Filter filter, boolean clustered,
                     boolean durable, boolean temporary, int maxSize)
@@ -123,7 +132,7 @@ public class QueueImpl implements Queue
       
       consumers = new ArrayList<Consumer>();
       
-      scheduledTimeouts = new HashSet<Timeout>();
+      scheduledRunnables = new HashSet<ScheduledDeliveryRunnable>();
       
       distributionPolicy = new RoundRobinDistributionPolicy();
       
@@ -295,42 +304,46 @@ public class QueueImpl implements Queue
    {
       messageReferences.clear();
       
-      if (!this.scheduledTimeouts.isEmpty())
+      if (!scheduledRunnables.isEmpty())
       {
-         Set<Timeout> clone = new HashSet<Timeout>(scheduledTimeouts);
+         Set<ScheduledDeliveryRunnable> clone = new HashSet<ScheduledDeliveryRunnable>(scheduledRunnables);
          
-         for (Timeout timeout: clone)
+         for (ScheduledDeliveryRunnable runnable: clone)
          {
-            timeout.cancel();
+            runnable.cancel();
          }
          
-         scheduledTimeouts.clear();
+         scheduledRunnables.clear();
       }
    }
 
    public synchronized void removeReference(MessageReference messageReference)
    {
       messageReferences.remove(messageReference , messageReference.getMessage().getPriority());
-      if (!this.scheduledTimeouts.isEmpty())
+      
+      if (!scheduledRunnables.isEmpty())
       {
-         Set<Timeout> clone = new HashSet<Timeout>(scheduledTimeouts);
+         Set<ScheduledDeliveryRunnable> clone = new HashSet<ScheduledDeliveryRunnable>(scheduledRunnables);
 
-         for (Timeout timeout: clone)
+         for (ScheduledDeliveryRunnable runnable: clone)
          {
-            timeout.cancel();
+         	runnable.cancel();
          }
 
-         scheduledTimeouts.clear();
+         scheduledRunnables.clear();
       }
    }
 
+   //FIXME - probably better with an iterator
    public synchronized List<MessageReference> removeReferences(Filter filter)
    {
       List<MessageReference> allRefs = list(filter);
+      
       for (MessageReference messageReference : allRefs)
       {
          removeReference(messageReference);
       }
+      
       return allRefs;
    }
 
@@ -356,13 +369,12 @@ public class QueueImpl implements Queue
 
    public synchronized int getMessageCount()
    {
-     // log.info("mr: " + messageReferences.size() + " sc: " + getScheduledCount() + " dc: " + getDeliveringCount());
       return messageReferences.size() + getScheduledCount() + getDeliveringCount();
    }
    
    public synchronized int getScheduledCount()
    {
-      return scheduledTimeouts.size();
+      return scheduledRunnables.size();
    }
    
    public int getDeliveringCount()
@@ -382,7 +394,7 @@ public class QueueImpl implements Queue
 
    public synchronized void setMaxSize(int maxSize)
    {
-      int num = messageReferences.size() + scheduledTimeouts.size();
+      int num = messageReferences.size() + scheduledRunnables.size();
       
       if (maxSize < num)
       {
@@ -496,18 +508,22 @@ public class QueueImpl implements Queue
              
    private boolean checkAndSchedule(MessageReference ref)
    {
-      if (ref.getScheduledDeliveryTime() > System.currentTimeMillis())
+   	long now = System.currentTimeMillis();
+   	
+      if (scheduledExecutor != null && ref.getScheduledDeliveryTime() > now)
       {      
          if (trace) { log.trace("Scheduling delivery for " + ref + " to occur at " + ref.getScheduledDeliveryTime()); }
-         
-         // Schedule the cancel to actually occur at the specified time. 
+           
+         long delay = ref.getScheduledDeliveryTime() - now;
             
-         Timeout timeout =
-            MessagingTimeoutFactory.instance.getFactory().
-               schedule(ref.getScheduledDeliveryTime(), new DeliverRefTimeoutTarget(ref));
+         ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(ref);
          
-         scheduledTimeouts.add(timeout);
-                       
+         scheduledRunnables.add(runnable);
+                  
+         Future<?> future = scheduledExecutor.schedule(runnable, delay, TimeUnit.MILLISECONDS);
+
+         runnable.setFuture(future);
+                  
          return true;
       }
       else
@@ -518,7 +534,7 @@ public class QueueImpl implements Queue
    
    private boolean checkFull()
    {
-      if (maxSize != -1 && (messageReferences.size() + scheduledTimeouts.size()) >= maxSize)
+      if (maxSize != -1 && (messageReferences.size() + scheduledRunnables.size()) >= maxSize)
       {
          if (trace) { log.trace(this + " queue is full, rejecting message"); }
          
@@ -565,7 +581,7 @@ public class QueueImpl implements Queue
          {
             throw new IllegalStateException("ClientConsumer.handle() should never return null");
          }
-         
+           
          if (status == HandleStatus.HANDLED)
          {
             deliveringCount.incrementAndGet();
@@ -597,29 +613,55 @@ public class QueueImpl implements Queue
    
    // Inner classes --------------------------------------------------------------------------
    
-   private class DeliverRefTimeoutTarget implements TimeoutTarget
+   private class ScheduledDeliveryRunnable implements Runnable
    {
       private MessageReference ref;
+      
+      private volatile Future<?> future;
+      
+      private boolean cancelled;
 
-      public DeliverRefTimeoutTarget(MessageReference ref)
+      public ScheduledDeliveryRunnable(MessageReference ref)
       {
          this.ref = ref;
       }
+      
+      public synchronized void setFuture(Future<?> future)
+      {
+      	if (cancelled)
+      	{
+      		future.cancel(false);
+      	}
+      	else
+      	{
+      		this.future = future;
+      	}
+      }
+      
+      public synchronized void cancel()
+      {
+      	if (future != null)
+      	{
+      		future.cancel(false);      		      		
+      	}
+      	
+      	cancelled = true;
+      }
 
-      public void timedOut(Timeout timeout)
+      public void run()
       {
          if (trace) { log.trace("Scheduled delivery timeout " + ref); }
          
-         synchronized (scheduledTimeouts)
+         synchronized (scheduledRunnables)
          {
-            boolean removed = scheduledTimeouts.remove(timeout);
+            boolean removed = scheduledRunnables.remove(this);
             
             if (!removed)
             {
-               throw new IllegalStateException("Failed to remove timeout " + timeout);
+            	log.warn("Failed to remove timeout " + this);
             }
          }
-              
+         
          ref.setScheduledDeliveryTime(0);
                   
          HandleStatus status = deliver(ref);

@@ -25,10 +25,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.jboss.aop.microcontainer.aspects.jmx.JMX;
 import org.jboss.jms.server.ConnectionManager;
-import org.jboss.jms.server.MessagingTimeoutFactory;
 import org.jboss.jms.server.SecurityStore;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.endpoint.MessagingServerPacketHandler;
@@ -36,7 +37,19 @@ import org.jboss.jms.server.security.NullAuthenticationManager;
 import org.jboss.jms.server.security.Role;
 import org.jboss.jms.server.security.SecurityMetadataStore;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.*;
+import org.jboss.messaging.core.Binding;
+import org.jboss.messaging.core.Configuration;
+import org.jboss.messaging.core.Filter;
+import org.jboss.messaging.core.MemoryManager;
+import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.MessagingServer;
+import org.jboss.messaging.core.NullPersistenceManager;
+import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.PostOffice;
+import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.QueueFactory;
+import org.jboss.messaging.core.QueueSettings;
+import org.jboss.messaging.core.ResourceManager;
 import org.jboss.messaging.core.impl.QueueFactoryImpl;
 import org.jboss.messaging.core.impl.ResourceManagerImpl;
 import org.jboss.messaging.core.impl.memory.SimpleMemoryManager;
@@ -53,8 +66,6 @@ import org.jboss.messaging.util.HierarchicalObjectRepository;
 import org.jboss.messaging.util.HierarchicalRepository;
 import org.jboss.messaging.util.Version;
 import org.jboss.security.AuthenticationManager;
-
-import javax.jms.Destination;
 
 /**
  * A Messaging Server
@@ -105,8 +116,9 @@ public class MessagingServerImpl implements MessagingServer
    private Configuration configuration = new Configuration();
    private HierarchicalRepository<HashSet<Role>> securityRepository = new HierarchicalObjectRepository<HashSet<Role>>();
    private HierarchicalRepository<QueueSettings> queueSettingsRepository = new HierarchicalObjectRepository<QueueSettings>();
-   private QueueFactory queueFactory = new QueueFactoryImpl();
+   private QueueFactory queueFactory;
    private ResourceManager resourceManager = new ResourceManagerImpl(0);
+   private ScheduledExecutorService scheduledExecutor;
 
    // Constructors ---------------------------------------------------------------------------------
    /**
@@ -163,6 +175,8 @@ public class MessagingServerImpl implements MessagingServer
          queueSettingsDeployer = new QueueSettingsDeployer();
          queueSettingsRepository.setDefault(new QueueSettings());
          queueSettingsDeployer.setQueueSettingsRepository(queueSettingsRepository);
+         scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize());
+         queueFactory = new QueueFactoryImpl(scheduledExecutor);
          queueFactory.setQueueSettingsRepository(queueSettingsRepository);
          connectionManager = new SimpleConnectionManager();
          memoryManager = new SimpleMemoryManager();
@@ -241,12 +255,12 @@ public class MessagingServerImpl implements MessagingServer
          messageCounterManager = null;
          postOffice.stop();
          postOffice = null;
+         scheduledExecutor.shutdown();
+         scheduledExecutor = null;
          if (createTransport)
          {
             remotingService.stop();
          }
-         MessagingTimeoutFactory.instance.reset();
-
          log.info("JMS " + this + " stopped");
       }
       catch (Throwable t)

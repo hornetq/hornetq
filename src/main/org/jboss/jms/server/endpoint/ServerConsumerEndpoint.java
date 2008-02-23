@@ -270,30 +270,6 @@ public class ServerConsumerEndpoint implements Consumer
       }
    }
     
-//   void localClose() throws Exception
-//   {
-//      if (trace) { log.trace(this + " grabbed the main lock in close() " + this); }
-//
-//      messageQueue.removeConsumer(this);
-//      
-//      sessionEndpoint.getConnectionEndpoint().getMessagingServer().getRemotingService().getDispatcher().unregister(id);     
-//      
-//      if (autoDeleteQueue)
-//      {
-//         if (messageQueue.getConsumerCount() == 0)
-//         {
-//            MessagingServer server = sessionEndpoint.getConnectionEndpoint().getMessagingServer();
-//            
-//            server.getPostOffice().removeBinding(messageQueue.getName());
-//            
-//            if (messageQueue.isDurable())
-//            {
-//               server.getPersistenceManager().deleteAllReferences(messageQueue);
-//            }
-//         }
-//      }
-//   }
-
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------

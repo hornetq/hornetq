@@ -239,8 +239,7 @@ public class ServerSessionEndpoint
 
    synchronized void handleDelivery(MessageReference ref, ServerConsumerEndpoint consumer) throws Exception
    {
-      Delivery delivery = new DeliveryImpl(ref, consumer.getID(),
-            deliveryIDSequence++, sender);
+      Delivery delivery = new DeliveryImpl(ref, consumer.getID(), deliveryIDSequence++, sender);
 
       deliveries.add(delivery);
 
