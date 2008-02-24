@@ -24,16 +24,10 @@ package org.jboss.jms.server.endpoint;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.CREATECONNECTION;
 
 import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.jms.server.ConnectionManager;
-import org.jboss.jms.server.SecurityStore;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.PersistenceManager;
-import org.jboss.messaging.core.PostOffice;
-import org.jboss.messaging.core.ResourceManager;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
-import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
 import org.jboss.messaging.util.MessagingException;
@@ -49,34 +43,11 @@ public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
 {
    private static final Logger log = Logger.getLogger(MessagingServerPacketHandler.class);
    
-   private final PacketDispatcher dispatcher;
-   
-   private final ResourceManager resourceManager;
-   
-   private final PersistenceManager persistenceManager;
-   
-   private final PostOffice postOffice;
-   
-   private final SecurityStore securityStore;
-   
-   private final ConnectionManager connectionManager;
+   private final MessagingServer server;
 
-   public MessagingServerPacketHandler(final PacketDispatcher dispatcher, final ResourceManager resourceManager,
-   		                              final PersistenceManager persistenceManager,
-   		                              final PostOffice postOffice, final SecurityStore securityStore,
-   		                              final ConnectionManager connectionManager)
+   public MessagingServerPacketHandler(final MessagingServer server)
    {
-      this.dispatcher = dispatcher;
-      
-      this.resourceManager = resourceManager;
-      
-      this.persistenceManager = persistenceManager;
-      
-      this.postOffice = postOffice;
-      
-      this.securityStore = securityStore;
-      
-      this.connectionManager = connectionManager;
+      this.server = server;
    }
    
    /*
@@ -102,9 +73,10 @@ public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
       {
          CreateConnectionRequest request = (CreateConnectionRequest) packet;
          
-         response = createConnection(request
-               .getUsername(), request.getPassword(), request.getRemotingSessionID(),
-               request.getClientVMID(), request.getPrefetchSize(), sender.getRemoteAddress());
+         response = server.createConnection(request.getUsername(), request.getPassword(),
+         		                             request.getRemotingSessionID(),
+                                            request.getClientVMID(), request.getPrefetchSize(),
+                                            sender.getRemoteAddress());
       }     
       else
       {
@@ -114,32 +86,5 @@ public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
       
       return response;
    }
-
-   private CreateConnectionResponse createConnection(final String username, final String password,
-                              final String remotingClientSessionID, final String clientVMID, final int prefetchSize,
-                              final String clientAddress)
-      throws Exception
-   {
-      log.trace("creating a new connection for user " + username);
-
-      // Authenticate. Successful autentication will place a new SubjectContext on thread local,
-      // which will be used in the authorization process. However, we need to make sure we clean
-      // up thread local immediately after we used the information, otherwise some other people
-      // security my be screwed up, on account of thread local security stack being corrupted.
-
-      securityStore.authenticate(username, password);
-
-      // We don't need the SubjectContext on thread local anymore, clean it up
-      SecurityActions.popSubjectContext();
-
-      final ServerConnection connection =
-         new ServerConnectionEndpoint(username, password,
-                                      remotingClientSessionID, clientVMID, clientAddress,
-                                      prefetchSize, dispatcher, resourceManager, persistenceManager,
-                                      postOffice, securityStore, connectionManager);
-
-      dispatcher.register(new ServerConnectionPacketHandler(connection));
-
-      return new CreateConnectionResponse(connection.getID());
-   }
+  
 }

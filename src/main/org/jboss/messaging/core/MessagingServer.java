@@ -26,6 +26,7 @@ import java.util.HashSet;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.security.Role;
 import org.jboss.messaging.core.remoting.RemotingService;
+import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.util.HierarchicalRepository;
 import org.jboss.messaging.util.Version;
 
@@ -96,4 +97,8 @@ public interface MessagingServer extends MessagingComponent
    void removeAllMessagesForBinding(String name) throws Exception;
 
    void removeMessageForBinding(String name, Filter filter) throws Exception;
+   
+   CreateConnectionResponse createConnection(String username, String password,
+                                             String remotingClientSessionID, String clientVMID,
+                                             int prefetchSize, String clientAddress) throws Exception;
 }

@@ -244,8 +244,6 @@ public class ServerSessionEndpoint implements ServerSession
       deliveries.clear();
 
       connection.removeSession(id);
-
-      dispatcher.unregister(id);
    }
    
    public void promptDelivery(final Queue queue)

@@ -312,7 +312,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          {
          	//Execute using executor
          	
-         	synchronized (buffer)
+         	synchronized (this)
          	{
          		buffer.addLast(message, message.getMessage().getPriority());
          	}
@@ -323,11 +323,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       else
       {
       	 // Add it to the buffer
-
-      	buffer.addLast(message, message.getMessage().getPriority());
       	
       	synchronized (this)
       	{
+      		buffer.addLast(message, message.getMessage().getPriority());
+         	      		
       		notify();
       	}
       }      
@@ -422,7 +422,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    		
    		DeliverMessage message;
    		
-   		synchronized (buffer)
+   		synchronized (this)
    		{
    		   message = buffer.removeFirst();
    		}

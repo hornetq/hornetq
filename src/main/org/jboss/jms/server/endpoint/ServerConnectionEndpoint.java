@@ -230,6 +230,8 @@ public class ServerConnectionEndpoint implements ServerConnection
       {
          throw new IllegalStateException("Cannot find session with id " + sessionId + " to remove");
       }      
+      
+      dispatcher.unregister(sessionId);
    }
 
    public void addTemporaryQueue(final Queue queue)

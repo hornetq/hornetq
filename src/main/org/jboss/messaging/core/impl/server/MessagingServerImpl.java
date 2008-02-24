@@ -32,6 +32,9 @@ import org.jboss.aop.microcontainer.aspects.jmx.JMX;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.endpoint.MessagingServerPacketHandler;
+import org.jboss.jms.server.endpoint.ServerConnection;
+import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
+import org.jboss.jms.server.endpoint.ServerConnectionPacketHandler;
 import org.jboss.jms.server.security.NullAuthenticationManager;
 import org.jboss.jms.server.security.Role;
 import org.jboss.jms.server.security.SecurityMetadataStore;
@@ -58,6 +61,7 @@ import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
+import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.deployers.queue.QueueSettingsDeployer;
 import org.jboss.messaging.deployers.security.SecurityDeployer;
 import org.jboss.messaging.util.ExceptionUtil;
@@ -203,12 +207,8 @@ public class MessagingServerImpl implements MessagingServer
          memoryManager.start();
          postOffice.start();
          
-         MessagingServerPacketHandler serverPacketHandler =
-         	new MessagingServerPacketHandler(remotingService.getDispatcher(), resourceManager,
-         			                           persistenceManager, postOffice, securityStore,
-         			                           connectionManager);
-         
-         
+         MessagingServerPacketHandler serverPacketHandler =	new MessagingServerPacketHandler(this);
+                  
          getRemotingService().getDispatcher().register(serverPacketHandler);
 
          ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -500,6 +500,31 @@ public class MessagingServerImpl implements MessagingServer
    public String toString()
    {
       return "MessagingServer[" + configuration.getMessagingServerID() + "]";
+   }
+   
+   public CreateConnectionResponse createConnection(final String username, final String password,
+                                                    final String remotingClientSessionID, final String clientVMID,
+                                                    final int prefetchSize, final String clientAddress)
+      throws Exception
+   {
+      log.trace("creating a new connection for user " + username);
+      
+      // Authenticate. Successful autentication will place a new SubjectContext on thread local,
+      // which will be used in the authorization process. However, we need to make sure we clean
+      // up thread local immediately after we used the information, otherwise some other people
+      // security my be screwed up, on account of thread local security stack being corrupted.
+      
+      securityStore.authenticate(username, password);
+      
+      final ServerConnection connection =
+         new ServerConnectionEndpoint(username, password,
+                          remotingClientSessionID, clientVMID, clientAddress,
+                          prefetchSize, remotingService.getDispatcher(), resourceManager, persistenceManager,
+                          postOffice, securityStore, connectionManager);
+      
+      remotingService.getDispatcher().register(new ServerConnectionPacketHandler(connection));
+      
+      return new CreateConnectionResponse(connection.getID());
    }
 
    // Public ---------------------------------------------------------------------------------------
