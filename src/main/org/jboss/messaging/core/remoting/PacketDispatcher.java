@@ -102,7 +102,8 @@ public class PacketDispatcher
          callFilters(packet);
          handler.handle(packet, sender);
 
-      } else
+      }
+      else
       {
          log.error("Unhandled packet " + packet);
       }

@@ -30,7 +30,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.jboss.aop.microcontainer.aspects.jmx.JMX;
 import org.jboss.jms.server.ConnectionManager;
-import org.jboss.jms.server.SecurityStore;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.endpoint.MessagingServerPacketHandler;
 import org.jboss.jms.server.security.NullAuthenticationManager;
@@ -203,7 +202,13 @@ public class MessagingServerImpl implements MessagingServer
          remotingService.addFailureListener(connectionManager);
          memoryManager.start();
          postOffice.start();
-         MessagingServerPacketHandler serverPacketHandler = new MessagingServerPacketHandler(this);
+         
+         MessagingServerPacketHandler serverPacketHandler =
+         	new MessagingServerPacketHandler(remotingService.getDispatcher(), resourceManager,
+         			                           persistenceManager, postOffice, securityStore,
+         			                           connectionManager);
+         
+         
          getRemotingService().getDispatcher().register(serverPacketHandler);
 
          ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -318,20 +323,20 @@ public class MessagingServerImpl implements MessagingServer
 
    public void createQueue(String address, String name) throws Exception
    {
-      if (getPostOffice().getBinding(name) == null)
+      if (postOffice.getBinding(name) == null)
       {
-         getPostOffice().addBinding(address, name, null, true, false);
+         postOffice.addBinding(address, name, null, true, false);
       }
 
-      if (!getPostOffice().containsAllowableAddress(address))
+      if (!postOffice.containsAllowableAddress(address))
       {
-         getPostOffice().addAllowableAddress(address);
+         postOffice.addAllowableAddress(address);
       }
    }
 
    public boolean destroyQueuesByAddress(String address) throws Exception
    {
-      List<Binding> bindings = getPostOffice().getBindingsForAddress(address);
+      List<Binding> bindings = postOffice.getBindingsForAddress(address);
 
       boolean destroyed = false;
 
@@ -339,23 +344,23 @@ public class MessagingServerImpl implements MessagingServer
       {
          Queue queue = binding.getQueue();
 
-         getPersistenceManager().deleteAllReferences(queue);
+         persistenceManager.deleteAllReferences(queue);
 
          queue.removeAllReferences();
 
-         getPostOffice().removeBinding(queue.getName());
+         postOffice.removeBinding(queue.getName());
 
          destroyed = true;
       }
 
-      getPostOffice().removeAllowableAddress(address);
+      postOffice.removeAllowableAddress(address);
 
       return destroyed;
    }
 
    public boolean destroyQueue(String name) throws Exception
    {
-      Binding binding = getPostOffice().getBinding(name);
+      Binding binding = postOffice.getBinding(name);
 
       boolean destroyed = false;
 
@@ -363,11 +368,11 @@ public class MessagingServerImpl implements MessagingServer
       {
          Queue queue = binding.getQueue();
 
-         getPersistenceManager().deleteAllReferences(queue);
+         persistenceManager.deleteAllReferences(queue);
 
          queue.removeAllReferences();
 
-         getPostOffice().removeBinding(queue.getName());
+         postOffice.removeBinding(queue.getName());
 
          destroyed = true;
       }
@@ -377,9 +382,9 @@ public class MessagingServerImpl implements MessagingServer
 
    public boolean addAddress(String address)
    {
-      if (!getPostOffice().containsAllowableAddress(address))
+      if (!postOffice.containsAllowableAddress(address))
       {
-         getPostOffice().addAllowableAddress(address);
+      	postOffice.addAllowableAddress(address);
          return true;
       }
       return false;
@@ -387,9 +392,9 @@ public class MessagingServerImpl implements MessagingServer
 
    public boolean removeAddress(String address)
    {
-      if (getPostOffice().containsAllowableAddress(address))
+      if (postOffice.containsAllowableAddress(address))
       {
-         getPostOffice().removeAllowableAddress(address);
+      	postOffice.removeAllowableAddress(address);
          return true;
       }
       return false;
@@ -451,19 +456,9 @@ public class MessagingServerImpl implements MessagingServer
       }
    }
 
-   public SecurityStore getSecurityManager()
-   {
-      return securityStore;
-   }
-
    public ConnectionManager getConnectionManager()
    {
       return connectionManager;
-   }
-
-   public MemoryManager getMemoryManager()
-   {
-      return memoryManager;
    }
 
    public PersistenceManager getPersistenceManager()
@@ -484,11 +479,6 @@ public class MessagingServerImpl implements MessagingServer
    public void setPostOffice(PostOffice postOffice)
    {
       this.postOffice = postOffice;
-   }
-
-   public ResourceManager getResourceManager()
-   {
-      return resourceManager;
    }
 
    public HierarchicalRepository<HashSet<Role>> getSecurityRepository()
@@ -524,7 +514,7 @@ public class MessagingServerImpl implements MessagingServer
    {
 
 
-      List<Binding> bindings = getPostOffice().getBindingsForAddress(address);
+      List<Binding> bindings = postOffice.getBindingsForAddress(address);
 
       boolean destroyed = false;
 
@@ -532,16 +522,16 @@ public class MessagingServerImpl implements MessagingServer
       {
          Queue queue = binding.getQueue();
 
-         getPersistenceManager().deleteAllReferences(queue);
+         persistenceManager.deleteAllReferences(queue);
 
          queue.removeAllReferences();
 
-         getPostOffice().removeBinding(queue.getName());
+         postOffice.removeBinding(queue.getName());
 
          destroyed = true;
       }
 
-      getPostOffice().removeAllowableAddress(address);
+      postOffice.removeAllowableAddress(address);
 
       return destroyed;
    }

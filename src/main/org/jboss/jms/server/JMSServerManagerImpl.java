@@ -21,37 +21,37 @@
    */
 package org.jboss.jms.server;
 
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.client.api.ClientConnectionFactory;
-import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.destination.JBossTopic;
-import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
-import org.jboss.logging.Logger;
-import org.jboss.messaging.core.MessagingServerManagement;
-import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.impl.server.SubscriptionInfo;
-import org.jboss.jms.server.MessageStatistics;
-import org.jboss.jms.message.JBossMessage;
-import org.jboss.messaging.core.impl.messagecounter.MessageCounter;
-import org.jboss.messaging.core.impl.filter.FilterImpl;
-import org.jboss.messaging.deployers.Deployer;
-import org.jboss.messaging.deployers.DeploymentManager;
-import org.jboss.messaging.util.JNDIUtil;
-import org.jboss.messaging.util.MessageQueueNameHelper;
-import org.jboss.aop.microcontainer.aspects.jmx.JMX;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 
+import javax.jms.Message;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
-import javax.jms.Message;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collection;
+
+import org.jboss.aop.microcontainer.aspects.jmx.JMX;
+import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.api.ClientConnectionFactory;
+import org.jboss.jms.destination.JBossQueue;
+import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.server.endpoint.ServerConnection;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Filter;
+import org.jboss.messaging.core.MessagingServerManagement;
+import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.impl.filter.FilterImpl;
+import org.jboss.messaging.core.impl.messagecounter.MessageCounter;
+import org.jboss.messaging.core.impl.server.SubscriptionInfo;
+import org.jboss.messaging.deployers.Deployer;
+import org.jboss.messaging.deployers.DeploymentManager;
+import org.jboss.messaging.util.JNDIUtil;
+import org.jboss.messaging.util.MessageQueueNameHelper;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * A Deployer used to create and add to JNDI queues, topics and connection factories. Typically this would only be used
@@ -502,13 +502,13 @@ public class JMSServerManagerImpl extends Deployer implements JMSServerManager
    public List<ClientInfo> getClients() throws Exception
    {
       List<ClientInfo> clientInfos = new ArrayList<ClientInfo>();
-      List<ServerConnectionEndpoint> endpoints = messagingServerManagement.getActiveConnections();
-      for (ServerConnectionEndpoint endpoint : endpoints)
+      List<ServerConnection> endpoints = messagingServerManagement.getActiveConnections();
+      for (ServerConnection endpoint : endpoints)
       {
          clientInfos.add(new ClientInfo(endpoint.getUsername(),
                  endpoint.getClientAddress(),
                  endpoint.isStarted(),
-                 endpoint.getCreated()));
+                 endpoint.getCreatedTime()));
       }
       return clientInfos;
    }

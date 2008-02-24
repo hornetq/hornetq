@@ -32,7 +32,7 @@ import java.util.Map.Entry;
 import org.jboss.jms.client.api.FailureListener;
 import org.jboss.jms.client.impl.JMSClientVMIdentifier;
 import org.jboss.jms.server.ConnectionManager;
-import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
+import org.jboss.jms.server.endpoint.ServerConnection;
 import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.MessagingException;
 import org.jboss.messaging.util.RemotingException;
@@ -57,9 +57,9 @@ public class SimpleConnectionManager implements ConnectionManager, FailureListen
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private Map<String /* remoting session ID */, List<ServerConnectionEndpoint>> endpoints;
+   private Map<String /* remoting session ID */, List<ServerConnection>> endpoints;
 
-   private Set<ServerConnectionEndpoint> activeServerConnectionEndpoints;
+   private Set<ServerConnection> activeServerConnections;
 
    // the clients maps is for information only: to better identify the clients of
    // jboss messaging using their VM ID
@@ -69,27 +69,27 @@ public class SimpleConnectionManager implements ConnectionManager, FailureListen
 
    public SimpleConnectionManager()
    {
-      endpoints = new HashMap<String, List<ServerConnectionEndpoint>>();
-      activeServerConnectionEndpoints = new HashSet<ServerConnectionEndpoint>();
+      endpoints = new HashMap<String, List<ServerConnection>>();
+      activeServerConnections = new HashSet<ServerConnection>();
       clients = new HashMap<String, String>();
    }
 
    // ConnectionManager implementation -------------------------------------------------------------
 
    public synchronized void registerConnection(String clientVMID, String remotingClientSessionID,
-         ServerConnectionEndpoint endpoint)
+         ServerConnection endpoint)
    {    
-      List<ServerConnectionEndpoint> connectionEndpoints = endpoints.get(remotingClientSessionID);
+      List<ServerConnection> connectionEndpoints = endpoints.get(remotingClientSessionID);
 
       if (connectionEndpoints == null)
       {
-         connectionEndpoints = new ArrayList<ServerConnectionEndpoint>();
+         connectionEndpoints = new ArrayList<ServerConnection>();
          endpoints.put(remotingClientSessionID, connectionEndpoints);
       }
 
       connectionEndpoints.add(endpoint);
 
-      activeServerConnectionEndpoints.add(endpoint);
+      activeServerConnections.add(endpoint);
 
       clients.put(remotingClientSessionID, clientVMID);
 
@@ -97,10 +97,10 @@ public class SimpleConnectionManager implements ConnectionManager, FailureListen
             Util.guidToString(remotingClientSessionID));
    }
    
-   public synchronized ServerConnectionEndpoint unregisterConnection(String remotingClientSessionID,
-         ServerConnectionEndpoint endpoint)
+   public synchronized ServerConnection unregisterConnection(String remotingClientSessionID,
+         ServerConnection endpoint)
    {
-      List<ServerConnectionEndpoint> connectionEndpoints = endpoints.get(remotingClientSessionID);
+      List<ServerConnection> connectionEndpoints = endpoints.get(remotingClientSessionID);
 
       if (connectionEndpoints != null)
       {
@@ -108,7 +108,7 @@ public class SimpleConnectionManager implements ConnectionManager, FailureListen
 
          if (removed)
          {
-            activeServerConnectionEndpoints.remove(endpoint);
+            activeServerConnections.remove(endpoint);
          }
 
          log.debug("unregistered connection " + endpoint + " with remoting session ID " + remotingClientSessionID);
@@ -124,11 +124,11 @@ public class SimpleConnectionManager implements ConnectionManager, FailureListen
       return null;
    }
    
-   public synchronized List<ServerConnectionEndpoint> getActiveConnections()
+   public synchronized List<ServerConnection> getActiveConnections()
    {
       // I will make a copy to avoid ConcurrentModification
-      List<ServerConnectionEndpoint> list = new ArrayList<ServerConnectionEndpoint>();
-      list.addAll(activeServerConnectionEndpoints);
+      List<ServerConnection> list = new ArrayList<ServerConnection>();
+      list.addAll(activeServerConnections);
       return list;
    }      
       
@@ -199,15 +199,15 @@ public class SimpleConnectionManager implements ConnectionManager, FailureListen
    {
       assert remotingClientSessionID != null;
       
-      List<ServerConnectionEndpoint> connectionEndpoints = endpoints.get(remotingClientSessionID);
+      List<ServerConnection> connectionEndpoints = endpoints.get(remotingClientSessionID);
       // the connection endpoints are copied in a new list to avoid concurrent modification exception
-      List<ServerConnectionEndpoint> copy;
+      List<ServerConnection> copy;
       if (connectionEndpoints != null)
-         copy = new ArrayList<ServerConnectionEndpoint>(connectionEndpoints);
+         copy = new ArrayList<ServerConnection>(connectionEndpoints);
       else
-         copy = new ArrayList<ServerConnectionEndpoint>();
+         copy = new ArrayList<ServerConnection>();
          
-      for (ServerConnectionEndpoint sce : copy)
+      for (ServerConnection sce : copy)
       {
          try
          {
@@ -244,11 +244,11 @@ public class SimpleConnectionManager implements ConnectionManager, FailureListen
          {
             buff.append("    No registered endpoints\n");
          }
-         for (Entry<String, List<ServerConnectionEndpoint>> entry : endpoints.entrySet())
+         for (Entry<String, List<ServerConnection>> entry : endpoints.entrySet())
          {
-            List<ServerConnectionEndpoint> connectionEndpoints = entry.getValue();
+            List<ServerConnection> connectionEndpoints = entry.getValue();
             buff.append("    "  + entry.getKey() + "----->\n");
-            for (ServerConnectionEndpoint sce : connectionEndpoints)
+            for (ServerConnection sce : connectionEndpoints)
             {
                buff.append("        " + sce + " (" + System.identityHashCode(sce) + ")\n");
             }

@@ -21,27 +21,18 @@
  */
 package org.jboss.jms.server.endpoint;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.CLOSE;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.CONS_FLOWTOKEN;
-
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.messaging.core.Consumer;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.HandleStatus;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.PostOffice;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.remoting.PacketHandler;
-import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.wireformat.ConsumerFlowTokenMessage;
-import org.jboss.messaging.core.remoting.wireformat.NullPacket;
-import org.jboss.messaging.core.remoting.wireformat.Packet;
-import org.jboss.messaging.core.remoting.wireformat.PacketType;
 import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.util.MessagingException;
 
 /**
  * Concrete implementation of a ClientConsumer. 
@@ -56,7 +47,7 @@ import org.jboss.messaging.util.MessagingException;
  * 
  * @version <tt>$Revision$</tt> $Id$
  */
-public class ServerConsumerEndpoint implements Consumer
+public class ServerConsumerEndpoint implements ServerConsumer
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -66,65 +57,76 @@ public class ServerConsumerEndpoint implements Consumer
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private boolean trace = log.isTraceEnabled();
+   private final boolean trace = log.isTraceEnabled();
 
    private final String id;
 
    private final Queue messageQueue;
-
-   private final ServerSessionEndpoint sessionEndpoint;
-
+   
    private final boolean noLocal;
 
    private final Filter filter;
-
-   private boolean started;
-
-   // This lock protects starting and stopping
-   private final Object startStopLock;
-
-   private final AtomicInteger availableTokens = new AtomicInteger(0);
    
    private final boolean autoDeleteQueue;
    
    private final boolean enableFlowControl;
    
+   private final String connectionID;   
+   
+   private final ServerSession sessionEndpoint;
+
    private final PersistenceManager persistenceManager;
+   
+   private final PostOffice postOffice;
+         
+   private final Object startStopLock = new Object();
+
+   private final AtomicInteger availableTokens = new AtomicInteger(0);
+   
+   private boolean started;
 
    // Constructors ---------------------------------------------------------------------------------
 
-   ServerConsumerEndpoint(MessagingServer sp, String id, Queue messageQueue,                          
-					           ServerSessionEndpoint sessionEndpoint, Filter filter,
-					           boolean noLocal, boolean autoDeleteQueue, boolean enableFlowControl)
+   ServerConsumerEndpoint(final Queue messageQueue, final boolean noLocal, final Filter filter,
+   		                 final boolean autoDeleteQueue, final boolean enableFlowControl,
+   		                 final String connectionID, final ServerSession sessionEndpoint,
+					           final PersistenceManager persistenceManager, final PostOffice postOffice,
+					           final boolean started)
    {
-      this.id = id;
-
+   	id = UUID.randomUUID().toString();
+      
       this.messageQueue = messageQueue;
-
-      this.sessionEndpoint = sessionEndpoint;
-
+      
       this.noLocal = noLocal;
 
-      this.startStopLock = new Object();
-
       this.filter = filter;
-                
-      this.started = this.sessionEndpoint.getConnectionEndpoint().isStarted();
       
       this.autoDeleteQueue = autoDeleteQueue;
       
       this.enableFlowControl = enableFlowControl;
       
-      this.persistenceManager = sessionEndpoint.getConnectionEndpoint().getMessagingServer().getPersistenceManager();
+      this.connectionID = connectionID;
+
+      this.sessionEndpoint = sessionEndpoint;
+
+      this.persistenceManager = persistenceManager;
       
-      // adding the consumer to the queue
+      this.postOffice = postOffice;
+      
+      this.started = started;
+      
       messageQueue.addConsumer(this);
       
       messageQueue.deliver();
    }
 
-   // Receiver implementation ----------------------------------------------------------------------
+   // ServerConsumer implementation ----------------------------------------------------------------------
 
+   public String getID()
+   {
+   	return id;
+   }
+   
    public HandleStatus handle(MessageReference ref) throws Exception
    {
       if (enableFlowControl && availableTokens.get() == 0)
@@ -161,11 +163,9 @@ public class ServerConsumerEndpoint implements Consumer
          {
             String conId = message.getConnectionID();
 
-            if (sessionEndpoint.getConnectionEndpoint().getConnectionID().equals(conId))
-            {
-            	PersistenceManager pm = sessionEndpoint.getConnectionEndpoint().getMessagingServer().getPersistenceManager();
-            	            	            	
-            	ref.acknowledge(pm);
+            if (connectionID.equals(conId))
+            {	            	
+            	ref.acknowledge(persistenceManager);
             	
              	return HandleStatus.HANDLED;
             }            
@@ -191,8 +191,6 @@ public class ServerConsumerEndpoint implements Consumer
       }
    }
    
-   // Closeable implementation ---------------------------------------------------------------------
-
    public void close() throws Exception
    {
       if (trace)
@@ -204,55 +202,23 @@ public class ServerConsumerEndpoint implements Consumer
 
       messageQueue.removeConsumer(this);
       
-      sessionEndpoint.getConnectionEndpoint().getMessagingServer().getRemotingService().getDispatcher().unregister(id);     
-      
       if (autoDeleteQueue)
       {
          if (messageQueue.getConsumerCount() == 0)
-         {
-            MessagingServer server = sessionEndpoint.getConnectionEndpoint().getMessagingServer();
-            
-            server.getPostOffice().removeBinding(messageQueue.getName());
+         {  
+            postOffice.removeBinding(messageQueue.getName());
             
             if (messageQueue.isDurable())
             {
-               server.getPersistenceManager().deleteAllReferences(messageQueue);
+               persistenceManager.deleteAllReferences(messageQueue);
             }
          }
       }
       
       sessionEndpoint.removeConsumer(id);           
    }
-
-   // ConsumerEndpoint implementation --------------------------------------------------------------
-
-   public void receiveTokens(int tokens) throws Exception
-   {
-      availableTokens.addAndGet(tokens);
-
-      promptDelivery();      
-   }
-
-   // Public ---------------------------------------------------------------------------------------
-
-   public String toString()
-   {
-      return "ConsumerEndpoint[" + id + "]";
-   }
-
-   public PacketHandler newHandler()
-   {
-      return new ServerConsumerEndpointPacketHandler();
-   }
-
-   // Package protected ----------------------------------------------------------------------------
    
-   String getID()
-   {
-   	return this.id;
-   }
-
-   void setStarted(boolean started)
+   public void setStarted(boolean started)
    {
       boolean useStarted;
       
@@ -269,61 +235,25 @@ public class ServerConsumerEndpoint implements Consumer
          promptDelivery();
       }
    }
-    
-   // Protected ------------------------------------------------------------------------------------
+   
+   public void receiveTokens(int tokens) throws Exception
+   {
+      availableTokens.addAndGet(tokens);
 
+      promptDelivery();      
+   }
+
+   // Public -----------------------------------------------------------------------------
+     
+   public String toString()
+   {
+      return "ConsumerEndpoint[" + id + "]";
+   }
+   
    // Private --------------------------------------------------------------------------------------
 
    private void promptDelivery()
    {
       sessionEndpoint.promptDelivery(messageQueue);
-   }
-
-   // Inner classes --------------------------------------------------------------------------------
-   
-   private class ServerConsumerEndpointPacketHandler extends ServerPacketHandlerSupport
-   {
-
-      public String getID()
-      {
-         return ServerConsumerEndpoint.this.id;
-      }
-
-      public Packet doHandle(Packet packet, PacketSender sender) throws Exception
-      {
-         Packet response = null;
-
-         PacketType type = packet.getType();
-         
-         if (type == CONS_FLOWTOKEN)
-         {
-            ConsumerFlowTokenMessage message = (ConsumerFlowTokenMessage) packet;
-            
-            receiveTokens(message.getTokens());
-         }
-         else if (type == CLOSE)
-         {
-            close();
-         }
-         else
-         {
-            throw new MessagingException(MessagingException.UNSUPPORTED_PACKET,
-                  "Unsupported packet " + type);
-         }
-
-         // reply if necessary
-         if (response == null && packet.isOneWay() == false)
-         {
-            response = new NullPacket();               
-         }
-         
-         return response;
-      }
-
-      @Override
-      public String toString()
-      {
-         return "ServerConsumerEndpointPacketHandler[id=" + id + "]";
-      }
-   }
+   } 
 }

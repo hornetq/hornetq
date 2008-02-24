@@ -21,21 +21,30 @@
    */
 package org.jboss.messaging.core.impl.server;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.aop.microcontainer.aspects.jmx.JMX;
 import org.jboss.jms.client.api.ClientConnectionFactory;
 import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.jms.client.SelectorTranslator;
-import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
-import org.jboss.messaging.core.*;
+import org.jboss.jms.server.endpoint.ServerConnection;
+import org.jboss.messaging.core.Binding;
+import org.jboss.messaging.core.Filter;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.MessagingComponent;
+import org.jboss.messaging.core.MessagingServer;
+import org.jboss.messaging.core.MessagingServerManagement;
 import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.core.impl.messagecounter.MessageCounter;
 import org.jboss.messaging.core.impl.filter.FilterImpl;
+import org.jboss.messaging.core.impl.messagecounter.MessageCounter;
 import org.jboss.messaging.util.MessagingException;
 
 /**
@@ -325,7 +334,7 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
       return getQueue(queue).getConsumerCount();
    }
 
-   public  List<ServerConnectionEndpoint> getActiveConnections()
+   public  List<ServerConnection> getActiveConnections()
    {
       return messagingServer.getConnectionManager().getActiveConnections();
    }

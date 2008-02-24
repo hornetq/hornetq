@@ -33,24 +33,28 @@ import org.jboss.jms.message.JBossMessage;
  */
 public class AsfMessageHolder
 {
-   private JBossMessage msg;
+   private final JBossMessage msg;
    
-   private String consumerID;
+   private final String consumerID;
    
-   private String queueName;
+   private final String queueName;
    
-   private int maxDeliveries;
+   private final int maxDeliveries;
    
-   private ClientSession connectionConsumerSession;
+   private final ClientSession connectionConsumerSession;
    
-   public AsfMessageHolder(JBossMessage msg, String consumerID,
-         String queueName, int maxDeliveries,
-         ClientSession connectionConsumerSession)
+   public AsfMessageHolder(final JBossMessage msg, final String consumerID,
+                           final String queueName, final int maxDeliveries,
+                           final ClientSession connectionConsumerSession)
    {
       this.msg = msg;
+      
       this.consumerID = consumerID;
+      
       this.queueName = queueName;
+      
       this.maxDeliveries = maxDeliveries;
+      
       this.connectionConsumerSession = connectionConsumerSession;
    }
 
@@ -59,19 +63,9 @@ public class AsfMessageHolder
       return msg;
    }
 
-   public void setMsg(JBossMessage msg)
-   {
-      this.msg = msg;
-   }
-
    public String getConsumerID()
    {
       return consumerID;
-   }
-
-   public void setConsumerID(String consumerID)
-   {
-      this.consumerID = consumerID;
    }
 
    public String getQueueName()
@@ -79,28 +73,13 @@ public class AsfMessageHolder
       return queueName;
    }
 
-   public void setQueueName(String queueName)
-   {
-      this.queueName = queueName;
-   }
-
    public int getMaxDeliveries()
    {
       return maxDeliveries;
    }
 
-   public void setMaxDeliveries(int maxDeliveries)
-   {
-      this.maxDeliveries = maxDeliveries;
-   }
-
    public ClientSession getConnectionConsumerSession()
    {
       return connectionConsumerSession;
-   }
-
-   public void setConnectionConsumerSession(ClientSession connectionConsumerSession)
-   {
-      this.connectionConsumerSession = connectionConsumerSession;
    }
 }

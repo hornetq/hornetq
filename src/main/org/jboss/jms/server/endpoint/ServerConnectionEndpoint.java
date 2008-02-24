@@ -21,11 +21,6 @@
   */
 package org.jboss.jms.server.endpoint;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.CLOSE;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.CONN_CREATESESSION;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.CONN_START;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.CONN_STOP;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -37,19 +32,16 @@ import java.util.concurrent.ConcurrentMap;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.SecurityStore;
 import org.jboss.messaging.core.Binding;
-import org.jboss.messaging.core.MessagingServer;
+import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.PostOffice;
 import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.ResourceManager;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.wireformat.ConnectionCreateSessionMessage;
 import org.jboss.messaging.core.remoting.wireformat.ConnectionCreateSessionResponseMessage;
-import org.jboss.messaging.core.remoting.wireformat.NullPacket;
-import org.jboss.messaging.core.remoting.wireformat.Packet;
-import org.jboss.messaging.core.remoting.wireformat.PacketType;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.util.MessagingException;
 
 /**
  * Concrete implementation of ConnectionEndpoint.
@@ -61,7 +53,7 @@ import org.jboss.messaging.util.MessagingException;
  *
  * $Id$
  */
-public class ServerConnectionEndpoint
+public class ServerConnectionEndpoint implements ServerConnection
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -75,87 +67,102 @@ public class ServerConnectionEndpoint
 
    private final String id;
 
-   private volatile boolean started;
-
    private final String username;
    
    private final String password;
 
    private final String remotingClientSessionID;
    
-   private final String jmsClientVMID;
-
-   private final MessagingServer messagingServer;
-
-   private final PostOffice postOffice;
-   
-   private final SecurityStore sm;
-   
-   private final ConnectionManager cm;
-
-   private final ConcurrentMap<String, ServerSessionEndpoint> sessions = new ConcurrentHashMap<String, ServerSessionEndpoint>();
-
-   private final Set<Queue> temporaryQueues = new ConcurrentHashSet<Queue>();
-
+   private final String clientAddress;
+      
    private final int prefetchSize;
 
-   private String clientAddress;
-   private long created;
+   private final PacketDispatcher dispatcher;
+   
+   private final ResourceManager resourceManager;
+   
+   private final PersistenceManager persistenceManager;   
+   
+   private final PostOffice postOffice;
+   
+   private final SecurityStore securityStore;
+   
+   private final ConnectionManager connectionManager;
 
-   // Constructors ---------------------------------------------------------------------------------
+   private final long createdTime;
+         
+   private final ConcurrentMap<String, ServerSession> sessions = new ConcurrentHashMap<String, ServerSession>();
 
-   public ServerConnectionEndpoint(MessagingServer messagingServer,
-                                   String username, String password, int prefetchSize,
-                                   String remotingSessionID,
-                                   String clientVMID,
-                                   String clientAddress) throws Exception
-   {
-      this.messagingServer = messagingServer;
-
-      sm = messagingServer.getSecurityManager();
-      cm = messagingServer.getConnectionManager();
-      postOffice = messagingServer.getPostOffice();
-
-      started = false;
-
-      this.id = UUID.randomUUID().toString();
+   private final Set<Queue> temporaryQueues = new ConcurrentHashSet<Queue>();
       
-      this.prefetchSize = prefetchSize;
-
-      this.username = username;
+   private volatile boolean started;
+   
+  
+   // Constructors ---------------------------------------------------------------------------------
+      
+   public ServerConnectionEndpoint(final String username, final String password,
+   		                          final String remotingClientSessionID, final String jmsClientVMID,
+   		                          final String clientAddress,
+   		                          final int prefetchSize, final PacketDispatcher dispatcher,
+   		                          final ResourceManager resourceManager,
+   		                          final PersistenceManager persistenceManager,
+   		                          final PostOffice postOffice, final SecurityStore securityStore,
+   		                          final ConnectionManager connectionManager)
+   {
+   	id = UUID.randomUUID().toString();
+      
+   	this.username = username;
       
       this.password = password;
-
-      this.remotingClientSessionID = remotingSessionID;
-
-      this.jmsClientVMID = clientVMID;
+      
+      this.remotingClientSessionID = remotingClientSessionID;
 
       this.clientAddress = clientAddress;
 
-      created = System.currentTimeMillis();
+      this.prefetchSize = prefetchSize;
 
-      cm.registerConnection(jmsClientVMID, remotingClientSessionID, this);
+      this.dispatcher = dispatcher;
+      
+      this.resourceManager = resourceManager;
+      
+      this.persistenceManager = persistenceManager;
+      
+      this.postOffice = postOffice;
+      
+      this.securityStore = securityStore;
+      
+      this.connectionManager = connectionManager;
+      
+      started = false;
+      
+      createdTime = System.currentTimeMillis();
+
+      connectionManager.registerConnection(jmsClientVMID, remotingClientSessionID, this);
    }
 
-   // ConnectionDelegate implementation ------------------------------------------------------------
+   // ServerConnection implementation ------------------------------------------------------------
 
-   public ConnectionCreateSessionResponseMessage createSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks,
-                                              PacketSender sender)
-      throws Exception
+   public String getID()
+   {
+   	return id;
+   }
+   
+   public ConnectionCreateSessionResponseMessage createSession(final boolean xa, final boolean autoCommitSends,
+   		                                                      final boolean autoCommitAcks,
+                                                               final PacketSender sender) throws Exception
    {           
-      String sessionID = UUID.randomUUID().toString();
- 
-      ServerSessionEndpoint ep =
-         new ServerSessionEndpoint(sessionID, this, autoCommitSends, autoCommitAcks, xa, sender, messagingServer.getResourceManager());            
+      ServerSession session =
+         new ServerSessionEndpoint(autoCommitSends, autoCommitAcks, prefetchSize, xa, this, resourceManager,
+         		sender, dispatcher, persistenceManager, postOffice);
 
       synchronized (sessions)
       {
-         sessions.put(sessionID, ep);
+         sessions.put(session.getID(), session);
       }
 
-      messagingServer.getRemotingService().getDispatcher().register(ep.newHandler());
+      dispatcher.register(new ServerSessionPacketHandler(session, prefetchSize));
       
-      return new ConnectionCreateSessionResponseMessage(sessionID);
+      return new ConnectionCreateSessionResponseMessage(session.getID());
    }
    
    public void start() throws Exception
@@ -170,9 +177,9 @@ public class ServerConnectionEndpoint
 
    public void close() throws Exception
    {
-      Map<String, ServerSessionEndpoint> sessionsClone = new HashMap<String, ServerSessionEndpoint>(sessions);
+      Map<String, ServerSession> sessionsClone = new HashMap<String, ServerSession>(sessions);
       
-      for (ServerSessionEndpoint session: sessionsClone.values())
+      for (ServerSession session: sessionsClone.values())
       {
          session.close();
       }
@@ -197,13 +204,16 @@ public class ServerConnectionEndpoint
 
       temporaryQueues.clear();      
 
-      cm.unregisterConnection(remotingClientSessionID, this);
+      connectionManager.unregisterConnection(remotingClientSessionID, this);
 
-      messagingServer.getRemotingService().getDispatcher().unregister(id);
+      dispatcher.unregister(id);
    }
-
-   // Public ---------------------------------------------------------------------------------------
-
+   
+   public SecurityStore getSecurityStore()
+   {
+      return securityStore;
+   }
+   
    public String getUsername()
    {
       return username;
@@ -213,55 +223,8 @@ public class ServerConnectionEndpoint
    {
       return password;
    }
-
-   public long getCreated()
-   {
-      return created;
-   }
-
-   public String getClientAddress()
-   {
-      return clientAddress;
-   }
-
-   public SecurityStore getSecurityManager()
-   {
-      return sm;
-   }
-
-   public MessagingServer getMessagingServer()
-   {
-      return messagingServer;
-   }
-
-   public PacketHandler newHandler()
-   {
-      return new ConnectionPacketHandler();
-   }
-
-   public String toString()
-   {
-      return "ConnectionEndpoint[" + id + "]";
-   }
-
-   // Package protected ----------------------------------------------------------------------------
-
-   int getPrefetchSize()
-   {
-      return prefetchSize;
-   }
-
-   String getConnectionID()
-   {
-      return id;
-   }
-
-   public boolean isStarted()
-   {
-      return started;
-   }
-
-   void removeSession(String sessionId) throws Exception
+   
+   public void removeSession(final String sessionId) throws Exception
    {
       if (sessions.remove(sessionId) == null)
       {
@@ -269,96 +232,56 @@ public class ServerConnectionEndpoint
       }      
    }
 
-   void addTemporaryQueue(Queue queue)
+   public void addTemporaryQueue(final Queue queue)
    {
       temporaryQueues.add(queue);      
    }
    
-   void removeTemporaryQueue(Queue queue)
+   public void removeTemporaryQueue(final Queue queue)
    {
       temporaryQueues.remove(queue);      
    }
-
-   String getRemotingClientSessionID()
+   
+   public int getPrefetchSize()
    {
-      return remotingClientSessionID;
+      return prefetchSize;
    }
-  
-   // Protected ------------------------------------------------------------------------------------
+   
+   public boolean isStarted()
+   {
+      return started;
+   }
+   
+   public long getCreatedTime()
+   {
+      return createdTime;
+   }
+
+   public String getClientAddress()
+   {
+      return clientAddress;
+   }
+
+   // Public ---------------------------------------------------------------------------------------
+    
+   public String toString()
+   {
+      return "ConnectionEndpoint[" + id + "]";
+   }
 
    // Private --------------------------------------------------------------------------------------
    
-   private void setStarted(boolean started) throws Exception
+   private void setStarted(final boolean started) throws Exception
    {
-      Map<String, ServerSessionEndpoint> sessionsClone = null;
+      Map<String, ServerSession> sessionsClone = null;
       
-      sessionsClone = new HashMap<String, ServerSessionEndpoint>(sessions);
+      sessionsClone = new HashMap<String, ServerSession>(sessions);
             
-      for (ServerSessionEndpoint session: sessionsClone.values() )
+      for (ServerSession session: sessionsClone.values() )
       {
          session.setStarted(started);
       }
       
       this.started = started;      
-   }   
-    
-   // Inner classes --------------------------------------------------------------------------------
-
-   private class ConnectionPacketHandler extends ServerPacketHandlerSupport
-   {
-      public ConnectionPacketHandler()
-      {
-      }
-
-      public String getID()
-      {
-         return ServerConnectionEndpoint.this.id;
-      }
-
-      public Packet doHandle(Packet packet, PacketSender sender) throws Exception
-      {
-         Packet response = null;
-
-         PacketType type = packet.getType();
-         
-         if (type == CONN_CREATESESSION)
-         {
-            ConnectionCreateSessionMessage request = (ConnectionCreateSessionMessage) packet;
-            
-            response = createSession(request.isXA(), request.isAutoCommitSends(), request.isAutoCommitAcks(), sender);
-         }
-         else if (type == CONN_START)
-         {
-            start();
-         }
-         else if (type == CONN_STOP)
-         {
-            stop();
-         }
-         else if (type == CLOSE)
-         {
-            close();
-         }                       
-         else
-         {
-            throw new MessagingException(MessagingException.UNSUPPORTED_PACKET,
-                                         "Unsupported packet " + type);
-         }
-
-         // reply if necessary
-         if (response == null && packet.isOneWay() == false)
-         {
-            response = new NullPacket();               
-         }
-         
-         return response;
-      }
-
-      @Override
-      public String toString()
-      {
-         return "ConnectionAdvisedPacketHandler[id=" + id + "]";
-      }
-   }
-
+   }         
 }

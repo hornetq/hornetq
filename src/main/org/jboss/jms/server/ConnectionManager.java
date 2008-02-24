@@ -23,7 +23,7 @@ package org.jboss.jms.server;
 
 import java.util.List;
 
-import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
+import org.jboss.jms.server.endpoint.ServerConnection;
 import org.jboss.messaging.core.MessagingComponent;
 
 
@@ -42,20 +42,20 @@ import org.jboss.messaging.core.MessagingComponent;
 public interface ConnectionManager extends MessagingComponent
 {
    void registerConnection(String clientVMID,
-                           String remotingClientSessionID, ServerConnectionEndpoint endpoint);
+                           String remotingClientSessionID, ServerConnection endpoint);
 
    /**
-    * @param serverConnectionEndpoint 
+    * @param ServerConnection 
     * @return null if there is no such connection.
     */
-   ServerConnectionEndpoint unregisterConnection(String remotingClientSessionID, ServerConnectionEndpoint serverConnectionEndpoint);
+   ServerConnection unregisterConnection(String remotingClientSessionID, ServerConnection ServerConnection);
    
    /**
     * Returns a list of active connection endpoints currently maintained by an instance of this
     * manager. The implementation should make a copy of the list to avoid
     * ConcurrentModificationException. The list could be empty, but never null.
     *
-    * @return List<ServerConnectionEndpoint>
+    * @return List<ServerConnection>
     */
-   List<ServerConnectionEndpoint> getActiveConnections();
+   List<ServerConnection> getActiveConnections();
 }

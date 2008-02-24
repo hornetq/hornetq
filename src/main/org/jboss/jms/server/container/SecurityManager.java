@@ -25,7 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.jms.server.SecurityStore;
-import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
+import org.jboss.jms.server.endpoint.ServerConnection;
 import org.jboss.jms.server.security.CheckType;
 import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.MessagingException;
@@ -134,7 +134,7 @@ public class SecurityManager
       return granted;
    }
 
-   public void check(String address, CheckType checkType, ServerConnectionEndpoint conn)
+   public void check(String address, CheckType checkType, ServerConnection conn)
       throws MessagingException
    {
       if (trace) { log.trace("checking access permissions to " + address); }
@@ -145,7 +145,7 @@ public class SecurityManager
          return;
       }
 
-      SecurityStore sm = conn.getSecurityManager();
+      SecurityStore sm = conn.getSecurityStore();
 
       // Authenticate. Successful autentication will place a new SubjectContext on thread local,
       // which will be used in the authorization process. However, we need to make sure we clean up

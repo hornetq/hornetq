@@ -29,6 +29,7 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_BROWS
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Message;
@@ -67,18 +68,19 @@ public class ServerBrowserEndpoint
    // Attributes -----------------------------------------------------------------------------------
 
    private final String id;
-   private final ServerSessionEndpoint session;
+   private final ServerSession session;
    private final Queue destination;
    private final Filter filter;
    private Iterator iterator;
 
    // Constructors ---------------------------------------------------------------------------------
 
-   ServerBrowserEndpoint(ServerSessionEndpoint session, String id,
+   ServerBrowserEndpoint(ServerSession session,
                          Queue destination, String messageFilter) throws Exception
    {     
       this.session = session;
-      this.id = id;
+      id = UUID.randomUUID().toString();
+      
       this.destination = destination;
 
 		if (messageFilter != null)
@@ -93,6 +95,11 @@ public class ServerBrowserEndpoint
 
    // BrowserEndpoint implementation ---------------------------------------------------------------
 
+   public String getID()
+   {
+   	return id;
+   }
+   
    public void reset() throws Exception
    {
       iterator = createIterator();
@@ -153,8 +160,6 @@ public class ServerBrowserEndpoint
    {
       iterator = null;
       
-      session.getConnectionEndpoint().getMessagingServer().getRemotingService().getDispatcher().unregister(id);
-
       session.removeBrowser(id);
       
       log.trace(this + " closed");

@@ -651,8 +651,6 @@ public class AcknowledgementTest extends JMSTestCase
 	      
 	      assertRemainingMessages(NUM_MESSAGES);
 	
-			log.info("Sent messages");
-	
 			int count = 0;
 	
 			Message m = null;
@@ -662,8 +660,6 @@ public class AcknowledgementTest extends JMSTestCase
 	         
 				m = consumer.receive(200);
 				
-				log.info("got message " + m);
-	         
 	         assertRemainingMessages(NUM_MESSAGES - (i + 1));
 	         
 				if (m == null) break;
@@ -703,11 +699,9 @@ public class AcknowledgementTest extends JMSTestCase
    {       
       final int BATCH_SIZE = 10;
 
-      log.info("*********** DEPLOYING CF");
       ArrayList<String> bindings = new ArrayList<String>();
       bindings.add("mycf");
       deployConnectionFactory(null,"mycf", bindings, -1, -1, -1, -1, false, false, false, BATCH_SIZE);
-      log.info("************ DONE DEPLOY");
       Connection conn = null;
       
       try

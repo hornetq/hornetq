@@ -21,13 +21,13 @@
   */
 package org.jboss.messaging.core;
 
-import org.jboss.messaging.core.impl.messagecounter.MessageCounter;
-import org.jboss.messaging.core.impl.filter.FilterImpl;
-import org.jboss.jms.client.api.ClientConnectionFactory;
-import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
-
-import java.util.List;
 import java.util.Collection;
+import java.util.List;
+
+import org.jboss.jms.client.api.ClientConnectionFactory;
+import org.jboss.jms.server.endpoint.ServerConnection;
+import org.jboss.messaging.core.impl.filter.FilterImpl;
+import org.jboss.messaging.core.impl.messagecounter.MessageCounter;
 
 /**
  * This interface describes the management interface exposed by the server
@@ -37,10 +37,6 @@ import java.util.Collection;
  */
 public interface MessagingServerManagement
 {
-//   String getServerVersion();
-//   
-//   Configuration getConfiguration();
-//   
    boolean isStarted();
 
    void createQueue(String address,String name) throws Exception;
@@ -93,7 +89,7 @@ public interface MessagingServerManagement
 
    public int getConsumerCountForQueue(String queue) throws Exception;
 
-   List<ServerConnectionEndpoint> getActiveConnections();
+   List<ServerConnection> getActiveConnections();
 
    void moveMessages(String toQueue, String fromQueue, FilterImpl filter) throws Exception;
 }

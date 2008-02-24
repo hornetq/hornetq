@@ -24,8 +24,13 @@ package org.jboss.jms.server.endpoint;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.CREATECONNECTION;
 
 import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.jms.server.ConnectionManager;
+import org.jboss.jms.server.SecurityStore;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.MessagingServer;
+import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.PostOffice;
+import org.jboss.messaging.core.ResourceManager;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
@@ -44,11 +49,34 @@ public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
 {
    private static final Logger log = Logger.getLogger(MessagingServerPacketHandler.class);
    
-   private MessagingServer messagingServer;
+   private final PacketDispatcher dispatcher;
+   
+   private final ResourceManager resourceManager;
+   
+   private final PersistenceManager persistenceManager;
+   
+   private final PostOffice postOffice;
+   
+   private final SecurityStore securityStore;
+   
+   private final ConnectionManager connectionManager;
 
-   public MessagingServerPacketHandler(MessagingServer messagingServer)
+   public MessagingServerPacketHandler(final PacketDispatcher dispatcher, final ResourceManager resourceManager,
+   		                              final PersistenceManager persistenceManager,
+   		                              final PostOffice postOffice, final SecurityStore securityStore,
+   		                              final ConnectionManager connectionManager)
    {
-      this.messagingServer = messagingServer;
+      this.dispatcher = dispatcher;
+      
+      this.resourceManager = resourceManager;
+      
+      this.persistenceManager = persistenceManager;
+      
+      this.postOffice = postOffice;
+      
+      this.securityStore = securityStore;
+      
+      this.connectionManager = connectionManager;
    }
    
    /*
@@ -64,7 +92,7 @@ public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
       return ClientConnectionFactoryImpl.id;
    }
 
-   public Packet doHandle(Packet packet, PacketSender sender) throws Exception
+   public Packet doHandle(final Packet packet, final PacketSender sender) throws Exception
    {
       Packet response = null;
      
@@ -87,11 +115,9 @@ public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
       return response;
    }
 
-   private CreateConnectionResponse
-      createConnection(String username,
-                              String password,
-                              String remotingSessionID, String clientVMID, int prefetchSize,
-                              String address)
+   private CreateConnectionResponse createConnection(final String username, final String password,
+                              final String remotingClientSessionID, final String clientVMID, final int prefetchSize,
+                              final String clientAddress)
       throws Exception
    {
       log.trace("creating a new connection for user " + username);
@@ -101,39 +127,19 @@ public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
       // up thread local immediately after we used the information, otherwise some other people
       // security my be screwed up, on account of thread local security stack being corrupted.
 
-      messagingServer.getSecurityManager().authenticate(username, password);
+      securityStore.authenticate(username, password);
 
       // We don't need the SubjectContext on thread local anymore, clean it up
       SecurityActions.popSubjectContext();
 
-      //Client ID is a JMS concept and does not belong on the server
-      
-//      String clientIDUsed = clientID;
-//
-//      // see if there is a preconfigured client id for the user
-//      if (username != null)
-//      {
-//         String preconfClientID =
-//            messagingServer.getJmsUserManagerInstance().getPreConfiguredClientID(username);
-//
-//         if (preconfClientID != null)
-//         {
-//            clientIDUsed = preconfClientID;
-//         }
-//      }
+      final ServerConnection connection =
+         new ServerConnectionEndpoint(username, password,
+                                      remotingClientSessionID, clientVMID, clientAddress,
+                                      prefetchSize, dispatcher, resourceManager, persistenceManager,
+                                      postOffice, securityStore, connectionManager);
 
-      // create the corresponding "server-side" connection endpoint and register it with the
-      // server peer's ClientManager
-      final ServerConnectionEndpoint endpoint =
-         new ServerConnectionEndpoint(messagingServer, username, password, prefetchSize,
-                                      remotingSessionID, clientVMID, address);
+      dispatcher.register(new ServerConnectionPacketHandler(connection));
 
-      String connectionID = endpoint.getConnectionID();
-
-      messagingServer.getRemotingService().getDispatcher().register(endpoint.newHandler());
-
-      log.trace("created and registered " + endpoint);
-
-      return new CreateConnectionResponse(connectionID);
+      return new CreateConnectionResponse(connection.getID());
    }
 }

@@ -21,11 +21,9 @@
  */
 package org.jboss.messaging.core;
 
-
 import java.util.HashSet;
 
 import org.jboss.jms.server.ConnectionManager;
-import org.jboss.jms.server.SecurityStore;
 import org.jboss.jms.server.security.Role;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.util.HierarchicalRepository;
@@ -63,11 +61,7 @@ public interface MessagingServer extends MessagingComponent
    
    RemotingService getRemotingService();
   
-   SecurityStore getSecurityManager();
-
    ConnectionManager getConnectionManager();
-
-   MemoryManager getMemoryManager();
 
    PersistenceManager getPersistenceManager();
 
@@ -75,8 +69,6 @@ public interface MessagingServer extends MessagingComponent
 
    PostOffice getPostOffice();
    
-   ResourceManager getResourceManager();
-
    HierarchicalRepository<HashSet<Role>> getSecurityRepository();
 
    void setPostOffice(PostOffice postOffice);

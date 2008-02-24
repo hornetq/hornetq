@@ -21,31 +21,6 @@
  */
 package org.jboss.jms.server.endpoint;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.CLOSE;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_ACKNOWLEDGE;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_BINDINGQUERY;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_CANCEL;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_COMMIT;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_CREATEBROWSER;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_CREATECONSUMER;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_CREATEQUEUE;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_DELETE_QUEUE;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_QUEUEQUERY;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_ROLLBACK;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_SEND;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_COMMIT;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_END;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_FORGET;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_GET_TIMEOUT;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_INDOUBT_XIDS;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_JOIN;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_PREPARE;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_RESUME;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_ROLLBACK;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_SET_TIMEOUT;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_START;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_SUSPEND;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -68,7 +43,7 @@ import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.MessagingServer;
+import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.PostOffice;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.ResourceManager;
@@ -76,39 +51,15 @@ import org.jboss.messaging.core.Transaction;
 import org.jboss.messaging.core.impl.DeliveryImpl;
 import org.jboss.messaging.core.impl.TransactionImpl;
 import org.jboss.messaging.core.impl.filter.FilterImpl;
-import org.jboss.messaging.core.remoting.PacketHandler;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.wireformat.NullPacket;
-import org.jboss.messaging.core.remoting.wireformat.Packet;
-import org.jboss.messaging.core.remoting.wireformat.PacketType;
-import org.jboss.messaging.core.remoting.wireformat.SessionAcknowledgeMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionAddAddressMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionBindingQueryResponseMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionCancelMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionCreateBrowserMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCreateBrowserResponseMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionCreateConsumerMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCreateConsumerResponseMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionCreateQueueMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionDeleteQueueMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionQueueQueryResponseMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionRemoveAddressMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionSendMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionXACommitMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionXAEndMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionXAForgetMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionXAGetInDoubtXidsResponseMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionXAGetTimeoutResponseMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionXAJoinMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionXAPrepareMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionXAResponseMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionXAResumeMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionXARollbackMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionXASetTimeoutMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionXASetTimeoutResponseMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.MessagingException;
 
@@ -126,13 +77,12 @@ import org.jboss.messaging.util.MessagingException;
  *
  * $Id$
  */
-public class ServerSessionEndpoint
+public class ServerSessionEndpoint implements ServerSession
 {
    // Constants
    // ------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger
-         .getLogger(ServerSessionEndpoint.class);
+   private static final Logger log = Logger.getLogger(ServerSessionEndpoint.class);
 
    // Static
    // ---------------------------------------------------------------------------------------
@@ -145,16 +95,26 @@ public class ServerSessionEndpoint
    private final boolean trace = log.isTraceEnabled();
 
    private final String id;
+   
+   private final boolean autoCommitSends;
 
-   private final ServerConnectionEndpoint connectionEndpoint;
+   private final boolean autoCommitAcks;
+   
+   private final ServerConnection connection;
+   
+   private final ResourceManager resourceManager;
 
-   private final MessagingServer sp;
-
-   private final Map<String, ServerConsumerEndpoint> consumers = new ConcurrentHashMap<String, ServerConsumerEndpoint>();
+   private final PacketSender sender;
+   
+   private final PacketDispatcher dispatcher;
+   
+   private final PersistenceManager persistenceManager;
+   
+   private final PostOffice postOffice;
+         
+   private final Map<String, ServerConsumer> consumers = new ConcurrentHashMap<String, ServerConsumer>();
 
    private final Map<String, ServerBrowserEndpoint> browsers = new ConcurrentHashMap<String, ServerBrowserEndpoint>();
-
-   private final PostOffice postOffice;
 
    private final LinkedList<Delivery> deliveries = new LinkedList<Delivery>();
 
@@ -164,80 +124,79 @@ public class ServerSessionEndpoint
 
    private Transaction tx;
 
-   private final boolean autoCommitSends;
-
-   private final boolean autoCommitAcks;
-
-   private final ResourceManager resourceManager;
-
-   private PacketSender sender;
-
    // Constructors
    // ---------------------------------------------------------------------------------
 
-   ServerSessionEndpoint(String sessionID,
-         ServerConnectionEndpoint connectionEndpoint, boolean autoCommitSends,
-         boolean autoCommitAcks, boolean xa, PacketSender sender, ResourceManager resourceManager)
-         throws Exception
+   ServerSessionEndpoint(final boolean autoCommitSends,
+                         final boolean autoCommitAcks, final int prefetchSize,
+                         final boolean xa, final ServerConnection connection,
+                         final ResourceManager resourceManager, final PacketSender sender, 
+                         final PacketDispatcher dispatcher, final PersistenceManager persistenceManager,
+                         final PostOffice postOffice) throws Exception
    {
-      this.id = sessionID;
+   	id = UUID.randomUUID().toString();
+            
+      this.autoCommitSends = autoCommitSends;
 
-      this.connectionEndpoint = connectionEndpoint;
-
-      sp = connectionEndpoint.getMessagingServer();
-
-      postOffice = sp.getPostOffice();
-
+      this.autoCommitAcks = autoCommitAcks;
+      
       if (!xa)
       {
          tx = new TransactionImpl();
       }
 
-      this.autoCommitSends = autoCommitSends;
-
-      this.autoCommitAcks = autoCommitAcks;
-      
-      this.sender = sender;
+      this.connection = connection;
 
       this.resourceManager = resourceManager;
+            
+      this.sender = sender;
+    
+      this.dispatcher = dispatcher;
       
+      this.persistenceManager = persistenceManager;
+      
+      this.postOffice = postOffice;
+            
       if (log.isTraceEnabled())
+      {
          log.trace("created server session endpoint for " + sender.getRemoteAddress());
+      }
    }
 
-   // Public
+   // ServerSession implementation
    // ---------------------------------------------------------------------------------------
-
-   public ServerConnectionEndpoint getConnectionEndpoint()
+   
+   public String getID()
    {
-      return connectionEndpoint;
+   	return id;
+   }
+   
+   public ServerConnection getConnection()
+   {
+      return connection;
    }
 
-   public String toString()
-   {
-      return "SessionEndpoint[" + id + "]";
-   }
-
-   // Package protected
-   // ----------------------------------------------------------------------------
-
-   void removeBrowser(String browserId) throws Exception
+   public void removeBrowser(final String browserId) throws Exception
    {
       if (browsers.remove(browserId) == null)
       {
          throw new IllegalStateException("Cannot find browser with id " + browserId + " to remove");
       }
+      
+      dispatcher.unregister(browserId);           
    }
 
-   void removeConsumer(String consumerId) throws Exception
+   public void removeConsumer(final String consumerId) throws Exception
    {
       if (consumers.remove(consumerId) == null)
       {
          throw new IllegalStateException("Cannot find consumer with id " + consumerId + " to remove");
       }
+      
+      dispatcher.unregister(consumerId);           
    }
-
-   synchronized void handleDelivery(MessageReference ref, ServerConsumerEndpoint consumer) throws Exception
+   
+   public synchronized void handleDelivery(final MessageReference ref, final ServerConsumer consumer) throws Exception
    {
       Delivery delivery = new DeliveryImpl(ref, consumer.getID(), deliveryIDSequence++, sender);
 
@@ -245,34 +204,22 @@ public class ServerSessionEndpoint
 
       delivery.deliver();
    }
-
-   void setStarted(boolean s) throws Exception
+   
+   public void setStarted(final boolean s) throws Exception
    {
-      Map<String, ServerConsumerEndpoint> consumersClone = new HashMap<String, ServerConsumerEndpoint>(consumers);
+      Map<String, ServerConsumer> consumersClone = new HashMap<String, ServerConsumer>(consumers);
 
-      for (ServerConsumerEndpoint consumer: consumersClone.values())
+      for (ServerConsumer consumer: consumersClone.values())
       {
          consumer.setStarted(s);
       }
    }
 
-   void promptDelivery(final Queue queue)
-   {
-      // TODO - do we really need to prompt on a different thread?
-      executor.execute(new Runnable()
-      {
-         public void run()
-         {
-            queue.deliver();
-         }
-      });
-   }
-
    public void close() throws Exception
    {
-      Map<String, ServerConsumerEndpoint> consumersClone = new HashMap<String, ServerConsumerEndpoint>(consumers);
+      Map<String, ServerConsumer> consumersClone = new HashMap<String, ServerConsumer>(consumers);
 
-      for (ServerConsumerEndpoint consumer: consumersClone.values())
+      for (ServerConsumer consumer: consumersClone.values())
       {
          consumer.close();
       }
@@ -296,20 +243,32 @@ public class ServerSessionEndpoint
 
       deliveries.clear();
 
-      connectionEndpoint.removeSession(id);
+      connection.removeSession(id);
 
-      connectionEndpoint.getMessagingServer().getRemotingService()
-            .getDispatcher().unregister(id);
+      dispatcher.unregister(id);
    }
-
-   private boolean send(String address, Message msg) throws Exception
+   
+   public void promptDelivery(final Queue queue)
+   {
+      // TODO - do we really need to prompt on a different thread?
+      executor.execute(new Runnable()
+      {
+         public void run()
+         {
+            queue.deliver();
+         }
+      });
+   }
+   
+   public boolean send(final String address, final Message msg) throws Exception
    {
       //check the address exists, if it doesnt add if the user has the correct privileges
-      if(!postOffice.containsAllowableAddress(address))
+      if (!postOffice.containsAllowableAddress(address))
       {
          try
          {
-            security.check(address, CheckType.CREATE, getConnectionEndpoint());
+            security.check(address, CheckType.CREATE, connection);
+            
             postOffice.addAllowableAddress(address);
          }
          catch (MessagingException e)
@@ -318,15 +277,15 @@ public class ServerSessionEndpoint
          }
       }
       //check the user has write access to this address
-      security.check(address, CheckType.WRITE, getConnectionEndpoint());
+      security.check(address, CheckType.WRITE, connection);
       // Assign the message an internal id - this is used to key it in the store
-      msg.setMessageID(sp.getPersistenceManager().generateMessageID());
+      msg.setMessageID(persistenceManager.generateMessageID());
 
       // This allows the no-local consumers to filter out the messages that come
       // from the same
       // connection.
 
-      msg.setConnectionID(connectionEndpoint.getConnectionID());
+      msg.setConnectionID(connection.getID());
 
       postOffice.route(address, msg);
 
@@ -342,7 +301,7 @@ public class ServerSessionEndpoint
          {
             if (msg.getNumDurableReferences() != 0)
             {
-               sp.getPersistenceManager().addMessage(msg);
+               persistenceManager.addMessage(msg);
             }
 
             msg.send();
@@ -356,8 +315,7 @@ public class ServerSessionEndpoint
       }
    }
 
-   private synchronized void acknowledge(long deliveryID, boolean allUpTo)
-         throws Exception
+   public synchronized void acknowledge(final long deliveryID, final boolean allUpTo) throws Exception
    {
       // Note that we do not consider it an error if the deliveries cannot be
       // found to be acked.
@@ -391,7 +349,7 @@ public class ServerSessionEndpoint
 
                if (autoCommitAcks)
                {
-                  ref.acknowledge(sp.getPersistenceManager());
+                  ref.acknowledge(persistenceManager);
                }
                else
                {
@@ -429,7 +387,7 @@ public class ServerSessionEndpoint
 
                if (autoCommitAcks)
                {
-                  ref.acknowledge(sp.getPersistenceManager());
+                  ref.acknowledge(persistenceManager);
                }
                else
                {
@@ -445,7 +403,7 @@ public class ServerSessionEndpoint
       }
    }
 
-   private void rollback() throws Exception
+   public void rollback() throws Exception
    {
       if (tx == null)
       {
@@ -471,10 +429,10 @@ public class ServerSessionEndpoint
          deliveryIDSequence -= tx.getAcknowledgementsCount();
       }
 
-      tx.rollback(sp.getPersistenceManager());
+      tx.rollback(persistenceManager);
    }
 
-   private void cancel(long deliveryID, boolean expired) throws Exception
+   public void cancel(final long deliveryID, final boolean expired) throws Exception
    {
       if (deliveryID == -1)
       {
@@ -494,7 +452,7 @@ public class ServerSessionEndpoint
             deliveries.clear();
          }
 
-         cancelTx.rollback(sp.getPersistenceManager());
+         cancelTx.rollback(persistenceManager);
       }
       else if (expired)
       {
@@ -511,7 +469,7 @@ public class ServerSessionEndpoint
 
             if (delivery.getDeliveryID() == deliveryID)
             {
-               delivery.getReference().expire(sp.getPersistenceManager());
+               delivery.getReference().expire(persistenceManager);
 
                iter.remove();
 
@@ -525,13 +483,12 @@ public class ServerSessionEndpoint
       }
    }
 
-   private void commit() throws Exception
+   public void commit() throws Exception
    {
-      tx.commit(true, sp.getPersistenceManager());
+      tx.commit(true, persistenceManager);
    }
 
-   private SessionXAResponseMessage XACommit(boolean onePhase, Xid xid)
-         throws Exception
+   public SessionXAResponseMessage XACommit(final boolean onePhase, final Xid xid) throws Exception
    {
       if (tx != null)
       {
@@ -554,7 +511,7 @@ public class ServerSessionEndpoint
             XAException.XAER_PROTO,
             "Cannot commit transaction, it is suspended " + xid); }
 
-      theTx.commit(onePhase, sp.getPersistenceManager());
+      theTx.commit(onePhase, persistenceManager);
 
       boolean removed = resourceManager.removeTransaction(xid);
 
@@ -568,7 +525,7 @@ public class ServerSessionEndpoint
       return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
    }
 
-   private SessionXAResponseMessage XAEnd(Xid xid, boolean failed) throws Exception
+   public SessionXAResponseMessage XAEnd(final Xid xid, final boolean failed) throws Exception
    {
       if (tx != null && tx.getXid().equals(xid))
       {
@@ -610,7 +567,7 @@ public class ServerSessionEndpoint
       return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
    }
 
-   private SessionXAResponseMessage XAForget(Xid xid)
+   public SessionXAResponseMessage XAForget(final Xid xid)
    {
       // Do nothing since we don't support heuristic commits / rollback from the
       // resource manager
@@ -618,7 +575,7 @@ public class ServerSessionEndpoint
       return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
    }
 
-   private SessionXAResponseMessage XAJoin(Xid xid) throws Exception
+   public SessionXAResponseMessage XAJoin(final Xid xid) throws Exception
    {
       Transaction theTx = resourceManager.getTransaction(xid);
 
@@ -637,7 +594,7 @@ public class ServerSessionEndpoint
       return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
    }
 
-   private SessionXAResponseMessage XAPrepare(Xid xid) throws Exception
+   public SessionXAResponseMessage XAPrepare(final Xid xid) throws Exception
    {
       if (tx != null)
       {
@@ -677,13 +634,13 @@ public class ServerSessionEndpoint
       }
       else
       {
-         theTx.prepare(sp.getPersistenceManager());
+         theTx.prepare(persistenceManager);
 
          return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
       }
    }
 
-   private SessionXAResponseMessage XAResume(Xid xid) throws Exception
+   public SessionXAResponseMessage XAResume(final Xid xid) throws Exception
    {
       if (tx != null)
       {
@@ -713,7 +670,7 @@ public class ServerSessionEndpoint
       return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
    }
 
-   private SessionXAResponseMessage XARollback(Xid xid) throws Exception
+   public SessionXAResponseMessage XARollback(final Xid xid) throws Exception
    {
       if (tx != null)
       {
@@ -736,7 +693,7 @@ public class ServerSessionEndpoint
             XAException.XAER_PROTO,
             "Cannot rollback transaction, it is suspended " + xid); }
 
-      theTx.rollback(sp.getPersistenceManager());
+      theTx.rollback(persistenceManager);
 
       boolean removed = resourceManager.removeTransaction(xid);
 
@@ -750,7 +707,7 @@ public class ServerSessionEndpoint
       return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
    }
 
-   private SessionXAResponseMessage XAStart(Xid xid)
+   public SessionXAResponseMessage XAStart(final Xid xid)
    {
       if (tx != null)
       {
@@ -775,7 +732,7 @@ public class ServerSessionEndpoint
       return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
    }
 
-   private SessionXAResponseMessage XASuspend() throws Exception
+   public SessionXAResponseMessage XASuspend() throws Exception
    {
       if (tx == null)
       {
@@ -800,38 +757,32 @@ public class ServerSessionEndpoint
       return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
    }
 
-   private List<Xid> getInDoubtXids() throws Exception
+   public List<Xid> getInDoubtXids() throws Exception
    {
       return null;
    }
 
-   private int getXATimeout()
+   public int getXATimeout()
    {
       return resourceManager.getTimeoutSeconds();
    }
 
-   private boolean setXATimeout(int timeoutSeconds)
+   public boolean setXATimeout(int timeoutSeconds)
    {
       return resourceManager.setTimeoutSeconds(timeoutSeconds);
    }
 
-   // Protected
-   // ------------------------------------------------------------------------------------
-
-   // Private
-   // --------------------------------------------------------------------------------------
-
-   private void addAddress(String address) throws Exception
+   public void addAddress(final String address) throws Exception
    {
       if (postOffice.containsAllowableAddress(address))
       {
          throw new MessagingException(MessagingException.ADDRESS_EXISTS, "Address already exists: " + address);
       }
-      security.check(address, CheckType.CREATE, getConnectionEndpoint());
+      security.check(address, CheckType.CREATE, connection);
       postOffice.addAllowableAddress(address);
    }
 
-   private void removeAddress(String address) throws Exception
+   public void removeAddress(final String address) throws Exception
    {
       if (!postOffice.removeAllowableAddress(address))
       {
@@ -839,16 +790,15 @@ public class ServerSessionEndpoint
       }
    }
 
-   private void createQueue(String address, String queueName,
-         String filterString, boolean durable, boolean temporary)
-         throws Exception
+   public void createQueue(final String address, final String queueName,
+         final String filterString, boolean durable, final boolean temporary) throws Exception
    {
       //make sure the user has privileges to create this address
-      if(!postOffice.containsAllowableAddress(address))
+      if (!postOffice.containsAllowableAddress(address))
       {
          try
          {
-            security.check(address, CheckType.CREATE, getConnectionEndpoint());
+            security.check(address, CheckType.CREATE, connection);
             postOffice.addAllowableAddress(address);
          }
          catch (MessagingException e)
@@ -882,11 +832,11 @@ public class ServerSessionEndpoint
       {
          Queue queue = binding.getQueue();
 
-         connectionEndpoint.addTemporaryQueue(queue);
+         connection.addTemporaryQueue(queue);
       }
    }
 
-   private void deleteQueue(String queueName) throws Exception
+   public void deleteQueue(final String queueName) throws Exception
    {
       Binding binding = postOffice.removeBinding(queueName);
 
@@ -899,17 +849,18 @@ public class ServerSessionEndpoint
 
       if (queue.isDurable())
       {
-         sp.getPersistenceManager().deleteAllReferences(binding.getQueue());
+      	persistenceManager.deleteAllReferences(binding.getQueue());
       }
 
       if (queue.isTemporary())
       {
-         connectionEndpoint.removeTemporaryQueue(queue);
+         connection.removeTemporaryQueue(queue);
       }
    }
 
-   private SessionCreateConsumerResponseMessage createConsumer(String queueName,  String filterString,
-                                                 boolean noLocal, boolean autoDeleteQueue) throws Exception
+   public SessionCreateConsumerResponseMessage
+      createConsumer(final String queueName, final String filterString,
+                     final boolean noLocal, final boolean autoDeleteQueue, final int prefetchSize) throws Exception
    {
       Binding binding = postOffice.getBinding(queueName);
 
@@ -917,11 +868,9 @@ public class ServerSessionEndpoint
       {
          throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
       }
-      security.check(binding.getAddress(), CheckType.READ, getConnectionEndpoint());
-      int prefetchSize = connectionEndpoint.getPrefetchSize();
-
-      String consumerID = UUID.randomUUID().toString();
-
+      
+      security.check(binding.getAddress(), CheckType.READ, connection);
+      
       Filter filter = null;
 
       if (filterString != null)
@@ -929,26 +878,26 @@ public class ServerSessionEndpoint
          filter = new FilterImpl(filterString);
       }
 
-      ServerConsumerEndpoint ep = new ServerConsumerEndpoint(sp, consumerID,
-            binding.getQueue(), this, filter, noLocal, autoDeleteQueue, prefetchSize > 0);
+      ServerConsumer consumer =
+      	new ServerConsumerEndpoint(binding.getQueue(), noLocal, filter, autoDeleteQueue, prefetchSize > 0, connection.getID(),
+                                    this, persistenceManager, postOffice, connection.isStarted());
 
-      connectionEndpoint.getMessagingServer().getRemotingService()
-            .getDispatcher().register(ep.newHandler());
+      dispatcher.register(new ServerConsumerPacketHandler(consumer));
 
-      SessionCreateConsumerResponseMessage response = new SessionCreateConsumerResponseMessage(consumerID,
+      SessionCreateConsumerResponseMessage response = new SessionCreateConsumerResponseMessage(consumer.getID(),
             prefetchSize);
 
       synchronized (consumers)
       {
-         consumers.put(consumerID, ep);
+         consumers.put(consumer.getID(), consumer);
       }
 
-      log.trace(this + " created and registered " + ep);
+      log.trace(this + " created and registered " + consumer);
 
       return response;
    }
 
-   public SessionQueueQueryResponseMessage executeQueueQuery(SessionQueueQueryMessage request) throws Exception
+   public SessionQueueQueryResponseMessage executeQueueQuery(final SessionQueueQueryMessage request) throws Exception
    {
       if (request.getQueueName() == null)
       {
@@ -979,7 +928,7 @@ public class ServerSessionEndpoint
       return response;
    }
 
-   public SessionBindingQueryResponseMessage executeBindingQuery(SessionBindingQueryMessage request) throws Exception
+   public SessionBindingQueryResponseMessage executeBindingQuery(final SessionBindingQueryMessage request) throws Exception
    {
       if (request.getAddress() == null)
       {
@@ -1003,14 +952,15 @@ public class ServerSessionEndpoint
       return new SessionBindingQueryResponseMessage(exists, queueNames);
    }
 
-   private SessionCreateBrowserResponseMessage createBrowser(String queueName, String selector)
+   public SessionCreateBrowserResponseMessage createBrowser(final String queueName, final String selector)
          throws Exception
    {
       if(!postOffice.containsAllowableAddress(queueName))
       {
          try
          {
-            security.check(queueName, CheckType.CREATE, this.getConnectionEndpoint());
+            security.check(queueName, CheckType.CREATE, connection);
+            
             postOffice.addAllowableAddress(queueName);
          }
          catch (MessagingException e)
@@ -1024,224 +974,30 @@ public class ServerSessionEndpoint
       {
          throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
       }
-      security.check(binding.getAddress(), CheckType.READ, this.getConnectionEndpoint());
-      String browserID = UUID.randomUUID().toString();
-
-      ServerBrowserEndpoint ep = new ServerBrowserEndpoint(this, browserID,
-            binding.getQueue(), selector);
+      security.check(binding.getAddress(), CheckType.READ, connection);
+      
+      ServerBrowserEndpoint browser = new ServerBrowserEndpoint(this, binding.getQueue(), selector);
 
       // still need to synchronized since close() can come in on a different
       // thread
       synchronized (browsers)
       {
-         browsers.put(browserID, ep);
+         browsers.put(browser.getID(), browser);
       }
 
-      connectionEndpoint.getMessagingServer().getRemotingService()
-            .getDispatcher().register(ep.newHandler());
+      dispatcher.register(browser.newHandler());
 
-      log.trace(this + " created and registered " + ep);
+      log.trace(this + " created and registered " + browser);
 
-      return new SessionCreateBrowserResponseMessage(browserID);
+      return new SessionCreateBrowserResponseMessage(browser.getID());
    }
-
-   public PacketHandler newHandler()
+   
+   // Public ---------------------------------------------------------------------------------------------
+   
+   public String toString()
    {
-      return new ServerSessionEndpointPacketHandler();
+      return "SessionEndpoint[" + id + "]";
    }
-
-   // Inner classes
-   // --------------------------------------------------------------------------------
-
-   private class ServerSessionEndpointPacketHandler extends ServerPacketHandlerSupport
-   {
-      public ServerSessionEndpointPacketHandler()
-      {
-      }
-
-      public String getID()
-      {
-         return ServerSessionEndpoint.this.id;
-      }
-
-      public Packet doHandle(Packet packet, PacketSender sender)
-            throws Exception
-      {
-         Packet response = null;
-
-         PacketType type = packet.getType();
-
-         // TODO use a switch for this
-         if (type == SESS_SEND)
-         {
-            SessionSendMessage message = (SessionSendMessage) packet;
-
-            send(message.getAddress(), message.getMessage());
-         }
-         else if (type == SESS_CREATECONSUMER)
-         {
-            SessionCreateConsumerMessage request = (SessionCreateConsumerMessage) packet;
-
-            response = createConsumer(request.getQueueName(), request
-                  .getFilterString(), request.isNoLocal(), request.isAutoDeleteQueue());
-         }
-         else if (type == SESS_CREATEQUEUE)
-         {
-            SessionCreateQueueMessage request = (SessionCreateQueueMessage) packet;
-
-            createQueue(request.getAddress(), request.getQueueName(), request
-                  .getFilterString(), request.isDurable(), request
-                  .isTemporary());
-         }
-         else if (type == SESS_DELETE_QUEUE)
-         {
-            SessionDeleteQueueMessage request = (SessionDeleteQueueMessage) packet;
-
-            deleteQueue(request.getQueueName());
-         }
-         else if (type == SESS_QUEUEQUERY)
-         {
-            SessionQueueQueryMessage request = (SessionQueueQueryMessage) packet;
-
-            response = executeQueueQuery(request);
-         }
-         else if (type == SESS_BINDINGQUERY)
-         {
-            SessionBindingQueryMessage request = (SessionBindingQueryMessage)packet;
-
-            response = executeBindingQuery(request);
-         }
-         else if (type == SESS_CREATEBROWSER)
-         {
-            SessionCreateBrowserMessage request = (SessionCreateBrowserMessage) packet;
-
-            response = createBrowser(request.getQueueName(), request
-                  .getFilterString());
-         }
-         else if (type == CLOSE)
-         {
-            close();
-         }
-         else if (type == SESS_ACKNOWLEDGE)
-         {
-            SessionAcknowledgeMessage message = (SessionAcknowledgeMessage) packet;
-
-            acknowledge(message.getDeliveryID(), message.isAllUpTo());
-         }
-         else if (type == SESS_COMMIT)
-         {
-            commit();
-         }
-         else if (type == SESS_ROLLBACK)
-         {
-            rollback();
-         }
-         else if (type == SESS_CANCEL)
-         {
-            SessionCancelMessage message = (SessionCancelMessage) packet;
-
-            cancel(message.getDeliveryID(), message.isExpired());
-         }
-         else if (type == SESS_XA_COMMIT)
-         {
-            SessionXACommitMessage message = (SessionXACommitMessage) packet;
-
-            response = XACommit(message.isOnePhase(), message.getXid());
-         }
-         else if (type == SESS_XA_END)
-         {
-            SessionXAEndMessage message = (SessionXAEndMessage) packet;
-
-            response = XAEnd(message.getXid(), message.isFailed());
-         }
-         else if (type == SESS_XA_FORGET)
-         {
-            SessionXAForgetMessage message = (SessionXAForgetMessage) packet;
-
-            response = XAForget(message.getXid());
-         }
-         else if (type == SESS_XA_JOIN)
-         {
-            SessionXAJoinMessage message = (SessionXAJoinMessage) packet;
-
-            response = XAJoin(message.getXid());
-         }
-         else if (type == SESS_XA_RESUME)
-         {
-            SessionXAResumeMessage message = (SessionXAResumeMessage) packet;
-
-            response = XAResume(message.getXid());
-         }
-         else if (type == SESS_XA_ROLLBACK)
-         {
-            SessionXARollbackMessage message = (SessionXARollbackMessage) packet;
-
-            response = XARollback(message.getXid());
-         }
-         else if (type == SESS_XA_START)
-         {
-            SessionXAStartMessage message = (SessionXAStartMessage) packet;
-
-            response = XAStart(message.getXid());
-         }
-         else if (type == SESS_XA_SUSPEND)
-         {
-            response = XASuspend();
-         }
-         else if (type == SESS_XA_PREPARE)
-         {
-            SessionXAPrepareMessage message = (SessionXAPrepareMessage) packet;
-
-            response = XAPrepare(message.getXid());
-         }
-         else if (type == SESS_XA_INDOUBT_XIDS)
-         {
-            List<Xid> xids = getInDoubtXids();
-
-            response = new SessionXAGetInDoubtXidsResponseMessage(xids);
-         }
-         else if (type == SESS_XA_GET_TIMEOUT)
-         {
-            response = new SessionXAGetTimeoutResponseMessage(getXATimeout());
-         }
-         else if (type == SESS_XA_SET_TIMEOUT)
-         {
-            SessionXASetTimeoutMessage message = (SessionXASetTimeoutMessage) packet;
-
-            response = new SessionXASetTimeoutResponseMessage(setXATimeout(message
-                  .getTimeoutSeconds()));
-         }
-         else if (type == PacketType.SESS_ADD_ADDRESS)
-         {
-            SessionAddAddressMessage message = (SessionAddAddressMessage) packet;
-
-            addAddress(message.getAddress());
-         }
-         else if (type == PacketType.SESS_REMOVE_ADDRESS)
-         {
-            SessionRemoveAddressMessage message = (SessionRemoveAddressMessage) packet;
-
-            removeAddress(message.getAddress());
-         }
-         else
-         {
-            throw new MessagingException(MessagingException.UNSUPPORTED_PACKET, "Unsupported packet " + type);
-         }
-
-         // reply if necessary
-         if (response == null && packet.isOneWay() == false)
-         {
-            response = new NullPacket();
-         }
-
-         return response;
-      }
-
-      @Override
-      public String toString()
-      {
-         return "ServerSessionEndpointPacketHandler[id=" + id + "]";
-      }
-   }
+   
 
 }
