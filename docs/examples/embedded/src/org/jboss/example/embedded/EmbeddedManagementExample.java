@@ -27,8 +27,8 @@ import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.MessagingServerManagement;
 import org.jboss.messaging.core.impl.server.MessagingServerImpl;
 import org.jboss.messaging.core.impl.server.MessagingServerManagementImpl;
-import org.jboss.jms.server.JMSServerManager;
-import org.jboss.jms.server.JMSServerManagerImpl;
+import org.jboss.messaging.jms.server.JMSServerManager;
+import org.jboss.messaging.jms.server.JMSServerManagerImpl;
 import org.jnp.server.NamingBeanImpl;
 import org.jnp.server.Main;
 

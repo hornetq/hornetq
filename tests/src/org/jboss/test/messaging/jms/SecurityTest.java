@@ -41,9 +41,9 @@ import javax.jms.XASession;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 
-import org.jboss.jms.server.security.Role;
-import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.core.impl.XidImpl;
+import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
 

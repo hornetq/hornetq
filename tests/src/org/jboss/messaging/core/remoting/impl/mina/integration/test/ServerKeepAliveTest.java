@@ -16,7 +16,7 @@ import java.util.concurrent.CountDownLatch;
 
 import junit.framework.TestCase;
 
-import org.jboss.jms.client.api.FailureListener;
+import org.jboss.messaging.core.client.FailureListener;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;

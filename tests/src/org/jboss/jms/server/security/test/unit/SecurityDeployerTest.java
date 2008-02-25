@@ -23,7 +23,7 @@ package org.jboss.jms.server.security.test.unit;
 
 import junit.framework.TestCase;
 import org.easymock.EasyMock;
-import org.jboss.jms.server.security.Role;
+import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.deployers.security.SecurityDeployer;
 import org.jboss.messaging.util.HierarchicalRepository;
 import org.jboss.messaging.util.XMLUtil;

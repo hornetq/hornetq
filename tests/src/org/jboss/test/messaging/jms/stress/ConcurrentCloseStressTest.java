@@ -34,7 +34,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.jms.ConnectionTest;

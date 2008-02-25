@@ -35,7 +35,7 @@
       <para>An example of a Server Peer configuration is presented below. Note
       that not all values for the server peer's attributes are specified in
       the example</para>
-      <programlisting>&lt;mbean code="org.jboss.jms.server.ServerPeer"
+      <programlisting>&lt;mbean code="org.jboss.messaging.jms.server.ServerPeer"
       name="jboss.messaging:service=ServerPeer"
       xmbean-dd="xmdesc/ServerPeer-xmbean.xml"&gt;
 
@@ -951,7 +951,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
       not be used depending on which login module you have configured</para>
       <para>Here is an example JMSUserManager configuration</para>
       <programlisting wrap-option="true">
-   &lt;mbean code="org.jboss.jms.server.plugin.JDBCJMSUserManagerService"
+   &lt;mbean code="org.jboss.messaging.jms.server.plugin.JDBCJMSUserManagerService"
       name="jboss.messaging:service=JMSUserManager"
       xmbean-dd="xmdesc/JMSUserManager-xmbean.xml"&gt;
       &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
@@ -1025,7 +1025,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
       The Default Dead Letter Queue. This destination is a dependency of an EJB MDB container.
    --&gt;
 
-   &lt;mbean code="org.jboss.jms.server.destination.QueueService"
+   &lt;mbean code="org.jboss.messaging.jms.server.destination.QueueService"
       name="jboss.messaging.destination:service=Queue,name=DLQ"
       xmbean-dd="xmdesc/Queue-xmbean.xml"&gt;
       &lt;depends optional-attribute-name="ServerPeer"&gt;
@@ -1035,7 +1035,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
    &lt;/mbean&gt;
 
 
-   &lt;mbean code="org.jboss.jms.server.destination.TopicService"
+   &lt;mbean code="org.jboss.messaging.jms.server.destination.TopicService"
       name="jboss.messaging.destination:service=Topic,name=testTopic"
       xmbean-dd="xmdesc/Topic-xmbean.xml"&gt;
       &lt;depends optional-attribute-name="ServerPeer"&gt;
@@ -1051,7 +1051,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
       &lt;/attribute&gt;
    &lt;/mbean&gt;
 
-   &lt;mbean code="org.jboss.jms.server.destination.TopicService"
+   &lt;mbean code="org.jboss.messaging.jms.server.destination.TopicService"
       name="jboss.messaging.destination:service=Topic,name=securedTopic"
       xmbean-dd="xmdesc/Topic-xmbean.xml"&gt;
       &lt;depends optional-attribute-name="ServerPeer"&gt;
@@ -1066,7 +1066,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
    &lt;/mbean&gt;
 
 
-   &lt;mbean code="org.jboss.jms.server.destination.QueueService"
+   &lt;mbean code="org.jboss.messaging.jms.server.destination.QueueService"
       name="jboss.messaging.destination:service=Queue,name=testQueue"
       xmbean-dd="xmdesc/Queue-xmbean.xml"&gt;
       &lt;depends optional-attribute-name="ServerPeer"&gt;
@@ -1082,7 +1082,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
       &lt;/attribute&gt;
    &lt;/mbean&gt;
 
-   &lt;mbean code="org.jboss.jms.server.destination.QueueService"
+   &lt;mbean code="org.jboss.messaging.jms.server.destination.QueueService"
       name="jboss.messaging.destination:service=Queue,name=A"
       xmbean-dd="xmdesc/Queue-xmbean.xml"&gt;
       &lt;depends optional-attribute-name="ServerPeer"&gt;
@@ -1095,7 +1095,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
    &lt;!-- It's possible for indiviual queues and topics to use a specific queue for
    an expiry or DLQ --&gt;
 
-   &lt;mbean code="org.jboss.jms.server.destination.QueueService"
+   &lt;mbean code="org.jboss.messaging.jms.server.destination.QueueService"
       name="jboss.messaging.destination:service=Queue,name=PrivateDLQ"
       xmbean-dd="xmdesc/Queue-xmbean.xml"&gt;
       &lt;depends optional-attribute-name="ServerPeer"&gt;
@@ -1104,7 +1104,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
       &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;
    &lt;/mbean&gt;
 
-   &lt;mbean code="org.jboss.jms.server.destination.QueueService"
+   &lt;mbean code="org.jboss.messaging.jms.server.destination.QueueService"
       name="jboss.messaging.destination:service=Queue,name=PrivateExpiryQueue"
       xmbean-dd="xmdesc/Queue-xmbean.xml"&gt;
       &lt;depends optional-attribute-name="ServerPeer"&gt;
@@ -1113,7 +1113,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
       &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;
    &lt;/mbean&gt;
 
-   &lt;mbean code="org.jboss.jms.server.destination.QueueService"
+   &lt;mbean code="org.jboss.messaging.jms.server.destination.QueueService"
       name="jboss.messaging.destination:service=Queue,name=QueueWithOwnDLQAndExpiryQueue"
       xmbean-dd="xmdesc/Queue-xmbean.xml"&gt;
       &lt;depends optional-attribute-name="ServerPeer"&gt;
@@ -1128,7 +1128,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
       &lt;/attribute&gt;
    &lt;/mbean&gt;
 
-   &lt;mbean code="org.jboss.jms.server.destination.TopicService"
+   &lt;mbean code="org.jboss.messaging.jms.server.destination.TopicService"
       name="jboss.messaging.destination:service=Topic,name=TopicWithOwnDLQAndExpiryQueue"
       xmbean-dd="xmdesc/Topic-xmbean.xml"&gt;
       &lt;depends optional-attribute-name="ServerPeer"&gt;
@@ -1144,7 +1144,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
    &lt;/mbean&gt;
 
 
-   &lt;mbean code="org.jboss.jms.server.destination.TopicService"
+   &lt;mbean code="org.jboss.messaging.jms.server.destination.TopicService"
       name="jboss.messaging.destination:service=Topic,name=TopicWithOwnRedeliveryDelay"
       xmbean-dd="xmdesc/Topic-xmbean.xml"&gt;
       &lt;depends optional-attribute-name="ServerPeer"&gt;
@@ -1155,7 +1155,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
    &lt;/mbean&gt;
 
 
-   &lt;mbean code="org.jboss.jms.server.destination.TopicService"
+   &lt;mbean code="org.jboss.messaging.jms.server.destination.TopicService"
       name="jboss.messaging.destination:service=Topic,name=testDistributedTopic"
       xmbean-dd="xmdesc/Topic-xmbean.xml"&gt;
       &lt;depends optional-attribute-name="ServerPeer"&gt;
@@ -1652,7 +1652,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
       <para>An example connection factory configuration is presented
       below:</para>
       <programlisting>
-&lt;mbean code="org.jboss.jms.server.connectionfactory.ConnectionFactory"
+&lt;mbean code="org.jboss.messaging.jms.server.connectionfactory.ConnectionFactory"
       name="jboss.messaging.connectionfactory:service=MyConnectionFactory"
       xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml"&gt;
       &lt;depends optional-attribute-name="ServerPeer"&gt;
@@ -1814,9 +1814,9 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
             balancing then you can specify how the load balancing is
             implemented by overriding this attribute. The value must
             correspond to the name of a class which implements the interface
-            org.jboss.jms.client.plugin.LoadBalancingFactory</para>
+            org.jboss.messaging.jms.client.plugin.LoadBalancingFactory</para>
             <para>The default value is
-            org.jboss.jms.client.plugin.RoundRobinLoadBalancingFactory, which
+            org.jboss.messaging.jms.client.plugin.RoundRobinLoadBalancingFactory, which
             load balances connetions across the cluster in a round-robin
             fashion</para>
          </section>
@@ -1879,12 +1879,12 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
                &lt;attribute name="timeout" isParam="true"&gt;0&lt;/attribute&gt;
                &lt;attribute name="serverBindAddress"&gt;${jboss.bind.address}&lt;/attribute&gt;
                &lt;attribute name="serverBindPort"&gt;4457&lt;/attribute&gt;
-               &lt;attribute name="clientSocketClass" isParam="true"&gt;org.jboss.jms.client.remoting.ClientSocketWrapper&lt;/attribute&gt;
-               &lt;attribute name="serverSocketClass" isParam="true"&gt;org.jboss.jms.server.remoting.ServerSocketWrapper&lt;/attribute&gt;
+               &lt;attribute name="clientSocketClass" isParam="true"&gt;org.jboss.messaging.jms.client.remoting.ClientSocketWrapper&lt;/attribute&gt;
+               &lt;attribute name="serverSocketClass" isParam="true"&gt;org.jboss.messaging.jms.server.remoting.ServerSocketWrapper&lt;/attribute&gt;
                &lt;attribute name="numberOfCallRetries" isParam="true"&gt;1&lt;/attribute&gt;
                &lt;attribute name="pingFrequency" isParam="true"&gt;214748364&lt;/attribute&gt;
                &lt;attribute name="pingWindowFactor" isParam="true"&gt;10&lt;/attribute&gt;
-               &lt;attribute name="onewayThreadPool"&gt;org.jboss.jms.server.remoting.DirectThreadPool&lt;/attribute&gt;
+               &lt;attribute name="onewayThreadPool"&gt;org.jboss.messaging.jms.server.remoting.DirectThreadPool&lt;/attribute&gt;
                
                &lt;!-- Periodicity of client pings. Server window by default is twice this figure --&gt;                               
                &lt;attribute name="clientLeasePeriod" isParam="true"&gt;10000&lt;/attribute&gt;
@@ -1904,7 +1904,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
                               
             &lt;/invoker&gt;
             &lt;handlers&gt;
-               &lt;handler subsystem="JMS"&gt;org.jboss.jms.server.remoting.JMSServerInvocationHandler&lt;/handler&gt;
+               &lt;handler subsystem="JMS"&gt;org.jboss.messaging.jms.server.remoting.JMSServerInvocationHandler&lt;/handler&gt;
             &lt;/handlers&gt;
          &lt;/config&gt;
       </programlisting></para>

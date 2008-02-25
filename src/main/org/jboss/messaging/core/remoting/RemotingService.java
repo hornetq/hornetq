@@ -6,8 +6,8 @@
  */
 package org.jboss.messaging.core.remoting;
 
-import org.jboss.jms.client.api.FailureListener;
 import org.jboss.messaging.core.MessagingComponent;
+import org.jboss.messaging.core.client.FailureListener;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

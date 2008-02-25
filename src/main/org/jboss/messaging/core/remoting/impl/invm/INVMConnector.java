@@ -10,7 +10,7 @@ import static org.jboss.messaging.core.remoting.TransportType.INVM;
 
 import java.io.IOException;
 
-import org.jboss.jms.client.api.FailureListener;
+import org.jboss.messaging.core.client.FailureListener;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.PacketDispatcher;

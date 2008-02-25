@@ -30,19 +30,6 @@ import java.util.ListIterator;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
 import org.jboss.kernel.plugins.bootstrap.basic.BasicBootstrap;
 import org.jboss.kernel.plugins.deployment.xml.BeanXMLDeployer;
 import org.jboss.kernel.spi.config.KernelConfig;
@@ -79,58 +66,12 @@ public class JBMBootstrapServer extends BasicBootstrap
    {
       JBMBootstrapServer bootstrap = new JBMBootstrapServer(args);
       bootstrap.run();
-      test();
-
-
    }
-
 
    public void run()
    {
       super.run();
       log.info("JBM Server Started");
-   }
-
-   private static void test()
-           throws NamingException, JMSException
-   {
-      //do some JMS stuff
-      InitialContext ic = new InitialContext();
-
-
-      ConnectionFactory cf = (ConnectionFactory) ic.lookup("ConnectionFactory");
-      Queue q = (Queue) ic.lookup("queue/testQueue");
-      Connection c = cf.createConnection();
-      Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      TextMessage message = s.createTextMessage("test");
-      MessageProducer p = s.createProducer(q);
-      p.send(message);
-      message = s.createTextMessage("test2");
-      p.send(message);
-      message = s.createTextMessage("test3");
-      p.send(message);
-      message = s.createTextMessage("test4");
-      p.send(message);
-      c.start();
-      MessageConsumer mc = s.createConsumer(q);
-      MessageListener messageListener = new MessageListener()
-      {
-         public void onMessage(Message message)
-         {
-            TextMessage textMessage = (TextMessage) message;
-            try
-            {
-               System.out.println("textMessage.getText() = " + textMessage.getText());
-            }
-            catch (JMSException e)
-            {
-               e.printStackTrace();
-            }
-         }
-      };
-      mc.setMessageListener(messageListener);
-      c.start();
-      c.close();
    }
 
    /**
@@ -168,7 +109,6 @@ public class JBMBootstrapServer extends BasicBootstrap
 
       deployer.validate();
    }
-
    
    /**
     * Undeploy a deployment

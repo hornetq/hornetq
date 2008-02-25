@@ -33,9 +33,6 @@ import java.util.concurrent.TimeUnit;
 import java.lang.management.ManagementFactory;
 
 import org.jboss.aop.microcontainer.aspects.jmx.JMX;
-import org.jboss.jms.client.api.ClientConnectionFactory;
-import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.jms.server.endpoint.ServerConnection;
 import org.jboss.messaging.core.Binding;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Message;
@@ -44,6 +41,9 @@ import org.jboss.messaging.core.MessagingComponent;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.MessagingServerManagement;
 import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.ServerConnection;
+import org.jboss.messaging.core.client.ClientConnectionFactory;
+import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.impl.filter.FilterImpl;
 import org.jboss.messaging.core.impl.messagecounter.MessageCounter;
 import org.jboss.messaging.util.MessagingException;
@@ -539,7 +539,7 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
 //      out.println("<table><tr><td>ID</td><td>Host</td><td>User</td><td>#Sessions</td></tr>");
 //      for (Iterator iter = endpoints.iterator(); iter.hasNext();)
 //      {
-//         ServerConnectionEndpoint endpoint = (ServerConnectionEndpoint) iter.next();
+//         ServerConnectionImpl endpoint = (ServerConnectionImpl) iter.next();
 //
 //         out.println("<tr>");
 //         out.println("<td>" + endpoint.toString() + "</td>");

@@ -68,14 +68,14 @@
       </constructor>
    </bean> 
    
-   <bean name="JMSServerManager" class="org.jboss.jms.server.JMSServerManagerImpl">
-      <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.messaging:service=JMSServerManager", exposedInterface=org.jboss.jms.server.JMSServerManager.class)</annotation>
+   <bean name="JMSServerManager" class="org.jboss.messaging.jms.server.JMSServerManagerImpl">
+      <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.messaging:service=JMSServerManager", exposedInterface=org.jboss.messaging.jms.server.JMSServerManager.class)</annotation>
       <property name="messagingServerManagement">
          <inject bean="MessagingServerManagement"/>
       </property>
    </bean>
 
-   <bean name="JMSServerDeployer" class="org.jboss.jms.server.JMSServerDeployer">
+   <bean name="JMSServerDeployer" class="org.jboss.messaging.jms.server.JMSServerDeployer">
       <property name="jmsServerManager">
          <inject bean="JMSServerManager"/>
       </property>

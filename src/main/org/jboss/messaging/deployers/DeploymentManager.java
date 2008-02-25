@@ -21,15 +21,19 @@
    */
 package org.jboss.messaging.deployers;
 
-import org.jboss.logging.Logger;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import org.jboss.logging.Logger;
 
 /**
  * This class manages any configuration files available. It will notify any deployers registered with it on changes.

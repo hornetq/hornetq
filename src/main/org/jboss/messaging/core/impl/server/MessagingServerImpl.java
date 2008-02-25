@@ -28,18 +28,10 @@ import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import org.jboss.jms.server.ConnectionManager;
-import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
-import org.jboss.jms.server.endpoint.MessagingServerPacketHandler;
-import org.jboss.jms.server.endpoint.ServerConnection;
-import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
-import org.jboss.jms.server.endpoint.ServerConnectionPacketHandler;
-import org.jboss.jms.server.security.NullAuthenticationManager;
-import org.jboss.jms.server.security.Role;
-import org.jboss.jms.server.security.SecurityMetadataStore;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Binding;
 import org.jboss.messaging.core.Configuration;
+import org.jboss.messaging.core.ConnectionManager;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.MemoryManager;
 import org.jboss.messaging.core.MessageReference;
@@ -51,8 +43,13 @@ import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.QueueFactory;
 import org.jboss.messaging.core.QueueSettings;
 import org.jboss.messaging.core.ResourceManager;
+import org.jboss.messaging.core.ServerConnection;
+import org.jboss.messaging.core.impl.ConnectionManagerImpl;
+import org.jboss.messaging.core.impl.MessagingServerPacketHandler;
 import org.jboss.messaging.core.impl.QueueFactoryImpl;
 import org.jboss.messaging.core.impl.ResourceManagerImpl;
+import org.jboss.messaging.core.impl.ServerConnectionImpl;
+import org.jboss.messaging.core.impl.ServerConnectionPacketHandler;
 import org.jboss.messaging.core.impl.memory.SimpleMemoryManager;
 import org.jboss.messaging.core.impl.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.impl.postoffice.PostOfficeImpl;
@@ -61,6 +58,9 @@ import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
+import org.jboss.messaging.core.security.NullAuthenticationManager;
+import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.core.security.SecurityMetadataStore;
 import org.jboss.messaging.deployers.queue.QueueSettingsDeployer;
 import org.jboss.messaging.deployers.security.SecurityDeployer;
 import org.jboss.messaging.util.ExceptionUtil;
@@ -100,7 +100,7 @@ public class MessagingServerImpl implements MessagingServer
    // wired components
 
    private SecurityMetadataStore securityStore;
-   private SimpleConnectionManager connectionManager;
+   private ConnectionManagerImpl connectionManager;
    private MemoryManager memoryManager = new SimpleMemoryManager();
    private MessageCounterManager messageCounterManager;
    private PostOffice postOffice;
@@ -169,7 +169,7 @@ public class MessagingServerImpl implements MessagingServer
 
          // Create the wired components
 
-         securityStore = new SecurityMetadataStore();
+         securityStore = new SecurityMetadataStore(configuration.getSecurityInvalidationInterval());
          securityRepository.setDefault(new HashSet<Role>());
          securityStore.setSecurityRepository(securityRepository);
          securityStore.setAuthenticationManager(authenticationManager);
@@ -181,7 +181,7 @@ public class MessagingServerImpl implements MessagingServer
          scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize());
          queueFactory = new QueueFactoryImpl(scheduledExecutor);
          queueFactory.setQueueSettingsRepository(queueSettingsRepository);
-         connectionManager = new SimpleConnectionManager();
+         connectionManager = new ConnectionManagerImpl();
          memoryManager = new SimpleMemoryManager();
          messageCounterManager = new MessageCounterManager(configuration.getMessageCounterSamplePeriod());
          configuration.addPropertyChangeListener(new PropertyChangeListener()
@@ -514,9 +514,9 @@ public class MessagingServerImpl implements MessagingServer
       // security my be screwed up, on account of thread local security stack being corrupted.
 
       securityStore.authenticate(username, password);
-
+      
       final ServerConnection connection =
-         new ServerConnectionEndpoint(username, password,
+         new ServerConnectionImpl(username, password,
                           remotingClientSessionID, clientVMID, clientAddress,
                           prefetchSize, remotingService.getDispatcher(), resourceManager, persistenceManager,
                           postOffice, securityStore, connectionManager);
@@ -534,29 +534,4 @@ public class MessagingServerImpl implements MessagingServer
 
    // Private --------------------------------------------------------------------------------------
 
-   private boolean destroyDestination(String address) throws Exception
-   {
-
-
-      List<Binding> bindings = postOffice.getBindingsForAddress(address);
-
-      boolean destroyed = false;
-
-      for (Binding binding : bindings)
-      {
-         Queue queue = binding.getQueue();
-
-         persistenceManager.deleteAllReferences(queue);
-
-         queue.removeAllReferences();
-
-         postOffice.removeBinding(queue.getName());
-
-         destroyed = true;
-      }
-
-      postOffice.removeAllowableAddress(address);
-
-      return destroyed;
-   }
 }

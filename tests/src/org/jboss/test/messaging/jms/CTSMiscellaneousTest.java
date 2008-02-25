@@ -37,7 +37,7 @@ import javax.jms.TextMessage;
 import javax.jms.TopicConnection;
 import javax.jms.TopicSession;
 
-import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.jms.message.SimpleJMSBytesMessage;
 import org.jboss.test.messaging.jms.message.SimpleJMSMessage;

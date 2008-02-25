@@ -35,8 +35,8 @@ import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 
-import org.jboss.jms.client.JBossSession;
-import org.jboss.jms.client.api.ClientSession;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.jms.client.JBossSession;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 

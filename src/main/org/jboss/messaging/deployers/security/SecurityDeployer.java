@@ -21,7 +21,7 @@
    */
 package org.jboss.messaging.deployers.security;
 
-import org.jboss.jms.server.security.Role;
+import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.deployers.Deployer;
 import org.jboss.messaging.util.HierarchicalRepository;
 import org.w3c.dom.Node;

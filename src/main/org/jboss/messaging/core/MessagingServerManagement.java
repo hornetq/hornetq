@@ -24,8 +24,7 @@ package org.jboss.messaging.core;
 import java.util.Collection;
 import java.util.List;
 
-import org.jboss.jms.client.api.ClientConnectionFactory;
-import org.jboss.jms.server.endpoint.ServerConnection;
+import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.impl.filter.FilterImpl;
 import org.jboss.messaging.core.impl.messagecounter.MessageCounter;
 import java.util.Set;

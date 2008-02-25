@@ -67,7 +67,7 @@
 
    <!-- Ignoring trace from these: -->
 
-   <category name="org.jboss.jms.server.remoting.JMSServerInvocationHandler">
+   <category name="org.jboss.messaging.jms.server.remoting.JMSServerInvocationHandler">
       <priority value="DEBUG"/>
    </category>
 

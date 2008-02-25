@@ -23,10 +23,9 @@ package org.jboss.messaging.core;
 
 import java.util.HashSet;
 
-import org.jboss.jms.server.ConnectionManager;
-import org.jboss.jms.server.security.Role;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
+import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.util.HierarchicalRepository;
 import org.jboss.messaging.util.Version;
 

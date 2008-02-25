@@ -6,15 +6,15 @@
 
    <interceptor class="org.jboss.test.messaging.tools.aop.PoisonInterceptor" scope="PER_VM"/>
 
-   <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.ConnectionAdvised->*(..))">
+   <bind pointcut="execution(* org.jboss.messaging.jms.server.endpoint.advised.ConnectionAdvised->*(..))">
       <interceptor-ref name="org.jboss.test.messaging.tools.aop.PoisonInterceptor"/>
    </bind>
 
-   <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.SessionAdvised->*(..))">
+   <bind pointcut="execution(* org.jboss.messaging.jms.server.endpoint.advised.SessionAdvised->*(..))">
       <interceptor-ref name="org.jboss.test.messaging.tools.aop.PoisonInterceptor"/>
    </bind>
 
-   <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.ConnectionFactoryAdvised->*(..))">
+   <bind pointcut="execution(* org.jboss.messaging.jms.server.endpoint.advised.ConnectionFactoryAdvised->*(..))">
       <interceptor-ref name="org.jboss.test.messaging.tools.aop.PoisonInterceptor"/>
    </bind>
 

@@ -41,14 +41,14 @@ import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
-import org.jboss.jms.server.security.Role;
-import org.jboss.jms.server.JMSServerManager;
 import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Binding;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.MessagingServerManagement;
 import org.jboss.messaging.core.QueueSettings;
+import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.microcontainer.JBMBootstrapServer;
 import org.jboss.messaging.util.JNDIUtil;
 import org.jboss.test.messaging.tools.ConfigurationHelper;

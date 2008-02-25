@@ -2,7 +2,7 @@
 
 <server>
 
-   <mbean code="org.jboss.jms.server.destination.QueueService"
+   <mbean code="org.jboss.messaging.jms.server.destination.QueueService"
       name="jboss.messaging.destination:service=Queue,name=DistributedSmokeTestQueue"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <attribute name="Clustered">true</attribute>

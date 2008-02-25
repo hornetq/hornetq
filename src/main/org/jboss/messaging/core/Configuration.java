@@ -25,7 +25,6 @@ import static org.jboss.messaging.core.remoting.TransportType.TCP;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,275 +32,162 @@ import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.TransportType;
 
 /**
- * This is the JBM configuration. It is used to configure the MessagingServer.
- * 
- * It does this by parsing the jbm-configuration.xml configuration file.
- * 
- * It also uses PropertyChangeSupport so users of this class can be notified on configuration changes.
- *
- * Derived from old ServerPeer
- *
- * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
  * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class Configuration implements Serializable
+public class Configuration
 {
-   private static final long serialVersionUID = -95502236335483837L;
-
-
-   private PropertyChangeSupport propertyChangeSupport;
-   protected Integer messagingServerID = 0;
-   protected String _defaultQueueJNDIContext = "";
-   protected String _defaultTopicJNDIContext = "";
-   protected String _securityDomain;
-   protected List<String> defaultInterceptors = new ArrayList<String>();
-
-   protected Long _messageCounterSamplePeriod = (long) 10000;// Default is 1 minute
-
-   protected Integer _defaultMessageCounterHistoryDayLimit = 1;
-
-   //Global override for strict behaviour
-   protected Boolean _strictTck = false;
-
-   protected String _postOfficeName;
-
-   protected Boolean _clustered = false;
-   
-   protected Integer _scheduledThreadPoolMaxSize = 30;
-
-   protected Long _stateTimeout = (long) 5000;
-
-   protected Long _castTimeout = (long) 5000;
-
-   protected String _groupName;
-
-   protected String _controlChannelName;
-
-   protected String _dataChannelName;
-
-   protected String _channelPartitionName;
-
-   protected TransportType _remotingTransport = TCP;
-
-   protected Integer _remotingBindAddress;
-   
-   protected Integer _remotingTimeout;
-
-   protected Boolean _remotingDisableInvm = false;
-   
-   protected Boolean _remotingEnableSSL = false;
-
-   protected String _remotingSSLKeyStorePath = null;
-
-   protected String _remotingSSLKeyStorePassword = null;
-
-   protected String _remotingSSLTrustStorePath = null;
-
-   protected String _remotingSSLTrustStorePassword = null;
-
    private static final String REMOTING_DISABLE_INVM_SYSPROP_KEY = "jbm.remoting.disable.invm";
 
    public static final String REMOTING_ENABLE_SSL_SYSPROP_KEY = "jbm.remoting.enable.ssl";
 
-   public  void addPropertyChangeListener(
-         PropertyChangeListener listener)
+   private PropertyChangeSupport propertyChangeSupport;
+   
+   protected int messagingServerID = 0;
+   
+   protected String securityDomain;
+   
+   protected List<String> defaultInterceptors = new ArrayList<String>();
+
+   protected long messageCounterSamplePeriod = (long) 10000;// Default is 1 minute
+
+   protected int defaultMessageCounterHistoryDayLimit = 1;
+
+   protected boolean strictTck = false;
+
+   protected boolean clustered = false;
+   
+   protected int scheduledThreadPoolMaxSize = 30;
+   
+   protected long securityInvalidationInterval = 10000;
+
+   protected TransportType remotingTransport = TCP;
+
+   protected int remotingBindAddress;
+   
+   protected int remotingTimeout;
+
+   protected boolean remotingDisableInvm = false;
+   
+   protected boolean remotingEnableSSL = false;
+
+   protected String remotingSSLKeyStorePath = null;
+
+   protected String remotingSSLKeyStorePassword = null;
+
+   protected String remotingSSLTrustStorePath = null;
+
+   protected String remotingSSLTrustStorePassword = null;
+
+   public void addPropertyChangeListener(PropertyChangeListener listener)
    {
-      if(propertyChangeSupport == null)
+      if (propertyChangeSupport == null)
       {
          propertyChangeSupport = new PropertyChangeSupport(this);
       }
       propertyChangeSupport.addPropertyChangeListener(listener);
    }
 
-   public  Integer getMessagingServerID()
+   public int getMessagingServerID()
    {
       return messagingServerID;
    }
-
-   public  void setMessagingServerID(Integer messagingServerID)
+   
+   public void setMessagingServerID(int id)
    {
-      this.messagingServerID = messagingServerID;
+   	this.messagingServerID = id;
+   }
+  
+   public void setSecurityDomain(String securityDomain) throws Exception
+   {
+      this.securityDomain = securityDomain;
    }
 
-   public  String getDefaultQueueJNDIContext()
+   public String getSecurityDomain()
    {
-      return _defaultQueueJNDIContext;
+      return securityDomain;
    }
-
-   public  void setDefaultQueueJNDIContext(String defaultQueueJNDIContext)
-   {
-      _defaultQueueJNDIContext = defaultQueueJNDIContext;
-   }
-
-   public  String getDefaultTopicJNDIContext()
-   {
-      return _defaultTopicJNDIContext;
-   }
-
-   public  void setDefaultTopicJNDIContext(String defaultTopicJNDIContext)
-   {
-      _defaultTopicJNDIContext = defaultTopicJNDIContext;
-   }
-
-   public  void setSecurityDomain(String securityDomain) throws Exception
-   {
-      _securityDomain = securityDomain;
-   }
-
-   public  String getSecurityDomain()
-   {
-      return _securityDomain;
-   }
-
    
    public List<String> getDefaultInterceptors()
    {
       return defaultInterceptors;
    }
 
-
-   public  long getMessageCounterSamplePeriod()
+   public long getMessageCounterSamplePeriod()
    {
-      return _messageCounterSamplePeriod;
+      return messageCounterSamplePeriod;
    }
 
-   public  void setMessageCounterSamplePeriod(long messageCounterSamplePeriod)
+   public void setMessageCounterSamplePeriod(long messageCounterSamplePeriod)
    {
       if (messageCounterSamplePeriod < 1000)
       {
          throw new IllegalArgumentException("Cannot set MessageCounterSamplePeriod < 1000 ms");
       }
-      propertyChangeSupport.firePropertyChange("messageCounterSamplePeriod", _messageCounterSamplePeriod, messageCounterSamplePeriod);
-      _messageCounterSamplePeriod = messageCounterSamplePeriod;
+      
+      propertyChangeSupport.firePropertyChange("messageCounterSamplePeriod", messageCounterSamplePeriod, messageCounterSamplePeriod);
+      
+      this.messageCounterSamplePeriod = messageCounterSamplePeriod;
    }
 
-   public  Integer getDefaultMessageCounterHistoryDayLimit()
+   public Integer getDefaultMessageCounterHistoryDayLimit()
    {
-      return _defaultMessageCounterHistoryDayLimit;
+      return defaultMessageCounterHistoryDayLimit;
    }
 
-   public  void setDefaultMessageCounterHistoryDayLimit(Integer defaultMessageCounterHistoryDayLimit)
+   public void setDefaultMessageCounterHistoryDayLimit(Integer defaultMessageCounterHistoryDayLimit)
    {
       if (defaultMessageCounterHistoryDayLimit < -1)
       {
          defaultMessageCounterHistoryDayLimit = -1;
       }
-      _defaultMessageCounterHistoryDayLimit = defaultMessageCounterHistoryDayLimit;
+      
+      this.defaultMessageCounterHistoryDayLimit = defaultMessageCounterHistoryDayLimit;
    }
 
-   public  Boolean isStrictTck()
+   public Boolean isStrictTck()
    {
-      return _strictTck || "true".equalsIgnoreCase(System.getProperty("jboss.messaging.stricttck"));
+      return strictTck || "true".equalsIgnoreCase(System.getProperty("jboss.messaging.stricttck"));
    }
 
-   public  void setStrictTck(Boolean strictTck)
+   public void setStrictTck(Boolean strictTck)
    {
-      _strictTck = strictTck || "true".equalsIgnoreCase(System.getProperty("jboss.messaging.stricttck"));
+      strictTck = strictTck || "true".equalsIgnoreCase(System.getProperty("jboss.messaging.stricttck"));
    }
-
-   public  String getPostOfficeName()
+  
+   public Boolean isClustered()
    {
-      return _postOfficeName;
-   }
-
-   public  void setPostOfficeName(String postOfficeName)
-   {
-      _postOfficeName = postOfficeName;
-   }
-
-   public  Boolean isClustered()
-   {
-      return _clustered;
+      return clustered;
    }
    
    public Integer getScheduledThreadPoolMaxSize()
    {
-   	return _scheduledThreadPoolMaxSize;
+   	return scheduledThreadPoolMaxSize;
    }
    
    public void setScheduledThreadPoolMaxSize(int size)
    {
-   	this._scheduledThreadPoolMaxSize = size;
+   	this.scheduledThreadPoolMaxSize = size;
    }
 
-   public  void setClustered(Boolean clustered)
+   public void setClustered(Boolean clustered)
    {
-      _clustered = clustered;
+      this.clustered = clustered;
+   }
+   
+   public long getSecurityInvalidationInterval()
+   {
+   	return this.securityInvalidationInterval;
    }
 
-   public  Long getStateTimeout()
+   public int getRemotingBindAddress()
    {
-      return _stateTimeout;
-   }
-
-   public  void setStateTimeout(Long stateTimeout)
-   {
-      _stateTimeout = stateTimeout;
-   }
-
-   public  Long getCastTimeout()
-   {
-      return _castTimeout;
-   }
-
-   public  void setCastTimeout(Long castTimeout)
-   {
-      _castTimeout = castTimeout;
-   }
-
-   public  String getGroupName()
-   {
-      return _groupName;
-   }
-
-   public  void setGroupName(String groupName)
-   {
-      _groupName = groupName;
-   }
-
-
-   public  String getControlChannelName()
-   {
-      return _controlChannelName;
-   }
-
-   public  void setControlChannelName(String controlChannelName)
-   {
-      _controlChannelName = controlChannelName;
-   }
-
-
-   public  String getDataChannelName()
-   {
-      return _dataChannelName;
-   }
-
-   public  void setDataChannelName(String dataChannelName)
-   {
-      _dataChannelName = dataChannelName;
-   }
-
-
-   public  String getChannelPartitionName()
-   {
-      return _channelPartitionName;
-   }
-
-   public  void setChannelPartitionName(String channelPartitionName)
-   {
-      _channelPartitionName = channelPartitionName;
-   }
-
-   public Integer getRemotingBindAddress()
-   {
-      return _remotingBindAddress;
+      return remotingBindAddress;
    }
 
    public void setRemotingBindAddress(Integer remotingBindAddress)
    {
-      this._remotingBindAddress = remotingBindAddress;
+      this.remotingBindAddress = remotingBindAddress;
    }
 
    /**
@@ -310,26 +196,36 @@ public class Configuration implements Serializable
     */
    public RemotingConfiguration getRemotingConfiguration() 
    {
-      RemotingConfiguration configuration = new RemotingConfiguration(_remotingTransport, "localhost", _remotingBindAddress);
-      configuration.setTimeout(_remotingTimeout);
+      RemotingConfiguration configuration = new RemotingConfiguration(remotingTransport, "localhost", remotingBindAddress);
+      
+      configuration.setTimeout(remotingTimeout);
+      
       if (System.getProperty(REMOTING_DISABLE_INVM_SYSPROP_KEY) != null)
       {
          configuration.setInvmDisabled(Boolean.parseBoolean(System.getProperty(REMOTING_DISABLE_INVM_SYSPROP_KEY)));
-      } else 
-      {
-         configuration.setInvmDisabled(_remotingDisableInvm);
       }
+      else 
+      {
+         configuration.setInvmDisabled(remotingDisableInvm);
+      }
+      
       if (System.getProperty(REMOTING_ENABLE_SSL_SYSPROP_KEY) != null)
       {
          configuration.setSSLEnabled(Boolean.parseBoolean(System.getProperty(REMOTING_ENABLE_SSL_SYSPROP_KEY)));
-      } else 
-      {
-         configuration.setSSLEnabled(_remotingEnableSSL);
       }
-      configuration.setKeyStorePath(_remotingSSLKeyStorePath);
-      configuration.setKeyStorePassword(_remotingSSLKeyStorePassword);
-      configuration.setTrustStorePath(_remotingSSLTrustStorePath);
-      configuration.setTrustStorePassword(_remotingSSLTrustStorePassword);      
+      else 
+      {
+         configuration.setSSLEnabled(remotingEnableSSL);
+      }
+      
+      configuration.setKeyStorePath(remotingSSLKeyStorePath);
+      
+      configuration.setKeyStorePassword(remotingSSLKeyStorePassword);
+      
+      configuration.setTrustStorePath(remotingSSLTrustStorePath);
+      
+      configuration.setTrustStorePassword(remotingSSLTrustStorePassword); 
+      
       return configuration;
    }
 

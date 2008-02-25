@@ -8,7 +8,7 @@ package org.jboss.messaging.core.remoting.wireformat;
 
 import static org.jboss.messaging.core.remoting.Assert.assertValidID;
 
-import org.jboss.jms.client.remoting.RemotingConnectionImpl;
+import org.jboss.messaging.core.client.impl.RemotingConnectionImpl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.

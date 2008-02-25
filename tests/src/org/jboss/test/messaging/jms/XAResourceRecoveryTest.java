@@ -26,7 +26,7 @@ import javax.naming.InitialContext;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
-import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.ServiceContainer;

@@ -23,9 +23,7 @@ package org.jboss.messaging.core;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
 
-import org.jboss.jms.server.security.Role;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
@@ -38,53 +36,57 @@ import org.w3c.dom.NodeList;
  */
 public class FileConfiguration extends Configuration
 {
-
-   private static final String READ_ATTR = "read";
-   private static final String WRITE_ATTR = "write";
-   private static final String CREATE_ATTR = "create";
-   private static final String NAME_ATTR = "name";
-
-   //default confog file location
+	private static final long serialVersionUID = -4766689627675039596L;
+	
+	//default config file location
    private String configurationUrl = "jbm-configuration.xml";
 
    public void start() throws Exception
    {
-
       URL url = getClass().getClassLoader().getResource(configurationUrl);
+      
       Element e = XMLUtil.urlToElement(url);
+      
       messagingServerID = getInteger(e, "server-peer-id", messagingServerID);
-      _defaultQueueJNDIContext = getString(e, "default-queue-jndi-context", _defaultQueueJNDIContext);
-      _defaultTopicJNDIContext = getString(e, "default-topic-jndi-context", _defaultTopicJNDIContext);
-      _securityDomain = getString(e, "security-domain", _securityDomain);
-      _messageCounterSamplePeriod = getLong(e, "message-counter-sample-period", _messageCounterSamplePeriod);
-      _defaultMessageCounterHistoryDayLimit = getInteger(e, "default-message-counter-history-day-limit", _defaultMessageCounterHistoryDayLimit);
-      _strictTck = getBoolean(e, "strict-tck", _strictTck);
-      _postOfficeName = getString(e, "post-office-name", _postOfficeName);
-      _clustered = getBoolean(e, "clustered", _clustered);
-      _scheduledThreadPoolMaxSize = getInteger(e, "scheduled-executor-max-pool-size", _scheduledThreadPoolMaxSize);
-      _stateTimeout = getLong(e, "state-timeout", _stateTimeout);
-      _castTimeout = getLong(e, "cast-timeout", _castTimeout);
-      _groupName = getString(e, "group-name", _groupName);
-      _controlChannelName = getString(e, "control-channel-name", _controlChannelName);
-      _dataChannelName = getString(e, "data-channel-name", _dataChannelName);
-      _channelPartitionName = getString(e, "channel-partition-name", _channelPartitionName);
-      _remotingTransport = TransportType.valueOf(getString(e, "remoting-transport", _remotingTransport.name()));
-      _remotingBindAddress = getInteger(e, "remoting-bind-address", _remotingBindAddress);
-      _remotingTimeout = getInteger(e, "remoting-timeout", _remotingTimeout);
-      _remotingDisableInvm = getBoolean(e, "remoting-disable-invm", _remotingDisableInvm);
-      _remotingEnableSSL = getBoolean(e, "remoting-enable-ssl", _remotingEnableSSL);
-      _remotingSSLKeyStorePath = getString(e, "remoting-ssl-keystore-path", _remotingSSLKeyStorePath);
-      _remotingSSLKeyStorePassword = getString(e, "remoting-ssl-keystore-password", _remotingSSLKeyStorePassword);
-      _remotingSSLTrustStorePath = getString(e, "remoting-ssl-truststore-path", _remotingSSLTrustStorePath);
-      _remotingSSLTrustStorePassword = getString(e, "remoting-ssl-truststore-password", _remotingSSLTrustStorePassword);
+      
+      securityDomain = getString(e, "security-domain", securityDomain);
+      
+      messageCounterSamplePeriod = getLong(e, "message-counter-sample-period", messageCounterSamplePeriod);
+      
+      defaultMessageCounterHistoryDayLimit = getInteger(e, "default-message-counter-history-day-limit", defaultMessageCounterHistoryDayLimit);
+      
+      strictTck = getBoolean(e, "strict-tck", strictTck);
+      
+      clustered = getBoolean(e, "clustered", clustered);
+      
+      scheduledThreadPoolMaxSize = getInteger(e, "scheduled-executor-max-pool-size", scheduledThreadPoolMaxSize);
+      
+      remotingTransport = TransportType.valueOf(getString(e, "remoting-transport", remotingTransport.name()));
+      
+      remotingBindAddress = getInteger(e, "remoting-bind-address", remotingBindAddress);
+      
+      remotingTimeout = getInteger(e, "remoting-timeout", remotingTimeout);
+      
+      remotingDisableInvm = getBoolean(e, "remoting-disable-invm", remotingDisableInvm);
+      
+      remotingEnableSSL = getBoolean(e, "remoting-enable-ssl", remotingEnableSSL);
+      
+      remotingSSLKeyStorePath = getString(e, "remoting-ssl-keystore-path", remotingSSLKeyStorePath);
+      
+      remotingSSLKeyStorePassword = getString(e, "remoting-ssl-keystore-password", remotingSSLKeyStorePassword);
+      
+      remotingSSLTrustStorePath = getString(e, "remoting-ssl-truststore-path", remotingSSLTrustStorePath);
+      
+      remotingSSLTrustStorePassword = getString(e, "remoting-ssl-truststore-password", remotingSSLTrustStorePassword);
 
       NodeList defaultInterceptors = e.getElementsByTagName("default-interceptors-config");
 
       ArrayList<String> interceptorList = new ArrayList<String>();
+      
       if (defaultInterceptors.getLength() > 0)
       {
-
          NodeList interceptors = defaultInterceptors.item(0).getChildNodes();
+         
          for (int k = 0; k < interceptors.getLength(); k++)
          {
             if ("interceptor".equalsIgnoreCase(interceptors.item(k).getNodeName()))
@@ -95,6 +97,16 @@ public class FileConfiguration extends Configuration
          }
       }
       this.defaultInterceptors = interceptorList;
+   }
+   
+   public String getConfigurationUrl()
+   {
+      return configurationUrl;
+   }
+
+   public void setConfigurationUrl(String configurationUrl)
+   {
+      this.configurationUrl = configurationUrl;
    }
 
    private Boolean getBoolean(Element e, String name, Boolean def)
@@ -135,16 +147,5 @@ public class FileConfiguration extends Configuration
          return nl.item(0).getTextContent().trim();
       }
       return def;
-   }
-
-
-   public String getConfigurationUrl()
-   {
-      return configurationUrl;
-   }
-
-   public void setConfigurationUrl(String configurationUrl)
-   {
-      this.configurationUrl = configurationUrl;
    }
 }

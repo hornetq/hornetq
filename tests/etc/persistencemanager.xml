@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <deployment xmlns="urn:jboss:bean-deployer:2.0">
-    <bean name="Configuration" class="org.jboss.jms.server.Configuration"/>
+    <bean name="Configuration" class="org.jboss.messaging.jms.server.ConfigurationImpl"/>
 
    <bean name="ServiceLocator" class="org.jboss.messaging.microcontainer.ServiceLocator">
       <demand>jboss.jca:name=DefaultDS,service=DataSourceBinding</demand>

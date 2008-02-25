@@ -10,7 +10,7 @@
             <map keyClass="java.lang.String" valueClass="java.lang.String">
                <entry>
                   <key>java.naming.factory.initial</key>
-                  <value>org.jboss.jms.server.jndi.InVMInitialContextFactory</value>
+                  <value>org.jboss.messaging.jms.server.jndi.InVMInitialContextFactory</value>
                </entry>
             </map>
          </parameter>
@@ -27,7 +27,7 @@
       <property name="bindTo">java:/jaas/messaging</property>
    </bean>
 
-   <bean name="Jaas" class="org.jboss.jms.server.security.NullAuthenticationManager"/>
+   <bean name="Jaas" class="org.jboss.messaging.core.security.NullAuthenticationManager"/>
 
    <bean name="jboss.jca:name=DefaultDS,service=DataSourceBinding" class="com.mysql.jdbc.jdbc2.optional.MysqlDataSource">
       <property name="url">jdbc:mysql://localhost/messaging</property>

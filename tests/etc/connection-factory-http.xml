@@ -9,7 +9,7 @@
 <server>
 
 
-   <mbean code="org.jboss.jms.server.connectionfactory.ConnectionFactory"
+   <mbean code="org.jboss.messaging.jms.server.connectionfactory.ConnectionFactory"
       name="jboss.messaging.destination:service=HTTPConnectionFactory"
       xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>

@@ -45,8 +45,8 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 
-import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.destination.JBossTopic;
+import org.jboss.messaging.jms.JBossQueue;
+import org.jboss.messaging.jms.JBossTopic;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 

@@ -31,7 +31,7 @@
                <attribute name="clientLeasePeriod" isParam="true">10000</attribute>
             </invoker>
             <handlers>
-               <handler subsystem="JMS">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>
+               <handler subsystem="JMS">org.jboss.messaging.jms.server.remoting.JMSServerInvocationHandler</handler>
             </handlers>
          </config>
       </attribute>

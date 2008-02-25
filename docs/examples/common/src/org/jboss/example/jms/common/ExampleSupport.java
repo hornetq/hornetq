@@ -12,8 +12,8 @@ import javax.naming.InitialContext;
 
 import org.jboss.example.jms.common.bean.Management;
 import org.jboss.example.jms.common.bean.ManagementHome;
-import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.client.api.ClientConnection;
+import org.jboss.messaging.core.client.ClientConnection;
+import org.jboss.messaging.jms.client.JBossConnection;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

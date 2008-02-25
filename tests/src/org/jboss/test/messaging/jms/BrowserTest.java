@@ -32,7 +32,7 @@ import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.jboss.jms.destination.JBossQueue;
+import org.jboss.messaging.jms.JBossQueue;
 
 
 /**

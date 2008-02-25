@@ -23,12 +23,9 @@ package org.jboss.jms.server.test.unit;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.HashSet;
 
 import junit.framework.TestCase;
 
-import org.jboss.jms.server.security.Role;
-import org.jboss.messaging.core.Configuration;
 import org.jboss.messaging.core.FileConfiguration;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.TransportType;
@@ -47,7 +44,6 @@ public class ConfigurationTest extends TestCase
       configuration.start();
    }
 
-
    protected void tearDown() throws Exception
    {
       configuration = null;
@@ -55,25 +51,13 @@ public class ConfigurationTest extends TestCase
 
    public void testSetServerPeerId() throws Exception
    {
-      assertEquals("failed to set ServerPeerId", new Integer(10), configuration.getMessagingServerID());
+      assertEquals("failed to set ServerPeerId", 10, configuration.getMessagingServerID());
    }
-
-   public void testSetDefaultQueueJndiContext() throws Exception
-   {
-      assertEquals("failed to set default queue jndi context", "/queuetest", configuration.getDefaultQueueJNDIContext());
-   }
-
-   public void testSetDefaultTopicJndiContext() throws Exception
-   {
-      assertEquals("failed to set default topic jndi context", "/topictest", configuration.getDefaultTopicJNDIContext());
-   }
-
+  
    public void testSetSecurityDomain() throws Exception
    {
       assertEquals("failed to set security domain", "java:/jaas/messagingtest", configuration.getSecurityDomain());
    }
-
-
   
    public void testSetMessageCounterSamplePeriod() throws Exception
    {
@@ -93,36 +77,6 @@ public class ConfigurationTest extends TestCase
    public void testSetClustered() throws Exception
    {
       assertEquals("failed to set clustered", Boolean.TRUE, configuration.isClustered());
-   }
-
-   public void testSetGroupName() throws Exception
-   {
-      assertEquals("failed to set group name", "MessagingPostOfficetest", configuration.getGroupName());
-   }
-
-   public void testSetStateTimeout() throws Exception
-   {
-      assertEquals("failed to set state timeout", new Long(10000), configuration.getStateTimeout());
-   }
-
-   public void testSetCastTimeout() throws Exception
-   {
-      assertEquals("failed to set cast timeout", new Long(10000), configuration.getCastTimeout());
-   }
-
-   public void testSetControlChannelName() throws Exception
-   {
-      assertEquals("failed to set control channel name", "udp-synctest", configuration.getControlChannelName());
-   }
-
-   public void testSetDateChannelName() throws Exception
-   {
-      assertEquals("failed to set data channel name", "udptest", configuration.getDataChannelName());
-   }
-
-   public void testSetChannelPartitionName() throws Exception
-   {
-      assertEquals("failed to set channel partition name", "JMStest", configuration.getChannelPartitionName());
    }
 
    public void testSetRemoteBindAddress() throws Exception

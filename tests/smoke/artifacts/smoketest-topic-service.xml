@@ -2,7 +2,7 @@
 
 <server>
 
-   <mbean code="org.jboss.jms.server.destination.TopicService"
+   <mbean code="org.jboss.messaging.jms.server.destination.TopicService"
       name="jboss.messaging.destination:service=Topic,name=SmokeTestTopic"
       xmbean-dd="xmdesc/Topic-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>

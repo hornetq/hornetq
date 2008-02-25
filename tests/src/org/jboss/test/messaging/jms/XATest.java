@@ -42,9 +42,9 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.client.impl.ClientSessionImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.impl.XidImpl;
+import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;

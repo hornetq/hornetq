@@ -98,7 +98,7 @@
       configuration, since it is not appropriate to specify them all at once.
       Which ones are specified depends on the configuration you want.</para>
       <programlisting>
-   &lt;mbean code="org.jboss.jms.server.bridge.BridgeService"
+   &lt;mbean code="org.jboss.messaging.jms.server.bridge.BridgeService"
           name="jboss.messaging:service=Bridge,name=TestBridge"
           xmbean-dd="xmdesc/Bridge-xmbean.xml"&gt;
           

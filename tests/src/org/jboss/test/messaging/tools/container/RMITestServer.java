@@ -36,11 +36,11 @@ import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.transaction.UserTransaction;
 
-import org.jboss.jms.server.security.Role;
-import org.jboss.jms.server.JMSServerManager;
 import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.MessagingServerManagement;
+import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.util.Logger;
 
 /**

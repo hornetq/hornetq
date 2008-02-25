@@ -43,7 +43,7 @@
       <!-- Does this connection factory support automatic client side load balancing? -->
       <supports-load-balancing>false</supports-load-balancing>
       <!-- The class name of the factory used to create the load balancing policy to use on the client side -->
-      <load-balancing-factory>org.jboss.jms.client.plugin.RoundRobinLoadBalancingFactory</load-balancing-factory>
+      <load-balancing-factory>org.jboss.messaging.jms.client.plugin.RoundRobinLoadBalancingFactory</load-balancing-factory>
       <!-- Whether we should be strict TCK compliant, i.e. how we deal with foreign messages, defaults to false-->
       <strict-tck>true</strict-tck>
    </connection-factory>

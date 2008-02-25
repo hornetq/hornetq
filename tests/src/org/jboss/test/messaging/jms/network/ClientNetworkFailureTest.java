@@ -32,7 +32,7 @@ import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.QueueConnection;
 
-import org.jboss.jms.client.api.FailureListener;
+import org.jboss.messaging.core.client.FailureListener;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.util.MessagingException;

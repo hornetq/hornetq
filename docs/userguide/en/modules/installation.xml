@@ -168,12 +168,12 @@
                &lt;attribute name="timeout" isParam="true"&gt;0&lt;/attribute&gt;
                &lt;attribute name="serverBindAddress"&gt;${jboss.bind.address}&lt;/attribute&gt;
                &lt;attribute name="serverBindPort"&gt;4657&lt;/attribute&gt;
-               &lt;attribute name="clientSocketClass" isParam="true"&gt;org.jboss.jms.client.remoting.ClientSocketWrapper&lt;/attribute&gt;
-               &lt;attribute name="serverSocketClass" isParam="true"&gt;org.jboss.jms.server.remoting.ServerSocketWrapper&lt;/attribute&gt;
+               &lt;attribute name="clientSocketClass" isParam="true"&gt;org.jboss.messaging.jms.client.remoting.ClientSocketWrapper&lt;/attribute&gt;
+               &lt;attribute name="serverSocketClass" isParam="true"&gt;org.jboss.messaging.jms.server.remoting.ServerSocketWrapper&lt;/attribute&gt;
                &lt;attribute name="numberOfCallRetries" isParam="true"&gt;1&lt;/attribute&gt;
                &lt;attribute name="pingFrequency" isParam="true"&gt;214748364&lt;/attribute&gt;
                &lt;attribute name="pingWindowFactor" isParam="true"&gt;10&lt;/attribute&gt;
-               &lt;attribute name="onewayThreadPool"&gt;org.jboss.jms.server.remoting.DirectThreadPool&lt;/attribute&gt;
+               &lt;attribute name="onewayThreadPool"&gt;org.jboss.messaging.jms.server.remoting.DirectThreadPool&lt;/attribute&gt;
                
                &lt;!-- Periodicity of client pings. Server window by default is twice this figure --&gt;                               
                &lt;attribute name="clientLeasePeriod" isParam="true"&gt;10000&lt;/attribute&gt;
@@ -193,7 +193,7 @@
                               
             &lt;/invoker&gt;
             &lt;handlers&gt;
-               &lt;handler subsystem="JMS"&gt;org.jboss.jms.server.remoting.JMSServerInvocationHandler&lt;/handler&gt;
+               &lt;handler subsystem="JMS"&gt;org.jboss.messaging.jms.server.remoting.JMSServerInvocationHandler&lt;/handler&gt;
             &lt;/handlers&gt;
          &lt;/config&gt;
             ]]&gt;&lt;/attribute&gt;
@@ -411,12 +411,12 @@ guest=guest
                &lt;attribute name="timeout" isParam="true"&gt;0&lt;/attribute&gt;
                &lt;attribute name="serverBindAddress"&gt;${jboss.bind.address}&lt;/attribute&gt;
                &lt;attribute name="serverBindPort"&gt;4657&lt;/attribute&gt;
-               &lt;attribute name="clientSocketClass" isParam="true"&gt;org.jboss.jms.client.remoting.ClientSocketWrapper&lt;/attribute&gt;
-               &lt;attribute name="serverSocketClass" isParam="true"&gt;org.jboss.jms.server.remoting.ServerSocketWrapper&lt;/attribute&gt;
+               &lt;attribute name="clientSocketClass" isParam="true"&gt;org.jboss.messaging.jms.client.remoting.ClientSocketWrapper&lt;/attribute&gt;
+               &lt;attribute name="serverSocketClass" isParam="true"&gt;org.jboss.messaging.jms.server.remoting.ServerSocketWrapper&lt;/attribute&gt;
                &lt;attribute name="numberOfCallRetries" isParam="true"&gt;1&lt;/attribute&gt;
                &lt;attribute name="pingFrequency" isParam="true"&gt;214748364&lt;/attribute&gt;
                &lt;attribute name="pingWindowFactor" isParam="true"&gt;10&lt;/attribute&gt;
-               &lt;attribute name="onewayThreadPool"&gt;org.jboss.jms.server.remoting.DirectThreadPool&lt;/attribute&gt;
+               &lt;attribute name="onewayThreadPool"&gt;org.jboss.messaging.jms.server.remoting.DirectThreadPool&lt;/attribute&gt;
                
                &lt;!-- Periodicity of client pings. Server window by default is twice this figure --&gt;                               
                &lt;attribute name="clientLeasePeriod" isParam="true"&gt;10000&lt;/attribute&gt;
@@ -436,7 +436,7 @@ guest=guest
                               
             &lt;/invoker&gt;
             &lt;handlers&gt;
-               &lt;handler subsystem="JMS"&gt;org.jboss.jms.server.remoting.JMSServerInvocationHandler&lt;/handler&gt;
+               &lt;handler subsystem="JMS"&gt;org.jboss.messaging.jms.server.remoting.JMSServerInvocationHandler&lt;/handler&gt;
             &lt;/handlers&gt;
          &lt;/config&gt;
             ]]&gt;&lt;/attribute&gt;

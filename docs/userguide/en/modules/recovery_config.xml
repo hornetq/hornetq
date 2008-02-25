@@ -26,7 +26,7 @@
            *** Add this line to enable recovery for JMS resources using DefaultJMSProvider ***
         --&gt;
         &lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING1"
-           value="org.jboss.jms.server.recovery.MessagingXAResourceRecovery;java:/DefaultJMSProvider"/&gt;
+           value="org.jboss.messaging.jms.server.recovery.MessagingXAResourceRecovery;java:/DefaultJMSProvider"/&gt;
 
     &lt;/properties&gt;
      

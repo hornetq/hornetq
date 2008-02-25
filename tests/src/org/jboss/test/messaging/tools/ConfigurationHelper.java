@@ -40,7 +40,9 @@ import org.jboss.test.messaging.tools.container.JBMPropertyKernelConfig;
 public class ConfigurationHelper implements KernelControllerContextAware
 {
    private Configuration configuration;
+   
    private KernelControllerContext kernelControllerContext;
+   
    private static HashMap<Integer, HashMap<String, Object>> configs;
 
    public void setKernelControllerContext(KernelControllerContext kernelControllerContext) throws Exception

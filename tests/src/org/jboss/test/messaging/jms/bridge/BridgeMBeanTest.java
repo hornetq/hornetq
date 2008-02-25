@@ -34,7 +34,7 @@ import javax.jms.TextMessage;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
-import org.jboss.jms.server.bridge.Bridge;
+import org.jboss.messaging.jms.server.bridge.Bridge;
 import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -597,7 +597,7 @@ public class BridgeMBeanTest extends BridgeTestBase
             long failureRetryInterval, int maxRetries, boolean addMessageIDInHeader) throws Exception
    {
       String config = 
-         "<mbean code=\"org.jboss.jms.server.bridge.BridgeService\" " +
+         "<mbean code=\"org.jboss.messaging.jms.server.bridge.BridgeService\" " +
          "name=\"jboss.messaging:service=Bridge,name=" + bridgeName + "\" " +
          "xmbean-dd=\"xmdesc/Bridge-xmbean.xml\">" +      
          "<attribute name=\"SourceProviderLoader\">" + sourceProviderLoader + "</attribute>"+      

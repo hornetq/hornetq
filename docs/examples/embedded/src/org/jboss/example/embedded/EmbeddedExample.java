@@ -25,17 +25,17 @@ import static org.jboss.messaging.core.remoting.TransportType.TCP;
 
 import javax.jms.Session;
 
-import org.jboss.jms.client.api.*;
-import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.jms.message.JBossTextMessage;
 import org.jboss.messaging.core.DestinationType;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.client.*;
+import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.impl.MessageImpl;
 import org.jboss.messaging.core.impl.QueueImpl;
 import org.jboss.messaging.core.impl.server.MessagingServerImpl;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
+import org.jboss.messaging.jms.client.JBossTextMessage;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>

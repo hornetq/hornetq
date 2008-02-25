@@ -37,11 +37,11 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
-import org.jboss.jms.server.bridge.Bridge;
-import org.jboss.jms.server.bridge.ConnectionFactoryFactory;
-import org.jboss.jms.server.bridge.DestinationFactory;
-import org.jboss.jms.server.bridge.JNDIConnectionFactoryFactory;
-import org.jboss.jms.server.bridge.JNDIDestinationFactory;
+import org.jboss.messaging.jms.server.bridge.Bridge;
+import org.jboss.messaging.jms.server.bridge.ConnectionFactoryFactory;
+import org.jboss.messaging.jms.server.bridge.DestinationFactory;
+import org.jboss.messaging.jms.server.bridge.JNDIConnectionFactoryFactory;
+import org.jboss.messaging.jms.server.bridge.JNDIDestinationFactory;
 import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;

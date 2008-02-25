@@ -31,7 +31,7 @@ import javax.jms.ServerSessionPool;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.jboss.jms.client.JBossConnectionConsumer;
+import org.jboss.messaging.jms.client.JBossConnectionConsumer;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;

@@ -156,7 +156,7 @@
         <!--
 			com.arjuna.ats.internal.jta.transaction.jts.UserTransactionImple
 			-->
-<property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING" value="org.jboss.jms.server.recovery.MessagingXAResourceRecovery;adaptor1"/>
+<property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING" value="org.jboss.messaging.jms.server.recovery.MessagingXAResourceRecovery;adaptor1"/>
 
 
 

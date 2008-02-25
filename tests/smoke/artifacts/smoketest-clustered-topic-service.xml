@@ -2,7 +2,7 @@
 
 <server>
 
-   <mbean code="org.jboss.jms.server.destination.TopicService"
+   <mbean code="org.jboss.messaging.jms.server.destination.TopicService"
       name="jboss.messaging.destination:service=Topic,name=DistributedSmokeTestTopic"
       xmbean-dd="xmdesc/Topic-xmbean.xml">
       <attribute name="Clustered">true</attribute>

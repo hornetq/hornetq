@@ -22,10 +22,10 @@
 package org.jboss.messaging.util.test.unit;
 
 import junit.framework.TestCase;
-import org.jboss.jms.server.security.Role;
 import org.jboss.messaging.util.HierarchicalObjectRepository;
 import org.jboss.messaging.util.HierarchicalRepository;
 import org.jboss.messaging.core.Mergeable;
+import org.jboss.messaging.core.security.Role;
 
 import java.util.HashSet;
 import java.util.List;

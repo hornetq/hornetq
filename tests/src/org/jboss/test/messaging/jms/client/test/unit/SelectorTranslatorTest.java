@@ -21,7 +21,7 @@
   */
 package org.jboss.test.messaging.jms.client.test.unit;
 
-import org.jboss.jms.client.SelectorTranslator;
+import org.jboss.messaging.jms.client.SelectorTranslator;
 import org.jboss.messaging.test.unit.UnitTestCase;
 
 /**

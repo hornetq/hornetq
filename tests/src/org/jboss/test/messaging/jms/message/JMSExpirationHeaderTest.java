@@ -24,7 +24,7 @@ package org.jboss.test.messaging.jms.message;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
 
-import org.jboss.jms.message.JBossMessage;
+import org.jboss.messaging.jms.client.JBossMessage;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 

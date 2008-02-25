@@ -9,7 +9,7 @@
 <server>
 
 
-   <mbean code="org.jboss.jms.server.bridge.BridgeService"
+   <mbean code="org.jboss.messaging.jms.server.bridge.BridgeService"
           name="jboss.messaging:service=Bridge,name=TestBridge"
           xmbean-dd="xmdesc/Bridge-xmbean.xml">
           

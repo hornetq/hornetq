@@ -2,7 +2,7 @@ package org.jboss.test.messaging.jms;
 
 import javax.naming.InitialContext;
 
-import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
 
 /**

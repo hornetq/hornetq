@@ -37,12 +37,12 @@ import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 
-import org.jboss.jms.message.JBossBytesMessage;
-import org.jboss.jms.message.JBossMapMessage;
-import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.message.JBossObjectMessage;
-import org.jboss.jms.message.JBossStreamMessage;
-import org.jboss.jms.message.JBossTextMessage;
+import org.jboss.messaging.jms.client.JBossBytesMessage;
+import org.jboss.messaging.jms.client.JBossMapMessage;
+import org.jboss.messaging.jms.client.JBossMessage;
+import org.jboss.messaging.jms.client.JBossObjectMessage;
+import org.jboss.messaging.jms.client.JBossStreamMessage;
+import org.jboss.messaging.jms.client.JBossTextMessage;
 
 /**
  *
