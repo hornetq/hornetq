@@ -22,6 +22,7 @@
 package org.jboss.messaging.deployers.queue;
 
 import org.jboss.messaging.core.QueueSettings;
+import org.jboss.messaging.core.PostOffice;
 import org.jboss.messaging.deployers.Deployer;
 import org.jboss.messaging.util.HierarchicalRepository;
 import org.w3c.dom.Node;
@@ -37,6 +38,8 @@ public class QueueSettingsDeployer extends Deployer
     * The repository to add to
     */
    HierarchicalRepository<QueueSettings> queueSettingsRepository;
+
+   PostOffice postOffice;
    private static final String CLUSTERED_NODE_NAME = "clustered";
    private static final String DLQ_NODE_NAME = "dlq";
    private static final String EXPIREY_QUEUE_NODE_NAME = "expiry-queue";
@@ -48,6 +51,11 @@ public class QueueSettingsDeployer extends Deployer
    public void setQueueSettingsRepository(HierarchicalRepository<QueueSettings> queueSettingsRepository)
    {
       this.queueSettingsRepository = queueSettingsRepository;
+   }
+
+   public void setPostOffice(PostOffice postOffice)
+   {
+      this.postOffice = postOffice;
    }
 
    /**
@@ -78,11 +86,22 @@ public class QueueSettingsDeployer extends Deployer
          }
          if(DLQ_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
-            queueSettings.setDLQ(child.getTextContent());
+            String queueName = child.getTextContent();
+            if(postOffice.getBinding(queueName) == null)
+            {
+
+               postOffice.addBinding(queueName, queueName, null, true, false);
+            }
+            queueSettings.setDLQ(postOffice.getBinding(queueName).getQueue());
          }
          if(EXPIREY_QUEUE_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
-            queueSettings.setExpiryQueue(child.getTextContent());
+            String queueName = child.getTextContent();
+            if(postOffice.getBinding(queueName) == null)
+            {
+               postOffice.addBinding(queueName, queueName, null, true, false);
+            }
+            queueSettings.setExpiryQueue(postOffice.getBinding(queueName).getQueue());
          }
          if(REDELIVERY_DELAY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {

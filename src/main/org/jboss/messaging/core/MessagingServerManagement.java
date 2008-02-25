@@ -28,6 +28,7 @@ import org.jboss.jms.client.api.ClientConnectionFactory;
 import org.jboss.jms.server.endpoint.ServerConnection;
 import org.jboss.messaging.core.impl.filter.FilterImpl;
 import org.jboss.messaging.core.impl.messagecounter.MessageCounter;
+import java.util.Set;
 
 /**
  * This interface describes the management interface exposed by the server
@@ -92,4 +93,8 @@ public interface MessagingServerManagement
    List<ServerConnection> getActiveConnections();
 
    void moveMessages(String toQueue, String fromQueue, FilterImpl filter) throws Exception;
+
+   void expireMessages(String queue,Filter filter) throws Exception;
+
+   Set<String> listAvailableAddresses();
 }

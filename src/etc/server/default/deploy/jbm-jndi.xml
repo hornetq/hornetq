@@ -106,6 +106,4 @@
       <entry name="/topic/testDistributedTopic"/>
    </topic>
 
-   <clientid name="testClientId" user="testUser" id="testId"/>
-
 </deployment>

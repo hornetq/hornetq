@@ -1,19 +1,23 @@
 package org.jboss.jms.server;
 
-import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.destination.JBossTopic;
 import org.jboss.messaging.core.impl.server.SubscriptionInfo;
 import org.jboss.jms.server.MessageStatistics;
+import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
+import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 
 import javax.jms.Message;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Set;
+import java.io.Serializable;
 
 /**
- * A JMS Management interface.
+ * The JMS Management interface.
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public interface JMSServerManager
+public interface JMSServerManager extends Serializable
 {
    // management operations
    public enum ListType
@@ -30,6 +34,12 @@ public interface JMSServerManager
    boolean destroyQueue(String name) throws Exception;
 
    boolean destroyTopic(String name) throws Exception;
+
+   Set<String> listAllQueues();
+
+   Set<String> listAllTopics();
+
+   Set<String> listTemporaryDestinations();
 
    boolean createConnectionFactory(String name, String clientID, int dupsOKBatchSize, boolean strictTck, int prefetchSize, String jndiBinding) throws Exception;
 
@@ -55,6 +65,12 @@ public interface JMSServerManager
 
    void moveMessage(String fromQueue, String toQueue, String messageID) throws Exception;
 
+   void expireMessage(String queue, String messageId) throws Exception;
+
+   void changeMessagePriority(String messageId, int priority);
+
+   void changeMessageHeader(String  messageId, String header, Object value);
+
    int getMessageCountForQueue(String queue) throws Exception;
 
    List<SubscriptionInfo> listSubscriptions(String topicName) throws Exception;
@@ -65,9 +81,23 @@ public interface JMSServerManager
 
    int getSubscriptionsCountForTopic(String topicName, ListType listType) throws Exception;
 
+   void dropSubscription(String subscription) throws Exception;
+
    int getConsumerCountForQueue(String queue) throws Exception;
 
-   List<ClientInfo> getClients() throws Exception;
+   List<ConnectionInfo> getConnections() throws Exception;
+
+   List<ConnectionInfo> getConnectionsForUser(String user) throws Exception;
+
+   void dropConnection(String clientId) throws Exception;
+
+   void dropConnectionForUser(String user) throws Exception;
+
+   public List<SessionInfo> getSessions() throws Exception;
+
+   public List<SessionInfo> getSessionsForConnection(String id) throws Exception;
+
+   public List<SessionInfo> getSessionsForUser(String user) throws Exception;
 
    void startGatheringStatistics();
 

@@ -30,6 +30,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.lang.management.ManagementFactory;
 
 import org.jboss.aop.microcontainer.aspects.jmx.JMX;
 import org.jboss.jms.client.api.ClientConnectionFactory;
@@ -47,6 +48,10 @@ import org.jboss.messaging.core.impl.filter.FilterImpl;
 import org.jboss.messaging.core.impl.messagecounter.MessageCounter;
 import org.jboss.messaging.util.MessagingException;
 
+import javax.management.StandardMBean;
+import javax.management.ObjectName;
+import javax.management.MBeanServer;
+
 /**
  * This interface describes the properties and operations that comprise the management interface of the
  * Messaging Server.
@@ -57,7 +62,7 @@ import org.jboss.messaging.util.MessagingException;
  * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>
  * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>
  */
-@JMX(name = "jboss.messaging:service=MessagingServerManagement", exposedInterface = MessagingServerManagement.class)
+//@JMX(name = "jboss.messaging:service=MessagingServerManagement", exposedInterface = MessagingServerManagement.class)
 public class MessagingServerManagementImpl implements MessagingServerManagement, MessagingComponent
 {
    private MessagingServer messagingServer;
@@ -195,7 +200,7 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
          throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
       }
       Queue queue = binding.getQueue();
-      currentCounters.put(queueName, new MessageCounter(queue.getName(),queue, queue.isDurable(), queue.getMessageCounterHistoryDayLimit()));
+      currentCounters.put(queueName, new MessageCounter(queue.getName(),queue, queue.isDurable(), queue.getQueueSettings().getMatch(queue.getName()).getMessageCounterHistoryDayLimit()));
    }
 
    public void unregisterMessageCounter(final String queueName) throws Exception
@@ -223,7 +228,7 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
             throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
          }
          Queue queue = binding.getQueue();
-         messageCounter = new MessageCounter(queue.getName(), queue,  queue.isDurable(), queue.getMessageCounterHistoryDayLimit());
+         messageCounter = new MessageCounter(queue.getName(), queue,  queue.isDurable(), queue.getQueueSettings().getMatch(queue.getName()).getMessageCounterHistoryDayLimit());
       }
       currentCounters.put(queueName, messageCounter);
       messageCounter.resetCounter();
@@ -350,6 +355,21 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
       }
 
    }
+
+   public void expireMessages(String queue, Filter filter) throws Exception
+   {
+      List<MessageReference> allRefs = getQueue(queue).removeReferences(filter);
+      for (MessageReference messageReference : allRefs)
+      {
+         messageReference.expire(messagingServer.getPersistenceManager());
+      }
+   }
+
+   public Set<String> listAvailableAddresses()
+   {
+      return messagingServer.getPostOffice().listAvailableAddresses();
+   }
+
 //
 ////   public int getDeliveringCountForQueue(String queue) throws Exception
 ////   {

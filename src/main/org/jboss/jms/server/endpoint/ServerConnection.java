@@ -26,11 +26,14 @@ import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.ConnectionCreateSessionResponseMessage;
 
+import java.util.Collection;
+
 /**
  * 
  * A ServerConnection
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  *
  */
 public interface ServerConnection
@@ -62,5 +65,9 @@ public interface ServerConnection
 	
 	long getCreatedTime();
 	
-	String getClientAddress();		
+	String getClientAddress();
+
+   long getCreated();
+
+   Collection<ServerSession> getSessions();
 }

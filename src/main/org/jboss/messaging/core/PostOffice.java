@@ -23,6 +23,7 @@ package org.jboss.messaging.core;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 
@@ -65,4 +66,6 @@ public interface PostOffice extends MessagingComponent
      
    //For testing only
    Map<String, List<Binding>> getMappings();
+
+   Set<String> listAvailableAddresses();
 }

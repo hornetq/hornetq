@@ -24,6 +24,7 @@ package org.jboss.messaging.util;
 import org.jboss.messaging.core.Mergeable;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.lang.reflect.ParameterizedType;
 
 /**
@@ -49,6 +50,10 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
    MatchComparator<String> matchComparator = new MatchComparator<String>();
 
    /**
+    * a cache
+    */
+   Map<String, T> cache = new ConcurrentHashMap<String,T>();
+   /**
     * Add a new match to the repository
     *
     * @param match The regex to use to match against
@@ -56,6 +61,7 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     */
    public void addMatch(String match, T value)
    {
+      cache.clear();
       Match.verify(match);
       Match<T> match1 = new Match<T>(match);
       match1.setValue(value);
@@ -71,11 +77,18 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     */
    public T getMatch(String match)
    {
+      if(cache.get(match) != null)
+      {
+         return cache.get(match);
+      }
       T actualMatch;
       HashMap<String, Match<T>> possibleMatches = getPossibleMatches(match);
       List<Match<T>> orderedMatches = sort(possibleMatches);
       actualMatch = merge(orderedMatches);
-      return actualMatch != null ? actualMatch : defaultmatch;
+      T value = actualMatch != null ? actualMatch : defaultmatch;
+      if(value != null)
+         cache.put(match, value);
+      return value;
    }
 
    /**
@@ -135,6 +148,7 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     */
    public void setDefault(T defaultValue)
    {
+      cache.clear();
       defaultmatch = defaultValue;
    }
 

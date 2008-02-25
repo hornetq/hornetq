@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import org.jboss.aop.microcontainer.aspects.jmx.JMX;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.endpoint.MessagingServerPacketHandler;
@@ -70,6 +69,8 @@ import org.jboss.messaging.util.HierarchicalRepository;
 import org.jboss.messaging.util.Version;
 import org.jboss.security.AuthenticationManager;
 
+import javax.jms.Destination;
+
 /**
  * A Messaging Server
  *
@@ -82,7 +83,6 @@ import org.jboss.security.AuthenticationManager;
  *          <p/>
  *          $Id: ServerPeer.java 3543 2008-01-07 22:31:58Z clebert.suconic@jboss.com $
  */
-@JMX(name = "jboss.messaging:service=MessagingServer", exposedInterface = MessagingServer.class)
 public class MessagingServerImpl implements MessagingServer
 {
    // Constants ------------------------------------------------------------------------------------
@@ -119,7 +119,7 @@ public class MessagingServerImpl implements MessagingServer
    private Configuration configuration = new Configuration();
    private HierarchicalRepository<HashSet<Role>> securityRepository = new HierarchicalObjectRepository<HashSet<Role>>();
    private HierarchicalRepository<QueueSettings> queueSettingsRepository = new HierarchicalObjectRepository<QueueSettings>();
-   private QueueFactory queueFactory;
+   private QueueFactory queueFactory = new QueueFactoryImpl();
    private ResourceManager resourceManager = new ResourceManagerImpl(0);
    private ScheduledExecutorService scheduledExecutor;
 
@@ -194,6 +194,7 @@ public class MessagingServerImpl implements MessagingServer
          });
          postOffice = new PostOfficeImpl(configuration.getMessagingServerID(),
                  persistenceManager, queueFactory, configuration.isStrictTck());
+         queueSettingsDeployer.setPostOffice(postOffice);
 
          if (createTransport)
          {
@@ -201,14 +202,12 @@ public class MessagingServerImpl implements MessagingServer
          }
          // Start the wired components
          securityDeployer.start();
-         queueSettingsDeployer.start();
          connectionManager.start();
          remotingService.addFailureListener(connectionManager);
          memoryManager.start();
          postOffice.start();
-         
-         MessagingServerPacketHandler serverPacketHandler =	new MessagingServerPacketHandler(this);
-                  
+         queueSettingsDeployer.start();
+         MessagingServerPacketHandler serverPacketHandler = new MessagingServerPacketHandler(this);
          getRemotingService().getDispatcher().register(serverPacketHandler);
 
          ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -501,29 +500,29 @@ public class MessagingServerImpl implements MessagingServer
    {
       return "MessagingServer[" + configuration.getMessagingServerID() + "]";
    }
-   
+
    public CreateConnectionResponse createConnection(final String username, final String password,
                                                     final String remotingClientSessionID, final String clientVMID,
                                                     final int prefetchSize, final String clientAddress)
       throws Exception
    {
       log.trace("creating a new connection for user " + username);
-      
+
       // Authenticate. Successful autentication will place a new SubjectContext on thread local,
       // which will be used in the authorization process. However, we need to make sure we clean
       // up thread local immediately after we used the information, otherwise some other people
       // security my be screwed up, on account of thread local security stack being corrupted.
-      
+
       securityStore.authenticate(username, password);
-      
+
       final ServerConnection connection =
          new ServerConnectionEndpoint(username, password,
                           remotingClientSessionID, clientVMID, clientAddress,
                           prefetchSize, remotingService.getDispatcher(), resourceManager, persistenceManager,
                           postOffice, securityStore, connectionManager);
-      
+
       remotingService.getDispatcher().register(new ServerConnectionPacketHandler(connection));
-      
+
       return new CreateConnectionResponse(connection.getID());
    }
 

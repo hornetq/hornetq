@@ -57,8 +57,8 @@ public class QueueSettingsDeployerTest extends TestCase
       queueSettingsDeployer.setQueueSettingsRepository(repository);
       QueueSettings queueSettings = new QueueSettings();
       queueSettings.setClustered(false);
-      queueSettings.setDLQ("DLQtest");
-      queueSettings.setExpiryQueue("ExpiryQueueTest");
+      //queueSettings.setDLQ("DLQtest");
+      //queueSettings.setExpiryQueue("ExpiryQueueTest");
       queueSettings.setRedeliveryDelay((long)100);
       queueSettings.setMaxSize(-100);
       queueSettings.setDistributionPolicyClass("org.jboss.messaging.core.impl.RoundRobinDistributionPolicy");

@@ -37,7 +37,7 @@ public class JBossTopic extends JBossDestination implements Topic
 
    private static final long serialVersionUID = 3257845497845724981L;
    
-   private static final String JMS_TOPIC_ADDRESS_PREFIX = "topicjms.";
+   public static final String JMS_TOPIC_ADDRESS_PREFIX = "topicjms.";
 
    // Static --------------------------------------------------------
    

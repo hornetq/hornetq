@@ -40,6 +40,7 @@ import org.jboss.messaging.util.Version;
  * This interface is never exposed outside the messaging server, e.g. by JMX or other means
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public interface MessagingServer extends MessagingComponent
 {  
@@ -71,6 +72,8 @@ public interface MessagingServer extends MessagingComponent
    PostOffice getPostOffice();
    
    HierarchicalRepository<HashSet<Role>> getSecurityRepository();
+
+   HierarchicalRepository<QueueSettings> getQueueSettingsRepository();
 
    void setPostOffice(PostOffice postOffice);
 

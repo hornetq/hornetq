@@ -110,7 +110,13 @@ public class PostOfficeImpl implements PostOffice
    {
       return allowableAddresses.contains(address);
    }
-   
+
+
+   public Set<String> listAvailableAddresses()
+   {
+      return allowableAddresses;
+   }
+
    public Binding addBinding(String address, String queueName, Filter filter, 
                              boolean durable, boolean temporary) throws Exception
    {
@@ -239,9 +245,9 @@ public class PostOfficeImpl implements PostOffice
    {
       return mappings;
    }
-   
-   
-   
+
+
+
    // Private -----------------------------------------------------------------
    
    private Binding createBinding(String address, String name, Filter filter,

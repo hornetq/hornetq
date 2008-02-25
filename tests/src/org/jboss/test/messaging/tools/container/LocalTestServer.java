@@ -48,6 +48,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Binding;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.MessagingServerManagement;
+import org.jboss.messaging.core.QueueSettings;
 import org.jboss.messaging.microcontainer.JBMBootstrapServer;
 import org.jboss.messaging.util.JNDIUtil;
 import org.jboss.test.messaging.tools.ConfigurationHelper;
@@ -834,11 +835,10 @@ public class LocalTestServer implements Server, Runnable
 
    public void setRedeliveryDelayOnDestination(String dest, boolean queue, long delay) throws Exception
    {
-      String condition = (queue ? "queue." : "topic.") + dest;
-      
-      List<Binding> bindings = this.getMessagingServer().getPostOffice().getBindingsForAddress(condition);
-
-      bindings.get(0).getQueue().setRedeliveryDelay(delay);
+      String condition = (queue ? "queuejms." : "topicjms.") + dest;
+      QueueSettings queueSettings = new QueueSettings();
+      queueSettings.setRedeliveryDelay(delay);
+      getMessagingServer().getQueueSettingsRepository().addMatch(condition, queueSettings);
    }
 
 

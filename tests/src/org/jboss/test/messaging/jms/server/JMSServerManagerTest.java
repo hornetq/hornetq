@@ -24,7 +24,7 @@ package org.jboss.test.messaging.jms.server;
 import org.apache.tools.ant.taskdefs.Sleep;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.jms.server.JMSServerManager;
-import org.jboss.jms.server.ClientInfo;
+import org.jboss.jms.server.ConnectionInfo;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.messaging.core.impl.server.SubscriptionInfo;
@@ -33,6 +33,7 @@ import javax.jms.*;
 import javax.naming.NameNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -169,6 +170,24 @@ public class JMSServerManagerTest extends JBMServerTestCase
       }
    }
 
+   public void testListAllQueues()
+   {
+      Set<String> queueNames = jmsServerManager.listAllQueues();
+      for (String queueName : queueNames)
+      {
+         System.out.println("queueName = " + queueName);
+      }
+   }
+
+   public void testListAllTopics()
+   {
+      Set<String> topics = jmsServerManager.listAllTopics();
+      for (String queueName : topics)
+      {
+         System.out.println("queueName = " + queueName);
+      }
+   }
+
    public void testCreateAndDestroyConectionFactory() throws Exception
    {
       jmsServerManager.createConnectionFactory("newtestcf", "anid", 100, true, 100, "newtestcf");
@@ -216,46 +235,197 @@ public class JMSServerManagerTest extends JBMServerTestCase
       }
    }
 
-   public void testClientInfo() throws Exception
+   public void testGetConnections() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection("guest", "guest");
-      List<ClientInfo> clientInfos = jmsServerManager.getClients();
-      assertNotNull(clientInfos);
-      assertEquals(1, clientInfos.size());
-      ClientInfo clientInfo = clientInfos.get(0);
-      assertEquals("guest", clientInfo.getUser());
-      assertEquals(ClientInfo.status.STOPPED, clientInfo.getStatus());
+      List<ConnectionInfo> connectionInfos = jmsServerManager.getConnections();
+      assertNotNull(connectionInfos);
+      assertEquals(1, connectionInfos.size());
+      ConnectionInfo connectionInfo = connectionInfos.get(0);
+      assertEquals("guest", connectionInfo.getUser());
+      assertEquals(ConnectionInfo.status.STOPPED, connectionInfo.getStatus());
       conn.start();
       // starting a connection is a remoting async operation
       // wait a little before querying clients infos from the server
       sleepIfRemoting(250);
-      clientInfos = jmsServerManager.getClients();
-      assertNotNull(clientInfos);
-      assertEquals(1, clientInfos.size());
-      clientInfo = clientInfos.get(0);
-      assertEquals(ClientInfo.status.STARTED, clientInfo.getStatus());
-      clientInfo.getAddress();
-      clientInfo.getTimeCreated();
-      clientInfo.getAliveTime();
+      connectionInfos = jmsServerManager.getConnections();
+      assertNotNull(connectionInfos);
+      assertEquals(1, connectionInfos.size());
+      connectionInfo = connectionInfos.get(0);
+      assertEquals(ConnectionInfo.status.STARTED, connectionInfo.getStatus());
+      connectionInfo.getAddress();
+      connectionInfo.getTimeCreated();
+      connectionInfo.getAliveTime();
       conn.close();
-      clientInfos = jmsServerManager.getClients();
-      assertNotNull(clientInfos);
-      assertEquals(0, clientInfos.size());
+      connectionInfos = jmsServerManager.getConnections();
+      assertNotNull(connectionInfos);
+      assertEquals(0, connectionInfos.size());
       Connection conn2 = getConnectionFactory().createConnection("guest", "guest");
       Connection conn3 = getConnectionFactory().createConnection("guest", "guest");
-      clientInfos = jmsServerManager.getClients();
-      assertNotNull(clientInfos);
-      assertEquals(2, clientInfos.size());
+      connectionInfos = jmsServerManager.getConnections();
+      assertNotNull(connectionInfos);
+      assertEquals(2, connectionInfos.size());
       conn2.close();
-      clientInfos = jmsServerManager.getClients();
-      assertNotNull(clientInfos);
-      assertEquals(1, clientInfos.size());
+      connectionInfos = jmsServerManager.getConnections();
+      assertNotNull(connectionInfos);
+      assertEquals(1, connectionInfos.size());
       conn3.close();
-      clientInfos = jmsServerManager.getClients();
-      assertNotNull(clientInfos);
-      assertEquals(0, clientInfos.size());
+      connectionInfos = jmsServerManager.getConnections();
+      assertNotNull(connectionInfos);
+      assertEquals(0, connectionInfos.size());
    }
 
+   public void testGetConnectionsForUser() throws Exception
+   {
+      Connection conn = getConnectionFactory().createConnection("guest", "guest");
+      Connection conn2 = getConnectionFactory().createConnection();
+      Connection conn3 = getConnectionFactory().createConnection();
+      Connection conn4 = getConnectionFactory().createConnection("guest", "guest");
+      Connection conn5 = getConnectionFactory().createConnection("guest", "guest");
+
+      try
+      {
+         List<ConnectionInfo> connectionInfos = jmsServerManager.getConnectionsForUser("guest");
+         assertNotNull(connectionInfos);
+         assertEquals(connectionInfos.size(),3);
+         for (ConnectionInfo connectionInfo : connectionInfos)
+         {
+            assertEquals(connectionInfo.getUser(), "guest");
+         }
+      }
+      finally
+      {
+         if(conn != null)
+         {
+            conn.close();
+         }
+         if(conn2 != null)
+         {
+            conn2.close();
+         }
+         if(conn3 != null)
+         {
+            conn3.close();
+         }
+         if(conn4 != null)
+         {
+            conn4.close();
+         }
+         if(conn5 != null)
+         {
+            conn5.close();
+         }
+      }
+
+   }
+
+   public void testDropConnectionForId() throws Exception
+   {
+      Connection conn = getConnectionFactory().createConnection("guest", "guest");
+      Connection conn2 = getConnectionFactory().createConnection();
+      Connection conn3 = getConnectionFactory().createConnection();
+      Connection conn4 = getConnectionFactory().createConnection("john", "needle");
+      Connection conn5 = getConnectionFactory().createConnection("guest", "guest");
+      String id = conn4.getClientID();
+      try
+      {
+
+         List<ConnectionInfo> connectionInfos = jmsServerManager.getConnectionsForUser("john");
+         assertEquals(connectionInfos.size(), 1);
+         jmsServerManager.dropConnection(connectionInfos.get(0).getId());
+         connectionInfos = jmsServerManager.getConnections();
+         assertNotNull(connectionInfos);
+         assertEquals(connectionInfos.size(),4);
+         for (ConnectionInfo connectionInfo : connectionInfos)
+         {
+            assertNotSame(connectionInfo.getUser(), "john");
+         }
+         try
+         {
+            conn4.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            fail("Should throw exception");
+         }
+         catch (JMSException e)
+         {
+            //pass
+         }
+      }
+      finally
+      {
+         if(conn != null)
+         {
+            conn.close();
+         }
+         if(conn2 != null)
+         {
+            conn2.close();
+         }
+         if(conn3 != null)
+         {
+            conn3.close();
+         }
+         if(conn5 != null)
+         {
+            conn5.close();
+         }
+      }
+
+   }
+
+   public void testDropConnectionForUser() throws Exception
+   {
+      Connection conn = getConnectionFactory().createConnection("guest", "guest");
+      Connection conn2 = getConnectionFactory().createConnection();
+      Connection conn3 = getConnectionFactory().createConnection();
+      Connection conn4 = getConnectionFactory().createConnection("john", "needle");
+      Connection conn5 = getConnectionFactory().createConnection("guest", "guest");
+      String id = conn4.getClientID();
+      try
+      {
+         jmsServerManager.dropConnectionForUser("guest");
+         List<ConnectionInfo> connectionInfos = jmsServerManager.getConnections();
+         assertNotNull(connectionInfos);
+         assertEquals(connectionInfos.size(),3);
+         for (ConnectionInfo connectionInfo : connectionInfos)
+         {
+            assertNotSame(connectionInfo.getUser(), "guest");
+         }
+         try
+         {
+            conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            fail("Should throw exception");
+         }
+         catch (JMSException e)
+         {
+            //pass
+         }
+         try
+         {
+            conn5.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            fail("Should throw exception");
+         }
+         catch (JMSException e)
+         {
+            //pass
+         }
+      }
+      finally
+      {
+         if(conn2 != null)
+         {
+            conn2.close();
+         }
+         if(conn3 != null)
+         {
+            conn3.close();
+         }
+         if(conn4 != null)
+         {
+            conn4.close();
+         }
+      }
+
+   }
    public void test() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection("guest", "guest");
@@ -546,6 +716,48 @@ public class JMSServerManagerTest extends JBMServerTestCase
          }
          consumer.close();
          consumer = sess.createConsumer(queue2);
+         Message message = consumer.receive();
+         assertEquals(messageToMove.getJMSMessageID(), message.getJMSMessageID());
+      }
+      finally
+      {
+         if(conn != null)
+         {
+            conn.close();
+         }
+      }
+
+   }
+
+   public void testExpireMessage() throws Exception
+   {
+      Connection conn = getConnectionFactory().createConnection("guest", "guest");
+      try
+      {
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Queue q = (Queue) getInitialContext().lookup("/queue/QueueWithOwnDLQAndExpiryQueue");
+         MessageProducer producer = sess.createProducer(q);
+         Message messageToMove = null;
+         for (int i = 0; i < 10; i++)
+         {
+            TextMessage message = sess.createTextMessage();
+            producer.send(message);
+            if (i == 5)
+            {
+               messageToMove = message;
+            }
+         }
+         jmsServerManager.expireMessage("QueueWithOwnDLQAndExpiryQueue", messageToMove.getJMSMessageID());
+         MessageConsumer consumer = sess.createConsumer(q);
+         conn.start();
+         for (int i = 0; i < 9; i++)
+         {
+            Message message = consumer.receive();
+            assertNotSame(messageToMove.getJMSMessageID(), message.getJMSMessageID());
+         }
+         consumer.close();
+         Queue expQueue = (Queue) getInitialContext().lookup("/queue/PrivateExpiryQueue");
+         consumer = sess.createConsumer(expQueue);
          Message message = consumer.receive();
          assertEquals(messageToMove.getJMSMessageID(), message.getJMSMessageID());
       }

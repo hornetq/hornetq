@@ -22,6 +22,7 @@
 package org.jboss.messaging.core;
 
 import org.jboss.messaging.core.impl.filter.FilterImpl;
+import org.jboss.messaging.util.HierarchicalRepository;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -32,6 +33,7 @@ import java.util.List;
  * A Queue
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  *
  */
 public interface Queue
@@ -100,21 +102,7 @@ public interface Queue
    int getMessagesAdded();
    
    //--------
-   
-   Queue getDLQ();
-   
-   Queue getExpiryQueue();
-   
-   int getMaxDeliveryAttempts();
-   
-   void setMaxDeliveryAttempts(int max);
-   
-   long getRedeliveryDelay();
-   
-   void setRedeliveryDelay(long delay);
-   
-   int getMessageCounterHistoryDayLimit();
-   
-   void setMessageCounterHistoryDayLimit(int limit);
+
+   HierarchicalRepository<QueueSettings> getQueueSettings();
 
 }

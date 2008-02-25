@@ -135,16 +135,17 @@ public class MessageReferenceImpl implements MessageReference
       }
             
       queue.decrementDeliveringCount();
-      
-      int maxDeliveries = queue.getMaxDeliveryAttempts();
+
+      int maxDeliveries = queue.getQueueSettings().getMatch(queue.getName()).getMaxDeliveryAttempts();
       
       if (maxDeliveries > 0 && deliveryCount >= maxDeliveries)
       {
-         if (queue.getDLQ() != null)
+         Queue DLQ = queue.getQueueSettings().getMatch(queue.getName()).getDLQ();
+         if (DLQ != null)
          {
             Message copyMessage = makeCopyForDLQOrExpiry(false, persistenceManager);
             
-            moveInTransaction(queue.getDLQ(), copyMessage, persistenceManager);
+            moveInTransaction(DLQ, copyMessage, persistenceManager);
          }
          else
          {
@@ -165,11 +166,12 @@ public class MessageReferenceImpl implements MessageReference
    
    public void expire(PersistenceManager persistenceManager) throws Exception
    {
-      if (queue.getExpiryQueue() != null)
+      Queue expiryQueue = queue.getQueueSettings().getMatch(queue.getName()).getExpiryQueue();
+      if (expiryQueue != null)
       {
          Message copyMessage = makeCopyForDLQOrExpiry(false, persistenceManager);
          
-         moveInTransaction(queue.getExpiryQueue(), copyMessage, persistenceManager);
+         moveInTransaction(expiryQueue, copyMessage, persistenceManager);
       }
       else
       {
@@ -195,7 +197,7 @@ public class MessageReferenceImpl implements MessageReference
    private void moveInTransaction(Queue destinationQueue, Message copyMessage,
                                   PersistenceManager persistenceManager) throws Exception
    {
-      copyMessage.createReference(queue.getExpiryQueue());
+      copyMessage.createReference(destinationQueue);
       
       TransactionImpl tx = new TransactionImpl();
       

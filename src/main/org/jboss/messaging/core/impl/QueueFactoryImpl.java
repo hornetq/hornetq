@@ -31,30 +31,31 @@ import org.jboss.messaging.util.HierarchicalObjectRepository;
 import org.jboss.messaging.util.HierarchicalRepository;
 
 /**
- * 
+ *
  * A QueueFactoryImpl
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  *
  */
 public class QueueFactoryImpl implements QueueFactory
 {
    private HierarchicalRepository<QueueSettings> queueSettingsRepository;
-   
+
    private ScheduledExecutorService scheduledExecutor;
 
    public QueueFactoryImpl(ScheduledExecutorService scheduledExecutor)
    {
       this();
-      
+
       this.scheduledExecutor = scheduledExecutor;
    }
-   
+
    public QueueFactoryImpl()
    {
       queueSettingsRepository = new HierarchicalObjectRepository<QueueSettings>();
-      
-      queueSettingsRepository.setDefault(new QueueSettings());      
+
+      queueSettingsRepository.setDefault(new QueueSettings());
    }
 
    public Queue createQueue(long id, String name, Filter filter,
@@ -62,20 +63,11 @@ public class QueueFactoryImpl implements QueueFactory
    {
       QueueSettings queueSettings = queueSettingsRepository.getMatch(name);
 
-      Queue queue =  new QueueImpl(id, name, filter, queueSettings.isClustered(),
-      		                       durable, temporary, queueSettings.getMaxSize(),
-      		                       scheduledExecutor);
-      
-      queue.setMaxDeliveryAttempts(queueSettings.getMaxDeliveryAttempts());
-      
-      queue.setMessageCounterHistoryDayLimit(queueSettings.getMessageCounterHistoryDayLimit());
-      
-      queue.setRedeliveryDelay(queueSettings.getRedeliveryDelay());                           
-      
+      Queue queue =  new QueueImpl(id, name, filter, queueSettings.isClustered(), durable, temporary, queueSettings.getMaxSize(), queueSettingsRepository);
+
       queue.setDistributionPolicy(queueSettings.getDistributionPolicy());
 
       return queue;
-
    }
 
    public void setQueueSettingsRepository(HierarchicalRepository<QueueSettings> queueSettingsRepository)

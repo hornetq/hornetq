@@ -37,7 +37,7 @@ public class JBossQueue extends JBossDestination implements Queue
    
    private static final long serialVersionUID = 4121129234371655479L;
    
-   private static final String JMS_QUEUE_ADDRESS_PREFIX = "queuejms.";
+   public static final String JMS_QUEUE_ADDRESS_PREFIX = "queuejms.";
 
    // Static --------------------------------------------------------
    

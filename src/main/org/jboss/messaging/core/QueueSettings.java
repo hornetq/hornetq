@@ -48,8 +48,8 @@ public class QueueSettings implements Mergeable<QueueSettings>
    private Integer maxDeliveryAttempts = null;
    private Integer messageCounterHistoryDayLimit = null;
    private Long redeliveryDelay = null;
-   private String DLQ = null;
-   private String ExpiryQueue = null;
+   private Queue DLQ = null;
+   private Queue ExpiryQueue = null;
 
 
    public Boolean isClustered()
@@ -113,22 +113,22 @@ public class QueueSettings implements Mergeable<QueueSettings>
    }
 
 
-   public String getDLQ()
+   public Queue getDLQ()
    {
       return DLQ;
    }
 
-   public void setDLQ(String DLQ)
+   public void setDLQ(Queue DLQ)
    {
       this.DLQ = DLQ;
    }
 
-   public String getExpiryQueue()
+   public Queue getExpiryQueue()
    {
       return ExpiryQueue;
    }
 
-   public void setExpiryQueue(String expiryQueue)
+   public void setExpiryQueue(Queue expiryQueue)
    {
       ExpiryQueue = expiryQueue;
    }

@@ -21,11 +21,7 @@
   */
 package org.jboss.jms.server.endpoint;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -49,6 +45,7 @@ import org.jboss.messaging.util.Logger;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -96,8 +93,8 @@ public class ServerConnectionEndpoint implements ServerConnection
    private final Set<Queue> temporaryQueues = new ConcurrentHashSet<Queue>();
       
    private volatile boolean started;
-   
-  
+
+
    // Constructors ---------------------------------------------------------------------------------
       
    public ServerConnectionEndpoint(final String username, final String password,
@@ -262,6 +259,16 @@ public class ServerConnectionEndpoint implements ServerConnection
    public String getClientAddress()
    {
       return clientAddress;
+   }
+
+   public long getCreated()
+   {
+      return createdTime;
+   }
+
+   public Collection<ServerSession> getSessions()
+   {
+      return sessions.values();
    }
 
    // Public ---------------------------------------------------------------------------------------

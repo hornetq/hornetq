@@ -24,20 +24,17 @@ package org.jboss.example.embedded;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import org.jboss.messaging.core.MessagingServer;
-import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessagingServerManagement;
 import org.jboss.messaging.core.impl.server.MessagingServerImpl;
 import org.jboss.messaging.core.impl.server.MessagingServerManagementImpl;
-import org.jboss.messaging.core.impl.MessageImpl;
-import org.jboss.messaging.core.impl.messagecounter.MessageCounter;
-import org.jboss.jms.client.api.*;
-import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.jms.message.JBossTextMessage;
+import org.jboss.jms.server.JMSServerManager;
+import org.jboss.jms.server.JMSServerManagerImpl;
+import org.jnp.server.NamingBeanImpl;
+import org.jnp.server.Main;
 
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import javax.management.StandardMBean;
+import javax.management.ObjectName;
+import java.lang.management.ManagementFactory;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -46,6 +43,18 @@ public class EmbeddedManagementExample
 {
    public static void main(String args[]) throws Exception
    {
+      System.setProperty("java.naming.factory.initial","org.jnp.interfaces.NamingContextFactory");
+      System.setProperty("java.naming.factory.url.pkgs","org.jboss.naming:org.jnp.interfaces");
+
+      NamingBeanImpl namingBean = new NamingBeanImpl();
+      namingBean.start();
+      Main mainMBean = new Main();
+      mainMBean.setPort(1099);
+      mainMBean.setBindAddress("localhost");
+      mainMBean.setRmiPort(1098);
+      mainMBean.setRmiBindAddress("localhost");
+      mainMBean.setNamingInfo(namingBean);
+      mainMBean.start();
       RemotingConfiguration remotingConf = new RemotingConfiguration(TCP, "localhost", 5400);
       remotingConf.setInvmDisabled(true);
       MessagingServer messagingServer = new MessagingServerImpl(remotingConf);
@@ -53,79 +62,22 @@ public class EmbeddedManagementExample
       MessagingServerManagementImpl messagingServerManagement = new MessagingServerManagementImpl();
       messagingServerManagement.setMessagingServer(messagingServer);
       messagingServerManagement.start();
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(remotingConf);
-      ClientConnection clientConnection = cf.createConnection(null, null);
-      ClientSession clientSession = clientConnection.createClientSession(false, true, true, 0, false);
-      String queue = "Queue1";
-      clientSession.createQueue(queue, queue, null, false, false);
-      ClientProducer clientProducer = clientSession.createProducer("Queue1");
-
-      clientConnection.start();
-
-      messagingServerManagement.registerMessageCounter(queue);
-      Message message = new MessageImpl(JBossTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte) 1);
-      messagingServerManagement.startMessageCounter(queue, 0);
-      for (int i = 0; i < 1000; i++)
-      {
-         clientProducer.send(message);
-      }
-
-      MessageCounter messageCounter = messagingServerManagement.getMessageCounter(queue);
-      System.out.println("messageCounter = " + messageCounter);
-      for (int i = 0; i < 2000; i++)
-      {
-         clientProducer.send(message);
-      }
-
-      messageCounter = messagingServerManagement.getMessageCounter(queue);
-      System.out.println("messageCounter = " + messageCounter);
-      for (int i = 0; i < 3000; i++)
-      {
-         clientProducer.send(message);
-      }
-
-      messageCounter = messagingServerManagement.getMessageCounter(queue);
-      System.out.println("messageCounter = " + messageCounter);
-      for (int i = 0; i < 4000; i++)
-      {
-         clientProducer.send(message);
-      }
-
-      messageCounter = messagingServerManagement.getMessageCounter(queue);
-      System.out.println("messageCounter = " + messageCounter);
-      messagingServerManagement.stopMessageCounter(queue);
-      messagingServerManagement.startMessageCounter(queue, 5);
-      ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-      Timer timer = new Timer();
-      scheduler.schedule(timer, 10, TimeUnit.SECONDS);
-      int counter = 0;
-      while (timer.isRunning())
-      {
-         clientProducer.send(message);
-         counter++;
-      }
-      scheduler.shutdown();
-      System.out.println("counter = " + counter);
-      messageCounter = messagingServerManagement.getMessageCounter(queue);
-      System.out.println("messageCounter = " + messageCounter);
-      messagingServerManagement.unregisterMessageCounter(queue);
-      clientConnection.close();
+      JMSServerManagerImpl jmsServerManager = new JMSServerManagerImpl();
+      jmsServerManager.setMessagingServerManagement(messagingServerManagement);
+      jmsServerManager.start();
+      StandardMBean serverManagementMBean = new StandardMBean(messagingServerManagement, MessagingServerManagement.class);
+      ObjectName serverManagementON = ObjectName.getInstance("org.jboss.messaging:name=MessagingServerManagement");
+      ManagementFactory.getPlatformMBeanServer().registerMBean(serverManagementMBean, serverManagementON);
+      StandardMBean JMSServerManagementMBean = new StandardMBean(jmsServerManager, JMSServerManager.class);
+      ObjectName JMSServerManagerON = ObjectName.getInstance("org.jboss.messaging:name=JMSServerManager");
+      ManagementFactory.getPlatformMBeanServer().registerMBean(JMSServerManagementMBean, JMSServerManagerON);
+      System.out.println("Press enter to kill server");
+      System.out.println("Receiving jmx connections on port 5401, try running command 'jconsole service:jmx:rmi:///jndi/rmi://localhost:5401/jmxrmi'");
+       
+      System.in.read();
       messagingServerManagement.stop();
       messagingServer.stop();
-   }
-
-   private static class Timer implements Runnable
-   {
-      boolean running = true;
-
-      public boolean isRunning()
-      {
-         return running;
-      }
-
-      public void run()
-      {
-         running = false;
-      }
+      mainMBean.stop();
+      namingBean.stop();
    }
 }

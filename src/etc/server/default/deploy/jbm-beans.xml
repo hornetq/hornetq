@@ -11,6 +11,7 @@
    </bean>
 
    <bean name="MessagingServerManagement" class="org.jboss.messaging.core.impl.server.MessagingServerManagementImpl">
+      <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.messaging:service=MessagingServerManagement", exposedInterface=org.jboss.messaging.core.MessagingServerManagement.class)</annotation>
       <property name="messagingServer">
          <inject bean="MessagingServer"/>
       </property>
@@ -68,8 +69,15 @@
    </bean> 
    
    <bean name="JMSServerManager" class="org.jboss.jms.server.JMSServerManagerImpl">
+      <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.messaging:service=JMSServerManager", exposedInterface=org.jboss.jms.server.JMSServerManager.class)</annotation>
       <property name="messagingServerManagement">
          <inject bean="MessagingServerManagement"/>
+      </property>
+   </bean>
+
+   <bean name="JMSServerDeployer" class="org.jboss.jms.server.JMSServerDeployer">
+      <property name="jmsServerManager">
+         <inject bean="JMSServerManager"/>
       </property>
    </bean>
  

@@ -21,37 +21,43 @@
    */
 package org.jboss.jms.server;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-
-import javax.jms.Message;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
-import javax.naming.NamingException;
-
-import org.jboss.aop.microcontainer.aspects.jmx.JMX;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.api.ClientConnectionFactory;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
-import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
+import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.endpoint.ServerConnection;
+import org.jboss.jms.server.endpoint.ServerSession;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.MessagingServerManagement;
 import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.core.impl.filter.FilterImpl;
-import org.jboss.messaging.core.impl.messagecounter.MessageCounter;
+import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.impl.server.SubscriptionInfo;
+import org.jboss.jms.server.MessageStatistics;
+import org.jboss.jms.message.JBossMessage;
+import org.jboss.messaging.core.impl.messagecounter.MessageCounter;
+import org.jboss.messaging.core.impl.filter.FilterImpl;
 import org.jboss.messaging.deployers.Deployer;
 import org.jboss.messaging.deployers.DeploymentManager;
 import org.jboss.messaging.util.JNDIUtil;
 import org.jboss.messaging.util.MessageQueueNameHelper;
+import org.jboss.aop.microcontainer.aspects.jmx.JMX;
+import org.jboss.managed.api.annotation.ManagementObject;
+import org.jboss.managed.api.annotation.ManagementOperation;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
+import javax.jms.Message;
+import javax.management.StandardMBean;
+import javax.management.ObjectName;
+import javax.management.MBeanServer;
+import java.util.*;
+import java.lang.management.ManagementFactory;
 
 /**
  * A Deployer used to create and add to JNDI queues, topics and connection factories. Typically this would only be used
@@ -59,8 +65,7 @@ import org.w3c.dom.NodeList;
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-@JMX(name = "jboss.messaging:service=MessagingServer", exposedInterface = JMSServerManager.class)
-public class JMSServerManagerImpl extends Deployer implements JMSServerManager
+public class JMSServerManagerImpl implements JMSServerManager
 {
    Logger log = Logger.getLogger(JMSServerManagerImpl.class);
 
@@ -77,18 +82,6 @@ public class JMSServerManagerImpl extends Deployer implements JMSServerManager
 
    MessagingServerManagement messagingServerManagement;
 
-   private static final String CLIENTID_ELEMENT = "client-id";
-   private static final String DUPS_OK_BATCH_SIZE_ELEMENT = "dups-ok-batch-size";
-   private static final String PREFETECH_SIZE_ELEMENT = "prefetch-size";
-   private static final String SUPPORTS_FAILOVER = "supports-failover";
-   private static final String SUPPORTS_LOAD_BALANCING = "supports-load-balancing";
-   private static final String LOAD_BALANCING_FACTORY = "load-balancing-factory";
-   private static final String STRICT_TCK = "strict-tck";
-   private static final String ENTRY_NODE_NAME = "entry";
-   private static final String CONNECTION_FACTORY_NODE_NAME = "connection-factory";
-   private static final String QUEUE_NODE_NAME = "queue";
-   private static final String TOPIC_NODE_NAME = "topic";
-
    public void setMessagingServerManagement(MessagingServerManagement messagingServerManagement)
    {
       this.messagingServerManagement = messagingServerManagement;
@@ -97,7 +90,7 @@ public class JMSServerManagerImpl extends Deployer implements JMSServerManager
    /**
     * lifecycle method
     */
-   public void start()
+   public void start() throws Exception
    {
       try
       {
@@ -107,45 +100,8 @@ public class JMSServerManagerImpl extends Deployer implements JMSServerManager
       {
          log.error("Unable to create Initial Context", e);
       }
-      try
-      {
-         DeploymentManager.getInstance().registerDeployable(this);
-      }
-      catch (Exception e)
-      {
-         log.error(new StringBuilder("Unable to get Deployment Manager: ").append(e));
-      }
    }
 
-   /**
-    * lifecycle method
-    */
-   public void stop() throws Exception
-   {
-      super.stop();
-      DeploymentManager.getInstance().unregisterDeployable(this);
-   }
-
-   /**
-    * the names of the elements to deploy
-    *
-    * @return the names of the elements todeploy
-    */
-   public String[] getElementTagName()
-   {
-      return new String[]{QUEUE_NODE_NAME, TOPIC_NODE_NAME, CONNECTION_FACTORY_NODE_NAME};
-   }
-
-   /**
-    * deploy an element
-    *
-    * @param node the element to deploy
-    * @throws Exception .
-    */
-   public void deploy(Node node) throws Exception
-   {
-      createAndBindObject(node);
-   }
 
    private boolean bindToJndi(String jndiName, Object objectToBind)
            throws NamingException
@@ -169,7 +125,7 @@ public class JMSServerManagerImpl extends Deployer implements JMSServerManager
          log.warn("Binding for " + jndiName + " already exists");
          return false;
       }
-      catch (NameNotFoundException e)
+      catch (Throwable e)
       {
          // OK
       }
@@ -180,122 +136,6 @@ public class JMSServerManagerImpl extends Deployer implements JMSServerManager
       return true;
    }
 
-   /**
-    * creates the object to bind, this will either be a JBossConnectionFActory, JBossQueue or JBossTopic
-    *
-    * @param node the config
-    * @throws Exception .
-    */
-   private void createAndBindObject(Node node) throws Exception
-   {
-      if (node.getNodeName().equals(CONNECTION_FACTORY_NODE_NAME))
-      {
-         // See http://www.jboss.com/index.html?module=bb&op=viewtopic&p=4076040#4076040
-         NodeList attributes = node.getChildNodes();
-         boolean cfStrictTck = false;
-         int prefetchSize = 150;
-         String clientID = null;
-         int dupsOKBatchSize = 1000;
-         for (int j = 0; j < attributes.getLength(); j++)
-         {
-            if (STRICT_TCK.equalsIgnoreCase(attributes.item(j).getNodeName()))
-            {
-               cfStrictTck = Boolean.parseBoolean(attributes.item(j).getTextContent().trim());
-            }
-            else if (PREFETECH_SIZE_ELEMENT.equalsIgnoreCase(attributes.item(j).getNodeName()))
-            {
-               prefetchSize = Integer.parseInt(attributes.item(j).getTextContent().trim());
-            }
-            else if (CLIENTID_ELEMENT.equalsIgnoreCase(attributes.item(j).getNodeName()))
-            {
-               clientID = attributes.item(j).getTextContent();
-            }
-            else if (DUPS_OK_BATCH_SIZE_ELEMENT.equalsIgnoreCase(attributes.item(j).getNodeName()))
-            {
-               dupsOKBatchSize = Integer.parseInt(attributes.item(j).getTextContent().trim());
-            }
-            if (SUPPORTS_FAILOVER.equalsIgnoreCase(attributes.item(j).getNodeName()))
-            {
-               //setSupportsFailover(Boolean.parseBoolean(attributes.item(j).getTextContent().trim()));
-            }
-            if (SUPPORTS_LOAD_BALANCING.equalsIgnoreCase(attributes.item(j).getNodeName()))
-            {
-               //setSupportsLoadBalancing(Boolean.parseBoolean(attributes.item(j).getTextContent().trim()));
-            }
-            if (LOAD_BALANCING_FACTORY.equalsIgnoreCase(attributes.item(j).getNodeName()))
-            {
-               //setLoadBalancingFactory(attributes.item(j).getTextContent().trim());
-            }
-         }
-
-         NodeList children = node.getChildNodes();
-         for (int i = 0; i < children.getLength(); i++)
-         {
-            Node child = children.item(i);
-
-            if (ENTRY_NODE_NAME.equalsIgnoreCase(children.item(i).getNodeName()))
-            {
-               String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
-               String name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
-               createConnectionFactory(name, clientID, dupsOKBatchSize, cfStrictTck, prefetchSize, jndiName);
-            }
-         }
-      }
-      else if (node.getNodeName().equals(QUEUE_NODE_NAME))
-      {
-         String queueName = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
-         NodeList children = node.getChildNodes();
-         for (int i = 0; i < children.getLength(); i++)
-         {
-            Node child = children.item(i);
-
-            if (ENTRY_NODE_NAME.equalsIgnoreCase(children.item(i).getNodeName()))
-            {
-               String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
-               createQueue(queueName, jndiName);
-            }
-
-         }
-      }
-      else if (node.getNodeName().equals(TOPIC_NODE_NAME))
-      {
-         String topicName = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
-         NodeList children = node.getChildNodes();
-         for (int i = 0; i < children.getLength(); i++)
-         {
-            Node child = children.item(i);
-
-            if (ENTRY_NODE_NAME.equalsIgnoreCase(children.item(i).getNodeName()))
-            {
-               String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
-               createTopic(topicName, jndiName);
-            }
-         }
-      }
-   }
-
-   /**
-    * undeploys an element
-    *
-    * @param node the element to undeploy
-    * @throws Exception .
-    */
-   public void undeploy(Node node) throws Exception
-   {
-      System.out.println("JNDIObjectDeployer.undeploy");
-   }
-
-   /**
-    * The name of the configuration file name to look for for deployment
-    *
-    * @return The name of the config file
-    */
-   public String getConfigFileName()
-   {
-      return "jbm-jndi.xml";
-   }
-
-   // management operations
 
    // management operations
 
@@ -303,7 +143,7 @@ public class JMSServerManagerImpl extends Deployer implements JMSServerManager
    {
       return messagingServerManagement.isStarted();
    }
-
+   
    public boolean createQueue(String queueName, String jndiBinding) throws Exception
    {
       JBossQueue jBossQueue = new JBossQueue(queueName);
@@ -359,6 +199,39 @@ public class JMSServerManagerImpl extends Deployer implements JMSServerManager
       }
       destinations.remove(name);
       return true;
+   }
+
+   public Set<String> listAllQueues()
+   {
+      Set<String> availableAddresses = messagingServerManagement.listAvailableAddresses();
+      Set<String> availableQueues = new HashSet<String>();
+      for (String address : availableAddresses)
+      {
+         if(address.startsWith(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX))
+         {
+            availableQueues.add(address.replace(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX, ""));
+         }
+      }
+      return availableQueues;
+   }
+
+   public Set<String> listAllTopics()
+   {
+      Set<String> availableAddresses = messagingServerManagement.listAvailableAddresses();
+      Set<String> availableTopics = new HashSet<String>();
+      for (String address : availableAddresses)
+      {
+         if(address.startsWith(JBossTopic.JMS_TOPIC_ADDRESS_PREFIX))
+         {
+            availableTopics.add(address.replace(JBossTopic.JMS_TOPIC_ADDRESS_PREFIX, ""));
+         }
+      }
+      return availableTopics;
+   }
+
+   public Set<String> listTemporaryDestinations()
+   {
+      return null;  //todo
    }
 
    public boolean createConnectionFactory(String name, String clientID, int dupsOKBatchSize, boolean strictTck, int prefetchSize, String jndiBinding) throws Exception
@@ -469,6 +342,21 @@ public class JMSServerManagerImpl extends Deployer implements JMSServerManager
               new FilterImpl("JMSMessageID='" + messageId + "'"));
    }
 
+   public void expireMessage(String queue, String messageId) throws Exception
+   {
+      messagingServerManagement.expireMessages(new JBossQueue(queue).getAddress(), new FilterImpl("JMSMessageID='" + messageId + "'"));
+   }
+
+   public void changeMessagePriority(String messageId, int priority)
+   {
+      //todo
+   }
+
+   public void changeMessageHeader(String messageId, String header, Object value)
+   {
+      //todo
+   }
+
    public int getMessageCountForQueue(String queue) throws Exception
    {
       return getMessageCount(new JBossQueue(queue));
@@ -494,25 +382,109 @@ public class JMSServerManagerImpl extends Deployer implements JMSServerManager
       return getSubscriptionsCount(new JBossTopic(topicName), listType);
    }
 
+   public void dropSubscription(String subscription) throws Exception
+   {
+      messagingServerManagement.destroyQueue(subscription);
+      
+   }
+
    public int getConsumerCountForQueue(String queue) throws Exception
    {
       return getConsumerCount(new JBossQueue(queue));
    }
 
-   public List<ClientInfo> getClients() throws Exception
+   public List<ConnectionInfo> getConnections() throws Exception
    {
-      List<ClientInfo> clientInfos = new ArrayList<ClientInfo>();
+      return getConnectionsForUser(null);
+   }
+
+   public List<ConnectionInfo> getConnectionsForUser(String user) throws Exception
+   {
+      List<ConnectionInfo> connectionInfos = new ArrayList<ConnectionInfo>();
       List<ServerConnection> endpoints = messagingServerManagement.getActiveConnections();
       for (ServerConnection endpoint : endpoints)
       {
-         clientInfos.add(new ClientInfo(endpoint.getUsername(),
-                 endpoint.getClientAddress(),
-                 endpoint.isStarted(),
-                 endpoint.getCreatedTime()));
+         if (user == null || user.equals(endpoint.getUsername()))
+         {
+            connectionInfos.add(new ConnectionInfo(endpoint.getID(),
+                    endpoint.getUsername(),
+                    endpoint.getClientAddress(),
+                    endpoint.isStarted(),
+                    endpoint.getCreated()));
+         }
       }
-      return clientInfos;
+      return connectionInfos;
    }
 
+   public void dropConnection(String clientId) throws Exception
+   {
+      List<ServerConnection> endpoints = messagingServerManagement.getActiveConnections();
+      for (ServerConnection endpoint : endpoints)
+      {
+         if (endpoint.getID().equals(clientId))
+         {
+            endpoint.close();
+            break;
+         }
+      }
+   }
+
+   public void dropConnectionForUser(String user) throws Exception
+   {
+      List<ServerConnection> endpoints = messagingServerManagement.getActiveConnections();
+      List<ConnectionInfo> connectionInfos = getConnectionsForUser(user);
+      for (ConnectionInfo connectionInfo : connectionInfos)
+      {
+
+
+         for (ServerConnection endpoint : endpoints)
+         {
+            if (endpoint.getID().equals(connectionInfo.getId()))
+            {
+               endpoint.close();
+               break;
+            }
+         }
+      }
+   }
+
+   public List<SessionInfo> getSessions() throws Exception
+   {
+      return getSessionsForConnection(null);
+   }
+
+   public List<SessionInfo> getSessionsForConnection(String id) throws Exception
+   {
+      List<SessionInfo> sessionInfos = new ArrayList<SessionInfo>();
+      List<ServerConnection> endpoints = messagingServerManagement.getActiveConnections();
+      for (ServerConnection endpoint : endpoints)
+      {
+         if(id == null || id.equals(endpoint.getID()))
+         {
+            Collection<ServerSession> serverSessionEndpoints = endpoint.getSessions();
+            for (ServerSession serverSessionEndpoint : serverSessionEndpoints)
+            {
+               sessionInfos.add(new SessionInfo(serverSessionEndpoint.getID(),
+                       endpoint.getID()));
+            }
+         }
+      }
+      return sessionInfos;
+   }
+
+   public List<SessionInfo> getSessionsForUser(String user) throws Exception
+   {
+      List<SessionInfo> sessionInfos = new ArrayList<SessionInfo>();
+      List<ServerConnection> endpoints = messagingServerManagement.getActiveConnections();
+      for (ServerConnection endpoint : endpoints)
+      {
+         if(user == null || user.equals(endpoint.getUsername()))
+         {
+            sessionInfos.addAll(getSessionsForConnection(endpoint.getID()));
+         }
+      }
+      return sessionInfos;
+   }
 
    public void startGatheringStatistics()
    {
