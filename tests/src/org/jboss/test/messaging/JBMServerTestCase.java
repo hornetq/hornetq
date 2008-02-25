@@ -964,7 +964,7 @@ public class JBMServerTestCase extends JBMBaseTestCase
     * 
     * @param time sleep time in milliseconds
     */
-   private void sleepIfRemoting(int time) throws Exception
+   protected void sleepIfRemoting(int time) throws Exception
    {
       RemotingConfiguration remotingConf = servers.get(0).getMessagingServer().getRemotingService().getRemotingConfiguration();
       if (remotingConf.isInvmDisabled())
