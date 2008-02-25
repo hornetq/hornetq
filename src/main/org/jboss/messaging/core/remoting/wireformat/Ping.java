@@ -27,7 +27,7 @@ public class Ping extends AbstractPacket
 
    // Constructors --------------------------------------------------
 
-   public Ping(String sessionID)
+   public Ping(final String sessionID)
    {
       super(PING);
       

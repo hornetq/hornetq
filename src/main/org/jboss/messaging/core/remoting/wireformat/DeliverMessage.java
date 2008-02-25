@@ -31,7 +31,7 @@ public class DeliverMessage extends AbstractPacket
 
    // Constructors --------------------------------------------------
 
-   public DeliverMessage(Message message, long deliveryID)
+   public DeliverMessage(final Message message, final long deliveryID)
    {
       super(SESS_DELIVER);
 

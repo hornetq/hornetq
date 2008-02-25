@@ -26,7 +26,7 @@ public class SessionBrowserNextMessageResponseMessage extends AbstractPacket
 
    // Constructors --------------------------------------------------
 
-   public SessionBrowserNextMessageResponseMessage(Message message)
+   public SessionBrowserNextMessageResponseMessage(final Message message)
    {
       super(PacketType.SESS_BROWSER_NEXTMESSAGE_RESP);
 

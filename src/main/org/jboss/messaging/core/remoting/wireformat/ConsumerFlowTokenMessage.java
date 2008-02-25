@@ -26,7 +26,7 @@ public class ConsumerFlowTokenMessage extends AbstractPacket
 
    // Constructors --------------------------------------------------
 
-   public ConsumerFlowTokenMessage(int tokens)
+   public ConsumerFlowTokenMessage(final int tokens)
    {
       super(CONS_FLOWTOKEN);
 

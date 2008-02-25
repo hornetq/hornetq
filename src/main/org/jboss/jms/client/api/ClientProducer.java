@@ -15,6 +15,8 @@ import org.jboss.messaging.util.MessagingException;
  */
 public interface ClientProducer
 {        
+	String getAddress();
+	
    void send(String address, Message message) throws MessagingException;
    
    void registerAcknowledgementHandler(AcknowledgementHandler handler);

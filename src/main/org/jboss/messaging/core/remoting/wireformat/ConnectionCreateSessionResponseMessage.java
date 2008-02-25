@@ -26,7 +26,7 @@ public class ConnectionCreateSessionResponseMessage extends AbstractPacket
 
    // Constructors --------------------------------------------------
 
-   public ConnectionCreateSessionResponseMessage(String sessionID)
+   public ConnectionCreateSessionResponseMessage(final String sessionID)
    {
       super(PacketType.CONN_CREATESESSION_RESP);
 

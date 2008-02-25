@@ -13,11 +13,11 @@ import java.util.List;
  */
 public class SessionBindingQueryResponseMessage extends AbstractPacket
 {
-   private boolean exists;
+   private final boolean exists;
    
-   private List<String> queueNames;
+   private final List<String> queueNames;
    
-   public SessionBindingQueryResponseMessage(boolean exists, List<String> queueNames)
+   public SessionBindingQueryResponseMessage(final boolean exists, final List<String> queueNames)
    {
       super(SESS_BINDINGQUERY_RESP);
 

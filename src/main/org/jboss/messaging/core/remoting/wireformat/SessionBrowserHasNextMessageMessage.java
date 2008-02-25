@@ -27,7 +27,7 @@ public class SessionBrowserHasNextMessageMessage extends AbstractPacket
 
    public SessionBrowserHasNextMessageMessage()
    {
-    super(SESS_BROWSER_HASNEXTMESSAGE);
+      super(SESS_BROWSER_HASNEXTMESSAGE);
    }
 
    // Public --------------------------------------------------------

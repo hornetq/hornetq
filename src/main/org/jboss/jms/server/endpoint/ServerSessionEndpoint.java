@@ -57,6 +57,7 @@ import org.jboss.messaging.core.remoting.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCreateBrowserResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCreateConsumerResponseMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionCreateProducerResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionXAResponseMessage;
@@ -115,6 +116,8 @@ public class ServerSessionEndpoint implements ServerSession
    private final Map<String, ServerConsumer> consumers = new ConcurrentHashMap<String, ServerConsumer>();
 
    private final Map<String, ServerBrowserEndpoint> browsers = new ConcurrentHashMap<String, ServerBrowserEndpoint>();
+   
+   private final Map<String, ServerProducer> producers = new ConcurrentHashMap<String, ServerProducer>();
 
    private final LinkedList<Delivery> deliveries = new LinkedList<Delivery>();
 
@@ -176,24 +179,34 @@ public class ServerSessionEndpoint implements ServerSession
       return connection;
    }
 
-   public void removeBrowser(final String browserId) throws Exception
+   public void removeBrowser(final String browserID) throws Exception
    {
-      if (browsers.remove(browserId) == null)
+      if (browsers.remove(browserID) == null)
       {
-         throw new IllegalStateException("Cannot find browser with id " + browserId + " to remove");
+         throw new IllegalStateException("Cannot find browser with id " + browserID + " to remove");
       }
       
-      dispatcher.unregister(browserId);           
+      dispatcher.unregister(browserID);           
    }
 
-   public void removeConsumer(final String consumerId) throws Exception
+   public void removeConsumer(final String consumerID) throws Exception
    {
-      if (consumers.remove(consumerId) == null)
+      if (consumers.remove(consumerID) == null)
       {
-         throw new IllegalStateException("Cannot find consumer with id " + consumerId + " to remove");
+         throw new IllegalStateException("Cannot find consumer with id " + consumerID + " to remove");
       }
       
-      dispatcher.unregister(consumerId);           
+      dispatcher.unregister(consumerID);           
+   }
+   
+   public void removeProducer(final String producerID) throws Exception
+   {
+      if (producers.remove(producerID) == null)
+      {
+         throw new IllegalStateException("Cannot find producer with id " + producerID + " to remove");
+      }
+      
+      dispatcher.unregister(producerID);           
    }
    
    public synchronized void handleDelivery(final MessageReference ref, final ServerConsumer consumer) throws Exception
@@ -233,10 +246,17 @@ public class ServerSessionEndpoint implements ServerSession
          browser.close();
       }
 
-      consumers.clear();
-
       browsers.clear();
+      
+      Map<String, ServerProducer> producersClone = new HashMap<String, ServerProducer>(producers);
 
+      for (ServerProducer producer: producersClone.values())
+      {
+         producer.close();
+      }
+
+      producers.clear();
+      
       rollback();
 
       executor.shutdown();
@@ -258,7 +278,7 @@ public class ServerSessionEndpoint implements ServerSession
       });
    }
    
-   public boolean send(final String address, final Message msg) throws Exception
+   public void send(final String address, final Message msg) throws Exception
    {
       //check the address exists, if it doesnt add if the user has the correct privileges
       if (!postOffice.containsAllowableAddress(address))
@@ -287,13 +307,7 @@ public class ServerSessionEndpoint implements ServerSession
 
       postOffice.route(address, msg);
 
-      if (msg.getReferences().isEmpty())
-      {
-         // Didn't route anywhere
-
-         return false;
-      }
-      else
+      if (!msg.getReferences().isEmpty())
       {
          if (autoCommitSends)
          {
@@ -308,8 +322,6 @@ public class ServerSessionEndpoint implements ServerSession
          {
             tx.addMessage(msg);
          }
-
-         return true;
       }
    }
 
@@ -885,10 +897,7 @@ public class ServerSessionEndpoint implements ServerSession
       SessionCreateConsumerResponseMessage response = new SessionCreateConsumerResponseMessage(consumer.getID(),
             prefetchSize);
 
-      synchronized (consumers)
-      {
-         consumers.put(consumer.getID(), consumer);
-      }
+      consumers.put(consumer.getID(), consumer);      
 
       log.trace(this + " created and registered " + consumer);
 
@@ -953,7 +962,7 @@ public class ServerSessionEndpoint implements ServerSession
    public SessionCreateBrowserResponseMessage createBrowser(final String queueName, final String selector)
          throws Exception
    {
-      if(!postOffice.containsAllowableAddress(queueName))
+      if (!postOffice.containsAllowableAddress(queueName))
       {
          try
          {
@@ -966,6 +975,7 @@ public class ServerSessionEndpoint implements ServerSession
             throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
          }
       }
+      
       Binding binding = postOffice.getBinding(queueName);
 
       if (binding == null)
@@ -976,19 +986,24 @@ public class ServerSessionEndpoint implements ServerSession
       
       ServerBrowserEndpoint browser = new ServerBrowserEndpoint(this, binding.getQueue(), selector);
 
-      // still need to synchronized since close() can come in on a different
-      // thread
-      synchronized (browsers)
-      {
-         browsers.put(browser.getID(), browser);
-      }
-
+      browsers.put(browser.getID(), browser);
+      
       dispatcher.register(browser.newHandler());
-
-      log.trace(this + " created and registered " + browser);
 
       return new SessionCreateBrowserResponseMessage(browser.getID());
    }
+   
+   public SessionCreateProducerResponseMessage createProducer(String address) throws Exception
+   {
+   	ServerProducerEndpoint producer = new ServerProducerEndpoint(this, address);
+   	
+   	producers.put(producer.getID(), producer);
+   	
+   	dispatcher.register(new ServerProducerPacketHandler(producer));
+   	
+   	return new SessionCreateProducerResponseMessage(producer.getID());
+   }
+
    
    // Public ---------------------------------------------------------------------------------------------
    

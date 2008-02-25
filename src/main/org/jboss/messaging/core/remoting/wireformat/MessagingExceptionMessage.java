@@ -28,7 +28,7 @@ public class MessagingExceptionMessage extends AbstractPacket
 
    // Constructors --------------------------------------------------
 
-   public MessagingExceptionMessage(MessagingException exception)
+   public MessagingExceptionMessage(final MessagingException exception)
    {
       super(EXCEPTION);
 

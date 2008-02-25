@@ -27,7 +27,7 @@ public class SessionBrowserResetMessage extends AbstractPacket
 
    public SessionBrowserResetMessage()
    {
-    super(SESS_BROWSER_RESET);
+      super(SESS_BROWSER_RESET);
    }
 
    // Public --------------------------------------------------------

@@ -23,7 +23,9 @@ package org.jboss.jms.client.impl;
 
 import org.jboss.jms.client.api.AcknowledgementHandler;
 import org.jboss.jms.client.api.ClientProducer;
+import org.jboss.jms.client.remoting.RemotingConnection;
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.remoting.wireformat.ProducerSendMessage;
 import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.MessagingException;
 
@@ -47,7 +49,13 @@ public class ClientProducerImpl implements ClientProducer
 
    private boolean trace = log.isTraceEnabled();
    
-   private ClientSessionInternal session;
+   private final String address;
+   
+   private final String id;
+   
+   private final ClientSessionInternal session;
+   
+   private final RemotingConnection remotingConnection;
    
    private volatile boolean closed;
    
@@ -55,18 +63,32 @@ public class ClientProducerImpl implements ClientProducer
 
    // Constructors ---------------------------------------------------------------------------------
       
-   public ClientProducerImpl(ClientSessionInternal session)
-   {
+   public ClientProducerImpl(final ClientSessionInternal session, final String id, final String address,
+   		                    final RemotingConnection remotingConnection)
+   {   	
       this.session = session;
+      
+      this.id = id;
+      
+      this.address = address;
+      
+      this.remotingConnection = remotingConnection;
    }
    
    // ClientProducer implementation ----------------------------------------------------------------
 
-   public void send(String address, Message message) throws MessagingException
+   public String getAddress()
+   {
+   	return address;
+   }
+   
+   public void send(String address, Message msg) throws MessagingException
    {
       checkClosed();
       
-      session.send(address, message);
+      ProducerSendMessage message = new ProducerSendMessage(address, msg.copy());
+      
+      remotingConnection.send(id, message, !msg.isDurable());
    }
    
    public void registerAcknowledgementHandler(AcknowledgementHandler handler)

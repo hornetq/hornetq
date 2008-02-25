@@ -18,13 +18,13 @@ public class SessionXASetTimeoutResponseMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
    
-   private boolean ok;
+   private final boolean ok;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionXASetTimeoutResponseMessage(boolean ok)
+   public SessionXASetTimeoutResponseMessage(final boolean ok)
    {
       super(PacketType.SESS_XA_SET_TIMEOUT_RESP);
       

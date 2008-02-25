@@ -29,7 +29,7 @@ public class Pong extends AbstractPacket
 
    // Constructors --------------------------------------------------
 
-   public Pong(String sessionID, boolean sessionFailed)
+   public Pong(final String sessionID, final boolean sessionFailed)
    {
       super(PONG);
 

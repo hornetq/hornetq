@@ -20,13 +20,13 @@ public class SessionXAStartMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
    
-   private Xid xid;
+   private final Xid xid;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionXAStartMessage(Xid xid)
+   public SessionXAStartMessage(final Xid xid)
    {
       super(PacketType.SESS_XA_START);
       

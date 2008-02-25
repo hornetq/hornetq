@@ -27,7 +27,7 @@ public class SessionBrowserNextMessageBlockMessage extends AbstractPacket
 
    // Constructors --------------------------------------------------
 
-   public SessionBrowserNextMessageBlockMessage(long maxMessages)
+   public SessionBrowserNextMessageBlockMessage(final long maxMessages)
    {
       super(SESS_BROWSER_NEXTMESSAGEBLOCK);
 

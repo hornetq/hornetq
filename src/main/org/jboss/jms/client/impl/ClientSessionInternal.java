@@ -33,7 +33,5 @@ public interface ClientSessionInternal extends ClientSession
    
    void removeProducer(ClientProducer producer);
    
-   void removeBrowser(ClientBrowser browser);
-   
-   void send(String address, Message message) throws MessagingException;   
+   void removeBrowser(ClientBrowser browser);  
 }

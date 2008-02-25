@@ -18,17 +18,17 @@ public class SessionXAResponseMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
    
-   private boolean error;
+   private final boolean error;
    
-   private int responseCode;
+   private final int responseCode;
    
-   private String message;
+   private final String message;
       
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionXAResponseMessage(boolean isError, int responseCode, String message)
+   public SessionXAResponseMessage(final boolean isError, final int responseCode, final String message)
    {
       super(PacketType.SESS_XA_RESP);
       

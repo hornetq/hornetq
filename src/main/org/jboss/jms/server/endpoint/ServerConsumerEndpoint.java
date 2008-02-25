@@ -131,8 +131,6 @@ public class ServerConsumerEndpoint implements ServerConsumer
    {
       if (enableFlowControl && availableTokens.get() == 0)
       {
-         if (trace) { log.trace(this + " is NOT accepting messages!"); }
-
          return HandleStatus.BUSY;
       }
 

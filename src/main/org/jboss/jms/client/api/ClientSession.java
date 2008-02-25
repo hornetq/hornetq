@@ -38,7 +38,7 @@ public interface ClientSession extends XAResource
    
    ClientBrowser createBrowser(String queueName, String messageSelector) throws MessagingException;
    
-   ClientProducer createProducer() throws MessagingException;
+   ClientProducer createProducer(String address) throws MessagingException;
    
    XAResource getXAResource();
 

@@ -20,13 +20,13 @@ public class SessionXARollbackMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
    
-   private Xid xid;
+   private final Xid xid;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionXARollbackMessage(Xid xid)
+   public SessionXARollbackMessage(final Xid xid)
    {
       super(PacketType.SESS_XA_ROLLBACK);
       

@@ -20,15 +20,15 @@ public class SessionXACommitMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
    
-   private boolean onePhase;
+   private final boolean onePhase;
    
-   private Xid xid;
+   private final Xid xid;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionXACommitMessage(Xid xid, boolean onePhase)
+   public SessionXACommitMessage(final Xid xid, final boolean onePhase)
    {
       super(PacketType.SESS_XA_COMMIT);
       

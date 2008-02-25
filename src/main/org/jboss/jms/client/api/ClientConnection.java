@@ -16,7 +16,7 @@ import org.jboss.messaging.util.MessagingException;
 public interface ClientConnection
 {    
    ClientSession createClientSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks,
-                                     int ackBatchSize) throws MessagingException;
+                                     int ackBatchSize, boolean cacheProducers) throws MessagingException;
 
    void start() throws MessagingException;
 

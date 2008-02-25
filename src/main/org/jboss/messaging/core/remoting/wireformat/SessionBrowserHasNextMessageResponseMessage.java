@@ -27,7 +27,7 @@ public class SessionBrowserHasNextMessageResponseMessage extends AbstractPacket
 
    // Constructors --------------------------------------------------
 
-   public SessionBrowserHasNextMessageResponseMessage(boolean hasNext)
+   public SessionBrowserHasNextMessageResponseMessage(final boolean hasNext)
    {
       super(SESS_BROWSER_HASNEXTMESSAGE_RESP);
 

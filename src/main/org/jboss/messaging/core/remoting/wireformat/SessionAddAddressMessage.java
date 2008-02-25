@@ -22,13 +22,13 @@ public class SessionAddAddressMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
    
-   private String address;
+   private final String address;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionAddAddressMessage(String address)
+   public SessionAddAddressMessage(final String address)
    {
       super(SESS_ADD_ADDRESS);
       

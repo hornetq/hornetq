@@ -28,11 +28,11 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_CANCE
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_COMMIT;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_CREATEBROWSER;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_CREATECONSUMER;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_CREATEPRODUCER;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_CREATEQUEUE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_DELETE_QUEUE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_QUEUEQUERY;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_ROLLBACK;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_SEND;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_COMMIT;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_END;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_XA_FORGET;
@@ -60,11 +60,11 @@ import org.jboss.messaging.core.remoting.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCancelMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCreateBrowserMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCreateConsumerMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionCreateProducerMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCreateQueueMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionDeleteQueueMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionRemoveAddressMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionXAEndMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionXAForgetMessage;
@@ -78,7 +78,6 @@ import org.jboss.messaging.core.remoting.wireformat.SessionXASetTimeoutMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionXASetTimeoutResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.util.MessagingException;
-
 
 /**
  * 
@@ -113,13 +112,7 @@ public class ServerSessionPacketHandler extends ServerPacketHandlerSupport
       PacketType type = packet.getType();
 
       // TODO use a switch for this
-      if (type == SESS_SEND)
-      {
-         SessionSendMessage message = (SessionSendMessage) packet;
-
-         session.send(message.getAddress(), message.getMessage());
-      }
-      else if (type == SESS_CREATECONSUMER)
+      if (type == SESS_CREATECONSUMER)
       {
          SessionCreateConsumerMessage request = (SessionCreateConsumerMessage) packet;
 
@@ -158,6 +151,12 @@ public class ServerSessionPacketHandler extends ServerPacketHandlerSupport
 
          response = session.createBrowser(request.getQueueName(), request
                .getFilterString());
+      }
+      else if (type == SESS_CREATEPRODUCER)
+      {
+         SessionCreateProducerMessage request = (SessionCreateProducerMessage) packet;
+
+         response = session.createProducer(request.getAddress());
       }
       else if (type == CLOSE)
       {

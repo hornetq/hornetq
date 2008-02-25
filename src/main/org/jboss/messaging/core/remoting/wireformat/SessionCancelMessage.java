@@ -20,15 +20,15 @@ public class SessionCancelMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
    
-   private long deliveryID;
+   private final long deliveryID;
    
-   private boolean expired;
+   private final boolean expired;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionCancelMessage(long deliveryID, boolean expired)
+   public SessionCancelMessage(final long deliveryID, final boolean expired)
    {
       super(SESS_CANCEL);
       

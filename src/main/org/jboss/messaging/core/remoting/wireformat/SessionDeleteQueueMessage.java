@@ -20,13 +20,13 @@ public class SessionDeleteQueueMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
 
-   private String queueName;
+   private final String queueName;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionDeleteQueueMessage(String queueName)
+   public SessionDeleteQueueMessage(final String queueName)
    {
       super(SESS_DELETE_QUEUE);
 

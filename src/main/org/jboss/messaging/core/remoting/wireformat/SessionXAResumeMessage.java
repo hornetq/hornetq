@@ -20,13 +20,13 @@ public class SessionXAResumeMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
    
-   private Xid xid;
+   private final Xid xid;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionXAResumeMessage(Xid xid)
+   public SessionXAResumeMessage(final Xid xid)
    {
       super(PacketType.SESS_XA_RESUME);
       

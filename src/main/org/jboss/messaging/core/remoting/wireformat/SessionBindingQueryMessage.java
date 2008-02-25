@@ -16,9 +16,9 @@ package org.jboss.messaging.core.remoting.wireformat;
  */
 public class SessionBindingQueryMessage extends AbstractPacket
 {
-   private String address;
+   private final String address;
 
-   public SessionBindingQueryMessage(String address)
+   public SessionBindingQueryMessage(final String address)
    {
       super(PacketType.SESS_BINDINGQUERY);
 

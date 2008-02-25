@@ -20,17 +20,18 @@ public class SessionCreateQueueMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
 
-   private String address;
-   private String queueName;
-   private String filterString;
-   private boolean durable;
-   private boolean temporary;
+   private final String address;
+   private final String queueName;
+   private final String filterString;
+   private final boolean durable;
+   private final boolean temporary;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateQueueMessage(String address, String queueName, String filterString, boolean durable, boolean temporary)
+   public SessionCreateQueueMessage(final String address, final String queueName,
+   		final String filterString, final boolean durable, final boolean temporary)
    {
       super(SESS_CREATEQUEUE);
 

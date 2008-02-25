@@ -6,60 +6,49 @@
  */
 package org.jboss.messaging.core.remoting.wireformat;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_SEND;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_CREATEPRODUCER_RESP;
 
-import org.jboss.messaging.core.Message;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionSendMessage extends AbstractPacket
+public class SessionCreateProducerResponseMessage extends AbstractPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private String address;
-   
-   private final Message message;
+   private final String producerID;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionSendMessage(String address, Message message)
+   public SessionCreateProducerResponseMessage(final String producerID)
    {
-      super(SESS_SEND);
+      super(SESS_CREATEPRODUCER_RESP);
 
-      assert message != null;
-            
-      this.address = address;
-      
-      this.message = message;
+      this.producerID = producerID;
    }
 
    // Public --------------------------------------------------------
 
-   public Message getMessage()
+   public String getProducerID()
    {
-      return message;
-   }
-   
-   public String getAddress()
-   {
-      return address;
+      return producerID;
    }
 
    @Override
    public String toString()
    {
-      return getParentString() + ", message=" + message + ", address=" + address
-            + "]";
+      StringBuffer buf = new StringBuffer(getParentString());
+      buf.append(", producerID=" + producerID);
+      buf.append("]");
+      return buf.toString();
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

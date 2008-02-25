@@ -22,13 +22,13 @@ public class SessionRemoveAddressMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
    
-   private String address;
+   private final String address;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
    
-   public SessionRemoveAddressMessage(String address)
+   public SessionRemoveAddressMessage(final String address)
    {
       super(SESS_REMOVE_ADDRESS);
       

@@ -6,62 +6,58 @@
  */
 package org.jboss.messaging.core.remoting.wireformat;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_CREATECONSUMER_RESP;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.PROD_SEND;
 
-import org.jboss.messaging.core.remoting.Assert;
+import org.jboss.messaging.core.Message;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionCreateConsumerResponseMessage extends AbstractPacket
+public class ProducerSendMessage extends AbstractPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final String consumerID;
-   
-   private final int prefetchSize;
+	private String address;
+	
+   private final Message message;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateConsumerResponseMessage(final String consumerID, final int prefetchSize)
+   public ProducerSendMessage(final String address, final Message message)
    {
-      super(SESS_CREATECONSUMER_RESP);
+      super(PROD_SEND);
 
-      Assert.assertValidID(consumerID);
-
-      this.consumerID = consumerID;
-      this.prefetchSize = prefetchSize;
+      this.address = address;
+      
+      this.message = message;
    }
 
    // Public --------------------------------------------------------
 
-   public String getConsumerID()
+   public String getAddress()
    {
-      return consumerID;
+   	return address;
    }
-
-   public int getPrefetchSize()
+   
+   public Message getMessage()
    {
-      return prefetchSize;
+      return message;
    }
-
+   
    @Override
    public String toString()
    {
-      StringBuffer buf = new StringBuffer(getParentString());
-      buf.append(", consumerID=" + consumerID);
-      buf.append(", prefetchSize=" + prefetchSize);
-      buf.append("]");
-      return buf.toString();
+      return getParentString() + ", address=" + address + ", message=" + message
+            + "]";
    }
-
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

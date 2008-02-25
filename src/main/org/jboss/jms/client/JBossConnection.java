@@ -115,9 +115,9 @@ public class JBossConnection implements
 
    public Session createSession(boolean transacted, int acknowledgeMode) throws JMSException
    {
-      return createSessionInternal(transacted, acknowledgeMode, false, TYPE_GENERIC_CONNECTION);
+      return createSessionInternal(transacted, acknowledgeMode, false, TYPE_GENERIC_CONNECTION, false);
    }
-
+   
    public String getClientID() throws JMSException
    {
       checkClosed();
@@ -263,7 +263,7 @@ public class JBossConnection implements
                                           int acknowledgeMode) throws JMSException
    {
        return createSessionInternal(transacted, acknowledgeMode, false,
-                                    JBossSession.TYPE_QUEUE_SESSION);
+                                    JBossSession.TYPE_QUEUE_SESSION, false);
    }
 
    public ConnectionConsumer createConnectionConsumer(Queue queue, String messageSelector,
@@ -281,9 +281,9 @@ public class JBossConnection implements
                                           int acknowledgeMode) throws JMSException
    {
       return createSessionInternal(transacted, acknowledgeMode, false,
-                                   JBossSession.TYPE_TOPIC_SESSION);
+                                   JBossSession.TYPE_TOPIC_SESSION, false);
    }
-
+   
    public ConnectionConsumer createConnectionConsumer(Topic topic, String messageSelector,
                                                       ServerSessionPool sessionPool,
                                                       int maxMessages) throws JMSException
@@ -298,28 +298,62 @@ public class JBossConnection implements
    public XASession createXASession() throws JMSException
    {
        return createSessionInternal(true, Session.SESSION_TRANSACTED, true,
-                                    JBossSession.TYPE_GENERIC_SESSION);
+                                    JBossSession.TYPE_GENERIC_SESSION, false);
    }
-
+   
    // XAQueueConnection implementation -------------------------------------------------------------
 
    public XAQueueSession createXAQueueSession() throws JMSException
    {
       return createSessionInternal(true, Session.SESSION_TRANSACTED, true,
-                                   JBossSession.TYPE_QUEUE_SESSION);
+                                   JBossSession.TYPE_QUEUE_SESSION, false);
 
    }
+   
 
    // XATopicConnection implementation -------------------------------------------------------------
 
    public XATopicSession createXATopicSession() throws JMSException
    {
       return createSessionInternal(true, Session.SESSION_TRANSACTED, true,
-                                   JBossSession.TYPE_TOPIC_SESSION);
+                                   JBossSession.TYPE_TOPIC_SESSION, false);
 
    }
-
+   
    // Public ---------------------------------------------------------------------------------------
+
+   // We provide some overloaded createSession methods to allow the value of cacheProducers to be specified
+   
+   public Session createSession(boolean transacted, int acknowledgeMode, boolean cacheProducers) throws JMSException
+   {
+      return createSessionInternal(transacted, acknowledgeMode, false, TYPE_GENERIC_CONNECTION, cacheProducers);
+   }
+   
+   public TopicSession createTopicSession(boolean transacted,
+         int acknowledgeMode, boolean cacheProducers) throws JMSException
+   {
+      return createSessionInternal(transacted, acknowledgeMode, false,
+                                   JBossSession.TYPE_TOPIC_SESSION, cacheProducers);
+   }
+
+   public XASession createXASession(boolean cacheProducers) throws JMSException
+   {
+       return createSessionInternal(true, Session.SESSION_TRANSACTED, true,
+                                    JBossSession.TYPE_GENERIC_SESSION, cacheProducers);
+   }
+   
+   public XAQueueSession createXAQueueSession(boolean cacheProducers) throws JMSException
+   {
+      return createSessionInternal(true, Session.SESSION_TRANSACTED, true,
+                                   JBossSession.TYPE_QUEUE_SESSION, cacheProducers);
+   }
+   
+   public XATopicSession createXATopicSession(boolean cacheProducers) throws JMSException
+   {
+      return createSessionInternal(true, Session.SESSION_TRANSACTED, true,
+                                   JBossSession.TYPE_TOPIC_SESSION, cacheProducers);
+   }
+
 
    public ClientConnection getConnection()
    {
@@ -342,7 +376,7 @@ public class JBossConnection implements
    // Protected ------------------------------------------------------------------------------------
 
    protected JBossSession createSessionInternal(boolean transacted, int acknowledgeMode,
-                                                boolean isXA, int type) throws JMSException
+                                                boolean isXA, int type, boolean cacheProducers) throws JMSException
    {
       if (transacted)
       {
@@ -387,7 +421,8 @@ public class JBossConnection implements
             }
          }
 
-         ClientSession session =  connection.createClientSession(isXA, autoCommitSends, autoCommitAcks, ackBatchSize);
+         ClientSession session =
+         	connection.createClientSession(isXA, autoCommitSends, autoCommitAcks, ackBatchSize, cacheProducers);
 
          justCreated = false;
          

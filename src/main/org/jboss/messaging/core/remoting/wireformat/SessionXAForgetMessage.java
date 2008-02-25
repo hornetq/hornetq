@@ -20,13 +20,13 @@ public class SessionXAForgetMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
    
-   private Xid xid;
+   private final Xid xid;
       
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionXAForgetMessage(Xid xid)
+   public SessionXAForgetMessage(final Xid xid)
    {
       super(PacketType.SESS_XA_FORGET);
       

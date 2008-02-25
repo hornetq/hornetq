@@ -20,15 +20,15 @@ public class SessionXAEndMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
    
-   private Xid xid;
+   private final Xid xid;
    
-   private boolean failed;
+   private final boolean failed;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionXAEndMessage(Xid xid, boolean failed)
+   public SessionXAEndMessage(final Xid xid, final boolean failed)
    {
       super(PacketType.SESS_XA_END);
       

@@ -90,7 +90,7 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    // ClientConnection implementation --------------------------------------------------------------
 
    public ClientSession createClientSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks,
-                                            int ackBatchSize) throws MessagingException
+                                            int ackBatchSize, boolean cacheProducers) throws MessagingException
    {
       checkClosed();
 
@@ -98,7 +98,7 @@ public class ClientConnectionImpl implements ClientConnectionInternal
 
       ConnectionCreateSessionResponseMessage response = (ConnectionCreateSessionResponseMessage)remotingConnection.send(id, request);   
 
-      ClientSession session =  new ClientSessionImpl(this, response.getSessionID(), ackBatchSize);
+      ClientSession session =  new ClientSessionImpl(this, response.getSessionID(), ackBatchSize, cacheProducers);
 
       children.put(response.getSessionID(), session);
 

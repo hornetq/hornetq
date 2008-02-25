@@ -18,16 +18,20 @@ public class SessionCreateConsumerMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
 
-   private String queueName;
-   private String filterString;
-   private boolean noLocal;
-   private boolean autoDeleteQueue;
+   private final String queueName;
+   
+   private final String filterString;
+   
+   private final boolean noLocal;
+   
+   private final boolean autoDeleteQueue;
       
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateConsumerMessage(String queueName, String filterString, boolean noLocal, boolean autoDeleteQueue)
+   public SessionCreateConsumerMessage(final String queueName, final String filterString,
+   		                              final boolean noLocal, final boolean autoDeleteQueue)
    {
       super(PacketType.SESS_CREATECONSUMER);
 

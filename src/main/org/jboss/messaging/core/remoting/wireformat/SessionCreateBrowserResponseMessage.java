@@ -28,7 +28,7 @@ public class SessionCreateBrowserResponseMessage extends AbstractPacket
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateBrowserResponseMessage(String browserID)
+   public SessionCreateBrowserResponseMessage(final String browserID)
    {
       super(SESS_CREATEBROWSER_RESP);
 

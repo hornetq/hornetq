@@ -16,9 +16,9 @@ package org.jboss.messaging.core.remoting.wireformat;
  */
 public class SessionQueueQueryMessage extends AbstractPacket
 {
-   private String queueName;
+   private final String queueName;
 
-   public SessionQueueQueryMessage(String queueName)
+   public SessionQueueQueryMessage(final String queueName)
    {
       super(PacketType.SESS_QUEUEQUERY);
 

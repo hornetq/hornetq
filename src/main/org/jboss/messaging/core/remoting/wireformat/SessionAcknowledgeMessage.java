@@ -18,15 +18,15 @@ public class SessionAcknowledgeMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
    
-   private long deliveryID;
+   private final long deliveryID;
    
-   private boolean allUpTo;
+   private final boolean allUpTo;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionAcknowledgeMessage(long deliveryID, boolean allUpTo)
+   public SessionAcknowledgeMessage(final long deliveryID, final boolean allUpTo)
    {
       super(PacketType.SESS_ACKNOWLEDGE);
       

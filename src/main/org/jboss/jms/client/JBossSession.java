@@ -343,11 +343,13 @@ public class JBossSession implements
          throw new InvalidDestinationException("Not a JBoss Destination:" + d);
       }           
       
+      JBossDestination jbd = (JBossDestination)d;
+      
       try
       {
-         ClientProducer producer = session.createProducer();
+         ClientProducer producer = session.createProducer(jbd == null ? null : jbd.getAddress());
 
-         return new JBossMessageProducer(producer, (JBossDestination)d);
+         return new JBossMessageProducer(producer, jbd);
       }
       catch (MessagingException e)
       {

@@ -30,7 +30,7 @@ public class ConnectionCreateSessionMessage extends AbstractPacket
 
    // Constructors --------------------------------------------------
 
-   public ConnectionCreateSessionMessage(boolean xa, boolean autoCommitSends, boolean autoCommitAcks)
+   public ConnectionCreateSessionMessage(final boolean xa, final boolean autoCommitSends, final boolean autoCommitAcks)
    {
       super(CONN_CREATESESSION);
 

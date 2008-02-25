@@ -22,13 +22,14 @@ public class SessionCreateBrowserMessage extends AbstractPacket
    // Attributes ----------------------------------------------------
 
    private final String queueName;
+   
    private final String filterString;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateBrowserMessage(String queueName, String filterString)
+   public SessionCreateBrowserMessage(final String queueName, final String filterString)
    {
       super(SESS_CREATEBROWSER);
 

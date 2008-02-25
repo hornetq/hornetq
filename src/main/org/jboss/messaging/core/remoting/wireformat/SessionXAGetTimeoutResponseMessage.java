@@ -19,13 +19,13 @@ public class SessionXAGetTimeoutResponseMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
    
-   private int timeoutSeconds;
+   private final int timeoutSeconds;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionXAGetTimeoutResponseMessage(int timeoutSeconds)
+   public SessionXAGetTimeoutResponseMessage(final int timeoutSeconds)
    {
       super(PacketType.SESS_XA_GET_TIMEOUT_RESP);
       

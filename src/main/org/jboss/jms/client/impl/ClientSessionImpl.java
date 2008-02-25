@@ -38,7 +38,6 @@ import org.jboss.jms.client.api.ClientBrowser;
 import org.jboss.jms.client.api.ClientConsumer;
 import org.jboss.jms.client.api.ClientProducer;
 import org.jboss.jms.client.remoting.RemotingConnection;
-import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
@@ -53,13 +52,14 @@ import org.jboss.messaging.core.remoting.wireformat.SessionCreateBrowserMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCreateBrowserResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCreateConsumerMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCreateConsumerResponseMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionCreateProducerMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionCreateProducerResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCreateQueueMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionDeleteQueueMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionRemoveAddressMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionRollbackMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionXAEndMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionXAForgetMessage;
@@ -99,9 +99,15 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private String id;
+   private final ClientConnectionInternal connection;
+      
+   private final String id;
    
-   private int lazyAckBatchSize;
+   private final int lazyAckBatchSize;
+   
+   private final boolean cacheProducers;
+   
+   private final ExecutorService executor;
    
    private volatile boolean closed;
       
@@ -117,25 +123,23 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    private boolean deliveryExpired;   
 
-   private ExecutorService executor;
-
-   private RemotingConnection remotingConnection;
-         
-   private ClientConnectionInternal connection;
+   private final RemotingConnection remotingConnection;         
    
-   private Set<ClientBrowser> browsers = new HashSet<ClientBrowser>();
+   private final Set<ClientBrowser> browsers = new HashSet<ClientBrowser>();
    
-   private Set<ClientProducer> producers = new HashSet<ClientProducer>();
+   private final Set<ClientProducer> producers = new HashSet<ClientProducer>();
    
-   private Map<String, ClientConsumerInternal> consumers = new HashMap<String, ClientConsumerInternal>();
+   private final Map<String, ClientConsumerInternal> consumers = new HashMap<String, ClientConsumerInternal>();
+   
+   private final Map<String, ClientProducer> producerCache;
    
    //For testing only
    private boolean forceNotSameRM;
    
    // Constructors ---------------------------------------------------------------------------------
    
-   public ClientSessionImpl(ClientConnectionInternal connection, String id,
-                            int lazyAckBatchSize) throws MessagingException
+   public ClientSessionImpl(final ClientConnectionInternal connection, final String id,
+                            final int lazyAckBatchSize, final boolean cacheProducers) throws MessagingException
    {
       this.id = id;
       
@@ -143,9 +147,20 @@ public class ClientSessionImpl implements ClientSessionInternal
       
       this.remotingConnection = connection.getRemotingConnection();
       
+      this.cacheProducers = cacheProducers;
+      
       executor = Executors.newSingleThreadExecutor();
       
-      this.lazyAckBatchSize = lazyAckBatchSize;   
+      this.lazyAckBatchSize = lazyAckBatchSize;
+      
+      if (cacheProducers)
+      {
+      	producerCache = new HashMap<String, ClientProducer>();
+      }
+      else
+      {
+      	producerCache = null;
+      }
    }
    
    // ClientSession implementation -----------------------------------------------------------------
@@ -263,11 +278,26 @@ public class ClientSessionImpl implements ClientSessionInternal
       return browser;
    }
 
-   public ClientProducer createProducer() throws MessagingException
+   public ClientProducer createProducer(String address) throws MessagingException
    {
       checkClosed();
+      
+      ClientProducer producer = null;
+      
+      if (cacheProducers)
+      {
+      	producer = producerCache.remove(address);
+      }
 
-      ClientProducer producer = new ClientProducerImpl(this);
+      if (producer == null)
+      {
+      	SessionCreateProducerMessage request = new SessionCreateProducerMessage(address);
+      	
+      	SessionCreateProducerResponseMessage response =
+      		(SessionCreateProducerResponseMessage)remotingConnection.send(id, request);
+      	
+      	producer = new ClientProducerImpl(this, response.getProducerID(), address, remotingConnection);      	
+      }
 
       producers.add(producer);
 
@@ -353,6 +383,11 @@ public class ClientSessionImpl implements ClientSessionInternal
       {
          closeChildren();
          
+         if (cacheProducers)
+         {
+         	producerCache.clear();
+         }
+         
          //Make sure any remaining acks make it to the server
          
          acknowledgeInternal(false);      
@@ -418,6 +453,11 @@ public class ClientSessionImpl implements ClientSessionInternal
    public void removeProducer(ClientProducer producer)
    {
       producers.remove(producer);
+      
+      if (cacheProducers && !producerCache.containsKey(producer.getAddress()))
+      {
+      	producerCache.put(producer.getAddress(), producer);
+      }
    }
    
    public void removeBrowser(ClientBrowser browser)
@@ -425,14 +465,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       browsers.remove(browser);
    }
    
-   public void send(String address, Message m) throws MessagingException
-   {
-      checkClosed();
-      
-      SessionSendMessage message = new SessionSendMessage(address, m.copy());
-      
-      remotingConnection.send(id, message, !m.isDurable());
-   }
+   
       
    // XAResource implementation --------------------------------------------------------------------
    

@@ -20,13 +20,13 @@ public class SessionXAJoinMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
    
-   private Xid xid;
+   private final Xid xid;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionXAJoinMessage(Xid xid)
+   public SessionXAJoinMessage(final Xid xid)
    {
       super(PacketType.SESS_XA_JOIN);
       

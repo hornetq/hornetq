@@ -27,7 +27,7 @@ public class CreateConnectionResponse extends AbstractPacket
 
    // Constructors --------------------------------------------------
 
-   public CreateConnectionResponse(String connectionID)
+   public CreateConnectionResponse(final String connectionID)
    {
       super(CREATECONNECTION_RESP);
 

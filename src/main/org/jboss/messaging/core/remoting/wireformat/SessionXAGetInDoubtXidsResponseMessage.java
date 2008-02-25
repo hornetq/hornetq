@@ -22,13 +22,13 @@ public class SessionXAGetInDoubtXidsResponseMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
    
-   private List<Xid> xids;
+   private final List<Xid> xids;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionXAGetInDoubtXidsResponseMessage(List<Xid> xids)
+   public SessionXAGetInDoubtXidsResponseMessage(final List<Xid> xids)
    {
       super(PacketType.SESS_XA_INDOUBT_XIDS_RESP);
       

@@ -6,38 +6,45 @@
  */
 package org.jboss.messaging.core.remoting.wireformat;
 
-import javax.transaction.xa.Xid;
-
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
  */
-public class SessionXAPrepareMessage extends AbstractPacket
+public class SessionCreateProducerMessage extends AbstractPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
-   private final Xid xid;
-   
+
+   private final String address;
+      
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionXAPrepareMessage(final Xid xid)
+   public SessionCreateProducerMessage(final String address)
    {
-      super(PacketType.SESS_XA_PREPARE);
-      
-      this.xid = xid;
+      super(PacketType.SESS_CREATEPRODUCER);
+
+      this.address = address;
    }
 
    // Public --------------------------------------------------------
-   
-   public Xid getXid()
+
+   @Override
+   public String toString()
    {
-      return xid;
+      StringBuffer buff = new StringBuffer(getParentString());
+      buff.append(", address=" + address);
+      buff.append("]");
+      return buff.toString();
+   }
+
+   public String getAddress()
+   {
+      return address;
    }
 
    // Package protected ---------------------------------------------

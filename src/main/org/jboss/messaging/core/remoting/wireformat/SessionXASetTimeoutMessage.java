@@ -19,13 +19,13 @@ public class SessionXASetTimeoutMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
    
-   private int timeoutSeconds;
+   private final int timeoutSeconds;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionXASetTimeoutMessage(int timeoutSeconds)
+   public SessionXASetTimeoutMessage(final int timeoutSeconds)
    {
       super(PacketType.SESS_XA_SET_TIMEOUT);
       

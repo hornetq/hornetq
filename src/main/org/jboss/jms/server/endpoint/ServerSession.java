@@ -32,6 +32,7 @@ import org.jboss.messaging.core.remoting.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCreateBrowserResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionCreateConsumerResponseMessage;
+import org.jboss.messaging.core.remoting.wireformat.SessionCreateProducerResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionXAResponseMessage;
@@ -51,6 +52,8 @@ public interface ServerSession
 	
 	void removeConsumer(String consumerID) throws Exception;
 	
+	void removeProducer(String producerID) throws Exception;
+	
 	void close() throws Exception;
 	
 	void setStarted(boolean started) throws Exception;
@@ -59,7 +62,7 @@ public interface ServerSession
 	
 	void promptDelivery(Queue queue);
 	
-	boolean send(String address, Message msg) throws Exception;
+	void send(String address, Message msg) throws Exception;
 
    void acknowledge(long deliveryID, boolean allUpTo) throws Exception;
 
@@ -103,6 +106,8 @@ public interface ServerSession
 
    SessionCreateConsumerResponseMessage  createConsumer(String queueName, String filterString,
                      boolean noLocal, boolean autoDeleteQueue, int prefetchSize) throws Exception;
+   
+   SessionCreateProducerResponseMessage createProducer(String address) throws Exception;   
 
    SessionQueueQueryResponseMessage executeQueueQuery(SessionQueueQueryMessage request) throws Exception;
 

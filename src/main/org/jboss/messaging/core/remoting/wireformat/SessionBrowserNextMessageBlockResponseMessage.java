@@ -30,7 +30,7 @@ public class SessionBrowserNextMessageBlockResponseMessage extends AbstractPacke
 
    // Constructors --------------------------------------------------
 
-   public SessionBrowserNextMessageBlockResponseMessage(Message[] messages)
+   public SessionBrowserNextMessageBlockResponseMessage(final Message[] messages)
    {
       super(SESS_BROWSER_NEXTMESSAGEBLOCK_RESP);
 

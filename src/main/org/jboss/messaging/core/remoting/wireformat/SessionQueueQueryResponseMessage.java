@@ -11,31 +11,39 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.SESS_QUEUE
  */
 public class SessionQueueQueryResponseMessage extends AbstractPacket
 {
-   private boolean exists;
+   private final boolean exists;
    
-   private boolean durable;
+   private final boolean durable;
    
-   private boolean temporary;
+   private final boolean temporary;
    
-   private int maxSize;
+   private final int maxSize;
    
-   private int consumerCount;
+   private final int consumerCount;
    
-   private int messageCount;
+   private final int messageCount;
    
-   private String filterString;
+   private final String filterString;
    
-   private String address;
+   private final String address;
    
-   //etc
+   public SessionQueueQueryResponseMessage(final boolean durable, final boolean temporary, final int maxSize, 
+   		final int consumerCount, final int messageCount, final String filterString, final String address)
+   {
+   	this(durable, temporary, maxSize, consumerCount, messageCount, filterString, address, true);
+   }
    
-   public SessionQueueQueryResponseMessage(boolean durable, boolean temporary, int maxSize, int consumerCount,
-                             int messageCount, String filterString, String address)
+   public SessionQueueQueryResponseMessage()
+   {
+      this(false, false, 0, 0, 0, null, null, false);
+   }
+   
+   private SessionQueueQueryResponseMessage(final boolean durable, final boolean temporary, final int maxSize, 
+   		final int consumerCount, final int messageCount, final String filterString, final String address,
+   		final boolean exists)
    {
       super(SESS_QUEUEQUERY_RESP);
-      
-      this.exists = true;
-      
+       
       this.durable = durable;
       
       this.temporary = temporary;
@@ -49,15 +57,10 @@ public class SessionQueueQueryResponseMessage extends AbstractPacket
       this.filterString = filterString;
       
       this.address = address;
-   }
-   
-   public SessionQueueQueryResponseMessage()
-   {
-      super(SESS_QUEUEQUERY_RESP);
       
-      this.exists = false;
+      this.exists = exists;      
    }
-   
+      
    public boolean isExists()
    {
       return exists;
