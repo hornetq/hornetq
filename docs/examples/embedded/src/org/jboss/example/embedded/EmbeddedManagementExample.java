@@ -55,10 +55,10 @@ public class EmbeddedManagementExample
       messagingServerManagement.start();
       ClientConnectionFactory cf = new ClientConnectionFactoryImpl(remotingConf);
       ClientConnection clientConnection = cf.createConnection(null, null);
-      ClientSession clientSession = clientConnection.createClientSession(false, true, true, 0);
+      ClientSession clientSession = clientConnection.createClientSession(false, true, true, 0, false);
       String queue = "Queue1";
       clientSession.createQueue(queue, queue, null, false, false);
-      ClientProducer clientProducer = clientSession.createProducer();
+      ClientProducer clientProducer = clientSession.createProducer("Queue1");
 
       clientConnection.start();
 
@@ -67,28 +67,28 @@ public class EmbeddedManagementExample
       messagingServerManagement.startMessageCounter(queue, 0);
       for (int i = 0; i < 1000; i++)
       {
-         clientProducer.send(queue, message);
+         clientProducer.send(message);
       }
 
       MessageCounter messageCounter = messagingServerManagement.getMessageCounter(queue);
       System.out.println("messageCounter = " + messageCounter);
       for (int i = 0; i < 2000; i++)
       {
-         clientProducer.send(queue, message);
+         clientProducer.send(message);
       }
 
       messageCounter = messagingServerManagement.getMessageCounter(queue);
       System.out.println("messageCounter = " + messageCounter);
       for (int i = 0; i < 3000; i++)
       {
-         clientProducer.send(queue, message);
+         clientProducer.send(message);
       }
 
       messageCounter = messagingServerManagement.getMessageCounter(queue);
       System.out.println("messageCounter = " + messageCounter);
       for (int i = 0; i < 4000; i++)
       {
-         clientProducer.send(queue, message);
+         clientProducer.send(message);
       }
 
       messageCounter = messagingServerManagement.getMessageCounter(queue);
@@ -101,7 +101,7 @@ public class EmbeddedManagementExample
       int counter = 0;
       while (timer.isRunning())
       {
-         clientProducer.send(queue, message);
+         clientProducer.send(message);
          counter++;
       }
       scheduler.shutdown();

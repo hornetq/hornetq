@@ -17,6 +17,8 @@ public interface ClientProducer
 {        
 	String getAddress();
 	
+	void send(Message message) throws MessagingException;
+	
    void send(String address, Message message) throws MessagingException;
    
    void registerAcknowledgementHandler(AcknowledgementHandler handler);

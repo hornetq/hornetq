@@ -49,15 +49,15 @@ public class EmbeddedExample
       messagingServer.start();
       ClientConnectionFactory cf = new ClientConnectionFactoryImpl(remotingConf);
       ClientConnection clientConnection = cf.createConnection(null, null);
-      ClientSession clientSession = clientConnection.createClientSession(false, true, true, 0);
+      ClientSession clientSession = clientConnection.createClientSession(false, true, true, 0, false);
       clientSession.createQueue("Queue1", "Queue1", null, false, false);
-      ClientProducer clientProducer = clientSession.createProducer();
+      ClientProducer clientProducer = clientSession.createProducer("Queue1");
 
       ClientConsumer clientConsumer = clientSession.createConsumer("Queue1", null, false, false, true);
       clientConnection.start();
       MessageImpl message = new MessageImpl(JBossTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte) 1);
       message.setPayload("Hello".getBytes());
-      clientProducer.send("Queue1", message);
+      clientProducer.send(message);
 
 
       Message m = clientConsumer.receive(0);

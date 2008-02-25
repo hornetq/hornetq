@@ -191,7 +191,7 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
       
       message.setJMSPriority(defaultPriority);
       
-      doSend(message, defaultTimeToLive, defaultDestination);
+      doSend(message, defaultTimeToLive, null);
    }
    
    public void send(Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
@@ -202,7 +202,7 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
       
       message.setJMSPriority(priority);
             
-      doSend(message, timeToLive, defaultDestination);
+      doSend(message, timeToLive, null);
    }
    
    public void send(Destination destination, Message message) throws JMSException
@@ -327,15 +327,31 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
          message.setJMSTimestamp(0);
       }
       
-      // if a default destination was already specified then this must be same destination as
-      // that specified in the arguments
-
-      if (this.defaultDestination != null && !this.defaultDestination.equals(destination))
+      String address = null;
+      
+      if (destination == null)
       {
-         throw new JMSException("Where a default destination is specified " +
-                                "for the sender and a destination is " +
-                                "specified in the arguments to the send, " +
-                                "these destinations must be equal");
+      	if (defaultDestination == null)
+      	{
+      		throw new InvalidDestinationException("Destination must be specified on send with an anonymous producer");
+      	}
+      	
+      	destination = defaultDestination;
+      }
+      else
+      {
+      	if (defaultDestination != null)
+      	{
+      		if (!destination.equals(defaultDestination))
+      		{
+      			throw new JMSException("Where a default destination is specified " +
+                     "for the sender and a destination is " +
+                     "specified in the arguments to the send, " +
+                     "these destinations must be equal");
+      		}
+      	}
+      	
+      	address = destination.getAddress();
       }
       
       JBossMessage jbm;
@@ -414,11 +430,9 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
 
       JBossDestination dest = (JBossDestination)destination;
 
-      String coreDest = dest.getAddress();
-
       try
-      {
-         producer.send(coreDest, jbm.getCoreMessage());
+      {      	
+      	producer.send(address, jbm.getCoreMessage());      		      	
       }
       catch (MessagingException e)
       {
