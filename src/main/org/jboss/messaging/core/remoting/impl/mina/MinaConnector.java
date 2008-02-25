@@ -162,14 +162,6 @@ public class MinaConnector implements NIOConnector, FailureNotifier
       }
       CloseFuture closeFuture = session.close().awaitUninterruptibly();
       boolean closed = closeFuture.isClosed();
-      try
-      {
-         Thread.sleep(1000);
-      } catch (InterruptedException e)
-      {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-      }
       
       connector.removeListener(ioListener);
       connector.dispose();
