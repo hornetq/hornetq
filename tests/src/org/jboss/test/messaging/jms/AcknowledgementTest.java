@@ -833,6 +833,8 @@ public class AcknowledgementTest extends JMSTestCase
      
    public void testMessageListenerAutoAck() throws Exception
    {
+      // FIXME the test hangs due to a race condition and never finish
+      fail("temporarily fails the test so that it does not hang the test suite");
       Connection conn = null;
       
       try
