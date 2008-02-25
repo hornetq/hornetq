@@ -21,6 +21,7 @@
    */
 package org.jboss.test.messaging.jms.server;
 
+import org.apache.tools.ant.taskdefs.Sleep;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.jms.server.JMSServerManager;
 import org.jboss.jms.server.ClientInfo;
@@ -225,6 +226,9 @@ public class JMSServerManagerTest extends JBMServerTestCase
       assertEquals("guest", clientInfo.getUser());
       assertEquals(ClientInfo.status.STOPPED, clientInfo.getStatus());
       conn.start();
+      // starting a connection is a remoting async operation
+      // wait a little before querying clients infos from the server
+      sleepIfRemoting(250);
       clientInfos = jmsServerManager.getClients();
       assertNotNull(clientInfos);
       assertEquals(1, clientInfos.size());
