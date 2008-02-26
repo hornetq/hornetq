@@ -23,8 +23,8 @@ package org.jboss.messaging.core.deployers.impl;
 
 import org.jboss.messaging.core.deployers.Deployer;
 import org.jboss.messaging.core.server.PostOffice;
-import org.jboss.messaging.core.server.impl.QueueSettings;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -33,31 +33,32 @@ import org.w3c.dom.NodeList;
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public class QueueSettingsDeployer extends Deployer
-{
-   /**
-    * The repository to add to
-    */
-   HierarchicalRepository<QueueSettings> queueSettingsRepository;
-
-   PostOffice postOffice;
+{   
    private static final String CLUSTERED_NODE_NAME = "clustered";
+   
    private static final String DLQ_NODE_NAME = "dlq";
-   private static final String EXPIREY_QUEUE_NODE_NAME = "expiry-queue";
+   
+   private static final String EXPIRY_QUEUE_NODE_NAME = "expiry-queue";
+   
    private static final String REDELIVERY_DELAY_NODE_NAME = "redelivery-delay";
+   
    private static final String MAX_SIZE_NODE_NAME = "max-size";
+   
    private static final String DISTRIBUTION_POLICY_CLASS_NODE_NAME = "distribution-policy-class";
+   
    private static final String MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME = "message-counter-history-day-limit";
 
-   public void setQueueSettingsRepository(HierarchicalRepository<QueueSettings> queueSettingsRepository)
-   {
-      this.queueSettingsRepository = queueSettingsRepository;
-   }
+   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
 
-   public void setPostOffice(PostOffice postOffice)
+   private final PostOffice postOffice;
+   
+   public QueueSettingsDeployer(final PostOffice postOffice, final HierarchicalRepository<QueueSettings> queueSettingsRepository)
    {
-      this.postOffice = postOffice;
+   	this.postOffice = postOffice;
+   	
+   	this.queueSettingsRepository = queueSettingsRepository;
    }
-
+   
    /**
     * the names of the elements to deploy
     * @return the names of the elements todeploy
@@ -75,53 +76,58 @@ public class QueueSettingsDeployer extends Deployer
    public void deploy(Node node) throws Exception
    {
       String match = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
+      
       NodeList children = node.getChildNodes();
+      
       QueueSettings queueSettings = new QueueSettings();
+      
       for (int i = 0; i < children.getLength(); i++)
       {
          Node child = children.item(i);
-         if(CLUSTERED_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         
+         if (CLUSTERED_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             queueSettings.setClustered(Boolean.valueOf(child.getTextContent()));
          }
-         if(DLQ_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (DLQ_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             String queueName = child.getTextContent();
-            if(postOffice.getBinding(queueName) == null)
+            
+            if (postOffice.getBinding(queueName) == null)
             {
-
                postOffice.addBinding(queueName, queueName, null, true, false);
             }
+            
             queueSettings.setDLQ(postOffice.getBinding(queueName).getQueue());
          }
-         if(EXPIREY_QUEUE_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (EXPIRY_QUEUE_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             String queueName = child.getTextContent();
-            if(postOffice.getBinding(queueName) == null)
+            
+            if (postOffice.getBinding(queueName) == null)
             {
                postOffice.addBinding(queueName, queueName, null, true, false);
             }
+            
             queueSettings.setExpiryQueue(postOffice.getBinding(queueName).getQueue());
          }
-         if(REDELIVERY_DELAY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (REDELIVERY_DELAY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             queueSettings.setRedeliveryDelay(Long.valueOf(child.getTextContent()));
          }
-         if(MAX_SIZE_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (MAX_SIZE_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             queueSettings.setMaxSize(Integer.valueOf(child.getTextContent()));   
          }
-         if(DISTRIBUTION_POLICY_CLASS_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (DISTRIBUTION_POLICY_CLASS_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             queueSettings.setDistributionPolicyClass(child.getTextContent());
          }
-         if(MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             queueSettings.setMessageCounterHistoryDayLimit(Integer.valueOf(child.getTextContent()));
          }
       }
-
-
       
       queueSettingsRepository.addMatch(match, queueSettings);
    }
@@ -144,6 +150,7 @@ public class QueueSettingsDeployer extends Deployer
    public void undeploy(Node node) throws Exception
    {
       String match = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
+      
       queueSettingsRepository.removeMatch(match);
    }
 

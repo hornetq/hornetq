@@ -27,7 +27,7 @@ import java.util.Vector;
 import javax.jms.ConnectionMetaData;
 import javax.jms.JMSException;
 
-import org.jboss.messaging.util.Version;
+import org.jboss.messaging.core.version.Version;
 
 /**
  * Connection metadata
@@ -61,37 +61,37 @@ public class JBossConnectionMetaData implements ConnectionMetaData
 
    public String getJMSVersion() throws JMSException
    {
-      return serverVersion.getJMSVersion();
+      return "1.1";
    }
 
    public int getJMSMajorVersion() throws JMSException
    {
-      return serverVersion.getJMSMajorVersion();
+      return 1;
    }
 
    public int getJMSMinorVersion() throws JMSException
    {
-      return serverVersion.getJMSMinorVersion();
+      return 1;
    }
 
    public String getJMSProviderName() throws JMSException
    {
-      return serverVersion.getJMSProviderName();
+      return "JBoss Messaging";
    }
 
    public String getProviderVersion() throws JMSException
    {
-      return serverVersion.getProviderVersion();
+      return serverVersion.getFullVersion();
    }
 
    public int getProviderMajorVersion() throws JMSException
    {
-      return serverVersion.getProviderMajorVersion();
+      return serverVersion.getMajorVersion();
    }
 
    public int getProviderMinorVersion() throws JMSException
    {
-      return serverVersion.getProviderMinorVersion();
+      return serverVersion.getMinorVersion();
    }
 
    public Enumeration getJMSXPropertyNames() throws JMSException

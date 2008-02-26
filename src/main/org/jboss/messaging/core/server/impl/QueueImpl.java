@@ -32,7 +32,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.messaging.core.*;
 import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
@@ -43,7 +42,7 @@ import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 
 /**
  *
@@ -61,64 +60,47 @@ public class QueueImpl implements Queue
 
    private static final boolean trace = log.isTraceEnabled();
 
-   protected volatile long id = -1;
+   private volatile long persistenceID = -1;
 
-   protected String name;
+   private final String name;
+   
+   private volatile Filter filter;
 
-   protected volatile int maxSize = -1;
+   private final boolean clustered;
 
-   protected boolean clustered;
+   private final boolean durable;
 
-   protected boolean temporary;
+   private final boolean temporary;
 
-   protected boolean durable;
+   private volatile int maxSize;
+         
+   private final ScheduledExecutorService scheduledExecutor;
 
-   protected Filter filter;
+   private final HierarchicalRepository<QueueSettings> queueSettings;
 
-   protected PriorityLinkedList<MessageReference> messageReferences;
+   private final PriorityLinkedList<MessageReference> messageReferences = new PriorityLinkedListImpl<MessageReference>(NUM_PRIORITIES);
 
-   protected List<Consumer> consumers;
+   private final List<Consumer> consumers  = new ArrayList<Consumer>();
 
-   protected Set<ScheduledDeliveryRunnable> scheduledRunnables;
+   private final Set<ScheduledDeliveryRunnable> scheduledRunnables = new HashSet<ScheduledDeliveryRunnable>();
 
-   protected DistributionPolicy distributionPolicy;
+   private volatile DistributionPolicy distributionPolicy = new RoundRobinDistributionPolicy();
 
-   protected boolean direct;
+   private boolean direct;
 
-   protected boolean promptDelivery;
+   private boolean promptDelivery;
 
    private int pos;
 
    private AtomicInteger messagesAdded = new AtomicInteger(0);
 
    private AtomicInteger deliveringCount = new AtomicInteger(0);
-
-   private ScheduledExecutorService scheduledExecutor;
-
-   // ---------
-
-   HierarchicalRepository<QueueSettings> queueSettings;
-
-   public QueueImpl(long id, String name, Filter filter, boolean clustered,
-                    boolean durable, boolean temporary, int maxSize, ScheduledExecutorService scheduledExecutor)
+   
+   public QueueImpl(final long persistenceID, final String name, final Filter filter, final boolean clustered,
+                    final boolean durable, final boolean temporary, final int maxSize, final ScheduledExecutorService scheduledExecutor,
+                    final HierarchicalRepository<QueueSettings> queueSettings)
    {
-   	this(id, name, filter, clustered, durable, temporary, maxSize);
-
-   	this.scheduledExecutor = scheduledExecutor;
-   }
-
-   public QueueImpl(long id, String name, Filter filter, boolean clustered,
-                    boolean durable, boolean temporary, int maxSize, HierarchicalRepository<QueueSettings> queueSettingsRepository)
-   {
-      this(id, name, filter, clustered, durable, temporary, maxSize);
-
-      queueSettings = queueSettingsRepository;
-   }
-
-   public QueueImpl(long id, String name, Filter filter, boolean clustered,
-                    boolean durable, boolean temporary, int maxSize)
-   {
-      this.id = id;
+   	this.persistenceID = persistenceID;
 
       this.name = name;
 
@@ -131,23 +113,14 @@ public class QueueImpl implements Queue
       this.temporary = temporary;
 
       this.maxSize = maxSize;
+      
+      this.scheduledExecutor = scheduledExecutor;
+   	
+   	this.queueSettings = queueSettings;
 
-      //TODO - use a wait free concurrent queue
-      messageReferences = new PriorityLinkedListImpl<MessageReference>(NUM_PRIORITIES);
-
-      consumers = new ArrayList<Consumer>();
-
-      scheduledRunnables = new HashSet<ScheduledDeliveryRunnable>();
-
-      distributionPolicy = new RoundRobinDistributionPolicy();
-
-      direct = true;
-
-      queueSettings = new HierarchicalObjectRepository<QueueSettings>();
-      queueSettings.setDefault(new QueueSettings());
+      direct = true;        	
    }
-
-
+   
    // Queue implementation -------------------------------------------------------------------
 
    public boolean isClustered()
@@ -355,12 +328,12 @@ public class QueueImpl implements Queue
 
    public long getPersistenceID()
    {
-      return id;
+      return persistenceID;
    }
 
    public void setPersistenceID(long id)
    {
-      this.id = id;
+      this.persistenceID = id;
    }
 
    public synchronized Filter getFilter()
@@ -375,7 +348,6 @@ public class QueueImpl implements Queue
 
    public synchronized int getMessageCount()
    {
-     // log.info("mr: " + messageReferences.size() + " sc: " + getScheduledCount() + " dc: " + getDeliveringCount());
       return messageReferences.size() + getScheduledCount() + getDeliveringCount();
    }
 
@@ -424,6 +396,13 @@ public class QueueImpl implements Queue
    {
       return messagesAdded.get();
    }
+   
+   public HierarchicalRepository<QueueSettings> getQueueSettings()
+   {
+      return queueSettings;
+   }
+   
+   // Public -----------------------------------------------------------------------------
 
    public boolean equals(Object other)
    {
@@ -684,12 +663,5 @@ public class QueueImpl implements Queue
             if (trace) { log.trace("Delivered scheduled delivery at " + System.currentTimeMillis() + " for " + ref); }
          }
       }
-   }
-
-   // -------------------------------
-
-   public HierarchicalRepository<QueueSettings> getQueueSettings()
-   {
-      return queueSettings;
    }
 }

@@ -30,7 +30,8 @@ import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.server.MessagingException;
-import org.jboss.messaging.util.Version;
+import org.jboss.messaging.core.version.Version;
+
 
 /**
  * Core connection factory.
@@ -99,9 +100,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
    
    public ClientConnection createConnection(String username, String password) throws MessagingException
    {
-      Version version = getVersionToUse(serverVersion);
-      
-      byte v = version.getProviderIncrementingVersion();
+      int v = serverVersion.getIncrementingVersion();
                        
       RemotingConnection remotingConnection = null;
       try
@@ -172,25 +171,5 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
 
    // Private --------------------------------------------------------------------------------------
    
-   private Version getVersionToUse(Version connectionVersion)
-   {
-      Version clientVersion = Version.instance();
-
-      Version versionToUse;
-
-      if (connectionVersion != null && connectionVersion.getProviderIncrementingVersion() <=
-          clientVersion.getProviderIncrementingVersion())
-      {
-         versionToUse = connectionVersion;
-      }
-      else
-      {
-         versionToUse = clientVersion;
-      }
-
-      return versionToUse;
-   }
-   
    // Inner Classes --------------------------------------------------------------------------------
-
 }

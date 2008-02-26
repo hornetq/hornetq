@@ -1,10 +1,3 @@
 Manifest-Version: 1.0
-Created-By: @JAVA_VM_VERSION@ (@JAVA_VM_VENDOR@)
-Specification-Title: @MODULE_NAME@
-Specification-Version: @MODULE_VERSION@
-Specification-Vendor: @MODULE_VENDOR@
-Implementation-Title: @MODULE_NAME@
-Implementation-URL: @MODULE_URL@
-Implementation-Version: @MODULE_IMPLEMENTATION_VERSION@
-Implementation-Vendor: @MODULE_VENDOR@
-Implementation-Vendor-Id: @MODULE_URL@
+JBossMessaging-Version: @JBM_VERSION@
+JBossMessaging-SVN-URL: @JBM_SVN_URL@

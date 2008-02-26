@@ -49,7 +49,7 @@ import org.jboss.messaging.core.client.FailureListener;
 import org.jboss.messaging.core.client.impl.ClientConnectionInternal;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingException;
-import org.jboss.messaging.util.Version;
+import org.jboss.messaging.core.version.Version;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

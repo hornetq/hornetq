@@ -22,8 +22,8 @@
 package org.jboss.messaging.core.server;
 
 import org.jboss.messaging.core.filter.impl.FilterImpl;
-import org.jboss.messaging.core.server.impl.QueueSettings;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -101,9 +101,6 @@ public interface Queue
    String getName();
    
    int getMessagesAdded();
-   
-   //--------
 
    HierarchicalRepository<QueueSettings> getQueueSettings();
-
 }

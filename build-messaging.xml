@@ -44,21 +44,17 @@
    <!--
         Module name(s) & version.
    -->
+   
+   <property name="module.name" value="messaging"/>
 
    <property name="messaging.version.major" value="2"/>
    <property name="messaging.version.minor" value="0"/>
-   <property name="messaging.version.revision" value="0"/>
-   <property name="messaging.version.incrementing" value="0"/>
-   <property name="messaging.version.tag" value="alpha1"/>
+   <property name="messaging.version.micro" value="0"/>
+   <property name="messaging.version.suffix" value="alpha1"/>
+   <property name="messaging.version.incrementing" value="100"/>
    <property name="messaging.version.name" value="Stilton"/>
-   <property name="messaging.version.cvstag" value="JBossMessaging_1_4_0_SP1"/>
-   <property name="module.name" value="messaging"/>
-   <property name="module.Name" value="JBoss Messaging"/>
-   <property name="module.version" value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.revision}.${messaging.version.tag}"/>
-
-   <property name="jms.version.major" value="1"/>
-   <property name="jms.version.minor" value="1"/>
-   <property name="jms.version" value="1.1"/>
+   <property name="messaging.version.svnurl" value="https://svn.jboss.org/repos/messaging/trunk"/>
+   <property name="messaging.version.string" value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix} (${messaging.version.name}, ${messaging.version.incrementing})"/>
 
    <!--
         Jar manifest version information.
@@ -67,16 +63,6 @@
    <tstamp>
      <format property="build.number" pattern="yyyyMMddHHmm"/>
    </tstamp>
-
-   <property name="messaging.specification.title" value="${module.Name}"/>
-   <property name="messaging.specification.version" value="${module.version}"/>
-   <property name="messaging.specification.vendor" value="JBoss Inc. (http://www.jboss.org/)"/>
-
-   <property name="messaging.implementation.title" value="${module.Name}"/>
-   <property name="messaging.implementation.url" value="http://www.jboss.org/"/>
-   <property name="messaging.implementation.version" value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.revision}.${messaging.version.tag} (build: CVSTag=${messaging.version.cvstag} date=${build.number})"/>
-   <property name="messaging.implementation.vendor" value="${messaging.specification.vendor}"/>
-   <property name="messaging.implementation.vendor.id" value="${messaging.implementation.url}"/>
 
    <property environment="ENV"/>
 
@@ -259,25 +245,13 @@
       <mkdir dir="${build.etc}"/>
       <copy todir="${build.etc}" filtering="yes">
          <fileset dir="${source.etc}">
-            <include name="**"/>
+            <include name="*.mf"/>
          </fileset>
          <filterset>
-            <filter token="JMS_VERSION" value="${jms.version}"/>
-            <filter token="JMS_VERSION_MAJOR" value="${jms.version.major}"/>
-            <filter token="JMS_VERSION_MINOR" value="${jms.version.minor}"/>
-            <filter token="MODULE_VERSION" value="${module.version}"/>
-            <filter token="MESSAGING_VERSION_MAJOR" value="${messaging.version.major}"/>
-            <filter token="MESSAGING_VERSION_MINOR" value="${messaging.version.minor}"/>
-            <filter token="MESSAGING_VERSION_INCREMENTING" value="${messaging.version.incrementing}"/>
-            <filter token="MODULE_NAME" value="${module.Name}"/>
-            <filter token="MODULE_VENDOR" value="${messaging.specification.vendor}"/>
-            <filter token="MODULE_URL" value="${messaging.implementation.url}"/>
-            <filter token="MODULE_IMPLEMENTATION_VERSION" value="${messaging.implementation.version}"/>
-            <filter token="JAVA_VM_VERSION" value="${java.vm.version}"/>
-            <filter token="JAVA_VM_VENDOR" value="${java.vm.vendor}"/>
+            <filter token="JBM_VERSION" value="${messaging.version.string}"/>
+	    <filter token="JBM_SVN_URL" value="${messaging.version.svnurl}"/>
          </filterset>
       </copy>
-      <move file="${build.etc}/VERSION-PRE-SUBSTITUTE" toFile="${build.etc}/VERSION"/>
    </target>
 
    <!-- ======================================================================================== -->
@@ -311,8 +285,6 @@
             todir="${jboss.home}/server/${jboss.config}/conf"/>
        <copy file="${source.etc}/server/default/deploy/queues.xml"
             todir="${jboss.home}/server/${jboss.config}/conf"/>
-       <!--<copy file="${build.lib}/jboss-${module.name}.sar"
-            todir="${jboss.home}/server/${jboss.config}/deploy"/>-->
        <copy
             todir="${jboss.home}/server/${jboss.config}/deploy/messaging.sar">
           <fileset dir="${build.sar}"/>
@@ -356,7 +328,6 @@
 
       <mkdir dir="${build.jar}/META-INF"/>
       <mkdir dir="${build.jar}/xmdesc"/>
-      <copy file="${build.etc}/VERSION" toFile="${build.jar}/VERSION"/>
    </target>
 
    <target name="sar-structure" depends="jar-structure">

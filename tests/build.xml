@@ -501,7 +501,7 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-	       <include name="**/messaging/core/**/${test-mask}.class"/>
+	       <include name="**/messaging/**/${test-mask}.class"/>
 	       <include name="**/jms/**/${test-mask}.class"/>	      	       	       
 	       
 	       <!-- We exclude the recovery tests for now, until we get recovery up and running again -->

@@ -38,14 +38,14 @@ public class CreateConnectionMessageCodec extends
          RemotingBuffer out)
          throws Exception
    {
-      byte version = request.getVersion();
+      int version = request.getVersion();
       String remotingSessionID = request.getRemotingSessionID();
       String clientVMID = request.getClientVMID();
       String username = request.getUsername();
       String password = request.getPassword();
       int prefetchSize = request.getPrefetchSize();
 
-      int bodyLength = 1 // version
+      int bodyLength = INT_LENGTH // version
             + sizeof(remotingSessionID)
             + sizeof(clientVMID)
             + sizeof(username) 
@@ -53,7 +53,7 @@ public class CreateConnectionMessageCodec extends
             + INT_LENGTH;
 
       out.putInt(bodyLength);
-      out.put(version);
+      out.putInt(version);
       out.putNullableString(remotingSessionID);
       out.putNullableString(clientVMID);
       out.putNullableString(username);
@@ -70,7 +70,7 @@ public class CreateConnectionMessageCodec extends
       {
          return null;
       }
-      byte version = in.get();
+      int version = in.getInt();
       String remotingSessionID = in.getNullableString();
       String clientVMID = in.getNullableString();
       String username = in.getNullableString();

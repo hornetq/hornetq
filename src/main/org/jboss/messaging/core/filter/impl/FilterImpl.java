@@ -78,7 +78,7 @@ public class FilterImpl implements Filter
         operator = (Operator)parser.parse(filterString, identifiers);
      }
      catch (Throwable e)
-     {
+     {   	  
         throw new MessagingException(MessagingException.INVALID_FILTER_EXPRESSION, "Invalid filter: " + filterString);
      }
   }

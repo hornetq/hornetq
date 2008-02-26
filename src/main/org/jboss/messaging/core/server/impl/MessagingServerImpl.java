@@ -34,6 +34,7 @@ import org.jboss.messaging.core.deployers.impl.SecurityDeployer;
 import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.memory.impl.SimpleMemoryManager;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
+import org.jboss.messaging.core.persistence.impl.nullpm.NullPersistenceManager;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
@@ -49,7 +50,6 @@ import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.Filter;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.NullPersistenceManager;
 import org.jboss.messaging.core.server.PersistenceManager;
 import org.jboss.messaging.core.server.PostOffice;
 import org.jboss.messaging.core.server.Queue;
@@ -58,7 +58,9 @@ import org.jboss.messaging.core.server.ResourceManager;
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
-import org.jboss.messaging.util.Version;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.version.Version;
+import org.jboss.messaging.util.VersionImpl;
 import org.jboss.security.AuthenticationManager;
 
 /**
@@ -109,7 +111,7 @@ public class MessagingServerImpl implements MessagingServer
    private Configuration configuration = new Configuration();
    private HierarchicalRepository<HashSet<Role>> securityRepository = new HierarchicalObjectRepository<HashSet<Role>>();
    private HierarchicalRepository<QueueSettings> queueSettingsRepository = new HierarchicalObjectRepository<QueueSettings>();
-   private QueueFactory queueFactory = new QueueFactoryImpl();
+   private QueueFactory queueFactory;
    private ResourceManager resourceManager = new ResourceManagerImpl(0);
    private ScheduledExecutorService scheduledExecutor;
 
@@ -119,9 +121,9 @@ public class MessagingServerImpl implements MessagingServer
     */
    public MessagingServerImpl()
    {
-      // Some wired components need to be started here
+      //We need to hard code the version information into a source file
 
-      version = Version.instance();
+      version = new VersionImpl("Stilton", 2, 0, 0, 100, "alpha1");
 
       started = false;
    }
@@ -163,12 +165,9 @@ public class MessagingServerImpl implements MessagingServer
       securityStore.setAuthenticationManager(authenticationManager);
       securityDeployer = new SecurityDeployer();
       securityDeployer.setSecurityRepository(securityRepository);
-      queueSettingsDeployer = new QueueSettingsDeployer();
       queueSettingsRepository.setDefault(new QueueSettings());
-      queueSettingsDeployer.setQueueSettingsRepository(queueSettingsRepository);
       scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize());
-      queueFactory = new QueueFactoryImpl(scheduledExecutor);
-      queueFactory.setQueueSettingsRepository(queueSettingsRepository);
+      queueFactory = new QueueFactoryImpl(queueSettingsRepository, scheduledExecutor);
       connectionManager = new ConnectionManagerImpl();
       memoryManager = new SimpleMemoryManager();
       messageCounterManager = new MessageCounterManager(configuration.getMessageCounterSamplePeriod());
@@ -182,7 +181,7 @@ public class MessagingServerImpl implements MessagingServer
       });
       postOffice = new PostOfficeImpl(configuration.getMessagingServerID(),
               persistenceManager, queueFactory, configuration.isStrictTck());
-      queueSettingsDeployer.setPostOffice(postOffice);
+      queueSettingsDeployer = new QueueSettingsDeployer(postOffice, queueSettingsRepository);
 
       if (createTransport)
       {

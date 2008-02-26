@@ -27,9 +27,9 @@ import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.SecurityStore;
-import org.jboss.messaging.core.server.impl.QueueSettings;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.util.Version;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.version.Version;
 
 /**
  * This interface defines the internal interface of the Messaging Server exposed

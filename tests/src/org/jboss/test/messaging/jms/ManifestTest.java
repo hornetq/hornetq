@@ -22,7 +22,6 @@
 package org.jboss.test.messaging.jms;
 
 import java.io.File;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -83,23 +82,8 @@ public class ManifestTest extends JMSTestCase
 	      // Compare the value from ConnectionMetaData and MANIFEST.MF
 	      Attributes attrs = manifest.getMainAttributes();
 	      
-	      log.info("META--> " + meta.getJMSMajorVersion());
-	      log.info("META--> " + meta.getJMSMinorVersion());
-	      log.info("META--> " + meta.getJMSProviderName());
-	      log.info("META--> " + meta.getJMSVersion());
-	      log.info("META--> " + meta.getProviderMajorVersion());
-	      log.info("META--> " + meta.getProviderMinorVersion());
-	      log.info("META--> " + meta.getProviderVersion());
-	      
-	      Iterator itr = attrs.entrySet().iterator();
-	      while (itr.hasNext()) {
-	         Object item = itr.next();
-	         log.trace("MANIFEST--> " + item + " : " + attrs.get(item));
-	      }
-	      
-	      assertEquals(attrs.getValue("Implementation-Title"), meta.getJMSProviderName());
-	      String ver = attrs.getValue("Implementation-Version");
-	      assertTrue(-1 != ver.indexOf(meta.getProviderVersion()));
+	      assertEquals(meta.getProviderVersion(), attrs.getValue("JBossMessaging-Version"));
+	      assertEquals("https://svn.jboss.org/repos/messaging/trunk", attrs.getValue("JBossMessaging-SVN-URL"));
       }
       finally
       {

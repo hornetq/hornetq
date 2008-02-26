@@ -22,7 +22,7 @@ public class CreateConnectionRequest extends AbstractPacket
 
    // Attributes ----------------------------------------------------
 
-   private final byte version;
+   private final int version;
    private final String remotingSessionID;
    private final String clientVMID;
    private final String username;
@@ -33,7 +33,7 @@ public class CreateConnectionRequest extends AbstractPacket
 
    // Constructors --------------------------------------------------
 
-   public CreateConnectionRequest(final byte version,
+   public CreateConnectionRequest(final int version,
          final String remotingSessionID, final String clientVMID, final String username, final String password,
          final int prefetchSize)
    {
@@ -52,7 +52,7 @@ public class CreateConnectionRequest extends AbstractPacket
 
    // Public --------------------------------------------------------
 
-   public byte getVersion()
+   public int getVersion()
    {
       return version;
    }

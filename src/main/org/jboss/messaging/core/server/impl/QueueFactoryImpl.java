@@ -27,7 +27,7 @@ import org.jboss.messaging.core.server.Filter;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 
 /**
  *
@@ -39,38 +39,28 @@ import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
  */
 public class QueueFactoryImpl implements QueueFactory
 {
-   private HierarchicalRepository<QueueSettings> queueSettingsRepository;
+   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
 
-   private ScheduledExecutorService scheduledExecutor;
+   private final ScheduledExecutorService scheduledExecutor;
 
-   public QueueFactoryImpl(ScheduledExecutorService scheduledExecutor)
+   public QueueFactoryImpl(final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+   		                  final ScheduledExecutorService scheduledExecutor)
    {
-      this();
-
+      this.queueSettingsRepository = queueSettingsRepository;
+      
       this.scheduledExecutor = scheduledExecutor;
    }
-
-   public QueueFactoryImpl()
-   {
-      queueSettingsRepository = new HierarchicalObjectRepository<QueueSettings>();
-
-      queueSettingsRepository.setDefault(new QueueSettings());
-   }
-
-   public Queue createQueue(long id, String name, Filter filter,
-                            boolean durable, boolean temporary)
+   
+   public Queue createQueue(final long persistenceID, final String name, final Filter filter,
+                            final boolean durable, final boolean temporary)
    {
       QueueSettings queueSettings = queueSettingsRepository.getMatch(name);
-
-      Queue queue =  new QueueImpl(id, name, filter, queueSettings.isClustered(), durable, temporary, queueSettings.getMaxSize(), queueSettingsRepository);
+            
+      Queue queue = new QueueImpl(persistenceID, name, filter, queueSettings.isClustered(), durable, temporary,
+      		queueSettings.getMaxSize(), scheduledExecutor, queueSettingsRepository);
 
       queue.setDistributionPolicy(queueSettings.getDistributionPolicy());
 
       return queue;
-   }
-
-   public void setQueueSettingsRepository(HierarchicalRepository<QueueSettings> queueSettingsRepository)
-   {
-      this.queueSettingsRepository = queueSettingsRepository;
    }
 }

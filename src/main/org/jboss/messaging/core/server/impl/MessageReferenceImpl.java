@@ -134,12 +134,17 @@ public class MessageReferenceImpl implements MessageReference
          persistenceManager.updateDeliveryCount(queue, this);
       }
             
+      log.info("Queue settings is " + queue.getQueueSettings());
+   	
+      
       queue.decrementDeliveringCount();
 
       int maxDeliveries = queue.getQueueSettings().getMatch(queue.getName()).getMaxDeliveryAttempts();
       
       if (maxDeliveries > 0 && deliveryCount >= maxDeliveries)
       {
+      	
+      	
          Queue DLQ = queue.getQueueSettings().getMatch(queue.getName()).getDLQ();
          
          if (DLQ != null)
