@@ -760,7 +760,7 @@ public class Operator
      Class className = oper1.getClass();
 
      if (className == Identifier.class)
-        arg1 = ((Identifier) oper1).value;
+        arg1 = ((Identifier) oper1).getValue();
      else if (className == Operator.class)
         arg1 = ((Operator) oper1).apply();
      else
@@ -811,7 +811,7 @@ public class Operator
      Class className = oper2.getClass();
 
      if (className == Identifier.class)
-        arg2 = ((Identifier) oper2).value;
+        arg2 = ((Identifier) oper2).getValue();
      else if (className == Operator.class)
         arg2 = ((Operator) oper2).apply();
      else
@@ -862,7 +862,7 @@ public class Operator
      Class className = oper3.getClass();
 
      if (className == Identifier.class)
-        arg3 = ((Identifier) oper3).value;
+        arg3 = ((Identifier) oper3).getValue();
      else if (className == Operator.class)
         arg3 = ((Operator ) oper3).apply();
      else

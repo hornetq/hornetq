@@ -30,6 +30,7 @@ import org.w3c.dom.Element;
 /**
  * A ChannelFactory that will use Elements to create channels.
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision:1909 $</tt>
  * $Id:XMLJChannelFactory.java 1909 2007-01-06 06:08:03Z clebert.suconic@jboss.com $
  */
@@ -39,14 +40,14 @@ public class XMLChannelFactory implements ChannelFactory
    // Constants ------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
-   Element controlConfig;
-   Element dataConfig;
+   private final Element controlConfig;
+   private final Element dataConfig;
 
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public XMLChannelFactory(Element controlConfig, Element dataConfig)
+   public XMLChannelFactory(final Element controlConfig, final Element dataConfig)
    {
       this.controlConfig = controlConfig;
       this.dataConfig = dataConfig;
@@ -59,19 +60,9 @@ public class XMLChannelFactory implements ChannelFactory
       return controlConfig;
    }
 
-   public void setControlConfig(Element controlConfig)
-   {
-      this.controlConfig = controlConfig;
-   }
-
    public Element getDataConfig()
    {
       return dataConfig;
-   }
-
-   public void setDataConfig(Element dataConfig)
-   {
-      this.dataConfig = dataConfig;
    }
 
    // implementation of JChannelFactory ------------------------------------------------------------

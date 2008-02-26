@@ -53,22 +53,22 @@ public class PostOfficeImpl implements PostOffice
 {  
    private static final Logger log = Logger.getLogger(PostOfficeImpl.class);
    
-   private int nodeID;
+   private final int nodeID;
    
-   private ConcurrentMap<String, List<Binding>> mappings = new ConcurrentHashMap<String, List<Binding>>();
+   private final ConcurrentMap<String, List<Binding>> mappings = new ConcurrentHashMap<String, List<Binding>>();
    
-   private Set<String> allowableAddresses = new ConcurrentHashSet<String>();
+   private final Set<String> allowableAddresses = new ConcurrentHashSet<String>();
    
-   private ConcurrentMap<String, Binding> nameMap = new ConcurrentHashMap<String, Binding>();
+   private final ConcurrentMap<String, Binding> nameMap = new ConcurrentHashMap<String, Binding>();
    
-   private PersistenceManager persistenceManager;
+   private final PersistenceManager persistenceManager;
    
-   private QueueFactory queueFactory;
+   private final QueueFactory queueFactory;
    
-   private boolean checkAllowable;
+   private final boolean checkAllowable;
     
-   public PostOfficeImpl(int nodeID, PersistenceManager persistenceManager, QueueFactory queueFactory,
-                         boolean checkAllowable)
+   public PostOfficeImpl(final int nodeID, final PersistenceManager persistenceManager,
+   		                final QueueFactory queueFactory, final boolean checkAllowable)
    {
       this.nodeID = nodeID;
       
@@ -95,17 +95,17 @@ public class PostOfficeImpl implements PostOffice
    
    // PostOffice implementation -----------------------------------------------
 
-   public void addAllowableAddress(String address)
+   public void addAllowableAddress(final String address)
    {      
       allowableAddresses.add(address);
    }
    
-   public boolean removeAllowableAddress(String address)
+   public boolean removeAllowableAddress(final String address)
    {      
       return allowableAddresses.remove(address);
    }
    
-   public boolean containsAllowableAddress(String address)
+   public boolean containsAllowableAddress(final String address)
    {
       return allowableAddresses.contains(address);
    }
@@ -116,8 +116,8 @@ public class PostOfficeImpl implements PostOffice
       return allowableAddresses;
    }
 
-   public Binding addBinding(String address, String queueName, Filter filter, 
-                             boolean durable, boolean temporary) throws Exception
+   public Binding addBinding(final String address, final String queueName, final Filter filter, 
+                             final boolean durable, final boolean temporary) throws Exception
    {
       Binding binding = createBinding(address, queueName, filter, durable, temporary);
 
@@ -131,7 +131,7 @@ public class PostOfficeImpl implements PostOffice
       return binding;      
    }
          
-   public Binding removeBinding(String queueName) throws Exception
+   public Binding removeBinding(final String queueName) throws Exception
    {
       Binding binding = removeQueueInMemory(queueName);
       
@@ -143,7 +143,7 @@ public class PostOfficeImpl implements PostOffice
       return binding;
    }
    
-   public List<Binding> getBindingsForAddress(String address)
+   public List<Binding> getBindingsForAddress(final String address)
    {
       List<Binding> list = new ArrayList<Binding>();
       
@@ -163,12 +163,12 @@ public class PostOfficeImpl implements PostOffice
       return list;
    }
    
-   public Binding getBinding(String queueName)
+   public Binding getBinding(final String queueName)
    {
       return nameMap.get(queueName);
    }
          
-   public void route(String address, Message message) throws Exception
+   public void route(final String address, final Message message) throws Exception
    {
      // boolean routeRemote = false;
       
@@ -218,7 +218,7 @@ public class PostOfficeImpl implements PostOffice
 //      }
    }
    
-   public void routeFromCluster(String address, Message message) throws Exception
+   public void routeFromCluster(final String address, final Message message) throws Exception
    {     
       List<Binding> bindings = mappings.get(address);
       
@@ -249,8 +249,8 @@ public class PostOfficeImpl implements PostOffice
 
    // Private -----------------------------------------------------------------
    
-   private Binding createBinding(String address, String name, Filter filter,
-                                 boolean durable, boolean temporary)
+   private Binding createBinding(final String address, final String name, final Filter filter,
+                                 final boolean durable, final boolean temporary)
    {
       Queue queue = queueFactory.createQueue(-1, name, filter, durable, temporary);
       
@@ -259,7 +259,7 @@ public class PostOfficeImpl implements PostOffice
       return binding;
    }
    
-   private void addBindingInMemory(Binding binding)
+   private void addBindingInMemory(final Binding binding)
    {              
       List<Binding> bindings = new CopyOnWriteArrayList<Binding>();
       
@@ -278,7 +278,7 @@ public class PostOfficeImpl implements PostOffice
       }     
    }
    
-   private Binding removeQueueInMemory(String queueName) throws Exception
+   private Binding removeQueueInMemory(final String queueName) throws Exception
    {
       Binding binding = nameMap.remove(queueName);
       

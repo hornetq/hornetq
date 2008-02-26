@@ -77,7 +77,7 @@ public class ServerBrowserImpl
    // Constructors ---------------------------------------------------------------------------------
 
    ServerBrowserImpl(ServerSession session,
-                         Queue destination, String messageFilter) throws Exception
+                     Queue destination, String messageFilter) throws Exception
    {     
       this.session = session;
       id = UUID.randomUUID().toString();

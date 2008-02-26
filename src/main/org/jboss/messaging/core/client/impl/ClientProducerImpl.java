@@ -81,7 +81,7 @@ public class ClientProducerImpl implements ClientProducer
    	return address;
    }
    
-   public void send(Message msg) throws MessagingException
+   public void send(final Message msg) throws MessagingException
    {
       checkClosed();
       
@@ -90,7 +90,7 @@ public class ClientProducerImpl implements ClientProducer
       remotingConnection.send(id, message, !msg.isDurable());
    }
    
-   public void send(String address, Message msg) throws MessagingException
+   public void send(final String address, final Message msg) throws MessagingException
    {
       checkClosed();
       
@@ -99,12 +99,12 @@ public class ClientProducerImpl implements ClientProducer
       remotingConnection.send(id, message, !msg.isDurable());
    }
          
-   public void registerAcknowledgementHandler(AcknowledgementHandler handler)
+   public void registerAcknowledgementHandler(final AcknowledgementHandler handler)
    {
       // TODO      
    }
 
-   public void unregisterAcknowledgementHandler(AcknowledgementHandler handler)
+   public void unregisterAcknowledgementHandler(final AcknowledgementHandler handler)
    {
       // TODO  
    }

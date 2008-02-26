@@ -30,8 +30,8 @@ package org.jboss.messaging.core.security;
  * $Id: $
  */
 public class CheckType
-{
-   public int type;
+{	
+   public final int type;
    public CheckType(int type)
    {
       this.type = type;

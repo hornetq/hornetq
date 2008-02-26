@@ -80,7 +80,7 @@ public class MessageImpl implements Message
    private byte[] payload;
    
    //We keep track of the persisted references for this message
-   private List<MessageReference> references = new ArrayList<MessageReference>();
+   private final List<MessageReference> references = new ArrayList<MessageReference>();
    
    private String connectionID;
    
@@ -108,8 +108,8 @@ public class MessageImpl implements Message
    /*
     * Construct a message before sending
     */
-   public MessageImpl(int type, boolean durable, long expiration,
-                      long timestamp, byte priority)
+   public MessageImpl(final int type, final boolean durable, final long expiration,
+                      final long timestamp, final byte priority)
    {
       this();
       this.type = type;
@@ -122,8 +122,8 @@ public class MessageImpl implements Message
    /*
     * Construct a MessageImpl from storage
     */
-   public MessageImpl(long messageID, int type, boolean durable, long expiration,
-                      long timestamp, byte priority, byte[] headers, byte[] payload)
+   public MessageImpl(final long messageID, final int type, final boolean durable, final long expiration,
+                      final long timestamp, final byte priority, final byte[] headers, final byte[] payload)
       throws Exception
    {
       this.messageID = messageID;
@@ -156,7 +156,7 @@ public class MessageImpl implements Message
     * 
     * @param other
     */
-   public MessageImpl(MessageImpl other)
+   public MessageImpl(final MessageImpl other)
    {
       this.messageID = other.messageID;
       this.type = other.type;
@@ -175,7 +175,7 @@ public class MessageImpl implements Message
       return messageID;
    }
    
-   public void setMessageID(long id)
+   public void setMessageID(final long id)
    {
       this.messageID = id;
    }
@@ -190,7 +190,7 @@ public class MessageImpl implements Message
       return durable;
    }
    
-   public void setDurable(boolean durable)
+   public void setDurable(final boolean durable)
    {
       this.durable = durable;
    }
@@ -200,7 +200,7 @@ public class MessageImpl implements Message
       return expiration;
    }
 
-   public void setExpiration(long expiration)
+   public void setExpiration(final long expiration)
    {
       this.expiration = expiration;
    }
@@ -210,27 +210,27 @@ public class MessageImpl implements Message
       return timestamp;
    }
    
-   public void setTimestamp(long timestamp)
+   public void setTimestamp(final long timestamp)
    {
       this.timestamp = timestamp;
    }
 
-   public Object putHeader(String name, Object value)
+   public Object putHeader(final String name, final Object value)
    {
       return headers.put(name, value);
    }
 
-   public Object getHeader(String name)
+   public Object getHeader(final String name)
    {
       return headers.get(name);
    }
 
-   public Object removeHeader(String name)
+   public Object removeHeader(final String name)
    {
       return headers.remove(name);
    }
 
-   public boolean containsHeader(String name)
+   public boolean containsHeader(final String name)
    {
       return headers.containsKey(name);
    }
@@ -245,7 +245,7 @@ public class MessageImpl implements Message
       return priority;
    }
 
-   public void setPriority(byte priority)
+   public void setPriority(final byte priority)
    {
       this.priority = priority;
    }
@@ -269,7 +269,7 @@ public class MessageImpl implements Message
       return payload;
    }
    
-   public void setPayload(byte[] payload)
+   public void setPayload(final byte[] payload)
    {
       this.payload = payload;
    }
@@ -279,12 +279,12 @@ public class MessageImpl implements Message
       return connectionID;
    }
    
-   public void setConnectionID(String connectionID)
+   public void setConnectionID(final String connectionID)
    {
       this.connectionID = connectionID;
    }
    
-   public void setDeliveryCount(int deliveryCount)
+   public void setDeliveryCount(final int deliveryCount)
    {
       this.deliveryCount = deliveryCount;
    }
@@ -304,7 +304,7 @@ public class MessageImpl implements Message
       return System.currentTimeMillis() - expiration >= 0;
    }
    
-   public MessageReference createReference(Queue queue)
+   public MessageReference createReference(final Queue queue)
    {
       MessageReference ref =  new MessageReferenceImpl(this, queue);
       
@@ -328,7 +328,7 @@ public class MessageImpl implements Message
       return references;
    }
    
-   public void removeDurableReference(MessageReference reference, int pos) throws Exception
+   public void removeDurableReference(final MessageReference reference, final int pos) throws Exception
    {
       refsLock.acquire();
       
@@ -345,7 +345,7 @@ public class MessageImpl implements Message
    }
    
    //TODO optimise to avoid scan
-   public int getDurableReferencePos(MessageReference reference)
+   public int getDurableReferencePos(final MessageReference reference)
    {
       int pos = 0;
       
@@ -365,7 +365,7 @@ public class MessageImpl implements Message
       return pos;
    }
    
-   public void addBackDurableReference(MessageReference reference)
+   public void addBackDurableReference(final MessageReference reference)
    {
       references.add(reference);
       
@@ -425,7 +425,7 @@ public class MessageImpl implements Message
 
    // Streamable implementation ---------------------------------
 
-   public void write(DataOutputStream out) throws Exception
+   public void write(final DataOutputStream out) throws Exception
    {
       out.writeLong(messageID);
       
@@ -455,7 +455,7 @@ public class MessageImpl implements Message
       }
    }
 
-   public void read(DataInputStream in) throws Exception
+   public void read(final DataInputStream in) throws Exception
    {
       messageID = in.readLong();
       

@@ -38,9 +38,8 @@ import org.jboss.messaging.core.server.MessagingException;
 public abstract class ServerPacketHandlerSupport implements PacketHandler
 {
    private static final Logger log = Logger.getLogger(ServerPacketHandlerSupport.class);
-   
-   
-   public void handle(Packet packet, PacketSender sender)
+      
+   public void handle(final Packet packet, final PacketSender sender)
    {
       Packet response;
       
@@ -82,6 +81,6 @@ public abstract class ServerPacketHandlerSupport implements PacketHandler
       }
    }
    
-   protected abstract Packet doHandle(Packet packet, PacketSender sender) throws Exception;
+   protected abstract Packet doHandle(final Packet packet, final PacketSender sender) throws Exception;
 
 }

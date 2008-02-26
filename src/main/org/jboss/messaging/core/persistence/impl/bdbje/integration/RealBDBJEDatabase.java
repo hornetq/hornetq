@@ -23,16 +23,17 @@ import com.sleepycat.je.Transaction;
  */
 public class RealBDBJEDatabase implements BDBJEDatabase
 {  
-   private Database database;
+   private final Database database;
    
-   RealBDBJEDatabase(Database database)
+   RealBDBJEDatabase(final Database database)
    {
       this.database = database;
    }
 
    // BDBJEDatabase implementation ------------------------------------------
    
-   public void put(BDBJETransaction tx, long id, byte[] bytes, int offset, int length) throws Exception
+   public void put(final BDBJETransaction tx, final long id, final byte[] bytes,
+   		          final int offset, final int length) throws Exception
    {
       DatabaseEntry key = createKey(id);
 
@@ -50,7 +51,7 @@ public class RealBDBJEDatabase implements BDBJEDatabase
       database.put(bdbTx, key, value);
    }
 
-   public void remove(BDBJETransaction tx, long id) throws Exception
+   public void remove(final BDBJETransaction tx, final long id) throws Exception
    {
       DatabaseEntry key = createKey(id);
 
@@ -71,7 +72,7 @@ public class RealBDBJEDatabase implements BDBJEDatabase
    
    // For testing
    
-   public byte[] get(long id) throws Exception
+   public byte[] get(final long id) throws Exception
    {
       DatabaseEntry key = createKey(id);
       
@@ -94,7 +95,7 @@ public class RealBDBJEDatabase implements BDBJEDatabase
       
    // Private ----------------------------------------------------------------------
    
-   private DatabaseEntry createKey(long id)
+   private DatabaseEntry createKey(final long id)
    {
       DatabaseEntry key = new DatabaseEntry();
       
@@ -105,7 +106,7 @@ public class RealBDBJEDatabase implements BDBJEDatabase
       return key;
    }
    
-   private Transaction getBDBTx(BDBJETransaction tx)
+   private Transaction getBDBTx(final BDBJETransaction tx)
    {
       Transaction bdbTx = null;
       
@@ -123,7 +124,7 @@ public class RealBDBJEDatabase implements BDBJEDatabase
    
    private class RealBDBJECursor implements BDBJECursor
    {
-      private Cursor cursor;
+      private final Cursor cursor;
       
       RealBDBJECursor() throws Exception
       {

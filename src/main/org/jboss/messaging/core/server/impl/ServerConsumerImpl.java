@@ -218,7 +218,7 @@ public class ServerConsumerImpl implements ServerConsumer
       sessionEndpoint.removeConsumer(id);           
    }
    
-   public void setStarted(boolean started)
+   public void setStarted(final boolean started)
    {
       boolean useStarted;
       
@@ -236,7 +236,7 @@ public class ServerConsumerImpl implements ServerConsumer
       }
    }
    
-   public void receiveTokens(int tokens) throws Exception
+   public void receiveTokens(final int tokens) throws Exception
    {
       availableTokens.addAndGet(tokens);
 

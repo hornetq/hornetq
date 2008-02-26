@@ -200,7 +200,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       return handler;
    }
 
-   public void setMessageHandler(MessageHandler handler) throws MessagingException
+   public void setMessageHandler(final MessageHandler handler) throws MessagingException
    {
       checkClosed();
       
@@ -332,7 +332,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }      
    }
 
-   public void recover(long lastDeliveryID)
+   public void recover(final long lastDeliveryID)
    {
       ignoreDeliveryMark = lastDeliveryID;
 

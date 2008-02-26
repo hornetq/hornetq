@@ -41,27 +41,32 @@ import org.jboss.messaging.core.list.PriorityLinkedList;
  */
 public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 {      	
-   private List<LinkedList<T>> linkedLists;
+   private final List<LinkedList<T>> linkedLists;
    
-   private int priorities;
+   private final int priorities;
    
    private int size;
    
-   public PriorityLinkedListImpl(int priorities)
+   public PriorityLinkedListImpl(final int priorities)
    {
       this.priorities = priorities;
        
-      initLists();
+      linkedLists = new ArrayList<LinkedList<T>>();
+      
+      for (int i = 0; i < priorities; i++)
+      {
+         linkedLists.add(new LinkedList<T>());
+      }
    }
    
-   public void addFirst(T t, int priority)
+   public void addFirst(final T t, final int priority)
    {      
       linkedLists.get(priority).addFirst(t);
       
       size++; 
    }
    
-   public void addLast(T t, int priority)
+   public void addLast(final T t, final int priority)
    { 
       linkedLists.get(priority).addLast(t);
       
@@ -157,7 +162,12 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
    
    public void clear()
    {
-      initLists();
+   	for (LinkedList<T> list: linkedLists)
+      {
+         list.clear();
+      }
+   	
+   	size = 0;
    }
    
    public int size()
@@ -170,10 +180,11 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
       return size == 0;
    }
 
-   public void remove(T messageReference, int priority)
+   public void remove(final T messageReference, final int priority)
    {
-      LinkedList linkedList = linkedLists.get(priority);
-      if(linkedList != null)
+      LinkedList<T> linkedList = linkedLists.get(priority);
+      
+      if (linkedList != null)
       {
          linkedList.remove(messageReference);
       }
@@ -182,18 +193,6 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
    public ListIterator<T> iterator()
    {
       return new PriorityLinkedListIterator();
-   }
-   
-   private void initLists()
-   {      
-      linkedLists = new ArrayList<LinkedList<T>>();
-      
-      for (int i = 0; i < priorities; i++)
-      {
-         linkedLists.add(new LinkedList<T>());
-      }
-      
-      size = 0;
    }
       
    private class PriorityLinkedListIterator implements ListIterator<T>
@@ -209,7 +208,7 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
          currentIter = linkedLists.get(index).listIterator();
       }
 
-      public void add(Object arg0)
+      public void add(final Object obj)
       {
          throw new UnsupportedOperationException();
       }
@@ -271,7 +270,7 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
          size--;
       }
 
-      public void set(Object obj)
+      public void set(final Object obj)
       {
          throw new UnsupportedOperationException();
       }

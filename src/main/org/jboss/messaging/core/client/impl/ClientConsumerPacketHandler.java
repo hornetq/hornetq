@@ -21,7 +21,7 @@ public class ClientConsumerPacketHandler implements PacketHandler
 
    private final String consumerID;
 
-   public ClientConsumerPacketHandler(ClientConsumerInternal clientConsumer, String consumerID)
+   public ClientConsumerPacketHandler(final ClientConsumerInternal clientConsumer, final String consumerID)
    {
       this.clientConsumer = clientConsumer;
       
@@ -33,7 +33,7 @@ public class ClientConsumerPacketHandler implements PacketHandler
       return consumerID;
    }
 
-   public void handle(Packet packet, PacketSender sender)
+   public void handle(final Packet packet, final PacketSender sender)
    {
       try
       {

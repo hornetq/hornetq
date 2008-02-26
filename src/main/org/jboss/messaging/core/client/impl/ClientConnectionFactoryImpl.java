@@ -84,11 +84,6 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
       this.prefetchSize = prefetchSize;
    }
 
-   public ClientConnectionFactoryImpl(RemotingConfiguration remotingConfig)
-   {
-      this.remotingConfig = remotingConfig;
-   }
-
    public ClientConnectionFactoryImpl()
    {
    }

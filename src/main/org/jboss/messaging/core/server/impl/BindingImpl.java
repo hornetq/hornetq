@@ -33,17 +33,17 @@ import org.jboss.messaging.core.server.Queue;
  */
 public class BindingImpl implements Binding
 {
-   private int nodeID;
+   private final int nodeID;
    
-   private String address;
+   private final String address;
    
-   private Queue queue;
+   private final Queue queue;
    
    private boolean hashAssigned;
    
    private int hash;
       
-   public BindingImpl(int nodeID, String address, Queue queue)
+   public BindingImpl(final int nodeID, final String address, final Queue queue)
    {
       this.nodeID = nodeID;
       

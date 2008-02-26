@@ -13,9 +13,9 @@ import com.sleepycat.je.Transaction;
  */
 public class RealBDBJETransaction implements BDBJETransaction
 {
-   private Transaction transaction;
+   private final Transaction transaction;
    
-   RealBDBJETransaction(Transaction transaction)
+   RealBDBJETransaction(final Transaction transaction)
    {
       this.transaction = transaction;
    }

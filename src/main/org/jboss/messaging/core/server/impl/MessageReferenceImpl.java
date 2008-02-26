@@ -57,7 +57,7 @@ public class MessageReferenceImpl implements MessageReference
    {
    }
 
-   public MessageReferenceImpl(MessageReferenceImpl other, Queue queue)
+   public MessageReferenceImpl(final MessageReferenceImpl other, final Queue queue)
    {
       this.deliveryCount = other.deliveryCount;
       
@@ -68,7 +68,7 @@ public class MessageReferenceImpl implements MessageReference
       this.queue = queue;
    }
    
-   protected MessageReferenceImpl(Message message, Queue queue)
+   protected MessageReferenceImpl(final Message message, final Queue queue)
    {
    	this.message = message;
    	
@@ -77,7 +77,7 @@ public class MessageReferenceImpl implements MessageReference
    
    // MessageReference implementation -------------------------------
    
-   public MessageReference copy(Queue queue)
+   public MessageReference copy(final Queue queue)
    {
    	return new MessageReferenceImpl(this, queue);
    }
@@ -87,7 +87,7 @@ public class MessageReferenceImpl implements MessageReference
       return deliveryCount;
    }
    
-   public void setDeliveryCount(int deliveryCount)
+   public void setDeliveryCount(final int deliveryCount)
    {
       this.deliveryCount = deliveryCount;
    }
@@ -102,7 +102,7 @@ public class MessageReferenceImpl implements MessageReference
       return scheduledDeliveryTime;
    }
 
-   public void setScheduledDeliveryTime(long scheduledDeliveryTime)
+   public void setScheduledDeliveryTime(final long scheduledDeliveryTime)
    {
       this.scheduledDeliveryTime = scheduledDeliveryTime;
    }
@@ -117,7 +117,7 @@ public class MessageReferenceImpl implements MessageReference
       return queue;
    }
    
-   public void acknowledge(PersistenceManager persistenceManager) throws Exception
+   public void acknowledge(final PersistenceManager persistenceManager) throws Exception
    {
       if (message.isDurable())
       {
@@ -127,7 +127,7 @@ public class MessageReferenceImpl implements MessageReference
       queue.decrementDeliveringCount();
    }
    
-   public boolean cancel(PersistenceManager persistenceManager) throws Exception
+   public boolean cancel(final PersistenceManager persistenceManager) throws Exception
    {      
       if (message.isDurable() && queue.isDurable())
       {
@@ -170,7 +170,7 @@ public class MessageReferenceImpl implements MessageReference
       }
    }
    
-   public void expire(PersistenceManager persistenceManager) throws Exception
+   public void expire(final PersistenceManager persistenceManager) throws Exception
    {
       Queue expiryQueue = queue.getQueueSettings().getMatch(queue.getName()).getExpiryQueue();
       if (expiryQueue != null)
@@ -200,8 +200,8 @@ public class MessageReferenceImpl implements MessageReference
    
    // Private -------------------------------------------------------
    
-   private void moveInTransaction(Queue destinationQueue, Message copyMessage,
-                                  PersistenceManager persistenceManager) throws Exception
+   private void moveInTransaction(final Queue destinationQueue, final Message copyMessage,
+                                  final PersistenceManager persistenceManager) throws Exception
    {
       copyMessage.createReference(destinationQueue);
       
@@ -214,7 +214,7 @@ public class MessageReferenceImpl implements MessageReference
       tx.commit(true, persistenceManager);
    }
    
-   private Message makeCopyForDLQOrExpiry(boolean expiry, PersistenceManager pm) throws Exception
+   private Message makeCopyForDLQOrExpiry(final boolean expiry, final PersistenceManager pm) throws Exception
    {
       /*
        We copy the message and send that to the dlq/expiry queue - this is

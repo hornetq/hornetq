@@ -48,11 +48,11 @@ public class ClientBrowserImpl implements ClientBrowser
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private String id;
+   private final String id;
    
-	private ClientSessionInternal session;
+	private final ClientSessionInternal session;
 	
-	private RemotingConnection remotingConnection;
+	private final RemotingConnection remotingConnection;
 	
 	private volatile boolean closed;
 	
@@ -60,7 +60,8 @@ public class ClientBrowserImpl implements ClientBrowser
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientBrowserImpl(RemotingConnection remotingConnection, ClientSessionInternal session, String id)
+   public ClientBrowserImpl(final String id, final ClientSessionInternal session,
+   		                   final RemotingConnection remotingConnection)
    {
       this.remotingConnection = remotingConnection;
       
@@ -122,7 +123,7 @@ public class ClientBrowserImpl implements ClientBrowser
       return response.getMessage();
    }
 
-   public Message[] nextMessageBlock(int maxMessages) throws MessagingException
+   public Message[] nextMessageBlock(final int maxMessages) throws MessagingException
    {
       checkClosed();
       

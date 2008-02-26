@@ -62,7 +62,7 @@ public class XidImpl implements Xid, Serializable
     * @param formatId
     * @param globalTransactionId
     */
-   public XidImpl(byte[] branchQualifier, int formatId, byte[] globalTransactionId)
+   public XidImpl(final byte[] branchQualifier, final int formatId, final byte[] globalTransactionId)
    {
       this.branchQualifier = branchQualifier;
       this.formatId = formatId;
@@ -73,7 +73,7 @@ public class XidImpl implements Xid, Serializable
     * Copy constructor
     * @param other
     */
-   public XidImpl(Xid other)
+   public XidImpl(final Xid other)
    {
       this.branchQualifier = copyBytes(other.getBranchQualifier());
       this.formatId = other.getFormatId();
@@ -158,7 +158,7 @@ public class XidImpl implements Xid, Serializable
    
    // Private -------------------------------------------------------------------------------
    
-   private String stringRep(byte[] bytes)
+   private String stringRep(final byte[] bytes)
    {
       StringBuffer buff = new StringBuffer();
       for (int i = 0; i < bytes.length; i++)

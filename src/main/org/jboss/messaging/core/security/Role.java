@@ -35,7 +35,7 @@ public class Role implements Serializable
 	
 	public static final String CREATE_NAME="create";
 		
-	String name;
+	private String name;
 	
 	private boolean read = false;
 	
@@ -43,12 +43,12 @@ public class Role implements Serializable
 	
 	private boolean create = false;
 
-	public Role(String name)
+	public Role(final String name)
 	{
 		this.name = name;
 	}
 
-	public Role(String name, boolean read, boolean write, boolean create)
+	public Role(final String name, final boolean read, final boolean write, final boolean create)
 	{
 		this.name = name;
 		this.read = read;
@@ -61,7 +61,7 @@ public class Role implements Serializable
 		return name;
 	}
 
-	public void setName(String name)
+	public void setName(final String name)
 	{
 		this.name = name;
 	}
@@ -71,7 +71,7 @@ public class Role implements Serializable
 		return read;
 	}
 
-	public void setRead(boolean read)
+	public void setRead(final boolean read)
 	{
 		this.read = read;
 	}
@@ -81,7 +81,7 @@ public class Role implements Serializable
 		return write;
 	}
 
-	public void setWrite(boolean write)
+	public void setWrite(final boolean write)
 	{
 		this.write = write;
 	}
@@ -91,12 +91,12 @@ public class Role implements Serializable
 		return create;
 	}
 
-	public void setCreate(boolean create)
+	public void setCreate(final boolean create)
 	{
 		this.create = create;
 	}
 
-	public boolean isCheckType(CheckType checkType)
+	public boolean isCheckType(final CheckType checkType)
 	{
 		return checkType.equals(CheckType.READ) ? read : checkType.equals(CheckType.WRITE) ? write : create;
 	}

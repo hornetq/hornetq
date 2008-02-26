@@ -22,22 +22,29 @@
 package org.jboss.messaging.core.filter.impl;
 
 /**
- *  This is a JMS identifier
+ * 
+ * A Identifier
+ * 
+ * @author Norbert Lataille (Norbert.Lataille@m4x.org)
+ * @author Scott.Stark@jboss.org
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @version $Revision: 2681 $
  *
- * @author     Norbert Lataille (Norbert.Lataille@m4x.org)
- * @author     Scott.Stark@jboss.org
- * @version    $Revision: 2681 $
  */
 public class Identifier
 {
-   String           name;
-   Object           value;
-   private int      hash;
+   private final String name;
    
-   public Identifier( String name )
+   private Object value;
+   
+   private final int hash;
+   
+   public Identifier(final String name)
    {
       this.name = name;
+      
       hash = name.hashCode();
+      
       value = null;
    }
    
@@ -46,7 +53,7 @@ public class Identifier
       return "Identifier@" + name;
    }
    
-   public boolean equals( Object obj )
+   public boolean equals(Object obj)
    {
       if ( obj.getClass() != Identifier.class )
       {
@@ -68,11 +75,13 @@ public class Identifier
    {
       return name;
    }
+   
    public Object getValue()
    {
       return value;
    }
-   public void setValue(Object value)
+   
+   public void setValue(final Object value)
    {
       this.value = value;
    }

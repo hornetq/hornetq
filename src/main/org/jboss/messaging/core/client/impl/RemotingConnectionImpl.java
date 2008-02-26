@@ -55,7 +55,7 @@ public class RemotingConnectionImpl implements RemotingConnection
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private RemotingConfiguration remotingConfig;
+   private final RemotingConfiguration remotingConfig;
 
    private NIOConnector connector;
    
@@ -65,7 +65,7 @@ public class RemotingConnectionImpl implements RemotingConnection
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public RemotingConnectionImpl(RemotingConfiguration remotingConfig) throws Exception
+   public RemotingConnectionImpl(final RemotingConfiguration remotingConfig) throws Exception
    {
       assert remotingConfig != null;
       
@@ -126,12 +126,12 @@ public class RemotingConnectionImpl implements RemotingConnection
    /**
     * send the packet and block until a response is received (<code>oneWay</code> is set to <code>false</code>)
     */
-   public AbstractPacket send(String id, AbstractPacket packet) throws MessagingException
+   public AbstractPacket send(final String id, final AbstractPacket packet) throws MessagingException
    {
       return send(id, packet, false);
    }
    
-   public AbstractPacket send(String id, AbstractPacket packet, boolean oneWay) throws MessagingException
+   public AbstractPacket send(final String id, final AbstractPacket packet, final boolean oneWay) throws MessagingException
    {
       assert packet != null;
 
@@ -167,7 +167,7 @@ public class RemotingConnectionImpl implements RemotingConnection
       } 
    }
    
-   public synchronized void setFailureListener(FailureListener newListener)
+   public synchronized void setFailureListener(final FailureListener newListener)
    {
       if (listener != null && newListener != null)
       {
@@ -191,7 +191,7 @@ public class RemotingConnectionImpl implements RemotingConnection
 
    // Private --------------------------------------------------------------------------------------
 
-   private AbstractPacket send(AbstractPacket packet, boolean oneWay) throws Exception
+   private AbstractPacket send(final AbstractPacket packet, final boolean oneWay) throws Exception
    {
       assert packet != null;
       checkConnected();

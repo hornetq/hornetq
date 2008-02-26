@@ -164,7 +164,8 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    // ClientSession implementation -----------------------------------------------------------------
 
-   public void createQueue(String address, String queueName, String filterString, boolean durable, boolean temporary)
+   public void createQueue(final String address, final String queueName, final String filterString,
+   		                  final boolean durable, final boolean temporary)
                            throws MessagingException
    {
       checkClosed();
@@ -174,14 +175,14 @@ public class ClientSessionImpl implements ClientSessionInternal
       remotingConnection.send(id, request);
    }
 
-   public void deleteQueue(String queueName) throws MessagingException
+   public void deleteQueue(final String queueName) throws MessagingException
    {
       checkClosed();
 
       remotingConnection.send(id, new SessionDeleteQueueMessage(queueName));
    }
    
-   public SessionQueueQueryResponseMessage queueQuery(String queueName) throws MessagingException
+   public SessionQueueQueryResponseMessage queueQuery(final String queueName) throws MessagingException
    {
       checkClosed();
       
@@ -192,7 +193,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       return response;
    }
    
-   public SessionBindingQueryResponseMessage bindingQuery(String address) throws MessagingException
+   public SessionBindingQueryResponseMessage bindingQuery(final String address) throws MessagingException
    {
       checkClosed();
       
@@ -203,7 +204,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       return response;
    }
    
-   public void addAddress(String address) throws MessagingException
+   public void addAddress(final String address) throws MessagingException
    {
       checkClosed();
       
@@ -212,7 +213,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       remotingConnection.send(id, request);
    }
    
-   public void removeAddress(String address) throws MessagingException
+   public void removeAddress(final String address) throws MessagingException
    {
       checkClosed();
       
@@ -221,8 +222,8 @@ public class ClientSessionImpl implements ClientSessionInternal
       remotingConnection.send(id, request);  
    }
    
-   public ClientConsumer createConsumer(String queueName, String filterString, boolean noLocal,
-                                        boolean autoDeleteQueue, boolean direct) throws MessagingException
+   public ClientConsumer createConsumer(final String queueName, final String filterString, final boolean noLocal,
+                                        final boolean autoDeleteQueue, final boolean direct) throws MessagingException
    {
       checkClosed();
     
@@ -260,7 +261,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       return consumer;
    }
    
-   public ClientBrowser createBrowser(String queueName, String messageSelector) throws MessagingException
+   public ClientBrowser createBrowser(final String queueName, final String messageSelector) throws MessagingException
    {
       checkClosed();
 
@@ -270,14 +271,14 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       SessionCreateBrowserResponseMessage response = (SessionCreateBrowserResponseMessage)remotingConnection.send(id, request);
 
-      ClientBrowser browser = new ClientBrowserImpl(remotingConnection, this, response.getBrowserID());  
+      ClientBrowser browser = new ClientBrowserImpl(response.getBrowserID(), this, remotingConnection);  
 
       browsers.add(browser);
 
       return browser;
    }
 
-   public ClientProducer createProducer(String address) throws MessagingException
+   public ClientProducer createProducer(final String address) throws MessagingException
    {
       checkClosed();
       
@@ -424,7 +425,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       return connection;
    }
 
-   public void delivered(long deliverID, boolean expired)
+   public void delivered(final long deliverID, final boolean expired)
    {
       this.deliverID = deliverID;
       
@@ -436,7 +437,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       acknowledgeInternal(false);
    }
    
-   public void removeConsumer(ClientConsumerInternal consumer) throws MessagingException
+   public void removeConsumer(final ClientConsumerInternal consumer) throws MessagingException
    {
       consumers.remove(consumer.getID());
             
@@ -449,7 +450,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       remotingConnection.send(id, new SessionCancelMessage(-1, false));
    }
    
-   public void removeProducer(ClientProducer producer)
+   public void removeProducer(final ClientProducer producer)
    {
       producers.remove(producer);
       
@@ -459,7 +460,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
    }
    
-   public void removeBrowser(ClientBrowser browser)
+   public void removeBrowser(final ClientBrowser browser)
    {
       browsers.remove(browser);
    }
@@ -468,7 +469,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       
    // XAResource implementation --------------------------------------------------------------------
    
-   public void commit(Xid xid, boolean onePhase) throws XAException
+   public void commit(final Xid xid, final boolean onePhase) throws XAException
    {
       try
       { 
@@ -489,7 +490,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
    }
 
-   public void end(Xid xid, int flags) throws XAException
+   public void end(final Xid xid, final int flags) throws XAException
    {
       try
       {
@@ -530,7 +531,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
    }
 
-   public void forget(Xid xid) throws XAException
+   public void forget(final Xid xid) throws XAException
    {
       try
       {                              
@@ -567,7 +568,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
    }
 
-   public boolean isSameRM(XAResource xares) throws XAException
+   public boolean isSameRM(final XAResource xares) throws XAException
    {
       if (!(xares instanceof ClientSessionImpl))
       {
@@ -584,7 +585,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       return this.connection.getServerID() == other.getConnection().getServerID();
    }
 
-   public int prepare(Xid xid) throws XAException
+   public int prepare(final Xid xid) throws XAException
    {
       try
       {
@@ -609,7 +610,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
    }
 
-   public Xid[] recover(int flag) throws XAException
+   public Xid[] recover(final int flag) throws XAException
    {
       try
       {
@@ -630,7 +631,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
    }
 
-   public void rollback(Xid xid) throws XAException
+   public void rollback(final Xid xid) throws XAException
    {
       try
       {
@@ -651,7 +652,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
    }
 
-   public boolean setTransactionTimeout(int seconds) throws XAException
+   public boolean setTransactionTimeout(final int seconds) throws XAException
    {
       try
       {                              
@@ -667,7 +668,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
    }
 
-   public void start(Xid xid, int flags) throws XAException
+   public void start(final Xid xid, final int flags) throws XAException
    {
       try
       {
@@ -714,7 +715,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    // Public ---------------------------------------------------------------------------------------
   
-   public void setForceNotSameRM(boolean force)
+   public void setForceNotSameRM(final boolean force)
    {
       this.forceNotSameRM = force;
    }
@@ -725,7 +726,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    // Private --------------------------------------------------------------------------------------
 
-   private void acknowledgeInternal(boolean block) throws MessagingException
+   private void acknowledgeInternal(final boolean block) throws MessagingException
    {
       if (acked)
       {

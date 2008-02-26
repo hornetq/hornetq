@@ -48,32 +48,33 @@ public class TransactionImpl implements Transaction
 {
    private static final Logger log = Logger.getLogger(TransactionImpl.class);
    
-   private List<Message> messagesToAdd = new ArrayList<Message>();
+   private final List<Message> messagesToAdd = new ArrayList<Message>();
    
-   private List<MessageReference> acknowledgements = new ArrayList<MessageReference>();  
+   private final List<MessageReference> acknowledgements = new ArrayList<MessageReference>();  
    
-   private List<TransactionSynchronization> synchronizations = new ArrayList<TransactionSynchronization>();
+   private final List<TransactionSynchronization> synchronizations = new ArrayList<TransactionSynchronization>();
    
-   private Xid xid;
+   private final Xid xid;
    
-   private boolean containsPersistent;
+   private volatile boolean containsPersistent;
    
    private volatile boolean prepared;
    
    private volatile boolean suspended;
    
    public TransactionImpl()
-   {            
+   {       
+   	this.xid = null;
    }
    
-   public TransactionImpl(Xid xid)
+   public TransactionImpl(final Xid xid)
    {
       this.xid = xid;      
    }
    
    // Transaction implementation -----------------------------------------------------------
    
-   public void addMessage(Message message)
+   public void addMessage(final Message message)
    {
       messagesToAdd.add(message);
       
@@ -83,7 +84,7 @@ public class TransactionImpl implements Transaction
       }
    }
    
-   public void addAcknowledgement(MessageReference acknowledgement)
+   public void addAcknowledgement(final MessageReference acknowledgement)
    {
       acknowledgements.add(acknowledgement);
        
@@ -93,12 +94,12 @@ public class TransactionImpl implements Transaction
       }
    }
       
-   public void addSynchronization(TransactionSynchronization sync)
+   public void addSynchronization(final TransactionSynchronization sync)
    {
       synchronizations.add(sync);
    }
    
-   public void prepare(PersistenceManager persistenceManager) throws Exception
+   public void prepare(final PersistenceManager persistenceManager) throws Exception
    {
       if (xid == null)
       {
@@ -112,7 +113,7 @@ public class TransactionImpl implements Transaction
       prepared = true;
    }
    
-   public void commit(boolean onePhase, PersistenceManager persistenceManager) throws Exception
+   public void commit(final boolean onePhase, final PersistenceManager persistenceManager) throws Exception
    {
       callSynchronizations(SyncType.BEFORE_COMMIT);
       
@@ -152,7 +153,7 @@ public class TransactionImpl implements Transaction
       clear();      
    }
    
-   public void rollback(PersistenceManager persistenceManager) throws Exception
+   public void rollback(final PersistenceManager persistenceManager) throws Exception
    {
       callSynchronizations(SyncType.BEFORE_ROLLBACK);
         
@@ -200,7 +201,7 @@ public class TransactionImpl implements Transaction
    
    // Private -------------------------------------------------------------------
    
-   private void callSynchronizations(SyncType type) throws Exception
+   private void callSynchronizations(final SyncType type) throws Exception
    {
       for (TransactionSynchronization sync: synchronizations)
       {
@@ -234,7 +235,7 @@ public class TransactionImpl implements Transaction
       containsPersistent = false;
    }
    
-   private void cancelDeliveries(PersistenceManager persistenceManager) throws Exception
+   private void cancelDeliveries(final PersistenceManager persistenceManager) throws Exception
    {
       Map<Queue, LinkedList<MessageReference>> queueMap = new HashMap<Queue, LinkedList<MessageReference>>();
       

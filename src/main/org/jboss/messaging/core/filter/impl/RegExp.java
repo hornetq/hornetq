@@ -33,67 +33,87 @@ import java.util.regex.Pattern;
  * @author droy@boostmyscore.com
  * @author Scott.Stark@jboss.org
  * @author Loren Rosen
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  * $Id: RegExp.java 2681 2007-05-15 00:09:10Z timfox $
  */
 public class RegExp 
 {
-   protected Pattern re;
+   private final Pattern re;
          
-   public RegExp (String pattern, Character escapeChar)
+   public RegExp(final String pattern, final Character escapeChar)
       throws Exception 
    {
       String pat = adjustPattern(pattern, escapeChar);
+      
       re = Pattern.compile(pat);
    }
     
-   public boolean isMatch (Object target) 
+   public boolean isMatch(final Object target) 
    {
       String str = target != null ? target.toString() : "";
+      
       return re.matcher(str).matches();
    }
     
-   protected String adjustPattern (String pattern, Character escapeChar) 
+   protected String adjustPattern(final String pattern, final Character escapeChar) 
       throws Exception 
    {
       int patternLen = pattern.length();
+      
       StringBuffer REpattern = new StringBuffer(patternLen + 10);
+      
       boolean useEscape = (escapeChar != null);
+      
       char escape = Character.UNASSIGNED;
-      if (useEscape) {
+      
+      if (useEscape)
+      {
          escape = escapeChar.charValue();
       }
       
       REpattern.append ('^');
 
-      for ( int i = 0; i < patternLen; i++ ) {
+      for (int i = 0; i < patternLen; i++)
+      {
          boolean escaped = false;
+         
          char c = pattern.charAt( i );
 
-         if ( useEscape && escape == c ) {
+         if (useEscape && escape == c)
+         {
             i++;
-            if ( i < patternLen ) {
+            
+            if ( i < patternLen )
+            {
                escaped = true;
                c = pattern.charAt( i );
-            } else {
+            }
+            else
+            {
                throw new Exception( "LIKE ESCAPE: Bad use of escape character" );
             }
          }
 
          // Match characters, or escape ones special to the underlying
          // regex engine
-         switch ( c ) {
+         switch ( c )
+         {
          case '_':
-            if ( escaped ) {
+            if ( escaped )
+            {
                REpattern.append( c );
-            } else {
+            } else
+            {
                REpattern.append( '.' );
             }
             break;
          case '%':
-            if ( escaped ) {
+            if ( escaped )
+            {
                REpattern.append( c );
-            } else {
+            } else
+            {
                REpattern.append( ".*" );
             }
             break;

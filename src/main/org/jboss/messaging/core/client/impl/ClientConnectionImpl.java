@@ -58,15 +58,15 @@ public class ClientConnectionImpl implements ClientConnectionInternal
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private String id;
+   private final String id;
    
-   private int serverID;
+   private final int serverID;
 
-   private RemotingConnection remotingConnection;
+   private final RemotingConnection remotingConnection;
 
-   private boolean strictTck;
+   private final boolean strictTck;
    
-   private Map<String, ClientSession> children = new ConcurrentHashMap<String, ClientSession>();
+   private final Map<String, ClientSession> children = new ConcurrentHashMap<String, ClientSession>();
 
    private volatile boolean closed;
 
@@ -74,8 +74,8 @@ public class ClientConnectionImpl implements ClientConnectionInternal
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConnectionImpl(String id, int serverID, boolean strictTck,
-                               RemotingConnection connection)
+   public ClientConnectionImpl(final String id, final int serverID, final boolean strictTck,
+                               final RemotingConnection connection)
    {
       this.id = id;
       
@@ -88,8 +88,8 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    
    // ClientConnection implementation --------------------------------------------------------------
 
-   public ClientSession createClientSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks,
-                                            int ackBatchSize, boolean cacheProducers) throws MessagingException
+   public ClientSession createClientSession(final boolean xa, final boolean autoCommitSends, final boolean autoCommitAcks,
+                                            final int ackBatchSize, final boolean cacheProducers) throws MessagingException
    {
       checkClosed();
 
@@ -118,7 +118,7 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       remotingConnection.send(id, new ConnectionStopMessage());
    }
 
-   public void setFailureListener(FailureListener listener) throws MessagingException
+   public void setFailureListener(final FailureListener listener) throws MessagingException
    {
       checkClosed();
       

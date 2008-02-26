@@ -31,6 +31,7 @@ import org.jgroups.JChannelFactory;
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 3465 $</tt>
  * $Id: MultiplexerChannelFactory.java 3465 2007-12-10 17:32:22Z ataylor $
  */
@@ -41,19 +42,19 @@ public class MultiplexerChannelFactory implements ChannelFactory
 
 
    // Attributes -----------------------------------------------------------------------------------
-   JChannelFactory jChannelFactory;
-   String dataStack;
-   String controlStack;
-   String uniqueID;
+   private final JChannelFactory jChannelFactory;
+   private final String dataStack;
+   private final String controlStack;
+   private final String uniqueID;
 
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public MultiplexerChannelFactory(JChannelFactory jChannelFactory,
-                                    String uniqueID,
-                                    String controlStack,
-                                    String dataStack)
+   public MultiplexerChannelFactory(final JChannelFactory jChannelFactory,
+                                    final String uniqueID,
+                                    final String controlStack,
+                                    final String dataStack)
    {
       this.jChannelFactory = jChannelFactory;
       this.uniqueID = uniqueID;
@@ -69,29 +70,14 @@ public class MultiplexerChannelFactory implements ChannelFactory
       return dataStack;
    }
 
-   public void setDataStack(String dataStack)
-   {
-      this.dataStack = dataStack;
-   }
-
    public String getControlStack()
    {
       return controlStack;
    }
 
-   public void setControlStack(String controlStack)
-   {
-      this.controlStack = controlStack;
-   }
-
    public String getUniqueID()
    {
       return uniqueID;
-   }
-
-   public void setUniqueID(String uniqueID)
-   {
-      this.uniqueID = uniqueID;
    }
 
    public Channel createControlChannel() throws Exception

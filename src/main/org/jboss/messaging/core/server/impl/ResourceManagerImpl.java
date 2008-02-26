@@ -42,28 +42,28 @@ public class ResourceManagerImpl implements ResourceManager
 {
    private ConcurrentMap<Xid, Transaction> transactions = new ConcurrentHashMap<Xid, Transaction>();
    
-   private int defaultTimeoutSeconds;
+   private final int defaultTimeoutSeconds;
    
-   private int timeoutSeconds;
+   private volatile int timeoutSeconds;
    
-   public ResourceManagerImpl(int defaultTimeoutSeconds)
+   public ResourceManagerImpl(final int defaultTimeoutSeconds)
    {      
       this.defaultTimeoutSeconds = defaultTimeoutSeconds;
    }
    
    // ResourceManager implementation ---------------------------------------------
    
-   public Transaction getTransaction(Xid xid)
+   public Transaction getTransaction(final Xid xid)
    {
       return transactions.get(xid);
    }
 
-   public boolean putTransaction(Xid xid, Transaction tx)
+   public boolean putTransaction(final Xid xid, final Transaction tx)
    {
       return transactions.putIfAbsent(xid, tx) == null;
    }
 
-   public boolean removeTransaction(Xid xid)
+   public boolean removeTransaction(final Xid xid)
    {
       return transactions.remove(xid) != null;
    }
@@ -73,12 +73,12 @@ public class ResourceManagerImpl implements ResourceManager
       return this.timeoutSeconds;
    }
    
-   public boolean setTimeoutSeconds(int timeoutSeconds)
+   public boolean setTimeoutSeconds(final int timeoutSeconds)
    {
       if (timeoutSeconds == 0)
       {
          //reset to default
-         timeoutSeconds = defaultTimeoutSeconds;
+         this.timeoutSeconds = defaultTimeoutSeconds;
       }
       else
       {

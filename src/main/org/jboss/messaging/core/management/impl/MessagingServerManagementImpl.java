@@ -72,6 +72,7 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
    private HashMap<String, ScheduledFuture> currentRunningCounters = new HashMap<String, ScheduledFuture>();
 
    private ScheduledExecutorService scheduler;
+   
    private int maxMessageCounters = 20;
 
    public void setMessagingServer(MessagingServer messagingServer)

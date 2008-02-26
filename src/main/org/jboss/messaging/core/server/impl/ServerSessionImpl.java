@@ -1001,7 +1001,7 @@ public class ServerSessionImpl implements ServerSession
       return new SessionCreateBrowserResponseMessage(browser.getID());
    }
    
-   public SessionCreateProducerResponseMessage createProducer(String address) throws Exception
+   public SessionCreateProducerResponseMessage createProducer(final String address) throws Exception
    {
    	ServerProducerImpl producer = new ServerProducerImpl(this, address);
    	

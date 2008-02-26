@@ -84,7 +84,7 @@ public class ServerProducerImpl implements ServerProducer
 		return 0;
 	}
 
-	public void sendCredits(int credits)
+	public void sendCredits(final int credits)
 	{
 		// TODO Auto-generated method stub
 		

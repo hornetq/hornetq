@@ -96,7 +96,7 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
    /**
     * Are we in debug mode? Used in testing
     */
-   private boolean debug;
+   private final boolean debug;
 
    /**
     * Used for debug only to ensure the XA operations are called in the right order
@@ -106,9 +106,10 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
    
    public RealBDBJEEnvironment()
    {      
+   	this.debug = false;
    }
    
-   public RealBDBJEEnvironment(boolean debug)
+   public RealBDBJEEnvironment(final boolean debug)
    {
       this.debug = debug;
 
@@ -204,7 +205,7 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
       return new RealBDBJETransaction(environment.beginTransaction(null, null));
    }
 
-   public BDBJEDatabase getDatabase(String databaseName) throws Exception
+   public BDBJEDatabase getDatabase(final String databaseName) throws Exception
    {
       DatabaseConfig dbConfig = new DatabaseConfig();
 
@@ -249,7 +250,7 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
       return this.transacted;
    }
 
-   public void setEnvironmentPath(String environmentPath)
+   public void setEnvironmentPath(final String environmentPath)
    {
       if (started)
       {
@@ -258,7 +259,7 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
       this.environmentPath = environmentPath;
    }
    
-   public void setCreateEnvironment(boolean createEnvironment)
+   public void setCreateEnvironment(final boolean createEnvironment)
    {
       if (started)
       {
@@ -267,7 +268,7 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
       this.createEnvironment = createEnvironment;
    }
 
-   public void setMemoryCacheSize(long size)
+   public void setMemoryCacheSize(final long size)
    {
       if (started)
       {
@@ -276,7 +277,7 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
       this.memoryCacheSize = size;
    }
 
-   public void setSyncOS(boolean sync)
+   public void setSyncOS(final boolean sync)
    {
       if (started)
       {
@@ -285,7 +286,7 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
       this.syncOS = sync;
    }
 
-   public void setSyncVM(boolean sync)
+   public void setSyncVM(final boolean sync)
    {
       if (started)
       {
@@ -294,7 +295,7 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
       this.syncVM = sync;
    }
 
-   public void setTransacted(boolean transacted)
+   public void setTransacted(final boolean transacted)
    {
       if (started)
       {
@@ -312,7 +313,7 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
       return list;
    }
 
-   public void startWork(Xid xid) throws Exception
+   public void startWork(final Xid xid) throws Exception
    {
       if (debug)
       {
@@ -322,7 +323,7 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
       environment.start(xid, XAResource.TMNOFLAGS);
    }
 
-   public void endWork(Xid xid, boolean failed) throws Exception
+   public void endWork(final Xid xid, final boolean failed) throws Exception
    {
       if (debug)
       {
@@ -332,7 +333,7 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
       environment.end(xid, failed ? XAResource.TMFAIL : XAResource.TMSUCCESS);
    }
    
-   public void prepare(Xid xid) throws Exception
+   public void prepare(final Xid xid) throws Exception
    {
       if (debug)
       {
@@ -342,7 +343,7 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
       environment.prepare(xid);
    }
 
-   public void commit(Xid xid) throws Exception
+   public void commit(final Xid xid) throws Exception
    {
       if (debug)
       {
@@ -352,7 +353,7 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
       environment.commit(xid, false);       
    }   
 
-   public void rollback(Xid xid) throws Exception
+   public void rollback(final Xid xid) throws Exception
    {
       if (debug)
       {
@@ -368,7 +369,7 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
     * Used for debug only
     */
    
-   private void checkStartWork(Xid xid)
+   private void checkStartWork(final Xid xid)
    {
       if (threadTXStatuses.get(Thread.currentThread()) != null)
       {
@@ -383,7 +384,7 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
       threadTXStatuses.put(Thread.currentThread(), new ThreadTXStatus(xid));
    }
    
-   private void checkEndWork(Xid xid)
+   private void checkEndWork(final Xid xid)
    {
       ThreadTXStatus status = threadTXStatuses.get(Thread.currentThread());
       
@@ -402,7 +403,7 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
       transactions.put(xid, status);
    }
    
-   private void checkPrepare(Xid xid)
+   private void checkPrepare(final Xid xid)
    {
       ThreadTXStatus status = this.transactions.get(xid);
       
@@ -419,7 +420,7 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
       status.prepared = true;
    }
       
-   private void checkCommitRollback(Xid xid)
+   private void checkCommitRollback(final Xid xid)
    {
       ThreadTXStatus status = this.transactions.get(xid);
       
@@ -453,9 +454,9 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
          this.implicitXid = xid;      
       }
 
-      Xid implicitXid;
+      final Xid implicitXid;
 
-      boolean prepared;
+      volatile boolean prepared;
    }
 
 }

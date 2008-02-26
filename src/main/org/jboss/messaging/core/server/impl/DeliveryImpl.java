@@ -39,16 +39,16 @@ public class DeliveryImpl implements Delivery
 {
    private static final Logger log = Logger.getLogger(DeliveryImpl.class);
    
-   private MessageReference reference;
+   private final MessageReference reference;
    
-   private String consumerID;
+   private final String consumerID;
    
-   private long deliveryID;
+   private final long deliveryID;
    
-   private PacketSender sender;
+   private final PacketSender sender;
 
-   public DeliveryImpl(MessageReference reference, String consumerID,
-                   long deliveryID, PacketSender sender)
+   public DeliveryImpl(final MessageReference reference, final String consumerID,
+                       final long deliveryID, final PacketSender sender)
    {      
       this.reference = reference;
       this.consumerID = consumerID;

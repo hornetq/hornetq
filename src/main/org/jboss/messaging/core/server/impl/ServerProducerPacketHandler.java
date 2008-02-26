@@ -22,11 +22,9 @@
 package org.jboss.messaging.core.server.impl;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CLOSE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONS_FLOWTOKEN;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PROD_SEND;
 
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
@@ -34,7 +32,13 @@ import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
 import org.jboss.messaging.core.server.MessagingException;
 import org.jboss.messaging.core.server.ServerProducer;
 
-
+/**
+ * 
+ * A ServerProducerPacketHandler
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ *
+ */
 public class ServerProducerPacketHandler extends ServerPacketHandlerSupport
 {
 	private final ServerProducer producer;

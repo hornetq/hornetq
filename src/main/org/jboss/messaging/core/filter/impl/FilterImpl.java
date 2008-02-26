@@ -61,15 +61,15 @@ public class FilterImpl implements Filter
 {
   private static final Logger log = Logger.getLogger(FilterImpl.class);
   
-  private String filterString;
+  private final String filterString;
 
-  private Map<String, Identifier> identifiers = new HashMap<String, Identifier>();
+  private final Map<String, Identifier> identifiers = new HashMap<String, Identifier>();
   
-  private Operator operator;
+  private final Operator operator;
   
-  private FilterParser parser = new FilterParser();
+  private final FilterParser parser = new FilterParser();
   
-  public FilterImpl(String filterString) throws MessagingException
+  public FilterImpl(final String filterString) throws MessagingException
   {
      this.filterString = filterString;
 
@@ -90,7 +90,7 @@ public class FilterImpl implements Filter
      return filterString;
   }
   
-  public boolean match(Message message)
+  public boolean match(final Message message)
   {
      try
      {                 
@@ -100,23 +100,23 @@ public class FilterImpl implements Filter
         { 
            Object val = null;
            
-           if (id.name.startsWith("JBM"))
+           if (id.getName().startsWith("JBM"))
            {           
               //Look it up as header fields
               
-              val = getHeaderFieldValue(message, id.name);
+              val = getHeaderFieldValue(message, id.getName());
            }
                      
            if (val == null)
            {
               //First look it up in the headers
               
-              val = message.getHeader(id.name);                            
+              val = message.getHeader(id.getName());                            
            }
            
            if (val != null)
            {
-              id.value = val;
+              id.setValue(val);
            }
         }
         
@@ -136,7 +136,7 @@ public class FilterImpl implements Filter
   
   // Private --------------------------------------------------------------------------
  
-  private Object getHeaderFieldValue(Message msg, String fieldName)
+  private Object getHeaderFieldValue(final Message msg, final String fieldName)
   {
      if ("JBMMessageID".equals(fieldName))
      {

@@ -73,15 +73,15 @@ public class SecurityStoreImpl implements SecurityStore
    
    private RealmMapping realmMapping;
    
-   private Set<String> readCache = new ConcurrentHashSet<String>();
+   private final Set<String> readCache = new ConcurrentHashSet<String>();
 
-   private Set<String> writeCache = new ConcurrentHashSet<String>();
+   private final Set<String> writeCache = new ConcurrentHashSet<String>();
 
-   private Set<String> createCache = new ConcurrentHashSet<String>();
+   private final Set<String> createCache = new ConcurrentHashSet<String>();
 
-   private long invalidationInterval;
+   private final long invalidationInterval;
 
-   private long lastCheck;
+   private volatile long lastCheck;
 
    // Constructors --------------------------------------------------
    
