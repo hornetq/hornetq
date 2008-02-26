@@ -29,6 +29,8 @@ import java.io.Serializable;
  */
 public class Role implements Serializable
 {
+	private static final long serialVersionUID = 3560097227776448872L;
+
 	public static final String WRITE_NAME="write";
 	
 	public static final String READ_NAME="read";

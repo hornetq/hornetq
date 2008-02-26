@@ -50,13 +50,6 @@ public class XidImpl implements Xid, Serializable
    private boolean hashCalculated;
    
    /**
-    * For serialization only
-    */
-   public XidImpl()
-   {      
-   }
-   
-   /**
     * Standard constructor
     * @param branchQualifier
     * @param formatId

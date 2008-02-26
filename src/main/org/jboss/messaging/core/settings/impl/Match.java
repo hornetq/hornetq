@@ -27,8 +27,7 @@ import java.util.regex.Pattern;
     a Match is the holder for the match string and the object to hold against it.
  */
 public class Match<T>
-{
-
+{	
    public static String WORD_WILDCARD = "^";
    private static String WORD_WILDCARD_REPLACEMENT = "[^.]+";
    public static String WILDCARD = "*";

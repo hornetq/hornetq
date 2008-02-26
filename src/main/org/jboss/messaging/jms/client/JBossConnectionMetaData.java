@@ -45,14 +45,14 @@ public class JBossConnectionMetaData implements ConnectionMetaData
 
    // Attributes ----------------------------------------------------
 
-   protected Version serverVersion;
+   private final Version serverVersion;
 
    // Constructors --------------------------------------------------
 
    /**
     * Create a new JBossConnectionMetaData object.
     */
-   public JBossConnectionMetaData(Version serverVersion)
+   public JBossConnectionMetaData(final Version serverVersion)
    {
       this.serverVersion = serverVersion;
    }

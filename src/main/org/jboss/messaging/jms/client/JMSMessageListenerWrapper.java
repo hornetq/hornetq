@@ -40,13 +40,13 @@ public class JMSMessageListenerWrapper implements MessageHandler
 {
    private static final Logger log = Logger.getLogger(JMSMessageListenerWrapper.class);
       
-   private JBossSession session;
+   private final JBossSession session;
    
-   private MessageListener listener;
+   private final MessageListener listener;
    
-   private boolean transactedOrClientAck;
+   private final boolean transactedOrClientAck;
    
-   public JMSMessageListenerWrapper(JBossSession session, MessageListener listener, int ackMode)
+   public JMSMessageListenerWrapper(final JBossSession session, final MessageListener listener, final int ackMode)
    {
       this.session = session;
       
@@ -59,7 +59,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
     * In this method we apply the JMS acknowledgement and redelivery semantics
     * as per JMS spec
     */
-   public void onMessage(Message message)
+   public void onMessage(final Message message)
    {
       JBossMessage jbm = JBossMessage.createMessage(message, session.getCoreSession());
       
@@ -127,8 +127,6 @@ public class JMSMessageListenerWrapper implements MessageHandler
          }
       }
       
-      session.setRecoverCalled(false);
-      
+      session.setRecoverCalled(false);     
    }
-
 }

@@ -31,22 +31,20 @@ import java.io.Serializable;
  */
 public class ConnectionInfo implements Serializable
 {
-   private static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("HH:mm:ss, EEE, MMM d, yyyy");
+	private static final long serialVersionUID = -2525719954021417273L;
+	
+	private static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("HH:mm:ss, EEE, MMM d, yyyy");
 
    public enum status{ STARTED, STOPPED }
 
-   private String id;
-   private String user;
-   private String address;
-   private boolean started;
-   private long created;
+   private final String id;
+   private final String user;
+   private final String address;
+   private final boolean started;
+   private final long created;
 
-   public ConnectionInfo()
-   {
-      
-   }
-
-   public ConnectionInfo(String id, String user, String address, boolean started, long created)
+   public ConnectionInfo(final String id, final String user, final String address,
+   		                final boolean started, final long created)
    {
       this.id = id;
       this.user = user;

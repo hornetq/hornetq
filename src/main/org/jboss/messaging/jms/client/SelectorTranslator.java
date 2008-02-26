@@ -44,7 +44,7 @@ import java.util.List;
  */
 public class SelectorTranslator
 {
-   public static String convertToJBMFilterString(String selectorString)
+   public static String convertToJBMFilterString(final String selectorString)
    {
       if (selectorString == null)
       {
@@ -71,7 +71,7 @@ public class SelectorTranslator
       
    }
    
-   private static String parse(String input, String match, String replace)
+   private static String parse(final String input, final String match, final String replace)
    {
       final char quote = '\'';
       

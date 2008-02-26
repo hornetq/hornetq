@@ -46,9 +46,6 @@ import org.jboss.messaging.util.StreamUtils;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 2740 $</tt>
  * 
- * Note this class is only serializable so messages can be returned from JMX operations
- * e.g. listAllMessages.
- * 
  * For normal message transportation serialization is not used
  * 
  * $Id: MessageSupport.java 2740 2007-05-30 11:36:28Z timfox $

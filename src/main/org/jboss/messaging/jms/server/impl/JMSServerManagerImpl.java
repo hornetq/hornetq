@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.jms.Message;
@@ -51,7 +52,6 @@ import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.MessageStatistics;
 import org.jboss.messaging.jms.server.SessionInfo;
 import org.jboss.messaging.jms.server.SubscriptionInfo;
-import org.jboss.messaging.jms.server.JMSServerManager.ListType;
 import org.jboss.messaging.util.JNDIUtil;
 import org.jboss.messaging.util.Pair;
 
@@ -63,22 +63,22 @@ import org.jboss.messaging.util.Pair;
  */
 public class JMSServerManagerImpl implements JMSServerManager
 {
-   Logger log = Logger.getLogger(JMSServerManagerImpl.class);
+   private static final Logger log = Logger.getLogger(JMSServerManagerImpl.class);
 
    /**
     * the initial context to bind to
     */
-   InitialContext initialContext;
+   private InitialContext initialContext;
 
-   HashMap<String, List<String>> destinations = new HashMap<String, List<String>>();
-   HashMap<String, JBossConnectionFactory> connectionFactories = new HashMap<String, JBossConnectionFactory>();
+   private final Map<String, List<String>> destinations = new HashMap<String, List<String>>();
+   
+   private final Map<String, JBossConnectionFactory> connectionFactories = new HashMap<String, JBossConnectionFactory>();
 
-   HashMap<String, List<String>> connectionFactoryBindings = new HashMap<String, List<String>>();
+   private final Map<String, List<String>> connectionFactoryBindings = new HashMap<String, List<String>>();
 
+   private MessagingServerManagement messagingServerManagement;
 
-   MessagingServerManagement messagingServerManagement;
-
-   public void setMessagingServerManagement(MessagingServerManagement messagingServerManagement)
+   public void setMessagingServerManagement(final MessagingServerManagement messagingServerManagement)
    {
       this.messagingServerManagement = messagingServerManagement;
    }
@@ -99,8 +99,7 @@ public class JMSServerManagerImpl implements JMSServerManager
    }
 
 
-   private boolean bindToJndi(String jndiName, Object objectToBind)
-           throws NamingException
+   private boolean bindToJndi(final String jndiName, final Object objectToBind) throws NamingException
    {
       String parentContext;
       String jndiNameInContext;

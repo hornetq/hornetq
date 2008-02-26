@@ -35,8 +35,7 @@ public class JMSServerDeployer extends Deployer
 {
    Logger log = Logger.getLogger(JMSServerManagerImpl.class);
 
-   JMSServerManager jmsServerManager;
-
+   private JMSServerManager jmsServerManager;
 
    private static final String CLIENTID_ELEMENT = "client-id";
    private static final String DUPS_OK_BATCH_SIZE_ELEMENT = "dups-ok-batch-size";
@@ -95,7 +94,7 @@ public class JMSServerDeployer extends Deployer
     * @param node the element to deploy
     * @throws Exception .
     */
-   public void deploy(Node node) throws Exception
+   public void deploy(final Node node) throws Exception
    {
       createAndBindObject(node);
    }
@@ -106,7 +105,7 @@ public class JMSServerDeployer extends Deployer
     * @param node the config
     * @throws Exception .
     */
-   private void createAndBindObject(Node node) throws Exception
+   private void createAndBindObject(final Node node) throws Exception
    {
       if (node.getNodeName().equals(CONNECTION_FACTORY_NODE_NAME))
       {
@@ -200,7 +199,7 @@ public class JMSServerDeployer extends Deployer
     * @param node the element to undeploy
     * @throws Exception .
     */
-   public void undeploy(Node node) throws Exception
+   public void undeploy(final Node node) throws Exception
    {
       if (node.getNodeName().equals(CONNECTION_FACTORY_NODE_NAME))
       {

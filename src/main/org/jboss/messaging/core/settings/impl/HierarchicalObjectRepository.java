@@ -37,35 +37,37 @@ import org.jboss.messaging.core.settings.Mergeable;
  * allows objects to be mapped against a regex pattern and held in order in a list
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
 public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T>
 {
    /**
     * The default Match to fall back to
     */
-   T defaultmatch;
+   private T defaultmatch;
 
    /**
     * all the matches
     */
-   HashMap<String, Match<T>> matches = new HashMap<String, Match<T>>();
+   private final Map<String, Match<T>> matches = new HashMap<String, Match<T>>();
 
    /**
     * a regex comparator
     */
-   MatchComparator<String> matchComparator = new MatchComparator<String>();
+   private final MatchComparator<String> matchComparator = new MatchComparator<String>();
 
    /**
     * a cache
     */
-   Map<String, T> cache = new ConcurrentHashMap<String,T>();
+   private final Map<String, T> cache = new ConcurrentHashMap<String,T>();
+   
    /**
     * Add a new match to the repository
     *
     * @param match The regex to use to match against
     * @param value the value to hold agains the match
     */
-   public void addMatch(String match, T value)
+   public void addMatch(final String match, final T value)
    {
       cache.clear();
       Match.verify(match);
@@ -81,7 +83,7 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     * @param match the match to look for
     * @return the value
     */
-   public T getMatch(String match)
+   public T getMatch(final String match)
    {
       if(cache.get(match) != null)
       {
@@ -102,7 +104,7 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     * @param orderedMatches
     * @return
     */
-   private T merge(List<Match<T>> orderedMatches)
+   private T merge(final List<Match<T>> orderedMatches)
    {
       T actualMatch = null;
       for (Match<T> match : orderedMatches)
@@ -125,7 +127,7 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     * @param possibleMatches
     * @return
     */
-   private List<Match<T>> sort(HashMap<String, Match<T>> possibleMatches)
+   private List<Match<T>> sort(final Map<String, Match<T>> possibleMatches)
    {
       List<String> keys = new ArrayList<String>(possibleMatches.keySet());
       Collections.sort(keys, matchComparator);
@@ -142,7 +144,7 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     *
     * @param match the match to remove
     */
-   public void removeMatch(String match)
+   public void removeMatch(final String match)
    {
       matches.remove(match);
    }
@@ -152,7 +154,7 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     *
     * @param defaultValue the value
     */
-   public void setDefault(T defaultValue)
+   public void setDefault(final T defaultValue)
    {
       cache.clear();
       defaultmatch = defaultValue;
@@ -163,9 +165,10 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     * @param match
     * @return
     */
-   private HashMap<String, Match<T>> getPossibleMatches(String match)
+   private HashMap<String, Match<T>> getPossibleMatches(final String match)
    {
       HashMap<String, Match<T>> possibleMatches = new HashMap<String, Match<T>>();
+      
       for (String key : matches.keySet())
       {
          if (matches.get(key).getPattern().matcher(match).matches())
@@ -177,12 +180,11 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
    }
 
    /**
-    * compares to matches to seew hich one is more specific
+    * compares to matches to see which one is more specific
     */
-   class MatchComparator<T extends String> implements Comparator<T>
+   private static class MatchComparator<T extends String> implements Comparator<T>
    {
-
-      public int compare(String o1, String o2)
+      public int compare(final String o1, final String o2)
       {
          if (o1.contains(Match.WILDCARD) && !o2.contains(Match.WILDCARD))
          {

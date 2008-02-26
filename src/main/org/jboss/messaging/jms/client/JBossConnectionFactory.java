@@ -67,15 +67,16 @@ public class JBossConnectionFactory implements
    
    // Attributes -----------------------------------------------------------------------------------
    
-   private ClientConnectionFactory connectionFactory;
+   private final ClientConnectionFactory connectionFactory;
    
-   private String clientID;
+   private final String clientID;
    
-   private int dupsOKBatchSize;
+   private final int dupsOKBatchSize;
 
    // Constructors ---------------------------------------------------------------------------------
    
-   public JBossConnectionFactory(ClientConnectionFactory connectionFactory, String clientID, int dupsOKBatchSize)
+   public JBossConnectionFactory(final ClientConnectionFactory connectionFactory, final String clientID,
+   		                        final int dupsOKBatchSize)
    {
       this.connectionFactory = connectionFactory;     
       
@@ -91,7 +92,7 @@ public class JBossConnectionFactory implements
       return createConnection(null, null);
    }
    
-   public Connection createConnection(String username, String password) throws JMSException
+   public Connection createConnection(final String username, final String password) throws JMSException
    {
       return createConnectionInternal(username, password, false,
                                       JBossConnection.TYPE_GENERIC_CONNECTION);
@@ -104,7 +105,7 @@ public class JBossConnectionFactory implements
       return createQueueConnection(null, null);
    }
    
-   public QueueConnection createQueueConnection(String username, String password)
+   public QueueConnection createQueueConnection(final String username, final String password)
       throws JMSException
    {
       return createConnectionInternal(username, password, false,
@@ -118,7 +119,7 @@ public class JBossConnectionFactory implements
       return createTopicConnection(null, null);
    }
    
-   public TopicConnection createTopicConnection(String username, String password)
+   public TopicConnection createTopicConnection(final String username, final String password)
       throws JMSException
    {
       return createConnectionInternal(username, password, false,
@@ -132,7 +133,7 @@ public class JBossConnectionFactory implements
       return createXAConnection(null, null);
    }
    
-   public XAConnection createXAConnection(String username, String password) throws JMSException
+   public XAConnection createXAConnection(final String username, final String password) throws JMSException
    {
       return createConnectionInternal(username, password, true,
                                       JBossConnection.TYPE_GENERIC_CONNECTION);
@@ -145,7 +146,7 @@ public class JBossConnectionFactory implements
       return createXAQueueConnection(null, null);
    }
    
-   public XAQueueConnection createXAQueueConnection(String username, String password)
+   public XAQueueConnection createXAQueueConnection(final String username, final String password)
       throws JMSException
    {
       return createConnectionInternal(username, password, true,
@@ -159,7 +160,7 @@ public class JBossConnectionFactory implements
       return createXATopicConnection(null, null);
    }
    
-   public XATopicConnection createXATopicConnection(String username, String password)
+   public XATopicConnection createXATopicConnection(final String username, final String password)
       throws JMSException
    {
       return createConnectionInternal(username, password, true,
@@ -192,8 +193,8 @@ public class JBossConnectionFactory implements
    
    // Protected ------------------------------------------------------------------------------------
    
-   protected JBossConnection createConnectionInternal(String username, String password,
-                                                      boolean isXA, int type)
+   protected JBossConnection createConnectionInternal(final String username, final String password,
+                                                      final boolean isXA, final int type)
       throws JMSException
    {
       try

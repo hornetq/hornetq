@@ -1,15 +1,10 @@
 package org.jboss.messaging.jms.server;
 
-import org.jboss.messaging.core.server.impl.ServerConnectionImpl;
-import org.jboss.messaging.core.server.impl.ServerSessionImpl;
-import org.jboss.messaging.jms.server.MessageStatistics;
+import java.io.Serializable;
+import java.util.List;
+import java.util.Set;
 
 import javax.jms.Message;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Set;
-import java.io.Serializable;
 
 /**
  * The JMS Management interface.

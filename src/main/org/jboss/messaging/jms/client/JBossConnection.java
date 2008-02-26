@@ -62,11 +62,9 @@ public class JBossConnection implements
     Connection, QueueConnection, TopicConnection,
     XAConnection, XAQueueConnection, XATopicConnection
 {
-
    // Constants ------------------------------------------------------------------------------------
    
    private static final Logger log = Logger.getLogger(JBossConnection.class);
-
 
    static final int TYPE_GENERIC_CONNECTION = 0;
    
@@ -78,26 +76,26 @@ public class JBossConnection implements
 
    // Attributes -----------------------------------------------------------------------------------
 
-   protected ClientConnection connection;
+   private final ClientConnection connection;
    
-   private int connectionType;
+   private final int connectionType;
+   
+   private final Version version;
+   
+   private final int dupsOKBatchSize;
+   
+   private volatile ExceptionListener exceptionListener;
+   
+   private volatile boolean justCreated = true;      
+   
+   private volatile ConnectionMetaData metaData;
    
    private String clientID;
-   
-   private boolean justCreated = true;      
-   
-   private ConnectionMetaData metaData;
-   
-   private Version version;
-   
-   private ExceptionListener exceptionListener;
-   
-   private int dupsOKBatchSize;
-     
+              
    // Constructors ---------------------------------------------------------------------------------
 
-   public JBossConnection(ClientConnection connection, int connectionType, Version version,
-                          String clientID, int dupsOKBatchSize)
+   public JBossConnection(final ClientConnection connection, final int connectionType, final Version version,
+                          final String clientID, final int dupsOKBatchSize)
    {
       this.connection = connection;
       
@@ -112,7 +110,7 @@ public class JBossConnection implements
 
    // Connection implementation --------------------------------------------------------------------
 
-   public Session createSession(boolean transacted, int acknowledgeMode) throws JMSException
+   public Session createSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       return createSessionInternal(transacted, acknowledgeMode, false, TYPE_GENERIC_CONNECTION, false);
    }
@@ -126,7 +124,7 @@ public class JBossConnection implements
       return clientID;
    }
 
-   public void setClientID(String clientID) throws JMSException
+   public void setClientID(final String clientID) throws JMSException
    {
       checkClosed();
       
@@ -166,7 +164,7 @@ public class JBossConnection implements
       return exceptionListener;
    }
 
-   public void setExceptionListener(ExceptionListener listener) throws JMSException
+   public void setExceptionListener(final ExceptionListener listener) throws JMSException
    {
       try
       {
@@ -230,20 +228,20 @@ public class JBossConnection implements
       }
    }
 
-   public ConnectionConsumer createConnectionConsumer(Destination destination,
-                                                      String messageSelector,
-                                                      ServerSessionPool sessionPool,
-                                                      int maxMessages) throws JMSException
+   public ConnectionConsumer createConnectionConsumer(final Destination destination,
+                                                      final String messageSelector,
+                                                      final ServerSessionPool sessionPool,
+                                                      final int maxMessages) throws JMSException
    {
       //TODO
       return null;
    }
 
-   public ConnectionConsumer createDurableConnectionConsumer(Topic topic,
-                                                             String subscriptionName,
-                                                             String messageSelector,
-                                                             ServerSessionPool sessionPool,
-                                                             int maxMessages) throws JMSException
+   public ConnectionConsumer createDurableConnectionConsumer(final Topic topic,
+                                                             final String subscriptionName,
+                                                             final String messageSelector,
+                                                             final ServerSessionPool sessionPool,
+                                                             final int maxMessages) throws JMSException
    {
       // As spec. section 4.11
       if (connectionType == TYPE_QUEUE_CONNECTION)
@@ -258,16 +256,16 @@ public class JBossConnection implements
 
    // QueueConnection implementation ---------------------------------------------------------------
 
-   public QueueSession createQueueSession(boolean transacted,
-                                          int acknowledgeMode) throws JMSException
+   public QueueSession createQueueSession(final boolean transacted,
+                                          final int acknowledgeMode) throws JMSException
    {
        return createSessionInternal(transacted, acknowledgeMode, false,
                                     JBossSession.TYPE_QUEUE_SESSION, false);
    }
 
-   public ConnectionConsumer createConnectionConsumer(Queue queue, String messageSelector,
-                                                      ServerSessionPool sessionPool,
-                                                      int maxMessages) throws JMSException
+   public ConnectionConsumer createConnectionConsumer(final Queue queue, final String messageSelector,
+                                                      final ServerSessionPool sessionPool,
+                                                      final int maxMessages) throws JMSException
    {
       //TODO
       
@@ -276,16 +274,16 @@ public class JBossConnection implements
 
    // TopicConnection implementation ---------------------------------------------------------------
 
-   public TopicSession createTopicSession(boolean transacted,
-                                          int acknowledgeMode) throws JMSException
+   public TopicSession createTopicSession(final boolean transacted,
+                                          final int acknowledgeMode) throws JMSException
    {
       return createSessionInternal(transacted, acknowledgeMode, false,
                                    JBossSession.TYPE_TOPIC_SESSION, false);
    }
    
-   public ConnectionConsumer createConnectionConsumer(Topic topic, String messageSelector,
-                                                      ServerSessionPool sessionPool,
-                                                      int maxMessages) throws JMSException
+   public ConnectionConsumer createConnectionConsumer(final Topic topic, final String messageSelector,
+                                                      final ServerSessionPool sessionPool,
+                                                      final int maxMessages) throws JMSException
    {
       //TODO
       
@@ -323,31 +321,32 @@ public class JBossConnection implements
 
    // We provide some overloaded createSession methods to allow the value of cacheProducers to be specified
    
-   public Session createSession(boolean transacted, int acknowledgeMode, boolean cacheProducers) throws JMSException
+   public Session createSession(final boolean transacted, final int acknowledgeMode,
+   		                       final boolean cacheProducers) throws JMSException
    {
       return createSessionInternal(transacted, acknowledgeMode, false, TYPE_GENERIC_CONNECTION, cacheProducers);
    }
    
-   public TopicSession createTopicSession(boolean transacted,
-         int acknowledgeMode, boolean cacheProducers) throws JMSException
+   public TopicSession createTopicSession(final boolean transacted,
+         final int acknowledgeMode, final boolean cacheProducers) throws JMSException
    {
       return createSessionInternal(transacted, acknowledgeMode, false,
                                    JBossSession.TYPE_TOPIC_SESSION, cacheProducers);
    }
 
-   public XASession createXASession(boolean cacheProducers) throws JMSException
+   public XASession createXASession(final boolean cacheProducers) throws JMSException
    {
        return createSessionInternal(true, Session.SESSION_TRANSACTED, true,
                                     JBossSession.TYPE_GENERIC_SESSION, cacheProducers);
    }
    
-   public XAQueueSession createXAQueueSession(boolean cacheProducers) throws JMSException
+   public XAQueueSession createXAQueueSession(final boolean cacheProducers) throws JMSException
    {
       return createSessionInternal(true, Session.SESSION_TRANSACTED, true,
                                    JBossSession.TYPE_QUEUE_SESSION, cacheProducers);
    }
    
-   public XATopicSession createXATopicSession(boolean cacheProducers) throws JMSException
+   public XATopicSession createXATopicSession(final boolean cacheProducers) throws JMSException
    {
       return createSessionInternal(true, Session.SESSION_TRANSACTED, true,
                                    JBossSession.TYPE_TOPIC_SESSION, cacheProducers);
@@ -374,8 +373,8 @@ public class JBossConnection implements
 
    // Protected ------------------------------------------------------------------------------------
 
-   protected JBossSession createSessionInternal(boolean transacted, int acknowledgeMode,
-                                                boolean isXA, int type, boolean cacheProducers) throws JMSException
+   protected JBossSession createSessionInternal(final boolean transacted, int acknowledgeMode,
+                                                final boolean isXA, final int type, final boolean cacheProducers) throws JMSException
    {
       if (transacted)
       {
@@ -447,7 +446,7 @@ public class JBossConnection implements
    
    private class JMSFailureListener implements FailureListener
    {
-      public void onFailure(MessagingException me)
+      public void onFailure(final MessagingException me)
       {
          JMSException je = new JMSException(me.toString());
          

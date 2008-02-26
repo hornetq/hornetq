@@ -41,7 +41,7 @@ public class JMSExceptionHelper
    
    // Static --------------------------------------------------------
    
-   public static JMSException convertFromMessagingException(MessagingException me)
+   public static JMSException convertFromMessagingException(final MessagingException me)
    {
       JMSException je;
       switch (me.getCode())

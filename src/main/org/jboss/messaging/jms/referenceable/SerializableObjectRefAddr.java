@@ -47,9 +47,9 @@ public class SerializableObjectRefAddr extends RefAddr
 {   
    private static final long serialVersionUID = 9158134548376171898L;
    
-   private byte[] bytes;
+   private final byte[] bytes;
       
-   public SerializableObjectRefAddr(String type, Object content) throws NamingException
+   public SerializableObjectRefAddr(final String type, final Object content) throws NamingException
    {
       super(type);
       
@@ -77,7 +77,7 @@ public class SerializableObjectRefAddr extends RefAddr
       return bytes;
    }
    
-   public static Object deserialize(byte[] bytes) throws IOException, ClassNotFoundException
+   public static Object deserialize(final byte[] bytes) throws IOException, ClassNotFoundException
    {
       ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
       

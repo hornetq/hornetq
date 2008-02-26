@@ -97,28 +97,28 @@ public class JBossSession implements
    
    // Attributes ----------------------------------------------------
    
-   private JBossConnection connection;
+   private final JBossConnection connection;
    
-   private ClientSession session;
+   private final ClientSession session;
 
-   private int sessionType;
+   private final int sessionType;
+   
+   private final int ackMode;
+   
+   private final boolean transacted;
+   
+   private final boolean xa;
    
    private LinkedList<AsfMessageHolder> asfMessages;
    
    private MessageListener distinguishedListener;
-   
-   private int ackMode;
-   
-   private boolean transacted;
-   
-   private boolean xa;
-   
+      
    private boolean recoverCalled;
       
    // Constructors --------------------------------------------------
 
-   public JBossSession(JBossConnection connection, boolean transacted, boolean xa, int ackMode,
-                       ClientSession session, int sessionType)
+   public JBossSession(final JBossConnection connection, final boolean transacted, final boolean xa,
+   		              final int ackMode, final ClientSession session, final int sessionType)
    {      
       this.connection = connection;
       
@@ -163,7 +163,7 @@ public class JBossSession implements
    	return new JBossObjectMessage();
    }
 
-   public ObjectMessage createObjectMessage(Serializable object) throws JMSException
+   public ObjectMessage createObjectMessage(final Serializable object) throws JMSException
    {
    	checkClosed();
    	
@@ -188,7 +188,7 @@ public class JBossSession implements
    	return new JBossTextMessage();
    }
 
-   public TextMessage createTextMessage(String text) throws JMSException
+   public TextMessage createTextMessage(final String text) throws JMSException
    {
    	checkClosed();
    	
@@ -292,7 +292,7 @@ public class JBossSession implements
       return distinguishedListener;
    }
 
-   public void setMessageListener(MessageListener listener) throws JMSException
+   public void setMessageListener(final MessageListener listener) throws JMSException
    {
       checkClosed();
       
@@ -329,14 +329,14 @@ public class JBossSession implements
       //Need to work out how to get ASF to work with core
    }
 
-   public MessageProducer createProducer(Destination d) throws JMSException
+   public MessageProducer createProducer(final Destination destination) throws JMSException
    {
-      if (d != null && !(d instanceof JBossDestination))
+      if (destination != null && !(destination instanceof JBossDestination))
       {
-         throw new InvalidDestinationException("Not a JBoss Destination:" + d);
+         throw new InvalidDestinationException("Not a JBoss Destination:" + destination);
       }           
       
-      JBossDestination jbd = (JBossDestination)d;
+      JBossDestination jbd = (JBossDestination)destination;
       
       try
       {
@@ -350,37 +350,37 @@ public class JBossSession implements
       }
    }
 
-   public MessageConsumer createConsumer(Destination d) throws JMSException
+   public MessageConsumer createConsumer(final Destination destination) throws JMSException
    {
-      return createConsumer(d, null, false);
+      return createConsumer(destination, null, false);
    }
 
-   public MessageConsumer createConsumer(Destination d, String messageSelector) throws JMSException
+   public MessageConsumer createConsumer(final Destination destination, final String messageSelector) throws JMSException
    {
-      return createConsumer(d, messageSelector, false);
+      return createConsumer(destination, messageSelector, false);
    }
 
-   public MessageConsumer createConsumer(Destination dest, String messageSelector, boolean noLocal)
+   public MessageConsumer createConsumer(final Destination destination, final String messageSelector, final boolean noLocal)
       throws JMSException
    {
-      if (dest == null)
+      if (destination == null)
       {
          throw new InvalidDestinationException("Cannot create a consumer with a null destination");
       }
 
-      if (!(dest instanceof JBossDestination))
+      if (!(destination instanceof JBossDestination))
       {
-         throw new InvalidDestinationException("Not a JBossDestination:" + dest);
+         throw new InvalidDestinationException("Not a JBossDestination:" + destination);
       }
 
-      JBossDestination jbdest = (JBossDestination)dest;
+      JBossDestination jbdest = (JBossDestination)destination;
 
       ClientConsumer cd = createConsumer(jbdest, null, messageSelector, noLocal);
 
-      return new JBossMessageConsumer(this, cd, noLocal, dest, messageSelector, dest instanceof Topic);
+      return new JBossMessageConsumer(this, cd, noLocal, destination, messageSelector, destination instanceof Topic);
    }
 
-   public Queue createQueue(String queueName) throws JMSException
+   public Queue createQueue(final String queueName) throws JMSException
    {
       //As per spec. section 4.11
       if (sessionType == TYPE_TOPIC_SESSION)
@@ -409,7 +409,7 @@ public class JBossSession implements
       }
    }
 
-   public Topic createTopic(String topicName) throws JMSException
+   public Topic createTopic(final String topicName) throws JMSException
    {
       //As per spec. section 4.11
       if (sessionType == TYPE_QUEUE_SESSION)
@@ -438,7 +438,7 @@ public class JBossSession implements
       }
    }
 
-   public TopicSubscriber createDurableSubscriber(Topic topic, String name) throws JMSException
+   public TopicSubscriber createDurableSubscriber(final Topic topic, final String name) throws JMSException
    {
       //As per spec. section 4.11
       if (sessionType == TYPE_QUEUE_SESSION)
@@ -461,8 +461,9 @@ public class JBossSession implements
       return new JBossMessageConsumer(this, cd, false, topic, null, false);
    }
    
-   private ClientConsumer createConsumer(JBossDestination dest,
-                                         String subscriptionName, String selectorString, boolean noLocal)
+   private ClientConsumer createConsumer(final JBossDestination dest,
+                                         final String subscriptionName, String selectorString,
+                                         final boolean noLocal)
       throws JMSException
    {      
       try
@@ -582,10 +583,8 @@ public class JBossSession implements
       }      
    }
 
-   public TopicSubscriber createDurableSubscriber(Topic topic,
-                                                  String name,
-                                                  String messageSelector,
-                                                  boolean noLocal)
+   public TopicSubscriber createDurableSubscriber(final Topic topic, final String name,
+                                                  String messageSelector, final boolean noLocal)
          throws JMSException
    {
       //As per spec. section 4.11
@@ -613,12 +612,12 @@ public class JBossSession implements
       return new JBossMessageConsumer(this, cd, noLocal, topic, messageSelector, false);
    }
 
-   public QueueBrowser createBrowser(Queue queue) throws JMSException
+   public QueueBrowser createBrowser(final Queue queue) throws JMSException
    {
       return createBrowser(queue, null);
    }
 
-   public QueueBrowser createBrowser(Queue queue, String messageSelector) throws JMSException
+   public QueueBrowser createBrowser(final Queue queue, String messageSelector) throws JMSException
    {
       //As per spec. section 4.11
       if (sessionType == TYPE_TOPIC_SESSION)
@@ -702,7 +701,7 @@ public class JBossSession implements
       }
    }
 
-   public void unsubscribe(String name) throws JMSException
+   public void unsubscribe(final String name) throws JMSException
    {
       // As per spec. section 4.11
       if (sessionType == TYPE_QUEUE_SESSION)
@@ -754,17 +753,17 @@ public class JBossSession implements
    
    // QueueSession implementation
    
-   public QueueReceiver createReceiver(Queue queue, String messageSelector) throws JMSException
+   public QueueReceiver createReceiver(final Queue queue, final String messageSelector) throws JMSException
    {
       return (QueueReceiver)createConsumer(queue, messageSelector);
    }
 
-   public QueueReceiver createReceiver(Queue queue) throws JMSException
+   public QueueReceiver createReceiver(final Queue queue) throws JMSException
    {
       return (QueueReceiver)createConsumer(queue);
    }
 
-   public QueueSender createSender(Queue queue) throws JMSException
+   public QueueSender createSender(final Queue queue) throws JMSException
    {
       return (QueueSender)createProducer(queue);
    }
@@ -778,18 +777,18 @@ public class JBossSession implements
    
    // TopicSession implementation
    
-   public TopicPublisher createPublisher(Topic topic) throws JMSException
+   public TopicPublisher createPublisher(final Topic topic) throws JMSException
    {
       return (TopicPublisher)createProducer(topic);
    }
 
-   public TopicSubscriber createSubscriber(Topic topic, String messageSelector,
-         boolean noLocal) throws JMSException
+   public TopicSubscriber createSubscriber(final Topic topic, final String messageSelector,
+                                           final boolean noLocal) throws JMSException
    {
       return (TopicSubscriber)createConsumer(topic, messageSelector, noLocal);
    }
 
-   public TopicSubscriber createSubscriber(Topic topic) throws JMSException
+   public TopicSubscriber createSubscriber(final Topic topic) throws JMSException
    {
       return (TopicSubscriber)createConsumer(topic);
    }
@@ -818,12 +817,12 @@ public class JBossSession implements
       return recoverCalled;
    }
    
-   public void setRecoverCalled(boolean recoverCalled)
+   public void setRecoverCalled(final boolean recoverCalled)
    {
       this.recoverCalled = recoverCalled;
    }
    
-   public void deleteTemporaryDestination(JBossDestination destination) throws JMSException
+   public void deleteTemporaryDestination(final JBossDestination destination) throws JMSException
    {
       try
       {
@@ -873,8 +872,8 @@ public class JBossSession implements
     * This method is used by the JBossConnectionConsumer to load up the session
     * with messages to be processed by the session's run() method
     */
-   void addAsfMessage(JBossMessage m, String consumerID, String queueName, int maxDeliveries,
-                      ClientSession connectionConsumerSession) throws JMSException
+   void addAsfMessage(final JBossMessage m, final String consumerID, final String queueName, final int maxDeliveries,
+                      final ClientSession connectionConsumerSession) throws JMSException
    {
       
       AsfMessageHolder holder =

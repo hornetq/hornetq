@@ -35,9 +35,9 @@ public class JBossQueue extends JBossDestination implements Queue
 {
    // Constants -----------------------------------------------------
    
-   private static final long serialVersionUID = 4121129234371655479L;
-   
-   public static final String JMS_QUEUE_ADDRESS_PREFIX = "queuejms.";
+	private static final long serialVersionUID = -1106092883162295462L;
+	
+	public static final String JMS_QUEUE_ADDRESS_PREFIX = "queuejms.";
 
    // Static --------------------------------------------------------
    
@@ -45,12 +45,12 @@ public class JBossQueue extends JBossDestination implements Queue
    
    // Constructors --------------------------------------------------
 
-   public JBossQueue(String name)
+   public JBossQueue(final String name)
    {
       super(JMS_QUEUE_ADDRESS_PREFIX + name, name);
    }
 
-   protected JBossQueue(String address, String name)
+   protected JBossQueue(final String address, final String name)
    {
       super(address, name);
    }

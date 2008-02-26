@@ -60,7 +60,7 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.version.Version;
-import org.jboss.messaging.util.VersionImpl;
+import org.jboss.messaging.core.version.impl.VersionImpl;
 import org.jboss.security.AuthenticationManager;
 
 /**

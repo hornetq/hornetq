@@ -37,27 +37,26 @@ import org.jboss.messaging.jms.referenceable.SerializableObjectRefAddr;
  *
  * $Id$
  */
-public abstract class JBossDestination implements Destination, Serializable /*, Referenceable http://jira.jboss.org/jira/browse/JBMESSAGING-395*/
+public abstract class JBossDestination implements Destination, Serializable/*, Referenceable http://jira.jboss.org/jira/browse/JBMESSAGING-395*/
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
       
-	protected static String escape(String input)
+	protected static String escape(final String input)
    {
       return input.replace("\\", "\\\\").replace(".", "\\.");
    }
       
    // Attributes ----------------------------------------------------
 
-   protected String name;
+   protected final String name;
    
-   private String address;
-   
-      
+   private final String address;
+         
    // Constructors --------------------------------------------------
 
-   public JBossDestination(String address, String name)
+   public JBossDestination(final String address, final String name)
    {
       this.address = address;
       

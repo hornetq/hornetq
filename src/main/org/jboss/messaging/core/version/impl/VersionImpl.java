@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.util;
+package org.jboss.messaging.core.version.impl;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -12,6 +12,7 @@ import java.io.Serializable;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.version.Version;
+import org.jboss.messaging.util.Streamable;
 
 /**
  * 
@@ -44,8 +45,8 @@ public class VersionImpl implements Version, Streamable, Serializable
    
    // Constructors --------------------------------------------------
 
-   public VersionImpl(String versionName, int majorVersion, int minorVersion, int microVersion,
-   		             int incrementingVersion, String versionSuffix)
+   public VersionImpl(final String versionName, final int majorVersion, final int minorVersion,
+   		             final int microVersion, final int incrementingVersion, final String versionSuffix)
    {
    	this.versionName = versionName;
    	

@@ -59,23 +59,23 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
 
    // Attributes -----------------------------------------------------------------------------------
    
-   private RemotingConfiguration remotingConfig;
+   private final RemotingConfiguration remotingConfig;
 
-   private Version serverVersion;
+   private final Version serverVersion;
  
-   private int serverID;
+   private final int serverID;
    
-   private int prefetchSize = 150;
+   private final int prefetchSize;
 
-   private boolean strictTck;
+   private final boolean strictTck;
    
    // Static ---------------------------------------------------------------------------------------
     
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConnectionFactoryImpl(int serverID,
-         RemotingConfiguration remotingConfig, Version serverVersion, boolean strictTck,
-         int prefetchSize)
+   public ClientConnectionFactoryImpl(final int serverID, final RemotingConfiguration remotingConfig,
+   		                             final Version serverVersion, final boolean strictTck,
+                                      final int prefetchSize)
    {
       this.serverID = serverID;
       this.remotingConfig = remotingConfig;
@@ -84,16 +84,12 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
       this.prefetchSize = prefetchSize;
    }
 
-   public ClientConnectionFactoryImpl()
-   {
-   }
-   
    public ClientConnection createConnection() throws MessagingException
    {
       return createConnection(null, null);
    }
    
-   public ClientConnection createConnection(String username, String password) throws MessagingException
+   public ClientConnection createConnection(final String username, final String password) throws MessagingException
    {
       int v = serverVersion.getIncrementingVersion();
                        

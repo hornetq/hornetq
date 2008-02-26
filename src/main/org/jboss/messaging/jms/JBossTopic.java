@@ -37,20 +37,20 @@ public class JBossTopic extends JBossDestination implements Topic
 {
    // Constants -----------------------------------------------------
 
-   private static final long serialVersionUID = 3257845497845724981L;
-   
-   public static final String JMS_TOPIC_ADDRESS_PREFIX = "topicjms.";
+	private static final long serialVersionUID = 7873614001276404156L;
 
-   // Static --------------------------------------------------------
-   
+	public static final String JMS_TOPIC_ADDRESS_PREFIX = "topicjms.";
+
    private static final char SEPARATOR = '.';
-   
-   public static String createQueueNameForDurableSubscription(String clientID, String subscriptionName)
+      
+   // Static --------------------------------------------------------
+      
+   public static String createQueueNameForDurableSubscription(final String clientID, final String subscriptionName)
    {
    	return escape(clientID) + SEPARATOR + escape(subscriptionName);
    }
    
-   public static Pair<String, String> decomposeQueueNameForDurableSubscription(String queueName)
+   public static Pair<String, String> decomposeQueueNameForDurableSubscription(final String queueName)
    {
       StringBuffer[] parts = new StringBuffer[2];
       int currentPart = 0;
@@ -102,12 +102,12 @@ public class JBossTopic extends JBossDestination implements Topic
    
    // Constructors --------------------------------------------------
 
-   public JBossTopic(String name)
+   public JBossTopic(final String name)
    {
       super(JMS_TOPIC_ADDRESS_PREFIX + name, name);
    }
 
-   protected JBossTopic(String address, String name)
+   protected JBossTopic(final String address, final String name)
    {
       super(address, name);
    }

@@ -36,21 +36,22 @@ public class SubscriptionInfo implements Serializable
 {
    private static final long serialVersionUID = -38689006079435295L;
 
-   private String id;
+   private final String id;
    
-   private boolean durable;
+   private final boolean durable;
    
-   private String name;
+   private final String name;
    
-   private String clientID;
+   private final String clientID;
    
-   private String selector;
+   private final String selector;
    
-   private int messageCount;
+   private final int messageCount;
    
-   private int maxSize;
+   private final int maxSize;
    
-   public SubscriptionInfo(String id, boolean durable, String name, String clientID, String selector, int messageCount, int maxSize)
+   public SubscriptionInfo(final String id, final boolean durable, final String name,
+   		                  final String clientID, final String selector, final int messageCount, final int maxSize)
    {
       this.id = id;
       this.durable = durable;

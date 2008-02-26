@@ -43,8 +43,8 @@ import org.jboss.messaging.jms.client.JBossConnectionFactory;
  */
 public class ConnectionFactoryObjectFactory implements ObjectFactory
 {
-   public Object getObjectInstance(Object ref, Name name, Context ctx,
-                                   Hashtable props) throws Exception
+   public Object getObjectInstance(final Object ref, final Name name, final Context ctx,
+                                   final Hashtable props) throws Exception
    {
       Reference r = (Reference)ref;
       

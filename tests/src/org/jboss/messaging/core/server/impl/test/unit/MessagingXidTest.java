@@ -96,17 +96,6 @@ public class MessagingXidTest extends UnitTestCase
       assertEquals(xid2, xid2);
    }
    
-   public void testDefaultConstructor()
-   {
-      XidImpl xid1 = new XidImpl();
-      
-      assertNull(xid1.getBranchQualifier());
-      
-      assertNull(xid1.getGlobalTransactionId());
-      
-      assertEquals(0, xid1.getFormatId());
-   }
-   
    public void testEqualsWithForeign()
    {
       XidImpl xid1 = new XidImpl(RandomUtil.randomBytes(), RandomUtil.randomInt(),

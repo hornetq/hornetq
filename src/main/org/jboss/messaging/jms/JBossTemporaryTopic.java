@@ -36,18 +36,19 @@ public class JBossTemporaryTopic extends JBossTopic implements TemporaryTopic
 {      
    // Constants -----------------------------------------------------
       
-   private static final long serialVersionUID = -8455283004195652511L;
+	private static final long serialVersionUID = 845450764835635266L;
 
-   private static final String JMS_TEMP_TOPIC_ADDRESS_PREFIX = "topictempjms.";
+	private static final String JMS_TEMP_TOPIC_ADDRESS_PREFIX = "topictempjms.";
+   
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
    
-   private transient JBossSession session;
+   private final transient JBossSession session;
       
    // Constructors --------------------------------------------------
 
-   public JBossTemporaryTopic(JBossSession session, String name)
+   public JBossTemporaryTopic(final JBossSession session, final String name)
    {
       super(JMS_TEMP_TOPIC_ADDRESS_PREFIX + name, name);
       
