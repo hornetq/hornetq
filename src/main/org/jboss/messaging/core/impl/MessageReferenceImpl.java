@@ -141,6 +141,7 @@ public class MessageReferenceImpl implements MessageReference
       if (maxDeliveries > 0 && deliveryCount >= maxDeliveries)
       {
          Queue DLQ = queue.getQueueSettings().getMatch(queue.getName()).getDLQ();
+         
          if (DLQ != null)
          {
             Message copyMessage = makeCopyForDLQOrExpiry(false, persistenceManager);

@@ -30,13 +30,12 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import org.jboss.messaging.core.ConnectionManager;
+import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.core.ServerConnection;
 import org.jboss.messaging.core.client.FailureListener;
 import org.jboss.messaging.core.client.impl.JMSClientVMIdentifier;
+import org.jboss.messaging.core.remoting.RemotingException;
 import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.util.MessagingException;
-import org.jboss.messaging.util.RemotingException;
-import org.jboss.messaging.util.Util;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
@@ -93,8 +92,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
       clients.put(remotingClientSessionID, clientVMID);
 
-      log.debug("registered connection " + endpoint + " as " +
-            Util.guidToString(remotingClientSessionID));
+      log.debug("registered connection " + endpoint + " as " + remotingClientSessionID);
    }
    
    public synchronized ServerConnection unregisterConnection(String remotingClientSessionID,

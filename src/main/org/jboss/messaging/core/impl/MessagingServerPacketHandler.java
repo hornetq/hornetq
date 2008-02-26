@@ -24,13 +24,13 @@ package org.jboss.messaging.core.impl;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.CREATECONNECTION;
 
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
-import org.jboss.messaging.util.MessagingException;
 
 /**
  * A packet handler for all packets that need to be handled at the server level

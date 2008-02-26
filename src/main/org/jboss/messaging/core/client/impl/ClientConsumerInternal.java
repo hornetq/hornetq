@@ -6,9 +6,9 @@
  */
 package org.jboss.messaging.core.client.impl;
 
+import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
-import org.jboss.messaging.util.MessagingException;
 
 /**
  * 

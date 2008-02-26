@@ -1,4 +1,4 @@
-package org.jboss.messaging.deployers;
+package org.jboss.messaging.core.deployers;
 
 import java.net.URL;
 

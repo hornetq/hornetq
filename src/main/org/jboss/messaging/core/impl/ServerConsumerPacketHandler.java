@@ -24,13 +24,13 @@ package org.jboss.messaging.core.impl;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.CLOSE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.CONS_FLOWTOKEN;
 
+import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.core.ServerConsumer;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.ConsumerFlowTokenMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
-import org.jboss.messaging.util.MessagingException;
 
 /**
  * 

@@ -22,11 +22,11 @@
 package org.jboss.messaging.core.client.impl;
 
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.core.client.AcknowledgementHandler;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.remoting.wireformat.ProducerSendMessage;
 import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.util.MessagingException;
 
 /**
  * The client-side Producer connectionFactory class.

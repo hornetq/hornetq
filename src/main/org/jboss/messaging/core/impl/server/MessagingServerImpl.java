@@ -44,6 +44,8 @@ import org.jboss.messaging.core.QueueFactory;
 import org.jboss.messaging.core.QueueSettings;
 import org.jboss.messaging.core.ResourceManager;
 import org.jboss.messaging.core.ServerConnection;
+import org.jboss.messaging.core.deployers.queue.QueueSettingsDeployer;
+import org.jboss.messaging.core.deployers.security.SecurityDeployer;
 import org.jboss.messaging.core.impl.ConnectionManagerImpl;
 import org.jboss.messaging.core.impl.MessagingServerPacketHandler;
 import org.jboss.messaging.core.impl.QueueFactoryImpl;
@@ -60,16 +62,12 @@ import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.security.NullAuthenticationManager;
 import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.core.security.SecurityMetadataStore;
-import org.jboss.messaging.deployers.queue.QueueSettingsDeployer;
-import org.jboss.messaging.deployers.security.SecurityDeployer;
-import org.jboss.messaging.util.ExceptionUtil;
+import org.jboss.messaging.core.security.SecurityStore;
+import org.jboss.messaging.core.security.SecurityStoreImpl;
 import org.jboss.messaging.util.HierarchicalObjectRepository;
 import org.jboss.messaging.util.HierarchicalRepository;
 import org.jboss.messaging.util.Version;
 import org.jboss.security.AuthenticationManager;
-
-import javax.jms.Destination;
 
 /**
  * A Messaging Server
@@ -99,7 +97,7 @@ public class MessagingServerImpl implements MessagingServer
 
    // wired components
 
-   private SecurityMetadataStore securityStore;
+   private SecurityStoreImpl securityStore;
    private ConnectionManagerImpl connectionManager;
    private MemoryManager memoryManager = new SimpleMemoryManager();
    private MessageCounterManager messageCounterManager;
@@ -151,125 +149,108 @@ public class MessagingServerImpl implements MessagingServer
 
    public synchronized void start() throws Exception
    {
-      try
+      log.debug("starting MessagingServer");
+
+      if (started)
       {
-         log.debug("starting MessagingServer");
-
-         if (started)
-         {
-            return;
-         }
-
-         if (configuration.getMessagingServerID() < 0)
-         {
-            throw new IllegalStateException("MessagingServer ID not set");
-         }
-
-         log.debug(this + " starting");
-
-         // Create the wired components
-
-         securityStore = new SecurityMetadataStore(configuration.getSecurityInvalidationInterval());
-         securityRepository.setDefault(new HashSet<Role>());
-         securityStore.setSecurityRepository(securityRepository);
-         securityStore.setAuthenticationManager(authenticationManager);
-         securityDeployer = new SecurityDeployer();
-         securityDeployer.setSecurityRepository(securityRepository);
-         queueSettingsDeployer = new QueueSettingsDeployer();
-         queueSettingsRepository.setDefault(new QueueSettings());
-         queueSettingsDeployer.setQueueSettingsRepository(queueSettingsRepository);
-         scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize());
-         queueFactory = new QueueFactoryImpl(scheduledExecutor);
-         queueFactory.setQueueSettingsRepository(queueSettingsRepository);
-         connectionManager = new ConnectionManagerImpl();
-         memoryManager = new SimpleMemoryManager();
-         messageCounterManager = new MessageCounterManager(configuration.getMessageCounterSamplePeriod());
-         configuration.addPropertyChangeListener(new PropertyChangeListener()
-         {
-            public void propertyChange(PropertyChangeEvent evt)
-            {
-               if (evt.getPropertyName().equals("messageCounterSamplePeriod"))
-                  messageCounterManager.reschedule(configuration.getMessageCounterSamplePeriod());
-            }
-         });
-         postOffice = new PostOfficeImpl(configuration.getMessagingServerID(),
-                 persistenceManager, queueFactory, configuration.isStrictTck());
-         queueSettingsDeployer.setPostOffice(postOffice);
-
-         if (createTransport)
-         {
-            remotingService.start();
-         }
-         // Start the wired components
-         securityDeployer.start();
-         connectionManager.start();
-         remotingService.addFailureListener(connectionManager);
-         memoryManager.start();
-         postOffice.start();
-         queueSettingsDeployer.start();
-         MessagingServerPacketHandler serverPacketHandler = new MessagingServerPacketHandler(this);
-         getRemotingService().getDispatcher().register(serverPacketHandler);
-
-         ClassLoader loader = Thread.currentThread().getContextClassLoader();
-         for (String interceptorClass : configuration.getDefaultInterceptors())
-         {
-            try
-            {
-               Class clazz = loader.loadClass(interceptorClass);
-               getRemotingService().addInterceptor((Interceptor) clazz.newInstance());
-            }
-            catch (Exception e)
-            {
-               log.warn("Error instantiating interceptor \"" + interceptorClass + "\"", e);
-            }
-         }
-
-         started = true;
-         log.info("JBoss Messaging " + getVersion().getProviderVersion() + " server [" +
-                 configuration.getMessagingServerID() + "] started");
+         return;
       }
-      catch (Throwable t)
+
+      if (configuration.getMessagingServerID() < 0)
       {
-         throw ExceptionUtil.handleJMXInvocation(t, this + " startService");
+         throw new IllegalStateException("MessagingServer ID not set");
       }
+
+      log.debug(this + " starting");
+
+      // Create the wired components
+
+      securityStore = new SecurityStoreImpl(configuration.getSecurityInvalidationInterval());
+      securityRepository.setDefault(new HashSet<Role>());
+      securityStore.setSecurityRepository(securityRepository);
+      securityStore.setAuthenticationManager(authenticationManager);
+      securityDeployer = new SecurityDeployer();
+      securityDeployer.setSecurityRepository(securityRepository);
+      queueSettingsDeployer = new QueueSettingsDeployer();
+      queueSettingsRepository.setDefault(new QueueSettings());
+      queueSettingsDeployer.setQueueSettingsRepository(queueSettingsRepository);
+      scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize());
+      queueFactory = new QueueFactoryImpl(scheduledExecutor);
+      queueFactory.setQueueSettingsRepository(queueSettingsRepository);
+      connectionManager = new ConnectionManagerImpl();
+      memoryManager = new SimpleMemoryManager();
+      messageCounterManager = new MessageCounterManager(configuration.getMessageCounterSamplePeriod());
+      configuration.addPropertyChangeListener(new PropertyChangeListener()
+      {
+         public void propertyChange(PropertyChangeEvent evt)
+         {
+            if (evt.getPropertyName().equals("messageCounterSamplePeriod"))
+               messageCounterManager.reschedule(configuration.getMessageCounterSamplePeriod());
+         }
+      });
+      postOffice = new PostOfficeImpl(configuration.getMessagingServerID(),
+              persistenceManager, queueFactory, configuration.isStrictTck());
+      queueSettingsDeployer.setPostOffice(postOffice);
+
+      if (createTransport)
+      {
+         remotingService.start();
+      }
+      // Start the wired components
+      securityDeployer.start();
+      connectionManager.start();
+      remotingService.addFailureListener(connectionManager);
+      memoryManager.start();
+      postOffice.start();
+      queueSettingsDeployer.start();
+      MessagingServerPacketHandler serverPacketHandler = new MessagingServerPacketHandler(this);
+      getRemotingService().getDispatcher().register(serverPacketHandler);
+
+      ClassLoader loader = Thread.currentThread().getContextClassLoader();
+      for (String interceptorClass : configuration.getDefaultInterceptors())
+      {
+         try
+         {
+            Class clazz = loader.loadClass(interceptorClass);
+            getRemotingService().addInterceptor((Interceptor) clazz.newInstance());
+         }
+         catch (Exception e)
+         {
+            log.warn("Error instantiating interceptor \"" + interceptorClass + "\"", e);
+         }
+      }
+
+      started = true;
    }
 
    public synchronized void stop() throws Exception
    {
-      try
+      if (!started)
       {
-         if (!started)
-         {
-            return;
-         }
-
-         log.info(this + " is Stopping. NOTE! Stopping the server peer cleanly will NOT cause failover to occur");
-
-         started = false;
-
-         // Stop the wired components
-         securityDeployer.stop();
-         queueSettingsDeployer.stop();
-         connectionManager.stop();
-         remotingService.removeFailureListener(connectionManager);
-         connectionManager = null;
-         memoryManager.stop();
-         memoryManager = null;
-         messageCounterManager.stop();
-         messageCounterManager = null;
-         postOffice.stop();
-         postOffice = null;
-         scheduledExecutor.shutdown();
-         scheduledExecutor = null;
-         if (createTransport)
-         {
-            remotingService.stop();
-         }
-         log.info("JMS " + this + " stopped");
+         return;
       }
-      catch (Throwable t)
+
+      log.info(this + " is Stopping. NOTE! Stopping the server peer cleanly will NOT cause failover to occur");
+
+      started = false;
+
+      // Stop the wired components
+      securityDeployer.stop();
+      queueSettingsDeployer.stop();
+      connectionManager.stop();
+      remotingService.removeFailureListener(connectionManager);
+      connectionManager = null;
+      memoryManager.stop();
+      memoryManager = null;
+      messageCounterManager.stop();
+      messageCounterManager = null;
+      postOffice.stop();
+      postOffice = null;
+      scheduledExecutor.shutdown();
+      scheduledExecutor = null;
+      if (createTransport)
       {
-         throw ExceptionUtil.handleJMXInvocation(t, this + " stopService");
+         remotingService.stop();
       }
    }
 
@@ -488,6 +469,11 @@ public class MessagingServerImpl implements MessagingServer
    public HierarchicalRepository<QueueSettings> getQueueSettingsRepository()
    {
       return queueSettingsRepository;
+   }
+   
+   public SecurityStore getSecurityStore()
+   {
+   	return securityStore;
    }
 
    public void setAuthenticationManager(AuthenticationManager authenticationManager)

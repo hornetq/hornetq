@@ -21,11 +21,15 @@
    */
 package org.jboss.messaging.util;
 
-import org.jboss.messaging.core.Mergeable;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.lang.reflect.ParameterizedType;
+
+import org.jboss.messaging.core.Mergeable;
 
 /**
  * allows objects to be mapped against a regex pattern and held in order in a list

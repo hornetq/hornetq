@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.FailureListener;
 import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
@@ -34,7 +35,6 @@ import org.jboss.messaging.core.remoting.wireformat.ConnectionCreateSessionRespo
 import org.jboss.messaging.core.remoting.wireformat.ConnectionStartMessage;
 import org.jboss.messaging.core.remoting.wireformat.ConnectionStopMessage;
 import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.util.MessagingException;
 
 /**
  * The client-side Connection connectionFactory class.

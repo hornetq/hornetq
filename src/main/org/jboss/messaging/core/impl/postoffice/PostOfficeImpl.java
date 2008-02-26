@@ -34,6 +34,7 @@ import org.jboss.messaging.core.Binding;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.PostOffice;
 import org.jboss.messaging.core.Queue;
@@ -41,7 +42,6 @@ import org.jboss.messaging.core.QueueFactory;
 import org.jboss.messaging.core.impl.BindingImpl;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.util.MessagingException;
 
 /**
  * 

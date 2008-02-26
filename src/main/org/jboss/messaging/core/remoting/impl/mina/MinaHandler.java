@@ -9,14 +9,14 @@ package org.jboss.messaging.core.remoting.impl.mina;
 import org.apache.mina.common.IoHandlerAdapter;
 import org.apache.mina.common.IoSession;
 import org.apache.mina.filter.reqres.Response;
+import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.RemotingException;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.Packet;
 import org.jboss.messaging.core.remoting.wireformat.Ping;
 import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.util.MessagingException;
-import org.jboss.messaging.util.RemotingException;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

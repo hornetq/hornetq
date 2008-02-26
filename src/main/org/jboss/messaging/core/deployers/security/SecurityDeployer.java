@@ -19,10 +19,10 @@
    * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
    * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
    */
-package org.jboss.messaging.deployers.security;
+package org.jboss.messaging.core.deployers.security;
 
+import org.jboss.messaging.core.deployers.Deployer;
 import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.deployers.Deployer;
 import org.jboss.messaging.util.HierarchicalRepository;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;

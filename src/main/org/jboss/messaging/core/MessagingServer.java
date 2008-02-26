@@ -26,6 +26,7 @@ import java.util.HashSet;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.util.HierarchicalRepository;
 import org.jboss.messaging.util.Version;
 
@@ -71,6 +72,8 @@ public interface MessagingServer extends MessagingComponent
    PostOffice getPostOffice();
    
    HierarchicalRepository<HashSet<Role>> getSecurityRepository();
+   
+   SecurityStore getSecurityStore();
 
    HierarchicalRepository<QueueSettings> getQueueSettingsRepository();
 

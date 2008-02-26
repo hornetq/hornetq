@@ -7,10 +7,10 @@
 package org.jboss.messaging.core.client.impl;
 
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.util.MessagingException;
 
 /**
  * 

@@ -38,10 +38,10 @@ import javax.jms.MessageFormatException;
 import javax.jms.MessageNotReadableException;
 import javax.jms.MessageNotWriteableException;
 
+import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.impl.MessageImpl;
 import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.util.MessagingException;
 
 /**
  * 

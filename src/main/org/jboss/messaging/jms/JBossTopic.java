@@ -24,6 +24,8 @@ package org.jboss.messaging.jms;
 import javax.jms.JMSException;
 import javax.jms.Topic;
 
+import org.jboss.messaging.util.Pair;
+
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -41,11 +43,61 @@ public class JBossTopic extends JBossDestination implements Topic
 
    // Static --------------------------------------------------------
    
+   private static final char SEPARATOR = '.';
+   
    public static String createQueueNameForDurableSubscription(String clientID, String subscriptionName)
    {
-      return clientID + "." + subscriptionName;
+   	return escape(clientID) + SEPARATOR + escape(subscriptionName);
    }
    
+   public static Pair<String, String> decomposeQueueNameForDurableSubscription(String queueName)
+   {
+      StringBuffer[] parts = new StringBuffer[2];
+      int currentPart = 0;
+      
+      parts[0] = new StringBuffer();
+      parts[1] = new StringBuffer();
+      
+      int pos = 0;
+      while (pos < queueName.length())
+      {
+         char ch = queueName.charAt(pos);
+         pos++;
+
+         if (ch == SEPARATOR)
+         {
+            currentPart++;
+            if (currentPart >= parts.length)
+            {
+               throw new IllegalArgumentException("Invalid message queue name: " + queueName);
+            }
+            
+            continue;
+         }
+
+         if (ch == '\\')
+         {
+            if (pos >= queueName.length())
+            {
+               throw new IllegalArgumentException("Invalid message queue name: " + queueName);
+            }
+            ch = queueName.charAt(pos);
+            pos++;
+         }
+
+         parts[currentPart].append(ch);
+      }
+      
+      if (currentPart != 1)
+      {
+         throw new IllegalArgumentException("Invalid message queue name: " + queueName);
+      }
+      
+      Pair<String, String> pair = new Pair<String, String>(parts[0].toString(), parts[1].toString());
+
+      return pair;
+   }
+         
    // Attributes ----------------------------------------------------     
    
    // Constructors --------------------------------------------------
@@ -78,8 +130,7 @@ public class JBossTopic extends JBossDestination implements Topic
    {
       return "JBossTopic[" + name + "]";
    }
-   
-  
+     
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

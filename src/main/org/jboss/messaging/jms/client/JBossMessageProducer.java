@@ -40,10 +40,10 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicPublisher;
 
+import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.util.MessagingException;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

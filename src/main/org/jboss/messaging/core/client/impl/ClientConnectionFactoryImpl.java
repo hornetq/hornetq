@@ -23,13 +23,13 @@ package org.jboss.messaging.core.client.impl;
 
 import java.io.Serializable;
 
+import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.util.MessagingException;
 import org.jboss.messaging.util.Version;
 
 /**

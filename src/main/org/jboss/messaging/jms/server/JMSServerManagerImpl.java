@@ -21,43 +21,34 @@
    */
 package org.jboss.messaging.jms.server;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.jms.Message;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.MessagingServerManagement;
 import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.ServerConnection;
 import org.jboss.messaging.core.ServerSession;
 import org.jboss.messaging.core.client.ClientConnectionFactory;
-import org.jboss.messaging.core.impl.ServerConnectionImpl;
-import org.jboss.messaging.core.impl.ServerSessionImpl;
-import org.jboss.messaging.core.impl.server.SubscriptionInfo;
-import org.jboss.messaging.core.impl.messagecounter.MessageCounter;
 import org.jboss.messaging.core.impl.filter.FilterImpl;
-import org.jboss.messaging.deployers.Deployer;
-import org.jboss.messaging.deployers.DeploymentManager;
+import org.jboss.messaging.core.impl.messagecounter.MessageCounter;
+import org.jboss.messaging.core.impl.server.SubscriptionInfo;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.client.JBossMessage;
-import org.jboss.messaging.jms.server.MessageStatistics;
 import org.jboss.messaging.util.JNDIUtil;
-import org.jboss.messaging.util.MessageQueueNameHelper;
-import org.jboss.aop.microcontainer.aspects.jmx.JMX;
-import org.jboss.managed.api.annotation.ManagementObject;
-import org.jboss.managed.api.annotation.ManagementOperation;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
-import javax.naming.NamingException;
-import javax.jms.Message;
-import javax.management.StandardMBean;
-import javax.management.ObjectName;
-import javax.management.MBeanServer;
-import java.util.*;
-import java.lang.management.ManagementFactory;
+import org.jboss.messaging.util.Pair;
 
 /**
  * A Deployer used to create and add to JNDI queues, topics and connection factories. Typically this would only be used
@@ -631,9 +622,9 @@ public class JMSServerManagerImpl implements JMSServerManager
 
             if (queue.isDurable())
             {
-               MessageQueueNameHelper helper = MessageQueueNameHelper.createHelper(queue.getName());
-               subName = helper.getSubName();
-               clientID = helper.getClientId();
+            	Pair<String, String> pair = JBossTopic.decomposeQueueNameForDurableSubscription(queue.getName());                             
+            	clientID = pair.a;
+            	subName = pair.b;               
             }
 
             SubscriptionInfo info = new SubscriptionInfo(queue.getName(), queue.isDurable(), subName, clientID,

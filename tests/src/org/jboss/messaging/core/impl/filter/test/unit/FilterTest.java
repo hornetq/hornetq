@@ -23,9 +23,9 @@ package org.jboss.messaging.core.impl.filter.test.unit;
 
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.core.impl.MessageImpl;
 import org.jboss.messaging.core.impl.filter.FilterImpl;
-import org.jboss.messaging.util.MessagingException;
 import org.jboss.test.messaging.JBMBaseTestCase;
 
 /**

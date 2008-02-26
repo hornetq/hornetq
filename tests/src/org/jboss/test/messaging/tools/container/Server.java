@@ -233,18 +233,6 @@ public interface Server extends Remote
    void configureSecurityForDestination(String destName, boolean isQueue, HashSet<Role> roles) throws Exception;
 
    /**
-    * @param config - sending 'config' as a String and not as an org.w3c.dom.Element to avoid
-    *        NotSerializableExceptions that show up when running tests on JDK 1.4.
-    */
-   void setDefaultSecurityConfig(String config) throws Exception;
-
-   /**
-    * @return a String that can be converted to an org.w3c.dom.Element using
-    *         ServerManagement.toElement().
-    */
-   String getDefaultSecurityConfig() throws Exception;
-
-   /**
     * Executes a command on the server
     * 
     * @param command
@@ -254,20 +242,6 @@ public interface Server extends Remote
    Object executeCommand(Command command) throws Exception;
 
    UserTransaction getUserTransaction() throws Exception;
-
-   /**
-    * Returns a Set containing the nodeID (as Integers) of all cluster members at the time of the
-    * call.
-    *
-    * USE IT ONLY FOR CLUSTERING TESTS!
-    */
-//   Set getNodeIDView() throws Exception;
-//   
-//   Map getFailoverMap() throws Exception;
-//   
-//   Map getRecoveryArea(String queueName) throws Exception;
-//   
-//   int getRecoveryMapSize(String queueName) throws Exception;
 
    /**
     * @return List<Notification>
@@ -300,4 +274,6 @@ public interface Server extends Remote
 
    //void setDefaultRedeliveryDelay(long delay) throws Exception;
    JMSServerManager getJMSServerManager() throws Exception;
+   
+   void invalidateSecurity() throws Exception;
 }

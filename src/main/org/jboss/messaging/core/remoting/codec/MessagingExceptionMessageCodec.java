@@ -8,8 +8,8 @@ package org.jboss.messaging.core.remoting.codec;
 
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.EXCEPTION;
 
+import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.core.remoting.wireformat.MessagingExceptionMessage;
-import org.jboss.messaging.util.MessagingException;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.

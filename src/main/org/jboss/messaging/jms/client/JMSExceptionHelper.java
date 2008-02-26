@@ -26,7 +26,7 @@ import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 import javax.jms.JMSSecurityException;
 
-import org.jboss.messaging.util.MessagingException;
+import org.jboss.messaging.core.MessagingException;
 
 /**
  * 

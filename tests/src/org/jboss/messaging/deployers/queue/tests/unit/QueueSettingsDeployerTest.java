@@ -24,7 +24,7 @@ package org.jboss.messaging.deployers.queue.tests.unit;
 import junit.framework.TestCase;
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.QueueSettings;
-import org.jboss.messaging.deployers.queue.QueueSettingsDeployer;
+import org.jboss.messaging.core.deployers.queue.QueueSettingsDeployer;
 import org.jboss.messaging.util.HierarchicalRepository;
 import org.jboss.messaging.util.XMLUtil;
 

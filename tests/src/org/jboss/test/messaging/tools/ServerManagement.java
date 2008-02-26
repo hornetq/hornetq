@@ -731,18 +731,6 @@ public class ServerManagement
       //servers.get(0).configureSecurityForDestination(destName, config);
    }
 
-   public static void setDefaultSecurityConfig(String config) throws Exception
-   {
-
-      servers.get(0).setDefaultSecurityConfig(config);
-   }
-
-   public static String getDefaultSecurityConfig() throws Exception
-   {
-
-      return servers.get(0).getDefaultSecurityConfig();
-   }
-
    public static Hashtable getJNDIEnvironment()
    {
       return getJNDIEnvironment(0);

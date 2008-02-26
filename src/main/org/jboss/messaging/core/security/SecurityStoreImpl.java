@@ -27,11 +27,11 @@ import java.util.Set;
 
 import javax.security.auth.Subject;
 
+import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.core.ServerConnection;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.HierarchicalRepository;
 import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.util.MessagingException;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.RealmMapping;
 import org.jboss.security.SimplePrincipal;
@@ -52,11 +52,11 @@ import org.jboss.security.SimplePrincipal;
  *
  * $Id$
  */
-public class SecurityMetadataStore implements SecurityStore
+public class SecurityStoreImpl implements SecurityStore
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(SecurityMetadataStore.class);
+   private static final Logger log = Logger.getLogger(SecurityStoreImpl.class);
 
    // Static --------------------------------------------------------
    
@@ -82,7 +82,7 @@ public class SecurityMetadataStore implements SecurityStore
 
    // Constructors --------------------------------------------------
    
-   public SecurityMetadataStore(long invalidationInterval)
+   public SecurityStoreImpl(long invalidationInterval)
    {
    	this.invalidationInterval = invalidationInterval;
    }
@@ -183,6 +183,15 @@ public class SecurityMetadataStore implements SecurityStore
       }      
    }
    
+   public void invalidateCache()
+   {
+   	readCache.clear();
+
+      writeCache.clear();
+
+      createCache.clear();
+   }
+   
    // Public --------------------------------------------------------
 
    public void setSecurityRepository(HierarchicalRepository<HashSet<Role>> securityRepository)
@@ -211,11 +220,7 @@ public class SecurityMetadataStore implements SecurityStore
 
       if (now - lastCheck > invalidationInterval)
       {
-         readCache.clear();
-
-         writeCache.clear();
-
-         createCache.clear();
+      	invalidateCache();
       }
       else
       {

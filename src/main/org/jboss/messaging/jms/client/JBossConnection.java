@@ -43,12 +43,12 @@ import javax.jms.XASession;
 import javax.jms.XATopicConnection;
 import javax.jms.XATopicSession;
 
+import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.FailureListener;
 import org.jboss.messaging.core.client.impl.ClientConnectionInternal;
 import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.util.MessagingException;
 import org.jboss.messaging.util.Version;
 
 /**

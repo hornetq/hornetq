@@ -23,7 +23,8 @@ package org.jboss.jms.server.deployer.test.unit;
 
 
 import junit.framework.TestCase;
-import org.jboss.messaging.deployers.Deployer;
+
+import org.jboss.messaging.core.deployers.Deployer;
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

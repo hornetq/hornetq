@@ -467,17 +467,7 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    {
       server.configureSecurityForDestination(destName, isQueue, roles);
    }
-
-   public void setDefaultSecurityConfig(String config) throws Exception
-   {
-      server.setDefaultSecurityConfig(config);
-   }
-
-   public String getDefaultSecurityConfig() throws Exception
-   {
-      return server.getDefaultSecurityConfig();
-   }
-
+ 
    public Object executeCommand(Command command) throws Exception
    {
       return server.executeCommand(command);
@@ -488,26 +478,6 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return server.getUserTransaction();
    }
 
-//   public Set getNodeIDView() throws Exception
-//   {
-//      return server.getNodeIDView();
-//   }
-//   
-//   public Map getFailoverMap() throws Exception
-//   {
-//   	return server.getFailoverMap();
-//   }
-//   
-//   public Map getRecoveryArea(String queueName) throws Exception
-//   {
-//   	return server.getRecoveryArea(queueName);
-//   }
-//   
-//   public int getRecoveryMapSize(String queueName) throws Exception
-//   {
-//   	return server.getRecoveryMapSize(queueName);
-//   }
-   
    public List pollNotificationListener(long listenerID) throws Exception
    {
       ProxyNotificationListener pl = null;
@@ -614,6 +584,11 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       env.put(Constants.SERVER_INDEX_PROPERTY_NAME, ""+getServerID());
 
       return new InitialContext(env);
+   }
+   
+   public void invalidateSecurity() throws Exception
+   {
+   	server.invalidateSecurity();
    }
 
    // Inner classes -------------------------------------------------

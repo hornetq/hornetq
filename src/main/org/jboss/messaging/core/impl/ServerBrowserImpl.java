@@ -34,6 +34,7 @@ import java.util.UUID;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.ServerSession;
 import org.jboss.messaging.core.impl.filter.FilterImpl;
@@ -45,7 +46,6 @@ import org.jboss.messaging.core.remoting.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.wireformat.SessionBrowserHasNextMessageResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionBrowserNextMessageResponseMessage;
 import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.util.MessagingException;
 
 /**
  * Concrete implementation of BrowserEndpoint.

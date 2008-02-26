@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.client.impl;
 
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionBrowserHasNextMessageMessage;
@@ -31,7 +32,6 @@ import org.jboss.messaging.core.remoting.wireformat.SessionBrowserNextMessageBlo
 import org.jboss.messaging.core.remoting.wireformat.SessionBrowserNextMessageMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionBrowserNextMessageResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionBrowserResetMessage;
-import org.jboss.messaging.util.MessagingException;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

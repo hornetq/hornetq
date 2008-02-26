@@ -43,7 +43,6 @@ import javax.naming.Reference;
 
 import org.jboss.messaging.microcontainer.NonSerializableFactory;
 import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.util.NotYetImplementedException;
 
 
 /**
@@ -85,7 +84,7 @@ public class InVMContext implements Context, Serializable
    
    public Object lookup(Name name) throws NamingException
    {
-      throw new NotYetImplementedException();
+      throw new UnsupportedOperationException();
    }
 
    public Object lookup(String name) throws NamingException
@@ -119,7 +118,7 @@ public class InVMContext implements Context, Serializable
 
    public void bind(Name name, Object obj) throws NamingException
    {
-      throw new NotYetImplementedException();
+      throw new UnsupportedOperationException();
    }
 
    public void bind(String name, Object obj) throws NamingException
@@ -129,7 +128,7 @@ public class InVMContext implements Context, Serializable
 
    public void rebind(Name name, Object obj) throws NamingException
    {
-      throw new NotYetImplementedException();
+      throw new UnsupportedOperationException();
    }
 
    public void rebind(String name, Object obj) throws NamingException
@@ -165,27 +164,27 @@ public class InVMContext implements Context, Serializable
 
    public void rename(Name oldName, Name newName) throws NamingException
    {
-      throw new NotYetImplementedException();
+      throw new UnsupportedOperationException();
    }
 
    public void rename(String oldName, String newName) throws NamingException
    {
-      throw new NotYetImplementedException();
+      throw new UnsupportedOperationException();
    }
 
    public NamingEnumeration list(Name name) throws NamingException
    {
-      throw new NotYetImplementedException();
+      throw new UnsupportedOperationException();
    }
 
    public NamingEnumeration list(String name) throws NamingException
    {
-      throw new NotYetImplementedException();
+      throw new UnsupportedOperationException();
    }
 
    public NamingEnumeration listBindings(Name name) throws NamingException
    {
-      throw new NotYetImplementedException();
+      throw new UnsupportedOperationException();
    }
 
    public NamingEnumeration listBindings(String contextName) throws NamingException
@@ -225,7 +224,7 @@ public class InVMContext implements Context, Serializable
 
    public Context createSubcontext(Name name) throws NamingException
    {
-      throw new NotYetImplementedException();
+      throw new UnsupportedOperationException();
    }
 
    public Context createSubcontext(String name) throws NamingException
@@ -242,12 +241,12 @@ public class InVMContext implements Context, Serializable
 
    public Object lookupLink(Name name) throws NamingException
    {
-      throw new NotYetImplementedException();
+      throw new UnsupportedOperationException();
    }
 
    public Object lookupLink(String name) throws NamingException
    {
-      throw new NotYetImplementedException();
+      throw new UnsupportedOperationException();
    }
 
    public NameParser getNameParser(Name name) throws NamingException
@@ -262,22 +261,22 @@ public class InVMContext implements Context, Serializable
 
    public Name composeName(Name name, Name prefix) throws NamingException
    {
-      throw new NotYetImplementedException();
+      throw new UnsupportedOperationException();
    }
 
    public String composeName(String name, String prefix) throws NamingException
    {
-      throw new NotYetImplementedException();
+      throw new UnsupportedOperationException();
    }
 
    public Object addToEnvironment(String propName, Object propVal) throws NamingException
    {
-      throw new NotYetImplementedException();
+      throw new UnsupportedOperationException();
    }
 
    public Object removeFromEnvironment(String propName) throws NamingException
    {
-      throw new NotYetImplementedException();
+      throw new UnsupportedOperationException();
    }
 
    public Hashtable getEnvironment() throws NamingException
@@ -362,7 +361,7 @@ public class InVMContext implements Context, Serializable
 
       public void close() throws NamingException
       {
-         throw new NotYetImplementedException();
+         throw new UnsupportedOperationException();
       }
 
       public boolean hasMore() throws NamingException

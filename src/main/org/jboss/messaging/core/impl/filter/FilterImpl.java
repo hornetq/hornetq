@@ -26,8 +26,8 @@ import java.util.Map;
 
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.util.MessagingException;
 
 /**
 * This class implements a JBoss Messaging filter

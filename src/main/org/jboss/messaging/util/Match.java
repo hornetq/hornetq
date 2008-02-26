@@ -21,11 +21,10 @@
    */
 package org.jboss.messaging.util;
 
-
 import java.util.regex.Pattern;
 
 /**
-    * a Match is the holder for the match string and the object to hold against it.
+    a Match is the holder for the match string and the object to hold against it.
  */
 public class Match<T>
 {

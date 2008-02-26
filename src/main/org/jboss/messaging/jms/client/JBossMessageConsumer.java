@@ -32,10 +32,10 @@ import javax.jms.QueueReceiver;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 
+import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.util.MessagingException;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

@@ -50,6 +50,7 @@ import java.util.List;
 
 import javax.transaction.xa.Xid;
 
+import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.core.ServerSession;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
@@ -78,7 +79,6 @@ import org.jboss.messaging.core.remoting.wireformat.SessionXARollbackMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionXASetTimeoutMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionXASetTimeoutResponseMessage;
 import org.jboss.messaging.core.remoting.wireformat.SessionXAStartMessage;
-import org.jboss.messaging.util.MessagingException;
 
 /**
  * 
