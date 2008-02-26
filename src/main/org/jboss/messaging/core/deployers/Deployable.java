@@ -14,7 +14,7 @@ public interface Deployable
     *
     * @return The name of the config file
     */
-   public String getConfigFileName();
+   String getConfigFileName();
 
    /**
     * Deploy the URL for the first time
@@ -22,7 +22,7 @@ public interface Deployable
     * @param url The resource todeploy
     * @throws Exception .
     */
-   public void deploy(URL url) throws Exception;
+   void deploy(URL url) throws Exception;
 
    /**
     * Redeploys a URL if changed
@@ -30,12 +30,12 @@ public interface Deployable
     * @param url The resource to redeploy
     * @throws Exception .
     */
-   public void redeploy(URL url) throws Exception;
+   void redeploy(URL url) throws Exception;
 
    /**
     * Undeploys a resource that has been removed
     * @param url The Resource that was deleted
     * @throws Exception .
     */
-   public void undeploy(URL url) throws Exception;
+   void undeploy(URL url) throws Exception;
 }

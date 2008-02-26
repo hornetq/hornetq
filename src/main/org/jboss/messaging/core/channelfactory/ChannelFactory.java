@@ -30,7 +30,9 @@ import org.jgroups.Channel;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 3124 $</tt>
  *
- * $Id: ChannelFactory.java 3124 2007-09-20 12:23:32Z timfox $
+ * 
+
+
  */
 public interface ChannelFactory
 {
