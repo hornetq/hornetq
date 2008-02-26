@@ -29,19 +29,19 @@ import java.util.Map;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.Binding;
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.core.impl.BindingImpl;
-import org.jboss.messaging.core.impl.MessageImpl;
-import org.jboss.messaging.core.impl.QueueFactoryImpl;
-import org.jboss.messaging.core.impl.QueueImpl;
-import org.jboss.messaging.core.impl.bdbje.BDBJEDatabase;
-import org.jboss.messaging.core.impl.bdbje.BDBJEEnvironment;
-import org.jboss.messaging.core.impl.bdbje.BDBJEPersistenceManager;
+import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.impl.bdbje.test.unit.fakes.FakeBDBJEEnvironment;
-import org.jboss.messaging.core.impl.filter.FilterImpl;
+import org.jboss.messaging.core.persistence.impl.bdbje.BDBJEDatabase;
+import org.jboss.messaging.core.persistence.impl.bdbje.BDBJEEnvironment;
+import org.jboss.messaging.core.persistence.impl.bdbje.BDBJEPersistenceManager;
+import org.jboss.messaging.core.server.Binding;
+import org.jboss.messaging.core.server.Message;
+import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.impl.BindingImpl;
+import org.jboss.messaging.core.server.impl.MessageImpl;
+import org.jboss.messaging.core.server.impl.QueueFactoryImpl;
+import org.jboss.messaging.core.server.impl.QueueImpl;
 import org.jboss.messaging.test.unit.UnitTestCase;
 
 /**

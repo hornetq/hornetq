@@ -21,14 +21,15 @@
    */
 package org.jboss.example.embedded;
 
-import org.jboss.messaging.core.remoting.RemotingConfiguration;
+import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
+import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.impl.MessagingServerImpl;
+
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
-import org.jboss.messaging.core.MessagingServer;
-import org.jboss.messaging.core.MessagingServerManagement;
-import org.jboss.messaging.core.impl.server.MessagingServerImpl;
-import org.jboss.messaging.core.impl.server.MessagingServerManagementImpl;
+import org.jboss.messaging.core.management.MessagingServerManagement;
+import org.jboss.messaging.core.management.impl.MessagingServerManagementImpl;
 import org.jboss.messaging.jms.server.JMSServerManager;
-import org.jboss.messaging.jms.server.JMSServerManagerImpl;
+import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jnp.server.NamingBeanImpl;
 import org.jnp.server.Main;
 

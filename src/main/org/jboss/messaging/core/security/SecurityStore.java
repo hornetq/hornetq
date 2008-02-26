@@ -25,8 +25,8 @@ import java.util.HashSet;
 
 import javax.security.auth.Subject;
 
-import org.jboss.messaging.core.ServerConnection;
-import org.jboss.messaging.util.HierarchicalRepository;
+import org.jboss.messaging.core.server.ServerConnection;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
 
 
 /**

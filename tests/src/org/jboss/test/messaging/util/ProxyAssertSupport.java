@@ -26,7 +26,7 @@ import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
-import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.core.logging.Logger;
 
 /**
  * This class will proxy any JUnit assertions and send then to our log outputs.

@@ -6,8 +6,8 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import static org.jboss.messaging.core.remoting.codec.AbstractPacketCodec.FALSE;
-import static org.jboss.messaging.core.remoting.codec.AbstractPacketCodec.TRUE;
+import static org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec.FALSE;
+import static org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec.TRUE;
 
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
@@ -21,10 +21,10 @@ import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 import org.apache.mina.filter.codec.demux.MessageDecoder;
 import org.apache.mina.filter.codec.demux.MessageDecoderResult;
 import org.apache.mina.filter.codec.demux.MessageEncoder;
-import org.jboss.messaging.core.remoting.codec.AbstractPacketCodec;
-import org.jboss.messaging.core.remoting.codec.DecoderStatus;
-import org.jboss.messaging.core.remoting.codec.RemotingBuffer;
-import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec;
+import org.jboss.messaging.core.remoting.impl.codec.DecoderStatus;
+import org.jboss.messaging.core.remoting.impl.codec.RemotingBuffer;
+import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

@@ -31,7 +31,7 @@ import java.util.Set;
 import javax.security.auth.Subject;
 import javax.security.auth.message.MessageInfo;
 
-import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.security.AnybodyPrincipal;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.NobodyPrincipal;

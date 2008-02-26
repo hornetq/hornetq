@@ -200,10 +200,10 @@
 
    <target name="compile-parsers">
 
-      <mkdir dir="${build.parsers}/org/jboss/messaging/core/impl/filter"/>
+      <mkdir dir="${build.parsers}/org/jboss/messaging/core/filter/impl"/>
       <echo message="${sun.javacc.lib}"/>
-      <javacc target="${source.java}/org/jboss/messaging/core/impl/filter/FilterParser.jj"
-              outputdirectory="${build.parsers}/org/jboss/messaging/core/impl/filter"
+      <javacc target="${source.java}/org/jboss/messaging/core/filter/impl/FilterParser.jj"
+              outputdirectory="${build.parsers}/org/jboss/messaging/core/filter/impl"
               javacchome="${sun.javacc.lib}"
               static="false"/>
 
@@ -221,15 +221,15 @@
              failonerror="${javac.fail.onerror}">
          <src path="${build.parsers}"/>
          <src path="${source.java}"/>
-         <include name="org/jboss/messaging/core/impl/filter/ASCII_CharStream.java"/>
-	 <include name="org/jboss/messaging/core/impl/filter/ParserException.java"/>
-	 <include name="org/jboss/messaging/core/impl/filter/FilterParser.java"/>
-	 <include name="org/jboss/messaging/core/impl/filter/FilterParserConstants.java"/>
-	 <include name="org/jboss/messaging/core/impl/filter/FilterParserTokenManager.java"/>
-	 <include name="org/jboss/messaging/core/impl/filter/Token.java"/>
-	 <include name="org/jboss/messaging/core/impl/filter/TokenMgrError.java"/>
-	 <include name="org/jboss/messaging/core/impl/filter/Operator.java"/>
-	 <include name="org/jboss/messaging/core/impl/filter/Identifier.java"/>
+         <include name="org/jboss/messaging/core/filter/impl/ASCII_CharStream.java"/>
+	 <include name="org/jboss/messaging/core/filter/impl/ParserException.java"/>
+	 <include name="org/jboss/messaging/core/filter/impl/FilterParser.java"/>
+	 <include name="org/jboss/messaging/core/filter/impl/FilterParserConstants.java"/>
+	 <include name="org/jboss/messaging/core/filter/impl/FilterParserTokenManager.java"/>
+	 <include name="org/jboss/messaging/core/filter/impl/Token.java"/>
+	 <include name="org/jboss/messaging/core/filter/impl/TokenMgrError.java"/>
+	 <include name="org/jboss/messaging/core/filter/impl/Operator.java"/>
+	 <include name="org/jboss/messaging/core/filter/impl/Identifier.java"/>
          <classpath refid="compilation.classpath"/>
       </javac>
    </target>

@@ -21,7 +21,7 @@
    */
 package org.jboss.messaging.core.client;
 
-import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.server.Message;
 
 /**
  * 

@@ -27,14 +27,14 @@ import org.apache.mina.common.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.jboss.beans.metadata.api.annotations.Install;
 import org.jboss.beans.metadata.api.annotations.Uninstall;
-import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Interceptor;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.RemotingException;
 import org.jboss.messaging.core.remoting.RemotingService;
-import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.core.remoting.impl.PacketDispatcher;
+import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
+import org.jboss.messaging.core.server.MessagingException;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

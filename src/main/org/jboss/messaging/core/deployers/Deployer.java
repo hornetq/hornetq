@@ -22,7 +22,7 @@
 package org.jboss.messaging.core.deployers;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.MessagingComponent;
+import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

@@ -41,8 +41,8 @@ import javax.naming.NamingException;
 import javax.naming.RefAddr;
 import javax.naming.Reference;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.microcontainer.NonSerializableFactory;
-import org.jboss.messaging.util.Logger;
 
 
 /**

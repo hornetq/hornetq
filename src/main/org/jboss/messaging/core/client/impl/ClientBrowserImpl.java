@@ -21,17 +21,17 @@
   */
 package org.jboss.messaging.core.client.impl;
 
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.core.client.ClientBrowser;
-import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionBrowserHasNextMessageMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionBrowserHasNextMessageResponseMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionBrowserNextMessageBlockMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionBrowserNextMessageBlockResponseMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionBrowserNextMessageMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionBrowserNextMessageResponseMessage;
-import org.jboss.messaging.core.remoting.wireformat.SessionBrowserResetMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.CloseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageBlockMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageBlockResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserResetMessage;
+import org.jboss.messaging.core.server.Message;
+import org.jboss.messaging.core.server.MessagingException;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

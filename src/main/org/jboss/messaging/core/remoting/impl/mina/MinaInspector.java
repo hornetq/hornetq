@@ -7,11 +7,11 @@
 package org.jboss.messaging.core.remoting.impl.mina;
 
 import static org.apache.mina.filter.reqres.ResponseType.WHOLE;
-import static org.jboss.messaging.core.remoting.wireformat.AbstractPacket.NO_CORRELATION_ID;
+import static org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket.NO_CORRELATION_ID;
 
 import org.apache.mina.filter.reqres.ResponseInspector;
 import org.apache.mina.filter.reqres.ResponseType;
-import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.

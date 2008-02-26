@@ -64,7 +64,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
       super(JBossObjectMessage.TYPE);
    }
    
-   public JBossObjectMessage(org.jboss.messaging.core.Message message, ClientSession session)
+   public JBossObjectMessage(org.jboss.messaging.core.server.Message message, ClientSession session)
    {
       super(message, session);
    }

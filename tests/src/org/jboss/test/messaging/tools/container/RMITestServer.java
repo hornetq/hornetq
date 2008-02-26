@@ -37,11 +37,11 @@ import javax.naming.InitialContext;
 import javax.transaction.UserTransaction;
 
 import org.jboss.kernel.spi.deployment.KernelDeployment;
-import org.jboss.messaging.core.MessagingServer;
-import org.jboss.messaging.core.MessagingServerManagement;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.MessagingServerManagement;
 import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.server.JMSServerManager;
-import org.jboss.messaging.util.Logger;
 
 /**
  * An RMI wrapper to access the ServiceContainer from a different address space.

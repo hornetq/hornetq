@@ -22,10 +22,10 @@
 package org.jboss.messaging.core.test.unit;
 
 import junit.framework.TestCase;
-import org.jboss.messaging.core.QueueSettings;
-import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.core.impl.RoundRobinDistributionPolicy;
-import org.jboss.messaging.core.impl.QueueImpl;
+import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.impl.QueueImpl;
+import org.jboss.messaging.core.server.impl.QueueSettings;
+import org.jboss.messaging.core.server.impl.RoundRobinDistributionPolicy;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>

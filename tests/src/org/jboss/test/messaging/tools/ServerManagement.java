@@ -37,7 +37,7 @@ import javax.management.ObjectName;
 import javax.transaction.UserTransaction;
 
 import org.jboss.kernel.spi.deployment.KernelDeployment;
-import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.test.messaging.tools.container.InVMInitialContextFactory;
 import org.jboss.test.messaging.tools.container.LocalTestServer;
 import org.jboss.test.messaging.tools.container.NotificationListenerID;

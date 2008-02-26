@@ -23,7 +23,7 @@ package org.jboss.test.messaging.jms.stress;
 
 import javax.jms.Session;
 
-import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.core.logging.Logger;
 
 /**
  * 

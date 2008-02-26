@@ -10,7 +10,7 @@ import static java.util.UUID.randomUUID;
 import junit.framework.TestCase;
 
 import org.apache.mina.common.IoBuffer;
-import org.jboss.messaging.core.remoting.codec.RemotingBuffer;
+import org.jboss.messaging.core.remoting.impl.codec.RemotingBuffer;
 import org.jboss.messaging.core.remoting.impl.mina.MinaPacketCodec;
 
 /**

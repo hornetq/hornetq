@@ -20,13 +20,6 @@
       <supports-load-balancing>true</supports-load-balancing>
    </connection-factory>
 
-   <connection-factory name="jboss.messaging.connectionfactory:service=ClusterPullConnectionFactory">
-      <entry name="/ClusterPullConnectionFactory"/>
-      <entry name="java:/ClusterPullConnectionFactory"/>
-      <supports-failover>true</supports-failover>
-      <supports-load-balancing>true</supports-load-balancing>
-   </connection-factory>
-
    <connection-factory name="MyExampleConnectionFactory">
       <entry name="/MyExampleConnectionFactory"/>
       <entry name="/acme/MyExampleConnectionFactoryDupe"/>

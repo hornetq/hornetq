@@ -25,16 +25,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessagingException;
-import org.jboss.messaging.core.PriorityLinkedList;
 import org.jboss.messaging.core.client.MessageHandler;
-import org.jboss.messaging.core.impl.PriorityLinkedListImpl;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
-import org.jboss.messaging.core.remoting.wireformat.ConsumerFlowTokenMessage;
-import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
-import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.core.list.PriorityLinkedList;
+import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.impl.PacketDispatcher;
+import org.jboss.messaging.core.remoting.impl.wireformat.CloseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.DeliverMessage;
+import org.jboss.messaging.core.server.Message;
+import org.jboss.messaging.core.server.MessagingException;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

@@ -6,7 +6,8 @@
  */
 package org.jboss.messaging.core.remoting;
 
-import org.jboss.messaging.core.remoting.wireformat.Packet;
+import org.jboss.messaging.core.remoting.impl.PacketDispatcher;
+import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 
 /**
  * A PacketHandler handles packets (as defined by {@link AbstractPacket} and its

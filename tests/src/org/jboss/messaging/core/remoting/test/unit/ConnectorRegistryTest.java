@@ -13,9 +13,9 @@ import junit.framework.TestCase;
 
 import org.jboss.messaging.core.remoting.ConnectorRegistry;
 import org.jboss.messaging.core.remoting.NIOConnector;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.ConnectorRegistryImpl;
+import org.jboss.messaging.core.remoting.impl.PacketDispatcher;
+import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

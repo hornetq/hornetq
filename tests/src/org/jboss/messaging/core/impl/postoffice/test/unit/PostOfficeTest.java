@@ -26,20 +26,20 @@ import java.util.List;
 import java.util.Map;
 
 import org.easymock.EasyMock;
-import org.jboss.messaging.core.Binding;
-import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.PersistenceManager;
-import org.jboss.messaging.core.PostOffice;
-import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.core.QueueFactory;
-import org.jboss.messaging.core.Transaction;
-import org.jboss.messaging.core.impl.BindingImpl;
-import org.jboss.messaging.core.impl.QueueFactoryImpl;
-import org.jboss.messaging.core.impl.QueueImpl;
-import org.jboss.messaging.core.impl.TransactionImpl;
-import org.jboss.messaging.core.impl.filter.FilterImpl;
-import org.jboss.messaging.core.impl.postoffice.PostOfficeImpl;
+import org.jboss.messaging.core.filter.impl.FilterImpl;
+import org.jboss.messaging.core.server.Binding;
+import org.jboss.messaging.core.server.Filter;
+import org.jboss.messaging.core.server.Message;
+import org.jboss.messaging.core.server.PersistenceManager;
+import org.jboss.messaging.core.server.PostOffice;
+import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.QueueFactory;
+import org.jboss.messaging.core.server.Transaction;
+import org.jboss.messaging.core.server.impl.BindingImpl;
+import org.jboss.messaging.core.server.impl.PostOfficeImpl;
+import org.jboss.messaging.core.server.impl.QueueFactoryImpl;
+import org.jboss.messaging.core.server.impl.QueueImpl;
+import org.jboss.messaging.core.server.impl.TransactionImpl;
 import org.jboss.messaging.test.unit.UnitTestCase;
 
 /**

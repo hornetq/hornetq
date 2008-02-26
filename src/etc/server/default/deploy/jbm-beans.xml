@@ -2,7 +2,7 @@
 
 <deployment xmlns="urn:jboss:bean-deployer:2.0">
 
-   <bean name="Configuration" class="org.jboss.messaging.core.FileConfiguration"/>
+   <bean name="Configuration" class="org.jboss.messaging.core.config.impl.FileConfiguration"/>
 
    <bean name="ServiceLocator" class="org.jboss.messaging.microcontainer.ServiceLocator">
       <demand>jboss.jca:name=DefaultDS,service=DataSourceBinding</demand>
@@ -10,14 +10,14 @@
       <!-- <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>-->
    </bean>
 
-   <bean name="MessagingServerManagement" class="org.jboss.messaging.core.impl.server.MessagingServerManagementImpl">
-      <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.messaging:service=MessagingServerManagement", exposedInterface=org.jboss.messaging.core.MessagingServerManagement.class)</annotation>
+   <bean name="MessagingServerManagement" class="org.jboss.messaging.core.management.impl.MessagingServerManagementImpl">
+      <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.messaging:service=MessagingServerManagement", exposedInterface=org.jboss.messaging.core.management.MessagingServerManagement.class)</annotation>
       <property name="messagingServer">
          <inject bean="MessagingServer"/>
       </property>
    </bean>
 
-   <bean name="MessagingServer" class="org.jboss.messaging.core.impl.server.MessagingServerImpl">
+   <bean name="MessagingServer" class="org.jboss.messaging.core.server.impl.MessagingServerImpl">
       <property name="persistenceManager">
          <inject bean="PersistenceManager"/>
       </property>
@@ -32,7 +32,7 @@
       </property>
    </bean>
 
-   <bean name="PersistenceManager" class="org.jboss.messaging.core.impl.bdbje.BDBJEPersistenceManager">
+   <bean name="PersistenceManager" class="org.jboss.messaging.core.persistence.impl.bdbje.BDBJEPersistenceManager">
    
       <property name="largeMessageRepository">${user.home}/bdbje/large</property>
       
@@ -46,7 +46,7 @@
    
    
    
-   <bean name="BDBJEEnvironment" class="org.jboss.messaging.core.impl.bdbje.integration.RealBDBJEEnvironment">
+   <bean name="BDBJEEnvironment" class="org.jboss.messaging.core.persistence.impl.bdbje.integration.RealBDBJEEnvironment">
    
       <property name="environmentPath">${user.home}/bdbje/env</property>
       
@@ -68,14 +68,14 @@
       </constructor>
    </bean> 
    
-   <bean name="JMSServerManager" class="org.jboss.messaging.jms.server.JMSServerManagerImpl">
+   <bean name="JMSServerManager" class="org.jboss.messaging.jms.server.impl.JMSServerManagerImpl">
       <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.messaging:service=JMSServerManager", exposedInterface=org.jboss.messaging.jms.server.JMSServerManager.class)</annotation>
       <property name="messagingServerManagement">
          <inject bean="MessagingServerManagement"/>
       </property>
    </bean>
 
-   <bean name="JMSServerDeployer" class="org.jboss.messaging.jms.server.JMSServerDeployer">
+   <bean name="JMSServerDeployer" class="org.jboss.messaging.jms.server.impl.JMSServerDeployer">
       <property name="jmsServerManager">
          <inject bean="JMSServerManager"/>
       </property>

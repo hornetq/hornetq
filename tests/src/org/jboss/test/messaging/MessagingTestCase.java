@@ -42,8 +42,8 @@ import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.client.JBossConnection;
-import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.util.ProxyAssertSupport;
 import org.jboss.tm.TransactionManagerLocator;

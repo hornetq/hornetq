@@ -12,7 +12,7 @@ import org.apache.mina.common.IoSession;
 import org.apache.mina.filter.reqres.Request;
 import org.apache.mina.filter.reqres.Response;
 import org.jboss.messaging.core.remoting.NIOSession;
-import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

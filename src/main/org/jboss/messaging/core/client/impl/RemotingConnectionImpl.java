@@ -24,14 +24,14 @@ package org.jboss.messaging.core.client.impl;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGISTRY;
 
-import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
-import org.jboss.messaging.core.remoting.RemotingConfiguration;
-import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
-import org.jboss.messaging.core.remoting.wireformat.MessagingExceptionMessage;
-import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
+import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.jboss.messaging.core.server.MessagingException;
 
 /**
  * 

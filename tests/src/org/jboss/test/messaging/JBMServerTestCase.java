@@ -36,11 +36,11 @@ import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
-import org.jboss.messaging.core.ConnectionManager;
-import org.jboss.messaging.core.MessagingServer;
-import org.jboss.messaging.core.MessagingServerManagement;
-import org.jboss.messaging.core.remoting.RemotingConfiguration;
+import org.jboss.messaging.core.management.MessagingServerManagement;
+import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
 import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.core.server.ConnectionManager;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.microcontainer.JBMBootstrapServer;

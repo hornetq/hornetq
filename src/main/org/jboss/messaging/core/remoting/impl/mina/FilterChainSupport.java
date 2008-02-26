@@ -23,9 +23,9 @@ import org.apache.mina.filter.logging.LoggingFilter;
 import org.apache.mina.filter.logging.MdcInjectionFilter;
 import org.apache.mina.filter.reqres.RequestResponseFilter;
 import org.apache.mina.filter.ssl.SslFilter;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
-import org.jboss.messaging.core.remoting.ssl.SSLSupport;
-import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

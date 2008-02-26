@@ -26,9 +26,9 @@ import java.beans.PropertyChangeListener;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.FileConfiguration;
-import org.jboss.messaging.core.remoting.RemotingConfiguration;
+import org.jboss.messaging.core.config.impl.FileConfiguration;
 import org.jboss.messaging.core.remoting.TransportType;
+import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>

@@ -12,10 +12,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.impl.bdbje.BDBJECursor;
-import org.jboss.messaging.core.impl.bdbje.BDBJEDatabase;
-import org.jboss.messaging.core.impl.bdbje.BDBJEEnvironment;
-import org.jboss.messaging.core.impl.bdbje.BDBJETransaction;
+import org.jboss.messaging.core.persistence.impl.bdbje.BDBJECursor;
+import org.jboss.messaging.core.persistence.impl.bdbje.BDBJEDatabase;
+import org.jboss.messaging.core.persistence.impl.bdbje.BDBJEEnvironment;
+import org.jboss.messaging.core.persistence.impl.bdbje.BDBJETransaction;
 import org.jboss.messaging.util.Pair;
 
 /**

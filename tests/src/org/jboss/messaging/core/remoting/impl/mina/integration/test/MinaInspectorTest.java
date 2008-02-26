@@ -13,8 +13,8 @@ import java.util.UUID;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.remoting.impl.mina.MinaInspector;
-import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
-import org.jboss.messaging.core.remoting.wireformat.NullPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.NullPacket;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

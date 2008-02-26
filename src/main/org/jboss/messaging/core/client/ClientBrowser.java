@@ -7,8 +7,8 @@
 
 package org.jboss.messaging.core.client;
 
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessagingException;
+import org.jboss.messaging.core.server.Message;
+import org.jboss.messaging.core.server.MessagingException;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

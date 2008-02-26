@@ -45,10 +45,10 @@ import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
 
-import org.jboss.messaging.core.MessagingComponent;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.jms.client.JBossSession;
-import org.jboss.messaging.util.Logger;
 import org.jboss.tm.TransactionManagerLocator;
 
 /**

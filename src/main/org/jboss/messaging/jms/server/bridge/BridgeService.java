@@ -27,8 +27,8 @@ import javax.management.ObjectName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
-import org.jboss.messaging.core.MessagingComponent;
-import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.server.MessagingComponent;
 
 /**
  * A BridgeService

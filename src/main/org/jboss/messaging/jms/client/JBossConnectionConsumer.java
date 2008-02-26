@@ -27,8 +27,8 @@ import javax.jms.ConnectionConsumer;
 import javax.jms.JMSException;
 import javax.jms.ServerSessionPool;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.JBossDestination;
-import org.jboss.messaging.util.Logger;
 
 /**
  * This class implements javax.jms.ConnectionConsumer

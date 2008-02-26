@@ -1,8 +1,8 @@
 package org.jboss.messaging.core.client.impl;
 
-import org.jboss.messaging.core.MessagingException;
 import org.jboss.messaging.core.client.FailureListener;
-import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
+import org.jboss.messaging.core.server.MessagingException;
 
 /**
  * 

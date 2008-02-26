@@ -1,74 +1,45 @@
 <deployment>
    <configuration>
+   
+      <!-- TODO!! Should specify all available properties in here -->
+   
       <!-- The unique id of the server peer - in a cluster each node MUST have a unique value - must be an integer -->
       <server-peer-id>0</server-peer-id>
+      
       <!-- The JAAS security domain to use for JBoss Messaging -->
       <security-domain>java:/jaas/messaging</security-domain>
+      
       <!-- The periodicity of the message counter manager enquiring on queues for statistics -->
       <message-counter-sample-period>5000</message-counter-sample-period>
-      <!-- The maximum amount of time for a client to wait for failover to start on the server side after
-  it has detected failure -->
-      <failover-start-timeout>60000</failover-start-timeout>
-      <!-- The maximum amount of time for a client to wait for failover to complete on the server side after
-  it has detected failure -->
-      <failover-complete-timeout>300000</failover-complete-timeout>
+      
       <!-- The maximum number of days results to maintain in the message counter history -->
       <default-message-counter-history-day-limit>-1</default-message-counter-history-day-limit>
-      <!-- The name of the connection factory to use for creating connections between nodes to pull messages -->
-      <cluster-pull-connection-factory-name>jboss.messaging.connectionfactory:service=ClusterPullConnectionFactory
-      </cluster-pull-connection-factory-name>
-
-      <!-- Use XA when pulling persistent messages from a remote node to this one. -->
-      <use-xa-for-message-pull>true</use-xa-for-message-pull>
-      <!-- When redistributing messages in the cluster. Do we need to preserve the order of messages received
-by a particular consumer from a particular producer? -->
-      <default-preserve-ordering>false</default-preserve-ordering>
-
-      <!-- Max. time to hold previously delivered messages back waiting for clients to reconnect after failover -->
-      <recover-deliveries-timeout>300000</recover-deliveries-timeout>
-
-
-      <!-- The password used by the message sucker connections to create connections.
-           THIS SHOULD ALWAYS BE CHANGED AT INSTALL TIME TO SECURE SYSTEM
-      <sucker-password></sucker-password>
-      -->
+      
       <strict-tck>true</strict-tck>
-      <post-office-name>JMS post office</post-office-name>
-
+      
       <clustered>false</clustered>
       
       <scheduled-executor-max-pool-size>30</scheduled-executor-max-pool-size>
-
-      <!-- All the remaining properties only have to be specified if the post office is clustered.
-You can safely comment them out if your post office is non clustered -->
-
-      <!-- The JGroups group name that the post office will use -->
-
-      <!--<group-name>MessagingPostOffice</group-name>-->
-
-      <!-- Max time to wait for state to arrive when the post office joins the cluster -->
-
-      <!--<state-timeout>5000</state-timeout>-->
-
-      <!-- Max time to wait for a synchronous call to node members using the MessageDispatcher -->
-
-      <!-- <cast-timeout>50000</cast-timeout>
-
-      <control-channel-name>udp-sync</control-channel-name>
-      <data-channel-name>udp</data-channel-name>
-      <channel-partition-name>${jboss.partition.name:DefaultPartition}-JMS</channel-partition-name>-->
-
+           
       <remoting-transport>TCP</remoting-transport>
+      
       <remoting-bind-address>5400</remoting-bind-address>
+      
       <!--  timeout in seconds -->
       <remoting-timeout>5</remoting-timeout>
+      
       <!-- true to disable invm communication when the client and the server are in the same JVM -->
       <remoting-disable-invm>false</remoting-disable-invm>
+      
       <!--  if ssl is enabled, all remoting-ssl-* properties must be set -->
       <remoting-enable-ssl>false</remoting-enable-ssl>
+      
       <remoting-ssl-keystore-path>messaging.keystore</remoting-ssl-keystore-path>      
-      <remoting-ssl-keystore-password>secureexample</remoting-ssl-keystore-password>      
-      <remoting-ssl-truststore-path>messaging.truststore</remoting-ssl-truststore-path>      
+      
+      <remoting-ssl-keystore-password>secureexample</remoting-ssl-keystore-password>     
+       
+      <remoting-ssl-truststore-path>messaging.truststore</remoting-ssl-truststore-path>  
+          
       <remoting-ssl-truststore-password>secureexample</remoting-ssl-truststore-password>      
 
    </configuration>

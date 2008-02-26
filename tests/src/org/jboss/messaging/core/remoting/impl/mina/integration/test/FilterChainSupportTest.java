@@ -31,7 +31,7 @@ import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.impl.mina.FailureNotifier;
 import org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport;
-import org.jboss.messaging.core.remoting.wireformat.Ping;
+import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

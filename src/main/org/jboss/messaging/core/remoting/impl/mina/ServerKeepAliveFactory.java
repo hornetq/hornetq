@@ -9,10 +9,10 @@ package org.jboss.messaging.core.remoting.impl.mina;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
-import org.jboss.messaging.core.remoting.wireformat.Ping;
-import org.jboss.messaging.core.remoting.wireformat.Pong;
-import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
+import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

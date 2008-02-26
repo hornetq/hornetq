@@ -23,9 +23,9 @@ package org.jboss.jms.server.security.test.unit;
 
 import junit.framework.TestCase;
 import org.easymock.EasyMock;
-import org.jboss.messaging.core.deployers.security.SecurityDeployer;
+import org.jboss.messaging.core.deployers.impl.SecurityDeployer;
 import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.util.HierarchicalRepository;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
 

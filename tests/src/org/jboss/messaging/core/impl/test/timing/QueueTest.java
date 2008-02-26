@@ -26,12 +26,12 @@ import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.core.impl.QueueImpl;
 import org.jboss.messaging.core.impl.test.unit.fakes.FakeConsumer;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.impl.QueueImpl;
 import org.jboss.messaging.test.unit.UnitTestCase;
-import org.jboss.messaging.util.Logger;
 
 /**
  * 

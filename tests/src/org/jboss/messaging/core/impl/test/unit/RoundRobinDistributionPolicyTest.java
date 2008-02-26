@@ -3,10 +3,10 @@ package org.jboss.messaging.core.impl.test.unit;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.messaging.core.Consumer;
-import org.jboss.messaging.core.DistributionPolicy;
-import org.jboss.messaging.core.impl.RoundRobinDistributionPolicy;
 import org.jboss.messaging.core.impl.test.unit.fakes.FakeConsumer;
+import org.jboss.messaging.core.server.Consumer;
+import org.jboss.messaging.core.server.DistributionPolicy;
+import org.jboss.messaging.core.server.impl.RoundRobinDistributionPolicy;
 import org.jboss.messaging.test.unit.UnitTestCase;
 
 /**

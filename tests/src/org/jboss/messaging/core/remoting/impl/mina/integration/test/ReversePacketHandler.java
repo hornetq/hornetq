@@ -9,17 +9,17 @@ package org.jboss.messaging.core.remoting.impl.mina.integration.test;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static junit.framework.Assert.fail;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.reverse;
-import static org.jboss.messaging.core.remoting.wireformat.AbstractPacket.NO_ID_SET;
+import static org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket.NO_ID_SET;
 
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
+import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
 import org.jboss.messaging.core.remoting.test.unit.TestPacketHandler;
-import org.jboss.messaging.core.remoting.wireformat.Packet;
-import org.jboss.messaging.core.remoting.wireformat.TextPacket;
-import org.jboss.messaging.util.Logger;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

@@ -23,11 +23,11 @@ package org.jboss.test.messaging.jms.server;
 
 import org.apache.tools.ant.taskdefs.Sleep;
 import org.jboss.test.messaging.JBMServerTestCase;
-import org.jboss.messaging.core.impl.server.SubscriptionInfo;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.ConnectionInfo;
 import org.jboss.messaging.jms.server.JMSServerManager;
+import org.jboss.messaging.jms.server.SubscriptionInfo;
 
 import javax.jms.*;
 import javax.naming.NameNotFoundException;

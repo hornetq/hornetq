@@ -1,11 +1,11 @@
 package org.jboss.messaging.core.client.impl;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
-import org.jboss.messaging.core.remoting.wireformat.Packet;
-import org.jboss.messaging.core.remoting.wireformat.PacketType;
-import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.core.remoting.impl.wireformat.DeliverMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

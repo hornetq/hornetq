@@ -27,7 +27,7 @@ import javax.jms.TextMessage;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.core.logging.Logger;
 
 public class FailoverTest extends TestCase
 {

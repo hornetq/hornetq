@@ -6,14 +6,14 @@ import java.util.List;
 import javax.transaction.xa.Xid;
 
 import org.easymock.EasyMock;
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.PersistenceManager;
-import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.core.Transaction;
-import org.jboss.messaging.core.TransactionSynchronization;
-import org.jboss.messaging.core.impl.QueueImpl;
-import org.jboss.messaging.core.impl.TransactionImpl;
+import org.jboss.messaging.core.server.Message;
+import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.PersistenceManager;
+import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.Transaction;
+import org.jboss.messaging.core.server.TransactionSynchronization;
+import org.jboss.messaging.core.server.impl.QueueImpl;
+import org.jboss.messaging.core.server.impl.TransactionImpl;
 import org.jboss.messaging.test.unit.UnitTestCase;
 
 /**

@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting;
 
-import org.jboss.messaging.core.MessagingException;
+import org.jboss.messaging.core.server.MessagingException;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

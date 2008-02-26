@@ -43,11 +43,11 @@ import javax.transaction.UserTransaction;
 
 import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Binding;
-import org.jboss.messaging.core.MessagingServer;
-import org.jboss.messaging.core.MessagingServerManagement;
-import org.jboss.messaging.core.QueueSettings;
+import org.jboss.messaging.core.management.MessagingServerManagement;
 import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.core.server.Binding;
+import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.impl.QueueSettings;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.microcontainer.JBMBootstrapServer;
 import org.jboss.messaging.util.JNDIUtil;

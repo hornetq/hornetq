@@ -6,8 +6,10 @@
  */
 package org.jboss.messaging.core.remoting;
 
-import org.jboss.messaging.core.MessagingComponent;
 import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.remoting.impl.PacketDispatcher;
+import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
+import org.jboss.messaging.core.server.MessagingComponent;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

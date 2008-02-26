@@ -1,8 +1,7 @@
 package org.jboss.messaging.jms.server;
 
-import org.jboss.messaging.core.impl.ServerConnectionImpl;
-import org.jboss.messaging.core.impl.ServerSessionImpl;
-import org.jboss.messaging.core.impl.server.SubscriptionInfo;
+import org.jboss.messaging.core.server.impl.ServerConnectionImpl;
+import org.jboss.messaging.core.server.impl.ServerSessionImpl;
 import org.jboss.messaging.jms.server.MessageStatistics;
 
 import javax.jms.Message;

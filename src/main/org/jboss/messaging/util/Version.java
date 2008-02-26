@@ -12,6 +12,8 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Properties;
 
+import org.jboss.messaging.core.logging.Logger;
+
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

@@ -29,7 +29,7 @@ import java.util.Set;
 
 import org.jboss.kernel.spi.dependency.KernelControllerContext;
 import org.jboss.kernel.spi.dependency.KernelControllerContextAware;
-import org.jboss.messaging.core.Configuration;
+import org.jboss.messaging.core.server.Configuration;
 import org.jboss.test.messaging.tools.container.JBMPropertyKernelConfig;
 
 /**

@@ -36,7 +36,7 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 
-import org.jboss.messaging.core.impl.server.SubscriptionInfo;
+import org.jboss.messaging.jms.server.SubscriptionInfo;
 
 
 /**

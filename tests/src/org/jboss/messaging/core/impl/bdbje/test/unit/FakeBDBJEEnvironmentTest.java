@@ -1,7 +1,7 @@
 package org.jboss.messaging.core.impl.bdbje.test.unit;
 
-import org.jboss.messaging.core.impl.bdbje.BDBJEEnvironment;
 import org.jboss.messaging.core.impl.bdbje.test.unit.fakes.FakeBDBJEEnvironment;
+import org.jboss.messaging.core.persistence.impl.bdbje.BDBJEEnvironment;
 
 /**
  * 

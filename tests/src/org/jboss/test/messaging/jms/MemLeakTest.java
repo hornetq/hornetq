@@ -38,8 +38,8 @@ import javax.jms.TextMessage;
 import javax.management.MBeanServer;
 import javax.naming.InitialContext;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
-import org.jboss.messaging.util.Logger;
 import org.jboss.profiler.jvmti.InventoryDataPoint;
 import org.jboss.profiler.jvmti.JVMTIInterface;
 import org.jboss.remoting.Client;

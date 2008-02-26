@@ -36,7 +36,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.Context;
 
-import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 

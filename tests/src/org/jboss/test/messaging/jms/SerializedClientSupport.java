@@ -13,7 +13,7 @@ import java.io.ObjectOutputStream;
 import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
 
-import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.core.logging.Logger;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

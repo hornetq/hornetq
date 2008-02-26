@@ -23,7 +23,7 @@ package org.jboss.test.messaging.jms.bridge;
 
 import java.util.Properties;
 
-import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**

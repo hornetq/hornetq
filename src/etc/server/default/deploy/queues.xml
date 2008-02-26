@@ -96,7 +96,7 @@
       <expiry-queue>queuejms.ExpiryQueue</expiry-queue>
       <redelivery-delay>0</redelivery-delay>
       <max-size>-1</max-size>
-      <distribution-policy-class>org.jboss.messaging.core.impl.RoundRobinDistributionPolicy</distribution-policy-class>
+      <distribution-policy-class>org.jboss.messaging.core.server.impl.RoundRobinDistributionPolicy</distribution-policy-class>
       <message-counter-history-day-limit>10</message-counter-history-day-limit>
    </queue-settings>
 

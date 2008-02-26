@@ -8,10 +8,10 @@ package org.jboss.messaging.core.remoting.impl.mina.integration.test;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.impl.PacketDispatcher;
 import org.jboss.messaging.core.remoting.impl.mina.MinaHandler;
+import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
 import org.jboss.messaging.core.remoting.test.unit.TestPacketHandler;
-import org.jboss.messaging.core.remoting.wireformat.TextPacket;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

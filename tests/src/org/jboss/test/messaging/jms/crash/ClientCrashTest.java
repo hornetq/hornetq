@@ -32,8 +32,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.messaging.core.ConnectionManager;
-import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.jms.SerializedClientSupport;
 

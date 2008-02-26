@@ -10,7 +10,7 @@ import java.io.File;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.remoting.ssl.SSLSupport;
+import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

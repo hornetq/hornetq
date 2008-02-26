@@ -27,6 +27,8 @@ import javax.jms.Destination;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 
+import org.jboss.messaging.jms.referenceable.SerializableObjectRefAddr;
+
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

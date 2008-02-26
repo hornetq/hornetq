@@ -26,10 +26,10 @@ import java.util.List;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.impl.XidImpl;
-import org.jboss.messaging.core.impl.bdbje.BDBJEDatabase;
-import org.jboss.messaging.core.impl.bdbje.BDBJEEnvironment;
-import org.jboss.messaging.core.impl.bdbje.BDBJETransaction;
+import org.jboss.messaging.core.persistence.impl.bdbje.BDBJEDatabase;
+import org.jboss.messaging.core.persistence.impl.bdbje.BDBJEEnvironment;
+import org.jboss.messaging.core.persistence.impl.bdbje.BDBJETransaction;
+import org.jboss.messaging.core.server.impl.XidImpl;
 import org.jboss.messaging.test.unit.UnitTestCase;
 
 import com.sleepycat.je.DatabaseException;

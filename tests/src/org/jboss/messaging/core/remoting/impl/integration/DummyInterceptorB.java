@@ -9,10 +9,10 @@ package org.jboss.messaging.core.remoting.impl.integration;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.messaging.core.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Interceptor;
-import org.jboss.messaging.core.remoting.wireformat.Packet;
-import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
+import org.jboss.messaging.core.server.MessagingException;
 
 public class DummyInterceptorB implements Interceptor
 {

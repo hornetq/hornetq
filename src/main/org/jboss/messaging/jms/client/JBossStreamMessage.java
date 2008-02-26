@@ -74,7 +74,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       super(JBossStreamMessage.TYPE);
    }
    
-   public JBossStreamMessage(org.jboss.messaging.core.Message message, ClientSession session)
+   public JBossStreamMessage(org.jboss.messaging.core.server.Message message, ClientSession session)
    {
       super(message, session);
    }

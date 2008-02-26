@@ -3,9 +3,9 @@ package org.jboss.messaging.core.impl.bdbje.integration.test.unit;
 import java.io.File;
 import java.io.FileOutputStream;
 
-import org.jboss.messaging.core.impl.bdbje.BDBJEEnvironment;
-import org.jboss.messaging.core.impl.bdbje.integration.RealBDBJEEnvironment;
 import org.jboss.messaging.core.impl.bdbje.test.unit.BDBJEEnvironmentTestBase;
+import org.jboss.messaging.core.persistence.impl.bdbje.BDBJEEnvironment;
+import org.jboss.messaging.core.persistence.impl.bdbje.integration.RealBDBJEEnvironment;
 
 /**
  * 

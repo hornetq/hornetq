@@ -24,8 +24,8 @@ package org.jboss.messaging.core.impl.test.unit;
 import java.util.Iterator;
 import java.util.ListIterator;
 
-import org.jboss.messaging.core.PriorityLinkedList;
-import org.jboss.messaging.core.impl.PriorityLinkedListImpl;
+import org.jboss.messaging.core.list.PriorityLinkedList;
+import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.test.unit.UnitTestCase;
 
 /**

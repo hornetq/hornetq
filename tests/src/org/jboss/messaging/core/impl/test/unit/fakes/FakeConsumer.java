@@ -24,10 +24,10 @@ package org.jboss.messaging.core.impl.test.unit.fakes;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.jboss.messaging.core.Consumer;
-import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.HandleStatus;
-import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.server.Consumer;
+import org.jboss.messaging.core.server.Filter;
+import org.jboss.messaging.core.server.HandleStatus;
+import org.jboss.messaging.core.server.MessageReference;
 
 /**
  * 
