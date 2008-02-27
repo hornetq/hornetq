@@ -28,6 +28,7 @@ import org.jboss.messaging.core.client.FailureListener;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
@@ -59,24 +60,30 @@ public class RemotingConnectionImpl implements RemotingConnection
    
    private FailureListener listener;
 
+   private transient PacketDispatcher dispatcher;
+
    // Constructors ---------------------------------------------------------------------------------
 
-   public RemotingConnectionImpl(final RemotingConfiguration remotingConfig) throws Exception
+   public RemotingConnectionImpl(final RemotingConfiguration remotingConfig, final PacketDispatcher dispatcher) throws Exception
    {
       assert remotingConfig != null;
+      assert dispatcher != null;
       
       this.remotingConfig = remotingConfig;
+      this.dispatcher = dispatcher;
       
       log.trace(this + " created with configuration " + remotingConfig);
    }
 
    // Public ---------------------------------------------------------------------------------------
 
+   // RemotingConnection implementation ------------------------------------------------------------
+   
    public void start() throws Throwable
    {
       if (log.isTraceEnabled()) { log.trace(this + " started remoting connection"); }
 
-      connector = REGISTRY.getConnector(remotingConfig);
+      connector = REGISTRY.getConnector(remotingConfig, dispatcher);
       session = connector.connect();
 
       if (log.isDebugEnabled())
@@ -179,6 +186,11 @@ public class RemotingConnectionImpl implements RemotingConnection
          connector.removeFailureListener(listener);
       }
       this.listener = newListener;
+   }
+   
+   public PacketDispatcher getPacketDispatcher()
+   {
+      return dispatcher;
    }
 
    // Package protected ----------------------------------------------------------------------------

@@ -26,6 +26,8 @@ import java.io.Serializable;
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
@@ -60,6 +62,8 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
    // Attributes -----------------------------------------------------------------------------------
    
    private final RemotingConfiguration remotingConfig;
+   
+   private final PacketDispatcher dispatcher;
 
    private final Version serverVersion;
  
@@ -82,6 +86,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
       this.serverVersion = serverVersion;
       this.strictTck = strictTck;
       this.prefetchSize = prefetchSize;
+      this.dispatcher = new PacketDispatcherImpl();
    }
 
    public ClientConnection createConnection() throws MessagingException
@@ -96,7 +101,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
       RemotingConnection remotingConnection = null;
       try
       {
-         remotingConnection = new RemotingConnectionImpl(remotingConfig);
+         remotingConnection = new RemotingConnectionImpl(remotingConfig, dispatcher);
        
          remotingConnection.start();
          

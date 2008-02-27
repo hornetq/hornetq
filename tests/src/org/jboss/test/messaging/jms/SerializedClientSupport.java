@@ -6,6 +6,10 @@
  */
 package org.jboss.test.messaging.jms;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static junit.framework.Assert.assertNotSame;
+import static junit.framework.Assert.assertSame;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -13,6 +17,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeoutException;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
@@ -102,17 +112,42 @@ public class SerializedClientSupport
       return file;
    }
 
-   // Constructors --------------------------------------------------
+   /**
+    * Assert that a process exits with the expected value (or not depending if
+    * the <code>sameValue</code> is expected or not). The method waits 5
+    * seconds for the process to exit, then an Exception is thrown. In any case,
+    * the process is destroyed before the method returns.
+    */
+   public static void assertProcessExits(boolean sameValue, int value,
+         final Process p) throws InterruptedException, ExecutionException,
+         TimeoutException
+   {
+      ScheduledExecutorService executor = Executors
+            .newSingleThreadScheduledExecutor();
+      Future<Integer> future = executor.submit(new Callable<Integer>()
+      {
 
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+         public Integer call() throws Exception
+         {
+            p.waitFor();
+            return p.exitValue();
+         }
+      });
+      try
+      {
+         int exitValue = future.get(5, SECONDS);
+         if (sameValue)
+         {
+            assertSame(value, exitValue);
+         } else
+         {
+            assertNotSame(value, exitValue);
+         }
+      } finally
+      {
+         p.destroy();
+      }
+   }
 
    /**
     * Redirect the input stream to a logger (as debug logs)
@@ -145,4 +180,17 @@ public class SerializedClientSupport
          }
       }
    }
+   
+   // Constructors --------------------------------------------------
+
+   // Public --------------------------------------------------------
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
 }

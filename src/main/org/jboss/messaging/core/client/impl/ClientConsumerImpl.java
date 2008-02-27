@@ -29,7 +29,6 @@ import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.PacketDispatcher;
 import org.jboss.messaging.core.remoting.impl.wireformat.CloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.DeliverMessage;
@@ -243,7 +242,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
          remotingConnection.send(id, new CloseMessage());
 
-         PacketDispatcher.client.unregister(id);
+         remotingConnection.getPacketDispatcher().unregister(id);
       }
       finally
       {

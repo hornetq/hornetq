@@ -26,6 +26,7 @@ import org.jboss.messaging.core.client.FailureListener;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.RemotingException;
+import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.mina.ClientKeepAliveFactory;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
@@ -96,7 +97,7 @@ public class ClientKeepAliveTest extends TestCase
       };
       service.addFailureListener(listener);
 
-      MinaConnector connector = new MinaConnector(service.getRemotingConfiguration(), factory);
+      MinaConnector connector = new MinaConnector(service.getRemotingConfiguration(), new PacketDispatcherImpl(), factory);
       connector.connect();
 
       boolean firedKeepAliveNotification = latch.await(KEEP_ALIVE_INTERVAL
@@ -127,7 +128,7 @@ public class ClientKeepAliveTest extends TestCase
       };
       service.addFailureListener(listener);
       
-      MinaConnector connector = new MinaConnector(service.getRemotingConfiguration(), factory);
+      MinaConnector connector = new MinaConnector(service.getRemotingConfiguration(), new PacketDispatcherImpl(), factory);
 
       NIOSession session = connector.connect();
       String clientSessionID = session.getID();
@@ -173,7 +174,7 @@ public class ClientKeepAliveTest extends TestCase
       try
       {
          MinaConnector connector = new MinaConnector(service.getRemotingConfiguration(),
-               factory);
+               new PacketDispatcherImpl(), factory);
 
          NIOSession session = connector.connect();
          String clientSessionID = session.getID();
@@ -232,9 +233,9 @@ public class ClientKeepAliveTest extends TestCase
       service.addFailureListener(listener);
       
       MinaConnector connectorNotResponding = new MinaConnector(service
-            .getRemotingConfiguration(), notRespondingfactory);
+            .getRemotingConfiguration(), new PacketDispatcherImpl(), notRespondingfactory);
       MinaConnector connectorResponding = new MinaConnector(service
-            .getRemotingConfiguration(), respondingfactory);
+            .getRemotingConfiguration(), new PacketDispatcherImpl(), respondingfactory);
 
       NIOSession sessionNotResponding = connectorNotResponding.connect();
       String clientSessionIDNotResponding = sessionNotResponding.getID();

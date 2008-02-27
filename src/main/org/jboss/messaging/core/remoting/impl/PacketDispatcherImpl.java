@@ -9,11 +9,13 @@ package org.jboss.messaging.core.remoting.impl;
 import static org.jboss.messaging.core.remoting.impl.Assert.assertValidID;
 import static org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket.NO_ID_SET;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
@@ -24,29 +26,29 @@ import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class PacketDispatcher
+public class PacketDispatcherImpl implements PacketDispatcher, Serializable
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(PacketDispatcher.class);
+   public static final Logger log = Logger.getLogger(PacketDispatcherImpl.class);
 
    // Attributes ----------------------------------------------------
 
    private Map<String, PacketHandler> handlers;
-   private List<Interceptor> filters;
+   public List<Interceptor> filters;
 
    // Static --------------------------------------------------------
 
-   public static final PacketDispatcher client = new PacketDispatcher();
+   // public static final PacketDispatcher client = new PacketDispatcher();
 
    // Constructors --------------------------------------------------
 
-   public PacketDispatcher()
+   public PacketDispatcherImpl()
    {
       handlers = new ConcurrentHashMap<String, PacketHandler>();
    }
 
-   public PacketDispatcher(List<Interceptor> filters)
+   public PacketDispatcherImpl(List<Interceptor> filters)
    {
       this();
       this.filters = filters;
@@ -56,6 +58,9 @@ public class PacketDispatcher
    
    
 
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.remoting.impl.IPacketDispatcher#register(org.jboss.messaging.core.remoting.PacketHandler)
+    */
    public void register(PacketHandler handler)
    {
       assertValidID(handler.getID());
@@ -69,6 +74,9 @@ public class PacketDispatcher
       }
    }
 
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.remoting.impl.IPacketDispatcher#unregister(java.lang.String)
+    */
    public void unregister(String handlerID)
    {
       assertValidID(handlerID);

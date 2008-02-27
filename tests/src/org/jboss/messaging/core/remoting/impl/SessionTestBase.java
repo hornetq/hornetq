@@ -16,6 +16,7 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.PacketHandler;
@@ -40,6 +41,7 @@ public abstract class SessionTestBase extends TestCase
    protected ReversePacketHandler serverPacketHandler;
 
    protected PacketDispatcher serverDispatcher;
+   protected PacketDispatcher clientDispatcher;
 
    protected NIOConnector connector;
 
@@ -53,7 +55,7 @@ public abstract class SessionTestBase extends TestCase
 
    public void testConnected() throws Exception
    {
-      NIOConnector connector = createNIOConnector();
+      NIOConnector connector = createNIOConnector(new PacketDispatcherImpl());
       NIOSession session = connector.connect();
 
       assertTrue(session.isConnected());
@@ -108,7 +110,7 @@ public abstract class SessionTestBase extends TestCase
       TestPacketHandler callbackHandler = new TestPacketHandler();
       callbackHandler.expectMessage(1);
 
-      PacketDispatcher.client.register(callbackHandler);
+      clientDispatcher.register(callbackHandler);
 
       TextPacket packet = new TextPacket("testSendOneWayWithCallbackHandler");
       packet.setTargetID(serverPacketHandler.getID());
@@ -153,7 +155,7 @@ public abstract class SessionTestBase extends TestCase
       
       TestPacketHandler callbackHandler = new TestPacketHandler();
       callbackHandler.expectMessage(1);
-      PacketDispatcher.client.register(callbackHandler);
+      clientDispatcher.register(callbackHandler);
 
       TextPacket packet = new TextPacket("testSendOneWayWith2Callbacks");
       packet.setTargetID(serverHandler.getID());
@@ -207,7 +209,7 @@ public abstract class SessionTestBase extends TestCase
    public void testClientHandlePacketSentByServer() throws Exception
    {
       TestPacketHandler clientHandler = new TestPacketHandler();
-      PacketDispatcher.client.register(clientHandler);
+      clientDispatcher.register(clientHandler);
 
       serverPacketHandler.expectMessage(1);
       clientHandler.expectMessage(1);
@@ -243,11 +245,14 @@ public abstract class SessionTestBase extends TestCase
    {
       serverDispatcher = startServer();
       
-      connector = createNIOConnector();
+      clientDispatcher = new PacketDispatcherImpl();
+
+      connector = createNIOConnector(clientDispatcher);
       session = connector.connect();
       
       serverPacketHandler = new ReversePacketHandler();
       serverDispatcher.register(serverPacketHandler);
+      
    }
 
    @Override
@@ -265,7 +270,7 @@ public abstract class SessionTestBase extends TestCase
    
    protected abstract RemotingConfiguration createRemotingConfiguration();
    
-   protected abstract NIOConnector createNIOConnector();
+   protected abstract NIOConnector createNIOConnector(PacketDispatcher dispatcher);
 
    protected abstract PacketDispatcher startServer() throws Exception;
    

@@ -6,7 +6,6 @@
  */
 package org.jboss.messaging.core.remoting;
 
-import org.jboss.messaging.core.remoting.impl.PacketDispatcher;
 import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
@@ -44,7 +43,7 @@ public interface ConnectorRegistry
     */
    boolean unregister(RemotingConfiguration remotingConfig);
 
-   NIOConnector getConnector(RemotingConfiguration remotingConfig);
+   NIOConnector getConnector(RemotingConfiguration remotingConfig, PacketDispatcher dispatcher);
 
    /**
     * Decrement the number of references on the NIOConnector corresponding to

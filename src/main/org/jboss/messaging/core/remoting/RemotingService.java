@@ -7,7 +7,6 @@
 package org.jboss.messaging.core.remoting;
 
 import org.jboss.messaging.core.client.FailureListener;
-import org.jboss.messaging.core.remoting.impl.PacketDispatcher;
 import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
 import org.jboss.messaging.core.server.MessagingComponent;
 

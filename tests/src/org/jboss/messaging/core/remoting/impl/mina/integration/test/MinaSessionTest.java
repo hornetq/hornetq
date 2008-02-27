@@ -10,8 +10,8 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.PORT;
 
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.NIOConnector;
-import org.jboss.messaging.core.remoting.impl.PacketDispatcher;
 import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.SessionTestBase;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
@@ -59,9 +59,9 @@ public class MinaSessionTest extends SessionTestBase
    // ClientTestBase overrides --------------------------------------
    
    @Override
-   protected NIOConnector createNIOConnector()
+   protected NIOConnector createNIOConnector(PacketDispatcher dispatcher)
    {
-      return new MinaConnector(createRemotingConfiguration());
+      return new MinaConnector(createRemotingConfiguration(), dispatcher);
    }
    
    @Override

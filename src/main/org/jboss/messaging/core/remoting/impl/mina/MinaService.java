@@ -29,10 +29,11 @@ import org.jboss.beans.metadata.api.annotations.Install;
 import org.jboss.beans.metadata.api.annotations.Uninstall;
 import org.jboss.messaging.core.client.FailureListener;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.RemotingException;
 import org.jboss.messaging.core.remoting.RemotingService;
-import org.jboss.messaging.core.remoting.impl.PacketDispatcher;
+import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
 import org.jboss.messaging.core.server.MessagingException;
 
@@ -82,7 +83,7 @@ public class MinaService implements RemotingService, FailureNotifier
 
       this.remotingConfig = remotingConfig;
       this.factory = factory;
-      this.dispatcher = new PacketDispatcher(this.filters);
+      this.dispatcher = new PacketDispatcherImpl(this.filters);
    }
    
    @Install

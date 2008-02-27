@@ -15,6 +15,7 @@ import java.util.Set;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.ConnectorRegistry;
 import org.jboss.messaging.core.remoting.NIOConnector;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
@@ -75,7 +76,7 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
        return (dispatcher != null);
    }
 
-   public synchronized NIOConnector getConnector(RemotingConfiguration remotingConfig)
+   public synchronized NIOConnector getConnector(RemotingConfiguration remotingConfig, PacketDispatcher dispatcher)
    {
       assert remotingConfig != null;
 
@@ -97,7 +98,7 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
       {
          PacketDispatcher localDispatcher = localDispatchers.get(remotingConfig);
          NIOConnector connector = new INVMConnector(remotingConfig.getHost(), remotingConfig
-               .getPort(), localDispatcher);
+               .getPort(), dispatcher, localDispatcher);
 
          if (log.isDebugEnabled())
             log.debug("Created " + connector + " to connect to "
@@ -114,7 +115,7 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
 
       if (transport == TCP)
       {
-         connector = new MinaConnector(remotingConfig);
+         connector = new MinaConnector(remotingConfig, dispatcher);
       }
 
       if (connector == null)

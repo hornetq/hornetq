@@ -19,6 +19,7 @@ import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
@@ -57,7 +58,7 @@ public class PacketStressTest extends TestCase
       RemotingConfiguration remotingConfig = new RemotingConfiguration(TCP, "localhost", PORT);
       service = new MinaService(remotingConfig);
       service.start();
-      connector = new MinaConnector(remotingConfig);
+      connector = new MinaConnector(remotingConfig, new PacketDispatcherImpl());
       
    }
    

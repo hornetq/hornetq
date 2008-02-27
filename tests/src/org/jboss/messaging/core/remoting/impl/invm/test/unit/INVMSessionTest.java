@@ -9,8 +9,9 @@ package org.jboss.messaging.core.remoting.impl.invm.test.unit;
 import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.PORT;
 
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.NIOConnector;
-import org.jboss.messaging.core.remoting.impl.PacketDispatcher;
+import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.SessionTestBase;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
@@ -27,7 +28,8 @@ public class INVMSessionTest extends SessionTestBase
 
    // Attributes ----------------------------------------------------
 
-   PacketDispatcher dispatcher = new PacketDispatcher();
+   PacketDispatcher serverDispatcher = new PacketDispatcherImpl();
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -37,9 +39,9 @@ public class INVMSessionTest extends SessionTestBase
    // ClientTestBase overrides --------------------------------------
    
    @Override
-   protected NIOConnector createNIOConnector()
+   protected NIOConnector createNIOConnector(PacketDispatcher dispatcher)
    {
-      return new INVMConnector("localhost", PORT, dispatcher);
+      return new INVMConnector("localhost", PORT, dispatcher, serverDispatcher);
    }
    
    @Override
@@ -51,13 +53,13 @@ public class INVMSessionTest extends SessionTestBase
    @Override
    protected PacketDispatcher startServer() throws Exception
    {
-      return dispatcher;
+      return serverDispatcher;
    }
    
    @Override
    protected void stopServer()
    {
-      dispatcher = null;
+      serverDispatcher = null;
    }
 
    // Package protected ---------------------------------------------

@@ -34,8 +34,8 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingException;
-import org.jboss.messaging.core.remoting.impl.PacketDispatcher;
 import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
@@ -72,14 +72,16 @@ public class MinaConnector implements NIOConnector, FailureNotifier
 
    // Public --------------------------------------------------------
 
-   public MinaConnector(RemotingConfiguration configuration)
+   public MinaConnector(RemotingConfiguration configuration, PacketDispatcher dispatcher)
    {
-      this(configuration, new ClientKeepAliveFactory());
+      this(configuration, dispatcher, new ClientKeepAliveFactory());
    }
 
-   public MinaConnector(RemotingConfiguration configuration, KeepAliveFactory keepAliveFactory)
+   public MinaConnector(RemotingConfiguration configuration, PacketDispatcher dispatcher,
+         KeepAliveFactory keepAliveFactory)
    {
       assert configuration != null;
+      assert dispatcher != null;
       assert keepAliveFactory != null;
 
       this.configuration = configuration;
@@ -107,7 +109,7 @@ public class MinaConnector implements NIOConnector, FailureNotifier
             configuration.getKeepAliveTimeout(), this);
       addExecutorFilter(filterChain);
 
-      connector.setHandler(new MinaHandler(PacketDispatcher.client, this, false));
+      connector.setHandler(new MinaHandler(dispatcher, this, false));
       connector.getSessionConfig().setKeepAlive(true);
       connector.getSessionConfig().setReuseAddress(true);
    }

@@ -37,7 +37,6 @@ import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.PacketDispatcher;
 import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.CloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
@@ -240,7 +239,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       consumers.put(response.getConsumerID(), consumer);
 
-      PacketDispatcher.client.register(new ClientConsumerPacketHandler(consumer, response.getConsumerID()));
+      remotingConnection.getPacketDispatcher().register(new ClientConsumerPacketHandler(consumer, response.getConsumerID()));
 
       if (prefetchSize > 0) // 0 ==> flow control is disabled
       {

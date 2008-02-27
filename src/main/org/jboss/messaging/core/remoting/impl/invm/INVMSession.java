@@ -12,8 +12,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.NIOSession;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.impl.PacketDispatcher;
 import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 
@@ -31,6 +31,7 @@ public class INVMSession implements NIOSession
 
    private String id;
    private long correlationCounter;
+   private PacketDispatcher clientDispatcher;
    private PacketDispatcher serverDispatcher;
    private boolean connected;
    
@@ -39,12 +40,14 @@ public class INVMSession implements NIOSession
 
    // Constructors --------------------------------------------------
 
-   public INVMSession(PacketDispatcher serverDispatcher)
+   public INVMSession(PacketDispatcher clientDispatcher, PacketDispatcher serverDispatcher)
    {
+      assert clientDispatcher != null;
       assert serverDispatcher != null;
       
       this.id = randomUUID().toString();
       this.correlationCounter = 0;
+      this.clientDispatcher = clientDispatcher;
       this.serverDispatcher = serverDispatcher;
       connected = true;
    }
@@ -79,7 +82,7 @@ public class INVMSession implements NIOSession
                public void send(Packet response) throws Exception
                {                  
                   serverDispatcher.callFilters(response);
-                  PacketDispatcher.client.dispatch(response, null);   
+                  clientDispatcher.dispatch(response, null);   
                }
                
                public String getSessionID()
@@ -114,7 +117,7 @@ public class INVMSession implements NIOSession
                      } else 
                      // other later responses are dispatched directly to the client
                      {
-                        PacketDispatcher.client.dispatch(response, null);
+                        clientDispatcher.dispatch(response, null);
                      }
                   }
                   catch (Exception e)

@@ -19,6 +19,7 @@ import junit.framework.TestCase;
 import org.jboss.messaging.core.client.FailureListener;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.RemotingException;
+import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
@@ -87,7 +88,7 @@ public class ServerKeepAliveTest extends TestCase
       service.start();
 
       MinaConnector connector = new MinaConnector(service
-            .getRemotingConfiguration());
+            .getRemotingConfiguration(), new PacketDispatcherImpl());
       final String[] sessionIDNotResponding = new String[1];
       final CountDownLatch latch = new CountDownLatch(1);
 
@@ -142,7 +143,7 @@ public class ServerKeepAliveTest extends TestCase
       service.start();
 
       MinaConnector connector = new MinaConnector(service
-            .getRemotingConfiguration());
+            .getRemotingConfiguration(), new PacketDispatcherImpl());
       final String[] sessionIDNotResponding = new String[1];
       final CountDownLatch latch = new CountDownLatch(1);
 

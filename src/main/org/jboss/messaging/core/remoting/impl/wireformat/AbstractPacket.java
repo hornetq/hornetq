@@ -8,7 +8,7 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import static org.jboss.messaging.core.remoting.impl.Assert.assertValidID;
 
-import org.jboss.messaging.core.client.impl.RemotingConnectionImpl;
+import org.jboss.messaging.core.client.impl.RemotingConnection;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -45,7 +45,7 @@ public class AbstractPacket implements Packet
 
    // Constructors --------------------------------------------------
 
-   public AbstractPacket(PacketType type)
+   AbstractPacket(PacketType type)
    {
       assert type != null;
 

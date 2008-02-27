@@ -75,7 +75,7 @@ public class CoreClientOverSSLTest extends TestCase
 
    public void testSSL() throws Exception
    {
-      Process p = SerializedClientSupport.spawnVM(CoreClientOverSSL.class
+      final Process p = SerializedClientSupport.spawnVM(CoreClientOverSSL.class
             .getName(), Boolean.TRUE.toString(), "messaging.keystore",
             "secureexample");
 
@@ -84,9 +84,7 @@ public class CoreClientOverSSLTest extends TestCase
       assertEquals(MESSAGE_TEXT_FROM_CLIENT, new String(m.getPayload()));
 
       log.info("waiting for the client VM to exit ...");
-      p.waitFor();
-
-      assertEquals(0, p.exitValue());
+      SerializedClientSupport.assertProcessExits(true, 0, p);
    }
 
    public void testSSLWithIncorrectKeyStorePassword() throws Exception
@@ -99,10 +97,7 @@ public class CoreClientOverSSLTest extends TestCase
       assertNull(m);
 
       log.info("waiting for the client VM to exit ...");
-      p.waitFor();
-
-      // client VM must have exited on an error
-      assertNotSame(0, p.exitValue());
+      SerializedClientSupport.assertProcessExits(false, 0, p);
    }
 
    public void testPlainConnectionToSSLEndpoint() throws Exception
@@ -114,10 +109,7 @@ public class CoreClientOverSSLTest extends TestCase
       assertNull(m);
 
       log.info("waiting for the client VM to exit ...");
-      p.waitFor();
-
-      // client VM must have exited on an error
-      assertNotSame(0, p.exitValue());
+      SerializedClientSupport.assertProcessExits(false, 0, p);
    }
 
    // Package protected ---------------------------------------------

@@ -13,8 +13,9 @@ import junit.framework.TestCase;
 
 import org.jboss.messaging.core.remoting.ConnectorRegistry;
 import org.jboss.messaging.core.remoting.NIOConnector;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.impl.ConnectorRegistryImpl;
-import org.jboss.messaging.core.remoting.impl.PacketDispatcher;
+import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
 
 /**
@@ -42,7 +43,7 @@ public class ConnectorRegistryTest extends TestCase
    protected void setUp() throws Exception
    {
       registry = new ConnectorRegistryImpl();
-      dispatcher = new PacketDispatcher();
+      dispatcher = new PacketDispatcherImpl();
       assertEquals(0, registry.getRegisteredRemotingConfigurations().length);
    }
    
@@ -71,8 +72,8 @@ public class ConnectorRegistryTest extends TestCase
    {
       RemotingConfiguration remotingConfig_1 = new RemotingConfiguration(TCP, "localhost", PORT);
       RemotingConfiguration remotingConfig_2 = new RemotingConfiguration(TCP, "localhost", PORT + 1);     
-      PacketDispatcher dispatcher_1 = new PacketDispatcher();      
-      PacketDispatcher dispatcher_2 = new PacketDispatcher();
+      PacketDispatcher dispatcher_1 = new PacketDispatcherImpl();      
+      PacketDispatcher dispatcher_2 = new PacketDispatcherImpl();
       
       assertTrue(registry.register(remotingConfig_1, dispatcher_1));
       assertTrue(registry.register(remotingConfig_2, dispatcher_2));
@@ -88,7 +89,7 @@ public class ConnectorRegistryTest extends TestCase
       // remotingConfig is registered -> client and server are in the same vm
       assertTrue(registry.register(remotingConfig, dispatcher));
       
-      NIOConnector connector = registry.getConnector(remotingConfig);
+      NIOConnector connector = registry.getConnector(remotingConfig, dispatcher);
       
       assertTrue(connector.getServerURI().startsWith(INVM.toString()));
       
@@ -104,7 +105,7 @@ public class ConnectorRegistryTest extends TestCase
       
       // remotingConfig is not registered -> client and server are not in the same vm
       
-      NIOConnector connector = registry.getConnector(remotingConfig);
+      NIOConnector connector = registry.getConnector(remotingConfig, dispatcher);
       
       assertNotNull(connector);
       assertEquals(remotingConfig.getURI(), connector.getServerURI());
@@ -117,10 +118,10 @@ public class ConnectorRegistryTest extends TestCase
       RemotingConfiguration remotingConfig = new RemotingConfiguration(TCP, "localhost", PORT);
       assertEquals(0, registry.getConnectorCount(remotingConfig));
 
-      NIOConnector connector1 = registry.getConnector(remotingConfig);
+      NIOConnector connector1 = registry.getConnector(remotingConfig, dispatcher);
       assertEquals(1, registry.getConnectorCount(remotingConfig));
 
-      NIOConnector connector2 = registry.getConnector(remotingConfig);
+      NIOConnector connector2 = registry.getConnector(remotingConfig, dispatcher);
       assertEquals(2, registry.getConnectorCount(remotingConfig));
 
       assertSame(connector1, connector2);
@@ -128,7 +129,7 @@ public class ConnectorRegistryTest extends TestCase
       assertNull(registry.removeConnector(remotingConfig));
       assertEquals(1, registry.getConnectorCount(remotingConfig));
 
-      NIOConnector connector3 = registry.getConnector(remotingConfig);
+      NIOConnector connector3 = registry.getConnector(remotingConfig, dispatcher);
       assertEquals(2, registry.getConnectorCount(remotingConfig));
 
       assertSame(connector1, connector3);
@@ -148,10 +149,10 @@ public class ConnectorRegistryTest extends TestCase
       assertEquals(0, registry.getConnectorCount(remotingConfig1));
       assertEquals(0, registry.getConnectorCount(remotingConfig2));
 
-      NIOConnector connector1 = registry.getConnector(remotingConfig1);
+      NIOConnector connector1 = registry.getConnector(remotingConfig1, dispatcher);
       assertEquals(1, registry.getConnectorCount(remotingConfig1));
 
-      NIOConnector connector2 = registry.getConnector(remotingConfig2);
+      NIOConnector connector2 = registry.getConnector(remotingConfig2, dispatcher);
       assertEquals(1, registry.getConnectorCount(remotingConfig2));
       
       assertNotSame(connector1, connector2);
@@ -172,10 +173,10 @@ public class ConnectorRegistryTest extends TestCase
       assertNotSame(remotingConfig1, remotingConfig2);
       assertEquals(remotingConfig1, remotingConfig2);
 
-      NIOConnector connector1 = registry.getConnector(remotingConfig1);
+      NIOConnector connector1 = registry.getConnector(remotingConfig1, dispatcher);
       assertEquals(1, registry.getConnectorCount(remotingConfig1));
 
-      NIOConnector connector2 = registry.getConnector(remotingConfig2);
+      NIOConnector connector2 = registry.getConnector(remotingConfig2, dispatcher);
       assertEquals(2, registry.getConnectorCount(remotingConfig2));
 
       assertSame(connector1, connector2);

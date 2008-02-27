@@ -16,7 +16,7 @@ import junit.framework.TestCase;
 
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.impl.PacketDispatcher;
+import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
 
 /**
@@ -31,7 +31,7 @@ public class PacketDispatcherTest extends TestCase
 
    // Attributes ----------------------------------------------------
 
-   PacketDispatcher dispatcher;
+   PacketDispatcherImpl dispatcher;
 
    // Static --------------------------------------------------------
 
@@ -44,7 +44,7 @@ public class PacketDispatcherTest extends TestCase
    @Override
    protected void setUp() throws Exception
    {
-      dispatcher = new PacketDispatcher();
+      dispatcher = new PacketDispatcherImpl();
    }
 
    @Override

@@ -8,7 +8,8 @@ package org.jboss.messaging.core.remoting.impl.mina.integration.test;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.remoting.impl.PacketDispatcher;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaHandler;
 import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
 import org.jboss.messaging.core.remoting.test.unit.TestPacketHandler;
@@ -24,6 +25,7 @@ public class MinaHandlerTest extends TestCase
 
    private MinaHandler handler;
    private TestPacketHandler packetHandler;
+   private PacketDispatcher clientDispatcher;
 
    // Constants -----------------------------------------------------
 
@@ -73,18 +75,19 @@ public class MinaHandlerTest extends TestCase
    @Override
    protected void setUp() throws Exception
    {
-      handler = new MinaHandler(PacketDispatcher.client, null, true);
+      clientDispatcher = new PacketDispatcherImpl();
+      handler = new MinaHandler(clientDispatcher, null, true);
 
       packetHandler = new TestPacketHandler();
-      PacketDispatcher.client.register(packetHandler);
+      clientDispatcher.register(packetHandler);
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      PacketDispatcher.client.unregister(packetHandler.getID());
+      clientDispatcher.unregister(packetHandler.getID());
       packetHandler = null;
-
+      clientDispatcher = null;
       handler = null;
    }
 
