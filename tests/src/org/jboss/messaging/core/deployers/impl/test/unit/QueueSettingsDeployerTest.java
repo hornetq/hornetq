@@ -24,8 +24,11 @@ package org.jboss.messaging.core.deployers.impl.test.unit;
 import junit.framework.TestCase;
 
 import org.easymock.EasyMock;
+import org.easymock.IArgumentMatcher;
 import org.jboss.messaging.core.deployers.impl.QueueSettingsDeployer;
 import org.jboss.messaging.core.server.PostOffice;
+import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.impl.BindingImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.XMLUtil;
@@ -46,15 +49,16 @@ public class QueueSettingsDeployerTest extends TestCase
            "   </queue-settings>";
 
    private QueueSettingsDeployer queueSettingsDeployer;
-   
+
    private HierarchicalRepository<QueueSettings> repository;
+   private PostOffice postOffice;
 
    protected void setUp() throws Exception
    {
-   	PostOffice postOffice = EasyMock.createStrictMock(PostOffice.class);
-   	
-   	repository = EasyMock.createStrictMock(HierarchicalRepository.class);
-   	   	
+      postOffice = EasyMock.createMock(PostOffice.class);
+
+      repository = EasyMock.createStrictMock(HierarchicalRepository.class);
+
       queueSettingsDeployer = new QueueSettingsDeployer(postOffice, repository);
    }
 
@@ -62,12 +66,25 @@ public class QueueSettingsDeployerTest extends TestCase
    {
       QueueSettings queueSettings = new QueueSettings();
       queueSettings.setClustered(false);
-      queueSettings.setRedeliveryDelay((long)100);
+      queueSettings.setRedeliveryDelay((long) 100);
       queueSettings.setMaxSize(-100);
       queueSettings.setDistributionPolicyClass("org.jboss.messaging.core.impl.RoundRobinDistributionPolicy");
       queueSettings.setMessageCounterHistoryDayLimit(1000);
-      repository.addMatch("queues.*", queueSettings);
+      Queue mockDLQ = EasyMock.createMock(Queue.class);
+      queueSettings.setDLQ(mockDLQ);
+      EasyMock.expect(postOffice.getBinding("DLQtest")).andReturn(new BindingImpl(0, "DLQtest", mockDLQ));
+      EasyMock.expect(postOffice.getBinding("DLQtest")).andReturn(new BindingImpl(0, "DLQtest", mockDLQ));
+      Queue mockQ = EasyMock.createMock(Queue.class);
+      queueSettings.setExpiryQueue(mockQ);
+      EasyMock.expect(postOffice.getBinding("ExpiryQueueTest")).andReturn(new BindingImpl(0, "ExpiryQueueTest", mockQ));
+      EasyMock.expect(postOffice.getBinding("ExpiryQueueTest")).andReturn(new BindingImpl(0, "ExpiryQueueTest", mockQ));
+
+      EasyMock.replay(postOffice);
+
+      repository.addMatch(EasyMock.eq("queues.*"), settings(queueSettings));
+
       EasyMock.replay(repository);
+      EasyMock.reportMatcher(new QueueSettingsMatcher(queueSettings));
       queueSettingsDeployer.deploy(XMLUtil.stringToElement(conf));
    }
 
@@ -76,5 +93,45 @@ public class QueueSettingsDeployerTest extends TestCase
       repository.removeMatch(conf);
       EasyMock.replay(repository);
 
+   }
+
+   public static QueueSettings settings(QueueSettings queueSettings)
+   {
+      EasyMock.reportMatcher(new QueueSettingsMatcher(queueSettings));
+      return queueSettings;
+   }
+
+   static class QueueSettingsMatcher implements IArgumentMatcher
+   {
+      QueueSettings queueSettings;
+
+      public QueueSettingsMatcher(QueueSettings queueSettings)
+      {
+         this.queueSettings = queueSettings;
+      }
+
+      public boolean matches(Object o)
+      {
+         if (this == o) return true;
+
+         QueueSettings that = (QueueSettings) o;
+
+         if (!queueSettings.getDLQ().equals(that.getDLQ())) return false;
+         if (!queueSettings.getExpiryQueue().equals(that.getExpiryQueue())) return false;
+         if (!queueSettings.isClustered().equals(that.isClustered())) return false;
+         if (!queueSettings.getDistributionPolicyClass().equals(that.getDistributionPolicyClass())) return false;
+         if (!queueSettings.getMaxDeliveryAttempts().equals(that.getMaxDeliveryAttempts())) return false;
+         if (!queueSettings.getMaxSize().equals(that.getMaxSize())) return false;
+         if (!queueSettings.getMessageCounterHistoryDayLimit().equals(that.getMessageCounterHistoryDayLimit()))
+            return false;
+         if (!queueSettings.getRedeliveryDelay().equals(that.getRedeliveryDelay())) return false;
+
+         return true;
+      }
+
+      public void appendTo(StringBuffer stringBuffer)
+      {
+         stringBuffer.append("Invalid Queue Settings created");
+      }
    }
 }

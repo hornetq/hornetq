@@ -274,6 +274,4 @@ public interface Server extends Remote
 
    //void setDefaultRedeliveryDelay(long delay) throws Exception;
    JMSServerManager getJMSServerManager() throws Exception;
-   
-   void invalidateSecurity() throws Exception;
 }

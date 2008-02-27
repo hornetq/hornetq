@@ -42,6 +42,4 @@ public interface SecurityStore
    void check(String address, CheckType checkType, ServerConnection conn) throws Exception;
 
    void setSecurityRepository(HierarchicalRepository<HashSet<Role>> securityRepository);
-   
-   void invalidateCache();
 }

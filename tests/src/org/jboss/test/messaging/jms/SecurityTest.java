@@ -786,8 +786,6 @@ public class SecurityTest extends JMSTestCase
    protected void tearDown() throws Exception
    {
    	super.tearDown();
-   	
-   	servers.get(0).invalidateSecurity();
 
       setSecurityConfig(oldDefaultConfig);
       configureSecurityForDestination("Queue1", true,  null);

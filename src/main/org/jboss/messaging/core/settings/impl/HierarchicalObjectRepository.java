@@ -31,6 +31,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.Mergeable;
+import org.jboss.messaging.core.settings.HierarchicalRepositoryChangeListener;
+import org.jboss.messaging.core.logging.Logger;
 
 
 /**
@@ -41,6 +43,7 @@ import org.jboss.messaging.core.settings.Mergeable;
  */
 public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T>
 {
+   Logger log = Logger.getLogger(HierarchicalObjectRepository.class);
    /**
     * The default Match to fall back to
     */
@@ -61,6 +64,12 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     */
    private final Map<String, T> cache = new ConcurrentHashMap<String,T>();
    
+
+   /**
+    * any registered listeners, these get fired on changes to the repository
+    */
+   private ArrayList<HierarchicalRepositoryChangeListener> listeners = new ArrayList<HierarchicalRepositoryChangeListener>();
+
    /**
     * Add a new match to the repository
     *
@@ -74,7 +83,7 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
       Match<T> match1 = new Match<T>(match);
       match1.setValue(value);
       matches.put(match, match1);
-
+      onChange();
    }
 
    /**
@@ -147,6 +156,17 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
    public void removeMatch(final String match)
    {
       matches.remove(match);
+      onChange();
+   }
+
+   public void registerListener(HierarchicalRepositoryChangeListener listener)
+   {
+      listeners.add(listener);
+   }
+
+   public void unRegisterListener(HierarchicalRepositoryChangeListener listener)
+   {
+      listeners.remove(listener);
    }
 
    /**
@@ -158,6 +178,21 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
    {
       cache.clear();
       defaultmatch = defaultValue;
+   }
+
+   private void onChange()
+   {
+      for (HierarchicalRepositoryChangeListener listener : listeners)
+      {
+         try
+         {
+            listener.onChange();
+         }
+         catch (Throwable e)
+         {
+            log.error("Unable to call listener:", e);
+         }
+      }
    }
 
    /**

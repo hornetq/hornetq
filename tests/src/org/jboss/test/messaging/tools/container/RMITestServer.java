@@ -586,10 +586,6 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return new InitialContext(env);
    }
    
-   public void invalidateSecurity() throws Exception
-   {
-   	server.invalidateSecurity();
-   }
 
    // Inner classes -------------------------------------------------
 }

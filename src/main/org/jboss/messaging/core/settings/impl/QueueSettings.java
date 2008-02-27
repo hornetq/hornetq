@@ -153,39 +153,7 @@ public class QueueSettings implements Mergeable<QueueSettings>
    }
 
 
-   public boolean equals(Object o)
-   {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-
-      QueueSettings that = (QueueSettings) o;
-
-      if (clustered != that.clustered) return false;
-      if (maxDeliveryAttempts != that.maxDeliveryAttempts) return false;
-      if (maxSize != that.maxSize) return false;
-      if (messageCounterHistoryDayLimit != that.messageCounterHistoryDayLimit) return false;
-      if (redeliveryDelay != that.redeliveryDelay) return false;
-      if (DLQ != null ? !DLQ.equals(that.DLQ) : that.DLQ != null) return false;
-      if (ExpiryQueue != null ? !ExpiryQueue.equals(that.ExpiryQueue) : that.ExpiryQueue != null) return false;
-      if (distributionPolicyClass != null ? !distributionPolicyClass.equals(that.distributionPolicyClass) : that.distributionPolicyClass != null)
-         return false;
-
-      return true;
-   }
-
-   public int hashCode()
-   {
-      int result;
-      result = (clustered ? 1 : 0);
-      result = 31 * result + maxSize;
-      result = 31 * result + (distributionPolicyClass != null ? distributionPolicyClass.hashCode() : 0);
-      result = 31 * result + maxDeliveryAttempts;
-      result = 31 * result + messageCounterHistoryDayLimit;
-      result = 31 * result + (int) (redeliveryDelay ^ (redeliveryDelay >>> 32));
-      result = 31 * result + (DLQ != null ? DLQ.hashCode() : 0);
-      result = 31 * result + (ExpiryQueue != null ? ExpiryQueue.hashCode() : 0);
-      return result;
-   }
+   
 
    /**
     * merge 2 objects in to 1

@@ -1,6 +1,7 @@
 package org.jboss.messaging.core.settings;
 
 
+
 /**
  * allows objects to be mapped against a regex pattern and held in order in a list
  *
@@ -33,4 +34,17 @@ public interface HierarchicalRepository<T>
     * @param match the match to remove
     */
    void removeMatch(String match);
+
+
+   /**
+    * register a listener to listen for changes in the repository
+    * @param listener
+    */
+   void registerListener(HierarchicalRepositoryChangeListener listener);
+
+   /**
+    * unregister a listener
+    * @param listener
+    */
+   void unRegisterListener(HierarchicalRepositoryChangeListener listener);
 }

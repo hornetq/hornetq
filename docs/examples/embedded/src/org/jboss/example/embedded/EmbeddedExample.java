@@ -23,17 +23,14 @@ package org.jboss.example.embedded;
 
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
-import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientProducer;
-import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.*;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
 import org.jboss.messaging.core.server.Message;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessageImpl;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
+import org.jboss.messaging.core.version.impl.VersionImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 
 /**
@@ -46,8 +43,8 @@ public class EmbeddedExample
       RemotingConfiguration remotingConf = new RemotingConfiguration(TCP, "localhost", 5400);
       MessagingServer messagingServer = new MessagingServerImpl(remotingConf);
       messagingServer.start();
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(remotingConf);
-      ClientConnection clientConnection = cf.createConnection(null, null);
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(messagingServer.getConfiguration().getMessagingServerID(),
+              messagingServer.getConfiguration().getRemotingConfiguration(), messagingServer.getVersion(), messagingServer.getConfiguration().isStrictTck(), 500);ClientConnection clientConnection = cf.createConnection(null, null);
       ClientSession clientSession = clientConnection.createClientSession(false, true, true, 0, false);
       clientSession.createQueue("Queue1", "Queue1", null, false, false);
       ClientProducer clientProducer = clientSession.createProducer("Queue1");

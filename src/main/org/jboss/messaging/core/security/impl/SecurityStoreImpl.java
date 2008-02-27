@@ -34,6 +34,7 @@ import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.server.MessagingException;
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.HierarchicalRepositoryChangeListener;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.RealmMapping;
@@ -41,38 +42,38 @@ import org.jboss.security.SimplePrincipal;
 
 /**
  * The JBM SecurityStore implementation
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
- * 
+ *
  * Parts based on old version by:
- * 
+ *
  * @author Peter Antman
  * @author <a href="mailto:Scott.Stark@jboss.org">Scott Stark</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- * 
+ *
  * @version $Revision$
  *
  * $Id$
  */
-public class SecurityStoreImpl implements SecurityStore
+public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryChangeListener
 {
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(SecurityStoreImpl.class);
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    private boolean trace = log.isTraceEnabled();
-   
+
    private HierarchicalRepository<HashSet<Role>> securityRepository;
 
    private AuthenticationManager authenticationManager;
-   
+
    private RealmMapping realmMapping;
-   
+
    private final Set<String> readCache = new ConcurrentHashSet<String>();
 
    private final Set<String> writeCache = new ConcurrentHashSet<String>();
@@ -84,12 +85,12 @@ public class SecurityStoreImpl implements SecurityStore
    private volatile long lastCheck;
 
    // Constructors --------------------------------------------------
-   
+
    public SecurityStoreImpl(long invalidationInterval)
    {
    	this.invalidationInterval = invalidationInterval;
    }
-   
+
    // SecurityManager implementation --------------------------------
 
    public Subject authenticate(String user, String password) throws Exception
@@ -97,9 +98,9 @@ public class SecurityStoreImpl implements SecurityStore
       if (trace) { log.trace("authenticating user " + user); }
 
       SimplePrincipal principal = new SimplePrincipal(user);
-      
+
       char[] passwordChars = null;
-      
+
       if (password != null)
       {
          passwordChars = password.toCharArray();
@@ -114,7 +115,7 @@ public class SecurityStoreImpl implements SecurityStore
          // Warning! This "taints" thread local. Make sure you pop it off the stack as soon as
          //          you're done with it.
          SecurityActions.pushSubjectContext(principal, passwordChars, subject);
-         
+
          return subject;
       }
       else
@@ -122,7 +123,7 @@ public class SecurityStoreImpl implements SecurityStore
          throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "User " + user + " is NOT authenticated");
       }
    }
-   
+
    public void check(String address, CheckType checkType, ServerConnection conn) throws Exception
    {
       if (trace) { log.trace("checking access permissions to " + address); }
@@ -161,7 +162,7 @@ public class SecurityStoreImpl implements SecurityStore
       }
 
       // if we get here we're granted, add to the cache
-      
+
       switch (checkType.type)
       {
          case CheckType.TYPE_READ:
@@ -183,29 +184,35 @@ public class SecurityStoreImpl implements SecurityStore
          {
             throw new IllegalArgumentException("Invalid checkType:" + checkType);
          }
-      }      
+      }
    }
-   
-   public void invalidateCache()
+
+   public void onChange()
    {
-   	readCache.clear();
+      invalidateCache();
+   }
+
+   private void invalidateCache()
+   {
+      readCache.clear();
 
       writeCache.clear();
 
       createCache.clear();
    }
-   
+
    // Public --------------------------------------------------------
 
    public void setSecurityRepository(HierarchicalRepository<HashSet<Role>> securityRepository)
    {
       this.securityRepository = securityRepository;
+      securityRepository.registerListener(this);
    }
-   
+
    public void setAuthenticationManager(AuthenticationManager authenticationManager)
    {
       this.authenticationManager = authenticationManager;
-      
+
       this.realmMapping = (RealmMapping) authenticationManager;
    }
 
@@ -214,7 +221,7 @@ public class SecurityStoreImpl implements SecurityStore
    // Package Private -----------------------------------------------
 
    // Private -------------------------------------------------------
-   
+
    private boolean checkCached(String dest, CheckType checkType)
    {
       long now = System.currentTimeMillis();
@@ -255,7 +262,7 @@ public class SecurityStoreImpl implements SecurityStore
 
       return granted;
    }
-   
+
    private boolean authorize(String user, String destination, CheckType checkType)
    {
       if (trace) { log.trace("authorizing user " + user + " for destination " + destination); }
@@ -263,9 +270,9 @@ public class SecurityStoreImpl implements SecurityStore
       HashSet<Role> roles = securityRepository.getMatch(destination);
 
       Principal principal = user == null ? null : new SimplePrincipal(user);
-      
+
       Set rolePrincipals = getRolePrincipals(checkType, roles);
-      
+
       boolean hasRole = realmMapping.doesUserHaveRole(principal, rolePrincipals);
 
       if (trace) { log.trace("user " + user + (hasRole ? " is " : " is NOT ") + "authorized"); }
@@ -288,5 +295,5 @@ public class SecurityStoreImpl implements SecurityStore
       return principals;
    }
 
-   // Inner class ---------------------------------------------------         
+   // Inner class ---------------------------------------------------
 }

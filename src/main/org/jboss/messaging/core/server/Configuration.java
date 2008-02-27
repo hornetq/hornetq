@@ -125,7 +125,7 @@ public class Configuration
          throw new IllegalArgumentException("Cannot set MessageCounterSamplePeriod < 1000 ms");
       }
       
-      propertyChangeSupport.firePropertyChange("messageCounterSamplePeriod", messageCounterSamplePeriod, messageCounterSamplePeriod);
+      propertyChangeSupport.firePropertyChange("messageCounterSamplePeriod", this.messageCounterSamplePeriod, messageCounterSamplePeriod);
       
       this.messageCounterSamplePeriod = messageCounterSamplePeriod;
    }
