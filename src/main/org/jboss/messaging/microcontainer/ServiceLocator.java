@@ -41,10 +41,7 @@ import javax.transaction.TransactionManager;
  */
 public class ServiceLocator implements KernelControllerContextAware
 {
-    private ObjectName multiplexer;
-    private TransactionManager tm;
     private org.jboss.security.AuthenticationManager authenticationManager;
-    private DataSource dataSource;
     private KernelControllerContext kernelControllerContext;
 
     public void setKernelControllerContext(KernelControllerContext kernelControllerContext) throws Exception
@@ -56,78 +53,6 @@ public class ServiceLocator implements KernelControllerContextAware
     {
         kernelControllerContext = null;
     }
-
-    public TransactionManager getTransactionManager() throws Exception
-    {
-        if(tm == null)
-        {
-            ControllerContext controllerContext = kernelControllerContext.getController().getInstalledContext("jbm:TransactionManager");
-           if(controllerContext != null)
-           {
-              tm = (TransactionManager) controllerContext.getTarget();
-           }
-           else
-           {
-              try
-              {
-                 tm = TransactionManagerLocator.locateTransactionManager();
-              }
-              catch (Exception e)
-              {
-                 throw new Exception("TransactionManager unavailable", e);
-              }
-           }
-        }
-        return tm;
-    }
-
-    public void setTransactionManager(TransactionManager transactionManager)
-    {
-        this.tm = transactionManager;
-    }
-
-    public DataSource getDataSource() throws Exception
-    {
-        if(dataSource == null)
-        {
-           ControllerContext controllerContext = kernelControllerContext.getController().getInstalledContext("jbm:DataSource");
-           if(controllerContext != null)
-           {
-              dataSource =  (DataSource) controllerContext.getTarget();
-           }
-           else
-           {
-              InitialContext ic = new InitialContext();
-              //try in the initial context, if its not there use the one that has been injected
-              try
-              {
-                 dataSource = (DataSource) ic.lookup("java:/DefaultDS");
-              }
-              catch (Exception e)
-              {
-                 throw new Exception("DataSource unavailable", e);
-              }
-           }
-
-        }
-        return dataSource;
-    }
-
-    public void setDataSource(DataSource datasource)
-    {
-        this.dataSource = datasource;
-    }
-
-
-   public TransactionManager getTm()
-   {
-      return tm;
-   }
-
-   public void setTm(TransactionManager tm)
-   {
-      this.tm = tm;
-   }
 
    public AuthenticationManager getAuthenticationManager() throws Exception
    {
@@ -158,14 +83,4 @@ public class ServiceLocator implements KernelControllerContextAware
    {
       this.authenticationManager = authenticationManager;
    }
-
-   public ObjectName getMultiplexer()
-    {
-        return multiplexer;
-    }
-
-    public void setMultiplexer(ObjectName multiplexer)
-    {
-        this.multiplexer = multiplexer;
-    }
 }
