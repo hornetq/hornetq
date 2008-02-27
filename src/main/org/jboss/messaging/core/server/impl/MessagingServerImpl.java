@@ -31,6 +31,9 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.deployers.impl.QueueSettingsDeployer;
 import org.jboss.messaging.core.deployers.impl.SecurityDeployer;
+import org.jboss.messaging.core.deployers.impl.FileDeploymentManager;
+import org.jboss.messaging.core.deployers.DeploymentManager;
+import org.jboss.messaging.core.deployers.Deployer;
 import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.memory.impl.SimpleMemoryManager;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
@@ -96,9 +99,10 @@ public class MessagingServerImpl implements MessagingServer
    private MemoryManager memoryManager = new SimpleMemoryManager();
    private MessageCounterManager messageCounterManager;
    private PostOffice postOffice;
-   private SecurityDeployer securityDeployer;
-   private QueueSettingsDeployer queueSettingsDeployer;
+   private Deployer securityDeployer;
+   private Deployer queueSettingsDeployer;
    private AuthenticationManager authenticationManager = new NullAuthenticationManager();
+   private DeploymentManager deploymentManager = new FileDeploymentManager();
 
    // plugins
 
@@ -163,8 +167,7 @@ public class MessagingServerImpl implements MessagingServer
       securityRepository.setDefault(new HashSet<Role>());
       securityStore.setSecurityRepository(securityRepository);
       securityStore.setAuthenticationManager(authenticationManager);
-      securityDeployer = new SecurityDeployer();
-      securityDeployer.setSecurityRepository(securityRepository);
+      securityDeployer = new SecurityDeployer(securityRepository);
       queueSettingsRepository.setDefault(new QueueSettings());
       scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize());
       queueFactory = new QueueFactoryImpl(queueSettingsRepository, scheduledExecutor);
@@ -193,7 +196,9 @@ public class MessagingServerImpl implements MessagingServer
       remotingService.addFailureListener(connectionManager);
       memoryManager.start();
       postOffice.start();
-      queueSettingsDeployer.start();
+      deploymentManager.start();
+      deploymentManager.registerDeployer(securityDeployer);
+      deploymentManager.registerDeployer(queueSettingsDeployer);
       MessagingServerPacketHandler serverPacketHandler = new MessagingServerPacketHandler(this);
       getRemotingService().getDispatcher().register(serverPacketHandler);
 
@@ -228,6 +233,7 @@ public class MessagingServerImpl implements MessagingServer
       // Stop the wired components
       securityDeployer.stop();
       queueSettingsDeployer.stop();
+      deploymentManager.stop();
       connectionManager.stop();
       remotingService.removeFailureListener(connectionManager);
       connectionManager = null;
@@ -277,6 +283,10 @@ public class MessagingServerImpl implements MessagingServer
       return remotingService;
    }
 
+   public DeploymentManager getDeploymentManager()
+   {
+      return deploymentManager;
+   }
 
    public void enableMessageCounters()
    {

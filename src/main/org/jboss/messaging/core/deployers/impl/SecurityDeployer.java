@@ -35,7 +35,7 @@ import java.util.HashSet;
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class SecurityDeployer extends Deployer
+public class SecurityDeployer extends XmlDeployer
 {
 
    private static final String PERMISSION_ELEMENT_NAME = "permission";
@@ -50,6 +50,10 @@ public class SecurityDeployer extends Deployer
     */
    private HierarchicalRepository<HashSet<Role>> securityRepository;
 
+   public SecurityDeployer(HierarchicalRepository<HashSet<Role>> securityRepository)
+   {
+      this.securityRepository = securityRepository;
+   }
    /**
     * the names of the elements to deploy
     * @return the names of the elements todeploy
@@ -66,11 +70,6 @@ public class SecurityDeployer extends Deployer
    public String getKeyAttribute()
    {
       return MATCH;
-   }
-
-   public void setSecurityRepository(HierarchicalRepository<HashSet<Role>> securityRepository)
-   {
-      this.securityRepository = securityRepository;
    }
 
    /**

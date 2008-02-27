@@ -32,7 +32,7 @@ import org.w3c.dom.NodeList;
  * A deployer for creating a set of queue settings and adding them to a repository
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class QueueSettingsDeployer extends Deployer
+public class QueueSettingsDeployer extends XmlDeployer
 {   
    private static final String CLUSTERED_NODE_NAME = "clustered";
    

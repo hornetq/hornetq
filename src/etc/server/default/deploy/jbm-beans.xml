@@ -76,6 +76,9 @@
       <property name="jmsServerManager">
          <inject bean="JMSServerManager"/>
       </property>
+      <property name="messagingServer">
+         <inject bean="MessagingServer"/>
+      </property>
    </bean>
  
 </deployment>

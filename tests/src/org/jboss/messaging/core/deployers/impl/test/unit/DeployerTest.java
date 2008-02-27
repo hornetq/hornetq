@@ -25,6 +25,7 @@ package org.jboss.messaging.core.deployers.impl.test.unit;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.deployers.Deployer;
+import org.jboss.messaging.core.deployers.impl.XmlDeployer;
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -168,7 +169,7 @@ public class DeployerTest  extends TestCase
       assertNull(testDeployer.getNodes().get("test3"));
       assertNull(testDeployer.getNodes().get("test4"));
    }
-   class TestDeployer extends Deployer
+   class TestDeployer extends XmlDeployer
    {
       private String elementname = "test";
       Element element = null;

@@ -30,6 +30,7 @@ import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.version.Version;
+import org.jboss.messaging.core.deployers.DeploymentManager;
 
 /**
  * This interface defines the internal interface of the Messaging Server exposed
@@ -107,4 +108,6 @@ public interface MessagingServer extends MessagingComponent
    CreateConnectionResponse createConnection(String username, String password,
                                              String remotingClientSessionID, String clientVMID,
                                              int prefetchSize, String clientAddress) throws Exception;
+
+   DeploymentManager getDeploymentManager();
 }

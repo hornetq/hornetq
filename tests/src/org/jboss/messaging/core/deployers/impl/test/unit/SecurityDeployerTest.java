@@ -54,17 +54,18 @@ public class SecurityDeployerTest extends TestCase
    private String noRoles =
            "   <securityfoo match=\"queues.testQueue\">\n" +
            "   </securityfoo>";
+   private HierarchicalRepository<HashSet<Role>> repository;
 
    protected void setUp() throws Exception
    {
-      deployer = new SecurityDeployer();
+      repository = EasyMock.createStrictMock(HierarchicalRepository.class);
+      deployer = new SecurityDeployer(EasyMock.createStrictMock(HierarchicalRepository.class));
    }
 
    public void testSingle() throws Exception
    {
 
-      HierarchicalRepository<HashSet<Role>> repository = EasyMock.createStrictMock(HierarchicalRepository.class);
-      deployer.setSecurityRepository(repository);
+
       Element e = XMLUtil.stringToElement(conf);
       Role role = new Role("durpublisher", true, true, true);
       Role role2 = new Role("guest", true, true, false);
@@ -81,8 +82,6 @@ public class SecurityDeployerTest extends TestCase
 
    public void testMultiple() throws Exception
    {
-      HierarchicalRepository<HashSet<Role>> repository = EasyMock.createStrictMock(HierarchicalRepository.class);
-      deployer.setSecurityRepository(repository);
       Role role = new Role("durpublisher", true, true, true);
       Role role2 = new Role("guest", true, true, false);
       Role role3 = new Role("publisher", true, true, false);
@@ -99,8 +98,6 @@ public class SecurityDeployerTest extends TestCase
    }
    public void testNoRolesAdded() throws Exception
    {
-      HierarchicalRepository<HashSet<Role>> repository = EasyMock.createStrictMock(HierarchicalRepository.class);
-      deployer.setSecurityRepository(repository);
       HashSet<Role> roles = new HashSet<Role>();
       repository.addMatch("queues.testQueue", roles);
       EasyMock.replay(repository);

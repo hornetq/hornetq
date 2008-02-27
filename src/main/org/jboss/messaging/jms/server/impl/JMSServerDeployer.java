@@ -24,6 +24,8 @@ package org.jboss.messaging.jms.server.impl;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.deployers.Deployer;
 import org.jboss.messaging.core.deployers.DeploymentManager;
+import org.jboss.messaging.core.deployers.impl.XmlDeployer;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -31,11 +33,13 @@ import org.w3c.dom.NodeList;
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class JMSServerDeployer extends Deployer 
+public class JMSServerDeployer extends XmlDeployer 
 {
    Logger log = Logger.getLogger(JMSServerManagerImpl.class);
 
    private JMSServerManager jmsServerManager;
+
+   private MessagingServer messagingServer;
 
    private static final String CLIENTID_ELEMENT = "client-id";
    private static final String DUPS_OK_BATCH_SIZE_ELEMENT = "dups-ok-batch-size";
@@ -54,6 +58,11 @@ public class JMSServerDeployer extends Deployer
       this.jmsServerManager = jmsServerManager;
    }
 
+   public void setMessagingServer(MessagingServer messagingServer)
+   {
+      this.messagingServer = messagingServer;
+   }
+
    /**
     * lifecycle method
     */
@@ -61,7 +70,7 @@ public class JMSServerDeployer extends Deployer
    {
       try
       {
-         DeploymentManager.getInstance().registerDeployable(this);
+         messagingServer.getDeploymentManager().registerDeployer(this);
       }
       catch (Exception e)
       {
@@ -75,7 +84,7 @@ public class JMSServerDeployer extends Deployer
    public void stop() throws Exception
    {
       super.stop();
-      DeploymentManager.getInstance().unregisterDeployable(this);
+      messagingServer.getDeploymentManager().unregisterDeployer(this);
    }
 
    /**
