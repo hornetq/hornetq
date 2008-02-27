@@ -56,11 +56,13 @@ public class SSLSupport
       return sslContext;
    }
 
-   public static SSLContext createClientContext() throws Exception
+   public static SSLContext createClientContext(String keystorePath,
+         String keystorePassword) throws Exception
    {
       SSLContext context = SSLContext.getInstance("TLS");
-      TrustManager[] trustManagers = loadTrustManager(true, null, null);
-      context.init(null, trustManagers, new SecureRandom());
+      KeyManager[] keyManagers = loadKeyManagers(keystorePath, keystorePassword);
+      TrustManager[] trustManagers = loadTrustManager(true,  null, null);
+      context.init(keyManagers, trustManagers, new SecureRandom());
       return context;
    }
 
@@ -70,7 +72,7 @@ public class SSLSupport
    {
       if (client)
       {
-         return createClientContext();
+         return createClientContext(keystorePath, keystorePassword);
       } else
       {
          return createServerContext(keystorePath, keystorePassword,

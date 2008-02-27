@@ -145,6 +145,13 @@ public class MinaConnector implements NIOConnector, FailureNotifier
          return false;
       }
 
+      CloseFuture closeFuture = session.close().awaitUninterruptibly();
+      boolean closed = closeFuture.isClosed();
+      
+      blockingScheduler.shutdown();
+      connector.removeListener(ioListener);
+      connector.dispose();
+
       SslFilter sslFilter = (SslFilter) session.getFilterChain().get("ssl");
       // FIXME without this hack, exceptions are thrown:
       // "Unexpected exception from SSLEngine.closeInbound()." -> because the ssl session is not stopped
@@ -160,13 +167,7 @@ public class MinaConnector implements NIOConnector, FailureNotifier
             // ignore
          }
       }
-      CloseFuture closeFuture = session.close().awaitUninterruptibly();
-      boolean closed = closeFuture.isClosed();
       
-      connector.removeListener(ioListener);
-      connector.dispose();
-      blockingScheduler.shutdown();
-
       connector = null;
       blockingScheduler = null;
       session = null;

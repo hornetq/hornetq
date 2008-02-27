@@ -6,8 +6,12 @@
  */
 package org.jboss.test.messaging.jms;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 
 import javax.jms.ConnectionFactory;
@@ -18,9 +22,9 @@ import org.jboss.messaging.core.logging.Logger;
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
+ * 
  * @version <tt>$Revision$</tt>
- *
+ * 
  */
 public class SerializedClientSupport
 {
@@ -32,7 +36,8 @@ public class SerializedClientSupport
 
    // Static --------------------------------------------------------
 
-   public static Process spawnVM(String className, String[] args) throws Exception
+   public static Process spawnVM(String className, String... args)
+         throws Exception
    {
       StringBuffer sb = new StringBuffer();
 
@@ -43,15 +48,13 @@ public class SerializedClientSupport
       if (System.getProperty("os.name").equals("Linux"))
       {
          sb.append("-cp").append(" ").append(classPath).append(" ");
-      }
-      else
+      } else
       {
          sb.append("-cp").append(" \"").append(classPath).append("\" ");
       }
 
       sb.append(className).append(' ');
 
-      // the first argument
       for (int i = 0; i < args.length; i++)
       {
          sb.append(args[i]).append(' ');
@@ -65,10 +68,15 @@ public class SerializedClientSupport
 
       log.trace("process: " + process);
 
+      ProcessLogger outputLogger = new ProcessLogger(process.getInputStream(),
+            className);
+      outputLogger.start();
+
       return process;
    }
 
-   public static File writeToFile(String fileName, ConnectionFactory cf, Queue queue) throws Exception
+   public static File writeToFile(String fileName, ConnectionFactory cf,
+         Queue queue) throws Exception
    {
       String moduleOutput = System.getProperty("java.io.tmpdir");
       if (moduleOutput == null)
@@ -84,7 +92,8 @@ public class SerializedClientSupport
 
       File file = new File(dir, fileName);
 
-      ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file));
+      ObjectOutputStream oos = new ObjectOutputStream(
+            new FileOutputStream(file));
       oos.writeObject(cf);
       oos.writeObject(queue);
       oos.flush();
@@ -92,7 +101,7 @@ public class SerializedClientSupport
 
       return file;
    }
-   
+
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
@@ -104,4 +113,36 @@ public class SerializedClientSupport
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
+
+   /**
+    * Redirect the input stream to a logger (as debug logs)
+    */
+   static class ProcessLogger extends Thread
+   {
+      InputStream is;
+      Logger processLogger;
+
+      ProcessLogger(InputStream is, String className)
+            throws ClassNotFoundException
+      {
+         this.is = is;
+         this.processLogger = Logger.getLogger(Class.forName(className));
+         setDaemon(true);
+      }
+
+      public void run()
+      {
+         try
+         {
+            InputStreamReader isr = new InputStreamReader(is);
+            BufferedReader br = new BufferedReader(isr);
+            String line = null;
+            while ((line = br.readLine()) != null)
+               processLogger.debug(line);
+         } catch (IOException ioe)
+         {
+            ioe.printStackTrace();
+         }
+      }
+   }
 }

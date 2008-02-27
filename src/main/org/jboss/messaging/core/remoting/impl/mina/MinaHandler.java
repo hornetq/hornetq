@@ -57,7 +57,7 @@ public class MinaHandler extends IoHandlerAdapter
    public void exceptionCaught(IoSession session, Throwable cause)
          throws Exception
    {
-      log.error("caught exception " + cause + " for session " + session);
+      log.error("caught exception " + cause + " for session " + session, cause);
       
       if (failureNotifier != null)
       {
