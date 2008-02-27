@@ -92,6 +92,10 @@
       <ant antfile="build-messaging.xml" target="jar"/>
    </target>
 
+   <target name="native" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="native"/>
+   </target>
+
    <target name="embedded" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="embedded"/>
    </target>

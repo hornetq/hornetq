@@ -81,6 +81,7 @@
    <property name="source.java" value="${project.source}/main"/>
    <property name="source.etc" value="${project.source}/etc"/>
    <property name="project.output" value="${project.root}/output"/>
+   <property name="build.jniheader" value="${project.output}/include"/>
    <property name="build.classes" value="${project.output}/classes"/>
    <property name="build.lib" value="${project.output}/lib"/>
    <property name="build.api" value="${project.output}/api"/>
@@ -171,6 +172,7 @@
       <path refid="external.dependencies.classpath"/>
       <path refid="jboss.dependencies.classpath"/>
       <pathelement location="${project.root}/lib/je-3.2.44.jar"/>
+      <pathelement location="${build.classes}"/> 
    </path>
 
    <!-- ======================================================================================== -->
@@ -239,7 +241,7 @@
          <classpath refid="compilation.classpath"/>
       </javac>
    </target>
-
+	
    <target name="compile-etc">
 
       <mkdir dir="${build.etc}"/>
@@ -653,17 +655,26 @@
    </target>
 
    <!-- ======================================================================================== -->
-   <!-- TCK Tasks                                                                                -->
+   <!-- Native Tasks                                                                             -->
    <!-- ======================================================================================== -->
 
-   <target name="cts-deploy" depends="jar">
-      <copy file="${build.lib}/jboss-${module.name}.sar"
-         todir="${ENV.JBOSS_HOME}/server/cts-messaging/deploy"/>
-   </target>
+	<property name="native.src" value="./native"/>
+	<property name="native.include" value="${native.src}/src"/>
+	
+	<target name="native-header" depends="compile">
+            <javah class="org.jboss.messaging.core.asyncio.impl.JlibAIO" classpathref="compilation.classpath" destdir="${native.include}">
+            </javah>
+    </target>
 
-   <target name="cts-undeploy">
-      <delete file="${ENV.JBOSS_HOME}/server/cts-messaging/deploy/jboss-${module.name}.sar"/>
-   </target>
+	<target name="native" depends="native-header">
+		<exec dir="${native.src}" executable="autoreconf">
+			<arg value="--install"/>
+		</exec>
+		<exec dir="${native.src}" executable="sh">
+			<arg value="./configure"/>
+		</exec>
+		<exec dir="${native.src}" executable="make"/>
+    </target>
 
    <!-- ======================================================================================== -->
    <!-- Cleaning Tasks                                                                           -->
