@@ -25,7 +25,7 @@
 #include <string>
 
 
-#include "org_jboss_messaging_core_persistence_impl_libaio_jni_impl_JlibAIO.h"
+#include "org_jboss_messaging_core_asyncio_impl_JlibAIO.h"
 
 
 #include "JavaUtilities.h"
@@ -33,12 +33,15 @@
 #include "JNICallbackAdapter.h"
 #include "AIOException.h"
 
+
+
+
 /*
  * Class:     org_jboss_jaio_libaioimpl_LibAIOController
  * Method:    init
  * Signature: (Ljava/lang/String;Ljava/lang/Class;)J
  */
-JNIEXPORT jlong JNICALL Java_org_jboss_messaging_core_persistence_impl_libaio_jni_impl_JlibAIO_init
+JNIEXPORT jlong JNICALL Java_org_jboss_messaging_core_asyncio_impl_JlibAIO
   (JNIEnv * env, jclass, jstring jstrFileName, jclass callbackClass, jint maxIO, jobject logger)
 {
 	try
