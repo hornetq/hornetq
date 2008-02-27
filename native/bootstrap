@@ -1,0 +1,3 @@
+autoreconf --install
+./configure
+make

@@ -1,0 +1,72 @@
+How to build jLibAIO:
+
+You will need to make sure you these following dependencies:
+
+ - G++
+ - Gcc
+ - autotools-dev (including libtool, automake, autoconf)
+ - Make
+ - libaio (0.3.106)
+ - libaio-dev
+ - JDK (full JDK)
+
+
+To build the native part:
+ Make sure you have JAVA_HOME defined, and pointing to the root of your JDK:
+ Example:
+ 
+ $> export JAVA_HOME=/usr/share/jdk1.5.0_13
+ 
+ 
+ Go to ./native and call bootstrap. Bootstrap will call all the initial scripts you need
+ $>  ./bootstrap
+ 
+ if you are missing any dependencies, autoconf would tell you what you're missing.
+ 
+ After bootstrap is called for the first time, you can aways build it by just calling make
+ 
+
+To run the java part:
+ Add <pathToYourProject>/native/src/.lib to LD_LIBRARY_PATH
+ Example:
+ 
+ $> export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/myWorkspace/native/src/.lib
+ 
+ $> cd ./java
+ 
+ $> ant tests
+ 
+ 
+ 
+
+
+Todo on the implementation:
+   - if queue is full, it needs to retry until it can find a slot (ok)
+
+Todo on the API:
+  - initialize with number of slots (ok)
+  - newAlignedBuffer (ok)
+  - destroyAlignedBuffer (ok)
+  - write (position, ByteBuffer, Callback) (ok)
+  - read (position, ByteBuffer, Callback) (ok)
+  - Logging (callback in Java); (ok
+  - Add more logging on the native layer
+  - Organize error codes
+  
+
+
+
+Future versions:
+  - MemoryPaging
+  
+  
+ Documenting:
+    - Man page libaio 
+      - requirements - O_BINARY
+      - requirements - Pre Allocation
+      - typos on the documentation (include libio?)
+      - Update example
+      - Max events ( /proc/sys/fs/aio-max-nr )
+      - is io_submit should be thread safe if you sumit on different io_cbs
+
+ 
