@@ -16,9 +16,9 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class Logger 
 {
-   private static ConcurrentMap<Class<?>, Logger> loggers = new ConcurrentHashMap<Class<?>, Logger>();
+   private static final ConcurrentMap<Class<?>, Logger> loggers = new ConcurrentHashMap<Class<?>, Logger>();
    
-   public static Logger getLogger(Class<?> clazz)
+   public static Logger getLogger(final Class<?> clazz)
    {
       Logger logger = loggers.get(clazz);
       
@@ -37,9 +37,9 @@ public class Logger
       return logger;
    }
    
-   private org.jboss.logging.Logger logger;
+   private final org.jboss.logging.Logger logger;
    
-   private Logger(Class<?> clazz)
+   private Logger(final Class<?> clazz)
    {
       logger = org.jboss.logging.Logger.getLogger(clazz);
    }
@@ -59,62 +59,62 @@ public class Logger
       return logger.isTraceEnabled();
    }
    
-   public void fatal(Object message)
+   public void fatal(final Object message)
    {
       logger.fatal(message);
    }
    
-   public void fatal(Object message, Throwable t)
+   public void fatal(final Object message, final Throwable t)
    {
       logger.fatal(message, t);
    }
    
-   public void error(Object message)
+   public void error(final Object message)
    {
       logger.error(message);
    }
    
-   public void error(Object message, Throwable t)
+   public void error(final Object message, final Throwable t)
    {
       logger.error(message, t);
    }
    
-   public void warn(Object message)
+   public void warn(final Object message)
    {
       logger.warn(message);
    }
    
-   public void warn(Object message, Throwable t)
+   public void warn(final Object message, final Throwable t)
    {
       logger.warn(message, t);
    }
    
-   public void info(Object message)
+   public void info(final Object message)
    {
       logger.info(message);
    }
    
-   public void info(Object message, Throwable t)
+   public void info(final Object message, final Throwable t)
    {
       logger.info(message, t);
    }
    
-   public void debug(Object message)
+   public void debug(final Object message)
    {
       logger.debug(message);
    }
    
-   public void debug(Object message, Throwable t)
+   public void debug(final Object message, final Throwable t)
    {
       logger.debug(message, t);
    }
    
-   public void trace(Object message)
+   public void trace(final Object message)
    {
       logger.trace(message);
    }
    
-   public void trace(Object message, Throwable t)
+   public void trace(final Object message, final Throwable t)
    {
       logger.trace(message, t);
    }

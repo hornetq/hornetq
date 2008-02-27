@@ -35,10 +35,6 @@ import org.jboss.messaging.core.server.MessagingException;
 
 /**
  * 
- * Encapsulates the state and behaviour from MINA needed for a JMS connection.
- * 
- * Each JMS connection maintains a single Client instance for invoking on the server.
- *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
