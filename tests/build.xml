@@ -96,6 +96,7 @@
    <property name="source.tests.java" value="${tests.root}/src"/>
    <property name="source.tests.stylesheets" value="${source.tests.java}/stylesheets"/>
    <property name="tests.output" value="${tests.root}/output"/>
+   <property name="build.native" value="../native/src/.libs"/>
    <property name="build.tests.classes" value="${tests.output}/classes"/>
    <property name="build.tests.lib" value="${tests.output}/lib"/>
    <property name="build.tests.reports" value="${tests.output}/reports"/>
@@ -475,6 +476,7 @@
              showoutput="${junit.showoutput}"
              timeout="${junit.timeout}">
 
+         <sysproperty key="java.library.path" value="${build.native}" />
          <sysproperty key="jbm.remoting.disable.invm" value="${disable.invm}" />
          <sysproperty key="remote" value="false"/>
          <sysproperty key="module.output" value="${tests.output}"/>
@@ -511,6 +513,7 @@
 	       <exclude name="**/jms/ConnectionConsumerTest.class"/>
 	       
                <include name="**/messaging/util/**/${test-mask}.class"/>
+               <exclude name="**/*NativeTest.class"/>
                <exclude name="**/jms/MemLeakTest.class"/>
                <exclude name="**/jms/RemotingConnectionConfigurationTest.class"/>
                <exclude name="**/jms/stress/**"/>
@@ -526,6 +529,57 @@
       </junit>
    </target>
 
+   <target name="native-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+           description="Runs all available tests an in-VM configuration">
+
+      <echo message=""/>
+      <echo message="Running nativeTests tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}, disable.invm=${disable.invm}"/>
+      <echo message=""/>
+
+      <junit printsummary="${junit.printsummary}"
+             fork="on"
+             forkMode="once"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+
+         <sysproperty key="java.library.path" value="${build.native}" />
+         <sysproperty key="jbm.remoting.disable.invm" value="${disable.invm}" />
+         <sysproperty key="remote" value="false"/>
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="jboss.messaging.groupname" value="${jboss.messaging.groupname}"/>
+         <sysproperty key="jboss.messaging.datachanneludpport" value="${jboss.messaging.datachanneludpport}"/>
+         <sysproperty key="jboss.messaging.controlchanneludpport" value="${jboss.messaging.controlchanneludpport}"/>
+         <sysproperty key="jboss.messaging.datachanneludpaddress" value="${jboss.messaging.datachanneludpaddress}"/>
+         <sysproperty key="jboss.messaging.controlchanneludpaddress" value="${jboss.messaging.controlchanneludpaddress}"/>
+         <sysproperty key="jboss.messaging.ipttl" value="${jboss.messaging.ipttl}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.logfile.suffix" value="invm"/>
+         <sysproperty key="build.lib" value="${build.lib}"/>
+         <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
+         <jvmarg value="-Xmx512M"/>
+         <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
+         <!--<jvmarg value="-ea"/>-->
+         <classpath refid="test.execution.classpath"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest todir="${junit.batchtest.todir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${build.tests.classes}">
+	        <include name="**/*NativeTest.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+   </target>
+
+
+	
    <target name="invm-thirdparty-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
            description="Runs all available thirdparty tests an in-VM configuration">
 
