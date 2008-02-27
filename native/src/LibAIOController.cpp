@@ -41,7 +41,7 @@
  * Method:    init
  * Signature: (Ljava/lang/String;Ljava/lang/Class;)J
  */
-JNIEXPORT jlong JNICALL Java_org_jboss_messaging_core_asyncio_impl_JlibAIO
+JNIEXPORT jlong JNICALL Java_org_jboss_messaging_core_asyncio_impl_JlibAIO_init
   (JNIEnv * env, jclass, jstring jstrFileName, jclass callbackClass, jint maxIO, jobject logger)
 {
 	try
@@ -74,7 +74,7 @@ JNIEXPORT jlong JNICALL Java_org_jboss_messaging_core_asyncio_impl_JlibAIO
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_jboss_messaging_core_persistence_impl_libaio_jni_impl_JlibAIO_read
+JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_JlibAIO_read
   (JNIEnv *env, jclass, jlong controllerAddress, jlong position, jlong size, jobject jbuffer, jobject callback)
 {
 	try 
@@ -91,7 +91,7 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_persistence_impl_libaio_jni
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_jboss_messaging_core_persistence_impl_libaio_jni_impl_JlibAIO_write
+JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_JlibAIO_write
   (JNIEnv *env, jclass, jlong controllerAddress, jlong position, jlong size, jobject jbuffer, jobject callback)
 {
 	try 
@@ -110,7 +110,7 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_persistence_impl_libaio_jni
 
 
 
-JNIEXPORT void Java_org_jboss_messaging_core_persistence_impl_libaio_jni_impl_JlibAIO_internalPollEvents
+JNIEXPORT void Java_org_jboss_messaging_core_asyncio_impl_JlibAIO_internalPollEvents
   (JNIEnv *env, jclass, jlong controllerAddress)
 {
 	try
@@ -124,7 +124,7 @@ JNIEXPORT void Java_org_jboss_messaging_core_persistence_impl_libaio_jni_impl_Jl
 	}
 }
 
-JNIEXPORT jobject JNICALL Java_org_jboss_messaging_core_persistence_impl_libaio_jni_impl_JlibAIO_newBuffer
+JNIEXPORT jobject JNICALL Java_org_jboss_messaging_core_asyncio_impl_JlibAIO_newBuffer
   (JNIEnv * env, jobject, jlong size)
 {
 	try
@@ -150,7 +150,7 @@ JNIEXPORT jobject JNICALL Java_org_jboss_messaging_core_persistence_impl_libaio_
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_jboss_messaging_core_persistence_impl_libaio_jni_impl_JlibAIO_destroyBuffer
+JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_JlibAIO_destroyBuffer
   (JNIEnv * env, jobject, jobject jbuffer)
 {
 	void *  buffer = env->GetDirectBufferAddress(jbuffer);
@@ -159,7 +159,7 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_persistence_impl_libaio_jni
 
 
 
-JNIEXPORT void JNICALL Java_org_jboss_messaging_core_persistence_impl_libaio_jni_impl_JlibAIO_closeInternal
+JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_JlibAIO_closeInternal
   (JNIEnv *env, jclass, jlong controllerAddress)
 {
 	try
@@ -175,7 +175,7 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_persistence_impl_libaio_jni
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_jboss_messaging_core_persistence_impl_libaio_jni_impl_JlibAIO_preAllocate
+JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_JlibAIO_preAllocate
   (JNIEnv * env, jclass, jlong controllerAddress, jint blocks, jlong size)
 {
 	try
