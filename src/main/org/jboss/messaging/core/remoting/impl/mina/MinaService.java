@@ -138,11 +138,11 @@ public class MinaService implements RemotingService, FailureNotifier
          addExecutorFilter(filterChain);
 
          // Bind
-         acceptor.setLocalAddress(new InetSocketAddress(remotingConfig.getHost(), remotingConfig.getPort()));
+         acceptor.setDefaultLocalAddress(new InetSocketAddress(remotingConfig.getHost(), remotingConfig.getPort()));
          acceptor.setReuseAddress(true);
          acceptor.getSessionConfig().setReuseAddress(true);
          acceptor.getSessionConfig().setKeepAlive(true);
-         acceptor.setDisconnectOnUnbind(false);
+         acceptor.setCloseOnDeactivation(false);
 
          acceptor.setHandler(new MinaHandler(dispatcher, this, true));
          acceptor.bind();

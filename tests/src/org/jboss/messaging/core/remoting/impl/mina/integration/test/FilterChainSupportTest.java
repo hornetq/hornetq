@@ -97,7 +97,7 @@ public class FilterChainSupportTest extends TestCase
       addSSLFilter(acceptor.getFilterChain(), false, keystorePath,
             keystorePassword, trustStorePath, trustStorePassword);
       addCodecFilter(acceptor.getFilterChain());
-      acceptor.setLocalAddress(address);
+      acceptor.setDefaultLocalAddress(address);
 
       final CountDownLatch latch = new CountDownLatch(1);
       
