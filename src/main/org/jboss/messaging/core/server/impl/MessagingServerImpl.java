@@ -21,10 +21,7 @@
   */
 package org.jboss.messaging.core.server.impl;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.HashSet;
-import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
@@ -34,14 +31,10 @@ import org.jboss.messaging.core.deployers.impl.SecurityDeployer;
 import org.jboss.messaging.core.deployers.impl.FileDeploymentManager;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.Deployer;
-import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.memory.impl.SimpleMemoryManager;
-import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.PersistenceManager;
 import org.jboss.messaging.core.persistence.impl.nullpm.NullPersistenceManager;
-import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.Interceptor;
@@ -56,7 +49,6 @@ import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.server.Configuration;
 import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
@@ -99,7 +91,6 @@ public class MessagingServerImpl implements MessagingServer
    private SecurityStoreImpl securityStore;
    private ConnectionManagerImpl connectionManager;
    private MemoryManager memoryManager = new SimpleMemoryManager();
-   private MessageCounterManager messageCounterManager;
    private PostOffice postOffice;
    private Deployer securityDeployer;
    private Deployer queueSettingsDeployer;
@@ -175,15 +166,6 @@ public class MessagingServerImpl implements MessagingServer
       queueFactory = new QueueFactoryImpl(queueSettingsRepository, scheduledExecutor);
       connectionManager = new ConnectionManagerImpl();
       memoryManager = new SimpleMemoryManager();
-      messageCounterManager = new MessageCounterManager(configuration.getMessageCounterSamplePeriod());
-      configuration.addPropertyChangeListener(new PropertyChangeListener()
-      {
-         public void propertyChange(PropertyChangeEvent evt)
-         {
-            if (evt.getPropertyName().equals("messageCounterSamplePeriod"))
-               messageCounterManager.reschedule(configuration.getMessageCounterSamplePeriod());
-         }
-      });
       postOffice = new PostOfficeImpl(configuration.getMessagingServerID(),
               persistenceManager, queueFactory, configuration.isStrictTck());
       queueSettingsDeployer = new QueueSettingsDeployer(postOffice, queueSettingsRepository);
@@ -241,8 +223,6 @@ public class MessagingServerImpl implements MessagingServer
       connectionManager = null;
       memoryManager.stop();
       memoryManager = null;
-      messageCounterManager.stop();
-      messageCounterManager = null;
       postOffice.stop();
       postOffice = null;
       scheduledExecutor.shutdown();

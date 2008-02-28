@@ -28,6 +28,7 @@ import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.ConnectionInfo;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.SubscriptionInfo;
+import org.jboss.messaging.jms.server.MessageStatistics;
 
 import javax.jms.*;
 import javax.naming.NameNotFoundException;
@@ -825,7 +826,6 @@ public class JMSServerManagerTest extends JBMServerTestCase
       {
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer producer = sess.createProducer(queue1);
-         Message messageToMove = null;
 
          TextMessage message = sess.createTextMessage();
          message.setStringProperty("MyString", "12345");
@@ -862,6 +862,76 @@ public class JMSServerManagerTest extends JBMServerTestCase
          assertEquals(message.getShortProperty("MyShort"), (short)1);
          consumer.close();
 
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+
+   }
+
+   public void testMessageStatistics() throws Exception
+   {
+      Connection conn = getConnectionFactory().createConnection("guest", "guest");
+      try
+      {
+         jmsServerManager.createQueue("CountQueue", "/queue/CountQueue");
+         Queue queue1 = (Queue) getInitialContext().lookup("/queue/CountQueue");
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer producer = sess.createProducer(queue1);
+
+         TextMessage message = sess.createTextMessage();
+         for(int i = 0; i < 100; i++)
+         {
+            producer.send(message);
+         }
+         jmsServerManager.startGatheringStatisticsForQueue("CountQueue");
+         for(int i = 0; i < 100; i++)
+         {
+            producer.send(message);
+         }
+         List<MessageStatistics> messageStatistics = jmsServerManager.getStatistics();
+         assertTrue(messageStatistics != null && messageStatistics.size() ==1);
+         assertEquals(messageStatistics.get(0).getCount(), 100);
+         assertEquals(messageStatistics.get(0).getTotalMessageCount(), 200);
+         assertEquals(messageStatistics.get(0).getCurrentMessageCount(), 200);
+         MessageConsumer consumer = sess.createConsumer(queue1);
+         conn.start();
+         for(int i = 0; i < 50; i++)
+         {
+            consumer.receive();
+         }
+         messageStatistics = jmsServerManager.getStatistics();
+         assertEquals(messageStatistics.get(0).getCount(), 100);
+         assertEquals(messageStatistics.get(0).getTotalMessageCount(), 200);
+         assertEquals(messageStatistics.get(0).getCurrentMessageCount(), 150);
+         consumer.close();
+         for(int i = 0; i < 50; i++)
+         {
+            producer.send(message);
+         }
+         messageStatistics = jmsServerManager.getStatistics();
+         assertEquals(messageStatistics.get(0).getCount(), 150);
+         assertEquals(messageStatistics.get(0).getTotalMessageCount(), 250);
+         assertEquals(messageStatistics.get(0).getCurrentMessageCount(), 200);
+
+         consumer = sess.createConsumer(queue1);
+         conn.start();
+         for(int i = 0; i < 200; i++)
+         {
+            consumer.receive();
+         }
+         messageStatistics = jmsServerManager.getStatistics();
+         assertEquals(messageStatistics.get(0).getCount(), 150);
+         assertEquals(messageStatistics.get(0).getTotalMessageCount(), 250);
+         assertEquals(messageStatistics.get(0).getCurrentMessageCount(), 0);
+         consumer.close();
+         jmsServerManager.stopGatheringStatisticsForQueue("CountQueue");
+         messageStatistics = jmsServerManager.getStatistics();
+         assertTrue(messageStatistics != null && messageStatistics.size() == 0);
       }
       finally
       {

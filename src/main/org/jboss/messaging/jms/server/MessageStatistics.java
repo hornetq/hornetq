@@ -57,17 +57,13 @@ public class MessageStatistics implements Serializable
    /** The message count */
    private int count;
 
-   /** The message count delta */
-   private int countDelta;
+   private int totalMessageCount;
 
-   /** The message depth */
-   private int depth;
 
-   /** The message depth delta */
-   private int depthDelta;
 
    /** The last update */
    private long timeLastUpdate;
+   private int currentMessageCount;
 
    // Static --------------------------------------------------------
 
@@ -102,64 +98,14 @@ public class MessageStatistics implements Serializable
       this.count = count;
    }
 
-   /**
-    * Get the countDelta.
-    * 
-    * @return Returns the countDelta.
-    */
-   public int getCountDelta()
+   public int getTotalMessageCount()
    {
-      return countDelta;
+      return totalMessageCount;
    }
 
-   /**
-    * Set the countDelta.
-    * 
-    * @param countDelta The countDelta to set.
-    */
-   public void setCountDelta(int countDelta)
+   public void setTotalMessageCount(int totalMessageCount)
    {
-      this.countDelta = countDelta;
-   }
-
-   /**
-    * Get the depth.
-    * 
-    * @return Returns the depth.
-    */
-   public int getDepth()
-   {
-      return depth;
-   }
-
-   /**
-    * Set the depth.
-    * 
-    * @param depth The depth to set.
-    */
-   public void setDepth(int depth)
-   {
-      this.depth = depth;
-   }
-
-   /**
-    * Get the depthDelta.
-    * 
-    * @return Returns the depthDelta.
-    */
-   public int getDepthDelta()
-   {
-      return depthDelta;
-   }
-
-   /**
-    * Set the depthDelta.
-    * 
-    * @param depthDelta The depthDelta to set.
-    */
-   public void setDepthDelta(int depthDelta)
-   {
-      this.depthDelta = depthDelta;
+      this.totalMessageCount = totalMessageCount;
    }
 
    /**
@@ -242,6 +188,17 @@ public class MessageStatistics implements Serializable
       this.timeLastUpdate = timeLastUpdate;
    }
 
+
+   public int getCurrentMessageCount()
+   {
+      return this.currentMessageCount;
+   }
+
+   public void setCurrentMessageCount(int currentMessageCount)
+   {
+      this.currentMessageCount = currentMessageCount;
+   }
+
    /**
     * Get the topic.
     * 
@@ -304,9 +261,9 @@ public class MessageStatistics implements Serializable
       }
 
       // counter values
-      buffer.append(count).append(',').append(countDelta).append(',').append(depth).append(',').append(depthDelta)
-            .append(',');
-
+      buffer.append("total messages received = ").append(getTotalMessageCount()).append(",").
+              append("current messages in queue = ").append(getCurrentMessageCount()).append(",").
+              append("current message count = ").append(getCount()).append(",");
       // timestamp last counter update
       if (timeLastUpdate > 0)
       {

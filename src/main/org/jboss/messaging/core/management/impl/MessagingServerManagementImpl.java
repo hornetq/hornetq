@@ -340,6 +340,10 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
 
    public Collection<MessageCounter> getMessageCounters()
    {
+      for (String s : currentCounters.keySet())
+      {
+         currentCounters.get(s).sample();
+      }
       return currentCounters.values();
    }
 

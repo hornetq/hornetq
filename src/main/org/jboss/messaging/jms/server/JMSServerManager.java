@@ -93,17 +93,13 @@ public interface JMSServerManager extends Serializable
 
    public List<SessionInfo> getSessionsForUser(String user) throws Exception;
 
-   void startGatheringStatistics();
+   void startGatheringStatistics() throws Exception;
 
-   void startGatheringStatisticsForQueue(String queue);
+   void startGatheringStatisticsForQueue(String queue) throws Exception;
 
-   void startGatheringStatisticsForTopic(String topic);
+   List<MessageStatistics> stopGatheringStatistics() throws Exception;
 
-   void stopGatheringStatistics();
-
-   void stopGatheringStatisticsForQueue(String queue);
-
-   void stopGatheringStatisticsForTopic(String topic);
+   MessageStatistics stopGatheringStatisticsForQueue(String queue) throws Exception;
 
    List<MessageStatistics> getStatistics() throws Exception;
 }

@@ -58,12 +58,10 @@ public class MessageCounter
    private Queue destQueue;
 
    // counter
-   private int countTotal;
-   private int countTotalLast;
-   private int depthLast;
    private long timeLastUpdate;
 
    // per hour day counter history
+   private int messageCount;
    private int dayCounterMax;
    private ArrayList<DayCounter> dayCounter;
 
@@ -84,7 +82,7 @@ public class MessageCounter
       destName = name;
       destDurable = durable;
       destQueue = queue;      
-
+      messageCount = destQueue.getMessageCount();
       // initialize counter
       resetCounter();
 
@@ -109,11 +107,6 @@ public class MessageCounter
     */
    public synchronized void sample()
    {
-      int latestMessagesAdded = destQueue.getMessagesAdded();
-
-      countTotal += latestMessagesAdded - lastMessagesAdded;
-      
-      lastMessagesAdded = latestMessagesAdded;
       
       //update timestamp
       timeLastUpdate = System.currentTimeMillis();
@@ -143,29 +136,14 @@ public class MessageCounter
       return destDurable;
    }
 
-   /**
-    * Gets the total message count since startup or
-    * last counter reset
-    *
-    * @return int    message count
-    */
-   public int getCount()
+   public int getTotalMessages()
    {
-      return countTotal;
+      return this.destQueue.getMessagesAdded();
    }
 
-   /**
-    * Gets the message count delta since last method call
-    *
-    * @return int    message count delta
-    */
-   public int getCountDelta()
+   public int getCurrentMessageCount()
    {
-      int delta = countTotal - countTotalLast;
-
-      countTotalLast = countTotal;
-
-      return delta;
+      return this.destQueue.getMessageCount();
    }
 
    /**
@@ -176,24 +154,9 @@ public class MessageCounter
     */
    public int getMessageCount()
    {
-      return destQueue.getMessageCount();
+      return destQueue.getMessagesAdded() - messageCount;
    }
 
-   /**
-    * Gets the message count delta of pending messages
-    * since last method call. Therefore
-    *
-    * @return int message queue depth delta
-    */
-   public int getMessageCountDelta()
-   {
-      int current = destQueue.getMessageCount();
-      int delta = current - depthLast;
-
-      depthLast = current;
-
-      return delta;
-   }
 
    /**
     * Gets the timestamp of the last message add
@@ -210,9 +173,7 @@ public class MessageCounter
     */
    public void resetCounter()
    {
-      countTotal = 0;
-      countTotalLast = 0;
-      depthLast = 0;
+      messageCount = destQueue.getMessageCount();
       timeLastUpdate = 0;
    }
 
@@ -232,7 +193,9 @@ public class MessageCounter
       ret.append(destName).append(",");
 
       // counter values
-      ret.append("total = ").append(getCount()).append(",").append("total delta = ").append(getCountDelta()).append(",").append("current = ").append(getMessageCount()).append(",").append("current delta = ").append(getMessageCountDelta()).append(",");
+      ret.append("total messages received = ").append(getTotalMessages()).append(",").
+              append("current messages in queue = ").append(getCurrentMessageCount()).append(",").
+              append("current message count = ").append(getMessageCount()).append(",");
 
       // timestamp last counter update
       if (timeLastUpdate > 0)

@@ -73,7 +73,7 @@ public class JMSServerManagerImpl implements JMSServerManager
    private InitialContext initialContext;
 
    private final Map<String, List<String>> destinations = new HashMap<String, List<String>>();
-   
+
    private final Map<String, JBossConnectionFactory> connectionFactories = new HashMap<String, JBossConnectionFactory>();
 
    private final Map<String, List<String>> connectionFactoryBindings = new HashMap<String, List<String>>();
@@ -87,6 +87,7 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    /**
     * lifecycle method
+    *
     * @throws Exception ex
     */
    public void start() throws Exception
@@ -134,14 +135,13 @@ public class JMSServerManagerImpl implements JMSServerManager
       return true;
    }
 
-
    // management operations
 
    public boolean isStarted()
    {
       return messagingServerManagement.isStarted();
    }
-   
+
    public boolean createQueue(String queueName, String jndiBinding) throws Exception
    {
       JBossQueue jBossQueue = new JBossQueue(queueName);
@@ -205,7 +205,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       Set<String> availableQueues = new HashSet<String>();
       for (String address : availableAddresses)
       {
-         if(address.startsWith(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX))
+         if (address.startsWith(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX))
          {
             availableQueues.add(address.replace(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX, ""));
          }
@@ -219,7 +219,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       Set<String> availableTopics = new HashSet<String>();
       for (String address : availableAddresses)
       {
-         if(address.startsWith(JBossTopic.JMS_TOPIC_ADDRESS_PREFIX))
+         if (address.startsWith(JBossTopic.JMS_TOPIC_ADDRESS_PREFIX))
          {
             availableTopics.add(address.replace(JBossTopic.JMS_TOPIC_ADDRESS_PREFIX, ""));
          }
@@ -233,7 +233,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       Set<String> tempDests = new HashSet<String>();
       for (String address : availableAddresses)
       {
-         if(address.startsWith(JBossTemporaryTopic.JMS_TOPIC_ADDRESS_PREFIX) || address.startsWith(JBossTemporaryQueue.JMS_QUEUE_ADDRESS_PREFIX))
+         if (address.startsWith(JBossTemporaryTopic.JMS_TOPIC_ADDRESS_PREFIX) || address.startsWith(JBossTemporaryQueue.JMS_QUEUE_ADDRESS_PREFIX))
          {
             tempDests.add(address.replace(JBossTopic.JMS_TOPIC_ADDRESS_PREFIX, ""));
          }
@@ -355,9 +355,9 @@ public class JMSServerManagerImpl implements JMSServerManager
               "JMSMessageID='" + messageId + "'");
    }
 
-   public void changeMessagePriority(String queue,String messageId, int priority) throws Exception
+   public void changeMessagePriority(String queue, String messageId, int priority) throws Exception
    {
-      messagingServerManagement.changeMessagePriority(new JBossQueue(queue).getAddress(), 
+      messagingServerManagement.changeMessagePriority(new JBossQueue(queue).getAddress(),
               "JMSMessageID='" + messageId + "'", priority);
    }
 
@@ -468,7 +468,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       List<ServerConnection> endpoints = messagingServerManagement.getActiveConnections();
       for (ServerConnection endpoint : endpoints)
       {
-         if(id == null || id.equals(endpoint.getID()))
+         if (id == null || id.equals(endpoint.getID()))
          {
             Collection<ServerSession> serverSessionEndpoints = endpoint.getSessions();
             for (ServerSession serverSessionEndpoint : serverSessionEndpoints)
@@ -487,7 +487,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       List<ServerConnection> endpoints = messagingServerManagement.getActiveConnections();
       for (ServerConnection endpoint : endpoints)
       {
-         if(user == null || user.equals(endpoint.getUsername()))
+         if (user == null || user.equals(endpoint.getUsername()))
          {
             sessionInfos.addAll(getSessionsForConnection(endpoint.getID()));
          }
@@ -495,59 +495,55 @@ public class JMSServerManagerImpl implements JMSServerManager
       return sessionInfos;
    }
 
-   public void startGatheringStatistics()
+   public void startGatheringStatistics() throws Exception
    {
-      //To change body of implemented methods use File | Settings | File Templates.
+      Set<String> availableAddresses = messagingServerManagement.listAvailableAddresses();
+      for (String address : availableAddresses)
+      {
+         if (address.startsWith(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX))
+         {
+            messagingServerManagement.startMessageCounter(address, 0);
+         }
+      }
    }
 
-   public void startGatheringStatisticsForQueue(String queue)
+   public void startGatheringStatisticsForQueue(String queue) throws Exception
    {
-      //To change body of implemented methods use File | Settings | File Templates.
+      JBossQueue jBossQueue = new JBossQueue(queue);
+      messagingServerManagement.startMessageCounter(jBossQueue.getAddress(), 0);
    }
 
-   public void startGatheringStatistics(JBossQueue queue)
+   public List<MessageStatistics> stopGatheringStatistics() throws Exception
    {
-      //To change body of implemented methods use File | Settings | File Templates.
+      List<MessageStatistics> messageStatisticses = createStats(messagingServerManagement.stopAllMessageCounters());
+      messagingServerManagement.unregisterAllMessageCounters();
+      return messageStatisticses;
    }
 
-   public void startGatheringStatisticsForTopic(String topic)
+   public MessageStatistics stopGatheringStatisticsForQueue(String queue) throws Exception
    {
-      //To change body of implemented methods use File | Settings | File Templates.
-   }
+      JBossQueue queue1 = new JBossQueue(queue);
+      MessageCounter counter = messagingServerManagement.stopMessageCounter(queue1.getAddress());
 
-   public void startGatheringStatistics(JBossTopic topic)
-   {
-      //To change body of implemented methods use File | Settings | File Templates.
-   }
-
-   public void stopGatheringStatistics()
-   {
-      //To change body of implemented methods use File | Settings | File Templates.
-   }
-
-   public void stopGatheringStatisticsForQueue(String queue)
-   {
-      //To change body of implemented methods use File | Settings | File Templates.
-   }
-
-   public void stopGatheringStatistics(JBossQueue queue)
-   {
-      //To change body of implemented methods use File | Settings | File Templates.
-   }
-
-   public void stopGatheringStatisticsForTopic(String topic)
-   {
-      //To change body of implemented methods use File | Settings | File Templates.
-   }
-
-   public void stopGatheringStatistics(JBossTopic topic)
-   {
-      //To change body of implemented methods use File | Settings | File Templates.
+      MessageStatistics stats = new MessageStatistics();
+      stats.setName(counter.getDestinationName());
+      stats.setDurable(counter.getDestinationDurable());
+      stats.setCount(counter.getMessageCount());
+      stats.setTotalMessageCount(counter.getTotalMessages());
+      stats.setCurrentMessageCount(counter.getCurrentMessageCount());
+      stats.setTimeLastUpdate(counter.getLastUpdate());
+      messagingServerManagement.unregisterMessageCounter(queue1.getAddress());
+      return stats;
    }
 
    public List<MessageStatistics> getStatistics() throws Exception
    {
       Collection<MessageCounter> counters = messagingServerManagement.getMessageCounters();
+      return createStats(counters);
+   }
+
+   private List<MessageStatistics> createStats(Collection<MessageCounter> counters)
+   {
       List<MessageStatistics> list = new ArrayList<MessageStatistics>(counters.size());
       for (Object counter1 : counters)
       {
@@ -556,10 +552,9 @@ public class JMSServerManagerImpl implements JMSServerManager
          MessageStatistics stats = new MessageStatistics();
          stats.setName(counter.getDestinationName());
          stats.setDurable(counter.getDestinationDurable());
-         stats.setCount(counter.getCount());
-         stats.setCountDelta(counter.getCountDelta());
-         stats.setDepth(counter.getMessageCount());
-         stats.setDepthDelta(counter.getMessageCountDelta());
+         stats.setCount(counter.getMessageCount());
+         stats.setTotalMessageCount(counter.getTotalMessages());
+         stats.setCurrentMessageCount(counter.getCurrentMessageCount());
          stats.setTimeLastUpdate(counter.getLastUpdate());
 
          list.add(stats);
@@ -640,9 +635,9 @@ public class JMSServerManagerImpl implements JMSServerManager
 
             if (queue.isDurable())
             {
-            	Pair<String, String> pair = JBossTopic.decomposeQueueNameForDurableSubscription(queue.getName());                             
-            	clientID = pair.a;
-            	subName = pair.b;               
+               Pair<String, String> pair = JBossTopic.decomposeQueueNameForDurableSubscription(queue.getName());
+               clientID = pair.a;
+               subName = pair.b;
             }
 
             SubscriptionInfo info = new SubscriptionInfo(queue.getName(), queue.isDurable(), subName, clientID,
