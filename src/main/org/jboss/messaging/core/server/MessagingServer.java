@@ -80,30 +80,6 @@ public interface MessagingServer extends MessagingComponent
    HierarchicalRepository<QueueSettings> getQueueSettingsRepository();
 
    void setPostOffice(PostOffice postOffice);
-
-   void createQueue(String address, String name) throws Exception;
-
-   public boolean destroyQueue(String name) throws Exception;
-
-   public boolean destroyQueuesByAddress(String address) throws Exception;
-   
-   boolean addAddress(String address);
-
-   boolean removeAddress(String address);
-   
-   void enableMessageCounters();
-
-   void disableMessageCounters();
-   
-   void resetAllMessageCounters();
-
-   void resetAllMessageCounterHistories();
-
-   void removeAllMessagesForAddress(String address) throws Exception;
-
-   void removeAllMessagesForBinding(String name) throws Exception;
-
-   void removeMessageForBinding(String name, Filter filter) throws Exception;
    
    CreateConnectionResponse createConnection(String username, String password,
                                              String remotingClientSessionID, String clientVMID,

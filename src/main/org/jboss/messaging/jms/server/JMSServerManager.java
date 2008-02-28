@@ -61,9 +61,9 @@ public interface JMSServerManager extends Serializable
 
    void expireMessage(String queue, String messageId) throws Exception;
 
-   void changeMessagePriority(String messageId, int priority);
+   void changeMessagePriority(String queue, String messageId, int priority) throws Exception;
 
-   void changeMessageHeader(String  messageId, String header, Object value);
+   void changeMessageHeader(String queue,String messageId, String header, Object value) throws Exception;
 
    int getMessageCountForQueue(String queue) throws Exception;
 

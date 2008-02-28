@@ -288,19 +288,7 @@ public class MessagingServerImpl implements MessagingServer
       return deploymentManager;
    }
 
-   public void enableMessageCounters()
-   {
-      messageCounterManager.start();
-   }
 
-   public void disableMessageCounters()
-   {
-      messageCounterManager.stop();
-
-      messageCounterManager.resetAllCounters();
-
-      messageCounterManager.resetAllCounterHistories();
-   }
 
    public void createQueue(String address, String name) throws Exception
    {
@@ -312,128 +300,6 @@ public class MessagingServerImpl implements MessagingServer
       if (!postOffice.containsAllowableAddress(address))
       {
          postOffice.addAllowableAddress(address);
-      }
-   }
-
-   public boolean destroyQueuesByAddress(String address) throws Exception
-   {
-      List<Binding> bindings = postOffice.getBindingsForAddress(address);
-
-      boolean destroyed = false;
-
-      for (Binding binding : bindings)
-      {
-         Queue queue = binding.getQueue();
-
-         persistenceManager.deleteAllReferences(queue);
-
-         queue.removeAllReferences();
-
-         postOffice.removeBinding(queue.getName());
-
-         destroyed = true;
-      }
-
-      postOffice.removeAllowableAddress(address);
-
-      return destroyed;
-   }
-
-   public boolean destroyQueue(String name) throws Exception
-   {
-      Binding binding = postOffice.getBinding(name);
-
-      boolean destroyed = false;
-
-      if (binding != null)
-      {
-         Queue queue = binding.getQueue();
-
-         persistenceManager.deleteAllReferences(queue);
-
-         queue.removeAllReferences();
-
-         postOffice.removeBinding(queue.getName());
-
-         destroyed = true;
-      }
-
-      return destroyed;
-   }
-
-   public boolean addAddress(String address)
-   {
-      if (!postOffice.containsAllowableAddress(address))
-      {
-      	postOffice.addAllowableAddress(address);
-         return true;
-      }
-      return false;
-   }
-
-   public boolean removeAddress(String address)
-   {
-      if (postOffice.containsAllowableAddress(address))
-      {
-      	postOffice.removeAllowableAddress(address);
-         return true;
-      }
-      return false;
-   }
-
-   public void resetAllMessageCounters()
-   {
-      this.messageCounterManager.resetAllCounters();
-   }
-
-   public void resetAllMessageCounterHistories()
-   {
-      this.messageCounterManager.resetAllCounterHistories();
-   }
-
-
-   public void removeAllMessagesForAddress(String address) throws Exception
-   {
-      List<Binding> bindings = postOffice.getBindingsForAddress(address);
-
-      for (Binding binding : bindings)
-      {
-         Queue queue = binding.getQueue();
-
-         if (queue.isDurable())
-         {
-            persistenceManager.deleteAllReferences(queue);
-         }
-
-         queue.removeAllReferences();
-      }
-   }
-
-   public void removeAllMessagesForBinding(String name) throws Exception
-   {
-      Binding binding = postOffice.getBinding(name);
-      if (binding != null)
-      {
-         Queue queue = binding.getQueue();
-
-         persistenceManager.deleteAllReferences(queue);
-
-         queue.removeAllReferences();
-      }
-   }
-
-   public void removeMessageForBinding(String name, Filter filter) throws Exception
-   {
-      Binding binding = postOffice.getBinding(name);
-      if (binding != null)
-      {
-         Queue queue = binding.getQueue();
-         List<MessageReference> allRefs = queue.list(filter);
-         for (MessageReference messageReference : allRefs)
-         {
-            persistenceManager.deleteReference(messageReference);
-            queue.removeReference(messageReference);
-         }
       }
    }
 

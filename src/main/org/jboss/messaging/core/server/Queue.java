@@ -66,6 +66,8 @@ public interface Queue
 
    void removeReference(MessageReference messageReference);
 
+   void changePriority(final MessageReference messageReference, int priority);
+
    List<MessageReference> removeReferences(Filter filter);
 
    long getPersistenceID();

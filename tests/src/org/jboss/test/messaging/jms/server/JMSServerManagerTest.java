@@ -287,7 +287,7 @@ public class JMSServerManagerTest extends JBMServerTestCase
       {
          List<ConnectionInfo> connectionInfos = jmsServerManager.getConnectionsForUser("guest");
          assertNotNull(connectionInfos);
-         assertEquals(connectionInfos.size(),3);
+         assertEquals(connectionInfos.size(), 3);
          for (ConnectionInfo connectionInfo : connectionInfos)
          {
             assertEquals(connectionInfo.getUser(), "guest");
@@ -295,23 +295,23 @@ public class JMSServerManagerTest extends JBMServerTestCase
       }
       finally
       {
-         if(conn != null)
+         if (conn != null)
          {
             conn.close();
          }
-         if(conn2 != null)
+         if (conn2 != null)
          {
             conn2.close();
          }
-         if(conn3 != null)
+         if (conn3 != null)
          {
             conn3.close();
          }
-         if(conn4 != null)
+         if (conn4 != null)
          {
             conn4.close();
          }
-         if(conn5 != null)
+         if (conn5 != null)
          {
             conn5.close();
          }
@@ -335,7 +335,7 @@ public class JMSServerManagerTest extends JBMServerTestCase
          jmsServerManager.dropConnection(connectionInfos.get(0).getId());
          connectionInfos = jmsServerManager.getConnections();
          assertNotNull(connectionInfos);
-         assertEquals(connectionInfos.size(),4);
+         assertEquals(connectionInfos.size(), 4);
          for (ConnectionInfo connectionInfo : connectionInfos)
          {
             assertNotSame(connectionInfo.getUser(), "john");
@@ -352,19 +352,19 @@ public class JMSServerManagerTest extends JBMServerTestCase
       }
       finally
       {
-         if(conn != null)
+         if (conn != null)
          {
             conn.close();
          }
-         if(conn2 != null)
+         if (conn2 != null)
          {
             conn2.close();
          }
-         if(conn3 != null)
+         if (conn3 != null)
          {
             conn3.close();
          }
-         if(conn5 != null)
+         if (conn5 != null)
          {
             conn5.close();
          }
@@ -385,7 +385,7 @@ public class JMSServerManagerTest extends JBMServerTestCase
          jmsServerManager.dropConnectionForUser("guest");
          List<ConnectionInfo> connectionInfos = jmsServerManager.getConnections();
          assertNotNull(connectionInfos);
-         assertEquals(connectionInfos.size(),3);
+         assertEquals(connectionInfos.size(), 3);
          for (ConnectionInfo connectionInfo : connectionInfos)
          {
             assertNotSame(connectionInfo.getUser(), "guest");
@@ -411,21 +411,22 @@ public class JMSServerManagerTest extends JBMServerTestCase
       }
       finally
       {
-         if(conn2 != null)
+         if (conn2 != null)
          {
             conn2.close();
          }
-         if(conn3 != null)
+         if (conn3 != null)
          {
             conn3.close();
          }
-         if(conn4 != null)
+         if (conn4 != null)
          {
             conn4.close();
          }
       }
 
    }
+
    public void test() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection("guest", "guest");
@@ -618,7 +619,7 @@ public class JMSServerManagerTest extends JBMServerTestCase
       }
       finally
       {
-         if(conn != null)
+         if (conn != null)
          {
             conn.close();
          }
@@ -681,7 +682,7 @@ public class JMSServerManagerTest extends JBMServerTestCase
       }
       finally
       {
-         if(conn != null)
+         if (conn != null)
          {
             conn.close();
          }
@@ -721,7 +722,7 @@ public class JMSServerManagerTest extends JBMServerTestCase
       }
       finally
       {
-         if(conn != null)
+         if (conn != null)
          {
             conn.close();
          }
@@ -763,7 +764,108 @@ public class JMSServerManagerTest extends JBMServerTestCase
       }
       finally
       {
-         if(conn != null)
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+
+   }
+
+   public void testChangeMessagePriority() throws Exception
+   {
+      Connection conn = getConnectionFactory().createConnection("guest", "guest");
+      try
+      {
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer producer = sess.createProducer(queue1);
+         producer.setPriority(9);
+         Message messageToMove = null;
+         for (int i = 0; i < 10; i++)
+         {
+            TextMessage message = sess.createTextMessage();
+
+            producer.send(message);
+            if (i == 5)
+            {
+               messageToMove = message;
+            }
+         }
+         jmsServerManager.changeMessagePriority("Queue1", messageToMove.getJMSMessageID(), 8);
+         MessageConsumer consumer = sess.createConsumer(queue1);
+         conn.start();
+         for (int i = 0; i < 9; i++)
+         {
+            Message message = consumer.receive();
+            assertNotSame(messageToMove.getJMSMessageID(), message.getJMSMessageID());
+            System.out.println("message.getJMSPriority() = " + message.getJMSPriority());
+            assertEquals(9, message.getJMSPriority());
+         }
+         Message message = consumer.receive();
+         assertEquals(8, message.getJMSPriority());
+         assertEquals(messageToMove.getJMSMessageID(), message.getJMSMessageID());
+
+         consumer.close();
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+
+   }
+
+   public void testChangeMessageHeader() throws Exception
+   {
+      Connection conn = getConnectionFactory().createConnection("guest", "guest");
+      try
+      {
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer producer = sess.createProducer(queue1);
+         Message messageToMove = null;
+
+         TextMessage message = sess.createTextMessage();
+         message.setStringProperty("MyString", "12345");
+         message.setBooleanProperty("MyBoolean", true);
+         message.setByteProperty("MyByte", (byte) 1);
+         message.setDoubleProperty("MyDouble", 0.0);
+         message.setFloatProperty("MyFloat", 0.0f);
+         message.setIntProperty("MyInt", 0);
+         message.setObjectProperty("MyObject", new String("test"));
+         message.setLongProperty("MyLong", 0l);
+         message.setShortProperty("MyShort", (short)0);
+
+         producer.send(message);
+         jmsServerManager.changeMessageHeader("Queue1", message.getJMSMessageID(), "MyString", "abcde");
+         jmsServerManager.changeMessageHeader("Queue1", message.getJMSMessageID(), "MyBoolean", false);
+         jmsServerManager.changeMessageHeader("Queue1", message.getJMSMessageID(), "MyByte", (byte)2);
+         jmsServerManager.changeMessageHeader("Queue1", message.getJMSMessageID(), "MyDouble", 0.1);
+         jmsServerManager.changeMessageHeader("Queue1", message.getJMSMessageID(), "MyFloat", 0.1f);
+         jmsServerManager.changeMessageHeader("Queue1", message.getJMSMessageID(), "MyInt", 1);
+         jmsServerManager.changeMessageHeader("Queue1", message.getJMSMessageID(), "MyObject", new Long(0));
+         jmsServerManager.changeMessageHeader("Queue1", message.getJMSMessageID(), "MyLong", 1l);
+         jmsServerManager.changeMessageHeader("Queue1", message.getJMSMessageID(), "MyShort", (short)1);
+         MessageConsumer consumer = sess.createConsumer(queue1);
+         conn.start();
+
+         message = (TextMessage) consumer.receive();
+         assertEquals(message.getStringProperty("MyString"), "abcde");
+         assertEquals(message.getBooleanProperty("MyBoolean"), false);
+         assertEquals(message.getByteProperty("MyByte"), (byte)2);
+         assertEquals(message.getDoubleProperty("MyDouble"), 0.1);
+         assertEquals(message.getIntProperty("MyInt"), 1);
+         assertEquals(message.getObjectProperty("MyObject").getClass(), Long.class);
+         assertEquals(message.getLongProperty("MyLong"), 1l);
+         assertEquals(message.getShortProperty("MyShort"), (short)1);
+         consumer.close();
+
+      }
+      finally
+      {
+         if (conn != null)
          {
             conn.close();
          }

@@ -96,9 +96,14 @@ public interface MessagingServerManagement
 
    List<ServerConnection> getActiveConnections();
 
-   void moveMessages(String toQueue, String fromQueue, FilterImpl filter) throws Exception;
+   void moveMessages(String toQueue, String fromQueue, String filter) throws Exception;
 
-   void expireMessages(String queue,Filter filter) throws Exception;
+   void expireMessages(String queue,String filter) throws Exception;
+
+   void changeMessagePriority(String queue, String filter, int priority) throws Exception;
+
+   void changeMessageHeader(String queue, String filter, String header, Object value) throws Exception;
 
    Set<String> listAvailableAddresses();
+
 }

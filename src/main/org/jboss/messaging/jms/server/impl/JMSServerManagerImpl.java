@@ -45,6 +45,8 @@ import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
+import org.jboss.messaging.jms.JBossTemporaryTopic;
+import org.jboss.messaging.jms.JBossTemporaryQueue;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.jms.server.ConnectionInfo;
@@ -85,6 +87,7 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    /**
     * lifecycle method
+    * @throws Exception ex
     */
    public void start() throws Exception
    {
@@ -226,7 +229,16 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    public Set<String> listTemporaryDestinations()
    {
-      return null;  //todo
+      Set<String> availableAddresses = messagingServerManagement.listAvailableAddresses();
+      Set<String> tempDests = new HashSet<String>();
+      for (String address : availableAddresses)
+      {
+         if(address.startsWith(JBossTemporaryTopic.JMS_TOPIC_ADDRESS_PREFIX) || address.startsWith(JBossTemporaryQueue.JMS_QUEUE_ADDRESS_PREFIX))
+         {
+            tempDests.add(address.replace(JBossTopic.JMS_TOPIC_ADDRESS_PREFIX, ""));
+         }
+      }
+      return tempDests;
    }
 
    public boolean createConnectionFactory(String name, String clientID, int dupsOKBatchSize, boolean strictTck, int prefetchSize, String jndiBinding) throws Exception
@@ -334,22 +346,25 @@ public class JMSServerManagerImpl implements JMSServerManager
    public void moveMessage(String fromQueue, String toQueue, String messageId) throws Exception
    {
       messagingServerManagement.moveMessages(new JBossQueue(fromQueue).getAddress(), new JBossQueue(toQueue).getAddress(),
-              new FilterImpl("JMSMessageID='" + messageId + "'"));
+              "JMSMessageID='" + messageId + "'");
    }
 
    public void expireMessage(String queue, String messageId) throws Exception
    {
-      messagingServerManagement.expireMessages(new JBossQueue(queue).getAddress(), new FilterImpl("JMSMessageID='" + messageId + "'"));
+      messagingServerManagement.expireMessages(new JBossQueue(queue).getAddress(),
+              "JMSMessageID='" + messageId + "'");
    }
 
-   public void changeMessagePriority(String messageId, int priority)
+   public void changeMessagePriority(String queue,String messageId, int priority) throws Exception
    {
-      //todo
+      messagingServerManagement.changeMessagePriority(new JBossQueue(queue).getAddress(), 
+              "JMSMessageID='" + messageId + "'", priority);
    }
 
-   public void changeMessageHeader(String messageId, String header, Object value)
+   public void changeMessageHeader(String queue, String messageId, String header, Object value) throws Exception
    {
-      //todo
+      messagingServerManagement.changeMessageHeader(new JBossQueue(queue).getAddress(),
+              "JMSMessageID='" + messageId + "'", header, value);
    }
 
    public int getMessageCountForQueue(String queue) throws Exception
@@ -380,7 +395,6 @@ public class JMSServerManagerImpl implements JMSServerManager
    public void dropSubscription(String subscription) throws Exception
    {
       messagingServerManagement.destroyQueue(subscription);
-      
    }
 
    public int getConsumerCountForQueue(String queue) throws Exception
@@ -646,12 +660,12 @@ public class JMSServerManagerImpl implements JMSServerManager
       return getSubscriptionsCount(topic, ListType.ALL);
    }
 
-   public int getSubscriptionsCount(JBossTopic topic, ListType listType) throws Exception
+   private int getSubscriptionsCount(JBossTopic topic, ListType listType) throws Exception
    {
       return listSubscriptions(topic, listType).size();
    }
 
-   public int getConsumerCount(JBossQueue queue) throws Exception
+   private int getConsumerCount(JBossQueue queue) throws Exception
    {
       return messagingServerManagement.getConsumerCountForQueue(queue.getAddress());
    }

@@ -306,6 +306,13 @@ public class QueueImpl implements Queue
       //FIXME - what about scheduled??
    }
 
+   public synchronized void changePriority(final MessageReference messageReference, int priority)
+   {
+      messageReferences.remove(messageReference , messageReference.getMessage().getPriority());
+      messageReferences.addLast(messageReference, priority);
+      //FIXME - what about scheduled??
+   }
+
    //FIXME - review this
    public synchronized List<MessageReference> removeReferences(final Filter filter)
    {
