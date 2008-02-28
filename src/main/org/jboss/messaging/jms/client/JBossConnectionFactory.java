@@ -41,8 +41,8 @@ import javax.naming.Reference;
 
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientConnectionFactory;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.MessagingException;
 import org.jboss.messaging.jms.referenceable.SerializableObjectRefAddr;
 
 /**

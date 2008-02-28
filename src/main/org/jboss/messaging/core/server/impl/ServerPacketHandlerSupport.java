@@ -22,11 +22,11 @@
 package org.jboss.messaging.core.server.impl;
 
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
-import org.jboss.messaging.core.server.MessagingException;
 
 /**
  * 

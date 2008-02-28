@@ -8,12 +8,12 @@ package org.jboss.messaging.core.remoting.impl.mina;
 
 import org.apache.mina.common.IoSession;
 import org.apache.mina.filter.keepalive.KeepAliveMessageFactory;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.RemotingException;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
-import org.jboss.messaging.core.server.MessagingException;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

@@ -21,7 +21,7 @@
  */
 package org.jboss.messaging.core.client;
 
-import org.jboss.messaging.core.server.MessagingException;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.version.Version;
 
 /**

@@ -25,11 +25,11 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CREAT
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
-import org.jboss.messaging.core.server.MessagingException;
 import org.jboss.messaging.core.server.MessagingServer;
 
 /**

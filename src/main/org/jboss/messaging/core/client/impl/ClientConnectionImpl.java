@@ -28,13 +28,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.wireformat.CloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionStartMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionStopMessage;
-import org.jboss.messaging.core.server.MessagingException;
 
 /**
  * The client-side Connection connectionFactory class.

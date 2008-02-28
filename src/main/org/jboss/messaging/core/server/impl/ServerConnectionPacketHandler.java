@@ -26,12 +26,12 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_START;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_STOP;
 
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
-import org.jboss.messaging.core.server.MessagingException;
 import org.jboss.messaging.core.server.ServerConnection;
 
 /**

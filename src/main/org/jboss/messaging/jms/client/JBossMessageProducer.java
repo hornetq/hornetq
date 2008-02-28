@@ -41,8 +41,8 @@ import javax.jms.Topic;
 import javax.jms.TopicPublisher;
 
 import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.MessagingException;
 import org.jboss.messaging.jms.JBossDestination;
 
 /**

@@ -28,9 +28,9 @@ import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 
 import org.jboss.messaging.core.client.ClientBrowser;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.server.MessagingException;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

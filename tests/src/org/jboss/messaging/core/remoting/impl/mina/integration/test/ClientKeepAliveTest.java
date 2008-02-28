@@ -23,6 +23,7 @@ import java.util.concurrent.CountDownLatch;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.RemotingException;
@@ -33,7 +34,6 @@ import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
-import org.jboss.messaging.core.server.MessagingException;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

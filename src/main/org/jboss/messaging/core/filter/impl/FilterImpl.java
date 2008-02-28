@@ -24,10 +24,10 @@ package org.jboss.messaging.core.filter.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.server.MessagingException;
 
 /**
 * This class implements a JBoss Messaging filter

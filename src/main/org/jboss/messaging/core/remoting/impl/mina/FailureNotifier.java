@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import org.jboss.messaging.core.server.MessagingException;
+import org.jboss.messaging.core.exception.MessagingException;
 
 
 

@@ -17,11 +17,11 @@ import static org.jboss.messaging.test.unit.RandomUtil.randomString;
 import junit.framework.TestCase;
 
 import org.apache.mina.common.IoSession;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.impl.mina.FailureNotifier;
 import org.jboss.messaging.core.remoting.impl.mina.MinaKeepAliveFactory;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
-import org.jboss.messaging.core.server.MessagingException;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

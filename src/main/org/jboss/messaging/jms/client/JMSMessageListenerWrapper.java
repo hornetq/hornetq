@@ -25,9 +25,9 @@ import javax.jms.MessageListener;
 import javax.jms.Session;
 
 import org.jboss.messaging.core.client.MessageHandler;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.server.MessagingException;
 
 /**
  * 

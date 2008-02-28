@@ -31,10 +31,10 @@ import java.util.Map.Entry;
 
 import org.jboss.messaging.core.client.FailureListener;
 import org.jboss.messaging.core.client.impl.JMSClientVMIdentifier;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.RemotingException;
 import org.jboss.messaging.core.server.ConnectionManager;
-import org.jboss.messaging.core.server.MessagingException;
 import org.jboss.messaging.core.server.ServerConnection;
 
 /**

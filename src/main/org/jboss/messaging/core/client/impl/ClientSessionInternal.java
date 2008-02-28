@@ -8,7 +8,7 @@ package org.jboss.messaging.core.client.impl;
 
 import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.server.MessagingException;
+import org.jboss.messaging.core.exception.MessagingException;
 
 /**
  * 

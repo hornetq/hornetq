@@ -33,9 +33,9 @@ import javax.jms.JMSException;
 import javax.jms.QueueConnection;
 
 import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
-import org.jboss.messaging.core.server.MessagingException;
 import org.jboss.test.messaging.jms.JMSTestCase;
 
 /**

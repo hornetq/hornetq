@@ -24,12 +24,12 @@ package org.jboss.messaging.core.server.impl;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PROD_SEND;
 
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
-import org.jboss.messaging.core.server.MessagingException;
 import org.jboss.messaging.core.server.ServerProducer;
 
 /**

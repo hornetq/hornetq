@@ -9,9 +9,9 @@ package org.jboss.messaging.core.client;
 
 import javax.transaction.xa.XAResource;
 
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
-import org.jboss.messaging.core.server.MessagingException;
 
 /**
  *  

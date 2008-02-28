@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
@@ -43,7 +44,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageResponseMessage;
-import org.jboss.messaging.core.server.MessagingException;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerSession;
 

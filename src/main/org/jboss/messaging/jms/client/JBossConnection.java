@@ -47,8 +47,8 @@ import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.FailureListener;
 import org.jboss.messaging.core.client.impl.ClientConnectionInternal;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.MessagingException;
 import org.jboss.messaging.core.version.Version;
 
 /**
