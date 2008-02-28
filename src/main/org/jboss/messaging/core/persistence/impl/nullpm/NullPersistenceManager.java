@@ -23,10 +23,10 @@ package org.jboss.messaging.core.persistence.impl.nullpm;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.server.Binding;
-import org.jboss.messaging.core.server.Message;
-import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.PersistenceManager;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.persistence.PersistenceManager;
+import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 

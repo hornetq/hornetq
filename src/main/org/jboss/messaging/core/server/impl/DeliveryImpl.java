@@ -22,11 +22,11 @@
 package org.jboss.messaging.core.server.impl;
 
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.impl.wireformat.DeliverMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerDeliverMessage;
 import org.jboss.messaging.core.server.Delivery;
-import org.jboss.messaging.core.server.Message;
-import org.jboss.messaging.core.server.MessageReference;
 
 /**
  * 
@@ -79,7 +79,7 @@ public class DeliveryImpl implements Delivery
       
       copy.setDeliveryCount(reference.getDeliveryCount() + 1);
       
-      DeliverMessage message = new DeliverMessage(copy, deliveryID);
+      ConsumerDeliverMessage message = new ConsumerDeliverMessage(copy, deliveryID);
       
       message.setTargetID(consumerID);
       

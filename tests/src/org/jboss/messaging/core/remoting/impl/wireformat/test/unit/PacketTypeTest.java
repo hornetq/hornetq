@@ -23,6 +23,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_CREATESESSION_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_START;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_STOP;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONS_DELIVER;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONS_FLOWTOKEN;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CREATECONNECTION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CREATECONNECTION_RESP;
@@ -51,7 +52,6 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEPRODUCER_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEQUEUE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_DELETE_QUEUE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_DELIVER;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_QUEUEQUERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_QUEUEQUERY_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_RECOVER;
@@ -75,7 +75,6 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_SUSPEND;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.TEXT;
 import static org.jboss.messaging.core.remoting.impl.wireformat.test.unit.CodecAssert.assertEqualsByteArrays;
-import static org.jboss.messaging.test.unit.RandomUtil.randomByte;
 import static org.jboss.messaging.test.unit.RandomUtil.randomBytes;
 import static org.jboss.messaging.test.unit.RandomUtil.randomInt;
 import static org.jboss.messaging.test.unit.RandomUtil.randomLong;
@@ -91,16 +90,19 @@ import javax.transaction.xa.Xid;
 
 import org.apache.mina.common.IoBuffer;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec;
 import org.jboss.messaging.core.remoting.impl.codec.BytesPacketCodec;
 import org.jboss.messaging.core.remoting.impl.codec.ConnectionCreateSessionMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.ConnectionCreateSessionResponseMessageCodec;
+import org.jboss.messaging.core.remoting.impl.codec.ConsumerDeliverMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.ConsumerFlowTokenMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.CreateConnectionMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.CreateConnectionResponseMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.DeliverMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.PingCodec;
 import org.jboss.messaging.core.remoting.impl.codec.PongCodec;
+import org.jboss.messaging.core.remoting.impl.codec.ProducerReceiveTokensMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.ProducerSendMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.RemotingBuffer;
 import org.jboss.messaging.core.remoting.impl.codec.SessionAcknowledgeMessageCodec;
@@ -146,14 +148,15 @@ import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSession
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionStartMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionStopMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerDeliverMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
-import org.jboss.messaging.core.remoting.impl.wireformat.DeliverMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
+import org.jboss.messaging.core.remoting.impl.wireformat.ProducerReceiveTokensMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddAddressMessage;
@@ -198,14 +201,14 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResp
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASuspendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
-import org.jboss.messaging.core.server.Message;
-import org.jboss.messaging.core.server.impl.MessageImpl;
 import org.jboss.messaging.test.unit.RandomUtil;
 import org.jboss.messaging.test.unit.UnitTestCase;
 import org.jboss.messaging.util.StreamUtils;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * 
+ * FIXME - tidy up tests so test names match the actual packets
  * 
  * @version <tt>$Revision$</tt>
  */
@@ -632,12 +635,13 @@ public class PacketTypeTest extends UnitTestCase
    
    public void testCreateProducerResponse() throws Exception
    {
-      SessionCreateProducerResponseMessage response = new SessionCreateProducerResponseMessage(randomString());
+      SessionCreateProducerResponseMessage response =
+      	new SessionCreateProducerResponseMessage(randomString(), randomInt());
 
       AbstractPacketCodec codec = new SessionCreateProducerResponseMessageCodec();
       SimpleRemotingBuffer buffer = encode(response, codec);
       checkHeader(buffer, response);
-      checkBody(buffer, response.getProducerID());
+      checkBody(buffer, response.getProducerID(), response.getInitialTokens());
       buffer.rewind();
 
       AbstractPacket decodedPacket = codec.decode(buffer);
@@ -645,7 +649,8 @@ public class PacketTypeTest extends UnitTestCase
       assertTrue(decodedPacket instanceof SessionCreateProducerResponseMessage);
       SessionCreateProducerResponseMessage decodedResponse = (SessionCreateProducerResponseMessage) decodedPacket;
       assertEquals(SESS_CREATEPRODUCER_RESP, decodedResponse.getType());
-      assertEquals(response.getProducerID(), decodedResponse.getProducerID());;
+      assertEquals(response.getProducerID(), decodedResponse.getProducerID());
+      assertEquals(response.getInitialTokens(), decodedResponse.getInitialTokens());
    }
 
    public void testStartConnectionMessage() throws Exception
@@ -698,13 +703,30 @@ public class PacketTypeTest extends UnitTestCase
       assertEquals(CONS_FLOWTOKEN, decodedMessage.getType());
       assertEquals(message.getTokens(), decodedMessage.getTokens());
    }
+   
+   public void testProducerReceiveTokensMessage() throws Exception
+   {
+   	ProducerReceiveTokensMessage message = new ProducerReceiveTokensMessage(10);
+      AbstractPacketCodec codec = new ProducerReceiveTokensMessageCodec();
+      SimpleRemotingBuffer buffer = encode(message, codec);
+      checkHeader(buffer, message);
+      checkBody(buffer, message.getTokens());
+      buffer.rewind();
+
+      AbstractPacket decodedPacket = codec.decode(buffer);
+
+      assertTrue(decodedPacket instanceof ProducerReceiveTokensMessage);
+      ProducerReceiveTokensMessage decodedMessage = (ProducerReceiveTokensMessage) decodedPacket;
+      assertEquals(PacketType.PROD_RECEIVETOKENS, decodedMessage.getType());
+      assertEquals(message.getTokens(), decodedMessage.getTokens());
+   }
 
    public void testDeliverMessage() throws Exception
    {
       Message msg = new MessageImpl();
-      DeliverMessage message = new DeliverMessage(msg, randomLong());
+      ConsumerDeliverMessage message = new ConsumerDeliverMessage(msg, randomLong());
 
-      AbstractPacketCodec codec = new DeliverMessageCodec();
+      AbstractPacketCodec codec = new ConsumerDeliverMessageCodec();
       SimpleRemotingBuffer buffer = encode(message, codec);
       checkHeader(buffer, message);
       checkBody(buffer, StreamUtils.toBytes(msg), message.getDeliveryID());
@@ -712,9 +734,9 @@ public class PacketTypeTest extends UnitTestCase
 
       AbstractPacket decodedPacket = codec.decode(buffer);
 
-      assertTrue(decodedPacket instanceof DeliverMessage);
-      DeliverMessage decodedMessage = (DeliverMessage) decodedPacket;
-      assertEquals(SESS_DELIVER, decodedMessage.getType());
+      assertTrue(decodedPacket instanceof ConsumerDeliverMessage);
+      ConsumerDeliverMessage decodedMessage = (ConsumerDeliverMessage) decodedPacket;
+      assertEquals(CONS_DELIVER, decodedMessage.getType());
       assertEquals(message.getMessage().getMessageID(), decodedMessage
             .getMessage().getMessageID());
       assertEquals(message.getDeliveryID(), decodedMessage.getDeliveryID());
@@ -1446,7 +1468,7 @@ public class PacketTypeTest extends UnitTestCase
       assertEquals(message.getAddress(), decodedMessage.getAddress());        
    }
    
-   public void testBindingQueryRequest() throws Exception
+   public void testSessionBindingQueryMessage() throws Exception
    {
       SessionBindingQueryMessage message = new SessionBindingQueryMessage(randomString());
 
@@ -1465,7 +1487,7 @@ public class PacketTypeTest extends UnitTestCase
       assertEquals(message.getAddress(), decodedMessage.getAddress());        
    }
    
-   public void testBindingQueryResponse() throws Exception
+   public void testSessionBindingQueryResponseMessage() throws Exception
    {
       boolean exists = true;
       List<String> queueNames = new ArrayList<String>();

@@ -21,8 +21,8 @@
  */
 package org.jboss.messaging.core.server.impl.test.unit.fakes;
 
-import org.jboss.messaging.core.server.Filter;
-import org.jboss.messaging.core.server.Message;
+import org.jboss.messaging.core.filter.Filter;
+import org.jboss.messaging.core.message.Message;
 
 /**
  * 

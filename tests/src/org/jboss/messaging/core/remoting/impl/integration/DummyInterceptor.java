@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Interceptor;
-import org.jboss.messaging.core.remoting.impl.wireformat.DeliverMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerDeliverMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.server.MessagingException;
 
@@ -43,9 +43,9 @@ public class DummyInterceptor implements Interceptor
       }
       if (changeMessage)
       {
-         if (packet instanceof DeliverMessage)
+         if (packet instanceof ConsumerDeliverMessage)
          {
-            DeliverMessage deliver = (DeliverMessage)packet;
+            ConsumerDeliverMessage deliver = (ConsumerDeliverMessage)packet;
             log.info("msg = " + deliver.getMessage().getClass().getName());
             deliver.getMessage().getHeaders().put("DummyInterceptor", "was here");
          }

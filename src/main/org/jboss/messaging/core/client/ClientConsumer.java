@@ -7,7 +7,7 @@
 
 package org.jboss.messaging.core.client;
 
-import org.jboss.messaging.core.server.Message;
+import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.server.MessagingException;
 
 /**
@@ -16,6 +16,8 @@ import org.jboss.messaging.core.server.MessagingException;
  */
 public interface ClientConsumer
 {      
+	Message receive() throws MessagingException;
+	
    Message receive(long timeout) throws MessagingException;
    
    Message receiveImmediate() throws MessagingException;

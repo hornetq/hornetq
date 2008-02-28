@@ -6,9 +6,9 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_DELIVER;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONS_DELIVER;
 
-import org.jboss.messaging.core.server.Message;
+import org.jboss.messaging.core.message.Message;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -17,7 +17,7 @@ import org.jboss.messaging.core.server.Message;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class DeliverMessage extends AbstractPacket
+public class ConsumerDeliverMessage extends AbstractPacket
 {
    // Constants -----------------------------------------------------
 
@@ -31,9 +31,9 @@ public class DeliverMessage extends AbstractPacket
 
    // Constructors --------------------------------------------------
 
-   public DeliverMessage(final Message message, final long deliveryID)
+   public ConsumerDeliverMessage(final Message message, final long deliveryID)
    {
-      super(SESS_DELIVER);
+      super(CONS_DELIVER);
 
       assert message != null;
 

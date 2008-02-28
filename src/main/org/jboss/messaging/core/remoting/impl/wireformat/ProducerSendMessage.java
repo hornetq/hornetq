@@ -8,7 +8,7 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PROD_SEND;
 
-import org.jboss.messaging.core.server.Message;
+import org.jboss.messaging.core.message.Message;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

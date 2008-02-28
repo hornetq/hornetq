@@ -1,4 +1,8 @@
-package org.jboss.messaging.core.server;
+package org.jboss.messaging.core.paging;
+
+import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.server.MessagingComponent;
+import org.jboss.messaging.core.server.Queue;
 
 /**
  * 

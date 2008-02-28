@@ -34,11 +34,11 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.server.Message;
-import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.impl.MessageImpl;
-import org.jboss.messaging.core.server.impl.XidImpl;
+import org.jboss.messaging.core.transaction.impl.XidImpl;
 
 /**
  * 

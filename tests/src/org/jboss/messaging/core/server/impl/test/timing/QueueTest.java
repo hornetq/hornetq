@@ -27,7 +27,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.impl.QueueImpl;
 import org.jboss.messaging.core.server.impl.test.unit.fakes.FakeConsumer;

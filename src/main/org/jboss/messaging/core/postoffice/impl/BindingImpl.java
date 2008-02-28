@@ -19,9 +19,9 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.server.impl;
+package org.jboss.messaging.core.postoffice.impl;
 
-import org.jboss.messaging.core.server.Binding;
+import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.server.Queue;
 
 /**

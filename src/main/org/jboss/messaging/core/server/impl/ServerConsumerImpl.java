@@ -24,14 +24,14 @@ package org.jboss.messaging.core.server.impl;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.persistence.PersistenceManager;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.PacketHandler;
-import org.jboss.messaging.core.server.Filter;
 import org.jboss.messaging.core.server.HandleStatus;
-import org.jboss.messaging.core.server.Message;
-import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.PersistenceManager;
-import org.jboss.messaging.core.server.PostOffice;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConsumer;
 import org.jboss.messaging.core.server.ServerSession;
@@ -90,10 +90,10 @@ public class ServerConsumerImpl implements ServerConsumer
    // Constructors ---------------------------------------------------------------------------------
 
    ServerConsumerImpl(final Queue messageQueue, final boolean noLocal, final Filter filter,
-   		                 final boolean autoDeleteQueue, final boolean enableFlowControl,
-   		                 final String connectionID, final ServerSession sessionEndpoint,
-					           final PersistenceManager persistenceManager, final PostOffice postOffice,
-					           final boolean started)
+   		             final boolean autoDeleteQueue, final boolean enableFlowControl,
+   		             final String connectionID, final ServerSession sessionEndpoint,
+					       final PersistenceManager persistenceManager, final PostOffice postOffice,
+					       final boolean started)
    {
    	id = UUID.randomUUID().toString();
       

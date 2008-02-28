@@ -19,18 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.server;
+package org.jboss.messaging.core.transaction;
+
+import javax.transaction.xa.Xid;
+
 
 /**
  * 
- * A Filter
+ * A ResourceManager
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface Filter
+public interface ResourceManager
 {
-   boolean match(Message message);
+   boolean putTransaction(Xid xid, Transaction tx);
    
-   String getFilterString();
+   Transaction getTransaction(Xid xid);
+   
+   boolean removeTransaction(Xid xid);
+   
+   int getTimeoutSeconds();
+   
+   boolean setTimeoutSeconds(int timeoutSeconds);
 }

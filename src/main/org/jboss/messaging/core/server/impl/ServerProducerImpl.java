@@ -23,7 +23,12 @@ package org.jboss.messaging.core.server.impl;
 
 import java.util.UUID;
 
-import org.jboss.messaging.core.server.Message;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
+import org.jboss.messaging.core.remoting.impl.wireformat.ProducerReceiveTokensMessage;
+import org.jboss.messaging.core.server.FlowController;
 import org.jboss.messaging.core.server.ServerProducer;
 import org.jboss.messaging.core.server.ServerSession;
 
@@ -36,21 +41,38 @@ import org.jboss.messaging.core.server.ServerSession;
  */
 public class ServerProducerImpl implements ServerProducer
 {
+	private static final Logger log = Logger.getLogger(ServerProducerImpl.class);
+	
 	private final String id;
 	
 	private final ServerSession session;
 	
 	private final String address;
-		
+	
+	private final FlowController flowController;
+	
+	private final PacketSender sender;
+	
+	private volatile int numberSent;
+	
+	private final int batchSize = 10;
+			
+	
 	// Constructors ----------------------------------------------------------------
 	
-	public ServerProducerImpl(final ServerSession session, final String address)
+	public ServerProducerImpl(final ServerSession session, final String address, 
+			                    final PacketSender sender,
+			                    final FlowController flowController) throws Exception
 	{
 		id = UUID.randomUUID().toString();
       
 		this.session = session;
 		
 		this.address = address;
+		
+		this.sender = sender;
+		
+		this.flowController = flowController;				
 	}
 	
 	// ServerProducer implementation --------------------------------------------
@@ -65,8 +87,9 @@ public class ServerProducerImpl implements ServerProducer
 		session.removeProducer(id);
 	}
 	
+	
 	public void send(final String address, final Message message) throws Exception
-	{
+	{		
 		if (address != null)
 		{
 			//Anonymous producer - no flow control
@@ -75,6 +98,15 @@ public class ServerProducerImpl implements ServerProducer
 		else
 		{			
 			session.send(this.address, message);
+			
+//			numberSent++;
+//			
+//			if (numberSent == batchSize)
+//			{
+//				numberSent = 0;
+//						
+//				flowController.checkTokens(this);
+//			}
 		}
 	}
 	
@@ -84,9 +116,12 @@ public class ServerProducerImpl implements ServerProducer
 		return 0;
 	}
 
-	public void sendCredits(final int credits)
+	public void sendCredits(final int credits) throws Exception
 	{
-		// TODO Auto-generated method stub
+		Packet packet = new ProducerReceiveTokensMessage(credits);
 		
+		packet.setTargetID(id);
+			
+		sender.send(packet);		
 	}
 }

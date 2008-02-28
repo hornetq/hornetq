@@ -43,7 +43,7 @@ import javax.transaction.xa.XAResource;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.core.server.impl.XidImpl;
+import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.tools.ServerManagement;
 

@@ -21,16 +21,20 @@ public class SessionCreateProducerResponseMessage extends AbstractPacket
    // Attributes ----------------------------------------------------
 
    private final String producerID;
+   
+   private final int initialTokens;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateProducerResponseMessage(final String producerID)
+   public SessionCreateProducerResponseMessage(final String producerID, final int initialTokens)
    {
       super(SESS_CREATEPRODUCER_RESP);
 
       this.producerID = producerID;
+      
+      this.initialTokens = initialTokens;
    }
 
    // Public --------------------------------------------------------
@@ -39,12 +43,18 @@ public class SessionCreateProducerResponseMessage extends AbstractPacket
    {
       return producerID;
    }
+   
+   public int getInitialTokens()
+   {
+   	return initialTokens;
+   }
 
    @Override
    public String toString()
    {
       StringBuffer buf = new StringBuffer(getParentString());
       buf.append(", producerID=" + producerID);
+      buf.append(", initialTokens=" + initialTokens);
       buf.append("]");
       return buf.toString();
    }

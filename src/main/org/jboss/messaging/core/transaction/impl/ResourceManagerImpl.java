@@ -19,15 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.server.impl;
+package org.jboss.messaging.core.transaction.impl;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.server.ResourceManager;
-import org.jboss.messaging.core.server.Transaction;
+import org.jboss.messaging.core.transaction.ResourceManager;
+import org.jboss.messaging.core.transaction.Transaction;
 
 /**
  * 

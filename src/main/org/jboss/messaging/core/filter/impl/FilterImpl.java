@@ -24,9 +24,9 @@ package org.jboss.messaging.core.filter.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.Filter;
-import org.jboss.messaging.core.server.Message;
+import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.server.MessagingException;
 
 /**

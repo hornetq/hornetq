@@ -22,7 +22,7 @@
 package org.jboss.messaging.core.deployers.impl;
 
 import org.jboss.messaging.core.deployers.Deployer;
-import org.jboss.messaging.core.server.PostOffice;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.w3c.dom.Node;

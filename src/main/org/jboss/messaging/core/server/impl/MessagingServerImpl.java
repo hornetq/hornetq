@@ -34,10 +34,16 @@ import org.jboss.messaging.core.deployers.impl.SecurityDeployer;
 import org.jboss.messaging.core.deployers.impl.FileDeploymentManager;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.Deployer;
+import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.memory.impl.SimpleMemoryManager;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
+import org.jboss.messaging.core.persistence.PersistenceManager;
 import org.jboss.messaging.core.persistence.impl.nullpm.NullPersistenceManager;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
@@ -47,21 +53,17 @@ import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.security.impl.NullAuthenticationManager;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
-import org.jboss.messaging.core.server.Binding;
 import org.jboss.messaging.core.server.Configuration;
 import org.jboss.messaging.core.server.ConnectionManager;
-import org.jboss.messaging.core.server.Filter;
-import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.PersistenceManager;
-import org.jboss.messaging.core.server.PostOffice;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
-import org.jboss.messaging.core.server.ResourceManager;
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.transaction.ResourceManager;
+import org.jboss.messaging.core.transaction.impl.ResourceManagerImpl;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.core.version.impl.VersionImpl;
 import org.jboss.security.AuthenticationManager;
@@ -347,7 +349,6 @@ public class MessagingServerImpl implements MessagingServer
    {
       this.authenticationManager = authenticationManager;
    }
-
 
    public String toString()
    {

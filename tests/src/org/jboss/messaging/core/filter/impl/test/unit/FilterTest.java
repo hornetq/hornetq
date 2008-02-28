@@ -21,11 +21,11 @@
   */
 package org.jboss.messaging.core.filter.impl.test.unit;
 
+import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
-import org.jboss.messaging.core.server.Filter;
-import org.jboss.messaging.core.server.Message;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.MessagingException;
-import org.jboss.messaging.core.server.impl.MessageImpl;
 import org.jboss.test.messaging.JBMBaseTestCase;
 
 /**

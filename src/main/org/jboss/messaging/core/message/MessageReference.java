@@ -19,7 +19,10 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.server;
+package org.jboss.messaging.core.message;
+
+import org.jboss.messaging.core.persistence.PersistenceManager;
+import org.jboss.messaging.core.server.Queue;
 
 /**
  * A reference to a message.

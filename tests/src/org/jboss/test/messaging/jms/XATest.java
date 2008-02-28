@@ -44,7 +44,7 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.impl.XidImpl;
+import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;

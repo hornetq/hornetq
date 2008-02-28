@@ -22,10 +22,10 @@
 package org.jboss.messaging.core.client.impl;
 
 import org.jboss.messaging.core.client.AcknowledgementHandler;
-import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
-import org.jboss.messaging.core.server.Message;
 import org.jboss.messaging.core.server.MessagingException;
 
 /**
@@ -38,7 +38,7 @@ import org.jboss.messaging.core.server.MessagingException;
  *
  * $Id$
  */
-public class ClientProducerImpl implements ClientProducer
+public class ClientProducerImpl implements ClientProducerInternal
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -58,12 +58,14 @@ public class ClientProducerImpl implements ClientProducer
    
    private volatile boolean closed;
    
+   private volatile int availableTokens;
+   
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
       
    public ClientProducerImpl(final ClientSessionInternal session, final String id, final String address,
-   		                    final RemotingConnection remotingConnection)
+   		                    final RemotingConnection remotingConnection, final int availableTokens)
    {   	
       this.session = session;
       
@@ -72,6 +74,8 @@ public class ClientProducerImpl implements ClientProducer
       this.address = address;
       
       this.remotingConnection = remotingConnection;
+      
+      this.availableTokens = availableTokens;
    }
    
    // ClientProducer implementation ----------------------------------------------------------------
@@ -85,20 +89,46 @@ public class ClientProducerImpl implements ClientProducer
    {
       checkClosed();
       
-      ProducerSendMessage message = new ProducerSendMessage(null, msg.copy());
-      
-      remotingConnection.send(id, message, !msg.isDurable());
+      doSend(null, msg);
    }
    
    public void send(final String address, final Message msg) throws MessagingException
    {
       checkClosed();
       
-      ProducerSendMessage message = new ProducerSendMessage(address, msg.copy());
-      
-      remotingConnection.send(id, message, !msg.isDurable());
+      doSend(address, msg);
    }
-         
+   
+   private void doSend(final String address, final Message msg) throws MessagingException
+   {
+   	ProducerSendMessage message = new ProducerSendMessage(address, msg.copy());
+   	
+//   	if (address == null)
+//   	{
+//   		//flow control
+//   		
+//   		//TODO guard against waiting for ever - interrupt the thread???
+//   		
+//   		while (availableTokens == 0)
+//   		{
+//				synchronized (this)
+//				{
+//					try
+//					{						
+//					   wait();						
+//					}
+//					catch (InterruptedException e)
+//					{   						
+//					}
+//				}		
+//   		}
+//   	}
+   	
+   	remotingConnection.send(id, message, !msg.isDurable());
+   	
+   	//availableTokens--;
+   }
+            
    public void registerAcknowledgementHandler(final AcknowledgementHandler handler)
    {
       // TODO      
@@ -117,12 +147,23 @@ public class ClientProducerImpl implements ClientProducer
       }
       session.removeProducer(this);
       
+      remotingConnection.getPacketDispatcher().unregister(id);
+      
       closed = true;
    }
 
    public boolean isClosed()
    {
       return closed;
+   }
+   
+   // ClientProducerInternal implementation --------------------------------------------------------
+   
+   public synchronized void receiveTokens(int tokens)
+   {
+   	availableTokens += tokens;
+   	
+   	notify();
    }
    
    // Public ---------------------------------------------------------------------------------------

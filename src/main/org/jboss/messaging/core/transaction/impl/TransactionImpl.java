@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.server.impl;
+package org.jboss.messaging.core.transaction.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,12 +30,12 @@ import java.util.Map;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.Message;
-import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.PersistenceManager;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.persistence.PersistenceManager;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.Transaction;
-import org.jboss.messaging.core.server.TransactionSynchronization;
+import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.core.transaction.TransactionSynchronization;
 
 /**
  * 

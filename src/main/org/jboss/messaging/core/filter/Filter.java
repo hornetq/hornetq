@@ -19,42 +19,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.server;
+package org.jboss.messaging.core.filter;
 
-import javax.transaction.xa.Xid;
-
-
+import org.jboss.messaging.core.message.Message;
 
 /**
  * 
- * A JBoss Messaging internal transaction
+ * A Filter
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface Transaction
-{   
-   void addSynchronization(TransactionSynchronization sync);
+public interface Filter
+{
+   boolean match(Message message);
    
-   void prepare(PersistenceManager persistenceManager) throws Exception;
-   
-   void commit(boolean onePhase, PersistenceManager persistenceManager) throws Exception;
-   
-   void rollback(PersistenceManager persistenceManager) throws Exception;   
-   
-   void addMessage(Message message);
-   
-   void addAcknowledgement(MessageReference acknowledgement);   
-   
-   int getAcknowledgementsCount();
-   
-   Xid getXid();
-   
-   boolean isEmpty();
-   
-   void suspend();
-   
-   void resume();
-   
-   boolean isSuspended();
+   String getFilterString();
 }

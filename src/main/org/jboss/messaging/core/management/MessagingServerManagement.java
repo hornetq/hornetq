@@ -25,10 +25,10 @@ import java.util.Collection;
 import java.util.List;
 
 import org.jboss.messaging.core.client.ClientConnectionFactory;
+import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
+import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
-import org.jboss.messaging.core.server.Filter;
-import org.jboss.messaging.core.server.Message;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConnection;
 

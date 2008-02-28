@@ -8,9 +8,9 @@ package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_NEXTMESSAGE_RESP;
 
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageResponseMessage;
-import org.jboss.messaging.core.server.Message;
-import org.jboss.messaging.core.server.impl.MessageImpl;
 import org.jboss.messaging.util.StreamUtils;
 
 /**

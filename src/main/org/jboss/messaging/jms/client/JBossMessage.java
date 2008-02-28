@@ -40,8 +40,8 @@ import javax.jms.MessageNotWriteableException;
 
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.MessagingException;
-import org.jboss.messaging.core.server.impl.MessageImpl;
 
 /**
  * 
@@ -117,7 +117,7 @@ public class JBossMessage implements javax.jms.Message
    private static final Logger log = Logger.getLogger(JBossMessage.class);
 
    
-   public static JBossMessage createMessage(org.jboss.messaging.core.server.Message message, ClientSession session)
+   public static JBossMessage createMessage(org.jboss.messaging.core.message.Message message, ClientSession session)
    {
       int type = message.getType();
       
@@ -155,7 +155,7 @@ public class JBossMessage implements javax.jms.Message
    // Attributes ----------------------------------------------------
 
    //The underlying message
-   protected org.jboss.messaging.core.server.Message message;
+   protected org.jboss.messaging.core.message.Message message;
    
    private ClientSession session;
    
@@ -177,7 +177,7 @@ public class JBossMessage implements javax.jms.Message
    /**
     * Constructor for when receiving a message from the server
     */
-   public JBossMessage(org.jboss.messaging.core.server.Message message, ClientSession session)
+   public JBossMessage(org.jboss.messaging.core.message.Message message, ClientSession session)
    {
       this.message = message;
       
@@ -757,7 +757,7 @@ public class JBossMessage implements javax.jms.Message
     
    // Public --------------------------------------------------------
    
-   public org.jboss.messaging.core.server.Message getCoreMessage()
+   public org.jboss.messaging.core.message.Message getCoreMessage()
    {
       return message;
    }

@@ -24,9 +24,9 @@ package org.jboss.messaging.core.server.impl.test.concurrent;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.server.HandleStatus;
-import org.jboss.messaging.core.server.Message;
-import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.impl.test.unit.fakes.FakeConsumer;

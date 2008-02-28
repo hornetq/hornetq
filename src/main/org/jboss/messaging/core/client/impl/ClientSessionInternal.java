@@ -7,9 +7,7 @@
 package org.jboss.messaging.core.client.impl;
 
 import org.jboss.messaging.core.client.ClientBrowser;
-import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.server.Message;
 import org.jboss.messaging.core.server.MessagingException;
 
 /**
@@ -31,7 +29,7 @@ public interface ClientSessionInternal extends ClientSession
    
    void removeConsumer(ClientConsumerInternal consumer) throws MessagingException;
    
-   void removeProducer(ClientProducer producer);
+   void removeProducer(ClientProducerInternal producer);
    
    void removeBrowser(ClientBrowser browser);  
 }

@@ -8,7 +8,7 @@ package org.jboss.messaging.core.remoting.impl.wireformat.test.unit;
 
 import junit.framework.Assert;
 
-import org.jboss.messaging.core.server.impl.XidImpl;
+import org.jboss.messaging.core.transaction.impl.XidImpl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

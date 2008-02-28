@@ -23,14 +23,17 @@ package org.jboss.example.embedded;
 
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 
-import org.jboss.messaging.core.client.*;
+import org.jboss.messaging.core.client.ClientConnection;
+import org.jboss.messaging.core.client.ClientConnectionFactory;
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
-import org.jboss.messaging.core.server.Message;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.impl.MessageImpl;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
-import org.jboss.messaging.core.version.impl.VersionImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 
 /**

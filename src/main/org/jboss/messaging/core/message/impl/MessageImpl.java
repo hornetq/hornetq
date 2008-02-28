@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.server.impl;
+package org.jboss.messaging.core.message.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -32,8 +32,8 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.Message;
-import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.util.StreamUtils;
 
@@ -303,7 +303,7 @@ public class MessageImpl implements Message
    
    public MessageReference createReference(final Queue queue)
    {
-      MessageReference ref =  new MessageReferenceImpl(this, queue);
+      MessageReference ref = new MessageReferenceImpl(this, queue);
       
       references.add(ref);
       

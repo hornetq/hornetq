@@ -37,6 +37,7 @@ import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.CloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
@@ -129,7 +130,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    private final Map<String, ClientConsumerInternal> consumers = new HashMap<String, ClientConsumerInternal>();
    
-   private final Map<String, ClientProducer> producerCache;
+   private final Map<String, ClientProducerInternal> producerCache;
    
    //For testing only
    private boolean forceNotSameRM;
@@ -153,7 +154,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       
       if (cacheProducers)
       {
-      	producerCache = new HashMap<String, ClientProducer>();
+      	producerCache = new HashMap<String, ClientProducerInternal>();
       }
       else
       {
@@ -241,22 +242,15 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       remotingConnection.getPacketDispatcher().register(new ClientConsumerPacketHandler(consumer, response.getConsumerID()));
 
-      if (prefetchSize > 0) // 0 ==> flow control is disabled
+      if (prefetchSize > 0) 
       {
-         //Now give the server consumer some initial tokens (1.5 * prefetchSize)
+      	//Consumer flow control is enabled so give the server consumer some initial tokens (1.5 * prefetchSize)
          
          int initialTokens = prefetchSize + prefetchSize >>> 1;
          
          remotingConnection.send(response.getConsumerID(), new ConsumerFlowTokenMessage(initialTokens), true);
       }
-      else
-      {
-         //FIXME
-         //FIXME - for now we need to send a flow control token to ensure the return packet sender gets set
-         //FIXME
-         remotingConnection.send(response.getConsumerID(), new ConsumerFlowTokenMessage(1), true);
-      }
-      
+            
       return consumer;
    }
    
@@ -281,7 +275,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    {
       checkClosed();
       
-      ClientProducer producer = null;
+      ClientProducerInternal producer = null;
       
       if (cacheProducers)
       {
@@ -295,7 +289,10 @@ public class ClientSessionImpl implements ClientSessionInternal
       	SessionCreateProducerResponseMessage response =
       		(SessionCreateProducerResponseMessage)remotingConnection.send(id, request);
       	
-      	producer = new ClientProducerImpl(this, response.getProducerID(), address, remotingConnection);      	
+      	producer = new ClientProducerImpl(this, response.getProducerID(), address,
+      			                            remotingConnection, response.getInitialTokens());  
+      	
+      	remotingConnection.getPacketDispatcher().register(new ClientProducerPacketHandler(producer, response.getProducerID()));
       }
 
       producers.add(producer);
@@ -384,6 +381,11 @@ public class ClientSessionImpl implements ClientSessionInternal
          
          if (cacheProducers)
          {
+         	for (ClientProducer producer: producerCache.values())
+         	{
+         		producer.close();
+         	}
+         	
          	producerCache.clear();
          }
          
@@ -393,11 +395,7 @@ public class ClientSessionImpl implements ClientSessionInternal
          
          remotingConnection.send(id, new CloseMessage());
    
-         executor.shutdownNow();
-         // executor.shutdownNow() makes a best-effort to cancel threads using Thread.interrupt().
-         // we call Thread.interrupted() to reset the thread status.
-         // without this call, JBMESSAGING-542 happens when closing a connection from a message listener.
-         Thread.interrupted();
+         executor.shutdown();
       }
       finally
       {
@@ -449,7 +447,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       remotingConnection.send(id, new SessionCancelMessage(-1, false));
    }
    
-   public void removeProducer(final ClientProducer producer)
+   public void removeProducer(final ClientProducerInternal producer)
    {
       producers.remove(producer);
       

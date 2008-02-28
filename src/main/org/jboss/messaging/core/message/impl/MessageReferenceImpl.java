@@ -19,13 +19,14 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.server.impl;
+package org.jboss.messaging.core.message.impl;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.Message;
-import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.PersistenceManager;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.persistence.PersistenceManager;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 
 /**
  * Implementation of a MessageReference
@@ -133,10 +134,7 @@ public class MessageReferenceImpl implements MessageReference
       {
          persistenceManager.updateDeliveryCount(queue, this);
       }
-            
-      log.info("Queue settings is " + queue.getQueueSettings());
-   	
-      
+              
       queue.decrementDeliveringCount();
 
       int maxDeliveries = queue.getQueueSettings().getMatch(queue.getName()).getMaxDeliveryAttempts();

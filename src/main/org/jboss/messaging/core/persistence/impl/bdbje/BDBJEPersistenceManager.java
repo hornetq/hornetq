@@ -34,17 +34,17 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.transaction.xa.Xid;
 
+import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.Binding;
-import org.jboss.messaging.core.server.Filter;
-import org.jboss.messaging.core.server.Message;
-import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.PersistenceManager;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.persistence.PersistenceManager;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.impl.BindingImpl;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
-import org.jboss.messaging.core.server.impl.BindingImpl;
-import org.jboss.messaging.core.server.impl.MessageImpl;
 import org.jboss.messaging.util.Pair;
 
 /**

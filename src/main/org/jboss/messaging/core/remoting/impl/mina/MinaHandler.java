@@ -97,7 +97,10 @@ public class MinaHandler extends IoHandlerAdapter
          throw new IllegalArgumentException("Unknown message type: " + message);
       }
 
+      
+      
       AbstractPacket packet = (AbstractPacket) message;
+
       PacketSender sender = new PacketSender()
       {
          public void send(Packet p) throws Exception

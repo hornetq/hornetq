@@ -43,10 +43,11 @@ public class SessionCreateProducerResponseMessageCodec extends
    {
       String producerID = response.getProducerID();
 
-      int bodyLength = sizeof(producerID);
+      int bodyLength = sizeof(producerID) + INT_LENGTH;
        
       out.putInt(bodyLength);
       out.putNullableString(producerID);
+      out.putInt(response.getInitialTokens());
    }
 
    @Override
@@ -60,8 +61,9 @@ public class SessionCreateProducerResponseMessageCodec extends
       }
 
       String producerID = in.getNullableString();
+      int initialTokens = in.getInt();
  
-      return new SessionCreateProducerResponseMessage(producerID);
+      return new SessionCreateProducerResponseMessage(producerID, initialTokens);
    }
 
    // Package protected ---------------------------------------------

@@ -24,7 +24,7 @@ package org.jboss.messaging.core.server.impl.test.unit.fakes;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.jboss.messaging.core.server.Filter;
+import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.impl.QueueImpl;

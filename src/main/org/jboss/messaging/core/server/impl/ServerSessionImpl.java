@@ -36,8 +36,14 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.persistence.PersistenceManager;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
@@ -50,21 +56,17 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryRespon
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.SecurityStore;
-import org.jboss.messaging.core.server.Binding;
 import org.jboss.messaging.core.server.Delivery;
-import org.jboss.messaging.core.server.Filter;
-import org.jboss.messaging.core.server.Message;
-import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.FlowController;
 import org.jboss.messaging.core.server.MessagingException;
-import org.jboss.messaging.core.server.PersistenceManager;
-import org.jboss.messaging.core.server.PostOffice;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.ResourceManager;
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.server.ServerConsumer;
 import org.jboss.messaging.core.server.ServerProducer;
 import org.jboss.messaging.core.server.ServerSession;
-import org.jboss.messaging.core.server.Transaction;
+import org.jboss.messaging.core.transaction.ResourceManager;
+import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 
 /**
  * Session implementation
@@ -302,7 +304,7 @@ public class ServerSessionImpl implements ServerSession
       securityStore.check(address, CheckType.WRITE, connection);
       // Assign the message an internal id - this is used to key it in the store
       msg.setMessageID(persistenceManager.generateMessageID());
-
+      
       // This allows the no-local consumers to filter out the messages that come
       // from the same
       // connection.
@@ -310,7 +312,7 @@ public class ServerSessionImpl implements ServerSession
       msg.setConnectionID(connection.getID());
 
       postOffice.route(address, msg);
-
+      
       if (!msg.getReferences().isEmpty())
       {
          if (autoCommitSends)
@@ -331,13 +333,10 @@ public class ServerSessionImpl implements ServerSession
 
    public synchronized void acknowledge(final long deliveryID, final boolean allUpTo) throws Exception
    {
-      // Note that we do not consider it an error if the deliveries cannot be
-      // found to be acked.
-      // This can legitimately occur if a connection/session/consumer is closed
-      // from inside a MessageHandlers
-      // onMessage method. In this situation the close will cancel any unacked
-      // deliveries, but the subsequent
-      // call to delivered() will try and ack again and not find the last
+      // Note that we do not consider it an error if the deliveries cannot be found to be acked.
+   	// This can legitimately occur if a connection/session/consumer is closed
+      // from inside a MessageHandlers onMessage method. In this situation the close will cancel any unacked
+      // deliveries, but the subsequent call to delivered() will try and ack again and not find the last
       // delivery on the server.
       if (allUpTo)
       {
@@ -1002,14 +1001,18 @@ public class ServerSessionImpl implements ServerSession
    }
    
    public SessionCreateProducerResponseMessage createProducer(final String address) throws Exception
-   {
-   	ServerProducerImpl producer = new ServerProducerImpl(this, address);
+   { 	
+   	//FlowController flowController = new FlowControllerImpl(address, postOffice, 10);		
+   	
+   	ServerProducerImpl producer = new ServerProducerImpl(this, address, sender, null);
    	
    	producers.put(producer.getID(), producer);
    	
    	dispatcher.register(new ServerProducerPacketHandler(producer));
    	
-   	return new SessionCreateProducerResponseMessage(producer.getID());
+   	int initialTokens = 10;
+   	
+   	return new SessionCreateProducerResponseMessage(producer.getID(), initialTokens);
    }
    
    // Public ---------------------------------------------------------------------------------------------

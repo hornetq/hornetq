@@ -6,17 +6,17 @@
  */
 package org.jboss.messaging.core.remoting.impl.codec;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_DELIVER;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONS_DELIVER;
 
-import org.jboss.messaging.core.remoting.impl.wireformat.DeliverMessage;
-import org.jboss.messaging.core.server.Message;
-import org.jboss.messaging.core.server.impl.MessageImpl;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerDeliverMessage;
 import org.jboss.messaging.util.StreamUtils;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
  */
-public class DeliverMessageCodec extends AbstractPacketCodec<DeliverMessage>
+public class ConsumerDeliverMessageCodec extends AbstractPacketCodec<ConsumerDeliverMessage>
 {
    // Constants -----------------------------------------------------
 
@@ -26,9 +26,9 @@ public class DeliverMessageCodec extends AbstractPacketCodec<DeliverMessage>
 
    // Constructors --------------------------------------------------
 
-   public DeliverMessageCodec()
+   public ConsumerDeliverMessageCodec()
    {
-      super(SESS_DELIVER);
+      super(CONS_DELIVER);
    }
 
    // Public --------------------------------------------------------
@@ -36,7 +36,7 @@ public class DeliverMessageCodec extends AbstractPacketCodec<DeliverMessage>
    // AbstractPacketCodec overrides ---------------------------------
 
    @Override
-   protected void encodeBody(DeliverMessage message, RemotingBuffer out) throws Exception
+   protected void encodeBody(ConsumerDeliverMessage message, RemotingBuffer out) throws Exception
    {
       byte[] encodedMsg = StreamUtils.toBytes(message.getMessage());
       long deliveryID = message.getDeliveryID();
@@ -51,7 +51,7 @@ public class DeliverMessageCodec extends AbstractPacketCodec<DeliverMessage>
    }
 
    @Override
-   protected DeliverMessage decodeBody(RemotingBuffer in)
+   protected ConsumerDeliverMessage decodeBody(RemotingBuffer in)
          throws Exception
    {
       int bodyLength = in.getInt();
@@ -67,7 +67,7 @@ public class DeliverMessageCodec extends AbstractPacketCodec<DeliverMessage>
       StreamUtils.fromBytes(message, encodedMsg);
       long deliveryID = in.getLong();
 
-      return new DeliverMessage(message, deliveryID);
+      return new ConsumerDeliverMessage(message, deliveryID);
    }
 
    // Package protected ---------------------------------------------

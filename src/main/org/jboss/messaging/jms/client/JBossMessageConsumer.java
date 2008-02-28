@@ -200,7 +200,7 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
    {
       try
       {
-         org.jboss.messaging.core.server.Message message =  consumer.receive(timeout);
+         org.jboss.messaging.core.message.Message message =  consumer.receive(timeout);
                
          JBossMessage jbm = null;
          

@@ -28,11 +28,11 @@ import static org.jboss.messaging.test.unit.RandomUtil.randomLong;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.messaging.core.server.Message;
-import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
-import org.jboss.messaging.core.server.impl.MessageImpl;
 import org.jboss.messaging.core.server.impl.test.unit.fakes.FakeQueueFactory;
 import org.jboss.messaging.test.unit.UnitTestCase;
 import org.jboss.messaging.util.StreamUtils;

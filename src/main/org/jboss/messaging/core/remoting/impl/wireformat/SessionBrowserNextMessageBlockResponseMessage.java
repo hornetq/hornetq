@@ -10,7 +10,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
 
 import java.util.Arrays;
 
-import org.jboss.messaging.core.server.Message;
+import org.jboss.messaging.core.message.Message;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

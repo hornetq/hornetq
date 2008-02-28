@@ -69,7 +69,7 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
       super(JBossTextMessage.TYPE);
    }
    
-   public JBossTextMessage(org.jboss.messaging.core.server.Message message, ClientSession session)
+   public JBossTextMessage(org.jboss.messaging.core.message.Message message, ClientSession session)
    {
       super(message, session);
    }

@@ -8,17 +8,17 @@ import java.util.concurrent.ScheduledExecutorService;
 import javax.transaction.xa.Xid;
 
 import org.easymock.EasyMock;
-import org.jboss.messaging.core.server.Message;
-import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.PersistenceManager;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.persistence.PersistenceManager;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.Transaction;
-import org.jboss.messaging.core.server.TransactionSynchronization;
 import org.jboss.messaging.core.server.impl.QueueImpl;
-import org.jboss.messaging.core.server.impl.TransactionImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.core.transaction.TransactionSynchronization;
+import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.test.unit.UnitTestCase;
 
 /**

@@ -36,17 +36,17 @@ import javax.naming.NamingException;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.client.ClientConnectionFactory;
+import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.management.MessagingServerManagement;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
-import org.jboss.messaging.core.server.Filter;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.jms.JBossQueue;
-import org.jboss.messaging.jms.JBossTopic;
-import org.jboss.messaging.jms.JBossTemporaryTopic;
 import org.jboss.messaging.jms.JBossTemporaryQueue;
+import org.jboss.messaging.jms.JBossTemporaryTopic;
+import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.jms.server.ConnectionInfo;
@@ -591,8 +591,8 @@ public class JMSServerManagerImpl implements JMSServerManager
             filter = new FilterImpl("JBMDurable='NON_DURABLE'");
             break;
       }
-      List<org.jboss.messaging.core.server.Message> messageList = messagingServerManagement.listMessages(queue, filter);
-      for (org.jboss.messaging.core.server.Message message : messageList)
+      List<org.jboss.messaging.core.message.Message> messageList = messagingServerManagement.listMessages(queue, filter);
+      for (org.jboss.messaging.core.message.Message message : messageList)
       {
          messages.add(JBossMessage.createMessage(message, null));
       }

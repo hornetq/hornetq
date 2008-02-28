@@ -28,7 +28,7 @@ import java.io.ObjectOutputStream;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.server.impl.XidImpl;
+import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.test.unit.RandomUtil;
 import org.jboss.messaging.test.unit.UnitTestCase;
 

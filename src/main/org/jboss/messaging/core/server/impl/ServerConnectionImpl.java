@@ -26,19 +26,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.persistence.PersistenceManager;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.security.SecurityStore;
-import org.jboss.messaging.core.server.Binding;
 import org.jboss.messaging.core.server.ConnectionManager;
-import org.jboss.messaging.core.server.PersistenceManager;
-import org.jboss.messaging.core.server.PostOffice;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.ResourceManager;
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.server.ServerSession;
+import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.ConcurrentHashSet;
 
 /**

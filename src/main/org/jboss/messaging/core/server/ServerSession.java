@@ -25,6 +25,8 @@ import java.util.List;
 
 import javax.transaction.xa.Xid;
 
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserResponseMessage;

@@ -14,13 +14,14 @@ import org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec;
 import org.jboss.messaging.core.remoting.impl.codec.BytesPacketCodec;
 import org.jboss.messaging.core.remoting.impl.codec.ConnectionCreateSessionMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.ConnectionCreateSessionResponseMessageCodec;
+import org.jboss.messaging.core.remoting.impl.codec.ConsumerDeliverMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.ConsumerFlowTokenMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.CreateConnectionMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.CreateConnectionResponseMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.DeliverMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.MessagingExceptionMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.PingCodec;
 import org.jboss.messaging.core.remoting.impl.codec.PongCodec;
+import org.jboss.messaging.core.remoting.impl.codec.ProducerReceiveTokensMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.ProducerSendMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.RemotingBuffer;
 import org.jboss.messaging.core.remoting.impl.codec.SessionAcknowledgeMessageCodec;
@@ -64,15 +65,16 @@ import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSession
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionStartMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionStopMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerDeliverMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
-import org.jboss.messaging.core.remoting.impl.wireformat.DeliverMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
+import org.jboss.messaging.core.remoting.impl.wireformat.ProducerReceiveTokensMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddAddressMessage;
@@ -177,7 +179,7 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
 
       addCodec(ConsumerFlowTokenMessage.class, ConsumerFlowTokenMessageCodec.class);
 
-      addCodec(DeliverMessage.class, DeliverMessageCodec.class);
+      addCodec(ConsumerDeliverMessage.class, ConsumerDeliverMessageCodec.class);
 
       addCodec(SessionAcknowledgeMessage.class,
             SessionAcknowledgeMessageCodec.class);
@@ -264,6 +266,8 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
       addCodec(SessionDeleteQueueMessage.class, SessionDeleteQueueMessageCodec.class);
       
       addCodec(ProducerSendMessage.class, ProducerSendMessageCodec.class);
+      
+      addCodec(ProducerReceiveTokensMessage.class, ProducerReceiveTokensMessageCodec.class);
 
    }
 

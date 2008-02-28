@@ -3,7 +3,7 @@ package org.jboss.messaging.core.client.impl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.impl.wireformat.DeliverMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerDeliverMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 
@@ -15,7 +15,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
  */
 public class ClientConsumerPacketHandler implements PacketHandler
 {
-   private static final Logger log = Logger.getLogger(ClientConsumerImpl.class);
+   private static final Logger log = Logger.getLogger(ClientConsumerPacketHandler.class);
 
    private final ClientConsumerInternal clientConsumer;
 
@@ -38,12 +38,18 @@ public class ClientConsumerPacketHandler implements PacketHandler
       try
       {
          PacketType type = packet.getType();
-         if (type == PacketType.SESS_DELIVER)
+         
+         if (type == PacketType.CONS_DELIVER)
          {
-            DeliverMessage message = (DeliverMessage) packet;
+            ConsumerDeliverMessage message = (ConsumerDeliverMessage) packet;
             
             clientConsumer.handleMessage(message);
          }
+         else
+         {
+         	throw new IllegalStateException("Invalid packet: " + type);
+         }
+         	
       }
       catch (Exception e)
       {
