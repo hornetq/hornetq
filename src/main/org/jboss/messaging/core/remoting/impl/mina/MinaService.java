@@ -7,6 +7,7 @@
 package org.jboss.messaging.core.remoting.impl.mina;
 
 import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGISTRY;
+import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addExecutorFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addKeepAliveFilter;
@@ -30,8 +31,8 @@ import org.jboss.beans.metadata.api.annotations.Uninstall;
 import org.jboss.messaging.core.client.FailureListener;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.Interceptor;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingException;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
@@ -81,6 +82,8 @@ public class MinaService implements RemotingService, FailureNotifier
       assert remotingConfig != null;
       assert factory != null;
 
+      validate(remotingConfig);
+      
       this.remotingConfig = remotingConfig;
       this.factory = factory;
       this.dispatcher = new PacketDispatcherImpl(this.filters);
@@ -149,14 +152,14 @@ public class MinaService implements RemotingService, FailureNotifier
          acceptor.bind();
          acceptorListener = new MinaSessionListener();
          acceptor.addListener(acceptorListener);
-         
-         boolean disableInvm = remotingConfig.isInvmDisabled();
-         if (log.isDebugEnabled())
-            log.debug("invm optimization for remoting is " + (disableInvm ? "disabled" : "enabled"));
-         if (!disableInvm)
-            REGISTRY.register(remotingConfig, dispatcher);
       }
       
+      boolean disableInvm = remotingConfig.isInvmDisabled();
+      if (log.isDebugEnabled())
+         log.debug("invm optimization for remoting is " + (disableInvm ? "disabled" : "enabled"));
+      if (!disableInvm)
+         REGISTRY.register(remotingConfig, dispatcher);
+
       started = true;
    }
 
@@ -187,6 +190,10 @@ public class MinaService implements RemotingService, FailureNotifier
       return remotingConfig;
    }
    
+   /**
+    * This method must only be called by tests which requires 
+    * to insert Filters (e.g. to simulate network failures)
+    */
    public DefaultIoFilterChainBuilder getFilterChain() 
    {
       assert started == true;

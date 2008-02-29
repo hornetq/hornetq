@@ -59,7 +59,6 @@ public class RemotingConfiguration implements Serializable
    {
       assert transport != null;
       assert host != null;
-      assert port > 0;
       
       this.transport = transport;
       this.host = host;
