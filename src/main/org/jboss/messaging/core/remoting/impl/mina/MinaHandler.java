@@ -78,7 +78,8 @@ public class MinaHandler extends IoHandlerAdapter
    {
       if (message instanceof Response)
       {
-         log.trace("received response " + message);
+         if (log.isTraceEnabled())
+            log.trace("received response " + message);
          // response is handled by the reqres filter.
          // do nothing
          return;
@@ -86,7 +87,8 @@ public class MinaHandler extends IoHandlerAdapter
       
       if (message instanceof Ping)
       {
-         log.trace("received ping " + message);
+         if (log.isTraceEnabled())
+            log.trace("received ping " + message);
          // response is handled by the keep-alive filter.
          // do nothing
          return;
