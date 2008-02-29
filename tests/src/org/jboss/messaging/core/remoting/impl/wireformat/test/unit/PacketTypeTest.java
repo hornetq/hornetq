@@ -12,10 +12,10 @@ import static org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec.I
 import static org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec.LONG_LENGTH;
 import static org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec.TRUE;
 import static org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec.sizeof;
-import static org.jboss.messaging.core.remoting.impl.mina.MinaPacketCodec.NOT_NULL_STRING;
-import static org.jboss.messaging.core.remoting.impl.mina.MinaPacketCodec.NULL_BYTE;
-import static org.jboss.messaging.core.remoting.impl.mina.MinaPacketCodec.NULL_STRING;
-import static org.jboss.messaging.core.remoting.impl.mina.MinaPacketCodec.UTF_8_ENCODER;
+import static org.jboss.messaging.core.remoting.impl.mina.BufferWrapper.NOT_NULL_STRING;
+import static org.jboss.messaging.core.remoting.impl.mina.BufferWrapper.NULL_BYTE;
+import static org.jboss.messaging.core.remoting.impl.mina.BufferWrapper.NULL_STRING;
+import static org.jboss.messaging.core.remoting.impl.mina.BufferWrapper.UTF_8_ENCODER;
 import static org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket.NO_ID_SET;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.BYTES;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CLOSE;
@@ -139,8 +139,8 @@ import org.jboss.messaging.core.remoting.impl.codec.SessionXASetTimeoutMessageCo
 import org.jboss.messaging.core.remoting.impl.codec.SessionXASetTimeoutResponseMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionXAStartMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.TextPacketCodec;
+import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
 import org.jboss.messaging.core.remoting.impl.mina.PacketCodecFactory;
-import org.jboss.messaging.core.remoting.impl.mina.MinaPacketCodec.BufferWrapper;
 import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.BytesPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.CloseMessage;
@@ -153,6 +153,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessag
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.remoting.impl.wireformat.NullPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
@@ -447,7 +448,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBody(buffer, packet.getBytes());
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof BytesPacket);
       BytesPacket p = (BytesPacket) decodedPacket;
@@ -521,7 +522,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBody(buffer, request.isXA(), request.isAutoCommitSends(), request.isAutoCommitAcks());
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof ConnectionCreateSessionMessage);
       ConnectionCreateSessionMessage decodedRequest = (ConnectionCreateSessionMessage) decodedPacket;
@@ -542,7 +543,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBody(buffer, response.getSessionID());
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof ConnectionCreateSessionResponseMessage);
       ConnectionCreateSessionResponseMessage decodedResponse = (ConnectionCreateSessionResponseMessage) decodedPacket;
@@ -560,7 +561,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBody(buffer, packet.getAddress(), StreamUtils.toBytes(packet.getMessage()));
       buffer.rewind();
 
-      AbstractPacket p = codec.decode(buffer);
+      Packet p = codec.decode(buffer);
 
       assertTrue(p instanceof ProducerSendMessage);
       ProducerSendMessage decodedPacket = (ProducerSendMessage) p;
@@ -583,7 +584,7 @@ public class PacketTypeTest extends UnitTestCase
             .getFilterString(), request.isNoLocal(), request.isAutoDeleteQueue());
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionCreateConsumerMessage);
       SessionCreateConsumerMessage decodedRequest = (SessionCreateConsumerMessage) decodedPacket;
@@ -606,7 +607,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBody(buffer, response.getConsumerID(), response.getPrefetchSize());
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionCreateConsumerResponseMessage);
       SessionCreateConsumerResponseMessage decodedResponse = (SessionCreateConsumerResponseMessage) decodedPacket;
@@ -625,7 +626,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBody(buffer, request.getAddress());
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionCreateProducerMessage);
       SessionCreateProducerMessage decodedRequest = (SessionCreateProducerMessage) decodedPacket;
@@ -644,7 +645,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBody(buffer, response.getProducerID(), response.getInitialTokens());
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionCreateProducerResponseMessage);
       SessionCreateProducerResponseMessage decodedResponse = (SessionCreateProducerResponseMessage) decodedPacket;
@@ -664,7 +665,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBodyIsEmpty(buffer);
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof ConnectionStartMessage);
       assertEquals(CONN_START, decodedPacket.getType());
@@ -681,7 +682,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBodyIsEmpty(buffer);
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof ConnectionStopMessage);
       assertEquals(CONN_STOP, decodedPacket.getType());
@@ -696,7 +697,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBody(buffer, message.getTokens());
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof ConsumerFlowTokenMessage);
       ConsumerFlowTokenMessage decodedMessage = (ConsumerFlowTokenMessage) decodedPacket;
@@ -713,7 +714,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBody(buffer, message.getTokens());
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof ProducerReceiveTokensMessage);
       ProducerReceiveTokensMessage decodedMessage = (ProducerReceiveTokensMessage) decodedPacket;
@@ -732,7 +733,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBody(buffer, StreamUtils.toBytes(msg), message.getDeliveryID());
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof ConsumerDeliverMessage);
       ConsumerDeliverMessage decodedMessage = (ConsumerDeliverMessage) decodedPacket;
@@ -753,7 +754,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBody(buffer, message.getDeliveryID(), message.isAllUpTo());
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionAcknowledgeMessage);
       SessionAcknowledgeMessage decodedMessage = (SessionAcknowledgeMessage) decodedPacket;
@@ -773,7 +774,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBody(buffer, message.getDeliveryID(), message.isExpired());
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionCancelMessage);
       SessionCancelMessage decodedMessage = (SessionCancelMessage) decodedPacket;
@@ -794,7 +795,7 @@ public class PacketTypeTest extends UnitTestCase
 
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionCommitMessage);
       assertEquals(SESS_COMMIT, decodedPacket.getType());
@@ -812,7 +813,7 @@ public class PacketTypeTest extends UnitTestCase
 
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionRollbackMessage);
       assertEquals(SESS_ROLLBACK, decodedPacket.getType());
@@ -830,7 +831,7 @@ public class PacketTypeTest extends UnitTestCase
 
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionRecoverMessage);
       assertEquals(SESS_RECOVER, decodedPacket.getType());
@@ -847,7 +848,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBodyIsEmpty(buffer);
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof CloseMessage);
       CloseMessage decodedMessage = (CloseMessage) decodedPacket;
@@ -867,7 +868,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBody(buffer, request.getQueueName(), request.getFilterString());
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionCreateBrowserMessage);
       SessionCreateBrowserMessage decodedRequest = (SessionCreateBrowserMessage) decodedPacket;
@@ -886,7 +887,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBody(buffer, response.getBrowserID());
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionCreateBrowserResponseMessage);
       SessionCreateBrowserResponseMessage decodedResponse = (SessionCreateBrowserResponseMessage) decodedPacket;
@@ -905,7 +906,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBodyIsEmpty(buffer);
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionBrowserResetMessage);
       assertEquals(SESS_BROWSER_RESET, decodedPacket.getType());
@@ -922,7 +923,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBodyIsEmpty(buffer);
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionBrowserHasNextMessageMessage);
       assertEquals(SESS_BROWSER_HASNEXTMESSAGE, decodedPacket.getType());
@@ -938,7 +939,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBody(buffer, response.hasNext());
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionBrowserHasNextMessageResponseMessage);
       SessionBrowserHasNextMessageResponseMessage decodedResponse = (SessionBrowserHasNextMessageResponseMessage) decodedPacket;
@@ -957,7 +958,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBodyIsEmpty(buffer);
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionBrowserNextMessageMessage);
       assertEquals(SESS_BROWSER_NEXTMESSAGE, decodedPacket.getType());
@@ -974,7 +975,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBody(buffer, StreamUtils.toBytes(msg));
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionBrowserNextMessageResponseMessage);
       SessionBrowserNextMessageResponseMessage decodedResponse = (SessionBrowserNextMessageResponseMessage) decodedPacket;
@@ -994,7 +995,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBody(buffer, request.getMaxMessages());
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionBrowserNextMessageBlockMessage);
       SessionBrowserNextMessageBlockMessage decodedRequest = (SessionBrowserNextMessageBlockMessage) decodedPacket;
@@ -1015,7 +1016,7 @@ public class PacketTypeTest extends UnitTestCase
             .encode(messages));
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionBrowserNextMessageBlockResponseMessage);
       SessionBrowserNextMessageBlockResponseMessage decodedResponse = (SessionBrowserNextMessageBlockResponseMessage) decodedPacket;
@@ -1046,7 +1047,7 @@ public class PacketTypeTest extends UnitTestCase
       checkHeader(buffer, message);
       buffer.rewind();
       
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
       assertTrue(decodedPacket instanceof SessionXACommitMessage);
       SessionXACommitMessage decodedMessage = (SessionXACommitMessage)decodedPacket;
       assertEquals(SESS_XA_COMMIT, decodedMessage.getType());
@@ -1073,7 +1074,7 @@ public class PacketTypeTest extends UnitTestCase
       checkHeader(buffer, message);
       buffer.rewind();
       
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
       assertTrue(decodedPacket instanceof SessionXAEndMessage);
       SessionXAEndMessage decodedMessage = (SessionXAEndMessage)decodedPacket;
       assertEquals(SESS_XA_END, decodedMessage.getType());
@@ -1090,7 +1091,7 @@ public class PacketTypeTest extends UnitTestCase
       checkHeader(buffer, message);
       buffer.rewind();
       
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
       assertTrue(decodedPacket instanceof SessionXAForgetMessage);
       SessionXAForgetMessage decodedMessage = (SessionXAForgetMessage)decodedPacket;
       assertEquals(SESS_XA_FORGET, decodedMessage.getType());
@@ -1108,7 +1109,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBodyIsEmpty(buffer);
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionXAGetInDoubtXidsMessage);
       assertEquals(SESS_XA_INDOUBT_XIDS, decodedPacket.getType());            
@@ -1129,7 +1130,7 @@ public class PacketTypeTest extends UnitTestCase
       checkHeader(buffer, message);
       buffer.rewind();
       
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
       assertTrue(decodedPacket instanceof SessionXAGetInDoubtXidsResponseMessage);
       SessionXAGetInDoubtXidsResponseMessage decodedMessage = (SessionXAGetInDoubtXidsResponseMessage)decodedPacket;
       assertEquals(SESS_XA_INDOUBT_XIDS_RESP, decodedMessage.getType());
@@ -1155,7 +1156,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBodyIsEmpty(buffer);
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionXAGetTimeoutMessage);
       assertEquals(SESS_XA_GET_TIMEOUT, decodedPacket.getType());     
@@ -1171,7 +1172,7 @@ public class PacketTypeTest extends UnitTestCase
       checkHeader(buffer, message);
       buffer.rewind();
       
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
       assertTrue(decodedPacket instanceof SessionXAGetTimeoutResponseMessage);
       SessionXAGetTimeoutResponseMessage decodedMessage = (SessionXAGetTimeoutResponseMessage)decodedPacket;
       assertEquals(SESS_XA_GET_TIMEOUT_RESP, decodedMessage.getType());
@@ -1188,7 +1189,7 @@ public class PacketTypeTest extends UnitTestCase
       checkHeader(buffer, message);
       buffer.rewind();
       
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
       assertTrue(decodedPacket instanceof SessionXAJoinMessage);
       SessionXAJoinMessage decodedMessage = (SessionXAJoinMessage)decodedPacket;
       assertEquals(SESS_XA_JOIN, decodedMessage.getType());
@@ -1204,7 +1205,7 @@ public class PacketTypeTest extends UnitTestCase
       checkHeader(buffer, message);
       buffer.rewind();
       
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
       assertTrue(decodedPacket instanceof SessionXAPrepareMessage);
       SessionXAPrepareMessage decodedMessage = (SessionXAPrepareMessage)decodedPacket;
       assertEquals(SESS_XA_PREPARE, decodedMessage.getType());
@@ -1243,7 +1244,7 @@ public class PacketTypeTest extends UnitTestCase
       checkHeader(buffer, message);
       buffer.rewind();
       
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
       assertTrue(decodedPacket instanceof SessionXAResponseMessage);
       SessionXAResponseMessage decodedMessage = (SessionXAResponseMessage)decodedPacket;
       assertEquals(SESS_XA_RESP, decodedMessage.getType());
@@ -1261,7 +1262,7 @@ public class PacketTypeTest extends UnitTestCase
       checkHeader(buffer, message);
       buffer.rewind();
       
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
       assertTrue(decodedPacket instanceof SessionXAResumeMessage);
       SessionXAResumeMessage decodedMessage = (SessionXAResumeMessage)decodedPacket;
       assertEquals(SESS_XA_RESUME, decodedMessage.getType());
@@ -1277,7 +1278,7 @@ public class PacketTypeTest extends UnitTestCase
       checkHeader(buffer, message);
       buffer.rewind();
       
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
       assertTrue(decodedPacket instanceof SessionXARollbackMessage);
       SessionXARollbackMessage decodedMessage = (SessionXARollbackMessage)decodedPacket;
       assertEquals(SESS_XA_ROLLBACK, decodedMessage.getType());
@@ -1293,7 +1294,7 @@ public class PacketTypeTest extends UnitTestCase
       checkHeader(buffer, message);
       buffer.rewind();
       
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
       assertTrue(decodedPacket instanceof SessionXASetTimeoutMessage);
       SessionXASetTimeoutMessage decodedMessage = (SessionXASetTimeoutMessage)decodedPacket;
       assertEquals(SESS_XA_SET_TIMEOUT, decodedMessage.getType());
@@ -1319,7 +1320,7 @@ public class PacketTypeTest extends UnitTestCase
       checkHeader(buffer, message);
       buffer.rewind();
       
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
       assertTrue(decodedPacket instanceof SessionXASetTimeoutResponseMessage);
       SessionXASetTimeoutResponseMessage decodedMessage = (SessionXASetTimeoutResponseMessage)decodedPacket;
       assertEquals(SESS_XA_SET_TIMEOUT_RESP, decodedMessage.getType());
@@ -1335,7 +1336,7 @@ public class PacketTypeTest extends UnitTestCase
       checkHeader(buffer, message);
       buffer.rewind();
       
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
       assertTrue(decodedPacket instanceof SessionXAStartMessage);
       SessionXAStartMessage decodedMessage = (SessionXAStartMessage)decodedPacket;
       assertEquals(SESS_XA_START, decodedMessage.getType());
@@ -1353,7 +1354,7 @@ public class PacketTypeTest extends UnitTestCase
       checkBodyIsEmpty(buffer);
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionXASuspendMessage);
       assertEquals(SESS_XA_SUSPEND, decodedPacket.getType());     
@@ -1370,7 +1371,7 @@ public class PacketTypeTest extends UnitTestCase
       checkHeader(buffer, message);
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionRemoveAddressMessage);
       SessionRemoveAddressMessage decodedMessage = (SessionRemoveAddressMessage)decodedPacket;
@@ -1390,7 +1391,7 @@ public class PacketTypeTest extends UnitTestCase
       checkHeader(buffer, message);
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionCreateQueueMessage);
       SessionCreateQueueMessage decodedMessage = (SessionCreateQueueMessage)decodedPacket;
@@ -1414,7 +1415,7 @@ public class PacketTypeTest extends UnitTestCase
       checkHeader(buffer, message);
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionQueueQueryMessage);
       SessionQueueQueryMessage decodedMessage = (SessionQueueQueryMessage)decodedPacket;
@@ -1434,7 +1435,7 @@ public class PacketTypeTest extends UnitTestCase
       checkHeader(buffer, message);
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionQueueQueryResponseMessage);
       SessionQueueQueryResponseMessage decodedMessage = (SessionQueueQueryResponseMessage)decodedPacket;
@@ -1453,13 +1454,13 @@ public class PacketTypeTest extends UnitTestCase
    {
       SessionAddAddressMessage message = new SessionAddAddressMessage(randomString());
 
-      AbstractPacketCodec codec = new SessionAddAddressMessageCodec();
+      AbstractPacketCodec<SessionAddAddressMessage> codec = new SessionAddAddressMessageCodec();
       
       SimpleRemotingBuffer buffer = encode(message, codec);
       checkHeader(buffer, message);
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionAddAddressMessage);
       SessionAddAddressMessage decodedMessage = (SessionAddAddressMessage)decodedPacket;
@@ -1478,7 +1479,7 @@ public class PacketTypeTest extends UnitTestCase
       checkHeader(buffer, message);
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionBindingQueryMessage);
       SessionBindingQueryMessage decodedMessage = (SessionBindingQueryMessage)decodedPacket;
@@ -1502,7 +1503,7 @@ public class PacketTypeTest extends UnitTestCase
       checkHeader(buffer, message);
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionBindingQueryResponseMessage);
       SessionBindingQueryResponseMessage decodedMessage = (SessionBindingQueryResponseMessage)decodedPacket;
@@ -1529,7 +1530,7 @@ public class PacketTypeTest extends UnitTestCase
       checkHeader(buffer, message);
       buffer.rewind();
 
-      AbstractPacket decodedPacket = codec.decode(buffer);
+      Packet decodedPacket = codec.decode(buffer);
 
       assertTrue(decodedPacket instanceof SessionDeleteQueueMessage);
       SessionDeleteQueueMessage decodedMessage = (SessionDeleteQueueMessage)decodedPacket;

@@ -11,7 +11,7 @@ import junit.framework.TestCase;
 
 import org.apache.mina.common.IoBuffer;
 import org.jboss.messaging.core.remoting.impl.codec.RemotingBuffer;
-import org.jboss.messaging.core.remoting.impl.mina.MinaPacketCodec;
+import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -38,7 +38,7 @@ public class MinaRemotingBufferTest extends TestCase
    {
       buffer = IoBuffer.allocate(256);
       buffer.setAutoExpand(true);
-      wrapper = new MinaPacketCodec.BufferWrapper(buffer);
+      wrapper = new BufferWrapper(buffer);
    }
 
    @Override

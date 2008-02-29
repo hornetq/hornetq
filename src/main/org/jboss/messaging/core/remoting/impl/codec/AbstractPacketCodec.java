@@ -16,14 +16,14 @@ import java.nio.charset.CharacterCodingException;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
  */
-public abstract class AbstractPacketCodec<P extends AbstractPacket>
+public abstract class AbstractPacketCodec<P extends Packet>
 {
    // Constants -----------------------------------------------------
 
@@ -110,16 +110,6 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
 
    public DecoderStatus decodable(RemotingBuffer buffer)
    {
-      if (buffer.remaining() < 1)
-      {
-         // can not read packet type
-         return NEED_DATA;
-      }
-      byte t = buffer.get();
-      if (t != type.byteValue())
-      {
-         return NOT_OK;
-      }
       if (buffer.remaining() < INT_LENGTH)
       {
          if (log.isDebugEnabled())
