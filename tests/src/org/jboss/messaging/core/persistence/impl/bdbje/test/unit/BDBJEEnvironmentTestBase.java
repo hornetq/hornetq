@@ -47,11 +47,11 @@ public abstract class BDBJEEnvironmentTestBase extends UnitTestCase
    
    protected BDBJEDatabase database;
    
-   protected static final String HOME_DIR = System.getProperty("user.home");
+   protected static final String TEMP_DIR = System.getProperty("java.io.tmpdir");
    
-   protected static final String ENV_DIR = HOME_DIR + "/test-bdb-environment";
+   protected static final String ENV_DIR = TEMP_DIR + "/test-bdb-environment";
       
-   protected static final String ENV_COPY_DIR = HOME_DIR + "/test-bdb-environment-copy";
+   protected static final String ENV_COPY_DIR = TEMP_DIR + "/test-bdb-environment-copy";
    
    protected static final String DB_NAME = "test-db";
    
@@ -1354,7 +1354,7 @@ public abstract class BDBJEEnvironmentTestBase extends UnitTestCase
       
       env.stop();
       
-      final String path2 = HOME_DIR + "/test-path123651";
+      final String path2 = TEMP_DIR + "/test-path123651";
       
       env.setEnvironmentPath(path2);
       
@@ -1513,7 +1513,7 @@ public abstract class BDBJEEnvironmentTestBase extends UnitTestCase
       
       env.stop();
       
-      final String path = HOME_DIR + "/test-path123";
+      final String path = TEMP_DIR + "/test-path123";
       
       createDir(path);
       
@@ -1560,7 +1560,7 @@ public abstract class BDBJEEnvironmentTestBase extends UnitTestCase
       
       env.setCreateEnvironment(false);
       
-      String dir = HOME_DIR + "/blah678";
+      String dir = TEMP_DIR + "/blah678";
       
       deleteDirectory(new File(dir));
       
