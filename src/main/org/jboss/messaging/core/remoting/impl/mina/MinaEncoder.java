@@ -16,6 +16,7 @@ import org.apache.mina.filter.codec.demux.MessageEncoder;
 import org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec;
 import org.jboss.messaging.core.remoting.impl.codec.RemotingBuffer;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -29,7 +30,7 @@ public class MinaEncoder implements MessageEncoder<Packet>
 
    // Attributes ----------------------------------------------------
 
-   private final Map<Byte, AbstractPacketCodec> codecs;
+   private final Map<PacketType, AbstractPacketCodec> codecs;
 
    // Static --------------------------------------------------------
 
@@ -37,11 +38,11 @@ public class MinaEncoder implements MessageEncoder<Packet>
 
     MinaEncoder()
    {
-      codecs = new HashMap<Byte, AbstractPacketCodec>();
+      codecs = new HashMap<PacketType, AbstractPacketCodec>();
    }
    // Public --------------------------------------------------------
 
-   public void put(byte type, AbstractPacketCodec codec)
+   public void put(PacketType type, AbstractPacketCodec codec)
    {
       codecs.put(type, codec);
    }
@@ -51,13 +52,13 @@ public class MinaEncoder implements MessageEncoder<Packet>
    public void encode(IoSession session, Packet packet,
          ProtocolEncoderOutput out) throws Exception
    {
-      final IoBuffer buffer = IoBuffer.allocate(256);
+      final IoBuffer buffer = IoBuffer.allocate(1024);
       // Enable auto-expand for easier encoding
       buffer.setAutoExpand(true);
 
       RemotingBuffer wrapper = new BufferWrapper(buffer);
 
-      AbstractPacketCodec codec = codecs.get(packet.getType().byteValue());
+      AbstractPacketCodec codec = codecs.get(packet.getType());
       if (codec == null)
       {
          throw new IllegalStateException("no encoder has been registered for " + packet);

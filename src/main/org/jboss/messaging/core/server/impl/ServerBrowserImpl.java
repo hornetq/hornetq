@@ -21,11 +21,6 @@
  */
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CLOSE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_HASNEXTMESSAGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_NEXTMESSAGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_RESET;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -213,29 +208,24 @@ public class ServerBrowserImpl
          Packet response = null;
 
          PacketType type = packet.getType();
-         
-         if (type == SESS_BROWSER_HASNEXTMESSAGE)
+         switch (type)
          {
-            response = new SessionBrowserHasNextMessageResponseMessage(hasNextMessage());
-         }
-         else if (type == SESS_BROWSER_NEXTMESSAGE)
-         {
-            Message message = nextMessage();
-            
+         case SESS_BROWSER_HASNEXTMESSAGE:
+            response = new SessionBrowserHasNextMessageResponseMessage(hasNextMessage());            
+            break;
+         case SESS_BROWSER_NEXTMESSAGE:
+            Message message = nextMessage();               
             response = new SessionBrowserNextMessageResponseMessage(message);
-         }
-         else if (type == SESS_BROWSER_RESET)
-         {
+            break;
+         case SESS_BROWSER_RESET:            
             reset();
-         }
-         else if (type == CLOSE)
-         {
+            break;
+         case CLOSE:
             close();
-         }
-         else
-         {
+            break;
+         default:
             throw new MessagingException(MessagingException.UNSUPPORTED_PACKET,
-                                         "Unsupported packet " + type);
+                  "Unsupported packet " + type);
          }
 
          // reply if necessary

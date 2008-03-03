@@ -21,11 +21,6 @@
   */
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CLOSE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_CREATESESSION;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_START;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_STOP;
-
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
@@ -62,28 +57,24 @@ public class ServerConnectionPacketHandler extends ServerPacketHandlerSupport
 
       PacketType type = packet.getType();
       
-      if (type == CONN_CREATESESSION)
+      switch (type)
       {
-         ConnectionCreateSessionMessage request = (ConnectionCreateSessionMessage) packet;
-         
+      case CONN_CREATESESSION:
+         ConnectionCreateSessionMessage request = (ConnectionCreateSessionMessage) packet;   
          response = connection.createSession(request.isXA(), request.isAutoCommitSends(), request.isAutoCommitAcks(), sender);
-      }
-      else if (type == CONN_START)
-      {
+         break;
+      case CONN_START:
          connection.start();
-      }
-      else if (type == CONN_STOP)
-      {
+         break;
+      case CONN_STOP:
          connection.stop();
-      }
-      else if (type == CLOSE)
-      {
+         break;
+      case CLOSE:
          connection.close();
-      }                       
-      else
-      {
+         break;
+      default:
          throw new MessagingException(MessagingException.UNSUPPORTED_PACKET,
-                                      "Unsupported packet " + type);
+               "Unsupported packet " + type);
       }
 
       // reply if necessary

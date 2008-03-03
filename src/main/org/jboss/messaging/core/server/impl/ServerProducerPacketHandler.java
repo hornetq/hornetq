@@ -21,9 +21,6 @@
   */
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CLOSE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PROD_SEND;
-
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.NullPacket;
@@ -58,19 +55,16 @@ public class ServerProducerPacketHandler extends ServerPacketHandlerSupport
       Packet response = null;
 
       PacketType type = packet.getType();
-      
-      if (type == PROD_SEND)
+      switch (type)
       {
+      case PROD_SEND:
          ProducerSendMessage message = (ProducerSendMessage) packet;
-         
          producer.send(message.getAddress(), message.getMessage());
-      }
-      else if (type == CLOSE)
-      {
+         break;
+      case CLOSE:
          producer.close();
-      }
-      else
-      {
+         break;
+      default:
          throw new MessagingException(MessagingException.UNSUPPORTED_PACKET,
                "Unsupported packet " + type);
       }

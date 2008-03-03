@@ -21,31 +21,6 @@
   */
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CLOSE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_ACKNOWLEDGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BINDINGQUERY;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CANCEL;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_COMMIT;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEBROWSER;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATECONSUMER;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEPRODUCER;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEQUEUE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_DELETE_QUEUE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_QUEUEQUERY;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_ROLLBACK;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_COMMIT;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_END;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_FORGET;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_GET_TIMEOUT;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_INDOUBT_XIDS;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_JOIN;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_PREPARE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_RESUME;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_ROLLBACK;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_SET_TIMEOUT;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_START;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_SUSPEND;
-
 import java.util.List;
 
 import javax.transaction.xa.Xid;
@@ -111,164 +86,156 @@ public class ServerSessionPacketHandler extends ServerPacketHandlerSupport
       Packet response = null;
 
       PacketType type = packet.getType();
-
-      // TODO use a switch for this
-      if (type == SESS_CREATECONSUMER)
+      switch (type)
+      {
+      case SESS_CREATECONSUMER:
       {
          SessionCreateConsumerMessage request = (SessionCreateConsumerMessage) packet;
-
          response = session.createConsumer(request.getQueueName(), request
                .getFilterString(), request.isNoLocal(), request.isAutoDeleteQueue(), prefetchSize);
+         break;
       }
-      else if (type == SESS_CREATEQUEUE)
+      case SESS_CREATEQUEUE:
       {
          SessionCreateQueueMessage request = (SessionCreateQueueMessage) packet;
-
          session.createQueue(request.getAddress(), request.getQueueName(), request
                .getFilterString(), request.isDurable(), request
                .isTemporary());
+         break;
       }
-      else if (type == SESS_DELETE_QUEUE)
+      case SESS_DELETE_QUEUE:
       {
          SessionDeleteQueueMessage request = (SessionDeleteQueueMessage) packet;
-
          session.deleteQueue(request.getQueueName());
+         break;
       }
-      else if (type == SESS_QUEUEQUERY)
+      case SESS_QUEUEQUERY:
       {
          SessionQueueQueryMessage request = (SessionQueueQueryMessage) packet;
-
          response = session.executeQueueQuery(request);
+         break;
       }
-      else if (type == SESS_BINDINGQUERY)
+      case SESS_BINDINGQUERY:
       {
          SessionBindingQueryMessage request = (SessionBindingQueryMessage)packet;
-
          response = session.executeBindingQuery(request);
+         break;
       }
-      else if (type == SESS_CREATEBROWSER)
+      case SESS_CREATEBROWSER:
       {
          SessionCreateBrowserMessage request = (SessionCreateBrowserMessage) packet;
-
          response = session.createBrowser(request.getQueueName(), request
                .getFilterString());
+         break;
       }
-      else if (type == SESS_CREATEPRODUCER)
+      case SESS_CREATEPRODUCER:
       {
          SessionCreateProducerMessage request = (SessionCreateProducerMessage) packet;
-
          response = session.createProducer(request.getAddress());
+         break;
       }
-      else if (type == CLOSE)
-      {
-      	session.close();
-      }
-      else if (type == SESS_ACKNOWLEDGE)
+      case CLOSE:
+         session.close();
+         break;
+      case SESS_ACKNOWLEDGE:
       {
          SessionAcknowledgeMessage message = (SessionAcknowledgeMessage) packet;
-
          session.acknowledge(message.getDeliveryID(), message.isAllUpTo());
+         break;
       }
-      else if (type == SESS_COMMIT)
-      {
-      	session.commit();
-      }
-      else if (type == SESS_ROLLBACK)
-      {
-      	session.rollback();
-      }
-      else if (type == SESS_CANCEL)
+      case SESS_COMMIT:
+         session.commit();
+         break;
+      case SESS_ROLLBACK:
+         session.rollback();
+         break;
+      case SESS_CANCEL:
       {
          SessionCancelMessage message = (SessionCancelMessage) packet;
-
          session.cancel(message.getDeliveryID(), message.isExpired());
+         break;
       }
-      else if (type == SESS_XA_COMMIT)
+      case SESS_XA_COMMIT:
       {
          SessionXACommitMessage message = (SessionXACommitMessage) packet;
-
          response = session.XACommit(message.isOnePhase(), message.getXid());
+         break;
       }
-      else if (type == SESS_XA_END)
+      case SESS_XA_END:
       {
          SessionXAEndMessage message = (SessionXAEndMessage) packet;
-
          response = session.XAEnd(message.getXid(), message.isFailed());
+         break;
       }
-      else if (type == SESS_XA_FORGET)
+      case SESS_XA_FORGET:
       {
          SessionXAForgetMessage message = (SessionXAForgetMessage) packet;
-
          response = session.XAForget(message.getXid());
+         break;
       }
-      else if (type == SESS_XA_JOIN)
+      case SESS_XA_JOIN:
       {
          SessionXAJoinMessage message = (SessionXAJoinMessage) packet;
-
          response = session.XAJoin(message.getXid());
+         break;
       }
-      else if (type == SESS_XA_RESUME)
+      case SESS_XA_RESUME:
       {
          SessionXAResumeMessage message = (SessionXAResumeMessage) packet;
-
          response = session.XAResume(message.getXid());
+         break;
       }
-      else if (type == SESS_XA_ROLLBACK)
+      case SESS_XA_ROLLBACK:
       {
          SessionXARollbackMessage message = (SessionXARollbackMessage) packet;
-
          response = session.XARollback(message.getXid());
+         break;
       }
-      else if (type == SESS_XA_START)
+      case SESS_XA_START:
       {
          SessionXAStartMessage message = (SessionXAStartMessage) packet;
-
          response = session.XAStart(message.getXid());
+         break;
       }
-      else if (type == SESS_XA_SUSPEND)
-      {
+      case SESS_XA_SUSPEND:
          response = session.XASuspend();
-      }
-      else if (type == SESS_XA_PREPARE)
+         break;
+      case SESS_XA_PREPARE:
       {
          SessionXAPrepareMessage message = (SessionXAPrepareMessage) packet;
-
          response = session.XAPrepare(message.getXid());
+         break;
       }
-      else if (type == SESS_XA_INDOUBT_XIDS)
-      {
+      case SESS_XA_INDOUBT_XIDS:
          List<Xid> xids = session.getInDoubtXids();
-
          response = new SessionXAGetInDoubtXidsResponseMessage(xids);
-      }
-      else if (type == SESS_XA_GET_TIMEOUT)
-      {
+         break;
+      case SESS_XA_GET_TIMEOUT:
          response = new SessionXAGetTimeoutResponseMessage(session.getXATimeout());
-      }
-      else if (type == SESS_XA_SET_TIMEOUT)
+         break;
+      case SESS_XA_SET_TIMEOUT:
       {
          SessionXASetTimeoutMessage message = (SessionXASetTimeoutMessage) packet;
-
          response = new SessionXASetTimeoutResponseMessage(session.setXATimeout(message
                .getTimeoutSeconds()));
+         break;
       }
-      else if (type == PacketType.SESS_ADD_ADDRESS)
+      case SESS_ADD_ADDRESS:
       {
          SessionAddAddressMessage message = (SessionAddAddressMessage) packet;
-
          session.addAddress(message.getAddress());
+         break;
       }
-      else if (type == PacketType.SESS_REMOVE_ADDRESS)
+      case SESS_REMOVE_ADDRESS:
       {
          SessionRemoveAddressMessage message = (SessionRemoveAddressMessage) packet;
-
          session.removeAddress(message.getAddress());
+         break;
       }
-      else
-      {
+      default:
          throw new MessagingException(MessagingException.UNSUPPORTED_PACKET, "Unsupported packet " + type);
       }
-
+      
       // reply if necessary
       if (response == null && packet.isOneWay() == false)
       {

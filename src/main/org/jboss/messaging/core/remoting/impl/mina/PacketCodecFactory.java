@@ -359,8 +359,8 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
    {
       try
       {
-         decoder.put(type.byteValue(), codec);
-         encoder.put(type.byteValue(), codec);
+         decoder.put(type, codec);
+         encoder.put(type, codec);
       } catch (Exception e)
       {
          log.error("Unable to add codec for packet " + type, e);

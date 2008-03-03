@@ -21,9 +21,6 @@
   */
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CLOSE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONS_FLOWTOKEN;
-
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
@@ -59,19 +56,16 @@ public class ServerConsumerPacketHandler extends ServerPacketHandlerSupport
       Packet response = null;
 
       PacketType type = packet.getType();
-      
-      if (type == CONS_FLOWTOKEN)
+      switch (type)
       {
+      case CONS_FLOWTOKEN:
          ConsumerFlowTokenMessage message = (ConsumerFlowTokenMessage) packet;
-         
          consumer.receiveTokens(message.getTokens());
-      }
-      else if (type == CLOSE)
-      {
+         break;
+      case CLOSE:
          consumer.close();
-      }
-      else
-      {
+         break;
+      default:
          throw new MessagingException(MessagingException.UNSUPPORTED_PACKET,
                "Unsupported packet " + type);
       }
