@@ -76,6 +76,6 @@
 	<classpathentry kind="lib" path="thirdparty/slf4j/log4j/lib/slf4j-log4j12.jar"/>
 	<classpathentry kind="lib" path="src/etc/server/default/config"/>
 	<classpathentry kind="lib" path="src/etc/server/default/deploy"/>
-	<classpathentry kind="lib" path="lib/je-3.2.44.jar"/>
+	<classpathentry kind="lib" path="lib/je-3.2.74.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
