@@ -82,7 +82,7 @@ public class CoreClientOverSSL
          MessagingServer server = new MessagingServerImpl();
          ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, remotingConf, server.getVersion());
          ClientConnection conn = cf.createConnection(null, null);
-         ClientSession session = conn.createClientSession(false, true, true, 0, false, false);
+         ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
          ClientProducer producer = session.createProducer(QUEUE);
 
          MessageImpl message = new MessageImpl(JBossTextMessage.TYPE, false, 0,
