@@ -98,7 +98,8 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    // ClientConnection implementation --------------------------------------------------------------
 
    public ClientSession createClientSession(final boolean xa, final boolean autoCommitSends, final boolean autoCommitAcks,
-                                            final int ackBatchSize, final boolean cacheProducers) throws MessagingException
+                                            final int ackBatchSize, final boolean blockOnAcknowledge,
+                                            final boolean cacheProducers) throws MessagingException
    {
       checkClosed();
 
@@ -108,7 +109,7 @@ public class ClientConnectionImpl implements ClientConnectionInternal
 
       ClientSession session =
       	new ClientSessionImpl(this, response.getSessionID(), ackBatchSize, cacheProducers, maxProducerRate,
-      			                producerWindowSize);
+      			                producerWindowSize, autoCommitSends, autoCommitAcks, blockOnAcknowledge);
 
       children.put(response.getSessionID(), session);
 

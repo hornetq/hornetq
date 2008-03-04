@@ -385,42 +385,59 @@ public class JBossConnection implements
       {
          int ackBatchSize;
          
-         if (transacted || acknowledgeMode == Session.CLIENT_ACKNOWLEDGE)
-         {
+         final boolean autoCommitSends;
+
+         final boolean autoCommitAcks;
+         
+         final boolean blockOnAcknowledge;
+
+      	if (acknowledgeMode == Session.SESSION_TRANSACTED)
+      	{
+      		autoCommitSends = false;
+
+            autoCommitAcks = false;
+            
             ackBatchSize = -1; //Infinite
+            
+            blockOnAcknowledge = false;
+      	}
+      	else if (acknowledgeMode == Session.AUTO_ACKNOWLEDGE)
+         {
+            autoCommitSends = true;
+
+            autoCommitAcks = true;
+            
+            ackBatchSize = 1;
+            
+            blockOnAcknowledge = true;
          }
          else if (acknowledgeMode == Session.DUPS_OK_ACKNOWLEDGE)
          {
-            ackBatchSize = dupsOKBatchSize;
+         	autoCommitSends = true;
+         	
+         	autoCommitAcks = true;
+         	
+         	ackBatchSize = dupsOKBatchSize;
+         	
+         	blockOnAcknowledge = false;
          }
+         else if (acknowledgeMode == Session.CLIENT_ACKNOWLEDGE)
+         {
+            autoCommitSends = true;
+
+            autoCommitAcks = false;
+            
+            ackBatchSize = -1; //Infinite
+            
+            blockOnAcknowledge = false;
+         }         
          else
          {
-            //Auto ack
-            ackBatchSize = 1;
-         }
-
-         boolean autoCommitSends = false;
-
-         boolean autoCommitAcks = false;
-
-         if (!transacted)
-         {
-            if (acknowledgeMode == Session.AUTO_ACKNOWLEDGE || acknowledgeMode == Session.DUPS_OK_ACKNOWLEDGE)
-            {
-               autoCommitSends = true;
-
-               autoCommitAcks = true;
-            }
-            else if (acknowledgeMode == Session.CLIENT_ACKNOWLEDGE)
-            {
-               autoCommitSends = true;
-
-               autoCommitAcks = false;
-            }
+         	throw new IllegalArgumentException("Invalid ackmode: " + acknowledgeMode);
          }
 
          ClientSession session =
-         	connection.createClientSession(isXA, autoCommitSends, autoCommitAcks, ackBatchSize, cacheProducers);
+         	connection.createClientSession(isXA, autoCommitSends, autoCommitAcks, ackBatchSize, blockOnAcknowledge, cacheProducers);
 
          justCreated = false;
          

@@ -140,11 +140,19 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    private long lastCommittedID = -1;
    
+   private final boolean autoCommitAcks;
+   
+   private final boolean autoCommitSends;
+   
+   private final boolean blockOnAcknowledge;
+   
    // Constructors ---------------------------------------------------------------------------------
    
    public ClientSessionImpl(final ClientConnectionInternal connection, final String id,
                             final int lazyAckBatchSize, final boolean cacheProducers,
-                            final int maxProducerRate, final int producerWindowSize) throws MessagingException
+                            final int maxProducerRate, final int producerWindowSize,
+                            final boolean autoCommitSends, final boolean autoCommitAcks,
+                            final boolean blockOnAcknowledge) throws MessagingException
    {
    	if (lazyAckBatchSize < -1 || lazyAckBatchSize == 0)
    	{
@@ -175,6 +183,12 @@ public class ClientSessionImpl implements ClientSessionInternal
       {
       	producerCache = null;
       }
+      
+      this.autoCommitAcks = autoCommitAcks;
+      
+      this.autoCommitSends = autoCommitSends;
+      
+      this.blockOnAcknowledge = blockOnAcknowledge;
    }
    
    // ClientSession implementation -----------------------------------------------------------------
@@ -353,15 +367,24 @@ public class ClientSessionImpl implements ClientSessionInternal
    {
       checkClosed();
             
-      //First we tell each consumer to clear it's buffers and ignore any deliveries with
+      //We tell each consumer to clear it's buffers and ignore any deliveries with
       //delivery id > last delivery id, until it gets delivery id = lastID again
+      
+      if (autoCommitAcks)
+      {
+      	lastCommittedID = lastID;
+      }
       
       for (ClientConsumerInternal consumer: consumers.values())
       {
          consumer.recover(lastCommittedID + 1);
       }
       
+      //We flush any remaining acks
+      
       acknowledgeInternal(false);      
+      
+      toAckCount = 0;
 
       remotingConnection.send(id, new SessionRollbackMessage());
    }
@@ -385,30 +408,18 @@ public class ClientSessionImpl implements ClientSessionInternal
          
          toAckCount = 0;
       }
-      else if (broken)
+      else if (broken || toAckCount == lazyAckBatchSize)
       {
          //Must always ack now
          acknowledgeInternal(false);
          
          toAckCount = 0;
-      }
-      else
-      {
-         if (toAckCount == lazyAckBatchSize)
+         
+         if (autoCommitAcks)
          {
-            acknowledgeInternal(false);
-            
-            toAckCount = 0;
-         }                       
-      }            
-      
-      //FIXME - temp hack - make server sessions alwyas transacted!!
-      
-      if (this.lazyAckBatchSize != -1)
-      {
-      	lastCommittedID = lastID;
+         	lastCommittedID = lastID;
+         }
       }
-      
    }
 
    public synchronized void close() throws MessagingException
@@ -451,6 +462,21 @@ public class ClientSessionImpl implements ClientSessionInternal
    public boolean isClosed()
    {
       return closed;
+   }
+   
+   public boolean isAutoCommitSends()
+   {
+   	return autoCommitSends;
+   }
+   
+   public boolean isAutoCommitAcks()
+   {
+   	return autoCommitAcks;   	   	
+   }
+   
+   public int getLazyAckBatchSize()
+   {
+   	return lazyAckBatchSize;
    }
    
    // ClientSessionInternal implementation ------------------------------------------------------------

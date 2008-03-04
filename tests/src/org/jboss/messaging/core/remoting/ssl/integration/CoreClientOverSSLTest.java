@@ -130,8 +130,7 @@ public class CoreClientOverSSLTest extends TestCase
 
       ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, remotingConf, server.getVersion());
       connection = cf.createConnection(null, null);
-      ClientSession session = connection.createClientSession(false, true, true,
-            0, false);
+      ClientSession session = connection.createClientSession(false, true, true, 0, false, false);
       session.createQueue(QUEUE, QUEUE, null, false, false);
       consumer = session.createConsumer(QUEUE, null, false, false, true);
       connection.start();

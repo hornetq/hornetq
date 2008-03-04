@@ -54,5 +54,11 @@ public interface ClientSession extends XAResource
    
    void close() throws MessagingException;
    
-   boolean isClosed();        
+   boolean isClosed();     
+   
+   boolean isAutoCommitSends();
+   
+   boolean isAutoCommitAcks();
+   
+   int getLazyAckBatchSize();
 }
