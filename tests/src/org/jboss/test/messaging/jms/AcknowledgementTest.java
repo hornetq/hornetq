@@ -21,6 +21,8 @@
   */
 package org.jboss.test.messaging.jms;
 
+import java.util.ArrayList;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
@@ -35,13 +37,7 @@ import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.jms.client.JBossSession;
-
 import EDU.oswego.cs.dl.util.concurrent.Latch;
-
-import java.util.List;
-import java.util.ArrayList;
 
 
 /**
@@ -833,8 +829,6 @@ public class AcknowledgementTest extends JMSTestCase
      
    public void testMessageListenerAutoAck() throws Exception
    {
-      // FIXME the test hangs due to a race condition and never finish
-      fail("temporarily fails the test so that it does not hang the test suite");
       Connection conn = null;
       
       try
@@ -974,8 +968,6 @@ public class AcknowledgementTest extends JMSTestCase
    public void testMessageListenerDupsOK() throws Exception
    {
       Connection conn = null;
-       // FIXME the test hangs due to a race condition and never finish
-      fail("temporarily fails the test so that it does not hang the test suite");
       try
       {
 	      
@@ -1048,8 +1040,6 @@ public class AcknowledgementTest extends JMSTestCase
    public void testMessageListenerClientAck() throws Exception
    {
       Connection conn = null;
-       // FIXME the test hangs due to a race condition and never finish
-      fail("temporarily fails the test so that it does not hang the test suite");
       try
       {      
 	      conn = cf.createConnection();
@@ -1095,8 +1085,6 @@ public class AcknowledgementTest extends JMSTestCase
    public void testMessageListenerTransactionalAck() throws Exception
    {
       Connection conn = null;
-       // FIXME the test hangs due to a race condition and never finish
-      fail("temporarily fails the test so that it does not hang the test suite");
       try
       {	      
 	      conn = cf.createConnection();

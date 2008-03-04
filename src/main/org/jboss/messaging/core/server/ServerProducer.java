@@ -17,7 +17,9 @@ public interface ServerProducer
 	
 	void send(String address, Message msg) throws Exception;
 	
-	void sendCredits(int credits) throws Exception;
+	void sendCredits() throws Exception;
 	
-	int getNumCredits();
+	void setWaiting(boolean waiting);
+	
+	boolean isWaiting();
 }

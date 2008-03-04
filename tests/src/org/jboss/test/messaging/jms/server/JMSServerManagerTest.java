@@ -191,7 +191,7 @@ public class JMSServerManagerTest extends JBMServerTestCase
 
    public void testCreateAndDestroyConectionFactory() throws Exception
    {
-      jmsServerManager.createConnectionFactory("newtestcf", "anid", 100, true, 100, "newtestcf");
+      jmsServerManager.createConnectionFactory("newtestcf", "anid", 100, true, 100, 0, 0, "newtestcf");
       JBossConnectionFactory jbcf = (JBossConnectionFactory) getInitialContext().lookup("newtestcf");
       assertNotNull(jbcf);
       assertNotNull(jbcf.getDelegate());
@@ -208,7 +208,7 @@ public class JMSServerManagerTest extends JBMServerTestCase
       ArrayList<String> bindings = new ArrayList<String>();
       bindings.add("oranewtestcf");
       bindings.add("newtestcf");
-      jmsServerManager.createConnectionFactory("newtestcf", "anid", 100, true, 100, bindings);
+      jmsServerManager.createConnectionFactory("newtestcf", "anid", 100, true, 100, 1000, 0, bindings);
       jbcf = (JBossConnectionFactory) getInitialContext().lookup("newtestcf");
       assertNotNull(jbcf);
       assertNotNull(jbcf.getDelegate());

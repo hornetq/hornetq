@@ -106,7 +106,7 @@ public interface ServerSession
    SessionCreateConsumerResponseMessage  createConsumer(String queueName, String filterString,
                      boolean noLocal, boolean autoDeleteQueue, int prefetchSize) throws Exception;
    
-   SessionCreateProducerResponseMessage createProducer(String address) throws Exception;   
+   SessionCreateProducerResponseMessage createProducer(String address, int windowSize) throws Exception;   
 
    SessionQueueQueryResponseMessage executeQueueQuery(SessionQueueQueryMessage request) throws Exception;
 

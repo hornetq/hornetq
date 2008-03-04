@@ -37,6 +37,7 @@ import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.DistributionPolicy;
 import org.jboss.messaging.core.server.HandleStatus;
@@ -96,6 +97,8 @@ public class QueueImpl implements Queue
 
    private AtomicInteger deliveringCount = new AtomicInteger(0);
    
+   private volatile FlowController flowController;
+   
    public QueueImpl(final long persistenceID, final String name, final Filter filter, final boolean clustered,
                     final boolean durable, final boolean temporary, final int maxSize, final ScheduledExecutorService scheduledExecutor,
                     final HierarchicalRepository<QueueSettings> queueSettings)
@@ -117,7 +120,7 @@ public class QueueImpl implements Queue
       this.scheduledExecutor = scheduledExecutor;
    	
    	this.queueSettings = queueSettings;
-
+   	
       direct = true;        	
    }
    
@@ -336,12 +339,12 @@ public class QueueImpl implements Queue
       this.persistenceID = id;
    }
 
-   public synchronized Filter getFilter()
+   public Filter getFilter()
    {
       return filter;
    }
 
-   public synchronized void setFilter(final Filter filter)
+   public void setFilter(final Filter filter)
    {
       this.filter = filter;
    }
@@ -361,12 +364,22 @@ public class QueueImpl implements Queue
       return deliveringCount.get();
    }
 
-   public void decrementDeliveringCount()
+   public void referenceAcknowledged() throws Exception
+   {
+      deliveringCount.decrementAndGet();
+      
+      if (flowController != null)
+      {
+      	flowController.messageAcknowledged();
+      }
+   }
+   
+   public void referenceCancelled()
    {
       deliveringCount.decrementAndGet();
    }
 
-   public synchronized int getMaxSize()
+   public int getMaxSize()
    {
       return maxSize;
    }
@@ -379,15 +392,16 @@ public class QueueImpl implements Queue
       {
          throw new IllegalArgumentException("Cannot set maxSize to " + maxSize + " since there are " + num + " refs");
       }
+      
       this.maxSize = maxSize;
    }
 
-   public synchronized DistributionPolicy getDistributionPolicy()
+   public DistributionPolicy getDistributionPolicy()
    {
       return distributionPolicy;
    }
 
-   public synchronized void setDistributionPolicy(final DistributionPolicy distributionPolicy)
+   public void setDistributionPolicy(final DistributionPolicy distributionPolicy)
    {
       this.distributionPolicy = distributionPolicy;
    }
@@ -400,6 +414,16 @@ public class QueueImpl implements Queue
    public HierarchicalRepository<QueueSettings> getQueueSettings()
    {
       return queueSettings;
+   }
+   
+   public void setFlowController(final FlowController flowController)
+   {
+   	this.flowController = flowController;
+   }
+   
+   public FlowController getFlowController()
+   {
+   	return flowController;
    }
    
    // Public -----------------------------------------------------------------------------
@@ -519,8 +543,8 @@ public class QueueImpl implements Queue
    }
 
    private boolean checkFull()
-   {
-      if (maxSize != -1 && (messageReferences.size() + scheduledRunnables.size()) >= maxSize)
+   {   	
+      if (maxSize != -1 && (deliveringCount.get() + messageReferences.size() + scheduledRunnables.size()) >= maxSize)
       {
          if (trace) { log.trace(this + " queue is full, rejecting message"); }
 

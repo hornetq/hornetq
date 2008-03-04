@@ -131,7 +131,7 @@ public class ServerSessionPacketHandler extends ServerPacketHandlerSupport
       case SESS_CREATEPRODUCER:
       {
          SessionCreateProducerMessage request = (SessionCreateProducerMessage) packet;
-         response = session.createProducer(request.getAddress());
+         response = session.createProducer(request.getAddress(), request.getWindowSize());
          break;
       }
       case CLOSE:

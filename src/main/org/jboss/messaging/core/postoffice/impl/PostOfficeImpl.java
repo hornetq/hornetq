@@ -37,6 +37,7 @@ import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.persistence.PersistenceManager;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
@@ -60,6 +61,8 @@ public class PostOfficeImpl implements PostOffice
    private final Set<String> allowableAddresses = new ConcurrentHashSet<String>();
    
    private final ConcurrentMap<String, Binding> nameMap = new ConcurrentHashMap<String, Binding>();
+   
+   private final ConcurrentMap<String, FlowController> flowControllers = new ConcurrentHashMap<String, FlowController>();
    
    private final PersistenceManager persistenceManager;
    
@@ -95,21 +98,29 @@ public class PostOfficeImpl implements PostOffice
    
    // PostOffice implementation -----------------------------------------------
 
-   public void addAllowableAddress(final String address)
+   public void addAllowableAddress(final String address) throws Exception
    {      
       allowableAddresses.add(address);
+      
+      flowControllers.put(address, new FlowControllerImpl(address, this));
    }
    
-   public boolean removeAllowableAddress(final String address)
+   public boolean removeAllowableAddress(final String address) throws Exception
    {      
-      return allowableAddresses.remove(address);
+      boolean removed = allowableAddresses.remove(address);
+      
+      if (removed)
+      {
+      	flowControllers.remove(address);
+      }
+      
+      return removed;
    }
    
    public boolean containsAllowableAddress(final String address)
    {
       return allowableAddresses.contains(address);
    }
-
 
    public Set<String> listAvailableAddresses()
    {
@@ -245,7 +256,10 @@ public class PostOfficeImpl implements PostOffice
       return mappings;
    }
 
-
+   public FlowController getFlowController(String address)
+   {   	
+   	return flowControllers.get(address);
+   }
 
    // Private -----------------------------------------------------------------
    
@@ -259,7 +273,7 @@ public class PostOfficeImpl implements PostOffice
       return binding;
    }
    
-   private void addBindingInMemory(final Binding binding)
+   private void addBindingInMemory(final Binding binding) throws Exception
    {              
       List<Binding> bindings = new CopyOnWriteArrayList<Binding>();
       
@@ -276,6 +290,10 @@ public class PostOfficeImpl implements PostOffice
       {
          throw new IllegalStateException("Binding already exists " + binding);
       }     
+      
+      FlowController flowController = flowControllers.get(binding.getAddress());
+           
+      binding.getQueue().setFlowController(flowController);
    }
    
    private Binding removeQueueInMemory(final String queueName) throws Exception
@@ -311,6 +329,8 @@ public class PostOfficeImpl implements PostOffice
       if (bindings.isEmpty())
       {
          mappings.remove(binding.getAddress());
+                           
+         binding.getQueue().setFlowController(null);
       }
                
       return binding;

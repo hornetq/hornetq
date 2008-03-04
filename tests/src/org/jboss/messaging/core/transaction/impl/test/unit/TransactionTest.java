@@ -1,4 +1,4 @@
-package org.jboss.messaging.core.server.impl.test.unit;
+package org.jboss.messaging.core.transaction.impl.test.unit;
 
 import java.util.ArrayList;
 import java.util.List;

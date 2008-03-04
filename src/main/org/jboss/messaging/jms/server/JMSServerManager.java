@@ -35,9 +35,15 @@ public interface JMSServerManager extends Serializable
 
    Set<String> listTemporaryDestinations();
 
-   boolean createConnectionFactory(String name, String clientID, int dupsOKBatchSize, boolean strictTck, int prefetchSize, String jndiBinding) throws Exception;
+   boolean createConnectionFactory(String name, String clientID,
+   		                          int dupsOKBatchSize, boolean strictTck, int prefetchSize,
+   		                          int producerWindowSize, int producerMaxRate,
+   		                          String jndiBinding) throws Exception;
 
-   boolean createConnectionFactory(String name, String clientID, int dupsOKBatchSize, boolean strictTck, int prefetchSize, List<String> jndiBindings) throws Exception;
+   boolean createConnectionFactory(String name, String clientID, int dupsOKBatchSize,
+   		                          boolean strictTck, int prefetchSize,
+   		                          int producerWindowSize, int producerMaxRate,
+   		                          List<String> jndiBindings) throws Exception;
 
    boolean destroyConnectionFactory(String name) throws Exception;
 

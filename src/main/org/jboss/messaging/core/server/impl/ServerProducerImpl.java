@@ -25,10 +25,10 @@ import java.util.UUID;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerReceiveTokensMessage;
-import org.jboss.messaging.core.server.FlowController;
 import org.jboss.messaging.core.server.ServerProducer;
 import org.jboss.messaging.core.server.ServerSession;
 
@@ -53,10 +53,7 @@ public class ServerProducerImpl implements ServerProducer
 	
 	private final PacketSender sender;
 	
-	private volatile int numberSent;
-	
-	private final int batchSize = 10;
-			
+	private volatile boolean waiting;
 	
 	// Constructors ----------------------------------------------------------------
 	
@@ -96,32 +93,32 @@ public class ServerProducerImpl implements ServerProducer
 			session.send(address, message);
 		}
 		else
-		{			
+		{						
 			session.send(this.address, message);
 			
-//			numberSent++;
-//			
-//			if (numberSent == batchSize)
-//			{
-//				numberSent = 0;
-//						
-//				flowController.checkTokens(this);
-//			}
+			if (flowController != null)
+		   {
+				flowController.messageReceived(this, 1);			
+			}
 		}
 	}
-	
-	public int getNumCredits()
-	{
-		// TODO Auto-generated method stub
-		return 0;
-	}
 
-	public void sendCredits(final int credits) throws Exception
+	public void sendCredits() throws Exception
 	{
-		Packet packet = new ProducerReceiveTokensMessage(credits);
+		Packet packet = new ProducerReceiveTokensMessage(1);
 		
 		packet.setTargetID(id);
 			
 		sender.send(packet);		
+	}
+	
+	public void setWaiting(final boolean waiting)
+	{
+		this.waiting = waiting;
+	}
+	
+	public boolean isWaiting()
+	{
+		return waiting;
 	}
 }

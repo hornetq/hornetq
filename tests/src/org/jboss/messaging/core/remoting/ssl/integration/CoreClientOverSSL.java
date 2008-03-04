@@ -80,8 +80,7 @@ public class CoreClientOverSSL
          // FIXME there should be another way to get a meaningful Version on the
          // client side...
          MessagingServer server = new MessagingServerImpl();
-         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0,
-               remotingConf, server.getVersion(), false, 0);
+         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, remotingConf, server.getVersion());
          ClientConnection conn = cf.createConnection(null, null);
          ClientSession session = conn.createClientSession(false, true, true, 0,
                false);

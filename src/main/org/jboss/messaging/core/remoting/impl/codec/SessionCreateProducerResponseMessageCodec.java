@@ -47,7 +47,7 @@ public class SessionCreateProducerResponseMessageCodec extends
        
       out.putInt(bodyLength);
       out.putNullableString(producerID);
-      out.putInt(response.getInitialTokens());
+      out.putInt(response.getWindowSize());
    }
 
    @Override
@@ -61,9 +61,9 @@ public class SessionCreateProducerResponseMessageCodec extends
       }
 
       String producerID = in.getNullableString();
-      int initialTokens = in.getInt();
+      int windowSize = in.getInt();
  
-      return new SessionCreateProducerResponseMessage(producerID, initialTokens);
+      return new SessionCreateProducerResponseMessage(producerID, windowSize);
    }
 
    // Package protected ---------------------------------------------

@@ -969,9 +969,9 @@ public class MessageConsumerTest extends JMSTestCase
 
           Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
           MessageProducer prod = sess.createProducer(queue1);
-          TextMessage tm1 = sess.createTextMessage("hello1");
-          TextMessage tm2 = sess.createTextMessage("hello2");
-          TextMessage tm3 = sess.createTextMessage("hello3");
+          TextMessage tm1 = sess.createTextMessage("hello1-a");
+          TextMessage tm2 = sess.createTextMessage("hello2-a");
+          TextMessage tm3 = sess.createTextMessage("hello3-a");
           prod.send(tm1);
           prod.send(tm2);
           prod.send(tm3);
@@ -981,7 +981,7 @@ public class MessageConsumerTest extends JMSTestCase
 
           TextMessage rm1 = (TextMessage)cons1.receive(1500);
           assertNotNull(rm1);
-          assertEquals("hello1", rm1.getText());
+          assertEquals("hello1-a", rm1.getText());
 
           cons1.close();
 
@@ -991,11 +991,11 @@ public class MessageConsumerTest extends JMSTestCase
 
           TextMessage rm2 = (TextMessage)cons2.receive(1500);
           assertNotNull(rm2);
-          assertEquals("hello2", rm2.getText());
+          assertEquals("hello2-a", rm2.getText());
 
           TextMessage rm3 = (TextMessage)cons2.receive(1500);
           assertNotNull(rm3);
-          assertEquals("hello3", rm3.getText());
+          assertEquals("hello3-a", rm3.getText());
           
           sess.commit();
        }

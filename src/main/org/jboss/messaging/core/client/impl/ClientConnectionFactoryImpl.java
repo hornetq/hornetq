@@ -73,19 +73,41 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
 
    private final boolean strictTck;
    
+   private final int maxProducerRate;
+   
+   private final int producerWindowSize;
+   
    // Static ---------------------------------------------------------------------------------------
     
    // Constructors ---------------------------------------------------------------------------------
 
    public ClientConnectionFactoryImpl(final int serverID, final RemotingConfiguration remotingConfig,
    		                             final Version serverVersion, final boolean strictTck,
-                                      final int prefetchSize)
+                                      final int prefetchSize,
+                                      final int producerWindowSize, final int maxProducerRate)
    {
       this.serverID = serverID;
       this.remotingConfig = remotingConfig;
       this.serverVersion = serverVersion;
       this.strictTck = strictTck;
-      this.prefetchSize = prefetchSize;
+      this.prefetchSize = prefetchSize;      
+      this.maxProducerRate = maxProducerRate;
+      this.producerWindowSize = producerWindowSize;
+      this.dispatcher = new PacketDispatcherImpl();
+      
+      log.info("creating cf with ws: "+ this.producerWindowSize + " and maxrate " + maxProducerRate);
+   }
+   
+   public ClientConnectionFactoryImpl(final int serverID, final RemotingConfiguration remotingConfig,
+                                      final Version serverVersion)
+   {
+      this.serverID = serverID;
+      this.remotingConfig = remotingConfig;
+      this.serverVersion = serverVersion;
+      this.strictTck = false;
+      this.prefetchSize = 150;      
+      this.maxProducerRate = -1;
+      this.producerWindowSize = 1000;
       this.dispatcher = new PacketDispatcherImpl();
    }
 
@@ -115,7 +137,8 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
             (CreateConnectionResponse)remotingConnection.send(id, request);
          
          ClientConnectionImpl connection =
-            new ClientConnectionImpl(response.getConnectionID(), serverID, strictTck, remotingConnection);
+            new ClientConnectionImpl(response.getConnectionID(), serverID, strictTck, remotingConnection,
+            		maxProducerRate, producerWindowSize);
 
          return connection;
       }
@@ -158,6 +181,33 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
    {
       return serverVersion;
    }
+
+	public int getPrefetchSize()
+	{
+		return prefetchSize;
+	}
+
+	public int getProducerWindowSize()
+	{
+		return producerWindowSize;
+	}
+
+	public int getServerID()
+	{
+		return serverID;
+	}
+
+	public boolean isStrictTck()
+	{
+		return strictTck;
+	}
+
+	public int getMaxProducerRate()
+	{
+		return maxProducerRate;
+	}
+	
+	
    
    // Public ---------------------------------------------------------------------------------------
       

@@ -125,7 +125,7 @@ public class MessageReferenceImpl implements MessageReference
          persistenceManager.deleteReference(this);
       }
       
-      queue.decrementDeliveringCount();
+      queue.referenceAcknowledged();
    }
    
    public boolean cancel(final PersistenceManager persistenceManager) throws Exception
@@ -135,14 +135,12 @@ public class MessageReferenceImpl implements MessageReference
          persistenceManager.updateDeliveryCount(queue, this);
       }
               
-      queue.decrementDeliveringCount();
+      queue.referenceCancelled();
 
       int maxDeliveries = queue.getQueueSettings().getMatch(queue.getName()).getMaxDeliveryAttempts();
       
       if (maxDeliveries > 0 && deliveryCount >= maxDeliveries)
-      {
-      	
-      	
+      {      	      	
          Queue DLQ = queue.getQueueSettings().getMatch(queue.getName()).getDLQ();
          
          if (DLQ != null)
@@ -171,6 +169,7 @@ public class MessageReferenceImpl implements MessageReference
    public void expire(final PersistenceManager persistenceManager) throws Exception
    {
       Queue expiryQueue = queue.getQueueSettings().getMatch(queue.getName()).getExpiryQueue();
+      
       if (expiryQueue != null)
       {
          Message copyMessage = makeCopyForDLQOrExpiry(false, persistenceManager);

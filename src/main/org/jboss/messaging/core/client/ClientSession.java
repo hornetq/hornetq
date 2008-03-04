@@ -40,6 +40,10 @@ public interface ClientSession extends XAResource
    
    ClientProducer createProducer(String address) throws MessagingException;
    
+   ClientProducer createRateLimitedProducer(String address, int rate) throws MessagingException;
+   
+   ClientProducer createProducerWithWindowSize(String address, int windowSize) throws MessagingException;
+   
    XAResource getXAResource();
 
    void commit() throws MessagingException;

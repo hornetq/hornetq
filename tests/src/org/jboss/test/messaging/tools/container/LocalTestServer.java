@@ -651,7 +651,8 @@ public class LocalTestServer implements Server, Runnable
                                        int dupsOkBatchSize) throws Exception
    {
       log.info("deploying connection factory with name: " + objectName + " and dupsok: " + dupsOkBatchSize);
-      getJMSServerManager().createConnectionFactory(objectName, clientId, dupsOkBatchSize, strictTck, prefetchSize, jndiBindings);
+      getJMSServerManager().createConnectionFactory(objectName, clientId, dupsOkBatchSize,
+      		strictTck, prefetchSize, 1000, -1, jndiBindings);
    }
 
 

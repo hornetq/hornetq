@@ -25,8 +25,8 @@ import org.jboss.messaging.core.client.AcknowledgementHandler;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
+import org.jboss.messaging.util.TokenBucketLimiter;
 
 /**
  * The client-side Producer connectionFactory class.
@@ -58,15 +58,24 @@ public class ClientProducerImpl implements ClientProducerInternal
    
    private volatile boolean closed;
    
-   private volatile int availableTokens;
+   //For limit throttling
    
+   private volatile int windowSize;
+   
+   //For rate throttling
+     
+   private final TokenBucketLimiter rateLimiter;
+     
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
       
    public ClientProducerImpl(final ClientSessionInternal session, final String id, final String address,
-   		                    final RemotingConnection remotingConnection, final int availableTokens)
+   		                    final RemotingConnection remotingConnection, final int windowSize,
+   		                    final int maxRate)
    {   	
+   	log.info("Creating producer with window size " + windowSize + " and max rate " + maxRate);
+   	
       this.session = session;
       
       this.id = id;
@@ -75,7 +84,16 @@ public class ClientProducerImpl implements ClientProducerInternal
       
       this.remotingConnection = remotingConnection;
       
-      this.availableTokens = availableTokens;
+      this.windowSize = windowSize;
+      
+      if (maxRate != -1)
+      {
+      	this.rateLimiter = new TokenBucketLimiter(maxRate, false);
+      }
+      else
+      {
+      	this.rateLimiter = null;
+      }
    }
    
    // ClientProducer implementation ----------------------------------------------------------------
@@ -103,30 +121,34 @@ public class ClientProducerImpl implements ClientProducerInternal
    {
    	ProducerSendMessage message = new ProducerSendMessage(address, msg.copy());
    	
-//   	if (address == null)
-//   	{
-//   		//flow control
-//   		
-//   		//TODO guard against waiting for ever - interrupt the thread???
-//   		
-//   		while (availableTokens == 0)
-//   		{
-//				synchronized (this)
-//				{
-//					try
-//					{						
-//					   wait();						
-//					}
-//					catch (InterruptedException e)
-//					{   						
-//					}
-//				}		
-//   		}
-//   	}
+   	//Window size of -1 means disable window flow control
+   	if (windowSize != -1 && address == null)
+   	{
+   		while (windowSize == 0)
+   		{
+				synchronized (this)
+				{
+					try
+					{						
+					   wait();						
+					}
+					catch (InterruptedException e)
+					{   						
+					}
+				}		
+   		}
+   		
+   		windowSize--;
+   	}
    	
    	remotingConnection.send(id, message, !msg.isDurable());
-   	
-   	//availableTokens--;
+   	 	   	
+   	if (rateLimiter != null)
+   	{
+   	   // Rate flow control
+      	   		
+   		rateLimiter.limit();
+   	}
    }
             
    public void registerAcknowledgementHandler(final AcknowledgementHandler handler)
@@ -145,6 +167,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       {
          return;         
       }
+      
       session.removeProducer(this);
       
       remotingConnection.getPacketDispatcher().unregister(id);
@@ -161,8 +184,8 @@ public class ClientProducerImpl implements ClientProducerInternal
    
    public synchronized void receiveTokens(int tokens)
    {
-   	availableTokens += tokens;
-   	
+   	windowSize += tokens;
+   		
    	notify();
    }
    
@@ -181,7 +204,7 @@ public class ClientProducerImpl implements ClientProducerInternal
          throw new MessagingException(MessagingException.OBJECT_CLOSED, "Producer is closed");
       }
    }
-   
+
    // Inner Classes --------------------------------------------------------------------------------
 
 }

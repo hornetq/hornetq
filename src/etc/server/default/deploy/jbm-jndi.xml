@@ -27,7 +27,7 @@
       <entry name="java:/connectionfactories/acme/connection_factory"/>
       <!-- You can specify the default Client ID to use for connections created using this factory -->
       <client-id>MyClientID</client-id>
-      <!-- PrefetchSize determines the approximate maximum number of messages the client consumer will buffer locally -->
+      <!-- PrefetchSize determines the maximum number of messages the client consumer will buffer locally -->
       <prefetch-size>150</prefetch-size>
       <!-- The batch size to use when using the DUPS_OK_ACKNOWLEDGE acknowledgement mode -->
       <dups-ok-batch-size>5000</dups-ok-batch-size>
@@ -39,6 +39,13 @@
       <load-balancing-factory>org.jboss.messaging.jms.client.plugin.RoundRobinLoadBalancingFactory</load-balancing-factory>
       <!-- Whether we should be strict TCK compliant, i.e. how we deal with foreign messages, defaults to false-->
       <strict-tck>true</strict-tck>
+      
+      <!-- This is the window size in number of messages to use when using producer window based flow control -->
+      <producer-window-size>1000</producer-window-size>
+      
+      <!-- This is the maximum producer send rate that will be applied when using rate based producer flow control -->
+      <producer-max-rate>100</producer-max-rate>
+      
    </connection-factory>
 
    <queue name="DLQ">

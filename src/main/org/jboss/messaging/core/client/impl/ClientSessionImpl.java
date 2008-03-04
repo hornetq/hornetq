@@ -38,7 +38,6 @@ import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.CloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
@@ -106,6 +105,10 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    private final boolean cacheProducers;
    
+   private final int maxProducerRate;
+   
+   private final int producerWindowSize;
+   
    private final ExecutorService executor;
    
    private volatile boolean closed;
@@ -135,11 +138,19 @@ public class ClientSessionImpl implements ClientSessionInternal
    //For testing only
    private boolean forceNotSameRM;
    
+   private long lastCommittedID = -1;
+   
    // Constructors ---------------------------------------------------------------------------------
    
    public ClientSessionImpl(final ClientConnectionInternal connection, final String id,
-                            final int lazyAckBatchSize, final boolean cacheProducers) throws MessagingException
+                            final int lazyAckBatchSize, final boolean cacheProducers,
+                            final int maxProducerRate, final int producerWindowSize) throws MessagingException
    {
+   	if (lazyAckBatchSize < -1 || lazyAckBatchSize == 0)
+   	{
+   		throw new IllegalArgumentException("Invalid lazyAckbatchSize, valid values are > 0 or -1 (infinite)");
+   	}
+   	
       this.id = id;
       
       this.connection = connection;
@@ -147,6 +158,10 @@ public class ClientSessionImpl implements ClientSessionInternal
       this.remotingConnection = connection.getRemotingConnection();
       
       this.cacheProducers = cacheProducers;
+      
+      this.maxProducerRate = maxProducerRate;
+      
+      this.producerWindowSize = producerWindowSize;
       
       executor = Executors.newSingleThreadExecutor();
       
@@ -273,7 +288,14 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    public ClientProducer createProducer(final String address) throws MessagingException
    {
+      return createProducer(address, producerWindowSize, maxProducerRate);
+   }
+   
+   public ClientProducer createProducer(final String address, final int windowSize, final int maxRate) throws MessagingException
+   {
       checkClosed();
+      
+      log.info("Creating prod, ws:" + windowSize);
       
       ClientProducerInternal producer = null;
       
@@ -284,13 +306,14 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       if (producer == null)
       {
-      	SessionCreateProducerMessage request = new SessionCreateProducerMessage(address);
+      	SessionCreateProducerMessage request = new SessionCreateProducerMessage(address, windowSize);
       	
       	SessionCreateProducerResponseMessage response =
       		(SessionCreateProducerResponseMessage)remotingConnection.send(id, request);
       	
       	producer = new ClientProducerImpl(this, response.getProducerID(), address,
-      			                            remotingConnection, response.getInitialTokens());  
+      			                            remotingConnection, response.getWindowSize(),
+      			                            maxRate);  
       	
       	remotingConnection.getPacketDispatcher().register(new ClientProducerPacketHandler(producer, response.getProducerID()));
       }
@@ -298,6 +321,16 @@ public class ClientSessionImpl implements ClientSessionInternal
       producers.add(producer);
 
       return producer;
+   }
+   
+   public ClientProducer createRateLimitedProducer(String address, int rate) throws MessagingException
+   {
+   	return createProducer(address, -1, rate);
+   }
+   
+   public ClientProducer createProducerWithWindowSize(String address, int windowSize) throws MessagingException
+   {
+   	return createProducer(address, windowSize, 0);
    }
    
    public XAResource getXAResource()
@@ -312,6 +345,8 @@ public class ClientSessionImpl implements ClientSessionInternal
       acknowledgeInternal(false);
       
       remotingConnection.send(id, new SessionCommitMessage());
+      
+      lastCommittedID = lastID;
    }
    
    public void rollback() throws MessagingException
@@ -319,11 +354,11 @@ public class ClientSessionImpl implements ClientSessionInternal
       checkClosed();
             
       //First we tell each consumer to clear it's buffers and ignore any deliveries with
-      //delivery id > last delivery id
+      //delivery id > last delivery id, until it gets delivery id = lastID again
       
       for (ClientConsumerInternal consumer: consumers.values())
       {
-         consumer.recover(lastID + 1);
+         consumer.recover(lastCommittedID + 1);
       }
       
       acknowledgeInternal(false);      
@@ -366,6 +401,14 @@ public class ClientSessionImpl implements ClientSessionInternal
             toAckCount = 0;
          }                       
       }            
+      
+      //FIXME - temp hack - make server sessions alwyas transacted!!
+      
+      if (this.lazyAckBatchSize != -1)
+      {
+      	lastCommittedID = lastID;
+      }
+      
    }
 
    public synchronized void close() throws MessagingException

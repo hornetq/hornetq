@@ -69,13 +69,18 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    private final Map<String, ClientSession> children = new ConcurrentHashMap<String, ClientSession>();
 
    private volatile boolean closed;
+   
+   private final int maxProducerRate;
+   
+   private final int producerWindowSize;
 
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
 
    public ClientConnectionImpl(final String id, final int serverID, final boolean strictTck,
-                               final RemotingConnection connection)
+                               final RemotingConnection connection, final int maxProducerRate,
+                               final int producerWindowSize)
    {
       this.id = id;
       
@@ -84,6 +89,10 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       this.strictTck = strictTck;
       
       this.remotingConnection = connection;
+      
+      this.maxProducerRate = maxProducerRate;
+      
+      this.producerWindowSize = producerWindowSize;
    }
    
    // ClientConnection implementation --------------------------------------------------------------
@@ -97,7 +106,9 @@ public class ClientConnectionImpl implements ClientConnectionInternal
 
       ConnectionCreateSessionResponseMessage response = (ConnectionCreateSessionResponseMessage)remotingConnection.send(id, request);   
 
-      ClientSession session =  new ClientSessionImpl(this, response.getSessionID(), ackBatchSize, cacheProducers);
+      ClientSession session =
+      	new ClientSessionImpl(this, response.getSessionID(), ackBatchSize, cacheProducers, maxProducerRate,
+      			                producerWindowSize);
 
       children.put(response.getSessionID(), session);
 

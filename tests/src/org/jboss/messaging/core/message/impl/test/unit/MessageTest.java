@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.server.impl.test.unit;
+package org.jboss.messaging.core.message.impl.test.unit;
 
 import static org.jboss.messaging.test.unit.RandomUtil.randomByte;
 import static org.jboss.messaging.test.unit.RandomUtil.randomInt;

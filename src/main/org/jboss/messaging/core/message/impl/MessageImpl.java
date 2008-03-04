@@ -34,6 +34,7 @@ import java.util.concurrent.Semaphore;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.util.StreamUtils;
 
@@ -382,7 +383,10 @@ public class MessageImpl implements Message
       {      
          for (MessageReference ref: references)
          {
-            ref.getQueue().addLast(ref);
+            if (ref.getQueue().addLast(ref) == HandleStatus.BUSY)
+            {
+            	log.warn("Message not added to queue " + ref.getQueue().getName() + " since it is full");
+            }
          }
       }
       finally

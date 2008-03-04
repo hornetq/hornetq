@@ -23,16 +23,14 @@ package org.jboss.messaging.core.management;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConnection;
-
-import java.util.Set;
 
 /**
  * This interface describes the management interface exposed by the server
@@ -48,13 +46,13 @@ public interface MessagingServerManagement
 
    void destroyQueue(String name) throws Exception;
    
-   boolean addAddress(String address);
+   boolean addAddress(String address) throws Exception;
 
-   boolean removeAddress(String address);
+   boolean removeAddress(String address) throws Exception;
    
    List<Queue> getQueuesForAddress(String address) throws Exception;
 
-   ClientConnectionFactory createClientConnectionFactory(boolean strictTck,int prefetchSize);
+   ClientConnectionFactory createClientConnectionFactory(boolean strictTck,int prefetchSize, int producerWindowSize, int producerMaxRate);
 
    void removeAllMessagesForAddress(String address) throws Exception;
 

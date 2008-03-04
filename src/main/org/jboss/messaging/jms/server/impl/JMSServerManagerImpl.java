@@ -241,12 +241,17 @@ public class JMSServerManagerImpl implements JMSServerManager
       return tempDests;
    }
 
-   public boolean createConnectionFactory(String name, String clientID, int dupsOKBatchSize, boolean strictTck, int prefetchSize, String jndiBinding) throws Exception
+   public boolean createConnectionFactory(String name, String clientID,
+   		int dupsOKBatchSize, boolean strictTck, int prefetchSize,
+   		int producerWindowSize, int producerMaxRate, String jndiBinding) throws Exception
    {
       JBossConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         ClientConnectionFactory clientConnectionFactory = messagingServerManagement.createClientConnectionFactory(strictTck, prefetchSize);
+      	log.info("^^^ creating cf with qws:" + producerWindowSize);
+      	
+         ClientConnectionFactory clientConnectionFactory =
+         	messagingServerManagement.createClientConnectionFactory(strictTck, prefetchSize, producerWindowSize, producerMaxRate);
          log.debug(this + " created local connectionFactory " + clientConnectionFactory);
          cf = new JBossConnectionFactory(clientConnectionFactory, clientID, dupsOKBatchSize);
       }
@@ -263,12 +268,16 @@ public class JMSServerManagerImpl implements JMSServerManager
    }
 
 
-   public boolean createConnectionFactory(String name, String clientID, int dupsOKBatchSize, boolean strictTck, int prefetchSize, List<String> jndiBindings) throws Exception
+   public boolean createConnectionFactory(String name, String clientID, int dupsOKBatchSize,
+   		                                 boolean strictTck, int prefetchSize,
+   		                                 int producerWindowSize, int producerMaxRate,
+   		                                 List<String> jndiBindings) throws Exception
    {
       JBossConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         ClientConnectionFactory clientConnectionFactory = messagingServerManagement.createClientConnectionFactory(strictTck, prefetchSize);
+         ClientConnectionFactory clientConnectionFactory =
+         	messagingServerManagement.createClientConnectionFactory(strictTck, prefetchSize, producerWindowSize, producerMaxRate);
          log.debug(this + " created local connectionFactory " + clientConnectionFactory);
          cf = new JBossConnectionFactory(clientConnectionFactory, clientID, dupsOKBatchSize);
       }

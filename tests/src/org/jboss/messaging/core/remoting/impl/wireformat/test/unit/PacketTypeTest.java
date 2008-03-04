@@ -618,12 +618,13 @@ public class PacketTypeTest extends UnitTestCase
    public void testCreateProducerRequest() throws Exception
    {      
       String destination = "queue.testCreateProducerRequest";
-      SessionCreateProducerMessage request = new SessionCreateProducerMessage(destination);
+      int windowSize = randomInt();
+      SessionCreateProducerMessage request = new SessionCreateProducerMessage(destination, windowSize);
 
       AbstractPacketCodec codec = new SessionCreateProducerMessageCodec();
       SimpleRemotingBuffer buffer = encode(request, codec);
       checkHeader(buffer, request);
-      checkBody(buffer, request.getAddress());
+      checkBody(buffer, request.getAddress(), request.getWindowSize());
       buffer.rewind();
 
       Packet decodedPacket = codec.decode(buffer);
@@ -632,6 +633,7 @@ public class PacketTypeTest extends UnitTestCase
       SessionCreateProducerMessage decodedRequest = (SessionCreateProducerMessage) decodedPacket;
       assertEquals(SESS_CREATEPRODUCER, decodedRequest.getType());
       assertEquals(request.getAddress(), decodedRequest.getAddress());
+      assertEquals(request.getWindowSize(), decodedRequest.getWindowSize());
    }
    
    public void testCreateProducerResponse() throws Exception
@@ -642,7 +644,7 @@ public class PacketTypeTest extends UnitTestCase
       AbstractPacketCodec codec = new SessionCreateProducerResponseMessageCodec();
       SimpleRemotingBuffer buffer = encode(response, codec);
       checkHeader(buffer, response);
-      checkBody(buffer, response.getProducerID(), response.getInitialTokens());
+      checkBody(buffer, response.getProducerID(), response.getWindowSize());
       buffer.rewind();
 
       Packet decodedPacket = codec.decode(buffer);
@@ -651,7 +653,7 @@ public class PacketTypeTest extends UnitTestCase
       SessionCreateProducerResponseMessage decodedResponse = (SessionCreateProducerResponseMessage) decodedPacket;
       assertEquals(SESS_CREATEPRODUCER_RESP, decodedResponse.getType());
       assertEquals(response.getProducerID(), decodedResponse.getProducerID());
-      assertEquals(response.getInitialTokens(), decodedResponse.getInitialTokens());
+      assertEquals(response.getWindowSize(), decodedResponse.getWindowSize());
    }
 
    public void testStartConnectionMessage() throws Exception

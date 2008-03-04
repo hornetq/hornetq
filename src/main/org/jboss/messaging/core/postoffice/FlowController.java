@@ -19,7 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.server;
+package org.jboss.messaging.core.postoffice;
+
+import org.jboss.messaging.core.server.ServerProducer;
 
 
 /**
@@ -31,9 +33,9 @@ package org.jboss.messaging.core.server;
  */
 public interface FlowController
 {
-	void registerProducer(ServerProducer producer);
-	
 	void messageAcknowledged() throws Exception;
 	
-	void checkTokens(ServerProducer producer) throws Exception;
+	void messageReceived(ServerProducer producer, int windowSize) throws Exception;
+	
+	int getInitialTokens(int windowSize, ServerProducer producer);
 }

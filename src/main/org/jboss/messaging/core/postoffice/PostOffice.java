@@ -43,15 +43,18 @@ import org.jboss.messaging.core.server.MessagingComponent;
  * 
  * The PostOffice also maintains a set of "allowable addresses". These are the addresses that it is legal to
  * route to.
+ * 
+ * Finally, a PostOffice maintains a set of FlowControllers - one for each unique address. These are used, where
+ * appropriate to control the flow of messages sent to a particular address
  *  
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
 public interface PostOffice extends MessagingComponent
 {   
-   void addAllowableAddress(String address);
+   void addAllowableAddress(String address) throws Exception;
    
-   boolean removeAllowableAddress(String address);
+   boolean removeAllowableAddress(String address) throws Exception;
    
    boolean containsAllowableAddress(String address);
 
@@ -67,6 +70,10 @@ public interface PostOffice extends MessagingComponent
    void route(String address, Message message) throws Exception;
    
    void routeFromCluster(String address, Message message) throws Exception;
+   
+   //Flow control
+   
+   FlowController getFlowController(String address);
      
    //For testing only
    Map<String, List<Binding>> getMappings();

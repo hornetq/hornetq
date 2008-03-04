@@ -471,7 +471,7 @@ public class QueueTest extends UnitTestCase
    }
    
    
-   public void testChangeConsumersAndDeliver()
+   public void testChangeConsumersAndDeliver() throws Exception
    {
       Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor, queueSettings);
                   
@@ -516,7 +516,7 @@ public class QueueTest extends UnitTestCase
       
       for (int i = 0; i < numMessages; i++)
       {
-         queue.decrementDeliveringCount();
+         queue.referenceAcknowledged();
       }
       
       for (int i = 0; i < 2 * numMessages; i++)
@@ -541,7 +541,7 @@ public class QueueTest extends UnitTestCase
       refs.clear();
       for (int i = 0; i < 2 * numMessages; i++)
       {
-         queue.decrementDeliveringCount();
+         queue.referenceAcknowledged();
       }
       
       FakeConsumer cons3 = new FakeConsumer();
@@ -576,7 +576,7 @@ public class QueueTest extends UnitTestCase
       refs.clear();
       for (int i = 0; i < 3 * numMessages; i++)
       {
-         queue.decrementDeliveringCount();
+         queue.referenceAcknowledged();
       }
       
       for (int i = 0; i < 2 * numMessages; i++)
@@ -602,7 +602,7 @@ public class QueueTest extends UnitTestCase
       refs.clear();
       for (int i = 0; i < 2 * numMessages; i++)
       {
-         queue.decrementDeliveringCount();
+         queue.referenceAcknowledged();
       }
       
       for (int i = 0; i < numMessages; i++)
@@ -907,12 +907,12 @@ public class QueueTest extends UnitTestCase
       assertRefListsIdenticalRefs(refs, consumer.getReferences());      
    }
    
-   public void testConsumerWithFiltersDirect()
+   public void testConsumerWithFiltersDirect() throws Exception
    {
       testConsumerWithFilters(true);
    }
    
-   public void testConsumerWithFiltersQueueing()
+   public void testConsumerWithFiltersQueueing() throws Exception
    {
       testConsumerWithFilters(false);
    }
@@ -1016,7 +1016,7 @@ public class QueueTest extends UnitTestCase
    }
    */
    
-   public void testConsumeWithFiltersAddAndRemoveConsumer()
+   public void testConsumeWithFiltersAddAndRemoveConsumer() throws Exception
    {
       Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor, queueSettings);
       
@@ -1051,7 +1051,7 @@ public class QueueTest extends UnitTestCase
             
       assertRefListsIdenticalRefs(refs, consumer.getReferences()); 
       
-      queue.decrementDeliveringCount();
+      queue.referenceAcknowledged();
 
       queue.removeConsumer(consumer);
             
@@ -1089,7 +1089,7 @@ public class QueueTest extends UnitTestCase
    
    // Private ------------------------------------------------------------------------------
    
-   private void testConsumerWithFilters(boolean direct)
+   private void testConsumerWithFilters(boolean direct) throws Exception
    {
       Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor, queueSettings);
       
@@ -1159,8 +1159,8 @@ public class QueueTest extends UnitTestCase
             
       assertRefListsIdenticalRefs(refs, consumer.getReferences()); 
       
-      queue.decrementDeliveringCount();
-      queue.decrementDeliveringCount();
+      queue.referenceAcknowledged();
+      queue.referenceAcknowledged();
       
       queue.removeConsumer(consumer);
       

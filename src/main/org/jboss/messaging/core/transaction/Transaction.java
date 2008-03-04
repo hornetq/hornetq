@@ -27,8 +27,6 @@ import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.persistence.PersistenceManager;
 
-
-
 /**
  * 
  * A JBoss Messaging internal transaction

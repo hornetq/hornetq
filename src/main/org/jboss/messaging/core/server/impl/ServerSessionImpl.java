@@ -44,6 +44,7 @@ import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.persistence.PersistenceManager;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketSender;
@@ -58,7 +59,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessag
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.server.Delivery;
-import org.jboss.messaging.core.server.FlowController;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.server.ServerConsumer;
@@ -333,6 +333,7 @@ public class ServerSessionImpl implements ServerSession
 
    public synchronized void acknowledge(final long deliveryID, final boolean allUpTo) throws Exception
    {
+   	//log.info("acknowledge called " + deliveryID + " all " + allUpTo);
       // Note that we do not consider it an error if the deliveries cannot be found to be acked.
    	// This can legitimately occur if a connection/session/consumer is closed
       // from inside a MessageHandlers onMessage method. In this situation the close will cancel any unacked
@@ -418,6 +419,7 @@ public class ServerSessionImpl implements ServerSession
 
    public void rollback() throws Exception
    {
+   	//log.info("Roll back called");
       if (tx == null)
       {
          // Might be null if XA
@@ -428,9 +430,8 @@ public class ServerSessionImpl implements ServerSession
       // Synchronize to prevent any new deliveries arriving during this recovery
       synchronized (this)
       {
-         // Add any unacked deliveries into the tx
-         // Doing this ensures all references are rolled back in the correct
-         // orderin a single contiguous block
+         // Add any unacked deliveries into the tx. Doing this ensures all references are rolled back in the correct
+         // order in a single contiguous block
 
          for (Delivery del : deliveries)
          {
@@ -1000,19 +1001,32 @@ public class ServerSessionImpl implements ServerSession
       return new SessionCreateBrowserResponseMessage(browser.getID());
    }
    
-   public SessionCreateProducerResponseMessage createProducer(final String address) throws Exception
+   /**
+    * Create a producer for the specified address
+    * @param address The address to produce too
+    * @param windowSize - the producer window size to use for flow control.
+    * Specify -1 to disable flow control completely
+    * The actual window size used may be less than the specified window size if the queue's maxSize attribute
+    * is set and there are not sufficient empty spaces in the queue
+    */
+   public SessionCreateProducerResponseMessage createProducer(final String address, final int windowSize) throws Exception
    { 	
-   	//FlowController flowController = new FlowControllerImpl(address, postOffice, 10);		
+   	FlowController flowController = null;
    	
-   	ServerProducerImpl producer = new ServerProducerImpl(this, address, sender, null);
+   	if (address != null)
+   	{
+   		flowController = windowSize == -1 ? null : postOffice.getFlowController(address);
+   	}
    	
+   	ServerProducerImpl producer = new ServerProducerImpl(this, address, sender, flowController);
+
    	producers.put(producer.getID(), producer);
    	
    	dispatcher.register(new ServerProducerPacketHandler(producer));
    	
-   	int initialTokens = 10;
-   	
-   	return new SessionCreateProducerResponseMessage(producer.getID(), initialTokens);
+   	int windowToUse = flowController == null ? -1 : flowController.getInitialTokens(windowSize, producer);
+   	   	   	
+   	return new SessionCreateProducerResponseMessage(producer.getID(), windowToUse);
    }
    
    // Public ---------------------------------------------------------------------------------------------

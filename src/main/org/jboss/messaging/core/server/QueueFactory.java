@@ -23,8 +23,6 @@ package org.jboss.messaging.core.server;
 
 import org.jboss.messaging.core.filter.Filter;
 
-
-
 /**
  * 
  * A QueueFactory

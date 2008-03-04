@@ -22,19 +22,19 @@ public class SessionCreateProducerResponseMessage extends AbstractPacket
 
    private final String producerID;
    
-   private final int initialTokens;
+   private final int windowSize;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateProducerResponseMessage(final String producerID, final int initialTokens)
+   public SessionCreateProducerResponseMessage(final String producerID, final int windowSize)
    {
       super(SESS_CREATEPRODUCER_RESP);
 
       this.producerID = producerID;
       
-      this.initialTokens = initialTokens;
+      this.windowSize = windowSize;
    }
 
    // Public --------------------------------------------------------
@@ -44,9 +44,9 @@ public class SessionCreateProducerResponseMessage extends AbstractPacket
       return producerID;
    }
    
-   public int getInitialTokens()
+   public int getWindowSize()
    {
-   	return initialTokens;
+   	return windowSize;
    }
 
    @Override
@@ -54,7 +54,7 @@ public class SessionCreateProducerResponseMessage extends AbstractPacket
    {
       StringBuffer buf = new StringBuffer(getParentString());
       buf.append(", producerID=" + producerID);
-      buf.append(", initialTokens=" + initialTokens);
+      buf.append(", windowSize=" + windowSize);
       buf.append("]");
       return buf.toString();
    }

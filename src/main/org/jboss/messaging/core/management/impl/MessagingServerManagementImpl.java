@@ -130,7 +130,7 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
       }
    }
 
-   public boolean addAddress(String address)
+   public boolean addAddress(String address) throws Exception
    {
       if (!messagingServer.getPostOffice().containsAllowableAddress(address))
       {
@@ -140,7 +140,7 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
       return false;
    }
 
-   public boolean removeAddress(String address)
+   public boolean removeAddress(String address) throws Exception
    {
       if (messagingServer.getPostOffice().containsAllowableAddress(address))
       {
@@ -150,10 +150,15 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
       return false;
    }
 
-   public ClientConnectionFactory createClientConnectionFactory(boolean strictTck, int prefetchSize)
+   public ClientConnectionFactory createClientConnectionFactory(boolean strictTck, int prefetchSize,
+   		                                                       int producerWindowSize, int producerMaxRate)
    {
       return new ClientConnectionFactoryImpl(messagingServer.getConfiguration().getMessagingServerID(),
-              messagingServer.getConfiguration().getRemotingConfiguration(), messagingServer.getVersion(), messagingServer.getConfiguration().isStrictTck() || strictTck, prefetchSize);
+              messagingServer.getConfiguration().getRemotingConfiguration(),
+              messagingServer.getVersion(),
+              messagingServer.getConfiguration().isStrictTck() || strictTck,
+              prefetchSize,
+              producerWindowSize, producerMaxRate);
    }
 
    public void removeAllMessagesForAddress(String address) throws Exception
