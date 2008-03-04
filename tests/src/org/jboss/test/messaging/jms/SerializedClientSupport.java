@@ -54,8 +54,10 @@ public class SerializedClientSupport
       sb.append("java").append(' ');
 
       String classPath = System.getProperty("java.class.path");
-
-      if (System.getProperty("os.name").equals("Linux"))
+      
+      // I guess it'd be simpler to check if the OS is Windows...
+      if (System.getProperty("os.name").equals("Linux")
+         || System.getProperty("os.name").equals("Mac OS X"))
       {
          sb.append("-cp").append(" ").append(classPath).append(" ");
       } else
