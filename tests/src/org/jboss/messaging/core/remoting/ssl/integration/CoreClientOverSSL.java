@@ -34,7 +34,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
+import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
@@ -71,7 +71,7 @@ public class CoreClientOverSSL
          String keyStorePath = args[1];
          String keyStorePassword = args[2];
 
-         RemotingConfiguration remotingConf = new RemotingConfiguration(TCP,
+         RemotingConfigurationImpl remotingConf = new RemotingConfigurationImpl(TCP,
                "localhost", CoreClientOverSSLTest.SSL_PORT);
          remotingConf.setSSLEnabled(sslEnabled);
          remotingConf.setKeyStorePath(keyStorePath);

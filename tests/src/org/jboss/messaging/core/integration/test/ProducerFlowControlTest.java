@@ -34,7 +34,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.TransportType;
-import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
+import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.core.settings.impl.QueueSettings;

@@ -71,7 +71,7 @@ public class ConfigurationHelper implements KernelControllerContextAware
       HashMap<String, Object> configuration = configs.get(config.getServerID());
       Configuration actualConfiguration = (Configuration) kernelControllerContext.getKernel().getRegistry().getEntry("Configuration").getTarget();
       actualConfiguration.setMessagingServerID(config.getServerID());
-      actualConfiguration.setRemotingBindAddress(actualConfiguration.getRemotingBindAddress() + config.getServerID());
+      actualConfiguration.setPort(actualConfiguration.getPort() + config.getServerID());
       alterConfig(actualConfiguration, configuration);
    }
 

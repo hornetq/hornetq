@@ -28,7 +28,7 @@ import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.RemotingException;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
-import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
+import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.mina.ClientKeepAliveFactory;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
@@ -58,7 +58,7 @@ public class ClientKeepAliveTest extends TestCase
    @Override
    protected void setUp() throws Exception
    {
-      RemotingConfiguration remotingConfig = new RemotingConfiguration(TCP, "localhost", PORT);
+      RemotingConfigurationImpl remotingConfig = new RemotingConfigurationImpl(TCP, "localhost", PORT);
       remotingConfig.setKeepAliveInterval(KEEP_ALIVE_INTERVAL);
       remotingConfig.setKeepAliveTimeout(KEEP_ALIVE_TIMEOUT);
       service = new MinaService(remotingConfig);

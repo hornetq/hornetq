@@ -16,7 +16,7 @@ import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.impl.ConnectorRegistryImpl;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
-import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
+import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -56,7 +56,7 @@ public class ConnectorRegistryTest extends TestCase
    
    public void testRemotingConfigurationRegistration() throws Exception
    {
-      RemotingConfiguration remotingConfig = new RemotingConfiguration(TCP, "localhost", PORT);
+      RemotingConfigurationImpl remotingConfig = new RemotingConfigurationImpl(TCP, "localhost", PORT);
       
       assertTrue(registry.register(remotingConfig, dispatcher));
       assertFalse(registry.register(remotingConfig, dispatcher));
@@ -70,8 +70,8 @@ public class ConnectorRegistryTest extends TestCase
    
    public void testRegistrationForTwoRemotingConfigurations() throws Exception
    {
-      RemotingConfiguration remotingConfig_1 = new RemotingConfiguration(TCP, "localhost", PORT);
-      RemotingConfiguration remotingConfig_2 = new RemotingConfiguration(TCP, "localhost", PORT + 1);     
+      RemotingConfigurationImpl remotingConfig_1 = new RemotingConfigurationImpl(TCP, "localhost", PORT);
+      RemotingConfigurationImpl remotingConfig_2 = new RemotingConfigurationImpl(TCP, "localhost", PORT + 1);     
       PacketDispatcher dispatcher_1 = new PacketDispatcherImpl();      
       PacketDispatcher dispatcher_2 = new PacketDispatcherImpl();
       
@@ -84,7 +84,7 @@ public class ConnectorRegistryTest extends TestCase
    
    public void testINVMConnectorFromTCPRemotingConfiguration() throws Exception
    {
-      RemotingConfiguration remotingConfig = new RemotingConfiguration(TCP, "localhost", PORT);
+      RemotingConfigurationImpl remotingConfig = new RemotingConfigurationImpl(TCP, "localhost", PORT);
       
       // remotingConfig is registered -> client and server are in the same vm
       assertTrue(registry.register(remotingConfig, dispatcher));
@@ -101,7 +101,7 @@ public class ConnectorRegistryTest extends TestCase
    
    public void testTCPConnectorFromTCPRemotingConfiguration() throws Exception
    {
-      RemotingConfiguration remotingConfig = new RemotingConfiguration(TCP, "localhost", PORT);
+      RemotingConfigurationImpl remotingConfig = new RemotingConfigurationImpl(TCP, "localhost", PORT);
       
       // remotingConfig is not registered -> client and server are not in the same vm
       
@@ -115,7 +115,7 @@ public class ConnectorRegistryTest extends TestCase
    
    public void testConnectorCount() throws Exception
    {
-      RemotingConfiguration remotingConfig = new RemotingConfiguration(TCP, "localhost", PORT);
+      RemotingConfigurationImpl remotingConfig = new RemotingConfigurationImpl(TCP, "localhost", PORT);
       assertEquals(0, registry.getConnectorCount(remotingConfig));
 
       NIOConnector connector1 = registry.getConnector(remotingConfig, dispatcher);
@@ -141,8 +141,8 @@ public class ConnectorRegistryTest extends TestCase
    
    public void testConnectorCount_2() throws Exception
    {
-      RemotingConfiguration remotingConfig1 = new RemotingConfiguration(TCP, "localhost", PORT);
-      RemotingConfiguration remotingConfig2 = new RemotingConfiguration(TCP, "127.0.0.1", PORT);
+      RemotingConfigurationImpl remotingConfig1 = new RemotingConfigurationImpl(TCP, "localhost", PORT);
+      RemotingConfigurationImpl remotingConfig2 = new RemotingConfigurationImpl(TCP, "127.0.0.1", PORT);
 
       assertNotSame(remotingConfig1, remotingConfig2);
       
@@ -167,8 +167,8 @@ public class ConnectorRegistryTest extends TestCase
     */
    public void testRemotingConfigurationEquality() throws Exception
    {
-      RemotingConfiguration remotingConfig1 = new RemotingConfiguration(TCP, "localhost", PORT);
-      RemotingConfiguration remotingConfig2 = new RemotingConfiguration(TCP, "localhost", PORT);
+      RemotingConfigurationImpl remotingConfig1 = new RemotingConfigurationImpl(TCP, "localhost", PORT);
+      RemotingConfigurationImpl remotingConfig2 = new RemotingConfigurationImpl(TCP, "localhost", PORT);
 
       assertNotSame(remotingConfig1, remotingConfig2);
       assertEquals(remotingConfig1, remotingConfig2);

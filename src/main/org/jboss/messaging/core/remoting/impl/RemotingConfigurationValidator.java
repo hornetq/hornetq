@@ -9,6 +9,7 @@ package org.jboss.messaging.core.remoting.impl;
 import static org.jboss.messaging.core.remoting.TransportType.INVM;
 
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -45,9 +46,10 @@ public class RemotingConfigurationValidator
          throw new IllegalStateException(
                "It is not allowed to enable SSL when the transport is set to invm.");
       }
-      if (configuration.getPort() < 0)
+      if (configuration.getTransport() != INVM 
+            && configuration.getPort() <= 0)
       {
-         throw new IllegalStateException("Remoting port can not be negative");
+         throw new IllegalStateException("Remoting port can not be negative when transport is not INVM");
       }
 
       if (log.isDebugEnabled())

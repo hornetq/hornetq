@@ -28,7 +28,6 @@ import junit.framework.TestCase;
 
 import org.jboss.messaging.core.config.impl.FileConfiguration;
 import org.jboss.messaging.core.remoting.TransportType;
-import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -79,12 +78,20 @@ public class ConfigurationTest extends TestCase
       assertEquals("failed to set clustered", Boolean.TRUE, configuration.isClustered());
    }
 
-   public void testSetRemoteBindAddress() throws Exception
+   public void testSetTransport() throws Exception
    {
-      RemotingConfiguration remotingConfig = configuration.getRemotingConfiguration();
-      assertEquals(TransportType.TCP, remotingConfig.getTransport());
-      assertEquals(10000, remotingConfig.getPort());
-      assertEquals(100, remotingConfig.getTimeout());
+      assertEquals(TransportType.TCP, configuration.getTransport());
+   }
+   
+   public void testSetRemotingPort() throws Exception
+   {
+      assertEquals(10000, configuration.getPort());
+
+   }
+
+   public void testSetRemotingTimeout() throws Exception
+   {
+      assertEquals(100, configuration.getTimeout());
    }
    
    public void testSetInterceptorsList() throws Exception

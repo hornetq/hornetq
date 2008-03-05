@@ -11,7 +11,8 @@ import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
+import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -31,9 +32,16 @@ public class RemotingConfigurationValidatorTest extends TestCase
 
    // Public --------------------------------------------------------
 
+   public void testINVMConfiguration()
+   {
+      RemotingConfiguration conf = RemotingConfigurationImpl.newINVMConfiguration();
+
+      validate(conf);
+   }
+
    public void testNegativePort()
    {
-      RemotingConfiguration conf = new RemotingConfiguration(TCP, "localhost", -1);
+      RemotingConfiguration conf = new RemotingConfigurationImpl(TCP, "localhost", -1);
 
       try 
       {
@@ -47,7 +55,7 @@ public class RemotingConfigurationValidatorTest extends TestCase
    
    public void test_DisableINVM_With_INVMTransport()
    {
-      RemotingConfiguration conf = new RemotingConfiguration(INVM, "localhost", 9000);
+      RemotingConfigurationImpl conf = new RemotingConfigurationImpl(INVM, "localhost", 9000);
       conf.setInvmDisabled(true);
       
       try 
@@ -62,7 +70,7 @@ public class RemotingConfigurationValidatorTest extends TestCase
    
    public void test_EnableSSL_With_INVMTransport()
    {
-      RemotingConfiguration conf = new RemotingConfiguration(INVM, "localhost", 9000);
+      RemotingConfigurationImpl conf = new RemotingConfigurationImpl(INVM, "localhost", 9000);
       conf.setSSLEnabled(true);
       
       try 

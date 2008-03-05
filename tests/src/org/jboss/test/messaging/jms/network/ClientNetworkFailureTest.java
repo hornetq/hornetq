@@ -34,7 +34,8 @@ import javax.jms.QueueConnection;
 
 import org.jboss.messaging.core.client.FailureListener;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
+import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.test.messaging.jms.JMSTestCase;
 
@@ -75,7 +76,7 @@ public class ClientNetworkFailureTest extends JMSTestCase
       minaService.stop();
       RemotingConfiguration oldRemotingConfig = minaService
             .getRemotingConfiguration();
-      RemotingConfiguration newRemotingConfig = new RemotingConfiguration(
+      RemotingConfigurationImpl newRemotingConfig = new RemotingConfigurationImpl(
             oldRemotingConfig);
       newRemotingConfig.setInvmDisabled(true);
       newRemotingConfig.setKeepAliveInterval(KEEP_ALIVE_INTERVAL);
@@ -151,15 +152,7 @@ public class ClientNetworkFailureTest extends JMSTestCase
    {
       QueueConnection conn = getConnectionFactory().createQueueConnection();
 
-      final CountDownLatch exceptionLatch = new CountDownLatch(2);
-      conn.setExceptionListener(new ExceptionListener()
-      {
-         public void onException(JMSException e)
-         {
-            log.warn("got expected exception on the client");
-            exceptionLatch.countDown();
-         }
-      });
+      final CountDownLatch exceptionLatch = new CountDownLatch(1);
 
       FailureListener listener = new FailureListenerWithLatch(exceptionLatch);
       minaService.addFailureListener(listener);
@@ -169,9 +162,9 @@ public class ClientNetworkFailureTest extends JMSTestCase
       networkFailureFilter.messageSentDropsPacket = true;
       networkFailureFilter.messageReceivedDropsPacket = true;
 
-      boolean gotExceptionsOnTheServerAndTheClient = exceptionLatch.await(
+      boolean gotExceptionOnTheServer = exceptionLatch.await(
             KEEP_ALIVE_INTERVAL + KEEP_ALIVE_TIMEOUT + 3, SECONDS);
-      assertTrue(gotExceptionsOnTheServerAndTheClient);
+      assertTrue(gotExceptionOnTheServer);
       assertActiveConnectionsOnTheServer(0);
 
       try

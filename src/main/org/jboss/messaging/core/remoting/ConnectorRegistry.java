@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting;
 
-import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
+import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 

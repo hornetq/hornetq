@@ -27,10 +27,6 @@ public class INVMConnector implements NIOConnector
 
    // Attributes ----------------------------------------------------
 
-   private String host;
-
-   private int port;
-
    private INVMSession session;
 
    private PacketDispatcher clientDispatcher;
@@ -40,13 +36,11 @@ public class INVMConnector implements NIOConnector
 
    // Constructors --------------------------------------------------
 
-   public INVMConnector(String host, int port, PacketDispatcher clientDispatcher, PacketDispatcher serverDispatcher)
+   public INVMConnector(PacketDispatcher clientDispatcher, PacketDispatcher serverDispatcher)
    {
-      assert host != null;
+      assert clientDispatcher != null;
       assert serverDispatcher != null;
       
-      this.host = host;
-      this.port = port;
       this.clientDispatcher = clientDispatcher;
       this.serverDispatcher = serverDispatcher;
    }
@@ -77,7 +71,7 @@ public class INVMConnector implements NIOConnector
 
    public String getServerURI()
    {
-      return INVM + "://" + host + ":" + port;
+      return INVM + "://localhost";
    }
    
    public void addFailureListener(FailureListener listener)

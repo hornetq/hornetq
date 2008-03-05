@@ -21,7 +21,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.RemotingException;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
-import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
+import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.impl.mina.ServerKeepAliveFactory;
@@ -80,7 +80,7 @@ public class ServerKeepAliveTest extends TestCase
          }
       };
 
-      RemotingConfiguration remotingConfig = new RemotingConfiguration(TCP,
+      RemotingConfigurationImpl remotingConfig = new RemotingConfigurationImpl(TCP,
             "localhost", PORT);
       remotingConfig.setKeepAliveInterval(KEEP_ALIVE_INTERVAL);
       remotingConfig.setKeepAliveTimeout(KEEP_ALIVE_TIMEOUT);
@@ -135,7 +135,7 @@ public class ServerKeepAliveTest extends TestCase
          }
       };
 
-      RemotingConfiguration remotingConfig = new RemotingConfiguration(TCP,
+      RemotingConfigurationImpl remotingConfig = new RemotingConfigurationImpl(TCP,
             "localhost", PORT);
       remotingConfig.setKeepAliveInterval(KEEP_ALIVE_INTERVAL);
       remotingConfig.setKeepAliveTimeout(KEEP_ALIVE_TIMEOUT);

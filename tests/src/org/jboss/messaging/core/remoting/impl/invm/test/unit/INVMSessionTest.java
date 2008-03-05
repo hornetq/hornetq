@@ -11,8 +11,9 @@ import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestS
 
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.NIOConnector;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
-import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
+import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.SessionTestBase;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
 
@@ -41,13 +42,13 @@ public class INVMSessionTest extends SessionTestBase
    @Override
    protected NIOConnector createNIOConnector(PacketDispatcher dispatcher)
    {
-      return new INVMConnector("localhost", PORT, dispatcher, serverDispatcher);
+      return new INVMConnector(dispatcher, serverDispatcher);
    }
    
    @Override
    protected RemotingConfiguration createRemotingConfiguration()
    {
-      return new RemotingConfiguration(INVM, "localhost", PORT);
+      return new RemotingConfigurationImpl(INVM, "localhost", PORT);
    }
    
    @Override

@@ -12,7 +12,7 @@ import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestS
 
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.NIOConnector;
-import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
+import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.SessionTestBase;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
@@ -65,9 +65,9 @@ public class MinaSessionTest extends SessionTestBase
    }
    
    @Override
-   protected RemotingConfiguration createRemotingConfiguration()
+   protected RemotingConfigurationImpl createRemotingConfiguration()
    {
-      return new RemotingConfiguration(TCP, "localhost", PORT);
+      return new RemotingConfigurationImpl(TCP, "localhost", PORT);
    }
 
    @Override

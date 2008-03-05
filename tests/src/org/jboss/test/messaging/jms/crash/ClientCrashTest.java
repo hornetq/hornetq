@@ -107,6 +107,7 @@ public class ClientCrashTest extends JBMServerTestCase
          MessageConsumer consumer = sess.createConsumer(queue);
 
          TextMessage messageFromClient = (TextMessage) consumer.receive(5000);
+         assertNotNull("no message received", messageFromClient);
          assertEquals(MESSAGE_TEXT_FROM_CLIENT, messageFromClient.getText());
 
          // 1 local connection to the server

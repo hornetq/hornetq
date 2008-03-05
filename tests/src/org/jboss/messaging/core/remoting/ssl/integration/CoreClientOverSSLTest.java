@@ -32,7 +32,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
+import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.test.messaging.jms.SerializedClientSupport;
@@ -117,7 +117,7 @@ public class CoreClientOverSSLTest extends TestCase
    @Override
    protected void setUp() throws Exception
    {
-      RemotingConfiguration remotingConf = new RemotingConfiguration(TCP,
+      RemotingConfigurationImpl remotingConf = new RemotingConfigurationImpl(TCP,
             "localhost", SSL_PORT);
       remotingConf.setSSLEnabled(true);
       remotingConf.setKeyStorePath("messaging.keystore");

@@ -8,8 +8,8 @@ package org.jboss.messaging.core.remoting.impl;
 
 import java.io.Serializable;
 
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.TransportType;
-
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -17,7 +17,8 @@ import org.jboss.messaging.core.remoting.TransportType;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class RemotingConfiguration implements Serializable
+public class RemotingConfigurationImpl implements Serializable,
+      RemotingConfiguration
 {
    // Constants -----------------------------------------------------
 
@@ -28,7 +29,7 @@ public class RemotingConfiguration implements Serializable
    public static final int DEFAULT_REQRES_TIMEOUT = 5; // in seconds
    public static final boolean DEFAULT_INVM_DISABLED = false;
    public static final boolean DEFAULT_SSL_ENABLED = false;
-   
+
    // Attributes ----------------------------------------------------
 
    private TransportType transport;
@@ -44,47 +45,59 @@ public class RemotingConfiguration implements Serializable
    private String keyStorePassword;
    private String trustStorePath;
    private String trustStorePassword;
-   
 
    // Static --------------------------------------------------------
 
+   /**
+    * Creates a RemotingConfiguration for the special case where the
+    * RemotingService must be accessed only within the JVM (i.e. the
+    * service does not open any socket).
+    */
+   public static RemotingConfiguration newINVMConfiguration()
+   {
+     RemotingConfigurationImpl conf = new RemotingConfigurationImpl();
+     conf.transport = TransportType.INVM;
+     return conf;
+   }
+   
    // Constructors --------------------------------------------------
 
    // for serialization only
-   protected RemotingConfiguration()
+   protected RemotingConfigurationImpl()
    {
    }
-  
-   public RemotingConfiguration(TransportType transport, String host, int port)
+   
+   public RemotingConfigurationImpl(TransportType transport, String host,
+         int port)
    {
       assert transport != null;
       assert host != null;
-      
+
       this.transport = transport;
       this.host = host;
       this.port = port;
    }
-   
-   public RemotingConfiguration(RemotingConfiguration other)
+
+   public RemotingConfigurationImpl(RemotingConfiguration other)
    {
       assert other != null;
-      
-      this.transport = other.transport;
-      this.host = other.host;
-      this.port = other.port;
-      
-      this.timeout = other.timeout;
-      this.keepAliveInterval = other.keepAliveInterval;
-      this.keepAliveTimeout = other.keepAliveTimeout;
-      this.invmDisabled = other.invmDisabled;
-      this.sslEnabled = other.sslEnabled;
-      this.keyStorePath = other.keyStorePath;
-      this.keyStorePassword = other.keyStorePassword;
-      this.trustStorePath = other.trustStorePath;
-      this.trustStorePassword = other.trustStorePassword;
+
+      this.transport = other.getTransport();
+      this.host = other.getHost();
+      this.port = other.getPort();
+
+      this.timeout = other.getTimeout();
+      this.keepAliveInterval = other.getKeepAliveInterval();
+      this.keepAliveTimeout = other.getKeepAliveTimeout();
+      this.invmDisabled = other.isInvmDisabled();
+      this.sslEnabled = other.isSSLEnabled();
+      this.keyStorePath = other.getKeyStorePath();
+      this.keyStorePassword = other.getKeyStorePassword();
+      this.trustStorePath = other.getTrustStorePath();
+      this.trustStorePassword = other.getTrustStorePassword();
    }
 
-   // Public --------------------------------------------------------
+   // RemotingConfiguration implementation --------------------------
 
    public TransportType getTransport()
    {
@@ -100,52 +113,27 @@ public class RemotingConfiguration implements Serializable
    {
       return port;
    }
-   
-   public void setKeepAliveInterval(int keepAliveInterval)
-   {
-      this.keepAliveInterval = keepAliveInterval;
-   }
 
    public int getKeepAliveInterval()
    {
-      return keepAliveInterval ;
-   }
-
-   public void setKeepAliveTimeout(int keepAliveTimeout)
-   {
-      this.keepAliveTimeout = keepAliveTimeout;
+      return keepAliveInterval;
    }
 
    public int getKeepAliveTimeout()
    {
       return keepAliveTimeout;
    }
-   
-   public void setTimeout(int timeout)
-   {
-      this.timeout = timeout;
-   }
-   
+
    public int getTimeout()
    {
       return timeout;
    }
 
-   public void setInvmDisabled(boolean disabled)
-   {
-      this.invmDisabled = disabled;
-   }
-   
    public boolean isInvmDisabled()
    {
       return invmDisabled;
    }
-   
-   public void setSSLEnabled(boolean sslEnabled)
-   {
-      this.sslEnabled = sslEnabled;
-   }
-   
+
    public boolean isSSLEnabled()
    {
       return sslEnabled;
@@ -156,19 +144,9 @@ public class RemotingConfiguration implements Serializable
       return keyStorePath;
    }
 
-   public void setKeyStorePath(String keyStorePath)
-   {
-      this.keyStorePath = keyStorePath;
-   }
-
    public String getKeyStorePassword()
    {
       return keyStorePassword;
-   }
-
-   public void setKeyStorePassword(String keyStorePassword)
-   {
-      this.keyStorePassword = keyStorePassword;
    }
 
    public String getTrustStorePath()
@@ -176,14 +154,32 @@ public class RemotingConfiguration implements Serializable
       return trustStorePath;
    }
 
-   public void setTrustStorePath(String trustStorePath)
-   {
-      this.trustStorePath = trustStorePath;
-   }
-
    public String getTrustStorePassword()
    {
       return trustStorePassword;
+   }
+
+   // Public --------------------------------------------------------
+
+   // FIXME required only for tests
+   public void setPort(int port)
+   {
+      this.port = port;
+   }
+   
+   public void setKeepAliveInterval(int keepAliveInterval)
+   {
+      this.keepAliveInterval = keepAliveInterval;
+   }
+
+   public void setKeepAliveTimeout(int keepAliveTimeout)
+   {
+      this.keepAliveTimeout = keepAliveTimeout;
+   }
+
+   public void setTimeout(int timeout)
+   {
+      this.timeout = timeout;
    }
 
    public void setTrustStorePassword(String trustStorePassword)
@@ -191,24 +187,29 @@ public class RemotingConfiguration implements Serializable
       this.trustStorePassword = trustStorePassword;
    }
 
-   public String getURI()
+   public void setInvmDisabled(boolean disabled)
    {
-      StringBuffer buff = new StringBuffer();
-      buff.append(transport + "://" + host + ":" + port);
-      buff.append("?").append("timeout=").append(timeout);
-      buff.append("&").append("keepAliveInterval=").append(keepAliveInterval);
-      buff.append("&").append("keepAliveTimeout=").append(keepAliveTimeout);
-      buff.append("&").append("invmDisabled=").append(invmDisabled);
-      buff.append("&").append("sslEnabled=").append(sslEnabled);
-      buff.append("&").append("keyStorePath=").append(keyStorePath);
-      buff.append("&").append("trustStorePath=").append(trustStorePath);
-      return buff.toString();
+      this.invmDisabled = disabled;
    }
 
-   @Override
-   public String toString()
+   public void setSSLEnabled(boolean sslEnabled)
    {
-      return "RemotingConfiguration[uri=" + getURI() + "]";
+      this.sslEnabled = sslEnabled;
+   }
+
+   public void setKeyStorePath(String keyStorePath)
+   {
+      this.keyStorePath = keyStorePath;
+   }
+
+   public void setKeyStorePassword(String keyStorePassword)
+   {
+      this.keyStorePassword = keyStorePassword;
+   }
+
+   public void setTrustStorePath(String trustStorePath)
+   {
+      this.trustStorePath = trustStorePath;
    }
 
    @Override
@@ -232,7 +233,7 @@ public class RemotingConfiguration implements Serializable
          return false;
       if (getClass() != obj.getClass())
          return false;
-      final RemotingConfiguration other = (RemotingConfiguration) obj;
+      final RemotingConfigurationImpl other = (RemotingConfigurationImpl) obj;
       if (host == null)
       {
          if (other.host != null)
@@ -248,6 +249,26 @@ public class RemotingConfiguration implements Serializable
       } else if (!transport.equals(other.transport))
          return false;
       return true;
+   }
+
+   public String getURI()
+   {
+      StringBuffer buff = new StringBuffer();
+      buff.append(transport + "://" + host + ":" + port);
+      buff.append("?").append("timeout=").append(timeout);
+      buff.append("&").append("keepAliveInterval=").append(keepAliveInterval);
+      buff.append("&").append("keepAliveTimeout=").append(keepAliveTimeout);
+      buff.append("&").append("invmDisabled=").append(invmDisabled);
+      buff.append("&").append("sslEnabled=").append(sslEnabled);
+      buff.append("&").append("keyStorePath=").append(keyStorePath);
+      buff.append("&").append("trustStorePath=").append(trustStorePath);
+      return buff.toString();
+   }
+
+   @Override
+   public String toString()
+   {
+      return "RemotingConfiguration[uri=" + getURI() + "]";
    }
 
    // Package protected ---------------------------------------------

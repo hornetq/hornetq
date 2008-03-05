@@ -16,6 +16,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.ConnectorRegistry;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
@@ -97,8 +98,7 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
       if (localDispatchers.containsKey(remotingConfig))
       {
          PacketDispatcher localDispatcher = localDispatchers.get(remotingConfig);
-         NIOConnector connector = new INVMConnector(remotingConfig.getHost(), remotingConfig
-               .getPort(), dispatcher, localDispatcher);
+         NIOConnector connector = new INVMConnector(dispatcher, localDispatcher);
 
          if (log.isDebugEnabled())
             log.debug("Created " + connector + " to connect to "

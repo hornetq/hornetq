@@ -21,22 +21,24 @@
  */
 package org.jboss.messaging.core.server;
 
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.TransportType;
-import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
+import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
 
 /**
  * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class Configuration
+public class Configuration implements RemotingConfiguration, Serializable
 {
+   private static final long serialVersionUID = 4077088945050267843L;
+
    private static final String REMOTING_DISABLE_INVM_SYSPROP_KEY = "jbm.remoting.disable.invm";
 
    public static final String REMOTING_ENABLE_SSL_SYSPROP_KEY = "jbm.remoting.enable.ssl";
@@ -61,23 +63,7 @@ public class Configuration
    
    protected long securityInvalidationInterval = 10000;
 
-   protected TransportType remotingTransport = TCP;
-
-   protected int remotingBindAddress;
-   
-   protected int remotingTimeout;
-
-   protected boolean remotingDisableInvm = false;
-   
-   protected boolean remotingEnableSSL = false;
-
-   protected String remotingSSLKeyStorePath = null;
-
-   protected String remotingSSLKeyStorePassword = null;
-
-   protected String remotingSSLTrustStorePath = null;
-
-   protected String remotingSSLTrustStorePassword = null;
+   protected RemotingConfigurationImpl remotingConfig;
 
    public void addPropertyChangeListener(PropertyChangeListener listener)
    {
@@ -179,55 +165,131 @@ public class Configuration
    {
    	return this.securityInvalidationInterval;
    }
-
-   public int getRemotingBindAddress()
+   
+   public String getHost()
    {
-      return remotingBindAddress;
+	   return remotingConfig.getHost();
+	}
+   
+   // FIXME required only for tests
+   public void setPort(int port)
+   {
+      remotingConfig.setPort(port);
    }
 
-   public void setRemotingBindAddress(Integer remotingBindAddress)
+   public int getPort()
    {
-      this.remotingBindAddress = remotingBindAddress;
+	   return remotingConfig.getPort();
    }
 
-   /**
-    * If the system property <code>jbm.remoting.disable.invm</code> is set, its boolean value is used 
-    * regardless of the value of the property <code>remoting-disable-invm</code> in <code>jbm-configuration.xml</code>
-    */
-   public RemotingConfiguration getRemotingConfiguration() 
+   public TransportType getTransport() 
    {
-      RemotingConfiguration configuration = new RemotingConfiguration(remotingTransport, "localhost", remotingBindAddress);
-      
-      configuration.setTimeout(remotingTimeout);
-      
+	   return remotingConfig.getTransport();
+   }
+
+   public boolean isInvmDisabled()
+   {
       if (System.getProperty(REMOTING_DISABLE_INVM_SYSPROP_KEY) != null)
       {
-         configuration.setInvmDisabled(Boolean.parseBoolean(System.getProperty(REMOTING_DISABLE_INVM_SYSPROP_KEY)));
+         return Boolean.parseBoolean(System.getProperty(REMOTING_DISABLE_INVM_SYSPROP_KEY));
       }
       else 
       {
-         configuration.setInvmDisabled(remotingDisableInvm);
+         return remotingConfig.isInvmDisabled();
       }
-      
-      if (System.getProperty(REMOTING_ENABLE_SSL_SYSPROP_KEY) != null)
-      {
-         configuration.setSSLEnabled(Boolean.parseBoolean(System.getProperty(REMOTING_ENABLE_SSL_SYSPROP_KEY)));
-      }
-      else 
-      {
-         configuration.setSSLEnabled(remotingEnableSSL);
-      }
-      
-      configuration.setKeyStorePath(remotingSSLKeyStorePath);
-      
-      configuration.setKeyStorePassword(remotingSSLKeyStorePassword);
-      
-      configuration.setTrustStorePath(remotingSSLTrustStorePath);
-      
-      configuration.setTrustStorePassword(remotingSSLTrustStorePassword); 
-      
-      return configuration;
    }
 
+   public boolean isSSLEnabled()
+   {
+      if (System.getProperty(REMOTING_ENABLE_SSL_SYSPROP_KEY) != null)
+      {
+         return Boolean.parseBoolean(System.getProperty(REMOTING_ENABLE_SSL_SYSPROP_KEY));
+      }
+      else 
+      {
+         return remotingConfig.isSSLEnabled();
+      }
+   }
+
+   public int getKeepAliveInterval()
+   {
+      return remotingConfig.getKeepAliveInterval();
+   }
+
+   public int getKeepAliveTimeout()
+   {
+      return remotingConfig.getKeepAliveTimeout();
+   }
+
+   public String getKeyStorePassword()
+   {
+      return remotingConfig.getKeyStorePassword();
+   }
+
+   public String getKeyStorePath()
+   {
+      return remotingConfig.getKeyStorePath();
+   }
+
+   public int getTimeout()
+   {
+      return remotingConfig.getTimeout();
+   }
+
+   public String getTrustStorePassword()
+   {
+      return remotingConfig.getTrustStorePassword();
+   }
+
+   public String getTrustStorePath()
+   {
+      return remotingConfig.getTrustStorePath();
+   }
+   
+   public String getURI()
+   {
+      return remotingConfig.getURI();
+   }
+
+
+   
+//   /**
+//    * If the system property <code>jbm.remoting.disable.invm</code> is set, its boolean value is used 
+//    * regardless of the value of the property <code>remoting-disable-invm</code> in <code>jbm-configuration.xml</code>
+//    */
+//   public RemotingConfiguration getRemotingConfiguration() 
+//   {
+//      RemotingConfigurationImpl configuration = new RemotingConfigurationImpl(remotingTransport, "localhost", remotingBindAddress);
+//      
+//      configuration.setTimeout(remotingTimeout);
+//      
+//      if (System.getProperty(REMOTING_DISABLE_INVM_SYSPROP_KEY) != null)
+//      {
+//         configuration.setInvmDisabled(Boolean.parseBoolean(System.getProperty(REMOTING_DISABLE_INVM_SYSPROP_KEY)));
+//      }
+//      else 
+//      {
+//         configuration.setInvmDisabled(remotingDisableInvm);
+//      }
+//      
+//      if (System.getProperty(REMOTING_ENABLE_SSL_SYSPROP_KEY) != null)
+//      {
+//         configuration.setSSLEnabled(Boolean.parseBoolean(System.getProperty(REMOTING_ENABLE_SSL_SYSPROP_KEY)));
+//      }
+//      else 
+//      {
+//         configuration.setSSLEnabled(remotingEnableSSL);
+//      }
+//      
+//      configuration.setKeyStorePath(remotingSSLKeyStorePath);
+//      
+//      configuration.setKeyStorePassword(remotingSSLKeyStorePassword);
+//      
+//      configuration.setTrustStorePath(remotingSSLTrustStorePath);
+//      
+//      configuration.setTrustStorePassword(remotingSSLTrustStorePassword); 
+//      
+//      return configuration;
+//   }
 }
  

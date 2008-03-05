@@ -7,6 +7,7 @@
 package org.jboss.messaging.core.remoting.impl.mina;
 
 import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGISTRY;
+import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addExecutorFilter;
@@ -33,10 +34,10 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.RemotingException;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
-import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -122,7 +123,9 @@ public class MinaService implements RemotingService, FailureNotifier
       if (log.isDebugEnabled())
          log.debug("Start MinaService with configuration:" + remotingConfig);
       
-      if (acceptor == null)
+      // if INVM transport is set, we bypass MINA setup
+      if (remotingConfig.getTransport() != INVM 
+            && acceptor == null)
       {
          acceptor = new NioSocketAcceptor();
          DefaultIoFilterChainBuilder filterChain = acceptor.getFilterChain();

@@ -21,10 +21,14 @@
    */
 package org.jboss.messaging.core.config.impl;
 
+import static org.jboss.messaging.core.remoting.TransportType.TCP;
+
+import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 
 import org.jboss.messaging.core.remoting.TransportType;
+import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
 import org.jboss.messaging.core.server.Configuration;
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
@@ -35,7 +39,7 @@ import org.w3c.dom.NodeList;
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class FileConfiguration extends Configuration
+public class FileConfiguration extends Configuration implements Serializable
 {
 	private static final long serialVersionUID = -4766689627675039596L;
 	
@@ -62,24 +66,28 @@ public class FileConfiguration extends Configuration
       
       scheduledThreadPoolMaxSize = getInteger(e, "scheduled-executor-max-pool-size", scheduledThreadPoolMaxSize);
       
-      remotingTransport = TransportType.valueOf(getString(e, "remoting-transport", remotingTransport.name()));
+      TransportType remotingTransport = TransportType.valueOf(getString(e, "remoting-transport", TCP.name()));
       
-      remotingBindAddress = getInteger(e, "remoting-bind-address", remotingBindAddress);
+      int remotingPort = getInteger(e, "remoting-bind-address", 5400);
       
-      remotingTimeout = getInteger(e, "remoting-timeout", remotingTimeout);
+      RemotingConfigurationImpl remotingConf = new RemotingConfigurationImpl(remotingTransport, "localhost", remotingPort);
       
-      remotingDisableInvm = getBoolean(e, "remoting-disable-invm", remotingDisableInvm);
+      remotingConf.setTimeout(getInteger(e, "remoting-timeout", 5));
       
-      remotingEnableSSL = getBoolean(e, "remoting-enable-ssl", remotingEnableSSL);
+      remotingConf.setInvmDisabled(getBoolean(e, "remoting-disable-invm", false));
       
-      remotingSSLKeyStorePath = getString(e, "remoting-ssl-keystore-path", remotingSSLKeyStorePath);
+      remotingConf.setSSLEnabled(getBoolean(e, "remoting-enable-ssl", false));
       
-      remotingSSLKeyStorePassword = getString(e, "remoting-ssl-keystore-password", remotingSSLKeyStorePassword);
+      remotingConf.setKeyStorePath(getString(e, "remoting-ssl-keystore-path", null));
       
-      remotingSSLTrustStorePath = getString(e, "remoting-ssl-truststore-path", remotingSSLTrustStorePath);
+      remotingConf.setKeyStorePassword(getString(e, "remoting-ssl-keystore-password", null));
       
-      remotingSSLTrustStorePassword = getString(e, "remoting-ssl-truststore-password", remotingSSLTrustStorePassword);
+      remotingConf.setTrustStorePath(getString(e, "remoting-ssl-truststore-path", null));
+      
+      remotingConf.setTrustStorePassword(getString(e, "remoting-ssl-truststore-password", null));
 
+      this.remotingConfig = remotingConf;
+      
       NodeList defaultInterceptors = e.getElementsByTagName("default-interceptors-config");
 
       ArrayList<String> interceptorList = new ArrayList<String>();

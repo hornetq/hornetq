@@ -60,7 +60,7 @@
    <bean name="RemotingService" class="org.jboss.messaging.core.remoting.impl.mina.MinaService">
       <constructor>
          <parameter>
-            <inject bean="Configuration" property="remotingConfiguration"/>
+            <inject bean="Configuration"/>
          </parameter>
       </constructor>
    </bean> 

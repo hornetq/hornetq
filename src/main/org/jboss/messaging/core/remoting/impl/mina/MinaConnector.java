@@ -36,8 +36,8 @@ import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.RemotingException;
-import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 
@@ -136,7 +136,7 @@ public class MinaConnector implements NIOConnector, FailureNotifier
       this.session = future.getSession();
       AbstractPacket packet = new Ping(Long.toString(session.getId()));
       session.write(packet);
-
+      
       return new MinaSession(session);
    }
 

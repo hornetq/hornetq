@@ -37,7 +37,7 @@ import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
 import org.jboss.messaging.core.management.MessagingServerManagement;
-import org.jboss.messaging.core.remoting.impl.RemotingConfiguration;
+import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.MessagingServer;
