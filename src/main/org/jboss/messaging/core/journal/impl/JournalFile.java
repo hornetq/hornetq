@@ -37,16 +37,20 @@ public class JournalFile
 {
 	private final SequentialFile file;
 	
+	private final long orderingID;
+	
 	private final Set<Long> ids = new HashSet<Long>();
 	
 	private int offset;
-	
-	public JournalFile(SequentialFile file)
+		
+	public JournalFile(final SequentialFile file, final long orderingID)
 	{
 		this.file = file;
+		
+		this.orderingID = orderingID;
 	}
 	
-	public void extendOffset(int delta)
+	public void extendOffset(final int delta)
 	{
 		offset += delta;
 	}
@@ -56,9 +60,34 @@ public class JournalFile
 		return offset;
 	}
 	
+	public long getOrderingID()
+	{
+		return orderingID;
+	}
+	
+	public void resetOffset()
+	{
+		offset = 0;
+	}
+	
 	public SequentialFile getFile()
 	{
 		return file;
+	}
+	
+	public void addID(final long id)
+	{
+		ids.add(id);
+	}
+	
+	public void removeID(final long id)
+	{
+		ids.remove(id);
+	}
+	
+	public boolean isEmpty()
+	{
+		return ids.isEmpty();
 	}
 	
 }

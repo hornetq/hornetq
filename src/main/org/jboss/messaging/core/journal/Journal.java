@@ -21,6 +21,8 @@
   */
 package org.jboss.messaging.core.journal;
 
+import java.util.Map;
+
 
 /**
  * 
@@ -31,11 +33,9 @@ package org.jboss.messaging.core.journal;
  */
 public interface Journal
 {
-	void preAllocateFiles(int numFiles) throws Exception;
+	RecordHandle add(long id, byte[] bytes) throws Exception;
 	
-	void add(long id, byte[] bytes) throws Exception;
+	void delete(RecordHandle handle) throws Exception;
 	
-	void delete(long id) throws Exception;
-	
-	void load() throws Exception;
+	Map<Long, byte[]> load() throws Exception;
 }

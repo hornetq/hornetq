@@ -21,8 +21,6 @@
   */
 package org.jboss.messaging.core.journal.impl;
 
-import java.io.File;
-import java.io.FilenameFilter;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,9 +29,12 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 
 import org.jboss.messaging.core.journal.Journal;
+import org.jboss.messaging.core.journal.RecordHandle;
 import org.jboss.messaging.core.journal.SequentialFile;
+import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
 
 /**
@@ -51,109 +52,229 @@ public class JournalImpl implements Journal
 	
 	private static final int LONG_LENGTH = 8;
 	
-	private static final byte ADD_RECORD = 1;
+	public static final byte ADD_RECORD = 1;
 	
-	private static final byte DELETE_RECORD = 2;
+	public static final byte DELETE_RECORD = 2;
 	
-	private static final String JOURNAL_FILE_PREFIX = "journal-";
+	public static final byte FILL_CHARACTER = (byte)'J';
 	
-	private static final String JOURNAL_FILE_EXTENSION = "jbm";
+	public static final String JOURNAL_FILE_PREFIX = "jbm";
 	
-   	
+	public static final String JOURNAL_FILE_EXTENSION = "jbm";
+	
+   
+	
 	private final String journalDir;
 	
 	private final int fileSize;
 	
-	private JournalFile currentFile ;
+	private final int numFiles;
 	
-	private List<JournalFile> files = new ArrayList<JournalFile>();
+	private final boolean sync;
 	
-	private LinkedList<JournalFile> availableFiles = new LinkedList<JournalFile>();
+	private final SequentialFileFactory fileFactory;
 	
-	private int fileSequence;
+	private final LinkedList<JournalFile> files = new LinkedList<JournalFile>();
 	
+	private final LinkedList<JournalFile> availableFiles = new LinkedList<JournalFile>();
 	
-	public JournalImpl(final String journalDir, final int fileSize)
+	private final LinkedList<JournalFile> filesToDelete = new LinkedList<JournalFile>();
+		
+	/*
+	 * We use a semaphore rather than synchronized since it performs better when contended
+	 */
+	
+	//TODO - improve concurrency by allowing concurrent accesses if doesn't change current file
+	private final Semaphore lock = new Semaphore(1, true);
+		
+	private volatile JournalFile currentFile ;
+		
+	private volatile boolean loaded;
+	
+	private volatile long lastOrderingID;
+					
+	public JournalImpl(final String journalDir, final int fileSize, final int numFiles, final boolean sync,
+			             final SequentialFileFactory fileFactory)
 	{
 		this.journalDir = journalDir;
 		
 		this.fileSize = fileSize;
+		
+		this.numFiles = numFiles;
+		
+		this.sync = sync;
+		
+		this.fileFactory = fileFactory;
 	}
 	
-	public void preAllocateFiles(int numFiles) throws Exception
+	// Journal implementation ----------------------------------------------------------------
+	
+	public RecordHandle add(final long id, final byte[] bytes) throws Exception
 	{
-		log.info("Pre-allocating " + numFiles + " files");
-		
-		for (int i = 0; i < numFiles; i++)
+		if (!loaded)
 		{
-			JournalFile info = createFile();
-			
-			availableFiles.add(info);
+			throw new IllegalStateException("Journal must be loaded first");
 		}
 		
-		log.info("Done pre-allocate");
-	}
-		
-	public void add(long id, byte[] bytes) throws Exception
-	{
 		int size = 1 + INT_LENGTH + LONG_LENGTH + bytes.length;
 		
-		checkFile(size);
+		lock.acquire();
 		
-		byte[] toWrite = new byte[size];
-		ByteBuffer bb = ByteBuffer.wrap(toWrite);
-		bb.put(ADD_RECORD);		
-		bb.putLong(id);
-		bb.putInt(bytes.length);
-		bb.put(bytes);
-		
-		bb.flip();
-		
-		currentFile.getFile().write(bb);		
-		
-		currentFile.extendOffset(size);
+		try
+		{   		
+   		checkFile(size);
+   		
+   		byte[] toWrite = new byte[size];
+   		ByteBuffer bb = ByteBuffer.wrap(toWrite);
+   		bb.put(ADD_RECORD);		
+   		bb.putLong(id);
+   		bb.putInt(bytes.length);
+   		bb.put(bytes);
+   		
+   		bb.flip();
+   		
+   		currentFile.getFile().write(bb);		
+   		
+   		currentFile.extendOffset(size);
+   		
+   		currentFile.addID(id);
+   		
+   		return new RecordHandleImpl(id, currentFile);
+		}
+		finally
+		{
+			lock.release();
+		}
 	}
 	
-	public void delete(long id) throws Exception
+	public void delete(RecordHandle handle) throws Exception
 	{
+		if (!loaded)
+		{
+			throw new IllegalStateException("Journal must be loaded first");
+		}
+		
+		RecordHandleImpl rh = (RecordHandleImpl)handle;
+		
 		int size = 1 + LONG_LENGTH;
 		
-		checkFile(size);
+		lock.acquire();
 		
-		byte[] toWrite = new byte[size];
-		ByteBuffer bb = ByteBuffer.wrap(toWrite);
-		bb.put(DELETE_RECORD);
-		bb.putLong(id);
-		
-		bb.flip();
-		
-		currentFile.getFile().write(bb);			
+		try
+		{		
+   		checkFile(size);
+   		
+   		long id = rh.getID();
+   		
+   		byte[] toWrite = new byte[size];
+   		ByteBuffer bb = ByteBuffer.wrap(toWrite);
+   		bb.put(DELETE_RECORD);
+   		bb.putLong(id);
+   		
+   		bb.flip();
+   		
+   		currentFile.getFile().write(bb);	
+   		
+   		JournalFile addedFile = rh.getFile();
+   		   		
+   		addedFile.removeID(id);
+   		
+   		checkAndReclaimFile(addedFile);
+		}
+		finally
+		{
+			lock.release();
+		}
 	}
-	
-	private boolean loaded;
-	
-	public void load() throws Exception
+		
+	public Map<Long, byte[]> load() throws Exception
 	{
 		if (loaded)
 		{
 			throw new IllegalStateException("Journal is already loaded");
 		}
 		
-		loadFiles();
+		log.info("Loading...");
+		
+		List<String> fileNames = fileFactory.listFiles(journalDir, JOURNAL_FILE_EXTENSION);
+		
+		log.info("There are " + fileNames.size() + " files in directory");
+		
+		List<JournalFile> orderedFiles = new ArrayList<JournalFile>(fileNames.size());
+				
+		for (String fileName: fileNames)
+		{
+			SequentialFile file = fileFactory.createSequentialFile(fileName, sync);
+			
+			file.open();
+			
+			ByteBuffer bb = ByteBuffer.wrap(new byte[LONG_LENGTH]);
+			
+			file.read(bb);
+			
+			bb.flip();
+			
+			long orderingID = bb.getLong();
+			
+			file.reset();
+							
+			orderedFiles.add(new JournalFile(file, orderingID));
+		}
+		
+		log.info("numFiles is " + numFiles);
+		
+		int createNum = numFiles - orderedFiles.size();
+		
+		//Preallocate some more if necessary
+		for (int i = 0; i < createNum; i++)
+		{
+			JournalFile file = createFile();
+			
+			orderedFiles.add(file);
+			
+			log.info("Created new file");
+		}
+		
+		log.info("Done creating new ones");
+			
+		//Now order them by ordering id - we can't use the file name for ordering since we can re-use files
+		
+		class JournalFileComparator implements Comparator<JournalFile>
+		{
+			public int compare(JournalFile f1, JournalFile f2)
+	      {
+	         long id1 = f1.getOrderingID();
+	         long id2 = f2.getOrderingID();
+
+	         return (id1 < id2 ? -1 : (id1 == id2 ? 0 : 1));
+	      }
+		}
+
+		Collections.sort(orderedFiles, new JournalFileComparator());
 		
 		Map<Long, byte[]> records = new HashMap<Long, byte[]>();
-				
-		for (JournalFile file: this.files)
+		
+		boolean filesWithData = true;
+		
+		outer: for (JournalFile file: orderedFiles)
 		{
+			log.info("Loading file, ordering id is " + file.getOrderingID());
+			
 			byte[] bytes = new byte[fileSize];
 			
 			ByteBuffer bb = ByteBuffer.wrap(bytes);
 			
 			file.getFile().read(bb);
 			
-			while (true)
+			bb.flip();
+			
+			bb.getLong();
+			
+			while (filesWithData && bb.hasRemaining())
 			{
 				byte recordType = bb.get();
+				
+				log.info("recordtype is " + recordType);
 				
 				if (recordType == ADD_RECORD)
 				{
@@ -175,91 +296,192 @@ public class JournalImpl implements Journal
 					
 					records.remove(id);
 				}
+				else if (recordType == FILL_CHARACTER)
+				{										
+					//Implies end of records in the file
+					
+					files.add(file);
+					
+					currentFile = file;
+					
+					filesWithData = false;
+															
+					continue outer;
+				}		
 				else
 				{
-					//Implies end of records in the file
-					break;
-					
-					//TODO set currentFile and offset
+					throw new IllegalStateException("Journal " + file.getFile().getFileName() +
+							                         " is corrupt, invalid record type " + recordType);
 				}
 			}
-			
+				
+			if (filesWithData)
+			{
+				log.info("Adding to files");
+				files.add(file);
+			}
+			else
+			{
+				log.info("Adding to available files");
+				//Empty files with no data of importance
+				availableFiles.add(file);
+			}
+		}				
+		
+		loaded = true;
+		
+		return records;
+	}
+	
+	public void stop() throws Exception
+	{
+		log.info("files size " + files.size());
+		log.info("available files size " + availableFiles.size());
+		log.info("files top delete size " + filesToDelete.size());
+		
+		for (JournalFile file: files)
+		{
+			file.getFile().close();
 		}
 		
+		for (JournalFile file: availableFiles)
+		{
+			file.getFile().close();
+		}
 		
+		for (JournalFile file: filesToDelete)
+		{
+			file.getFile().close();
+		}
+		
+		this.currentFile = null;
+		
+		files.clear();
+		
+		availableFiles.clear();
+		
+		filesToDelete.clear();
+	}
+	
+	// Public -----------------------------------------------------------------------------
+	
+	public LinkedList<JournalFile> getFiles()
+	{
+		return files;
+	}
+	
+	public LinkedList<JournalFile> getAvailableFiles()
+	{
+		return availableFiles;
+	}
+	
+	public LinkedList<JournalFile> getFilesToDelete()
+	{
+		return filesToDelete;
 	}
 	
 	// Private -----------------------------------------------------------------------------
 	
-	private void loadFiles() throws Exception
-	{
-		File dir = new File(journalDir);
-		
-		FilenameFilter fnf = new FilenameFilter()
+	private void checkAndReclaimFile(JournalFile file) throws Exception
+	{		
+		if (file.isEmpty() && file != currentFile)
 		{
-			public boolean accept(File file, String name)
-			{
-				return name.endsWith(".jbm");
-			}
-		};
-		
-		String[] fileNames = dir.list(fnf);
-		
-		List<JournalFile> files = new ArrayList<JournalFile>(fileNames.length);
-				
-		for (String fileName: fileNames)
-		{
-			SequentialFile file = new NIOSequentialFile(fileName, true);
+			//File can be reclaimed
 			
-			file.load();
+			files.remove(file);
 			
-			files.add(new JournalFile(file));
-		}
-		
-		//Now order them by ordering id - we can't use the file name for ordering since we can re-use files
-		
-		class JournalFileComparator implements Comparator<JournalFile>
-		{
-			public int compare(JournalFile f1, JournalFile f2)
-	      {
-	         long id1 = f1.getFile().getOrderingID();
-	         long id2 = f2.getFile().getOrderingID();
-
-	         return (id1 < id2 ? -1 : (id1 == id2 ? 0 : 1));
-	      }
-		}
-
-		Collections.sort(files, new JournalFileComparator());
-		
-		for (JournalFile file: files)
-		{
+			//TODO - add to delete file list if there are a lot of available files
 			
+			//Re-initialise it
+			
+			long newOrderingID = generateOrderingID();
+			
+			ByteBuffer bb = ByteBuffer.wrap(new byte[LONG_LENGTH]);
+			
+			bb.putLong(newOrderingID);
+			
+			SequentialFile sf = file.getFile();
+			
+			sf.reset();
+			
+			sf.write(bb);
+			
+			JournalFile jf = new JournalFile(sf, newOrderingID);
+			
+			availableFiles.add(jf);   		
 		}
 	}
 	
 	private JournalFile createFile() throws Exception
 	{
-		int fileNo = fileSequence++;
+		log.info("Creating a new file");
 		
-		String fileName = journalDir + "/" + JOURNAL_FILE_PREFIX + fileNo + "." + JOURNAL_FILE_EXTENSION;
+		long orderingID = generateOrderingID();
 		
-		SequentialFile sequentialFile = new NIOSequentialFile(fileName, true);
+		String fileName = journalDir + "/" + JOURNAL_FILE_PREFIX + "-" + orderingID + "." + JOURNAL_FILE_EXTENSION;
+						
+		SequentialFile sequentialFile = fileFactory.createSequentialFile(fileName, sync);
 		
-		sequentialFile.create();
+		sequentialFile.open();
+						
+		sequentialFile.preAllocate(fileSize, FILL_CHARACTER);
 		
-		JournalFile info = new JournalFile(sequentialFile);
+		ByteBuffer bb = ByteBuffer.wrap(new byte[LONG_LENGTH]);
+		
+		bb.putLong(orderingID);
+		
+		bb.flip();
+		
+		sequentialFile.write(bb);
+		
+		sequentialFile.reset();
+		
+		JournalFile info = new JournalFile(sequentialFile, orderingID);
 		
 		return info;
 	}
 	
-	private void checkFile(int size) throws Exception
+	private long generateOrderingID()
 	{
+		long orderingID = System.currentTimeMillis();
+		
+		while (orderingID == lastOrderingID)
+		{
+			//Ensure it's unique
+			try
+			{				
+				Thread.sleep(1);
+			}
+			catch (InterruptedException ignore)
+			{				
+			}
+			orderingID = System.currentTimeMillis();
+		}
+		lastOrderingID = orderingID;	
+		
+		return orderingID;
+	}
+	
+	private void checkFile(final int size) throws Exception
+	{
+		//We take into account the first timestamp long
+		if (size > fileSize - LONG_LENGTH)
+		{
+			throw new IllegalArgumentException("Record is too large to store " + size);
+		}
+		
 		if (currentFile == null || fileSize - currentFile.getOffset() < size)
 		{
+			log.info("Getting new file");
+			
 			if (currentFile != null)
 			{
 				currentFile.getFile().close();
+				
+				checkAndReclaimFile(currentFile);
 			}
+			
+			log.info("Getting new file");
 			
 			if (!availableFiles.isEmpty())
 			{

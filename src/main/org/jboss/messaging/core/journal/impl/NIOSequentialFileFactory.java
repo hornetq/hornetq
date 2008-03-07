@@ -19,35 +19,45 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.journal;
+package org.jboss.messaging.core.journal.impl;
 
-import java.nio.ByteBuffer;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.jboss.messaging.core.journal.SequentialFile;
+import org.jboss.messaging.core.journal.SequentialFileFactory;
 
 /**
  * 
- * A SequentialFile
+ * A NIOSequentialFileFactory
  * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>Journal
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface SequentialFile
+public class NIOSequentialFileFactory implements SequentialFileFactory
 {
-	/*
-	 * Creates the file if it doesn't already exist, then opens it
-	 */
-	void open() throws Exception;
-	
-	String getFileName();
-	
-	void preAllocate(int size, byte fillCharacter) throws Exception;
-	
-	void delete() throws Exception;
+	public SequentialFile createSequentialFile(final String fileName, final boolean sync)
+	{
+		return new NIOSequentialFile(fileName, sync);
+	}
 
-	void write(ByteBuffer bytes) throws Exception;
-	   
-	void read(ByteBuffer bytes) throws Exception;
-	
-	void reset() throws Exception;
-	
-	void close() throws Exception;
+	public List<String> listFiles(final String journalDir, final String extension) throws Exception
+	{
+		File dir = new File(journalDir);
+		
+		FilenameFilter fnf = new FilenameFilter()
+		{
+			public boolean accept(File file, String name)
+			{
+				return name.endsWith(".jbm");
+			}
+		};
+		
+		String[] fileNames = dir.list(fnf);
+		
+		return Arrays.asList(fileNames);
+	}
 }

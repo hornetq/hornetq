@@ -21,33 +21,13 @@
   */
 package org.jboss.messaging.core.journal;
 
-import java.nio.ByteBuffer;
-
 /**
  * 
- * A SequentialFile
+ * A RecordHandle
  * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>Journal
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface SequentialFile
+public interface RecordHandle
 {
-	/*
-	 * Creates the file if it doesn't already exist, then opens it
-	 */
-	void open() throws Exception;
-	
-	String getFileName();
-	
-	void preAllocate(int size, byte fillCharacter) throws Exception;
-	
-	void delete() throws Exception;
-
-	void write(ByteBuffer bytes) throws Exception;
-	   
-	void read(ByteBuffer bytes) throws Exception;
-	
-	void reset() throws Exception;
-	
-	void close() throws Exception;
 }

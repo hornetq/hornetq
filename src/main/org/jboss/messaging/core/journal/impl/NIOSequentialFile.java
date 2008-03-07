@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 import org.jboss.messaging.core.journal.SequentialFile;
+import org.jboss.messaging.core.logging.Logger;
 
 /**
  * 
@@ -37,27 +38,32 @@ import org.jboss.messaging.core.journal.SequentialFile;
  */
 public class NIOSequentialFile implements SequentialFile
 {
+	private static final Logger log = Logger.getLogger(NIOSequentialFile.class);
+		
 	private static final int LONG_LENGTH = 8;
 		
-	private final String fileName;
+	private String fileName;
 	
-	private final boolean sync;
-		
+	private boolean sync;
+	
 	private File file;
 	
 	private FileChannel channel;
-	
-	private long orderingID;
 		
-	public NIOSequentialFile(String fileName, boolean sync) throws Exception
+	public NIOSequentialFile(final String fileName, final boolean sync)
 	{
 		this.fileName = fileName;
 		
-		this.sync = sync;			  
+		this.sync = sync;		
+	}
+	
+	public String getFileName()
+	{
+		return fileName;
 	}
 		
-	public void create() throws Exception
-	{
+	public void open() throws Exception
+	{		
 		file = new File(fileName);
 
 		RandomAccessFile rfile = new RandomAccessFile(file, "rw");
@@ -65,55 +71,26 @@ public class NIOSequentialFile implements SequentialFile
 		channel = rfile.getChannel();		
 	}
 	
-	public void load() throws Exception
-	{
-		ByteBuffer bb = ByteBuffer.wrap(new byte[LONG_LENGTH]);
-		
-		channel.read(bb);
-		
-		orderingID = bb.getLong();
-	}
-	
-	public long getOrderingID()
-	{
-		return orderingID;
-	}
-	
-	public void initialise(long orderingID, int size) throws Exception
+	public void preAllocate(final int size, final byte fillCharacter) throws Exception
 	{
 		ByteBuffer bb = ByteBuffer.allocateDirect(size);
 		
-		this.orderingID = orderingID;
-
-		//First 8 bytes contain the orderingID - used to order the files when loading
-		
-		bb.putLong(orderingID);
-		
-		//for debug only
 		for (int i = 0; i < size - LONG_LENGTH; i++)
 		{
-			if (i % 100 == 0)
-			{
-				bb.put((byte)'\n');
-			}
-			else
-			{
-				bb.put((byte)'X');
-			}
+			bb.put(fillCharacter);			
 		}
-		//end debug
-
+		
 		bb.flip();
 
 		channel.position(0);
 
 		channel.write(bb);
 
-		channel.force(false);
+		channel.force(false);	
 		
-		channel.position(LONG_LENGTH);		
+		channel.position(0);
 	}
-
+	
 	public void close() throws Exception
 	{
 		channel.close();
@@ -128,7 +105,9 @@ public class NIOSequentialFile implements SequentialFile
 
 	public void read(ByteBuffer bytes) throws Exception
 	{
-		channel.read(bytes);
+		int bytesRead = channel.read(bytes);
+		
+		log.info("Read " + bytesRead + " bytes");
 	}
 
 	public void write(ByteBuffer bytes) throws Exception
@@ -138,7 +117,11 @@ public class NIOSequentialFile implements SequentialFile
 		if (sync)
 		{
 			channel.force(false);
-		}
+		};
 	}
 
+	public void reset() throws Exception
+	{
+		channel.position(0);
+	}
 }
