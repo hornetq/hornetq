@@ -105,10 +105,14 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    private final boolean cacheProducers;
    
-   private final int maxProducerRate;
+   private final int defaultConsumerWindowSize;   
    
-   private final int producerWindowSize;
+   private final int defaultConsumerMaxRate;
    
+   private final int defaultProducerWindowSize;
+   
+   private final int defaultProducerMaxRate;
+     
    private final ExecutorService executor;
    
    private volatile boolean closed;
@@ -149,10 +153,13 @@ public class ClientSessionImpl implements ClientSessionInternal
    // Constructors ---------------------------------------------------------------------------------
    
    public ClientSessionImpl(final ClientConnectionInternal connection, final String id,
-                            final int lazyAckBatchSize, final boolean cacheProducers,
-                            final int maxProducerRate, final int producerWindowSize,
+                            final int lazyAckBatchSize, final boolean cacheProducers,                            
                             final boolean autoCommitSends, final boolean autoCommitAcks,
-                            final boolean blockOnAcknowledge) throws MessagingException
+                            final boolean blockOnAcknowledge,
+                            final int defaultConsumerWindowSize,  
+                            final int defaultConsumerMaxRate,
+                            final int defaultProducerWindowSize,
+                            final int defaultProducerMaxRate) throws MessagingException
    {
    	if (lazyAckBatchSize < -1 || lazyAckBatchSize == 0)
    	{
@@ -167,9 +174,13 @@ public class ClientSessionImpl implements ClientSessionInternal
       
       this.cacheProducers = cacheProducers;
       
-      this.maxProducerRate = maxProducerRate;
+      this.defaultConsumerWindowSize = defaultConsumerWindowSize;
       
-      this.producerWindowSize = producerWindowSize;
+      this.defaultConsumerMaxRate = defaultConsumerMaxRate;
+      
+      this.defaultProducerWindowSize = defaultProducerWindowSize;
+      
+      this.defaultProducerMaxRate = defaultProducerMaxRate;
       
       executor = Executors.newSingleThreadExecutor();
       
@@ -257,29 +268,23 @@ public class ClientSessionImpl implements ClientSessionInternal
       checkClosed();
     
       SessionCreateConsumerMessage request =
-         new SessionCreateConsumerMessage(queueName, filterString, noLocal, autoDeleteQueue);
+         new SessionCreateConsumerMessage(queueName, filterString, noLocal, autoDeleteQueue,
+         		                           defaultConsumerWindowSize, defaultConsumerMaxRate);
       
       SessionCreateConsumerResponseMessage response = (SessionCreateConsumerResponseMessage)remotingConnection.send(id, request);
       
-      int prefetchSize = response.getPrefetchSize();
-            
       ClientConsumerInternal consumer =
-         new ClientConsumerImpl(this, response.getConsumerID(),             
-                                executor, remotingConnection, direct, response.getPrefetchSize());
+         new ClientConsumerImpl(this, response.getConsumerID(), executor, remotingConnection, direct, 1);
 
       consumers.put(response.getConsumerID(), consumer);
 
       remotingConnection.getPacketDispatcher().register(new ClientConsumerPacketHandler(consumer, response.getConsumerID()));
+      
+      //Now we send window size tokens to start the consumption
+      //We even send it if windowSize == -1, since we need to start the consumer
+      
+      remotingConnection.send(response.getConsumerID(), new ConsumerFlowTokenMessage(response.getWindowSize()), true);
 
-      if (prefetchSize > 0) 
-      {
-      	//Consumer flow control is enabled so give the server consumer some initial tokens (1.5 * prefetchSize)
-         
-         int initialTokens = prefetchSize + prefetchSize >>> 1;
-         
-         remotingConnection.send(response.getConsumerID(), new ConsumerFlowTokenMessage(initialTokens), true);
-      }
-            
       return consumer;
    }
    
@@ -302,14 +307,12 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    public ClientProducer createProducer(final String address) throws MessagingException
    {
-      return createProducer(address, producerWindowSize, maxProducerRate);
+      return createProducer(address, defaultProducerWindowSize, defaultProducerMaxRate);
    }
-   
+      
    public ClientProducer createProducer(final String address, final int windowSize, final int maxRate) throws MessagingException
    {
       checkClosed();
-      
-      log.info("Creating prod, ws:" + windowSize);
       
       ClientProducerInternal producer = null;
       
@@ -320,14 +323,16 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       if (producer == null)
       {
-      	SessionCreateProducerMessage request = new SessionCreateProducerMessage(address, windowSize);
+      	SessionCreateProducerMessage request = new SessionCreateProducerMessage(address, windowSize, maxRate);
       	
       	SessionCreateProducerResponseMessage response =
       		(SessionCreateProducerResponseMessage)remotingConnection.send(id, request);
       	
+      	//maxRate and windowSize can be overridden by the server
+      	
       	producer = new ClientProducerImpl(this, response.getProducerID(), address,
       			                            remotingConnection, response.getWindowSize(),
-      			                            maxRate);  
+      			                            response.getMaxRate());  
       	
       	remotingConnection.getPacketDispatcher().register(new ClientProducerPacketHandler(producer, response.getProducerID()));
       }

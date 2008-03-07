@@ -44,6 +44,7 @@ public class QueueSettings implements Mergeable<QueueSettings>
    public static final Integer DEFAULT_MAX_DELIVERY_ATTEMPTS = 10;
    public static final Integer DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT = 0;
    public static final Long DEFAULT_REDELIVER_DELAY = (long) 500;
+   
 
    private Boolean clustered = false;
    private Integer maxSize = null;
@@ -53,6 +54,10 @@ public class QueueSettings implements Mergeable<QueueSettings>
    private Long redeliveryDelay = null;
    private Queue DLQ = null;
    private Queue ExpiryQueue = null;
+   private Integer consumerWindowSize = null;
+   private Integer consumerMaxRate = null;
+   private Integer producerWindowSize = null;
+   private Integer producerMaxRate = null;
 
 
    public Boolean isClustered()
@@ -115,7 +120,6 @@ public class QueueSettings implements Mergeable<QueueSettings>
       this.distributionPolicyClass = distributionPolicyClass;
    }
 
-
    public Queue getDLQ()
    {
       return DLQ;
@@ -152,7 +156,45 @@ public class QueueSettings implements Mergeable<QueueSettings>
       return DEFAULT_DISTRIBUTION_POLICY;
    }
 
+   public Integer getConsumerWindowSize()
+	{
+		return consumerWindowSize;
+	}
 
+	public void setConsumerWindowSize(Integer consumerWindowSize)
+	{
+		this.consumerWindowSize = consumerWindowSize;
+	}
+
+	public Integer getConsumerMaxRate()
+	{
+		return consumerMaxRate;
+	}
+
+	public void setConsumerMaxRate(Integer consumerMaxRate)
+	{
+		this.consumerMaxRate = consumerMaxRate;
+	}
+
+	public Integer getProducerWindowSize()
+	{
+		return producerWindowSize;
+	}
+
+	public void setProducerWindowSize(Integer producerWindowSize)
+	{
+		this.producerWindowSize = producerWindowSize;
+	}
+
+	public Integer getProducerMaxRate()
+	{
+		return producerMaxRate;
+	}
+
+	public void setProducerMaxRate(Integer producerMaxRate)
+	{
+		this.producerMaxRate = producerMaxRate;
+	}
    
 
    /**
@@ -193,5 +235,23 @@ public class QueueSettings implements Mergeable<QueueSettings>
       {
          ExpiryQueue = merged.ExpiryQueue;
       }
+      if (merged.consumerWindowSize != null)
+      {
+      	consumerWindowSize = merged.consumerWindowSize;
+      }
+      if (merged.consumerMaxRate != null)
+      {
+      	consumerMaxRate = merged.consumerMaxRate;
+      }
+      if (merged.producerWindowSize != null)
+      {
+      	producerWindowSize = merged.producerWindowSize;
+      }
+      if (merged.producerMaxRate != null)
+      {
+      	producerMaxRate = merged.producerMaxRate;
+      }
    }
+
+	
 }

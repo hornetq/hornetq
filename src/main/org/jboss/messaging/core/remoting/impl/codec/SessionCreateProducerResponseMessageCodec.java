@@ -43,11 +43,12 @@ public class SessionCreateProducerResponseMessageCodec extends
    {
       String producerID = response.getProducerID();
 
-      int bodyLength = sizeof(producerID) + INT_LENGTH;
+      int bodyLength = sizeof(producerID) + 2 * INT_LENGTH;
        
       out.putInt(bodyLength);
       out.putNullableString(producerID);
       out.putInt(response.getWindowSize());
+      out.putInt(response.getMaxRate());
    }
 
    @Override
@@ -62,8 +63,9 @@ public class SessionCreateProducerResponseMessageCodec extends
 
       String producerID = in.getNullableString();
       int windowSize = in.getInt();
+      int maxRate = in.getInt();
  
-      return new SessionCreateProducerResponseMessage(producerID, windowSize);
+      return new SessionCreateProducerResponseMessage(producerID, windowSize, maxRate);
    }
 
    // Package protected ---------------------------------------------

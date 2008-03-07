@@ -150,14 +150,15 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
       return false;
    }
 
-   public ClientConnectionFactory createClientConnectionFactory(boolean strictTck, int prefetchSize,
+   public ClientConnectionFactory createClientConnectionFactory(boolean strictTck,
+   		                                                       int consumerWindowSize, int consumerMaxRate,
    		                                                       int producerWindowSize, int producerMaxRate)
    {
       return new ClientConnectionFactoryImpl(messagingServer.getConfiguration().getMessagingServerID(),
               messagingServer.getConfiguration(),
               messagingServer.getVersion(),
               messagingServer.getConfiguration().isStrictTck() || strictTck,
-              prefetchSize,
+              consumerWindowSize, consumerMaxRate,
               producerWindowSize, producerMaxRate);
    }
 
@@ -270,7 +271,8 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
          throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
       }
       Queue queue = binding.getQueue();
-      currentCounters.put(queueName, new MessageCounter(queue.getName(), queue, queue.isDurable(), queue.getQueueSettings().getMatch(queue.getName()).getMessageCounterHistoryDayLimit()));
+      currentCounters.put(queueName, new MessageCounter(queue.getName(), queue, queue.isDurable(),
+      		messagingServer.getQueueSettingsRepository().getMatch(queue.getName()).getMessageCounterHistoryDayLimit()));
    }
 
    public void unregisterMessageCounter(final String queueName) throws Exception
@@ -298,7 +300,8 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
             throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
          }
          Queue queue = binding.getQueue();
-         messageCounter = new MessageCounter(queue.getName(), queue, queue.isDurable(), queue.getQueueSettings().getMatch(queue.getName()).getMessageCounterHistoryDayLimit());
+         messageCounter = new MessageCounter(queue.getName(), queue, queue.isDurable(),
+         		messagingServer.getQueueSettingsRepository().getMatch(queue.getName()).getMessageCounterHistoryDayLimit());
       }
       currentCounters.put(queueName, messageCounter);
       messageCounter.resetCounter();
@@ -437,7 +440,7 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
       List<MessageReference> allRefs = getQueue(queue).removeReferences(actFilter);
       for (MessageReference messageReference : allRefs)
       {
-         messageReference.expire(messagingServer.getPersistenceManager());
+         messageReference.expire(messagingServer.getPersistenceManager(), messagingServer.getQueueSettingsRepository());
       }
    }
 

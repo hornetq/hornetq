@@ -101,7 +101,7 @@ public class PacketDispatcherImpl implements PacketDispatcher, Serializable
       String targetID = packet.getTargetID();
       if (NO_ID_SET.equals(targetID))
       {
-         log.error("Packet is not handled, it has no targetID: " + packet);
+         log.error("Packet is not handled, it has no targetID: " + packet + ": " + System.identityHashCode(packet));
          return;
       }
       PacketHandler handler = getHandler(targetID);

@@ -25,13 +25,18 @@ public class SessionCreateConsumerMessage extends AbstractPacket
    private final boolean noLocal;
    
    private final boolean autoDeleteQueue;
+   
+   private final int windowSize;
+   
+   private int maxRate;
       
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    public SessionCreateConsumerMessage(final String queueName, final String filterString,
-   		                              final boolean noLocal, final boolean autoDeleteQueue)
+   		                              final boolean noLocal, final boolean autoDeleteQueue,
+   		                              final int windowSize, final int maxRate)
    {
       super(PacketType.SESS_CREATECONSUMER);
 
@@ -39,6 +44,8 @@ public class SessionCreateConsumerMessage extends AbstractPacket
       this.filterString = filterString;
       this.noLocal = noLocal;
       this.autoDeleteQueue = autoDeleteQueue;
+      this.windowSize = windowSize;
+      this.maxRate = maxRate;
    }
 
    // Public --------------------------------------------------------
@@ -51,6 +58,8 @@ public class SessionCreateConsumerMessage extends AbstractPacket
       buff.append(", filterString=" + filterString);
       buff.append(", noLocal=" + noLocal);
       buff.append(", autoDeleteQueue=" + autoDeleteQueue);
+      buff.append(", windowSize=" + windowSize);
+      buff.append(", maxRate=" + maxRate);
       buff.append("]");
       return buff.toString();
    }
@@ -73,6 +82,16 @@ public class SessionCreateConsumerMessage extends AbstractPacket
    public boolean isAutoDeleteQueue()
    {
       return autoDeleteQueue;
+   }
+   
+   public int getWindowSize()
+   {
+   	return windowSize;
+   }
+   
+   public int getMaxRate()
+   {
+   	return maxRate;
    }
 
    // Package protected ---------------------------------------------

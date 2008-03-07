@@ -23,6 +23,8 @@ package org.jboss.messaging.core.message;
 
 import org.jboss.messaging.core.persistence.PersistenceManager;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 
 /**
  * A reference to a message.
@@ -65,9 +67,9 @@ public interface MessageReference
    
    void acknowledge(PersistenceManager persistenceManager) throws Exception;  
    
-   boolean cancel(PersistenceManager persistenceManager) throws Exception;  
+   boolean cancel(PersistenceManager persistenceManager, HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;  
    
-   void expire(PersistenceManager persistenceManager) throws Exception;
+   void expire(PersistenceManager persistenceManager, HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
 }
 
 

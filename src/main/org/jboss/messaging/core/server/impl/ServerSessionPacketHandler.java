@@ -67,13 +67,9 @@ public class ServerSessionPacketHandler extends ServerPacketHandlerSupport
 {
 	private final ServerSession session;
 	
-	private final int prefetchSize;
-	
-	public ServerSessionPacketHandler(final ServerSession session, final int prefetchSize)
+	public ServerSessionPacketHandler(final ServerSession session)
    {
 		this.session = session;
-		
-		this.prefetchSize = prefetchSize;
    }
 
    public String getID()
@@ -91,8 +87,10 @@ public class ServerSessionPacketHandler extends ServerPacketHandlerSupport
       case SESS_CREATECONSUMER:
       {
          SessionCreateConsumerMessage request = (SessionCreateConsumerMessage) packet;
-         response = session.createConsumer(request.getQueueName(), request
-               .getFilterString(), request.isNoLocal(), request.isAutoDeleteQueue(), prefetchSize);
+         
+         response = session.createConsumer(request.getQueueName(), request.getFilterString(),
+         		                            request.isNoLocal(), request.isAutoDeleteQueue(),
+         		                            request.getWindowSize(), request.getMaxRate());
          break;
       }
       case SESS_CREATEQUEUE:
@@ -131,7 +129,7 @@ public class ServerSessionPacketHandler extends ServerPacketHandlerSupport
       case SESS_CREATEPRODUCER:
       {
          SessionCreateProducerMessage request = (SessionCreateProducerMessage) packet;
-         response = session.createProducer(request.getAddress(), request.getWindowSize());
+         response = session.createProducer(request.getAddress(), request.getWindowSize(), request.getMaxRate());
          break;
       }
       case CLOSE:

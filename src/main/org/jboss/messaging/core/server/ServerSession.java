@@ -103,10 +103,10 @@ public interface ServerSession
 
    void deleteQueue(String queueName) throws Exception;
 
-   SessionCreateConsumerResponseMessage  createConsumer(String queueName, String filterString,
-                     boolean noLocal, boolean autoDeleteQueue, int prefetchSize) throws Exception;
+   SessionCreateConsumerResponseMessage createConsumer(String queueName, String filterString, boolean noLocal,
+   		                                              boolean autoDeleteQueue, int windowSize, int maxRate) throws Exception;
    
-   SessionCreateProducerResponseMessage createProducer(String address, int windowSize) throws Exception;   
+   SessionCreateProducerResponseMessage createProducer(String address, int windowSize, int maxRate) throws Exception;   
 
    SessionQueueQueryResponseMessage executeQueueQuery(SessionQueueQueryMessage request) throws Exception;
 

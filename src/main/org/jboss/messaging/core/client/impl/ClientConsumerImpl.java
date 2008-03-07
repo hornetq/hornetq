@@ -276,8 +276,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          return;
       }
       
-      log.info("Got message " + message.getMessage().getMessageID() + " del id " + message.getDeliveryID());
-      
       if (ignoreDeliveryMark >= 0)
       {
          long delID = message.getDeliveryID();
@@ -286,14 +284,12 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          {
             // Ignore - the session is recovering and these are inflight
             // messages
-         	log.info("Ignoring");
             return;
          }
          else if (delID == ignoreDeliveryMark)
          {
             // We have hit the begining of the recovered messages - we can
             // stop ignoring
-         	log.info("Stopping ignoring");
             ignoreDeliveryMark = -1;
          }
          else
@@ -337,8 +333,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       	
       	synchronized (this)
       	{
-      		log.info("Adding to buffer: " + message.getMessage().getMessageID());
-      		
       		buffer.addLast(message, message.getMessage().getPriority());
          	      		
       		notify();
@@ -348,12 +342,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    public void recover(final long lastDeliveryID)
    {
-   	log.info("Calling recover " +lastDeliveryID);
-   	
       ignoreDeliveryMark = lastDeliveryID;
 
       buffer.clear();      
-      log.info("Called recover");
    }
 
    // Public

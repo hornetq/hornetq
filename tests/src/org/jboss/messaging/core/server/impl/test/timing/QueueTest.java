@@ -78,7 +78,7 @@ public class QueueTest extends UnitTestCase
    
    public void testScheduledNoConsumer() throws Exception
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
            
       //Send one scheduled
       
@@ -144,7 +144,7 @@ public class QueueTest extends UnitTestCase
    
    private void testScheduled(boolean direct)
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
       
       FakeConsumer consumer = null;
       

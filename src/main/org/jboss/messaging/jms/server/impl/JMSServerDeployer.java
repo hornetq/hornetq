@@ -22,8 +22,6 @@
 package org.jboss.messaging.jms.server.impl;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.deployers.Deployer;
-import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.XmlDeployer;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.server.JMSServerManager;
@@ -43,7 +41,8 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String CLIENTID_ELEMENT = "client-id";
    private static final String DUPS_OK_BATCH_SIZE_ELEMENT = "dups-ok-batch-size";
-   private static final String PREFETCH_SIZE_ELEMENT = "prefetch-size";
+   private static final String CONSUMER_WINDOW_SIZE_ELEMENT = "consumer-window-size";
+   private static final String CONSUMER_MAX_RATE = "consumer-max-rate";
    private static final String PRODUCER_WINDOW_SIZE = "producer-window-size";
    private static final String PRODUCER_MAX_RATE = "producer-max-rate";
    private static final String SUPPORTS_FAILOVER = "supports-failover";
@@ -123,20 +122,28 @@ public class JMSServerDeployer extends XmlDeployer
          // See http://www.jboss.com/index.html?module=bb&op=viewtopic&p=4076040#4076040
          NodeList attributes = node.getChildNodes();
          boolean cfStrictTck = false;
-         int prefetchSize = 150;
+         
          String clientID = null;
          int dupsOKBatchSize = 1000;
+         
+         int consumerWindowSize = 1000;
+         int consumerMaxRate = -1;         
          int producerWindowSize = 1000;
          int producerMaxRate = -1;
+         
          for (int j = 0; j < attributes.getLength(); j++)
          {
             if (STRICT_TCK.equalsIgnoreCase(attributes.item(j).getNodeName()))
             {
                cfStrictTck = Boolean.parseBoolean(attributes.item(j).getTextContent().trim());
             }
-            else if (PREFETCH_SIZE_ELEMENT.equalsIgnoreCase(attributes.item(j).getNodeName()))
+            else if (CONSUMER_WINDOW_SIZE_ELEMENT.equalsIgnoreCase(attributes.item(j).getNodeName()))
             {
-               prefetchSize = Integer.parseInt(attributes.item(j).getTextContent().trim());
+               consumerWindowSize = Integer.parseInt(attributes.item(j).getTextContent().trim());
+            }
+            else if (CONSUMER_MAX_RATE.equalsIgnoreCase(attributes.item(j).getNodeName()))
+            {
+               consumerMaxRate = Integer.parseInt(attributes.item(j).getTextContent().trim());
             }
             else if (PRODUCER_WINDOW_SIZE.equalsIgnoreCase(attributes.item(j).getNodeName()))
             {
@@ -181,7 +188,7 @@ public class JMSServerDeployer extends XmlDeployer
                String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
                String name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
                jmsServerManager.createConnectionFactory(name, clientID, dupsOKBatchSize, cfStrictTck,
-               		prefetchSize, producerWindowSize, producerMaxRate, jndiName);
+               		consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate, jndiName);
             }
          }
       }

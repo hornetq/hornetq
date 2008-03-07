@@ -105,7 +105,7 @@ public class TokenBucketLimiterTest extends TestCase
 		
 		long start = System.currentTimeMillis();
 		
-		int count = 0;
+		long count = 0;
 		
 		final long measureTime = 5000;
 		

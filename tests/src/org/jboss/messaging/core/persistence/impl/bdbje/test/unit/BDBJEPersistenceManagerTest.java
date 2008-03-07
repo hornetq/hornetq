@@ -85,7 +85,7 @@ public class BDBJEPersistenceManagerTest extends UnitTestCase
    
    private Queue createQueue(int i)
    {
-      return new QueueImpl(i, "blah" + i, null, false, true, false, -1, null, null);
+      return new QueueImpl(i, "blah" + i, null, false, true, false, -1, null);
    }
    
    // The tests ----------------------------------------------------------------
@@ -305,16 +305,16 @@ public class BDBJEPersistenceManagerTest extends UnitTestCase
    {      
       Message msg = generateMessage(1);
       
-      Queue queue1 = new QueueImpl(1, "queue1", null, false, true, false, -1, null, null);
+      Queue queue1 = new QueueImpl(1, "queue1", null, false, true, false, -1, null);
       assertTrue(queue1.isDurable());
       
-      Queue queue2 = new QueueImpl(1, "queue1", null, false, false, false, -1, null, null);
+      Queue queue2 = new QueueImpl(1, "queue1", null, false, false, false, -1, null);
       assertFalse(queue2.isDurable());
       
-      Queue queue3 = new QueueImpl(1, "queue1", null, false, true, false, -1, null, null);
+      Queue queue3 = new QueueImpl(1, "queue1", null, false, true, false, -1, null);
       assertTrue(queue3.isDurable());
       
-      Queue queue4 = new QueueImpl(1, "queue1", null, false, false, false, -1, null, null);
+      Queue queue4 = new QueueImpl(1, "queue1", null, false, false, false, -1, null);
       assertFalse(queue4.isDurable());
      
       MessageReference ref1 = msg.createReference(queue1);
@@ -662,13 +662,13 @@ public class BDBJEPersistenceManagerTest extends UnitTestCase
        
    public void testAddRemoveBindings() throws Exception
    {
-      Queue queue1 = new QueueImpl(1, "queue1", new FilterImpl("a=1"), false, true, false, -1, null, null);
+      Queue queue1 = new QueueImpl(1, "queue1", new FilterImpl("a=1"), false, true, false, -1, null);
       
-      Queue queue2 = new QueueImpl(2, "queue2", new FilterImpl("a=1"), false, true, false, -1, null, null);
+      Queue queue2 = new QueueImpl(2, "queue2", new FilterImpl("a=1"), false, true, false, -1, null);
             
-      Queue queue3 = new QueueImpl(3, "queue3", new FilterImpl("a=1"), false, true, false, -1, null, null);
+      Queue queue3 = new QueueImpl(3, "queue3", new FilterImpl("a=1"), false, true, false, -1, null);
       
-      Queue queue4 = new QueueImpl(4, "queue4", new FilterImpl("a=1"), false, true, false, -1, null, null);
+      Queue queue4 = new QueueImpl(4, "queue4", new FilterImpl("a=1"), false, true, false, -1, null);
       
       String condition1 = "queue.condition1";
       
@@ -751,13 +751,13 @@ public class BDBJEPersistenceManagerTest extends UnitTestCase
    
    public void testLoadBindings() throws Exception
    {
-      Queue queue1 = new QueueImpl(1, "queue1", null, false, true, false, -1, null, null);
+      Queue queue1 = new QueueImpl(1, "queue1", null, false, true, false, -1, null);
       
-      Queue queue2 = new QueueImpl(2, "queue2", null, false, true, false, -1, null, null);
+      Queue queue2 = new QueueImpl(2, "queue2", null, false, true, false, -1, null);
             
-      Queue queue3 = new QueueImpl(3, "queue3", null, false, true, false, -1, null, null);
+      Queue queue3 = new QueueImpl(3, "queue3", null, false, true, false, -1, null);
       
-      Queue queue4 = new QueueImpl(4, "queue4", null, false, true, false, -1, null, null);
+      Queue queue4 = new QueueImpl(4, "queue4", null, false, true, false, -1, null);
       
       String condition1 = "queue.condition1";
       

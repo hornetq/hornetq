@@ -26,6 +26,8 @@ import javax.transaction.xa.Xid;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.persistence.PersistenceManager;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 
 /**
  * 
@@ -42,7 +44,8 @@ public interface Transaction
    
    void commit(boolean onePhase, PersistenceManager persistenceManager) throws Exception;
    
-   void rollback(PersistenceManager persistenceManager) throws Exception;   
+   void rollback(PersistenceManager persistenceManager,
+   		        final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;   
    
    void addMessage(Message message);
    

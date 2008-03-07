@@ -42,11 +42,12 @@ public class SessionCreateProducerMessageCodec extends
    {
       String address = request.getAddress();
      
-      int bodyLength = sizeof(address) + INT_LENGTH;
+      int bodyLength = sizeof(address) + 2 * INT_LENGTH;
 
       out.putInt(bodyLength);
       out.putNullableString(address);
       out.putInt(request.getWindowSize());
+      out.putInt(request.getMaxRate());
    }
 
    @Override
@@ -62,8 +63,10 @@ public class SessionCreateProducerMessageCodec extends
       String address = in.getNullableString();
       
       int windowSize = in.getInt();
+      
+      int maxRate = in.getInt();
 
-      return new SessionCreateProducerMessage(address, windowSize);
+      return new SessionCreateProducerMessage(address, windowSize, maxRate);
    }
 
    // Package protected ---------------------------------------------

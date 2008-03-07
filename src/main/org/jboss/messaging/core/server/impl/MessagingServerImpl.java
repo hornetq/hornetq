@@ -163,7 +163,7 @@ public class MessagingServerImpl implements MessagingServer
       securityDeployer = new SecurityDeployer(securityRepository);
       queueSettingsRepository.setDefault(new QueueSettings());
       scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize());
-      queueFactory = new QueueFactoryImpl(queueSettingsRepository, scheduledExecutor);
+      queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository);
       connectionManager = new ConnectionManagerImpl();
       memoryManager = new SimpleMemoryManager();
       postOffice = new PostOfficeImpl(configuration.getMessagingServerID(),
@@ -337,7 +337,7 @@ public class MessagingServerImpl implements MessagingServer
 
    public CreateConnectionResponse createConnection(final String username, final String password,
                                                     final String remotingClientSessionID, final String clientVMID,
-                                                    final int prefetchSize, final String clientAddress)
+                                                    final String clientAddress)
       throws Exception
    {
       log.trace("creating a new connection for user " + username);
@@ -352,7 +352,8 @@ public class MessagingServerImpl implements MessagingServer
       final ServerConnection connection =
          new ServerConnectionImpl(username, password,
                           remotingClientSessionID, clientVMID, clientAddress,
-                          prefetchSize, remotingService.getDispatcher(), resourceManager, persistenceManager,
+                          remotingService.getDispatcher(), resourceManager, persistenceManager,
+                          queueSettingsRepository,
                           postOffice, securityStore, connectionManager);
 
       remotingService.getDispatcher().register(new ServerConnectionPacketHandler(connection));

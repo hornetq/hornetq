@@ -21,18 +21,22 @@ public class SessionCreateProducerMessage extends AbstractPacket
    private final String address;
    
    private final int windowSize;
+   
+   private final int maxRate;
       
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateProducerMessage(final String address, final int windowSize)
+   public SessionCreateProducerMessage(final String address, final int windowSize, final int maxRate)
    {
       super(PacketType.SESS_CREATEPRODUCER);
 
       this.address = address;
       
       this.windowSize = windowSize;
+      
+      this.maxRate = maxRate;
    }
 
    // Public --------------------------------------------------------
@@ -43,6 +47,7 @@ public class SessionCreateProducerMessage extends AbstractPacket
       StringBuffer buff = new StringBuffer(getParentString());
       buff.append(", address=" + address);
       buff.append(", windowSize=" + windowSize);
+      buff.append(", maxrate=" + maxRate);
       buff.append("]");
       return buff.toString();
    }
@@ -55,6 +60,11 @@ public class SessionCreateProducerMessage extends AbstractPacket
    public int getWindowSize()
    {
    	return windowSize;
+   }
+   
+   public int getMaxRate()
+   {
+   	return maxRate;
    }
 
    // Package protected ---------------------------------------------

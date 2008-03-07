@@ -34,6 +34,8 @@ import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.persistence.PersistenceManager;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.TransactionSynchronization;
 
@@ -153,7 +155,8 @@ public class TransactionImpl implements Transaction
       clear();      
    }
    
-   public void rollback(final PersistenceManager persistenceManager) throws Exception
+   public void rollback(final PersistenceManager persistenceManager,
+   		               final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
       callSynchronizations(SyncType.BEFORE_ROLLBACK);
         
@@ -162,7 +165,7 @@ public class TransactionImpl implements Transaction
          persistenceManager.unprepareTransaction(xid, messagesToAdd, acknowledgements);             
       }
       
-      cancelDeliveries(persistenceManager);
+      cancelDeliveries(persistenceManager, queueSettingsRepository);
                         
       callSynchronizations(SyncType.AFTER_ROLLBACK);  
       
@@ -235,7 +238,8 @@ public class TransactionImpl implements Transaction
       containsPersistent = false;
    }
    
-   private void cancelDeliveries(final PersistenceManager persistenceManager) throws Exception
+   private void cancelDeliveries(final PersistenceManager persistenceManager,
+   		                        final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
       Map<Queue, LinkedList<MessageReference>> queueMap = new HashMap<Queue, LinkedList<MessageReference>>();
       
@@ -255,7 +259,7 @@ public class TransactionImpl implements Transaction
             queueMap.put(queue, list);
          }
                  
-         if (ref.cancel(persistenceManager))
+         if (ref.cancel(persistenceManager, queueSettingsRepository))
          {
             list.add(ref);
          }

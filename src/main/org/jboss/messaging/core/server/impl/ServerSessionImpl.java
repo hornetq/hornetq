@@ -64,6 +64,8 @@ import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.server.ServerConsumer;
 import org.jboss.messaging.core.server.ServerProducer;
 import org.jboss.messaging.core.server.ServerSession;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
@@ -113,6 +115,8 @@ public class ServerSessionImpl implements ServerSession
    
    private final PersistenceManager persistenceManager;
    
+   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
+         
    private final PostOffice postOffice;
    
    private final SecurityStore securityStore;
@@ -135,10 +139,11 @@ public class ServerSessionImpl implements ServerSession
    // ---------------------------------------------------------------------------------
 
    public ServerSessionImpl(final boolean autoCommitSends,
-                            final boolean autoCommitAcks, final int prefetchSize,
+                            final boolean autoCommitAcks,
                             final boolean xa, final ServerConnection connection,
                             final ResourceManager resourceManager, final PacketSender sender, 
                             final PacketDispatcher dispatcher, final PersistenceManager persistenceManager,
+                            final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                             final PostOffice postOffice, final SecurityStore securityStore) throws Exception
    {
    	id = UUID.randomUUID().toString();
@@ -161,6 +166,8 @@ public class ServerSessionImpl implements ServerSession
       this.dispatcher = dispatcher;
       
       this.persistenceManager = persistenceManager;
+      
+      this.queueSettingsRepository = queueSettingsRepository;
       
       this.postOffice = postOffice;
       
@@ -443,7 +450,7 @@ public class ServerSessionImpl implements ServerSession
          deliveryIDSequence -= tx.getAcknowledgementsCount();
       }
 
-      tx.rollback(persistenceManager);
+      tx.rollback(persistenceManager, queueSettingsRepository);
    }
 
    public void cancel(final long deliveryID, final boolean expired) throws Exception
@@ -466,7 +473,7 @@ public class ServerSessionImpl implements ServerSession
             deliveries.clear();
          }
 
-         cancelTx.rollback(persistenceManager);
+         cancelTx.rollback(persistenceManager, queueSettingsRepository);
       }
       else if (expired)
       {
@@ -483,7 +490,7 @@ public class ServerSessionImpl implements ServerSession
 
             if (delivery.getDeliveryID() == deliveryID)
             {
-               delivery.getReference().expire(persistenceManager);
+               delivery.getReference().expire(persistenceManager, queueSettingsRepository);
 
                iter.remove();
 
@@ -707,7 +714,7 @@ public class ServerSessionImpl implements ServerSession
             XAException.XAER_PROTO,
             "Cannot rollback transaction, it is suspended " + xid); }
 
-      theTx.rollback(persistenceManager);
+      theTx.rollback(persistenceManager, queueSettingsRepository);
 
       boolean removed = resourceManager.removeTransaction(xid);
 
@@ -875,9 +882,9 @@ public class ServerSessionImpl implements ServerSession
       }
    }
 
-   public SessionCreateConsumerResponseMessage
-      createConsumer(final String queueName, final String filterString,
-                     final boolean noLocal, final boolean autoDeleteQueue, final int prefetchSize) throws Exception
+   public SessionCreateConsumerResponseMessage createConsumer(final String queueName, final String filterString,
+                                                              final boolean noLocal, final boolean autoDeleteQueue,
+                                                              int windowSize, int maxRate) throws Exception
    {
       Binding binding = postOffice.getBinding(queueName);
 
@@ -894,20 +901,28 @@ public class ServerSessionImpl implements ServerSession
       {
          filter = new FilterImpl(filterString);
       }
-
+      
+      //Flow control values if specified on queue override those passed in from client
+      
+      Integer queueWindowSize = queueSettingsRepository.getMatch(queueName).getConsumerWindowSize();
+      
+      windowSize = queueWindowSize != null ? queueWindowSize : windowSize;
+      
+      Integer queueMaxRate = queueSettingsRepository.getMatch(queueName).getConsumerMaxRate();
+      
+      maxRate = queueMaxRate != null ? queueMaxRate : maxRate;
+      
       ServerConsumer consumer =
-      	new ServerConsumerImpl(binding.getQueue(), noLocal, filter, autoDeleteQueue, prefetchSize > 0, connection.getID(),
-                                    this, persistenceManager, postOffice, connection.isStarted());
+      	new ServerConsumerImpl(binding.getQueue(), noLocal, filter, autoDeleteQueue, windowSize != -1, maxRate, connection.getID(),
+                                this, persistenceManager, queueSettingsRepository, postOffice, connection.isStarted());
 
       dispatcher.register(new ServerConsumerPacketHandler(consumer));
 
-      SessionCreateConsumerResponseMessage response = new SessionCreateConsumerResponseMessage(consumer.getID(),
-            prefetchSize);
+      SessionCreateConsumerResponseMessage response =
+      	new SessionCreateConsumerResponseMessage(consumer.getID(), windowSize);
 
       consumers.put(consumer.getID(), consumer);      
-
-      log.trace(this + " created and registered " + consumer);
-
+      
       return response;
    }
 
@@ -1007,11 +1022,15 @@ public class ServerSessionImpl implements ServerSession
     * @param windowSize - the producer window size to use for flow control.
     * Specify -1 to disable flow control completely
     * The actual window size used may be less than the specified window size if the queue's maxSize attribute
-    * is set and there are not sufficient empty spaces in the queue
+    * is set and there are not sufficient empty spaces in the queue, or it is overridden by any producer-window_size
+    * specified on the queue
     */
-   public SessionCreateProducerResponseMessage createProducer(final String address, final int windowSize) throws Exception
+   public SessionCreateProducerResponseMessage createProducer(final String address, final int windowSize,
+   		                                                     final int maxRate) throws Exception
    { 	
    	FlowController flowController = null;
+   	
+   	final int maxRateToUse = maxRate;
    	
    	if (address != null)
    	{
@@ -1024,9 +1043,9 @@ public class ServerSessionImpl implements ServerSession
    	
    	dispatcher.register(new ServerProducerPacketHandler(producer));
    	
-   	int windowToUse = flowController == null ? -1 : flowController.getInitialTokens(windowSize, producer);
+   	final int windowToUse = flowController == null ? -1 : flowController.getInitialTokens(windowSize, producer);
    	   	   	
-   	return new SessionCreateProducerResponseMessage(producer.getID(), windowToUse);
+   	return new SessionCreateProducerResponseMessage(producer.getID(), windowToUse, maxRateToUse);
    }
    
    // Public ---------------------------------------------------------------------------------------------

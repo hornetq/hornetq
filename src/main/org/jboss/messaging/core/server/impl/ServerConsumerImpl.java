@@ -30,11 +30,13 @@ import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.persistence.PersistenceManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConsumer;
 import org.jboss.messaging.core.server.ServerSession;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.util.TokenBucketLimiter;
 
 /**
  * Concrete implementation of a ClientConsumer. 
@@ -71,7 +73,7 @@ public class ServerConsumerImpl implements ServerConsumer
    
    private final boolean autoDeleteQueue;
    
-   private final boolean enableFlowControl;
+   private final TokenBucketLimiter limiter;
    
    private final String connectionID;   
    
@@ -79,20 +81,24 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private final PersistenceManager persistenceManager;
    
+   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
+   
    private final PostOffice postOffice;
          
    private final Object startStopLock = new Object();
 
-   private final AtomicInteger availableTokens = new AtomicInteger(0);
+   private final AtomicInteger availableTokens;
    
    private boolean started;
 
    // Constructors ---------------------------------------------------------------------------------
 
    ServerConsumerImpl(final Queue messageQueue, final boolean noLocal, final Filter filter,
-   		             final boolean autoDeleteQueue, final boolean enableFlowControl,
+   		             final boolean autoDeleteQueue, final boolean enableFlowControl, final int maxRate,
    		             final String connectionID, final ServerSession sessionEndpoint,
-					       final PersistenceManager persistenceManager, final PostOffice postOffice,
+					       final PersistenceManager persistenceManager,
+					       final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+					       final PostOffice postOffice,
 					       final boolean started)
    {
    	id = UUID.randomUUID().toString();
@@ -105,21 +111,37 @@ public class ServerConsumerImpl implements ServerConsumer
       
       this.autoDeleteQueue = autoDeleteQueue;
       
-      this.enableFlowControl = enableFlowControl;
-      
+      if (maxRate != -1)
+      {
+      	limiter = new TokenBucketLimiter(maxRate, false);
+      }
+      else
+      {
+      	limiter = null;
+      }
+
       this.connectionID = connectionID;
 
       this.sessionEndpoint = sessionEndpoint;
 
       this.persistenceManager = persistenceManager;
       
+      this.queueSettingsRepository = queueSettingsRepository;
+      
       this.postOffice = postOffice;
       
       this.started = started;
       
-      messageQueue.addConsumer(this);
+      if (enableFlowControl)
+      {
+         availableTokens = new AtomicInteger(0);
+      }
+      else
+      {
+      	availableTokens = null;
+      }
       
-      messageQueue.deliver();
+      messageQueue.addConsumer(this);
    }
 
    // ServerConsumer implementation ----------------------------------------------------------------------
@@ -131,14 +153,14 @@ public class ServerConsumerImpl implements ServerConsumer
    
    public HandleStatus handle(MessageReference ref) throws Exception
    {
-      if (enableFlowControl && availableTokens.get() == 0)
+      if (availableTokens != null && availableTokens.get() == 0)
       {
          return HandleStatus.BUSY;
       }
 
       if (ref.getMessage().isExpired())
       {         
-         ref.expire(persistenceManager);
+         ref.expire(persistenceManager, queueSettingsRepository);
          
          return HandleStatus.HANDLED;
       }
@@ -171,7 +193,7 @@ public class ServerConsumerImpl implements ServerConsumer
             }            
          }
                          
-         if (enableFlowControl)
+         if (availableTokens != null)
          {
             availableTokens.decrementAndGet();
          }
@@ -238,10 +260,18 @@ public class ServerConsumerImpl implements ServerConsumer
    
    public void receiveTokens(final int tokens) throws Exception
    {
-      availableTokens.addAndGet(tokens);
+      int previous = availableTokens != null ? availableTokens.getAndAdd(tokens) : 0;
 
-      promptDelivery();      
+      if (previous == 0)
+      {
+      	promptDelivery();      
+      }   	
    }
+   
+   public void promptDelivery()
+   {
+      sessionEndpoint.promptDelivery(messageQueue);
+   } 
 
    // Public -----------------------------------------------------------------------------
      
@@ -252,8 +282,4 @@ public class ServerConsumerImpl implements ServerConsumer
    
    // Private --------------------------------------------------------------------------------------
 
-   private void promptDelivery()
-   {
-      sessionEndpoint.promptDelivery(messageQueue);
-   } 
 }

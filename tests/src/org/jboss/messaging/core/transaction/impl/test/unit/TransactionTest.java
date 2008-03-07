@@ -50,7 +50,7 @@ public class TransactionTest extends UnitTestCase
       
       List<MessageReference> refsToRemove = new ArrayList<MessageReference>();
       
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor, queueSettings);
+      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
       
       MessageReference ref1 = this.generateReference(queue, 1);
       msgsToAdd.add(ref1.getMessage());
@@ -82,7 +82,7 @@ public class TransactionTest extends UnitTestCase
       
       List<MessageReference> refsToRemove = new ArrayList<MessageReference>();
       
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor, queueSettings);
+      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
       
       MessageReference ref1 = this.generateReference(queue, 1);
       msgsToAdd.add(ref1.getMessage());
@@ -100,7 +100,7 @@ public class TransactionTest extends UnitTestCase
       
       EasyMock.replay(pm);
       
-      tx.rollback(pm);
+      tx.rollback(pm, queueSettings);
       
       EasyMock.verify(pm);
  
@@ -113,7 +113,7 @@ public class TransactionTest extends UnitTestCase
       
       List<MessageReference> refsToRemove = new ArrayList<MessageReference>();
       
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor, queueSettings);
+      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
       
       MessageReference ref1 = this.generateReference(queue, 1);
       msgsToAdd.add(ref1.getMessage());
@@ -146,7 +146,7 @@ public class TransactionTest extends UnitTestCase
       
       List<MessageReference> refsToRemove = new ArrayList<MessageReference>();
       
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor, queueSettings);
+      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
       
       MessageReference ref1 = this.generateReference(queue, 1);
       msgsToAdd.add(ref1.getMessage());
@@ -187,7 +187,7 @@ public class TransactionTest extends UnitTestCase
       
       List<MessageReference> refsToRemove = new ArrayList<MessageReference>();
       
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor, queueSettings);
+      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
       
       MessageReference ref1 = this.generateReference(queue, 1);
       msgsToAdd.add(ref1.getMessage());
@@ -221,7 +221,7 @@ public class TransactionTest extends UnitTestCase
       
       List<MessageReference> refsToRemove = new ArrayList<MessageReference>();
       
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor, queueSettings);
+      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
       
       MessageReference ref1 = this.generateReference(queue, 1);
       msgsToAdd.add(ref1.getMessage());
@@ -253,7 +253,7 @@ public class TransactionTest extends UnitTestCase
       
       EasyMock.replay(pm);
       
-      tx.rollback(pm);
+      tx.rollback(pm, queueSettings);
       
       EasyMock.verify(pm);
    }
@@ -264,7 +264,7 @@ public class TransactionTest extends UnitTestCase
       
       List<MessageReference> refsToRemove = new ArrayList<MessageReference>();
       
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor, queueSettings);
+      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
       
       MessageReference ref1 = this.generateReference(queue, 1);
       msgsToAdd.add(ref1.getMessage());
@@ -304,7 +304,7 @@ public class TransactionTest extends UnitTestCase
       
       EasyMock.replay(sync);
       
-      tx.rollback(pm);
+      tx.rollback(pm, queueSettings);
       
       EasyMock.verify(sync);            
    }
@@ -315,7 +315,7 @@ public class TransactionTest extends UnitTestCase
       
       List<MessageReference> refsToRemove = new ArrayList<MessageReference>();
       
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor, queueSettings);
+      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
       
       MessageReference ref1 = this.generateReference(queue, 1);
       msgsToAdd.add(ref1.getMessage());
@@ -361,7 +361,7 @@ public class TransactionTest extends UnitTestCase
       EasyMock.replay(sync);
       
       tx.prepare(pm);
-      tx.rollback(pm);
+      tx.rollback(pm, queueSettings);
       
       EasyMock.verify(sync);            
    }

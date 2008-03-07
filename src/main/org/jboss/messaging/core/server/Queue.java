@@ -27,8 +27,6 @@ import java.util.List;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.postoffice.FlowController;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
 
 
 /**
@@ -108,8 +106,6 @@ public interface Queue
    
    int getMessagesAdded();
 
-   HierarchicalRepository<QueueSettings> getQueueSettings();
-   
    FlowController getFlowController();
    
    void setFlowController(FlowController flowController);

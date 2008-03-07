@@ -69,13 +69,16 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
  
    private final int serverID;
    
-   private final int prefetchSize;
-
    private final boolean strictTck;
+      
+   private final int defaultConsumerWindowSize;
    
-   private final int maxProducerRate;
+   private final int defaultConsumerMaxRate;
+
+   private final int defaultProducerWindowSize;
    
-   private final int producerWindowSize;
+   private final int defaultProducerMaxRate;
+   
    
    // Static ---------------------------------------------------------------------------------------
     
@@ -83,19 +86,18 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
 
    public ClientConnectionFactoryImpl(final int serverID, final RemotingConfiguration remotingConfig,
    		                             final Version serverVersion, final boolean strictTck,
-                                      final int prefetchSize,
-                                      final int producerWindowSize, final int maxProducerRate)
+                                      final int defaultConsumerWindowSize, final int defaultConsumerMaxRate,
+                                      final int defaultProducerWindowSize, final int defaultProducerMaxRate)
    {
       this.serverID = serverID;
       this.remotingConfig = remotingConfig;
       this.serverVersion = serverVersion;
       this.strictTck = strictTck;
-      this.prefetchSize = prefetchSize;      
-      this.maxProducerRate = maxProducerRate;
-      this.producerWindowSize = producerWindowSize;
+      this.defaultConsumerWindowSize = defaultConsumerWindowSize;  
+      this.defaultConsumerMaxRate = defaultConsumerMaxRate;
+      this.defaultProducerWindowSize = defaultProducerWindowSize;
+      this.defaultProducerMaxRate = defaultProducerMaxRate;
       this.dispatcher = new PacketDispatcherImpl();
-      
-      log.info("creating cf with ws: "+ this.producerWindowSize + " and maxrate " + maxProducerRate);
    }
    
    public ClientConnectionFactoryImpl(final int serverID, final RemotingConfiguration remotingConfig,
@@ -105,9 +107,10 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
       this.remotingConfig = remotingConfig;
       this.serverVersion = serverVersion;
       this.strictTck = false;
-      this.prefetchSize = 150;      
-      this.maxProducerRate = -1;
-      this.producerWindowSize = 1000;
+      this.defaultConsumerWindowSize = 1000;      
+      this.defaultConsumerMaxRate = -1;
+      this.defaultProducerWindowSize = 1000;
+      this.defaultProducerMaxRate = -1;
       this.dispatcher = new PacketDispatcherImpl();
    }
 
@@ -130,15 +133,15 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
          String sessionID = remotingConnection.getSessionID();
          
          CreateConnectionRequest request =
-            new CreateConnectionRequest(v, sessionID, JMSClientVMIdentifier.instance, username, password,
-                  prefetchSize);
+            new CreateConnectionRequest(v, sessionID, JMSClientVMIdentifier.instance, username, password);
          
          CreateConnectionResponse response =
             (CreateConnectionResponse)remotingConnection.send(id, request);
          
          ClientConnectionImpl connection =
             new ClientConnectionImpl(response.getConnectionID(), serverID, strictTck, remotingConnection,
-            		maxProducerRate, producerWindowSize);
+            		defaultConsumerWindowSize, defaultConsumerMaxRate,
+            		defaultProducerWindowSize, defaultProducerMaxRate);
 
          return connection;
       }
@@ -182,14 +185,14 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
       return serverVersion;
    }
 
-	public int getPrefetchSize()
+	public int getConsumerWindowSize()
 	{
-		return prefetchSize;
+		return defaultConsumerWindowSize;
 	}
 
 	public int getProducerWindowSize()
 	{
-		return producerWindowSize;
+		return defaultProducerWindowSize;
 	}
 
 	public int getServerID()
@@ -204,7 +207,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
 
 	public int getMaxProducerRate()
 	{
-		return maxProducerRate;
+		return defaultProducerMaxRate;
 	}
 	
 	

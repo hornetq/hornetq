@@ -28,9 +28,6 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.impl.QueueImpl;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
 
 /**
  * 
@@ -43,14 +40,10 @@ public class FakeQueueFactory implements QueueFactory
 {
 	private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
-   private final HierarchicalRepository<QueueSettings> queueSettings = 
-   	new HierarchicalObjectRepository<QueueSettings>();
-	
 	public Queue createQueue(long persistenceID, String name, Filter filter,
 			                   boolean durable, boolean temporary)
 	{
-		return new QueueImpl(persistenceID, name, filter, false, durable, temporary, -1,
-				scheduledExecutor, queueSettings);
+		return new QueueImpl(persistenceID, name, filter, false, durable, temporary, -1, scheduledExecutor);
 	}
 
 }

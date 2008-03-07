@@ -90,7 +90,7 @@ public class TokenBucketLimiter
 			tokensAdded = 0;
 		}
 														
-		int tokensDue = (int)(rate * (diff)  / 1000);
+		int tokensDue = (int)(rate * diff  / 1000);
 		
 		int tokensToAdd = tokensDue - tokensAdded;
 		

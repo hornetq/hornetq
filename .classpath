@@ -77,5 +77,6 @@
 	<classpathentry kind="lib" path="src/etc/server/default/config"/>
 	<classpathentry kind="lib" path="src/etc/server/default/deploy"/>
 	<classpathentry kind="lib" path="lib/je-3.2.74.jar"/>
+	<classpathentry kind="lib" path="tests/lib/grizzly-framework-1.7.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

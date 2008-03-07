@@ -52,7 +52,8 @@ public interface MessagingServerManagement
    
    List<Queue> getQueuesForAddress(String address) throws Exception;
 
-   ClientConnectionFactory createClientConnectionFactory(boolean strictTck,int prefetchSize, int producerWindowSize, int producerMaxRate);
+   ClientConnectionFactory createClientConnectionFactory(boolean strictTck,
+   		int consumerWindowSize, int consumerMaxRate, int producerWindowSize, int producerMaxRate);
 
    void removeAllMessagesForAddress(String address) throws Exception;
 

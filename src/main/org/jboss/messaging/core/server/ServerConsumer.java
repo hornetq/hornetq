@@ -38,4 +38,6 @@ public interface ServerConsumer extends Consumer
 	void setStarted(boolean started) throws Exception;
 	
 	void receiveTokens(int tokens) throws Exception;
+	
+	void promptDelivery();
 }

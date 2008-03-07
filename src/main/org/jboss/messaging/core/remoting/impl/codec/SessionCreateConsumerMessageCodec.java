@@ -40,14 +40,18 @@ public class SessionCreateConsumerMessageCodec extends
       String filterString = request.getFilterString();
       boolean noLocal = request.isNoLocal();
       boolean autoDelete = request.isAutoDeleteQueue();
+      int windowSize = request.getWindowSize();
+      int maxRate = request.getMaxRate();
 
-      int bodyLength = sizeof(queueName) + sizeof(filterString) + 2;
+      int bodyLength = sizeof(queueName) + sizeof(filterString) + 2 + 2 * INT_LENGTH;
 
       out.putInt(bodyLength);
       out.putNullableString(queueName);
       out.putNullableString(filterString);
       out.putBoolean(noLocal);
       out.putBoolean(autoDelete);
+      out.putInt(windowSize);
+      out.putInt(maxRate);
    }
 
    @Override
@@ -64,8 +68,10 @@ public class SessionCreateConsumerMessageCodec extends
       String filterString = in.getNullableString();
       boolean noLocal = in.getBoolean();
       boolean autoDelete = in.getBoolean();
+      int windowSize = in.getInt();
+      int maxRate = in.getInt();
  
-      return new SessionCreateConsumerMessage(queueName, filterString, noLocal, autoDelete);
+      return new SessionCreateConsumerMessage(queueName, filterString, noLocal, autoDelete, windowSize, maxRate);
    }
 
    // Package protected ---------------------------------------------

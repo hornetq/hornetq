@@ -70,17 +70,25 @@ public class ClientConnectionImpl implements ClientConnectionInternal
 
    private volatile boolean closed;
    
-   private final int maxProducerRate;
+   private final int defaultConsumerWindowSize;
    
-   private final int producerWindowSize;
+   private final int defaultConsumerMaxRate;
+   
+   private final int defaultProducerWindowSize;
+   
+   private final int defaultProducerMaxRate;
+   
 
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
 
    public ClientConnectionImpl(final String id, final int serverID, final boolean strictTck,
-                               final RemotingConnection connection, final int maxProducerRate,
-                               final int producerWindowSize)
+                               final RemotingConnection connection,
+                               final int defaultConsumerWindowSize,     
+                               final int defaultConsumerMaxRate,
+                               final int defaultProducerWindowSize,
+                               final int defaultProducerMaxRate)
    {
       this.id = id;
       
@@ -90,9 +98,13 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       
       this.remotingConnection = connection;
       
-      this.maxProducerRate = maxProducerRate;
+      this.defaultConsumerWindowSize = defaultConsumerWindowSize;
       
-      this.producerWindowSize = producerWindowSize;
+      this.defaultConsumerMaxRate = defaultConsumerMaxRate;
+      
+      this.defaultProducerWindowSize = defaultProducerWindowSize;
+      
+      this.defaultProducerMaxRate = defaultProducerMaxRate;
    }
    
    // ClientConnection implementation --------------------------------------------------------------
@@ -108,8 +120,9 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       ConnectionCreateSessionResponseMessage response = (ConnectionCreateSessionResponseMessage)remotingConnection.send(id, request);   
 
       ClientSession session =
-      	new ClientSessionImpl(this, response.getSessionID(), ackBatchSize, cacheProducers, maxProducerRate,
-      			                producerWindowSize, autoCommitSends, autoCommitAcks, blockOnAcknowledge);
+      	new ClientSessionImpl(this, response.getSessionID(), ackBatchSize, cacheProducers,
+      			autoCommitSends, autoCommitAcks, blockOnAcknowledge,
+      			defaultConsumerWindowSize, defaultConsumerMaxRate, defaultProducerWindowSize, defaultProducerMaxRate);
 
       children.put(response.getSessionID(), session);
 

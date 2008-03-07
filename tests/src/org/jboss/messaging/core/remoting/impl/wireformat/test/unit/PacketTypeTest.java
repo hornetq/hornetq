@@ -464,16 +464,14 @@ public class PacketTypeTest extends UnitTestCase
       String clientVMID = randomString();
       String username = null;
       String password = null;
-      int prefetchSize = 0;
- 
+
       CreateConnectionRequest request = new CreateConnectionRequest(version,
-            remotingSessionID, clientVMID, username, password, prefetchSize);
+            remotingSessionID, clientVMID, username, password);
 
       AbstractPacketCodec<CreateConnectionRequest> codec = new CreateConnectionMessageCodec();
       SimpleRemotingBuffer buffer = encode(request, codec);
       checkHeader(buffer, request);
-      checkBody(buffer, version, remotingSessionID, clientVMID, username,
-            password, prefetchSize);
+      checkBody(buffer, version, remotingSessionID, clientVMID, username, password);
       buffer.rewind();
 
       AbstractPacket decodedPacket = codec.decode(buffer);
@@ -575,13 +573,13 @@ public class PacketTypeTest extends UnitTestCase
    {      
       String destination = "queue.testCreateConsumerRequest";
       SessionCreateConsumerMessage request = new SessionCreateConsumerMessage(destination,
-            "color = 'red'", false, false);
+            "color = 'red'", false, false, randomInt(), randomInt());
 
       AbstractPacketCodec codec = new SessionCreateConsumerMessageCodec();
       SimpleRemotingBuffer buffer = encode(request, codec);
       checkHeader(buffer, request);
       checkBody(buffer, request.getQueueName(), request
-            .getFilterString(), request.isNoLocal(), request.isAutoDeleteQueue());
+            .getFilterString(), request.isNoLocal(), request.isAutoDeleteQueue(), request.getWindowSize(), request.getMaxRate());
       buffer.rewind();
 
       Packet decodedPacket = codec.decode(buffer);
@@ -593,18 +591,19 @@ public class PacketTypeTest extends UnitTestCase
       assertEquals(request.getFilterString(), decodedRequest.getFilterString());
       assertEquals(request.isNoLocal(), decodedRequest.isNoLocal());
       assertEquals(request.isAutoDeleteQueue(), decodedRequest.isAutoDeleteQueue());
+      assertEquals(request.getWindowSize(), decodedRequest.getWindowSize());
+      assertEquals(request.getMaxRate(), decodedRequest.getMaxRate());
    }
 
    public void testCreateConsumerResponse() throws Exception
    {
-
-      SessionCreateConsumerResponseMessage response = new SessionCreateConsumerResponseMessage(
-            randomString(), RandomUtil.randomInt());
+      SessionCreateConsumerResponseMessage response =
+      	new SessionCreateConsumerResponseMessage(randomString(), randomInt());
 
       AbstractPacketCodec codec = new SessionCreateConsumerResponseMessageCodec();
       SimpleRemotingBuffer buffer = encode(response, codec);
       checkHeader(buffer, response);
-      checkBody(buffer, response.getConsumerID(), response.getPrefetchSize());
+      checkBody(buffer, response.getConsumerID(), response.getWindowSize());
       buffer.rewind();
 
       Packet decodedPacket = codec.decode(buffer);
@@ -612,19 +611,22 @@ public class PacketTypeTest extends UnitTestCase
       assertTrue(decodedPacket instanceof SessionCreateConsumerResponseMessage);
       SessionCreateConsumerResponseMessage decodedResponse = (SessionCreateConsumerResponseMessage) decodedPacket;
       assertEquals(SESS_CREATECONSUMER_RESP, decodedResponse.getType());
-      assertEquals(response.getPrefetchSize(), decodedResponse.getPrefetchSize());
+      
+      assertEquals(response.getConsumerID(), decodedResponse.getConsumerID());
+      assertEquals(response.getWindowSize(), decodedResponse.getWindowSize());
    }
    
    public void testCreateProducerRequest() throws Exception
    {      
       String destination = "queue.testCreateProducerRequest";
       int windowSize = randomInt();
-      SessionCreateProducerMessage request = new SessionCreateProducerMessage(destination, windowSize);
+      int maxRate = randomInt();
+      SessionCreateProducerMessage request = new SessionCreateProducerMessage(destination, windowSize, maxRate);
 
       AbstractPacketCodec codec = new SessionCreateProducerMessageCodec();
       SimpleRemotingBuffer buffer = encode(request, codec);
       checkHeader(buffer, request);
-      checkBody(buffer, request.getAddress(), request.getWindowSize());
+      checkBody(buffer, request.getAddress(), request.getWindowSize(), request.getMaxRate());
       buffer.rewind();
 
       Packet decodedPacket = codec.decode(buffer);
@@ -634,17 +636,18 @@ public class PacketTypeTest extends UnitTestCase
       assertEquals(SESS_CREATEPRODUCER, decodedRequest.getType());
       assertEquals(request.getAddress(), decodedRequest.getAddress());
       assertEquals(request.getWindowSize(), decodedRequest.getWindowSize());
+      assertEquals(request.getMaxRate(), decodedRequest.getMaxRate());
    }
    
    public void testCreateProducerResponse() throws Exception
    {
       SessionCreateProducerResponseMessage response =
-      	new SessionCreateProducerResponseMessage(randomString(), randomInt());
+      	new SessionCreateProducerResponseMessage(randomString(), randomInt(), randomInt());
 
       AbstractPacketCodec codec = new SessionCreateProducerResponseMessageCodec();
       SimpleRemotingBuffer buffer = encode(response, codec);
       checkHeader(buffer, response);
-      checkBody(buffer, response.getProducerID(), response.getWindowSize());
+      checkBody(buffer, response.getProducerID(), response.getWindowSize(), response.getMaxRate());
       buffer.rewind();
 
       Packet decodedPacket = codec.decode(buffer);
@@ -654,6 +657,7 @@ public class PacketTypeTest extends UnitTestCase
       assertEquals(SESS_CREATEPRODUCER_RESP, decodedResponse.getType());
       assertEquals(response.getProducerID(), decodedResponse.getProducerID());
       assertEquals(response.getWindowSize(), decodedResponse.getWindowSize());
+      assertEquals(response.getMaxRate(), decodedResponse.getMaxRate());
    }
 
    public void testStartConnectionMessage() throws Exception

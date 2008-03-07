@@ -42,8 +42,6 @@ import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.DistributionPolicy;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
 
 /**
  *
@@ -77,8 +75,6 @@ public class QueueImpl implements Queue
          
    private final ScheduledExecutorService scheduledExecutor;
 
-   private final HierarchicalRepository<QueueSettings> queueSettings;
-
    private final PriorityLinkedList<MessageReference> messageReferences = new PriorityLinkedListImpl<MessageReference>(NUM_PRIORITIES);
 
    private final List<Consumer> consumers  = new ArrayList<Consumer>();
@@ -100,8 +96,8 @@ public class QueueImpl implements Queue
    private volatile FlowController flowController;
    
    public QueueImpl(final long persistenceID, final String name, final Filter filter, final boolean clustered,
-                    final boolean durable, final boolean temporary, final int maxSize, final ScheduledExecutorService scheduledExecutor,
-                    final HierarchicalRepository<QueueSettings> queueSettings)
+                    final boolean durable, final boolean temporary, final int maxSize,
+                    final ScheduledExecutorService scheduledExecutor)
    {
    	this.persistenceID = persistenceID;
 
@@ -118,8 +114,6 @@ public class QueueImpl implements Queue
       this.maxSize = maxSize;
       
       this.scheduledExecutor = scheduledExecutor;
-   	
-   	this.queueSettings = queueSettings;
    	
       direct = true;        	
    }
@@ -410,12 +404,7 @@ public class QueueImpl implements Queue
    {
       return messagesAdded.get();
    }
-   
-   public HierarchicalRepository<QueueSettings> getQueueSettings()
-   {
-      return queueSettings;
-   }
-   
+    
    public void setFlowController(final FlowController flowController)
    {
    	this.flowController = flowController;

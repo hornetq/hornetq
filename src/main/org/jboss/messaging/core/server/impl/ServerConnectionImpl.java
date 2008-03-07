@@ -38,6 +38,8 @@ import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.server.ServerSession;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.ConcurrentHashSet;
 
@@ -74,14 +76,14 @@ public class ServerConnectionImpl implements ServerConnection
    
    private final String clientAddress;
       
-   private final int prefetchSize;
-
    private final PacketDispatcher dispatcher;
    
    private final ResourceManager resourceManager;
    
-   private final PersistenceManager persistenceManager;   
+   private final PersistenceManager persistenceManager;  
    
+   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
+      
    private final PostOffice postOffice;
    
    private final SecurityStore securityStore;
@@ -100,13 +102,14 @@ public class ServerConnectionImpl implements ServerConnection
    // Constructors ---------------------------------------------------------------------------------
       
    public ServerConnectionImpl(final String username, final String password,
-   		                          final String remotingClientSessionID, final String jmsClientVMID,
-   		                          final String clientAddress,
-   		                          final int prefetchSize, final PacketDispatcher dispatcher,
-   		                          final ResourceManager resourceManager,
-   		                          final PersistenceManager persistenceManager,
-   		                          final PostOffice postOffice, final SecurityStore securityStore,
-   		                          final ConnectionManager connectionManager)
+   		                      final String remotingClientSessionID, final String jmsClientVMID,
+   		                      final String clientAddress,
+   		                      final PacketDispatcher dispatcher,
+   		                      final ResourceManager resourceManager,
+   		                      final PersistenceManager persistenceManager,
+   		                      final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+   		                      final PostOffice postOffice, final SecurityStore securityStore,
+   		                      final ConnectionManager connectionManager)
    {
    	id = UUID.randomUUID().toString();
       
@@ -118,13 +121,13 @@ public class ServerConnectionImpl implements ServerConnection
 
       this.clientAddress = clientAddress;
 
-      this.prefetchSize = prefetchSize;
-
       this.dispatcher = dispatcher;
       
       this.resourceManager = resourceManager;
       
       this.persistenceManager = persistenceManager;
+      
+      this.queueSettingsRepository = queueSettingsRepository;      
       
       this.postOffice = postOffice;
       
@@ -151,15 +154,15 @@ public class ServerConnectionImpl implements ServerConnection
                                                                final PacketSender sender) throws Exception
    {           
       ServerSession session =
-         new ServerSessionImpl(autoCommitSends, autoCommitAcks, prefetchSize, xa, this, resourceManager,
-         		sender, dispatcher, persistenceManager, postOffice, securityStore);
+         new ServerSessionImpl(autoCommitSends, autoCommitAcks, xa, this, resourceManager,
+         		sender, dispatcher, persistenceManager, queueSettingsRepository, postOffice, securityStore);
 
       synchronized (sessions)
       {
          sessions.put(session.getID(), session);
       }
 
-      dispatcher.register(new ServerSessionPacketHandler(session, prefetchSize));
+      dispatcher.register(new ServerSessionPacketHandler(session));
       
       return new ConnectionCreateSessionResponseMessage(session.getID());
    }
@@ -241,11 +244,6 @@ public class ServerConnectionImpl implements ServerConnection
    public void removeTemporaryQueue(final Queue queue)
    {
       temporaryQueues.remove(queue);      
-   }
-   
-   public int getPrefetchSize()
-   {
-      return prefetchSize;
    }
    
    public boolean isStarted()

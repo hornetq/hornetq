@@ -27,15 +27,13 @@ public class CreateConnectionRequest extends AbstractPacket
    private final String clientVMID;
    private final String username;
    private final String password;
-   private final int prefetchSize;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    public CreateConnectionRequest(final int version,
-         final String remotingSessionID, final String clientVMID, final String username, final String password,
-         final int prefetchSize)
+         final String remotingSessionID, final String clientVMID, final String username, final String password)
    {
       super(CREATECONNECTION);
 
@@ -47,7 +45,6 @@ public class CreateConnectionRequest extends AbstractPacket
       this.clientVMID = clientVMID;
       this.username = username;
       this.password = password;
-      this.prefetchSize = prefetchSize;
    }
 
    // Public --------------------------------------------------------
@@ -88,11 +85,6 @@ public class CreateConnectionRequest extends AbstractPacket
       buf.append(", password=" + password);
       buf.append("]");
       return buf.toString();
-   }
-
-   public int getPrefetchSize()
-   {
-      return prefetchSize;
    }
 
    // Protected -----------------------------------------------------

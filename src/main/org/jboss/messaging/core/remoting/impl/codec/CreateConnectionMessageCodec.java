@@ -6,9 +6,9 @@
  */
 package org.jboss.messaging.core.remoting.impl.codec;
 
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
-
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CREATECONNECTION;
+
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -43,14 +43,12 @@ public class CreateConnectionMessageCodec extends
       String clientVMID = request.getClientVMID();
       String username = request.getUsername();
       String password = request.getPassword();
-      int prefetchSize = request.getPrefetchSize();
 
       int bodyLength = INT_LENGTH // version
             + sizeof(remotingSessionID)
             + sizeof(clientVMID)
             + sizeof(username) 
-            + sizeof(password)
-            + INT_LENGTH;
+            + sizeof(password);
 
       out.putInt(bodyLength);
       out.putInt(version);
@@ -58,7 +56,6 @@ public class CreateConnectionMessageCodec extends
       out.putNullableString(clientVMID);
       out.putNullableString(username);
       out.putNullableString(password);
-      out.putInt(prefetchSize);
    }
 
    @Override
@@ -75,10 +72,8 @@ public class CreateConnectionMessageCodec extends
       String clientVMID = in.getNullableString();
       String username = in.getNullableString();
       String password = in.getNullableString();
-      int prefetchSize = in.getInt();
 
-      return new CreateConnectionRequest(version, remotingSessionID,
-            clientVMID, username, password, prefetchSize);
+      return new CreateConnectionRequest(version, remotingSessionID, clientVMID, username, password);
    }
 
    // Package protected ---------------------------------------------

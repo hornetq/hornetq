@@ -23,18 +23,22 @@ public class SessionCreateProducerResponseMessage extends AbstractPacket
    private final String producerID;
    
    private final int windowSize;
+   
+   private final int maxRate;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateProducerResponseMessage(final String producerID, final int windowSize)
+   public SessionCreateProducerResponseMessage(final String producerID, final int windowSize, final int maxRate)
    {
       super(SESS_CREATEPRODUCER_RESP);
 
       this.producerID = producerID;
       
       this.windowSize = windowSize;
+      
+      this.maxRate = maxRate;
    }
 
    // Public --------------------------------------------------------
@@ -48,6 +52,11 @@ public class SessionCreateProducerResponseMessage extends AbstractPacket
    {
    	return windowSize;
    }
+   
+   public int getMaxRate()
+   {
+   	return maxRate;
+   }
 
    @Override
    public String toString()
@@ -55,6 +64,7 @@ public class SessionCreateProducerResponseMessage extends AbstractPacket
       StringBuffer buf = new StringBuffer(getParentString());
       buf.append(", producerID=" + producerID);
       buf.append(", windowSize=" + windowSize);
+      buf.append(", maxRate=" + maxRate);
       buf.append("]");
       return buf.toString();
    }

@@ -4,8 +4,7 @@
 
    <bean name="Configuration" class="org.jboss.messaging.core.config.impl.FileConfiguration"/>
 
-   <bean name="ServiceLocator" class="org.jboss.messaging.microcontainer.ServiceLocator">
-   </bean>
+   <bean name="ServiceLocator" class="org.jboss.messaging.microcontainer.ServiceLocator"/>
 
    <bean name="MessagingServerManagement" class="org.jboss.messaging.core.management.impl.MessagingServerManagementImpl">
       <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.messaging:service=MessagingServerManagement", exposedInterface=org.jboss.messaging.core.management.MessagingServerManagement.class)</annotation>
@@ -40,9 +39,7 @@
       </property>
             
    </bean>
-   
-   
-   
+         
    <bean name="BDBJEEnvironment" class="org.jboss.messaging.core.persistence.impl.bdbje.integration.RealBDBJEEnvironment">
    
       <property name="environmentPath">${user.home}/bdbje/env</property>
@@ -51,9 +48,11 @@
       
       <property name="syncVM">true</property>
       
-      <property name="syncOS">false</property>
+      <property name="syncOS">true</property>
    
-      <property name="memoryCacheSize">-1</property>
+      <!-- We set the BDB cache low. We don't really use BDB for caching, and setting it large will increase
+      memory footprint since messages will be in memory twice - once in the queue and once in the cache -->
+      <property name="memoryCacheSize">1048576</property>
             
    </bean>
 

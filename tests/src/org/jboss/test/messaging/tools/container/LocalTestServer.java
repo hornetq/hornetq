@@ -601,9 +601,9 @@ public class LocalTestServer implements Server, Runnable
 
    public void deployConnectionFactory(String objectName,
                                        List<String> jndiBindings,
-                                       int prefetchSize) throws Exception
+                                       int consumerWindowSize) throws Exception
    {
-      deployConnectionFactory(null, objectName, jndiBindings, prefetchSize, -1, -1, -1, false, false, false, -1);
+      deployConnectionFactory(null, objectName, jndiBindings, consumerWindowSize, -1, -1, -1, false, false, false, -1);
    }
 
 
@@ -612,7 +612,6 @@ public class LocalTestServer implements Server, Runnable
    {
       deployConnectionFactory(null, objectName, jndiBindings, -1, -1, -1, -1, false, false, false, -1);
    }
-
 
    public void deployConnectionFactory(String objectName, List<String> jndiBindings, boolean strictTck) throws Exception
    {
@@ -652,7 +651,7 @@ public class LocalTestServer implements Server, Runnable
    {
       log.info("deploying connection factory with name: " + objectName + " and dupsok: " + dupsOkBatchSize);
       getJMSServerManager().createConnectionFactory(objectName, clientId, dupsOkBatchSize,
-      		strictTck, prefetchSize, 1000, -1, jndiBindings);
+      		strictTck, prefetchSize, -1, 1000, -1, jndiBindings);
    }
 
 

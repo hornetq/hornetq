@@ -26,6 +26,8 @@ import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.persistence.PersistenceManager;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 
 /**
@@ -128,7 +130,8 @@ public class MessageReferenceImpl implements MessageReference
       queue.referenceAcknowledged();
    }
    
-   public boolean cancel(final PersistenceManager persistenceManager) throws Exception
+   public boolean cancel(final PersistenceManager persistenceManager,
+   		                final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {      
       if (message.isDurable() && queue.isDurable())
       {
@@ -137,11 +140,11 @@ public class MessageReferenceImpl implements MessageReference
               
       queue.referenceCancelled();
 
-      int maxDeliveries = queue.getQueueSettings().getMatch(queue.getName()).getMaxDeliveryAttempts();
+      int maxDeliveries = queueSettingsRepository.getMatch(queue.getName()).getMaxDeliveryAttempts();
       
       if (maxDeliveries > 0 && deliveryCount >= maxDeliveries)
       {      	      	
-         Queue DLQ = queue.getQueueSettings().getMatch(queue.getName()).getDLQ();
+         Queue DLQ = queueSettingsRepository.getMatch(queue.getName()).getDLQ();
          
          if (DLQ != null)
          {
@@ -166,9 +169,10 @@ public class MessageReferenceImpl implements MessageReference
       }
    }
    
-   public void expire(final PersistenceManager persistenceManager) throws Exception
+   public void expire(final PersistenceManager persistenceManager,
+   		final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
-      Queue expiryQueue = queue.getQueueSettings().getMatch(queue.getName()).getExpiryQueue();
+      Queue expiryQueue = queueSettingsRepository.getMatch(queue.getName()).getExpiryQueue();
       
       if (expiryQueue != null)
       {

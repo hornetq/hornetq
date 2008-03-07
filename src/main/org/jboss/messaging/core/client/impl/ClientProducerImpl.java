@@ -121,8 +121,8 @@ public class ClientProducerImpl implements ClientProducerInternal
    {
    	ProducerSendMessage message = new ProducerSendMessage(address, msg.copy());
    	
-   	//Window size of -1 means disable window flow control
-   	if (windowSize != -1 && address == null)
+   	//We only flow control with non-anonymous producers
+   	if (address == null)
    	{
    		while (windowSize == 0)
    		{
