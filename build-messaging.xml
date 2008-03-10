@@ -139,7 +139,7 @@
       <path refid="apache.mina.classpath"/>
       <path refid="slf4j.api.classpath"/>
       <path refid="slf4j.log4j.classpath"/>
-      <pathelement path="${build.lib}/je-3.2.44.jar"/>
+      <pathelement path="${build.lib}/je-3.2.74.jar"/>
    </path>
 
    <!--
