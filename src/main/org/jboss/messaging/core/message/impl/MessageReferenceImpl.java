@@ -187,7 +187,21 @@ public class MessageReferenceImpl implements MessageReference
          acknowledge(persistenceManager);
       }
    }
-         
+
+   public void moveMessage(final Queue destinationQueue,
+                                  final PersistenceManager persistenceManager) throws Exception
+   {
+      TransactionImpl tx = new TransactionImpl();
+
+      message.createReference(destinationQueue);
+
+      tx.addMessage(message);
+
+      tx.addAcknowledgement(this);
+
+      tx.commit(true, persistenceManager);
+   }
+
    // Public --------------------------------------------------------
 
    public String toString()

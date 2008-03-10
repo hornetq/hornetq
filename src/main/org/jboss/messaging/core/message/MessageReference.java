@@ -70,6 +70,9 @@ public interface MessageReference
    boolean cancel(PersistenceManager persistenceManager, HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;  
    
    void expire(PersistenceManager persistenceManager, HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+
+   void moveMessage(Queue destinationQueue,
+                                  PersistenceManager persistenceManager) throws Exception;
 }
 
 

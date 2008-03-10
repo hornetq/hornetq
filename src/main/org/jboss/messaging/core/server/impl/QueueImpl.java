@@ -37,11 +37,14 @@ import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.DistributionPolicy;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.transaction.impl.TransactionImpl;
+import org.jboss.messaging.core.persistence.PersistenceManager;
 
 /**
  *
@@ -230,6 +233,18 @@ public class QueueImpl implements Queue
       }
    }
 
+   public void move(MessageReference messageReference, Queue queue, PersistenceManager persistenceManager) throws Exception
+   {
+      Message newMessage = messageReference.getMessage().copy();
+      MessageReference newRef = newMessage.createReference(queue);
+      queue.addLast(newRef);
+      messageReferences.remove(messageReference , messageReference.getMessage().getPriority());
+      TransactionImpl tx = new TransactionImpl();
+      tx.addMessage(newMessage);
+      tx.addAcknowledgement(messageReference);
+      tx.commit(true, persistenceManager);
+   }
+
    public synchronized void addConsumer(final Consumer consumer)
    {
       consumers.add(consumer);
@@ -308,19 +323,6 @@ public class QueueImpl implements Queue
       messageReferences.remove(messageReference , messageReference.getMessage().getPriority());
       messageReferences.addLast(messageReference, priority);
       //FIXME - what about scheduled??
-   }
-
-   //FIXME - review this
-   public synchronized List<MessageReference> removeReferences(final Filter filter)
-   {
-      List<MessageReference> allRefs = list(filter);
-      
-      for (MessageReference messageReference : allRefs)
-      {
-         removeReference(messageReference);
-      }
-      
-      return allRefs;
    }
 
    public long getPersistenceID()

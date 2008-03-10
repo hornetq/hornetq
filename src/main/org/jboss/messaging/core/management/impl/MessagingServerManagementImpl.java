@@ -426,10 +426,10 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
       Filter actFilter = new FilterImpl(filter);
       Queue from = getQueue(fromQueue);
       Queue to = getQueue(toQueue);
-      List<MessageReference> messageReferences = from.removeReferences(actFilter);
+      List<MessageReference> messageReferences = from.list(actFilter);
       for (MessageReference messageReference : messageReferences)
       {
-         to.addLast(messageReference);
+         from.move(messageReference, to, messagingServer.getPersistenceManager());
       }
 
    }
@@ -437,10 +437,10 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
    public void expireMessages(String queue, String filter) throws Exception
    {
       Filter actFilter = new FilterImpl(filter);
-      List<MessageReference> allRefs = getQueue(queue).removeReferences(actFilter);
+      List<MessageReference> allRefs = getQueue(queue).list(actFilter);
       for (MessageReference messageReference : allRefs)
       {
-         messageReference.expire(messagingServer.getPersistenceManager(), messagingServer.getQueueSettingsRepository());
+         messageReference.getMessage().setExpiration(System.currentTimeMillis());
       }
    }
 
@@ -458,19 +458,6 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
          messageReference.getMessage().setPriority((byte) priority);
       }
 
-   }
-
-   public void changeMessageHeader(String queue, String filter, String header, Object value) throws Exception
-   {
-       Filter actFilter = new FilterImpl(filter);
-      List<MessageReference> allRefs = getQueue(queue).list(actFilter);
-      for (MessageReference reference : allRefs)
-      {
-         if(reference.getMessage().removeHeader(header) != null)
-         {
-            reference.getMessage().putHeader(header, value);
-         }
-      }
    }
 
    public Set<String> listAvailableAddresses()

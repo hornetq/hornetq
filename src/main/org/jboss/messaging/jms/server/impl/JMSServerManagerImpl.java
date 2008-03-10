@@ -370,12 +370,6 @@ public class JMSServerManagerImpl implements JMSServerManager
               "JMSMessageID='" + messageId + "'", priority);
    }
 
-   public void changeMessageHeader(String queue, String messageId, String header, Object value) throws Exception
-   {
-      messagingServerManagement.changeMessageHeader(new JBossQueue(queue).getAddress(),
-              "JMSMessageID='" + messageId + "'", header, value);
-   }
-
    public int getMessageCountForQueue(String queue) throws Exception
    {
       return getMessageCount(new JBossQueue(queue));
@@ -447,7 +441,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       }
    }
 
-   public void dropConnectionForUser(String user) throws Exception
+   public void dropConnectionsForUser(String user) throws Exception
    {
       List<ServerConnection> endpoints = messagingServerManagement.getActiveConnections();
       List<ConnectionInfo> connectionInfos = getConnectionsForUser(user);

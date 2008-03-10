@@ -27,6 +27,7 @@ import java.util.List;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.postoffice.FlowController;
+import org.jboss.messaging.core.persistence.PersistenceManager;
 
 
 /**
@@ -68,8 +69,6 @@ public interface Queue
 
    void changePriority(final MessageReference messageReference, int priority);
 
-   List<MessageReference> removeReferences(Filter filter);
-
    long getPersistenceID();
    
    void setPersistenceID(long id);
@@ -109,4 +108,6 @@ public interface Queue
    FlowController getFlowController();
    
    void setFlowController(FlowController flowController);
+
+   void move(MessageReference messageReference, Queue queue, PersistenceManager persistenceManager) throws Exception;
 }

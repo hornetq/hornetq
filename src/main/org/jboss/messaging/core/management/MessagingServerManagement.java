@@ -33,76 +33,239 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConnection;
 
 /**
- * This interface describes the management interface exposed by the server
+ * This interface describes the core management interface exposed by the server
  * 
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
 public interface MessagingServerManagement
 {
+   /**
+    * is the server started
+    * @return true if the server is running
+    */
    boolean isStarted();
 
+   /**
+    * creates a queue with the specified address
+    * @param address the address
+    * @param name the name of the queue
+    * @throws Exception if a problem occurred
+    */
    void createQueue(String address,String name) throws Exception;
 
+   /**
+    * destroy a particular queue
+    * @param name the name of the queue
+    * @throws Exception if a problem occurred
+    */
    void destroyQueue(String name) throws Exception;
-   
+
+   /**
+    * add an address to the post office
+    * @param address the address to add
+    * @return true if the address was added
+    * @throws Exception if a problem occurred
+    */
    boolean addAddress(String address) throws Exception;
 
+   /**
+    * remove an address from the post office
+    * @param address the address to remove
+    * @return true if the address was removed
+    * @throws Exception if a problem occurred
+    */
    boolean removeAddress(String address) throws Exception;
-   
+
+   /**
+    * returns all the queues for a specific address
+    * @param address the address
+    * @return the queues
+    * @throws Exception if a problem occurred
+    */
    List<Queue> getQueuesForAddress(String address) throws Exception;
 
+   /**
+    * create a client connection factory
+    * @param strictTck if it is strict TCK
+    * @param consumerWindowSize the consumer window size
+    * @param consumerMaxRate the consumer max rate
+    * @param producerWindowSize the producer window size
+    * @param producerMaxRate the producer max rate
+    * @return the connection factory
+    */
    ClientConnectionFactory createClientConnectionFactory(boolean strictTck,
    		int consumerWindowSize, int consumerMaxRate, int producerWindowSize, int producerMaxRate);
 
+   /**
+    * remove all the messages for a specific address
+    * @param address the address
+    * @throws Exception if a problem occurred
+    */
    void removeAllMessagesForAddress(String address) throws Exception;
 
+   /**
+    * remove all the messages for a specific binding
+    * @param name the name of the binding
+    * @throws Exception if a problem occurred
+    */
    void removeAllMessagesForBinding(String name) throws Exception;
 
-   List<Message> listMessages(String queueName, Filter filter) throws Exception;
+   /**
+    * List all messages in a queue that match the filter provided
+    * @param queue the name of the queue
+    * @param filter the filter
+    * @return the messages
+    * @throws Exception if a problem occurred
+    */
+   List<Message> listMessages(String queue, Filter filter) throws Exception;
 
+   /**
+    * remove the messages for a specific binding that match the specified filter
+    * @param binding the name of the binding
+    * @param filter the filter
+    * @throws Exception if a problem occurred
+    */
    void removeMessageForBinding(String binding, Filter filter) throws Exception;
 
-   void removeMessageForAddress(String binding, Filter filter) throws Exception;
+   /**
+    * remove the messages for a specific address that match the specified filter
+    * @param address the address
+    * @param filter the filter
+    * @throws Exception if a problem occurred
+    */
+   void removeMessageForAddress(String address, Filter filter) throws Exception;
 
+   /**
+    * count the number of messages in a queue
+    * @param queue the name of the queue
+    * @return the number of messages in a queue
+    * @throws Exception if a problem occurred
+    */
    int getMessageCountForQueue(String queue) throws Exception;
 
-   void registerMessageCounter(String queueName) throws Exception;
+   /**
+    * register a message counter with a specific queue
+    * @param queue the name of the queue
+    * @throws Exception if a problem occurred
+    */
+   void registerMessageCounter(String queue) throws Exception;
 
-   void unregisterMessageCounter(String queueName) throws Exception;
+   /**
+    * unregister a message counter from a specific queue
+    * @param queue the name of the queue
+    * @throws Exception if a problem occurred
+    */
+   void unregisterMessageCounter(String queue) throws Exception;
 
-   void startMessageCounter(String queueName, long duration) throws Exception;
+   /**
+    * start collection statistics on a message counter. The message counter must have been registered first.
+    * @param queue the name of the queue
+    * @param duration how long to take a sample for in seconds. 0 means indefinitely.
+    * @throws Exception if a problem occurred
+    */
+   void startMessageCounter(String queue, long duration) throws Exception;
 
-   MessageCounter stopMessageCounter(String queueName) throws Exception;
+   /**
+    * stop a message counter on a specific queue. The message counter must be started to call this.
+    * @param queue the name of the queue
+    * @return the message counter stopped
+    * @throws Exception if a problem occurred
+    */
+   MessageCounter stopMessageCounter(String queue) throws Exception;
 
-   MessageCounter getMessageCounter(String queueName);
+   /**
+    * get a message counter for a specific queue
+    * @param queue the name of the queue
+    * @return the message counter
+    */
+   MessageCounter getMessageCounter(String queue);
 
+   /**
+    * get all message counters
+    * @return the message counters
+    */
    Collection<MessageCounter> getMessageCounters();
 
+   /**
+    * reset a message counter for a specific queue
+    * @param queue the name of the queue
+    */
    void resetMessageCounter(String queue);
 
+   /**
+    * reset all message counters registered
+    */
    void resetMessageCounters();
 
+   /**
+    * reset the history for a message counter for a queue
+    * @param queue the name of the queue
+    */
    void resetMessageCounterHistory(String queue);
 
+   /**
+    * reset all message counter histories
+    */
    void resetMessageCounterHistories();
 
+   /**
+    * stop all message counters
+    * @return all message counters
+    * @throws Exception if a problem occurred
+    */
    List<MessageCounter> stopAllMessageCounters() throws Exception;
 
+   /**
+    * unregister all message counters
+    * @throws Exception if a problem occurred
+    */
    void unregisterAllMessageCounters() throws Exception;
 
+   /**
+    * get the number of consumers for a specific queue
+    * @param queue the name of the queue
+    * @return the count
+    * @throws Exception if a problem occurred
+    */
    public int getConsumerCountForQueue(String queue) throws Exception;
 
+   /**
+    * return all the active connections
+    * @return all connections
+    */
    List<ServerConnection> getActiveConnections();
 
+   /**
+    * move a set of messages from one queue to another
+    * @param toQueue the source queue
+    * @param fromQueue the destination queue
+    * @param filter the filter to use
+    * @throws Exception if a problem occurred
+    */
    void moveMessages(String toQueue, String fromQueue, String filter) throws Exception;
 
+   /**
+    * expire a set of messages for a specific queue
+    * @param queue the name of the queue
+    * @param filter the filter to use
+    * @throws Exception if a problem occurred
+    */
    void expireMessages(String queue,String filter) throws Exception;
 
+   /**
+    * change the message priority for a set of messages
+    * @param queue the name of the queue
+    * @param filter the filter to use
+    * @param priority the priority to change to
+    * @throws Exception if a problem occurred
+    */
    void changeMessagePriority(String queue, String filter, int priority) throws Exception;
 
-   void changeMessageHeader(String queue, String filter, String header, Object value) throws Exception;
-
+   /**
+    * list all available addresses
+    * @return the addresses
+    */
    Set<String> listAvailableAddresses();
 
 }

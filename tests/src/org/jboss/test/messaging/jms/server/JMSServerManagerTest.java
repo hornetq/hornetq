@@ -21,9 +21,7 @@
    */
 package org.jboss.test.messaging.jms.server;
 
-import org.apache.tools.ant.taskdefs.Sleep;
 import org.jboss.test.messaging.JBMServerTestCase;
-import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.ConnectionInfo;
 import org.jboss.messaging.jms.server.JMSServerManager;
@@ -383,7 +381,7 @@ public class JMSServerManagerTest extends JBMServerTestCase
       String id = conn4.getClientID();
       try
       {
-         jmsServerManager.dropConnectionForUser("guest");
+         jmsServerManager.dropConnectionsForUser("guest");
          List<ConnectionInfo> connectionInfos = jmsServerManager.getConnections();
          assertNotNull(connectionInfos);
          assertEquals(connectionInfos.size(), 3);
@@ -806,60 +804,6 @@ public class JMSServerManagerTest extends JBMServerTestCase
          assertEquals(8, message.getJMSPriority());
          assertEquals(messageToMove.getJMSMessageID(), message.getJMSMessageID());
 
-         consumer.close();
-
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-
-   }
-
-   public void testChangeMessageHeader() throws Exception
-   {
-      Connection conn = getConnectionFactory().createConnection("guest", "guest");
-      try
-      {
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer producer = sess.createProducer(queue1);
-
-         TextMessage message = sess.createTextMessage();
-         message.setStringProperty("MyString", "12345");
-         message.setBooleanProperty("MyBoolean", true);
-         message.setByteProperty("MyByte", (byte) 1);
-         message.setDoubleProperty("MyDouble", 0.0);
-         message.setFloatProperty("MyFloat", 0.0f);
-         message.setIntProperty("MyInt", 0);
-         message.setObjectProperty("MyObject", new String("test"));
-         message.setLongProperty("MyLong", 0l);
-         message.setShortProperty("MyShort", (short)0);
-
-         producer.send(message);
-         jmsServerManager.changeMessageHeader("Queue1", message.getJMSMessageID(), "MyString", "abcde");
-         jmsServerManager.changeMessageHeader("Queue1", message.getJMSMessageID(), "MyBoolean", false);
-         jmsServerManager.changeMessageHeader("Queue1", message.getJMSMessageID(), "MyByte", (byte)2);
-         jmsServerManager.changeMessageHeader("Queue1", message.getJMSMessageID(), "MyDouble", 0.1);
-         jmsServerManager.changeMessageHeader("Queue1", message.getJMSMessageID(), "MyFloat", 0.1f);
-         jmsServerManager.changeMessageHeader("Queue1", message.getJMSMessageID(), "MyInt", 1);
-         jmsServerManager.changeMessageHeader("Queue1", message.getJMSMessageID(), "MyObject", new Long(0));
-         jmsServerManager.changeMessageHeader("Queue1", message.getJMSMessageID(), "MyLong", 1l);
-         jmsServerManager.changeMessageHeader("Queue1", message.getJMSMessageID(), "MyShort", (short)1);
-         MessageConsumer consumer = sess.createConsumer(queue1);
-         conn.start();
-
-         message = (TextMessage) consumer.receive();
-         assertEquals(message.getStringProperty("MyString"), "abcde");
-         assertEquals(message.getBooleanProperty("MyBoolean"), false);
-         assertEquals(message.getByteProperty("MyByte"), (byte)2);
-         assertEquals(message.getDoubleProperty("MyDouble"), 0.1);
-         assertEquals(message.getIntProperty("MyInt"), 1);
-         assertEquals(message.getObjectProperty("MyObject").getClass(), Long.class);
-         assertEquals(message.getLongProperty("MyLong"), 1l);
-         assertEquals(message.getShortProperty("MyShort"), (short)1);
          consumer.close();
 
       }
