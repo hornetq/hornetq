@@ -156,7 +156,7 @@
       <path refid="jboss.profiler.jvmti.classpath"/>
       <path refid="jboss.test14.classpath"/>
       <path refid="jboss.jboss.retro.classpath"/>
-      <pathelement location="${project.root}/lib/je-3.2.44.jar"/>
+      <pathelement location="${project.root}/lib/je-3.2.74.jar"/>
       <pathelement location="${tests.root}/lib/easymock.jar"/>
    </path>
 
@@ -170,7 +170,7 @@
       <pathelement location="${project.root}/src/etc"/> <!-- server's configuration files -->
       <pathelement location="${project.root}/src/etc/server/default/deploy"/>
       <pathelement location="${project.thirdparty}/naming/jnp-client.jar"/>
-      <pathelement location="${project.root}/lib/je-3.2.44.jar"/>
+      <pathelement location="${project.root}/lib/je-3.2.74.jar"/>
       <pathelement location="${tests.root}/lib/easymock.jar"/>
       <path refid="test.compilation.classpath"/>
       <path refid="dom4j.dom4j.classpath"/>
