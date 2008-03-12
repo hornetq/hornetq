@@ -71,7 +71,7 @@ public class NIOSequentialFile implements SequentialFile
 		channel = rfile.getChannel();		
 	}
 	
-	public void preAllocate(final int size, final byte fillCharacter) throws Exception
+	public void fill(final int position, final int size, final byte fillCharacter) throws Exception
 	{
 		ByteBuffer bb = ByteBuffer.allocateDirect(size);
 		
@@ -82,7 +82,7 @@ public class NIOSequentialFile implements SequentialFile
 		
 		bb.flip();
 
-		channel.position(0);
+		channel.position(position);
 
 		channel.write(bb);
 
@@ -103,11 +103,13 @@ public class NIOSequentialFile implements SequentialFile
 		file.delete();
 	}
 
-	public void read(ByteBuffer bytes) throws Exception
+	public int read(ByteBuffer bytes) throws Exception
 	{
 		int bytesRead = channel.read(bytes);
 		
 		log.info("Read " + bytesRead + " bytes");
+		
+		return bytesRead;
 	}
 
 	public void write(ByteBuffer bytes) throws Exception
@@ -117,7 +119,7 @@ public class NIOSequentialFile implements SequentialFile
 		if (sync)
 		{
 			channel.force(false);
-		};
+		}
 	}
 
 	public void reset() throws Exception

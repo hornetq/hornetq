@@ -25,7 +25,6 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
-import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.journal.impl.test.unit.fakes.FakeSequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.test.unit.fakes.FakeSequentialFileFactory.FakeSequentialFile;
@@ -60,25 +59,31 @@ public class JournalTest extends UnitTestCase
 	
 	public void testLoad() throws Exception
 	{
-		final int numFiles = 10;
+		final int minFiles = 10;
+		
+		final int minAvailableFiles = 10;
 		
 		final int fileSize = 10 * 1024;
 		
 		final boolean sync = true;
 		
+		final String filePrefix = "jbm";
+		
+		final String fileExtension = "jbm";
+		
 		long timeStart = System.currentTimeMillis();
 		
-		JournalImpl journal = new JournalImpl(journalDir, fileSize, numFiles, sync, factory);
+		JournalImpl journal =
+			new JournalImpl(journalDir, fileSize, minFiles, minAvailableFiles, sync, factory, 5000, filePrefix, fileExtension);
 		
 		journal.load();
 		
 		long timeEnd = System.currentTimeMillis();
 		
 		assertEquals(1, journal.getFiles().size());
-		assertEquals(numFiles - 1, journal.getAvailableFiles().size());
-		assertEquals(0, journal.getFilesToDelete().size());
-		
-		assertEquals(numFiles, factory.getFileMap().size());
+		assertEquals(minFiles - 1, journal.getAvailableFiles().size());
+	
+		assertEquals(minFiles, factory.getFileMap().size());
 		
 		for (Map.Entry<String, FakeSequentialFile> entry: factory.getFileMap().entrySet())
 		{
@@ -98,7 +103,7 @@ public class JournalTest extends UnitTestCase
 			long orderingID = bb.getLong();
 			
 			String expectedFilename =
-				journalDir + "/" + JournalImpl.JOURNAL_FILE_PREFIX + "-" + orderingID + "." + JournalImpl.JOURNAL_FILE_EXTENSION;
+				journalDir + "/" + filePrefix + "-" + orderingID + "." + fileExtension;
 			
 			assertEquals(expectedFilename, file.getFileName());
 			
@@ -128,21 +133,20 @@ public class JournalTest extends UnitTestCase
 		
 		assertEquals(0, journal.getFiles().size());
 		assertEquals(0, journal.getAvailableFiles().size());
-		assertEquals(0, journal.getFilesToDelete().size());
-		
+
 		//Now reload
 		
-		journal = new JournalImpl(journalDir, fileSize, numFiles, sync, factory);
+		journal = new JournalImpl(journalDir, fileSize, minFiles, minAvailableFiles, sync, factory, 5000, filePrefix, fileExtension);
+		
 		
 		log.info("******** reloading");
 		
 		journal.load();
 		
 		assertEquals(1, journal.getFiles().size());
-		assertEquals(numFiles - 1, journal.getAvailableFiles().size());
-		assertEquals(0, journal.getFilesToDelete().size());
-		
-		assertEquals(numFiles, factory.getFileMap().size());
+		assertEquals(minFiles - 1, journal.getAvailableFiles().size());
+	
+		assertEquals(minFiles, factory.getFileMap().size());
 		
 		for (Map.Entry<String, FakeSequentialFile> entry: factory.getFileMap().entrySet())
 		{
@@ -162,7 +166,7 @@ public class JournalTest extends UnitTestCase
 			long orderingID = bb.getLong();
 			
 			String expectedFilename =
-				journalDir + "/" + JournalImpl.JOURNAL_FILE_PREFIX + "-" + orderingID + "." + JournalImpl.JOURNAL_FILE_EXTENSION;
+				journalDir + "/" + filePrefix + "-" + orderingID + "." + fileExtension;
 			
 			assertEquals(expectedFilename, file.getFileName());
 			

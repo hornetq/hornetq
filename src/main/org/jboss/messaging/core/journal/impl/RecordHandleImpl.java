@@ -1,5 +1,8 @@
 package org.jboss.messaging.core.journal.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.messaging.core.journal.RecordHandle;
 
 /**
@@ -13,13 +16,18 @@ public class RecordHandleImpl implements RecordHandle
 {
 	private final long id;
 	
-	private final JournalFile file;
+	private List<JournalFile> files = new ArrayList<JournalFile>();
 	
-	public RecordHandleImpl(final long id, final JournalFile file)
+	public RecordHandleImpl(final long id)
 	{
 		this.id = id;
+	}
+	
+	public void addFile(JournalFile file)
+	{
+		files.add(file);
 		
-		this.file = file;
+		file.incRefCount();
 	}
 	
 	public long getID()
@@ -27,8 +35,11 @@ public class RecordHandleImpl implements RecordHandle
 		return id;
 	}
 	
-	public JournalFile getFile()
+	public void recordDeleted()
 	{
-		return file;
+		for (JournalFile file: files)
+		{
+			file.decRefCount();
+		}
 	}
 }

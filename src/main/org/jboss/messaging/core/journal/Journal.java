@@ -21,7 +21,7 @@
   */
 package org.jboss.messaging.core.journal;
 
-import java.util.Map;
+import java.util.List;
 
 
 /**
@@ -33,9 +33,32 @@ import java.util.Map;
  */
 public interface Journal
 {
-	RecordHandle add(long id, byte[] bytes) throws Exception;
+	// Non transactional operations
 	
-	void delete(RecordHandle handle) throws Exception;
+	RecordHandle appendAddRecord(long id, byte[] record) throws Exception;
 	
-	Map<Long, byte[]> load() throws Exception;
+	void appendUpdateRecord(RecordHandle handle, byte[] record) throws Exception;
+	
+	void appendDeleteRecord(RecordHandle handle) throws Exception;
+	
+	// Transactional operations
+	
+	RecordHandle appendAddRecordTransactional(long txID, long id, byte[] record, boolean done) throws Exception;
+	
+	void appendUpdateRecordTransactional(long txID, RecordHandle handle, byte[] record, boolean done) throws Exception;
+	
+	void appendDeleteRecordTransactional(long txID, RecordHandle handle, boolean done) throws Exception;
+	
+	
+//	RecordHandle appendAddRecordPrepare(long txID, long id, byte[] record, boolean done) throws Exception;
+//	
+//	void appendUpdateRecordPrepare(long txID, RecordHandle handle, byte[] record, boolean done) throws Exception;
+//	
+//	void appendDeleteRecordPrepare(long txID, RecordHandle handle, boolean done) throws Exception;
+
+	
+	// Load
+	
+	List<RecordHistory> load() throws Exception;
+	
 }

@@ -151,7 +151,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 			open = true;
 		}
 
-		public void preAllocate(int size, byte fillCharacter) throws Exception
+		public void fill(int pos, int size, byte fillCharacter) throws Exception
 		{		
 			if (!open)
 			{
@@ -162,7 +162,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 			
 			byte[] bytes = new byte[size];
 			
-			for (int i = 0; i < size; i++)
+			for (int i = pos; i < size + pos; i++)
 			{
 				bytes[i] = fillCharacter;
 			}
@@ -170,7 +170,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 			data = ByteBuffer.wrap(bytes);		
 		}
 
-		public void read(ByteBuffer bytes) throws Exception
+		public int read(ByteBuffer bytes) throws Exception
 		{
 			if (!open)
 			{
@@ -186,6 +186,8 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 			data.get(bytesRead);
 			
 			bytes.put(bytesRead);
+			
+			return bytesRead.length;
 		}
 
 		public void reset() throws Exception

@@ -30,4 +30,5 @@ package org.jboss.messaging.core.journal;
  */
 public interface RecordHandle
 {
+	public long getID();
 }

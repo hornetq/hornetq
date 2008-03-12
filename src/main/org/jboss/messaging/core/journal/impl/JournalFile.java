@@ -39,7 +39,7 @@ public class JournalFile
 	
 	private final long orderingID;
 	
-	private final Set<Long> ids = new HashSet<Long>();
+	private int refCount;
 	
 	private int offset;
 		
@@ -75,19 +75,19 @@ public class JournalFile
 		return file;
 	}
 	
-	public void addID(final long id)
+	public void incRefCount()
 	{
-		ids.add(id);
+		refCount++;
 	}
 	
-	public void removeID(final long id)
+	public void decRefCount()
 	{
-		ids.remove(id);
+		refCount--;
 	}
 	
 	public boolean isEmpty()
 	{
-		return ids.isEmpty();
+		return refCount == 0;
 	}
 	
 }

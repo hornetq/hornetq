@@ -19,35 +19,30 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.journal;
+package org.jboss.messaging.core.bindingmanager;
 
-import java.nio.ByteBuffer;
+import org.jboss.messaging.core.postoffice.Binding;
 
 /**
  * 
- * A SequentialFile
+ * A BindingManager
  * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>Journal
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface SequentialFile
+public interface BindingManager
 {
-	/*
-	 * Creates the file if it doesn't already exist, then opens it
-	 */
-	void open() throws Exception;
-	
-	String getFileName();
-	
-	void fill(int position, int size, byte fillCharacter) throws Exception;
-	
-	void delete() throws Exception;
-
-	void write(ByteBuffer bytes) throws Exception;
-	   
-	int read(ByteBuffer bytes) throws Exception;
-	
-	void reset() throws Exception;
-	
-	void close() throws Exception;
+   /**
+    * Add a binding into the store
+    * @param binding The binding to add
+    * @throws Exception
+    */
+   void addBinding(Binding binding) throws Exception;
+   
+   /**
+    * Delete a binding from the store
+    * @param binding The binding to delete
+    * @throws Exception
+    */
+   void deleteBinding(Binding binding) throws Exception;
 }
