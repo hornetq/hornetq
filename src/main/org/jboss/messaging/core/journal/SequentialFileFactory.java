@@ -34,5 +34,5 @@ public interface SequentialFileFactory
 {
 	SequentialFile createSequentialFile(String fileName, boolean sync) throws Exception;
 	
-	List<String> listFiles(String journalDir, String extension) throws Exception;
+	List<String> listFiles(String extension) throws Exception;
 }

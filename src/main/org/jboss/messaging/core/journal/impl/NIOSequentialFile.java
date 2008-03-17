@@ -39,9 +39,9 @@ import org.jboss.messaging.core.logging.Logger;
 public class NIOSequentialFile implements SequentialFile
 {
 	private static final Logger log = Logger.getLogger(NIOSequentialFile.class);
-		
-	private static final int LONG_LENGTH = 8;
-		
+			
+	private String journalDir;
+	
 	private String fileName;
 	
 	private boolean sync;
@@ -49,9 +49,13 @@ public class NIOSequentialFile implements SequentialFile
 	private File file;
 	
 	private FileChannel channel;
+	
+	private RandomAccessFile rfile;
 		
-	public NIOSequentialFile(final String fileName, final boolean sync)
+	public NIOSequentialFile(final String journalDir, final String fileName, final boolean sync)
 	{
+		this.journalDir = journalDir;
+		
 		this.fileName = fileName;
 		
 		this.sync = sync;		
@@ -64,18 +68,20 @@ public class NIOSequentialFile implements SequentialFile
 		
 	public void open() throws Exception
 	{		
-		file = new File(fileName);
+		file = new File(journalDir + "/" + fileName);
 
-		RandomAccessFile rfile = new RandomAccessFile(file, "rw");
+		rfile = new RandomAccessFile(file, "rw");
 
 		channel = rfile.getChannel();		
+		
+		//log.info("Opened file");
 	}
 	
 	public void fill(final int position, final int size, final byte fillCharacter) throws Exception
 	{
 		ByteBuffer bb = ByteBuffer.allocateDirect(size);
 		
-		for (int i = 0; i < size - LONG_LENGTH; i++)
+		for (int i = 0; i < size; i++)
 		{
 			bb.put(fillCharacter);			
 		}
@@ -94,36 +100,51 @@ public class NIOSequentialFile implements SequentialFile
 	public void close() throws Exception
 	{
 		channel.close();
+		
+		rfile.close();
+						
+		channel = null;
+		
+		rfile = null;
+		
+		file = null;
+		
+		//log.info("Closed file");
 	}
 
 	public void delete() throws Exception
-	{
-		close();
-		
+	{		
 		file.delete();
+		
+		close();		
 	}
 
 	public int read(ByteBuffer bytes) throws Exception
 	{
+		//log.info("reading, position is " + channel.position());
+		
 		int bytesRead = channel.read(bytes);
 		
-		log.info("Read " + bytesRead + " bytes");
+		//log.info("Read " + bytesRead + " bytes");
 		
 		return bytesRead;
 	}
 
-	public void write(ByteBuffer bytes) throws Exception
+	public int write(ByteBuffer bytes, boolean sync) throws Exception
 	{
-		channel.write(bytes);
+		int bytesRead = channel.write(bytes);
 		
-		if (sync)
+		if (sync && this.sync)
 		{
 			channel.force(false);
 		}
+		
+		return bytesRead;
 	}
 
-	public void reset() throws Exception
+	public void position(final int pos) throws Exception
 	{
-		channel.position(0);
+		//log.info("Positioning to " + pos);
+		channel.position(pos);
 	}
 }

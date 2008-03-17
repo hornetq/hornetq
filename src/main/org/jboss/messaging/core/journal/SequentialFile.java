@@ -43,11 +43,11 @@ public interface SequentialFile
 	
 	void delete() throws Exception;
 
-	void write(ByteBuffer bytes) throws Exception;
+	int write(ByteBuffer bytes, boolean sync) throws Exception;
 	   
 	int read(ByteBuffer bytes) throws Exception;
 	
-	void reset() throws Exception;
+	void position(int pos) throws Exception;
 	
 	void close() throws Exception;
 }

@@ -19,71 +19,38 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.journal.impl;
+package org.jboss.messaging.core.journal.impl.test.unit;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.io.File;
 
-import org.jboss.messaging.core.journal.SequentialFile;
+import org.jboss.messaging.core.journal.SequentialFileFactory;
+import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
+import org.jboss.messaging.core.logging.Logger;
 
 /**
  * 
- * A JournalFile
+ * A RealJournalImplTest
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class JournalFile
+public class RealJournalImplTest extends JournalImplTestBase
 {
-	private final SequentialFile file;
+	private static final Logger log = Logger.getLogger(RealJournalImplTest.class);
 	
-	private final long orderingID;
-	
-	private int offset;
-	
-	private final Set<Long> positives = new HashSet<Long>();
-	
-	private final Set<Long> negatives = new HashSet<Long>();
+	protected String journalDir = System.getProperty("user.home") + "/journal-test";
 		
-	public JournalFile(final SequentialFile file, final long orderingID)
-	{
-		this.file = file;
+	protected void prepareDirectory() throws Exception
+	{				
+		File file = new File(journalDir);
 		
-		this.orderingID = orderingID;
+		deleteDirectory(file);
+		
+		file.mkdir();		
 	}
 	
-	public void extendOffset(final int delta)
+	protected SequentialFileFactory getFileFactory() throws Exception
 	{
-		offset += delta;
-	}
-	
-	public int getOffset()
-	{
-		return offset;
-	}
-	
-	public long getOrderingID()
-	{
-		return orderingID;
-	}
-	
-	public void resetOffset()
-	{
-		offset = 0;
-	}
-	
-	public SequentialFile getFile()
-	{
-		return file;
-	}	
-	
-	public void addPositive(final long id)
-	{
-		this.positives.add(id);
-	}
-	
-	public void addNegative(final long id)
-	{
-		this.negatives.add(id);
+		return new NIOSequentialFileFactory(journalDir);
 	}
 }

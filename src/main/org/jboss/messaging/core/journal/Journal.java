@@ -23,6 +23,7 @@ package org.jboss.messaging.core.journal;
 
 import java.util.List;
 
+import org.jboss.messaging.core.server.MessagingComponent;
 
 /**
  * 
@@ -31,34 +32,40 @@ import java.util.List;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface Journal
+public interface Journal extends MessagingComponent
 {
 	// Non transactional operations
 	
-	RecordHandle appendAddRecord(long id, byte[] record) throws Exception;
+	void appendAddRecord(long id, byte[] record) throws Exception;
 	
-	void appendUpdateRecord(RecordHandle handle, byte[] record) throws Exception;
+	void appendUpdateRecord(long id, byte[] record) throws Exception;
 	
-	void appendDeleteRecord(RecordHandle handle) throws Exception;
+	void appendDeleteRecord(long id) throws Exception;
 	
 	// Transactional operations
 	
-	RecordHandle appendAddRecordTransactional(long txID, long id, byte[] record, boolean done) throws Exception;
+	void appendAddRecordTransactional(long txID, long id, byte[] record, boolean done) throws Exception;
 	
-	void appendUpdateRecordTransactional(long txID, RecordHandle handle, byte[] record, boolean done) throws Exception;
+	void appendUpdateRecordTransactional(long txID, long id, byte[] record, boolean done) throws Exception;
 	
-	void appendDeleteRecordTransactional(long txID, RecordHandle handle, boolean done) throws Exception;
+	void appendDeleteRecordTransactional(long txID, long id, boolean done) throws Exception;
 	
+	//XA operations
 	
-//	RecordHandle appendAddRecordPrepare(long txID, long id, byte[] record, boolean done) throws Exception;
-//	
-//	void appendUpdateRecordPrepare(long txID, RecordHandle handle, byte[] record, boolean done) throws Exception;
-//	
-//	void appendDeleteRecordPrepare(long txID, RecordHandle handle, boolean done) throws Exception;
+	void appendAddRecordPrepare(long txID, long id, byte[] record, boolean done) throws Exception;
+	
+	void appendUpdateRecordPrepare(long txID, long id, byte[] record, boolean done) throws Exception;
+	
+	void appendDeleteRecordPrepare(long txID, long id, boolean done) throws Exception;
+	
+	void appendXACommitRecord(long txID) throws Exception;
+	
+	void appendXARollbackRecord(long txID) throws Exception;
 
 	
 	// Load
 	
-	List<RecordHistory> load() throws Exception;
+	void load(List<RecordInfo> committedRecords,
+			    List<PreparedTransactionInfo> preparedTransactions) throws Exception;
 	
 }

@@ -58,15 +58,25 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 		{		
 			sf.data.position(0);
 			
-			log.info("positioning data to 0");
+			//log.info("positioning data to 0");
 		}
 						
 		return sf;
 	}
 	
-	public List<String> listFiles(String journalDir, String extension)
+	public List<String> listFiles(final String extension)
 	{
-		return new ArrayList<String>(fileMap.keySet());
+		List<String> files = new ArrayList<String>();
+		
+		for (String s: fileMap.keySet())
+		{
+			if (s.endsWith("." + extension))
+			{
+				files.add(s);
+			}
+		}
+		
+		return files;
 	}
 	
 	public Map<String, FakeSequentialFile> getFileMap()
@@ -101,7 +111,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 		
 		public boolean isOpen()
 		{
-			log.info("is open" + System.identityHashCode(this) +" open is now " + open);
+			//log.info("is open" + System.identityHashCode(this) +" open is now " + open);
 			return open;
 		}
 		
@@ -116,7 +126,10 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 		{
 			open = false;
 			
-			log.info("Calling close " + System.identityHashCode(this) +" open is now " + open);
+			if (data != null)
+			{
+				data.position(0);
+			}
 		}
 
 		public void delete() throws Exception
@@ -141,7 +154,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 
 		public void open() throws Exception
 		{
-			log.info("open called");
+			//log.info("open called");
 			
 			if (open)
 			{
@@ -158,18 +171,18 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 				throw new IllegalStateException("Is closed");
 			}
 			
-			log.info("pre-allocate called " + size +" , " + fillCharacter);
+			checkAndResize(pos + size);
 			
-			byte[] bytes = new byte[size];
+			//log.info("size is " + size + " pos is " + pos);
 			
 			for (int i = pos; i < size + pos; i++)
 			{
-				bytes[i] = fillCharacter;
-			}
-			
-			data = ByteBuffer.wrap(bytes);		
+				data.array()[i] = fillCharacter;
+				
+				//log.info("Filling " + pos + " with char " + fillCharacter);
+			}						
 		}
-
+		
 		public int read(ByteBuffer bytes) throws Exception
 		{
 			if (!open)
@@ -177,11 +190,11 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 				throw new IllegalStateException("Is closed");
 			}
 			
-			log.info("read called " + bytes.array().length);
+			//log.info("read called " + bytes.array().length);
 			
 			byte[] bytesRead = new byte[bytes.array().length];
 			
-			log.info("reading, data pos is " + data.position() + " data size is " + data.array().length);
+			//log.info("reading, data pos is " + data.position() + " data size is " + data.array().length);
 			
 			data.get(bytesRead);
 			
@@ -190,29 +203,55 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 			return bytesRead.length;
 		}
 
-		public void reset() throws Exception
+		public void position(int pos) throws Exception
 		{
 			if (!open)
 			{
 				throw new IllegalStateException("Is closed");
 			}
 			
-			log.info("reset called");
+			//log.info("reset called");
 			
-			data.position(0);
+			data.position(pos);
 		}
 
-		public void write(ByteBuffer bytes) throws Exception
+		public int write(ByteBuffer bytes, boolean sync) throws Exception
 		{
 			if (!open)
 			{
 				throw new IllegalStateException("Is closed");
 			}
 			
-			log.info("write called, position is " + data.position() + " bytes is " + bytes.array().length);
+			int position = data == null ? 0 : data.position();
+			
+			checkAndResize(bytes.capacity() + position);
+			
+			//log.info("write called, position is " + data.position() + " bytes is " + bytes.array().length);
 			
 			data.put(bytes);
+			
+			return bytes.array().length;
 		}
+		
+		private void checkAndResize(int size)
+		{
+			int oldpos = data == null ? 0 : data.position();
+			
+			if (data == null || data.array().length < size)
+			{
+				byte[] newBytes = new byte[size];
+				
+				if (data != null)
+				{
+					System.arraycopy(data.array(), 0, newBytes, 0, data.array().length);
+				}
+				
+				data = ByteBuffer.wrap(newBytes);
+				
+				data.position(oldpos);
+			}
+		}
+
 
 	}
 

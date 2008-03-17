@@ -23,7 +23,6 @@ package org.jboss.messaging.core.journal.impl;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -39,12 +38,19 @@ import org.jboss.messaging.core.journal.SequentialFileFactory;
  */
 public class NIOSequentialFileFactory implements SequentialFileFactory
 {
+	private final String journalDir;
+	
+	public NIOSequentialFileFactory(final String journalDir)
+	{
+		this.journalDir = journalDir;
+	}	
+	
 	public SequentialFile createSequentialFile(final String fileName, final boolean sync)
 	{
-		return new NIOSequentialFile(fileName, sync);
+		return new NIOSequentialFile(journalDir, fileName, sync);
 	}
 
-	public List<String> listFiles(final String journalDir, final String extension) throws Exception
+	public List<String> listFiles(final String extension) throws Exception
 	{
 		File dir = new File(journalDir);
 		
@@ -52,7 +58,7 @@ public class NIOSequentialFileFactory implements SequentialFileFactory
 		{
 			public boolean accept(File file, String name)
 			{
-				return name.endsWith(".jbm");
+				return name.endsWith("." + extension);
 			}
 		};
 		

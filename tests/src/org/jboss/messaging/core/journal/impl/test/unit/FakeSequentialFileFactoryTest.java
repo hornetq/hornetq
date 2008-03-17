@@ -19,20 +19,28 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.journal;
+package org.jboss.messaging.core.journal.impl.test.unit;
 
-import java.util.List;
+import org.jboss.messaging.core.journal.SequentialFileFactory;
+import org.jboss.messaging.core.journal.impl.test.unit.fakes.FakeSequentialFileFactory;
 
 /**
  * 
- * A RecordHistory
+ * A FakeSequentialFileFactoryTest
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface RecordHistory
+public class FakeSequentialFileFactoryTest extends SequentialFileFactoryTestBase
 {
-	RecordHandle getHandle();
-	
-	List<byte[]> getRecords();
+	protected void setUp() throws Exception
+	{
+		super.setUp();
+	}
+
+	protected SequentialFileFactory createFactory()
+	{
+		return new FakeSequentialFileFactory();
+	}
+
 }

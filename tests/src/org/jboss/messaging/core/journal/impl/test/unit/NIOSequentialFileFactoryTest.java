@@ -19,16 +19,38 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.journal;
+package org.jboss.messaging.core.journal.impl.test.unit;
+
+import java.io.File;
+
+import org.jboss.messaging.core.journal.SequentialFileFactory;
+import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 
 /**
  * 
- * A RecordHandle
+ * A NIOSequentialFileFactoryTest
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface RecordHandle
-{
-	public long getID();
+public class NIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
+{		
+	protected String journalDir = System.getProperty("user.home") + "/journal-test";
+		
+	protected void setUp() throws Exception
+	{
+		super.setUp();
+		
+		File file = new File(journalDir);
+		
+		deleteDirectory(file);
+		
+		file.mkdir();		
+	}
+
+	protected SequentialFileFactory createFactory()
+	{
+		return new NIOSequentialFileFactory(journalDir);
+	}
+
 }
