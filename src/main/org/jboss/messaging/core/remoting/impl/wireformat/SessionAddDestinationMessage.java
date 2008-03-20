@@ -6,17 +6,17 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_ADD_ADDRESS;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_ADD_DESTINATION;
 
 
 /**
  * 
- * A SessionAddAddressMessage
+ * A SessionAddDestinationMessage
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SessionAddAddressMessage extends AbstractPacket
+public class SessionAddDestinationMessage extends AbstractPacket
 {
    // Constants -----------------------------------------------------
 
@@ -24,15 +24,19 @@ public class SessionAddAddressMessage extends AbstractPacket
    
    private final String address;
    
+   private final boolean temporary;
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionAddAddressMessage(final String address)
+   public SessionAddDestinationMessage(final String address, final boolean temp)
    {
-      super(SESS_ADD_ADDRESS);
+      super(SESS_ADD_DESTINATION);
       
       this.address = address;
+      
+      this.temporary = temp;
    }
 
    // Public --------------------------------------------------------
@@ -42,10 +46,15 @@ public class SessionAddAddressMessage extends AbstractPacket
       return address;
    }
    
+   public boolean isTemporary()
+   {
+   	return temporary;
+   }
+   
    @Override
    public String toString()
    {
-      return getParentString() + ", address=" + address + "]";
+      return getParentString() + ", address=" + address + ", temp=" + temporary +"]";
    }
    
    // Package protected ---------------------------------------------

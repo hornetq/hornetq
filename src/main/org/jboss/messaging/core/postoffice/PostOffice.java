@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.server.MessagingComponent;
 
 /**
@@ -52,11 +53,11 @@ import org.jboss.messaging.core.server.MessagingComponent;
  */
 public interface PostOffice extends MessagingComponent
 {   
-   void addAllowableAddress(String address) throws Exception;
+   boolean addDestination(String address, boolean temporary) throws Exception;
    
-   boolean removeAllowableAddress(String address) throws Exception;
+   boolean removeDestination(String address, boolean temporary) throws Exception;
    
-   boolean containsAllowableAddress(String address);
+   boolean containsDestination(String address);
 
    Binding addBinding(String address, String queueName, Filter filter,
                       boolean durable, boolean temporary) throws Exception;
@@ -67,7 +68,7 @@ public interface PostOffice extends MessagingComponent
    
    Binding getBinding(String queueName) throws Exception;
       
-   void route(String address, Message message) throws Exception;
+   List<MessageReference> route(String address, Message message) throws Exception;
    
    void routeFromCluster(String address, Message message) throws Exception;
    
@@ -78,5 +79,5 @@ public interface PostOffice extends MessagingComponent
    //For testing only
    Map<String, List<Binding>> getMappings();
 
-   Set<String> listAvailableAddresses();
+   Set<String> listAllDestinations();
 }

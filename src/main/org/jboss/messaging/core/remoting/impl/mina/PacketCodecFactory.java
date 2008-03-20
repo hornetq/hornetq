@@ -23,7 +23,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PONG;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PROD_RECEIVETOKENS;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PROD_SEND;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_ACKNOWLEDGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_ADD_ADDRESS;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_ADD_DESTINATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BINDINGQUERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BINDINGQUERY_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_HASNEXTMESSAGE;
@@ -46,7 +46,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_QUEUEQUERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_QUEUEQUERY_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_RECOVER;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_REMOVE_ADDRESS;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_REMOVE_DESTINATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_ROLLBACK;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_COMMIT;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_END;
@@ -83,7 +83,7 @@ import org.jboss.messaging.core.remoting.impl.codec.ProducerReceiveTokensMessage
 import org.jboss.messaging.core.remoting.impl.codec.ProducerSendMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.RemotingBuffer;
 import org.jboss.messaging.core.remoting.impl.codec.SessionAcknowledgeMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionAddAddressMessageCodec;
+import org.jboss.messaging.core.remoting.impl.codec.SessionAddDestinationMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionBindingQueryMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionBindingQueryResponseMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionBrowserHasNextMessageResponseMessageCodec;
@@ -101,7 +101,7 @@ import org.jboss.messaging.core.remoting.impl.codec.SessionCreateQueueMessageCod
 import org.jboss.messaging.core.remoting.impl.codec.SessionDeleteQueueMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionQueueQueryMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionQueueQueryResponseMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionRemoveAddressMessageCodec;
+import org.jboss.messaging.core.remoting.impl.codec.SessionRemoveDestinationMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionXACommitMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionXAEndMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionXAForgetMessageCodec;
@@ -297,8 +297,8 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
       addCodecForEmptyPacket(encoder, decoder, SESS_XA_SUSPEND,
             SessionXASuspendMessage.class);
 
-      addCodec(encoder, decoder, SESS_REMOVE_ADDRESS,
-            new SessionRemoveAddressMessageCodec());
+      addCodec(encoder, decoder, SESS_REMOVE_DESTINATION,
+            new SessionRemoveDestinationMessageCodec());
 
       addCodec(encoder, decoder, SESS_CREATEQUEUE,
             new SessionCreateQueueMessageCodec());
@@ -309,8 +309,8 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
       addCodec(encoder, decoder, SESS_QUEUEQUERY_RESP,
             new SessionQueueQueryResponseMessageCodec());
 
-      addCodec(encoder, decoder, SESS_ADD_ADDRESS,
-            new SessionAddAddressMessageCodec());
+      addCodec(encoder, decoder, SESS_ADD_DESTINATION,
+            new SessionAddDestinationMessageCodec());
 
       addCodec(encoder, decoder, SESS_BINDINGQUERY,
             new SessionBindingQueryMessageCodec());

@@ -35,6 +35,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.jboss.messaging.core.journal.Journal;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
@@ -79,34 +80,20 @@ public class JournalImpl implements Journal
 	public static final byte UPDATE_RECORD = 12;
 	
 	public static final byte DELETE_RECORD = 13;
-	
+			
 	public static final byte ADD_RECORD_TX = 14;
 	
 	public static final byte UPDATE_RECORD_TX = 15;
 	
 	public static final byte DELETE_RECORD_TX = 16;
 	
-	public static final byte ADD_RECORD_PREPARE = 17;
+	public static final byte PREPARE_RECORD = 17;
+		
+	public static final byte COMMIT_RECORD = 18;
 	
-	public static final byte UPDATE_RECORD_PREPARE = 18;
+	public static final byte ROLLBACK_RECORD = 19;
 	
-	public static final byte DELETE_RECORD_PREPARE = 19;
-	
-	public static final byte XA_COMMIT_RECORD = 20;
-	
-	public static final byte XA_ROLLBACK_RECORD = 21;
-	
-	//End markers - they must all be unique
-	
-	public static final byte DONE = 31;
-	
-	public static final byte TX_CONTINUE = 32;
-	
-	public static final byte TX_DONE = 33;
-	
-	public static final byte XA_CONTINUE = 34;
-	
-	public static final byte XA_DONE = 35;
+	public static final byte DONE = 20;
 	
 	public static final byte FILL_CHARACTER = 74; // Letter 'J' 
 		
@@ -151,6 +138,7 @@ public class JournalImpl implements Journal
 	
 	private TimerTask availableFilesTask;
 	
+	private final AtomicLong transactionIDSequence = new AtomicLong(0);
 	
 	public JournalImpl(final int fileSize, final int minFiles, final int minAvailableFiles,
 			             final boolean sync, final SequentialFileFactory fileFactory, final long taskPeriod,
@@ -224,22 +212,10 @@ public class JournalImpl implements Journal
 		bb.putLong(id);		
 		bb.putInt(record.length);		
 		bb.put(record);		
-		bb.put(DONE);	
-		
+		bb.put(DONE);			
 		bb.flip();
-			             				
-		lock.acquire();
 		
-		try
-		{   					
-   		checkFile(size);   		   	
-   		currentFile.getFile().write(bb, true);		   		
-   		currentFile.extendOffset(size);
-		}
-		finally
-		{
-			lock.release();
-		}
+		appendRecord(bb, true);
 	}
 			
 	public void appendUpdateRecord(final long id, final byte[] record) throws Exception
@@ -248,9 +224,7 @@ public class JournalImpl implements Journal
 		{
 			throw new IllegalStateException("Journal must be loaded first");
 		}
-		
-		//TODO optimise to avoid creating a new byte buffer
-		
+			
 		int size = SIZE_BYTE + SIZE_LONG + SIZE_INT + record.length + SIZE_BYTE;
 		
 		ByteBuffer bb = ByteBuffer.wrap(new byte[size]);
@@ -259,22 +233,10 @@ public class JournalImpl implements Journal
 		bb.putLong(id);		
 		bb.putInt(record.length);		
 		bb.put(record);		
-		bb.put(DONE);
-		
+		bb.put(DONE);		
 		bb.flip();
 		
-		lock.acquire();
-		
-		try
-		{   		
-   		checkFile(size);   		   		
-   		currentFile.getFile().write(bb, true);		   		
-   		currentFile.extendOffset(size);
-		}
-		finally
-		{
-			lock.release();
-		}				
+		appendRecord(bb, true);			
 	}
 			
 	public void appendDeleteRecord(long id) throws Exception
@@ -286,30 +248,23 @@ public class JournalImpl implements Journal
 		
 		int size = SIZE_BYTE + SIZE_LONG + SIZE_BYTE;
 		
-		ByteBuffer buffer = ByteBuffer.wrap(new byte[size]);
+		ByteBuffer bb = ByteBuffer.wrap(new byte[size]);
 		
-		buffer.put(DELETE_RECORD);		
-		buffer.putLong(id);		
-		buffer.put(DONE);
-		
-		buffer.flip();
+		bb.put(DELETE_RECORD);		
+		bb.putLong(id);		
+		bb.put(DONE);		
+		bb.flip();
 								
-		lock.acquire();
-		
-		try
-		{   		
-   		checkFile(size);   		   		
-   		currentFile.getFile().write(buffer, true);
-   		currentFile.extendOffset(size);
-		}
-		finally
-		{
-			lock.release();
-		}				
+		appendRecord(bb, true);			
 	}		
+	
+	public long getTransactionID()
+	{
+		return transactionIDSequence.getAndIncrement();
+	}
 
 	public void appendAddRecordTransactional(final long txID, final long id,
-			                                   final byte[] record, final boolean done) throws Exception
+			                                   final byte[] record) throws Exception
    {
 		if (state != STATE_LOADED)
 		{
@@ -325,34 +280,14 @@ public class JournalImpl implements Journal
 		bb.putLong(id);
 		bb.putInt(record.length);
 		bb.put(record);
-
-		if (done)
-		{
-			bb.put(TX_DONE);
-		}
-		else
-		{
-			bb.put(TX_CONTINUE);
-		}
-
+		bb.put(DONE);		
 		bb.flip();
-
-		lock.acquire();
-
-		try
-		{   					
-			checkFile(size);
-			currentFile.getFile().write(bb, done);		
-			currentFile.extendOffset(size);
-		}
-		finally
-		{
-			lock.release();
-		}
+		
+		appendRecord(bb, false);
 	}
-	
+			
 	public void appendUpdateRecordTransactional(final long txID, final long id,
-			final byte[] record, final boolean done) throws Exception
+			final byte[] record) throws Exception
 	{
 		if (state != STATE_LOADED)
 		{
@@ -367,34 +302,14 @@ public class JournalImpl implements Journal
 		bb.putLong(txID);		
 		bb.putLong(id);		
 		bb.putInt(record.length);		
-		bb.put(record);
-		
-	   if (done)
-	   {
-	   	bb.put(TX_DONE);
-	   }
-	   else
-	   {
-	   	bb.put(TX_CONTINUE);
-	   }
-		
+		bb.put(record);		
+		bb.put(DONE);		
 		bb.flip();
 		
-		lock.acquire();
-		
-		try
-		{   		
-   		checkFile(size);   		   	
-   		currentFile.getFile().write(bb, done);		   		
-   		currentFile.extendOffset(size);   		   		   		
-		}
-		finally
-		{
-			lock.release();
-		}				
+		appendRecord(bb, false);			
 	}
 	
-	public void appendDeleteRecordTransactional(final long txID, final long id, final boolean done) throws Exception
+	public void appendDeleteRecordTransactional(final long txID, final long id) throws Exception
 	{
 		if (state != STATE_LOADED)
 		{
@@ -403,163 +318,38 @@ public class JournalImpl implements Journal
 		
 		int size = SIZE_BYTE + SIZE_LONG + SIZE_LONG + SIZE_BYTE;
 		
-		ByteBuffer buffer = ByteBuffer.wrap(new byte[size]);
-		
-		buffer.put(DELETE_RECORD_TX);		
-		buffer.putLong(txID);		
-		buffer.putLong(id);
-		
-		if (done)
-		{
-			buffer.put(TX_DONE);
-		}
-		else
-		{
-			buffer.put(TX_CONTINUE);
-		}
-				
-		buffer.flip();
-								
-		lock.acquire();
-		
-		try
-		{   		
-   		checkFile(size);   		   	
-   		currentFile.getFile().write(buffer, done);		   		
-   		currentFile.extendOffset(size);   		
-		}
-		finally
-		{
-			lock.release();
-		}				
-	}	
-	
-	
-	public void appendAddRecordPrepare(final long txID, final long id, final byte[] record, final boolean done) throws Exception
-	{
-		if (state != STATE_LOADED)
-		{
-			throw new IllegalStateException("Journal must be loaded first");
-		}
-
-		int size = SIZE_BYTE + SIZE_LONG + SIZE_LONG + SIZE_INT + record.length + SIZE_BYTE;
-
-		ByteBuffer bb = ByteBuffer.wrap(new byte[size]);
-
-		bb.put(ADD_RECORD_PREPARE);
-		bb.putLong(txID);
-		bb.putLong(id);
-		bb.putInt(record.length);
-		bb.put(record);
-
-		if (done)
-		{
-			bb.put(XA_DONE);
-		}
-		else
-		{
-			bb.put(XA_CONTINUE);
-		}
-
-		bb.flip();
-
-		lock.acquire();
-
-		try
-		{   					
-			checkFile(size);
-			currentFile.getFile().write(bb, done);		
-			currentFile.extendOffset(size);			
-		}
-		finally
-		{
-			lock.release();
-		}
-	}
-	
-	public void appendUpdateRecordPrepare(final long txID, final long id, final byte[] record, final boolean done) throws Exception
-	{
-		if (state != STATE_LOADED)
-		{
-			throw new IllegalStateException("Journal must be loaded first");
-		}
-		
-		int size = SIZE_BYTE + SIZE_LONG + SIZE_LONG + SIZE_INT + record.length + SIZE_BYTE;
-		
 		ByteBuffer bb = ByteBuffer.wrap(new byte[size]);
 		
-		bb.put(UPDATE_RECORD_PREPARE);		
+		bb.put(DELETE_RECORD_TX);		
 		bb.putLong(txID);		
 		bb.putLong(id);		
-		bb.putInt(record.length);		
-		bb.put(record);
+		bb.put(DONE);			
+		bb.flip();
+								
+		appendRecord(bb, false);				
+	}	
+	
 		
-	   if (done)
-	   {
-	   	bb.put(XA_DONE);
-	   }
-	   else
-	   {
-	   	bb.put(XA_CONTINUE);
-	   }
+	public void appendPrepareRecord(final long txID) throws Exception
+	{
+		if (state != STATE_LOADED)
+		{
+			throw new IllegalStateException("Journal must be loaded first");
+		}
 		
+		int size = SIZE_BYTE + SIZE_LONG + SIZE_BYTE;
+		
+		ByteBuffer bb = ByteBuffer.wrap(new byte[size]);
+		
+		bb.put(PREPARE_RECORD);		
+		bb.putLong(txID);		
+		bb.put(DONE);				
 		bb.flip();
 		
-		lock.acquire();
-		
-		try
-		{   		
-   		checkFile(size);   		   		
-   		currentFile.getFile().write(bb, done);		   		
-   		currentFile.extendOffset(size);   		   		   		
-		}
-		finally
-		{
-			lock.release();
-		}		
+		appendRecord(bb, true);		
 	}
 	
-	public void appendDeleteRecordPrepare(final long txID, final long id, final boolean done) throws Exception
-	{
-		if (state != STATE_LOADED)
-		{
-			throw new IllegalStateException("Journal must be loaded first");
-		}
-		
-		int size = SIZE_BYTE + SIZE_LONG + SIZE_LONG + SIZE_BYTE;
-		
-		ByteBuffer buffer = ByteBuffer.wrap(new byte[size]);
-		
-		buffer.put(DELETE_RECORD_PREPARE);		
-		buffer.putLong(txID);		
-		buffer.putLong(id);
-		
-		if (done)
-		{
-			buffer.put(XA_DONE);
-		}
-		else
-		{
-			buffer.put(XA_CONTINUE);
-		}
-				
-		buffer.flip();
-								
-		lock.acquire();
-		
-		try
-		{   		
-   		checkFile(size);   		   	
-   		currentFile.getFile().write(buffer, done);		   		
-   		currentFile.extendOffset(size);   		   		
-		}
-		finally
-		{
-			lock.release();
-		}				
-	}
-	
-	public void appendXACommitRecord(final long txID) throws Exception
+	public void appendCommitRecord(final long txID) throws Exception
 	{
 		if (state != STATE_LOADED)
 		{
@@ -568,29 +358,17 @@ public class JournalImpl implements Journal
 		
 		int size = SIZE_BYTE + SIZE_LONG + SIZE_BYTE;
 		
-		ByteBuffer buffer = ByteBuffer.wrap(new byte[size]);
+		ByteBuffer bb = ByteBuffer.wrap(new byte[size]);
 		
-		buffer.put(XA_COMMIT_RECORD);		
-		buffer.putLong(txID);		
-		buffer.put(XA_DONE);		
+		bb.put(COMMIT_RECORD);		
+		bb.putLong(txID);		
+		bb.put(DONE);				
+		bb.flip();
 		
-		buffer.flip();
-		
-		lock.acquire();
-		
-		try
-		{   		
-   		checkFile(size);   		   		
-   		currentFile.getFile().write(buffer, true);		   		
-   		currentFile.extendOffset(size);
-		}
-		finally
-		{
-			lock.release();
-		}		
+		appendRecord(bb, true);	
 	}
 	
-	public void appendXARollbackRecord(final long txID) throws Exception
+	public void appendRollbackRecord(final long txID) throws Exception
 	{
 		if (state != STATE_LOADED)
 		{
@@ -599,26 +377,14 @@ public class JournalImpl implements Journal
 		
 		int size = SIZE_BYTE + SIZE_LONG + SIZE_BYTE;
 		
-		ByteBuffer buffer = ByteBuffer.wrap(new byte[size]);
+		ByteBuffer bb = ByteBuffer.wrap(new byte[size]);
 		
-		buffer.put(XA_ROLLBACK_RECORD);		
-		buffer.putLong(txID);		
-		buffer.put(XA_DONE);
-				
-		buffer.flip();
+		bb.put(ROLLBACK_RECORD);		
+		bb.putLong(txID);		
+		bb.put(DONE);			
+		bb.flip();
 								
-		lock.acquire();
-		
-		try
-		{   		
-   		checkFile(size);   		   	
-   		currentFile.getFile().write(buffer, true);		   		
-   		currentFile.extendOffset(size);
-		}
-		finally
-		{
-			lock.release();
-		}		
+		appendRecord(bb, true);			
 	}
 		
 	public void load(final List<RecordInfo> committedRecords,
@@ -687,6 +453,8 @@ public class JournalImpl implements Journal
 		
 		int lastDataPos = -1;
 		
+		long maxTransactionID = -1;
+		
 		for (JournalFile file: orderedFiles)
 		{	
 			ByteBuffer bb = ByteBuffer.wrap(new byte[fileSize]);
@@ -712,22 +480,18 @@ public class JournalImpl implements Journal
 			
 			while (bb.hasRemaining())
 			{
-				byte recordType = bb.get();
-				
 				int pos = bb.position();
+				
+				byte recordType = bb.get();
 				
 				switch(recordType)
 				{
 					case ADD_RECORD:
 					{									
-						long id = bb.getLong();
-						
-						int size = bb.getInt();
-						
-						byte[] record = new byte[size];
-						
-						bb.get(record);
-						
+						long id = bb.getLong();				
+						int size = bb.getInt();						
+						byte[] record = new byte[size];						
+						bb.get(record);						
 						byte end = bb.get();
 						
 						if (end != DONE)
@@ -737,7 +501,6 @@ public class JournalImpl implements Journal
 						else
 						{																				
 							records.add(new RecordInfo(id, record, false));
-
 							hasData = true;							
 						}
 												
@@ -745,14 +508,10 @@ public class JournalImpl implements Journal
 					}										
 					case UPDATE_RECORD:						
 					{
-						long id = bb.getLong();
-						
-						int size = bb.getInt();
-						
-						byte[] record = new byte[size];
-						
-						bb.get(record);
-						
+						long id = bb.getLong();		
+						int size = bb.getInt();						
+						byte[] record = new byte[size];						
+						bb.get(record);						
 						byte end = bb.get();
 						
 						if (end != DONE)
@@ -761,8 +520,7 @@ public class JournalImpl implements Journal
 						}
 						else
 						{					
-							records.add(new RecordInfo(id, record, true));
-							
+							records.add(new RecordInfo(id, record, true));							
 							hasData = true;							
 						}
 												
@@ -770,8 +528,7 @@ public class JournalImpl implements Journal
 					}					
 					case DELETE_RECORD:						
 					{
-						long id = bb.getLong();
-						
+						long id = bb.getLong();	
 						byte end = bb.get();
 						
 						if (end != DONE)
@@ -780,8 +537,7 @@ public class JournalImpl implements Journal
 						}
 						else
 						{						
-							recordsToDelete.add(id);
-							
+							recordsToDelete.add(id);							
 							hasData = true;							
 						}
 						
@@ -789,19 +545,15 @@ public class JournalImpl implements Journal
 					}					
 					case ADD_RECORD_TX:
 					{					
-						long txID = bb.getLong();
-						
-						long id = bb.getLong();
-						
-						int size = bb.getInt();
-						
-						byte[] record = new byte[size];
-						
-						bb.get(record);
-						
+						long txID = bb.getLong();							
+						maxTransactionID = Math.max(maxTransactionID, txID);						
+						long id = bb.getLong();				
+						int size = bb.getInt();						
+						byte[] record = new byte[size];						
+						bb.get(record);						
 						byte end = bb.get();
 						
-						if (end != TX_CONTINUE && end != TX_DONE)
+						if (end != DONE)
 						{
 							repairFrom(pos, file);
 						}
@@ -811,20 +563,11 @@ public class JournalImpl implements Journal
 							
 							if (tx == null)
 							{
-								tx = new TransactionHolder(txID);
-								
+								tx = new TransactionHolder(txID);								
 								transactions.put(txID, tx);
 							}
 							
-							tx.recordInfos.add(new RecordInfo(id, record, false));
-							
-							if (end == TX_DONE)
-							{
-								transactions.remove(txID);
-								
-								records.addAll(tx.recordInfos);
-							}
-
+							tx.recordInfos.add(new RecordInfo(id, record, false));							
 							hasData = true;							
 						}
 					
@@ -832,19 +575,15 @@ public class JournalImpl implements Journal
 					}		
 					case UPDATE_RECORD_TX:
 					{					
-						long txID = bb.getLong();
-						
-						long id = bb.getLong();
-						
-						int size = bb.getInt();
-						
-						byte[] record = new byte[size];
-						
-						bb.get(record);
-						
+						long txID = bb.getLong();	
+						maxTransactionID = Math.max(maxTransactionID, txID);						
+						long id = bb.getLong();					
+						int size = bb.getInt();						
+						byte[] record = new byte[size];						
+						bb.get(record);						
 						byte end = bb.get();
 						
-						if (end != TX_CONTINUE && end != TX_DONE)
+						if (end != DONE)
 						{
 							repairFrom(pos, file);
 						}
@@ -854,18 +593,12 @@ public class JournalImpl implements Journal
 							
 							if (tx == null)
 							{
-								throw new IllegalStateException("Cannot find tx with id " + txID);
+								tx = new TransactionHolder(txID);								
+								transactions.put(txID, tx);
 							}
 							
 							tx.recordInfos.add(new RecordInfo(id, record, true));
-							
-							if (end == TX_DONE)
-							{
-								transactions.remove(txID);
-								
-								records.addAll(tx.recordInfos);
-							}
-							
+
 							hasData = true;							
 						}
 											
@@ -873,13 +606,12 @@ public class JournalImpl implements Journal
 					}	
 					case DELETE_RECORD_TX:
 					{					
-						long txID = bb.getLong();
-						
-						long id = bb.getLong();
-						
+						long txID = bb.getLong();	
+						maxTransactionID = Math.max(maxTransactionID, txID);						
+						long id = bb.getLong();			
 						byte end = bb.get();
 						
-						if (end != TX_CONTINUE && end != TX_DONE)
+						if (end != DONE)
 						{
 							repairFrom(pos, file);
 						}
@@ -889,145 +621,47 @@ public class JournalImpl implements Journal
 							
 							if (tx == null)
 							{
-								throw new IllegalStateException("Cannot find tx with id " + txID);
+								tx = new TransactionHolder(txID);								
+								transactions.put(txID, tx);
 							}
 							
-							tx.recordsToDelete.add(id);
-							
-							if (end == TX_DONE)
-							{
-								transactions.remove(txID);
-								
-								records.addAll(tx.recordInfos);
-								
-								recordsToDelete.addAll(tx.recordsToDelete);
-							} 
-							
+							tx.recordsToDelete.add(id);							
 							hasData = true;							
 						}
 											
 						break;
 					}	
-					case ADD_RECORD_PREPARE:
+					case PREPARE_RECORD:
 					{
-						long txID = bb.getLong();
-						
-						long id = bb.getLong();
-						
-						int size = bb.getInt();
-						
-						byte[] record = new byte[size];
-						
-						bb.get(record);
-						
+						long txID = bb.getLong();				
+						maxTransactionID = Math.max(maxTransactionID, txID);						
 						byte end = bb.get();
 						
-						if (end != XA_DONE && end != XA_CONTINUE)
+						if (end != DONE)
 						{
 							repairFrom(pos, file);
 						}
 						else
-						{						
-							TransactionHolder tx = transactions.get(txID);
-							
-							if (tx == null)
-							{
-								tx = new TransactionHolder(txID);
-								
-								transactions.put(txID, tx);
-							}
-							
-							tx.recordInfos.add(new RecordInfo(id, record, false));
-							
-							if (end == XA_DONE)
-							{
-								tx.prepared = true;
-							}
-							
-							hasData = true;							
-						}
-						
-						break;
-					}
-					case UPDATE_RECORD_PREPARE:
-					{
-						long txID = bb.getLong();
-						
-						long id = bb.getLong();
-						
-						int size = bb.getInt();
-						
-						byte[] record = new byte[size];
-						
-						bb.get(record);
-						
-						byte end = bb.get();
-						
-						if (end != XA_CONTINUE && end != XA_DONE)
 						{
-							repairFrom(pos, file);
-						}
-						else
-						{					
 							TransactionHolder tx = transactions.get(txID);
 							
 							if (tx == null)
 							{
 								throw new IllegalStateException("Cannot find tx with id " + txID);
 							}
-							
-							tx.recordInfos.add(new RecordInfo(id, record, true));
-							
-							if (end == XA_DONE)
-							{
-								tx.prepared = true;
-							}
-							
-							hasData = true;							
+														
+							tx.prepared = true;
 						}
-											
+						
 						break;
 					}
-					case DELETE_RECORD_PREPARE:
+					case COMMIT_RECORD:
 					{
-						long txID = bb.getLong();
-						
-						long id = bb.getLong();
-						
+						long txID = bb.getLong();	
+						maxTransactionID = Math.max(maxTransactionID, txID);
 						byte end = bb.get();
 						
-						if (end != XA_CONTINUE && end != XA_DONE)
-						{
-							repairFrom(pos, file);
-						}
-						else
-						{					
-							TransactionHolder tx = transactions.get(txID);
-							
-							if (tx == null)
-							{
-								throw new IllegalStateException("Cannot find tx with id " + txID);
-							}
-							
-							tx.recordsToDelete.add(id);
-							
-							if (end == XA_DONE)
-							{
-								tx.prepared = true;
-							}	
-							
-							hasData = true;							
-						}
-											
-						break;
-					}
-					case XA_COMMIT_RECORD:
-					{
-						long txID = bb.getLong();
-						
-						byte end = bb.get();
-						
-						if (end != XA_DONE)
+						if (end != DONE)
 						{
 							repairFrom(pos, file);
 						}
@@ -1040,25 +674,19 @@ public class JournalImpl implements Journal
 								throw new IllegalStateException("Cannot find tx with id " + txID);
 							}
 							
-							if (!tx.prepared)
-							{
-								throw new IllegalStateException("Can't commit transaction - it is not prepared " + txID);
-							}
-							
-							records.addAll(tx.recordInfos);
-							
-							recordsToDelete.addAll(tx.recordsToDelete);
+							records.addAll(tx.recordInfos);							
+							recordsToDelete.addAll(tx.recordsToDelete);														
 						}
 						
 						break;
 					}
-					case XA_ROLLBACK_RECORD:
+					case ROLLBACK_RECORD:
 					{
-						long txID = bb.getLong();
-						
+						long txID = bb.getLong();		
+						maxTransactionID = Math.max(maxTransactionID, txID);						
 						byte end = bb.get();
 						
-						if (end != XA_DONE)
+						if (end != DONE)
 						{
 							repairFrom(pos, file);
 						}
@@ -1069,18 +697,13 @@ public class JournalImpl implements Journal
 							if (tx == null)
 							{
 								throw new IllegalStateException("Cannot find tx with id " + txID);
-							}
-							
-							if (!tx.prepared)
-							{
-								throw new IllegalStateException("Can't roll back transaction - it is not prepared " + txID);
-							}
+							}						
 						}
 						
 						break;
 					}
 					case FILL_CHARACTER:						
-					{
+					{	
 						//End of records in file - we check the file only contains fill characters from this point
 						while (bb.hasRemaining())
 						{
@@ -1104,7 +727,7 @@ public class JournalImpl implements Journal
 				
 				if (recordType != FILL_CHARACTER)
 				{
-					lastDataPos = pos;
+					lastDataPos = bb.position();
 				}
 			}
 						
@@ -1125,6 +748,8 @@ public class JournalImpl implements Journal
 				file.getFile().position(SIZE_LONG);
 			}								
 		}			
+		
+		transactionIDSequence.set(maxTransactionID + 1);
 									
 		//Now it's possible that some of the files are no longer needed
 		
@@ -1144,6 +769,8 @@ public class JournalImpl implements Journal
 			currentFile.getFile().open();
 		
 			currentFile.getFile().position(lastDataPos);
+			
+			currentFile.setOffset(lastDataPos);
 		}
 		else
 		{
@@ -1184,16 +811,13 @@ public class JournalImpl implements Journal
 	}
 			
 	public void checkAndCreateAvailableFiles() throws Exception
-	{
-		//log.info("min available " + minAvailableFiles + " avail: " + availableFiles.size() + " files: " + files.size());
+	{		
 		int filesToCreate = minAvailableFiles - availableFiles.size();
 		
 		for (int i = 0; i < filesToCreate; i++)
 		{
 			JournalFile file = createFile();
-			
-			//log.info("Creating new file");
-			
+
 			availableFiles.add(file);
 		}
 	}
@@ -1248,11 +872,11 @@ public class JournalImpl implements Journal
 	
 	public void startTasks()
 	{
-		reclaimerTask = new ReclaimerTask();
-		timer.schedule(reclaimerTask, taskPeriod, taskPeriod);
-		
-		availableFilesTask = new AvailableFilesTask();
-		timer.schedule(availableFilesTask, taskPeriod, taskPeriod);
+//		reclaimerTask = new ReclaimerTask();
+//		timer.schedule(reclaimerTask, taskPeriod, taskPeriod);
+//		
+//		availableFilesTask = new AvailableFilesTask();
+//		timer.schedule(availableFilesTask, taskPeriod, taskPeriod);
 	}
 	
 	// Public -----------------------------------------------------------------------------
@@ -1297,9 +921,7 @@ public class JournalImpl implements Journal
    			
    			sf.position(SIZE_LONG);
    			
-   			jf.resetOffset();
-   			
-   			jf.extendOffset(SIZE_LONG);
+   			jf.setOffset(SIZE_LONG);
    			
    			availableFiles.add(jf);   		
    		}
@@ -1308,6 +930,24 @@ public class JournalImpl implements Journal
 		
 	// Private -----------------------------------------------------------------------------
 		
+	private void appendRecord(ByteBuffer bb, boolean sync) throws Exception
+	{
+		lock.acquire();
+		
+		int size = bb.capacity();
+				
+		try
+		{   					
+			checkFile(size);
+			currentFile.getFile().write(bb, false);			
+			currentFile.extendOffset(size);
+		}
+		finally
+		{
+			lock.release();
+		}
+	}
+	
 	private void repairFrom(int pos, JournalFile file) throws Exception
 	{
 		log.warn("Corruption has been detected in file: " + file.getFile().getFileName() +
@@ -1410,8 +1050,7 @@ public class JournalImpl implements Journal
 				
 				cancel();
 			}
-		}
-		
+		}		
 	}
 	
 	private class AvailableFilesTask extends TimerTask
@@ -1435,8 +1074,6 @@ public class JournalImpl implements Journal
 				
 				cancel();
 			}
-		}
-		
-	}
-	
+		}		
+	}	
 }

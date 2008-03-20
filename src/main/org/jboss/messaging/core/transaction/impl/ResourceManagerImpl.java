@@ -23,6 +23,7 @@ package org.jboss.messaging.core.transaction.impl;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.transaction.xa.Xid;
 
@@ -40,7 +41,7 @@ import org.jboss.messaging.core.transaction.Transaction;
  */
 public class ResourceManagerImpl implements ResourceManager
 {
-   private ConcurrentMap<Xid, Transaction> transactions = new ConcurrentHashMap<Xid, Transaction>();
+   private final ConcurrentMap<Xid, Transaction> transactions = new ConcurrentHashMap<Xid, Transaction>();
    
    private final int defaultTimeoutSeconds;
    

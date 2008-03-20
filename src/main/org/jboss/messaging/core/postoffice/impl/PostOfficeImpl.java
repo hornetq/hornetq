@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.postoffice.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -35,13 +36,14 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.persistence.PersistenceManager;
+import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.util.ConcurrentHashSet;
+import org.jboss.messaging.util.ConcurrentSet;
 
 /**
  * 
@@ -58,24 +60,24 @@ public class PostOfficeImpl implements PostOffice
    
    private final ConcurrentMap<String, List<Binding>> mappings = new ConcurrentHashMap<String, List<Binding>>();
    
-   private final Set<String> allowableAddresses = new ConcurrentHashSet<String>();
+   private final ConcurrentSet<String> destinations = new ConcurrentHashSet<String>();
    
    private final ConcurrentMap<String, Binding> nameMap = new ConcurrentHashMap<String, Binding>();
    
    private final ConcurrentMap<String, FlowController> flowControllers = new ConcurrentHashMap<String, FlowController>();
    
-   private final PersistenceManager persistenceManager;
-   
    private final QueueFactory queueFactory;
    
    private final boolean checkAllowable;
+   
+   private final StorageManager storageManager;
     
-   public PostOfficeImpl(final int nodeID, final PersistenceManager persistenceManager,
+   public PostOfficeImpl(final int nodeID, final StorageManager storageManager,
    		                final QueueFactory queueFactory, final boolean checkAllowable)
    {
       this.nodeID = nodeID;
       
-      this.persistenceManager = persistenceManager;
+      this.storageManager = storageManager;
       
       this.queueFactory = queueFactory;
       
@@ -93,38 +95,53 @@ public class PostOfficeImpl implements PostOffice
    {
       mappings.clear();
       
-      allowableAddresses.clear();
+      destinations.clear();
    }
    
    // PostOffice implementation -----------------------------------------------
 
-   public void addAllowableAddress(final String address) throws Exception
+   public boolean addDestination(final String address, final boolean temporary) throws Exception
    {      
-      allowableAddresses.add(address);
-      
-      flowControllers.put(address, new FlowControllerImpl(address, this));
+   	boolean added = destinations.addIfAbsent(address);
+   	
+   	if (added)
+   	{   	
+      	if (!temporary)
+      	{
+      		storageManager.addDestination(address);
+      	}
+      	 
+         flowControllers.put(address, new FlowControllerImpl(address, this));
+   	}
+   	
+   	return added;
    }
    
-   public boolean removeAllowableAddress(final String address) throws Exception
+   public boolean removeDestination(final String address, final boolean temporary) throws Exception
    {      
-      boolean removed = allowableAddresses.remove(address);
+      boolean removed = destinations.remove(address);
       
       if (removed)
       {
       	flowControllers.remove(address);
+      	
+      	if (!temporary)
+         {
+      		storageManager.deleteDestination(address);
+         }
       }
-      
+
       return removed;
    }
    
-   public boolean containsAllowableAddress(final String address)
+   public boolean containsDestination(final String address)
    {
-      return allowableAddresses.contains(address);
+      return destinations.contains(address);
    }
 
-   public Set<String> listAvailableAddresses()
+   public Set<String> listAllDestinations()
    {
-      return allowableAddresses;
+      return destinations;
    }
 
    public Binding addBinding(final String address, final String queueName, final Filter filter, 
@@ -136,7 +153,7 @@ public class PostOfficeImpl implements PostOffice
       
       if (durable)
       {
-         persistenceManager.addBinding(binding);
+      	storageManager.addBinding(binding);
       }
       
       return binding;      
@@ -148,7 +165,7 @@ public class PostOfficeImpl implements PostOffice
       
       if (binding.getQueue().isDurable())
       {
-         persistenceManager.deleteBinding(binding);
+      	storageManager.deleteBinding(binding);
       }
       
       return binding;
@@ -179,13 +196,11 @@ public class PostOfficeImpl implements PostOffice
       return nameMap.get(queueName);
    }
          
-   public void route(final String address, final Message message) throws Exception
+   public List<MessageReference> route(final String address, final Message message) throws Exception
    {
-     // boolean routeRemote = false;
-      
       if (checkAllowable)
       {
-         if (!allowableAddresses.contains(address))
+         if (!destinations.contains(address))
          {
             throw new MessagingException(MessagingException.ADDRESS_DOES_NOT_EXIST,
                                          "Cannot route to address " + address);
@@ -194,6 +209,8 @@ public class PostOfficeImpl implements PostOffice
            
       List<Binding> bindings = mappings.get(address);
       
+      List<MessageReference> refs = new ArrayList<MessageReference>();
+      
       if (bindings != null)
       {
          for (Binding binding: bindings)
@@ -201,32 +218,15 @@ public class PostOfficeImpl implements PostOffice
             Queue queue = binding.getQueue();
             
             if (queue.getFilter() == null || queue.getFilter().match(message))
-            {         
-               if (binding.getNodeID() == nodeID)
-               {
-                  //Local queue
-                                 
-                  message.createReference(queue);              
-               }
-               else
-               {
-//                  if (!queue.isDurable())
-//                  {
-//                     //Remote queue - we never route to remote durable queues since we will lose atomicity in event
-//                     //of crash - for moving between durable queues we use message redistribution
-//                     
-//                     routeRemote = true;                  
-//                  }               
-               }
+            {                      
+               MessageReference reference = message.createReference(queue);              
+               
+               refs.add(reference);
             }
          }
       }
-
       
-//      if (routeRemote)
-//      {
-//         tx.addSynchronization(new CastMessageCallback(new MessageRequest(address, message)));
-//      }
+      return refs;
    }
    
    public void routeFromCluster(final String address, final Message message) throws Exception
@@ -338,12 +338,24 @@ public class PostOfficeImpl implements PostOffice
    
    private void loadBindings() throws Exception
    {
-      List<Binding> bindings = persistenceManager.loadBindings(queueFactory);
+      List<Binding> bindings = new ArrayList<Binding>();
+      
+      List<String> dests = new ArrayList<String>();
+      
+      storageManager.loadBindings(queueFactory, bindings, dests);
+   	
+      Map<Long, Queue> queues = new HashMap<Long, Queue>();
       
       for (Binding binding: bindings)
       {
-         addBindingInMemory(binding);                    
+         addBindingInMemory(binding);             
+         
+         queues.put(binding.getQueue().getPersistenceID(), binding.getQueue());
       }
+      
+      destinations.addAll(dests);
+      
+      storageManager.loadMessages(this, queues);
    }
 
 }

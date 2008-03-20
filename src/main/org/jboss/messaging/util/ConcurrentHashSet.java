@@ -23,9 +23,9 @@ package org.jboss.messaging.util;
 
 import java.util.AbstractSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * 
@@ -38,9 +38,9 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * $Id: ConcurrentReaderHashSet.java 1935 2007-01-09 23:29:20Z clebert.suconic@jboss.com $
  */
-public class ConcurrentHashSet<E> extends AbstractSet<E>
+public class ConcurrentHashSet<E> extends AbstractSet<E> implements ConcurrentSet<E>
 {
-   private Map<E, Object> theMap;
+   private ConcurrentMap<E, Object> theMap;
    
    private static Object dummy = new Object();
    
@@ -94,6 +94,13 @@ public class ConcurrentHashSet<E> extends AbstractSet<E>
    public boolean remove(Object o)
    {
       return theMap.remove(o) == dummy;
+   }
+   
+   public boolean addIfAbsent(E o)
+   {
+   	Object obj = theMap.putIfAbsent(o, dummy);
+   	
+   	return obj == null;
    }
 
 }

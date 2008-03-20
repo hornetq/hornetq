@@ -67,9 +67,9 @@ public class JournalFile
 		return orderingID;
 	}
 	
-	public void resetOffset()
+	public void setOffset(final int offset)
 	{
-		offset = 0;
+		this.offset = offset;
 	}
 	
 	public SequentialFile getFile()

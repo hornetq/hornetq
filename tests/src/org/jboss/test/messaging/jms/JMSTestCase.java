@@ -30,17 +30,11 @@ public class JMSTestCase extends JBMServerTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-                  
-      String[] args = new String[]{"invm-beans.xml", "jbm-beans.xml"};
+                        
       ic = getInitialContext();
       cf = getConnectionFactory();
    }
 
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-      //ServerManagement.stopServerPeer();
-   }
 
    public JMSTestCase(String name)
    {

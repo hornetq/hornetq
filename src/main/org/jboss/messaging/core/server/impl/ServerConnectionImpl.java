@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.persistence.PersistenceManager;
+import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
@@ -80,7 +80,7 @@ public class ServerConnectionImpl implements ServerConnection
    
    private final ResourceManager resourceManager;
    
-   private final PersistenceManager persistenceManager;  
+   private final StorageManager persistenceManager;  
    
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
       
@@ -95,6 +95,8 @@ public class ServerConnectionImpl implements ServerConnection
    private final ConcurrentMap<String, ServerSession> sessions = new ConcurrentHashMap<String, ServerSession>();
 
    private final Set<Queue> temporaryQueues = new ConcurrentHashSet<Queue>();
+   
+   private final Set<String> temporaryDestinations = new ConcurrentHashSet<String>();
       
    private volatile boolean started;
 
@@ -106,7 +108,7 @@ public class ServerConnectionImpl implements ServerConnection
    		                      final String clientAddress,
    		                      final PacketDispatcher dispatcher,
    		                      final ResourceManager resourceManager,
-   		                      final PersistenceManager persistenceManager,
+   		                      final StorageManager persistenceManager,
    		                      final HierarchicalRepository<QueueSettings> queueSettingsRepository,
    		                      final PostOffice postOffice, final SecurityStore securityStore,
    		                      final ConnectionManager connectionManager)
@@ -201,10 +203,17 @@ public class ServerConnectionImpl implements ServerConnection
       
       for (String address: addresses)
       {
-         postOffice.removeAllowableAddress(address);
+         postOffice.removeDestination(address, true);
+      }
+      
+      for (String address: temporaryDestinations)
+      {
+      	postOffice.removeDestination(address, true);
       }
 
       temporaryQueues.clear();      
+      
+      temporaryDestinations.clear();
 
       connectionManager.unregisterConnection(remotingClientSessionID, this);
 
@@ -244,6 +253,16 @@ public class ServerConnectionImpl implements ServerConnection
    public void removeTemporaryQueue(final Queue queue)
    {
       temporaryQueues.remove(queue);      
+   }
+   
+   public void addTemporaryDestination(final String address)
+   {
+      temporaryDestinations.add(address);     
+   }
+   
+   public void removeTemporaryDestination(final String address)
+   {
+      temporaryDestinations.remove(address);
    }
    
    public boolean isStarted()

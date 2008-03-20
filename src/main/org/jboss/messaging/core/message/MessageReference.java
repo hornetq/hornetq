@@ -21,7 +21,8 @@
   */
 package org.jboss.messaging.core.message;
 
-import org.jboss.messaging.core.persistence.PersistenceManager;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -30,8 +31,6 @@ import org.jboss.messaging.core.settings.impl.QueueSettings;
  * A reference to a message.
  * 
  * Channels store message references rather than the messages themselves.
- * 
- * If many channels have contain the same reference this makes a lot of sense
  * 
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -54,9 +53,7 @@ public interface MessageReference
    
    void setScheduledDeliveryTime(long scheduledDeliveryTime);
    
-   /**
-    * @return the number of times delivery has been attempted for this routable
-    */
+
    int getDeliveryCount();
    
    void setDeliveryCount(int deliveryCount);        
@@ -65,14 +62,12 @@ public interface MessageReference
    
    Queue getQueue();
    
-   void acknowledge(PersistenceManager persistenceManager) throws Exception;  
+   boolean cancel(StorageManager persistenceManager, PostOffice postOffice,
+   		         HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;  
    
-   boolean cancel(PersistenceManager persistenceManager, HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;  
-   
-   void expire(PersistenceManager persistenceManager, HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+   void expire(StorageManager persistenceManager, PostOffice postOffice,
+   		      HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
 
-   void moveMessage(Queue destinationQueue,
-                                  PersistenceManager persistenceManager) throws Exception;
 }
 
 

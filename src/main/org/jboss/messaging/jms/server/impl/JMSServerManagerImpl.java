@@ -145,6 +145,7 @@ public class JMSServerManagerImpl implements JMSServerManager
    public boolean createQueue(String queueName, String jndiBinding) throws Exception
    {
       JBossQueue jBossQueue = new JBossQueue(queueName);
+      messagingServerManagement.addDestination(jBossQueue.getAddress());
       messagingServerManagement.createQueue(jBossQueue.getAddress(), jBossQueue.getAddress());
       boolean added = bindToJndi(jndiBinding, jBossQueue);
       if (added)
@@ -157,7 +158,7 @@ public class JMSServerManagerImpl implements JMSServerManager
    public boolean createTopic(String topicName, String jndiBinding) throws Exception
    {
       JBossTopic jBossTopic = new JBossTopic(topicName);
-      messagingServerManagement.addAddress(jBossTopic.getAddress());
+      messagingServerManagement.addDestination(jBossTopic.getAddress());
       boolean added = bindToJndi(jndiBinding, jBossTopic);
       if (added)
       {
@@ -168,7 +169,9 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    public boolean destroyQueue(String name) throws Exception
    {
+   	JBossQueue jBossQueue = new JBossQueue(name);
       messagingServerManagement.destroyQueue(name);
+      messagingServerManagement.removeDestination(jBossQueue.getAddress());
       List<String> jndiBindings = destinations.get(name);
       if (jndiBindings == null || jndiBindings.size() == 0)
       {
@@ -185,7 +188,7 @@ public class JMSServerManagerImpl implements JMSServerManager
    public boolean destroyTopic(String name) throws Exception
    {
       JBossTopic jBossTopic = new JBossTopic(name);
-      messagingServerManagement.removeAddress(jBossTopic.getAddress());
+      messagingServerManagement.removeDestination(jBossTopic.getAddress());
       List<String> jndiBindings = destinations.get(name);
       if (jndiBindings == null || jndiBindings.size() == 0)
       {
@@ -330,15 +333,15 @@ public class JMSServerManagerImpl implements JMSServerManager
       return listMessages(subscription, listType);
    }
 
-   public void removeMessageFromQueue(String queueName, String messageId) throws Exception
-   {
-      messagingServerManagement.removeMessageForBinding(new JBossQueue(queueName).getAddress(), new FilterImpl("JMSMessageID='" + messageId + "'"));
-   }
-
-   public void removeMessageFromTopic(String topicName, String messageId) throws Exception
-   {
-      messagingServerManagement.removeMessageForAddress(new JBossTopic(topicName).getAddress(), new FilterImpl("JMSMessageID='" + messageId + "'"));
-   }
+//   public void removeMessageFromQueue(String queueName, String messageId) throws Exception
+//   {
+//      messagingServerManagement.removeMessageForBinding(new JBossQueue(queueName).getAddress(), new FilterImpl("JMSMessageID='" + messageId + "'"));
+//   }
+//
+//   public void removeMessageFromTopic(String topicName, String messageId) throws Exception
+//   {
+//      messagingServerManagement.removeMessageForAddress(new JBossTopic(topicName).getAddress(), new FilterImpl("JMSMessageID='" + messageId + "'"));
+//   }
 
    public void removeAllMessagesForQueue(String queueName) throws Exception
    {
@@ -352,11 +355,11 @@ public class JMSServerManagerImpl implements JMSServerManager
       removeAllMessages(jBossTopic);
    }
 
-   public void moveMessage(String fromQueue, String toQueue, String messageId) throws Exception
-   {
-      messagingServerManagement.moveMessages(new JBossQueue(fromQueue).getAddress(), new JBossQueue(toQueue).getAddress(),
-              "JMSMessageID='" + messageId + "'");
-   }
+//   public void moveMessage(String fromQueue, String toQueue, String messageId) throws Exception
+//   {
+//      messagingServerManagement.moveMessages(new JBossQueue(fromQueue).getAddress(), new JBossQueue(toQueue).getAddress(),
+//              "JMSMessageID='" + messageId + "'");
+//   }
 
    public void expireMessage(String queue, String messageId) throws Exception
    {
@@ -364,11 +367,11 @@ public class JMSServerManagerImpl implements JMSServerManager
               "JMSMessageID='" + messageId + "'");
    }
 
-   public void changeMessagePriority(String queue, String messageId, int priority) throws Exception
-   {
-      messagingServerManagement.changeMessagePriority(new JBossQueue(queue).getAddress(),
-              "JMSMessageID='" + messageId + "'", priority);
-   }
+//   public void changeMessagePriority(String queue, String messageId, int priority) throws Exception
+//   {
+//      messagingServerManagement.changeMessagePriority(new JBossQueue(queue).getAddress(),
+//              "JMSMessageID='" + messageId + "'", priority);
+//   }
 
    public int getMessageCountForQueue(String queue) throws Exception
    {

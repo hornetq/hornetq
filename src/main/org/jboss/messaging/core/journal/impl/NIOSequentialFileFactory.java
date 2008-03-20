@@ -23,6 +23,7 @@ package org.jboss.messaging.core.journal.impl;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -63,6 +64,11 @@ public class NIOSequentialFileFactory implements SequentialFileFactory
 		};
 		
 		String[] fileNames = dir.list(fnf);
+		
+		if (fileNames == null)
+		{
+			throw new IOException("Failed to list: " + journalDir);
+		}
 		
 		return Arrays.asList(fileNames);
 	}

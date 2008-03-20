@@ -25,8 +25,6 @@ public interface ClientSessionInternal extends ClientSession
       
    void delivered(long deliveryID, boolean expired);
    
-   void flushAcks() throws MessagingException;
-   
    void removeConsumer(ClientConsumerInternal consumer) throws MessagingException;
    
    void removeProducer(ClientProducerInternal producer);

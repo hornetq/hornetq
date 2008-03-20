@@ -26,12 +26,13 @@ import java.util.List;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddAddressMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCancelMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserMessage;
@@ -40,7 +41,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMe
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveAddressMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAForgetMessage;
@@ -65,6 +66,8 @@ import org.jboss.messaging.core.server.ServerSession;
  */
 public class ServerSessionPacketHandler extends ServerPacketHandlerSupport
 {
+	private static final Logger log = Logger.getLogger(ServerSessionPacketHandler.class);
+	
 	private final ServerSession session;
 	
 	public ServerSessionPacketHandler(final ServerSession session)
@@ -82,6 +85,7 @@ public class ServerSessionPacketHandler extends ServerPacketHandlerSupport
       Packet response = null;
 
       PacketType type = packet.getType();
+      
       switch (type)
       {
       case SESS_CREATECONSUMER:
@@ -218,16 +222,16 @@ public class ServerSessionPacketHandler extends ServerPacketHandlerSupport
                .getTimeoutSeconds()));
          break;
       }
-      case SESS_ADD_ADDRESS:
+      case SESS_ADD_DESTINATION:
       {
-         SessionAddAddressMessage message = (SessionAddAddressMessage) packet;
-         session.addAddress(message.getAddress());
+         SessionAddDestinationMessage message = (SessionAddDestinationMessage) packet;
+         session.addDestination(message.getAddress(), message.isTemporary());
          break;
       }
-      case SESS_REMOVE_ADDRESS:
+      case SESS_REMOVE_DESTINATION:
       {
-         SessionRemoveAddressMessage message = (SessionRemoveAddressMessage) packet;
-         session.removeAddress(message.getAddress());
+         SessionRemoveDestinationMessage message = (SessionRemoveDestinationMessage) packet;
+         session.removeDestination(message.getAddress(), message.isTemporary());
          break;
       }
       default:

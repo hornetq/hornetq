@@ -95,9 +95,9 @@ public interface ServerSession
 
    boolean setXATimeout(int timeoutSeconds);
 
-   void addAddress(String address) throws Exception;
+   void addDestination(String address, boolean temporary) throws Exception;
 
-   void removeAddress(String address) throws Exception;
+   void removeDestination(String address, boolean temporary) throws Exception;
 
    void createQueue(String address, String queueName, String filterString, boolean durable, boolean temporary) throws Exception;
 

@@ -6,18 +6,18 @@
  */
 package org.jboss.messaging.core.remoting.impl.codec;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_ADD_ADDRESS;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_ADD_DESTINATION;
 
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddAddressMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 
 /**
  * 
- * A SessionAddAddressMessageCodec
+ * A SessionAddDestinationMessageCodec
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SessionAddAddressMessageCodec extends AbstractPacketCodec<SessionAddAddressMessage>
+public class SessionAddDestinationMessageCodec extends AbstractPacketCodec<SessionAddDestinationMessage>
 {
    // Constants -----------------------------------------------------
 
@@ -27,9 +27,9 @@ public class SessionAddAddressMessageCodec extends AbstractPacketCodec<SessionAd
 
    // Constructors --------------------------------------------------
 
-   public SessionAddAddressMessageCodec()
+   public SessionAddDestinationMessageCodec()
    {
-      super(SESS_ADD_ADDRESS);
+      super(SESS_ADD_DESTINATION);
    }
 
    // Public --------------------------------------------------------
@@ -37,7 +37,7 @@ public class SessionAddAddressMessageCodec extends AbstractPacketCodec<SessionAd
    // AbstractPacketCodec overrides ---------------------------------
 
    @Override
-   protected void encodeBody(SessionAddAddressMessage message, RemotingBuffer out) throws Exception
+   protected void encodeBody(SessionAddDestinationMessage message, RemotingBuffer out) throws Exception
    {
       String address = message.getAddress();
      
@@ -45,10 +45,11 @@ public class SessionAddAddressMessageCodec extends AbstractPacketCodec<SessionAd
 
       out.putInt(bodyLength);
       out.putNullableString(address);
+      out.putBoolean(message.isTemporary());
    }
 
    @Override
-   protected SessionAddAddressMessage decodeBody(RemotingBuffer in)
+   protected SessionAddDestinationMessage decodeBody(RemotingBuffer in)
          throws Exception
    {
       int bodyLength = in.getInt();
@@ -58,8 +59,9 @@ public class SessionAddAddressMessageCodec extends AbstractPacketCodec<SessionAd
       }
 
       String address = in.getNullableString();
+      boolean temp = in.getBoolean();
     
-      return new SessionAddAddressMessage(address);
+      return new SessionAddDestinationMessage(address, temp);
    }
 
    // Package protected ---------------------------------------------

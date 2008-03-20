@@ -170,7 +170,7 @@ public interface JMSServerManager extends Serializable
     * @param messageId the id of the message to remove
     * @throws Exception if a problem occurred
     */
-   void removeMessageFromQueue(String queue, String messageId) throws Exception;
+ //  void removeMessageFromQueue(String queue, String messageId) throws Exception;
 
    /**
     * removes a particular message from a topic
@@ -178,7 +178,7 @@ public interface JMSServerManager extends Serializable
     * @param messageId the id of the message
     * @throws Exception if a problem occurred
     */
-   void removeMessageFromTopic(String topic, String messageId) throws Exception;
+ //  void removeMessageFromTopic(String topic, String messageId) throws Exception;
 
    /**
     * removes all messages from a particular queue
@@ -201,7 +201,7 @@ public interface JMSServerManager extends Serializable
     * @param messageID the id of the message
     * @throws Exception if a problem occurred
     */
-   void moveMessage(String fromQueue, String toQueue, String messageID) throws Exception;
+   //void moveMessage(String fromQueue, String toQueue, String messageID) throws Exception;
 
    /**
     * expires a message
@@ -218,7 +218,7 @@ public interface JMSServerManager extends Serializable
     * @param priority the priority to change the message to
     * @throws Exception if a problem occurred
     */
-   void changeMessagePriority(String queue, String messageId, int priority) throws Exception;
+ //  void changeMessagePriority(String queue, String messageId, int priority) throws Exception;
 
    /**
     * returns how many messages a queue is currently holding

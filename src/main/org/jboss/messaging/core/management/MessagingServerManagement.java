@@ -67,7 +67,7 @@ public interface MessagingServerManagement
     * @return true if the address was added
     * @throws Exception if a problem occurred
     */
-   boolean addAddress(String address) throws Exception;
+   boolean addDestination(String address) throws Exception;
 
    /**
     * remove an address from the post office
@@ -75,7 +75,7 @@ public interface MessagingServerManagement
     * @return true if the address was removed
     * @throws Exception if a problem occurred
     */
-   boolean removeAddress(String address) throws Exception;
+   boolean removeDestination(String address) throws Exception;
 
    /**
     * returns all the queues for a specific address
@@ -126,7 +126,7 @@ public interface MessagingServerManagement
     * @param filter the filter
     * @throws Exception if a problem occurred
     */
-   void removeMessageForBinding(String binding, Filter filter) throws Exception;
+  /// void removeMessageForBinding(String binding, Filter filter) throws Exception;
 
    /**
     * remove the messages for a specific address that match the specified filter
@@ -134,7 +134,7 @@ public interface MessagingServerManagement
     * @param filter the filter
     * @throws Exception if a problem occurred
     */
-   void removeMessageForAddress(String address, Filter filter) throws Exception;
+  // void removeMessageForAddress(String address, Filter filter) throws Exception;
 
    /**
     * count the number of messages in a queue
@@ -243,7 +243,7 @@ public interface MessagingServerManagement
     * @param filter the filter to use
     * @throws Exception if a problem occurred
     */
-   void moveMessages(String toQueue, String fromQueue, String filter) throws Exception;
+   //void moveMessages(String toQueue, String fromQueue, String filter) throws Exception;
 
    /**
     * expire a set of messages for a specific queue
@@ -260,7 +260,7 @@ public interface MessagingServerManagement
     * @param priority the priority to change to
     * @throws Exception if a problem occurred
     */
-   void changeMessagePriority(String queue, String filter, int priority) throws Exception;
+   //void changeMessagePriority(String queue, String filter, int priority) throws Exception;
 
    /**
     * list all available addresses

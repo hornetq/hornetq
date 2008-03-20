@@ -171,6 +171,8 @@ public class PersistenceTest extends JMSTestCase
 
 	      stop();
 
+	      log.info("************ RESTARTING");
+	      
 	      startNoDelete();
 
 	      // Messaging server restart implies new ConnectionFactory lookup
@@ -475,6 +477,7 @@ public class PersistenceTest extends JMSTestCase
 
 	      ds.close();
 
+	      log.info("************* UNSUBSCRIBE CALLED");
 	      s.unsubscribe("sub");
       }
       finally

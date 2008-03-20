@@ -32,252 +32,318 @@ import javax.transaction.xa.Xid;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.persistence.PersistenceManager;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.core.transaction.TransactionSynchronization;
 
 /**
  * 
  * A TransactionImpl
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
+ * 
  */
 public class TransactionImpl implements Transaction
 {
-   private static final Logger log = Logger.getLogger(TransactionImpl.class);
-   
-   private final List<Message> messagesToAdd = new ArrayList<Message>();
-   
-   private final List<MessageReference> acknowledgements = new ArrayList<MessageReference>();  
-   
-   private final List<TransactionSynchronization> synchronizations = new ArrayList<TransactionSynchronization>();
-   
-   private final Xid xid;
-   
-   private volatile boolean containsPersistent;
-   
-   private volatile boolean prepared;
-   
-   private volatile boolean suspended;
-   
-   public TransactionImpl()
-   {       
-   	this.xid = null;
-   }
-   
-   public TransactionImpl(final Xid xid)
-   {
-      this.xid = xid;      
-   }
-   
-   // Transaction implementation -----------------------------------------------------------
-   
-   public void addMessage(final Message message)
-   {
-      messagesToAdd.add(message);
-      
-      if (message.getNumDurableReferences() != 0)
-      {
-         containsPersistent = true;
-      }
-   }
-   
-   public void addAcknowledgement(final MessageReference acknowledgement)
-   {
-      acknowledgements.add(acknowledgement);
-       
-      if (acknowledgement.getMessage().isDurable() && acknowledgement.getQueue().isDurable())
-      {
-         containsPersistent = true;
-      }
-   }
-      
-   public void addSynchronization(final TransactionSynchronization sync)
-   {
-      synchronizations.add(sync);
-   }
-   
-   public void prepare(final PersistenceManager persistenceManager) throws Exception
-   {
-      if (xid == null)
-      {
-         throw new IllegalStateException("Cannot call prepare() on a non XA transaction");
-      }
-      else if (containsPersistent)
-      {
-         persistenceManager.prepareTransaction(xid, messagesToAdd, acknowledgements);
-      }
-            
-      prepared = true;
-   }
-   
-   public void commit(final boolean onePhase, final PersistenceManager persistenceManager) throws Exception
-   {
-      callSynchronizations(SyncType.BEFORE_COMMIT);
-      
-      if (containsPersistent)
-      {
-         if (xid == null || onePhase)
-         {
-            //1PC commit
-            
-            persistenceManager.commitTransaction(messagesToAdd, acknowledgements);
-         }
-         else
-         {
-            //2PC commit
-            
-            if (!prepared)
-            {
-               throw new IllegalStateException("Transaction is not prepared");
-            }
-            
-            persistenceManager.commitPreparedTransaction(xid);                        
-         } 
-      }
-            
-      for (Message msg: messagesToAdd)
-      {
-         msg.send();
-      }
-      
-      for (MessageReference reference: acknowledgements)
-      {
-         reference.getQueue().referenceAcknowledged();
-      }
-      
-      callSynchronizations(SyncType.AFTER_COMMIT);
-      
-      clear();      
-   }
-   
-   public void rollback(final PersistenceManager persistenceManager,
-   		               final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
-   {
-      callSynchronizations(SyncType.BEFORE_ROLLBACK);
-        
-      if (prepared)
-      {
-         persistenceManager.unprepareTransaction(xid, messagesToAdd, acknowledgements);             
-      }
-      
-      cancelDeliveries(persistenceManager, queueSettingsRepository);
-                        
-      callSynchronizations(SyncType.AFTER_ROLLBACK);  
-      
-      clear();      
-   }      
-   
-   public int getAcknowledgementsCount()
-   {
-      return acknowledgements.size();
-   }
-   
-   public void suspend()
-   {
-      suspended = true;
-   }
-   
-   public void resume()
-   {
-      suspended = false;
-   }
-   
-   public boolean isSuspended()
-   {
-      return suspended;
-   }
-   
-   public Xid getXid()
-   {
-      return xid;
-   }
-   
-   public boolean isEmpty()
-   {
-      return messagesToAdd.isEmpty() && acknowledgements.isEmpty();
-   }
-   
-   // Private -------------------------------------------------------------------
-   
-   private void callSynchronizations(final SyncType type) throws Exception
-   {
-      for (TransactionSynchronization sync: synchronizations)
-      {
-         if (type == SyncType.BEFORE_COMMIT)
-         {
-            sync.beforeCommit();
-         }
-         else if (type == SyncType.AFTER_COMMIT)
-         {
-            sync.afterCommit();
-         }
-         else if (type == SyncType.BEFORE_ROLLBACK)
-         {
-            sync.beforeRollback();
-         }
-         else if (type == SyncType.AFTER_ROLLBACK)
-         {
-            sync.afterRollback();
-         }            
-      }
-   }
+	private static final Logger log = Logger.getLogger(TransactionImpl.class);
 
-   private void clear()
-   {
-      messagesToAdd.clear();
-      
-      acknowledgements.clear();
-      
-      synchronizations.clear();
-      
-      containsPersistent = false;
-   }
-   
-   private void cancelDeliveries(final PersistenceManager persistenceManager,
-   		                        final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
-   {
-      Map<Queue, LinkedList<MessageReference>> queueMap = new HashMap<Queue, LinkedList<MessageReference>>();
-      
-      //Need to sort into lists - one for each queue involved.
-      //Then cancelling back atomicly for each queue adding list on front to guarantee ordering is preserved      
-      
-      for (MessageReference ref: acknowledgements)
-      {
-         Queue queue = ref.getQueue();
-         
-         LinkedList<MessageReference> list = queueMap.get(queue);
-         
-         if (list == null)
-         {
-            list = new LinkedList<MessageReference>();
-            
-            queueMap.put(queue, list);
-         }
-                 
-         if (ref.cancel(persistenceManager, queueSettingsRepository))
-         {
-            list.add(ref);
-         }
-      }
-      
-      for (Map.Entry<Queue, LinkedList<MessageReference>> entry: queueMap.entrySet())
-      {                  
-         LinkedList<MessageReference> refs = entry.getValue();
-                
-         entry.getKey().addListFirst(refs);
-      }
-   }
-   
-   // Inner Enums -------------------------------------------------------------------------------
-   
-   private enum SyncType
-   {
-      BEFORE_COMMIT, AFTER_COMMIT, BEFORE_ROLLBACK, AFTER_ROLLBACK;
-   }
-         
+	private final StorageManager storageManager;
+
+	private final PostOffice postOffice;
+
+	private final List<MessageReference> refsToAdd = new ArrayList<MessageReference>();
+
+	private final List<MessageReference> acknowledgements = new ArrayList<MessageReference>();
+
+	private final Xid xid;
+
+	private final long id;
+
+	private volatile State state = State.ACTIVE;
+
+	private volatile boolean containsPersistent;
+
+	public TransactionImpl(final StorageManager storageManager,
+			final PostOffice postOffice)
+	{
+		this.storageManager = storageManager;
+
+		this.postOffice = postOffice;
+
+		this.xid = null;
+
+		this.id = storageManager.generateTransactionID();
+	}
+
+	public TransactionImpl(final Xid xid, final StorageManager storageManager,
+			final PostOffice postOffice)
+	{
+		this.storageManager = storageManager;
+
+		this.postOffice = postOffice;
+
+		this.xid = xid;
+
+		this.id = storageManager.generateTransactionID();
+	}
+
+	// Transaction implementation
+	// -----------------------------------------------------------
+
+	public long getID()
+	{
+		return id;
+	}
+
+	public void addMessage(final String address, final Message message)
+			throws Exception
+	{
+		if (state != State.ACTIVE)
+		{
+			throw new IllegalStateException("Transaction is in invalid state " + state);
+		}
+
+		List<MessageReference> refs = postOffice.route(address, message);
+
+		refsToAdd.addAll(refs);
+
+		if (message.getDurableRefCount() != 0)
+		{
+			storageManager.storeMessageTransactional(id, address, message);
+
+			containsPersistent = true;
+		}
+	}
+
+	public void addAcknowledgement(final MessageReference acknowledgement)
+			throws Exception
+	{
+		if (state != State.ACTIVE)
+		{
+			throw new IllegalStateException("Transaction is in invalid state " + state);
+		}
+		acknowledgements.add(acknowledgement);
+
+		Message message = acknowledgement.getMessage();
+
+		if (message.isDurable())
+		{
+			Queue queue = acknowledgement.getQueue();
+
+			if (queue.isDurable())
+			{
+				// Need to lock on the message to prevent a race where the ack and
+				// delete
+				// records get recorded in the log in the wrong order
+
+				// TODO For now - we just use synchronized - can probably do better
+				// locking
+
+				synchronized (message)
+				{
+					message.decrementDurableRefCount();
+
+					if (message.getDurableRefCount() == 0)
+					{
+						storageManager.storeDeleteTransactional(id, message
+								.getMessageID());
+					}
+					else
+					{
+						storageManager.storeAcknowledgeTransactional(id, queue
+								.getPersistenceID(), message.getMessageID());
+					}
+
+					containsPersistent = true;
+				}
+			}
+		}
+
+	}
+
+	public void prepare() throws Exception
+	{
+		if (state != State.ACTIVE)
+		{
+			throw new IllegalStateException("Transaction is in invalid state " + state);
+		}
+
+		if (xid == null)
+		{
+			throw new IllegalStateException("Cannot prepare non XA transaction");
+		}
+
+		if (containsPersistent)
+		{
+			storageManager.prepare(id);
+		}
+
+		state = State.PREPARED;
+	}
+
+	public void commit() throws Exception
+	{
+		if (xid != null)
+		{
+			if (state != State.PREPARED)
+			{
+				throw new IllegalStateException("Transaction is in invalid state " + state);
+			}
+		}
+		else
+		{
+			if (state != State.ACTIVE)
+			{
+				throw new IllegalStateException("Transaction is in invalid state " + state);
+			}
+		}
+
+		if (containsPersistent)
+		{
+			storageManager.commit(id);
+		}
+
+		for (MessageReference ref : refsToAdd)
+		{
+			ref.getQueue().addLast(ref);
+		}
+
+		for (MessageReference reference : acknowledgements)
+		{
+			reference.getQueue().referenceAcknowledged();
+		}
+
+		clear();
+
+		state = State.COMMITTED;
+	}
+
+	public void rollback(final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+	{
+		if (xid != null)
+		{
+			if (state != State.PREPARED && state != State.ACTIVE)
+			{
+				throw new IllegalStateException("Transaction is in invalid state " + state);
+			}
+		}
+		else
+		{
+			if (state != State.ACTIVE)
+			{
+				throw new IllegalStateException("Transaction is in invalid state " + state);
+		   }
+		}
+
+		if (containsPersistent)
+		{
+			storageManager.rollback(id);
+		}
+
+		Map<Queue, LinkedList<MessageReference>> queueMap = new HashMap<Queue, LinkedList<MessageReference>>();
+
+		// We sort into lists - one for each queue involved.
+		// Then we cancel back atomicly for each queue adding list on front to
+		// guarantee ordering is preserved
+
+		for (MessageReference ref : acknowledgements)
+		{
+			Queue queue = ref.getQueue();
+
+			Message message = ref.getMessage();
+
+			if (message.isDurable() && queue.isDurable())
+			{
+				// Reverse the decrements we did in the tx
+				message.incrementDurableRefCount();
+			}
+
+			LinkedList<MessageReference> list = queueMap.get(queue);
+
+			if (list == null)
+			{
+				list = new LinkedList<MessageReference>();
+
+				queueMap.put(queue, list);
+			}
+
+			if (ref.cancel(storageManager, postOffice, queueSettingsRepository))
+			{
+				list.add(ref);
+			}
+		}
+
+		for (Map.Entry<Queue, LinkedList<MessageReference>> entry : queueMap
+				.entrySet())
+		{
+			LinkedList<MessageReference> refs = entry.getValue();
+
+			entry.getKey().addListFirst(refs);
+		}
+
+		clear();
+
+		state = State.ROLLEDBACK;
+	}
+
+	public int getAcknowledgementsCount()
+	{
+		return acknowledgements.size();
+	}
+
+	public void suspend()
+	{
+		if (state != State.ACTIVE)
+		{
+			throw new IllegalStateException("Can only suspend active transaction");
+		}
+		state = State.SUSPENDED;
+	}
+
+	public void resume()
+	{
+		if (state != State.SUSPENDED)
+		{
+			throw new IllegalStateException("Can only resume a suspended transaction");
+		}
+		state = State.ACTIVE;
+	}
+
+	public Transaction.State getState()
+	{
+		return state;
+	}
+
+	public Xid getXid()
+	{
+		return xid;
+	}
+
+	public boolean isEmpty()
+	{
+		return refsToAdd.isEmpty() && acknowledgements.isEmpty();
+	}
+
+	public boolean isContainsPersistent()
+	{
+		return containsPersistent;
+	}
+
+	public void setContainsPersistent(final boolean containsPersistent)
+	{
+		this.containsPersistent = containsPersistent;
+	}
+
+	// Private
+	// -------------------------------------------------------------------
+
+	private void clear()
+	{
+		refsToAdd.clear();
+
+		acknowledgements.clear();
+	}
 }

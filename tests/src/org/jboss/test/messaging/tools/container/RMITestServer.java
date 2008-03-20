@@ -322,7 +322,7 @@ public class RMITestServer extends UnicastRemoteObject implements Server
 //      return server.getDestinationManager();
 //   }
 //
-//   public PersistenceManager getPersistenceManager()
+//   public StorageManager getPersistenceManager()
 //   {
 //      return server.getPersistenceManager();
 //   }

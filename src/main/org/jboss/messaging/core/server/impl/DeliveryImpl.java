@@ -24,6 +24,7 @@ package org.jboss.messaging.core.server.impl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerDeliverMessage;
 import org.jboss.messaging.core.server.Delivery;

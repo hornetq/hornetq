@@ -667,7 +667,7 @@ public class JBossSession implements
                            
          session.createQueue(queue.getAddress(), queue.getAddress(), null, false, true);
          
-         //session.addAddress(queue.getAddress());
+         session.addDestination(queue.getAddress(), true);
          
          return queue;      
       }
@@ -691,7 +691,7 @@ public class JBossSession implements
       {      
          JBossTemporaryTopic topic = new JBossTemporaryTopic(this, topicName);
                            
-         session.addAddress(topic.getAddress());
+         session.addDestination(topic.getAddress(), true);
          
          return topic;
       }
@@ -858,7 +858,7 @@ public class JBossSession implements
                                                destination.getName() + " since it has subscribers");
             }
          }   
-         session.removeAddress(destination.getAddress());
+         session.removeDestination(destination.getAddress(), true);
       }
       catch (MessagingException e)
       {

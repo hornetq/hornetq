@@ -32,7 +32,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PING;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PONG;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PROD_SEND;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_ACKNOWLEDGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_ADD_ADDRESS;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_ADD_DESTINATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BINDINGQUERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BINDINGQUERY_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_HASNEXTMESSAGE;
@@ -55,7 +55,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_QUEUEQUERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_QUEUEQUERY_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_RECOVER;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_REMOVE_ADDRESS;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_REMOVE_DESTINATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_ROLLBACK;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_COMMIT;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_END;
@@ -106,7 +106,7 @@ import org.jboss.messaging.core.remoting.impl.codec.ProducerReceiveTokensMessage
 import org.jboss.messaging.core.remoting.impl.codec.ProducerSendMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.RemotingBuffer;
 import org.jboss.messaging.core.remoting.impl.codec.SessionAcknowledgeMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionAddAddressMessageCodec;
+import org.jboss.messaging.core.remoting.impl.codec.SessionAddDestinationMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionBindingQueryMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionBindingQueryResponseMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionBrowserHasNextMessageResponseMessageCodec;
@@ -124,7 +124,7 @@ import org.jboss.messaging.core.remoting.impl.codec.SessionCreateQueueMessageCod
 import org.jboss.messaging.core.remoting.impl.codec.SessionDeleteQueueMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionQueueQueryMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionQueueQueryResponseMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionRemoveAddressMessageCodec;
+import org.jboss.messaging.core.remoting.impl.codec.SessionRemoveDestinationMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionXACommitMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionXAEndMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionXAForgetMessageCodec;
@@ -160,7 +160,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerReceiveTokensMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddAddressMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageMessage;
@@ -183,7 +183,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessa
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRecoverMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveAddressMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRollbackMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
@@ -1369,9 +1369,9 @@ public class PacketTypeTest extends UnitTestCase
    
    public void testSessionRemoveAddressMessage() throws Exception
    {
-      SessionRemoveAddressMessage message = new SessionRemoveAddressMessage(randomString());
+      SessionRemoveDestinationMessage message = new SessionRemoveDestinationMessage(randomString(), true);
 
-      AbstractPacketCodec codec = new SessionRemoveAddressMessageCodec();
+      AbstractPacketCodec codec = new SessionRemoveDestinationMessageCodec();
       
       SimpleRemotingBuffer buffer = encode(message, codec);
       checkHeader(buffer, message);
@@ -1379,11 +1379,12 @@ public class PacketTypeTest extends UnitTestCase
 
       Packet decodedPacket = codec.decode(buffer);
 
-      assertTrue(decodedPacket instanceof SessionRemoveAddressMessage);
-      SessionRemoveAddressMessage decodedMessage = (SessionRemoveAddressMessage)decodedPacket;
-      assertEquals(SESS_REMOVE_ADDRESS, decodedMessage.getType());
+      assertTrue(decodedPacket instanceof SessionRemoveDestinationMessage);
+      SessionRemoveDestinationMessage decodedMessage = (SessionRemoveDestinationMessage)decodedPacket;
+      assertEquals(SESS_REMOVE_DESTINATION, decodedMessage.getType());
       
       assertEquals(message.getAddress(), decodedMessage.getAddress());
+      assertEquals(message.isTemporary(), decodedMessage.isTemporary());
             
    }
    
@@ -1458,9 +1459,9 @@ public class PacketTypeTest extends UnitTestCase
    
    public void testSessionAddAddressMessage() throws Exception
    {
-      SessionAddAddressMessage message = new SessionAddAddressMessage(randomString());
+      SessionAddDestinationMessage message = new SessionAddDestinationMessage(randomString(), true);
 
-      AbstractPacketCodec<SessionAddAddressMessage> codec = new SessionAddAddressMessageCodec();
+      AbstractPacketCodec<SessionAddDestinationMessage> codec = new SessionAddDestinationMessageCodec();
       
       SimpleRemotingBuffer buffer = encode(message, codec);
       checkHeader(buffer, message);
@@ -1468,11 +1469,12 @@ public class PacketTypeTest extends UnitTestCase
 
       Packet decodedPacket = codec.decode(buffer);
 
-      assertTrue(decodedPacket instanceof SessionAddAddressMessage);
-      SessionAddAddressMessage decodedMessage = (SessionAddAddressMessage)decodedPacket;
-      assertEquals(SESS_ADD_ADDRESS, decodedMessage.getType());
+      assertTrue(decodedPacket instanceof SessionAddDestinationMessage);
+      SessionAddDestinationMessage decodedMessage = (SessionAddDestinationMessage)decodedPacket;
+      assertEquals(SESS_ADD_DESTINATION, decodedMessage.getType());
       
-      assertEquals(message.getAddress(), decodedMessage.getAddress());        
+      assertEquals(message.getAddress(), decodedMessage.getAddress());      
+      assertEquals(message.isTemporary(), decodedMessage.isTemporary());
    }
    
    public void testSessionBindingQueryMessage() throws Exception

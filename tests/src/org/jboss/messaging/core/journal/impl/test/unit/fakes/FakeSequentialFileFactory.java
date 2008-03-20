@@ -97,7 +97,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 		
 		private final boolean sync;
 		
-		private ByteBuffer data;
+		private volatile ByteBuffer data;
 		
 		public ByteBuffer getData()
 		{
@@ -151,16 +151,9 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 			}
 			return fileName;
 		}
-
+		
 		public void open() throws Exception
 		{
-			//log.info("open called");
-			
-			if (open)
-			{
-				throw new IllegalStateException("Is already open");
-			}		
-
 			open = true;
 		}
 

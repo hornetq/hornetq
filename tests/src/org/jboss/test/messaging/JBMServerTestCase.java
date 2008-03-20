@@ -598,7 +598,7 @@ public class JBMServerTestCase extends JBMBaseTestCase
    }
 
 
-//   public PersistenceManager getPersistenceManager()
+//   public StorageManager getPersistenceManager()
 //   {
 //      try
 //      {

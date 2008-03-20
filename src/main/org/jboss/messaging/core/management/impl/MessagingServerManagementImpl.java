@@ -30,9 +30,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.lang.management.ManagementFactory;
 
-import org.jboss.aop.microcontainer.aspects.jmx.JMX;
 import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -47,10 +45,6 @@ import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConnection;
-
-import javax.management.StandardMBean;
-import javax.management.ObjectName;
-import javax.management.MBeanServer;
 
 /**
  * This interface describes the properties and operations that comprise the management interface of the
@@ -80,18 +74,6 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
       this.messagingServer = messagingServer;
    }
 
-//   public String getServerVersion()
-//   {      
-//      return messagingServer.getVersion().getProviderVersion();
-//   }
-//
-//   public Configuration getConfiguration()
-//   {
-//      return messagingServer.getConfiguration();
-//   }
-
-   //
-
    public boolean isStarted()
    {
       return messagingServer.isStarted();
@@ -103,51 +85,30 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
       {
          messagingServer.getPostOffice().addBinding(address, name, null, true, false);
       }
-
-      if (!messagingServer.getPostOffice().containsAllowableAddress(address))
-      {
-         messagingServer.getPostOffice().addAllowableAddress(address);
-      }
    }
 
    public void destroyQueue(String name) throws Exception
    {
       Binding binding = messagingServer.getPostOffice().getBinding(name);
 
-      boolean destroyed = false;
-
       if (binding != null)
       {
          Queue queue = binding.getQueue();
 
-         messagingServer.getPersistenceManager().deleteAllReferences(queue);
-
-         queue.removeAllReferences();
-
+         queue.deleteAllReferences(messagingServer.getStorageManager());
+         
          messagingServer.getPostOffice().removeBinding(queue.getName());
-
-         destroyed = true;
       }
    }
 
-   public boolean addAddress(String address) throws Exception
+   public boolean addDestination(String address) throws Exception
    {
-      if (!messagingServer.getPostOffice().containsAllowableAddress(address))
-      {
-      	messagingServer.getPostOffice().addAllowableAddress(address);
-         return true;
-      }
-      return false;
+      return messagingServer.getPostOffice().addDestination(address, false);
    }
 
-   public boolean removeAddress(String address) throws Exception
+   public boolean removeDestination(String address) throws Exception
    {
-      if (messagingServer.getPostOffice().containsAllowableAddress(address))
-      {
-      	messagingServer.getPostOffice().removeAllowableAddress(address);
-         return true;
-      }
-      return false;
+      return messagingServer.getPostOffice().removeDestination(address, false);
    }
 
    public ClientConnectionFactory createClientConnectionFactory(boolean strictTck,
@@ -170,12 +131,7 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
       {
          Queue queue = binding.getQueue();
 
-         if (queue.isDurable())
-         {
-            messagingServer.getPersistenceManager().deleteAllReferences(queue);
-         }
-
-         queue.removeAllReferences();
+         queue.deleteAllReferences(messagingServer.getStorageManager());
       }
    }
 
@@ -186,9 +142,7 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
       {
          Queue queue = binding.getQueue();
 
-         messagingServer.getPersistenceManager().deleteAllReferences(queue);
-
-         queue.removeAllReferences();
+         queue.deleteAllReferences(messagingServer.getStorageManager());
       }
    }
 
@@ -207,29 +161,29 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
       return msgs;
    }
 
-   public void removeMessageForBinding(String name, Filter filter) throws Exception
-   {
-      Binding binding = messagingServer.getPostOffice().getBinding(name);
-      if (binding != null)
-      {
-         Queue queue = binding.getQueue();
-         List<MessageReference> allRefs = queue.list(filter);
-         for (MessageReference messageReference : allRefs)
-         {
-            messagingServer.getPersistenceManager().deleteReference(messageReference);
-            queue.removeReference(messageReference);
-         }
-      }
-   }
+//   public void removeMessageForBinding(String name, Filter filter) throws Exception
+//   {
+//      Binding binding = messagingServer.getPostOffice().getBinding(name);
+//      if (binding != null)
+//      {
+//         Queue queue = binding.getQueue();
+//         List<MessageReference> allRefs = queue.list(filter);
+//         for (MessageReference messageReference : allRefs)
+//         {
+//            messagingServer.getPersistenceManager().deleteReference(messageReference);
+//            queue.removeReference(messageReference);
+//         }
+//      }
+//   }
 
-   public void removeMessageForAddress(String binding, Filter filter) throws Exception
-   {
-      List<Binding> bindings = messagingServer.getPostOffice().getBindingsForAddress(binding);
-      for (Binding binding1 : bindings)
-      {
-         removeMessageForBinding(binding1.getQueue().getName(), filter);
-      }
-   }
+//   public void removeMessageForAddress(String binding, Filter filter) throws Exception
+//   {
+//      List<Binding> bindings = messagingServer.getPostOffice().getBindingsForAddress(binding);
+//      for (Binding binding1 : bindings)
+//      {
+//         removeMessageForBinding(binding1.getQueue().getName(), filter);
+//      }
+//   }
 
    public List<Queue> getQueuesForAddress(String address) throws Exception
    {
@@ -421,18 +375,18 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
       return messagingServer.getConnectionManager().getActiveConnections();
    }
 
-   public void moveMessages(String fromQueue, String toQueue, String filter) throws Exception
-   {
-      Filter actFilter = new FilterImpl(filter);
-      Queue from = getQueue(fromQueue);
-      Queue to = getQueue(toQueue);
-      List<MessageReference> messageReferences = from.list(actFilter);
-      for (MessageReference messageReference : messageReferences)
-      {
-         from.move(messageReference, to, messagingServer.getPersistenceManager());
-      }
-
-   }
+//   public void moveMessages(String fromQueue, String toQueue, String filter) throws Exception
+//   {
+//      Filter actFilter = new FilterImpl(filter);
+//      Queue from = getQueue(fromQueue);
+//      Queue to = getQueue(toQueue);
+//      List<MessageReference> messageReferences = from.list(actFilter);
+//      for (MessageReference messageReference : messageReferences)
+//      {
+//         from.move(messageReference, to, messagingServer.getPersistenceManager());
+//      }
+//
+//   }
 
    public void expireMessages(String queue, String filter) throws Exception
    {
@@ -444,25 +398,25 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
       }
    }
 
-   public void changeMessagePriority(String queue, String filter, int priority) throws Exception
-   {
-      Filter actFilter = new FilterImpl(filter);
-      List<MessageReference> allRefs = getQueue(queue).list(actFilter);
-      for (MessageReference messageReference : allRefs)
-      {
-         List<MessageReference> allRefsForMessage = messageReference.getMessage().getReferences();
-         for (MessageReference reference : allRefsForMessage)
-         {
-            reference.getQueue().changePriority(reference, priority);
-         }
-         messageReference.getMessage().setPriority((byte) priority);
-      }
-
-   }
+//   public void changeMessagePriority(String queue, String filter, int priority) throws Exception
+//   {
+//      Filter actFilter = new FilterImpl(filter);
+//      List<MessageReference> allRefs = getQueue(queue).list(actFilter);
+//      for (MessageReference messageReference : allRefs)
+//      {
+//         List<MessageReference> allRefsForMessage = messageReference.getMessage().getReferences();
+//         for (MessageReference reference : allRefsForMessage)
+//         {
+//            reference.getQueue().changePriority(reference, priority);
+//         }
+//         messageReference.getMessage().setPriority((byte) priority);
+//      }
+//
+//   }
 
    public Set<String> listAvailableAddresses()
    {
-      return messagingServer.getPostOffice().listAvailableAddresses();
+      return messagingServer.getPostOffice().listAllDestinations();
    }
 
 //

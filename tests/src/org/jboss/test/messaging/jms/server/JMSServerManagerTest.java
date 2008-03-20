@@ -21,18 +21,30 @@
    */
 package org.jboss.test.messaging.jms.server;
 
-import org.jboss.test.messaging.JBMServerTestCase;
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
-import org.jboss.messaging.jms.server.ConnectionInfo;
-import org.jboss.messaging.jms.server.JMSServerManager;
-import org.jboss.messaging.jms.server.SubscriptionInfo;
-import org.jboss.messaging.jms.server.MessageStatistics;
-
-import javax.jms.*;
-import javax.naming.NameNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
+import javax.jms.Connection;
+import javax.jms.DeliveryMode;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.jms.TopicSubscriber;
+import javax.naming.NameNotFoundException;
+
+import org.jboss.messaging.jms.client.JBossConnectionFactory;
+import org.jboss.messaging.jms.server.ConnectionInfo;
+import org.jboss.messaging.jms.server.JMSServerManager;
+import org.jboss.messaging.jms.server.MessageStatistics;
+import org.jboss.messaging.jms.server.SubscriptionInfo;
+import org.jboss.test.messaging.JBMServerTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -546,112 +558,125 @@ public class JMSServerManagerTest extends JBMServerTestCase
       }
    }
 
-   public void testRemoveMessageFromQueue() throws Exception
-   {
-      Connection conn = getConnectionFactory().createConnection("guest", "guest");
-      try
-      {
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer producer = sess.createProducer(queue1);
-         Message messageToDelete = null;
-         for (int i = 0; i < 10; i++)
-         {
-            TextMessage message = sess.createTextMessage();
-            message.setIntProperty("pos", i);
-            producer.send(message);
-            if (i == 5)
-            {
-               messageToDelete = message;
-            }
-         }
-         jmsServerManager.removeMessageFromQueue("Queue1", messageToDelete.getJMSMessageID());
-         sess = conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer consumer = sess.createConsumer(queue1);
-         conn.start();
-         int lastPos = -1;
-         for (int i = 0; i < 9; i++)
-         {
-            Message message = consumer.receive();
-            assertNotSame(messageToDelete.getJMSMessageID(), message.getJMSMessageID());
-            int pos = message.getIntProperty("pos");
-            assertTrue("returned in wrong order", pos > lastPos);
-            lastPos = pos;
-         }
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-   }
+//   public void testRemoveMessageFromQueue() throws Exception
+//   {
+//      Connection conn = getConnectionFactory().createConnection("guest", "guest");
+//      try
+//      {
+//         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//         MessageProducer producer = sess.createProducer(queue1);
+//         Message messageToDelete = null;
+//         for (int i = 0; i < 10; i++)
+//         {
+//            TextMessage message = sess.createTextMessage();
+//            message.setIntProperty("pos", i);
+//            producer.send(message);
+//            if (i == 5)
+//            {
+//               messageToDelete = message;
+//            }
+//         }
+//         jmsServerManager.removeMessageFromQueue("Queue1", messageToDelete.getJMSMessageID());
+//         sess = conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
+//         MessageConsumer consumer = sess.createConsumer(queue1);
+//         conn.start();
+//         int lastPos = -1;
+//         for (int i = 0; i < 9; i++)
+//         {
+//            Message message = consumer.receive();
+//            assertNotSame(messageToDelete.getJMSMessageID(), message.getJMSMessageID());
+//            int pos = message.getIntProperty("pos");
+//            assertTrue("returned in wrong order", pos > lastPos);
+//            lastPos = pos;
+//         }
+//      }
+//      finally
+//      {
+//         if (conn != null)
+//         {
+//            conn.close();
+//         }
+//      }
+//   }
 
-   public void testRemoveMessageFromTopic() throws Exception
-   {
-      Connection conn = getConnectionFactory().createConnection("guest", "guest");
-      try
-      {
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer producer = sess.createProducer(topic1);
-         MessageConsumer consumer = sess.createConsumer(topic1);
-         MessageConsumer consumer2 = sess.createConsumer(topic1);
-         Message messageToDelete = null;
-         for (int i = 0; i < 10; i++)
-         {
-            TextMessage message = sess.createTextMessage();
-            producer.send(message);
-            if (i == 5)
-            {
-               messageToDelete = message;
-            }
-         }
-         jmsServerManager.removeMessageFromTopic("Topic1", messageToDelete.getJMSMessageID());
-         conn.start();
-         for (int i = 0; i < 9; i++)
-         {
-            Message message = consumer.receive();
-            assertNotSame(messageToDelete.getJMSMessageID(), message.getJMSMessageID());
-            message = consumer2.receive();
-            assertNotSame(messageToDelete.getJMSMessageID(), message.getJMSMessageID());
-         }
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
+//   public void testRemoveMessageFromTopic() throws Exception
+//   {
+//      Connection conn = getConnectionFactory().createConnection("guest", "guest");
+//      try
+//      {
+//         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//         MessageProducer producer = sess.createProducer(topic1);
+//         MessageConsumer consumer = sess.createConsumer(topic1);
+//         MessageConsumer consumer2 = sess.createConsumer(topic1);
+//         Message messageToDelete = null;
+//         for (int i = 0; i < 10; i++)
+//         {
+//            TextMessage message = sess.createTextMessage();
+//            producer.send(message);
+//            if (i == 5)
+//            {
+//               messageToDelete = message;
+//            }
+//         }
+//         jmsServerManager.removeMessageFromTopic("Topic1", messageToDelete.getJMSMessageID());
+//         conn.start();
+//         for (int i = 0; i < 9; i++)
+//         {
+//            Message message = consumer.receive();
+//            assertNotSame(messageToDelete.getJMSMessageID(), message.getJMSMessageID());
+//            message = consumer2.receive();
+//            assertNotSame(messageToDelete.getJMSMessageID(), message.getJMSMessageID());
+//         }
+//      }
+//      finally
+//      {
+//         if (conn != null)
+//         {
+//            conn.close();
+//         }
+//      }
+//
+//   }
 
-   }
-
-   public void testRemoveAllMessagesFromQueue() throws Exception
-   {
-      Connection conn = getConnectionFactory().createConnection("guest", "guest");
-      try
-      {
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer producer = sess.createProducer(queue1);
-         for (int i = 0; i < 10; i++)
-         {
-            TextMessage message = sess.createTextMessage();
-            producer.send(message);
-         }
-         jmsServerManager.removeAllMessagesForQueue("Queue1");
-         sess = conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer consumer = sess.createConsumer(queue1);
-         assertEquals("messages still exist", 0, jmsServerManager.getMessageCountForQueue("Queue1"));
-
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-   }
+//   public void testRemoveAllMessagesFromQueue() throws Exception
+//   {
+//      Connection conn = getConnectionFactory().createConnection("guest", "guest");
+//      
+//      ServerManagement.getServer(0).createQueue("myQueue", null);
+//      
+//      Queue queue = (Queue)this.getInitialContext().lookup("/queue/myQueue");
+//      
+//      try
+//      {
+//         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//         MessageProducer producer = sess.createProducer(queue);
+//         for (int i = 0; i < 10; i++)
+//         {
+//            TextMessage message = sess.createTextMessage();
+//            producer.send(message);
+//         }
+//         jmsServerManager.removeAllMessagesForQueue("myQueue");
+//         sess = conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
+//         MessageConsumer consumer = sess.createConsumer(queue);
+//         assertEquals("messages still exist", 0, jmsServerManager.getMessageCountForQueue("myQueue"));
+//
+//      }
+//      finally
+//      {
+//         if (conn != null)
+//         {
+//            conn.close();
+//         }
+//         
+//         try
+//         {
+//         	ServerManagement.getServer(0).destroyQueue("myQueue", null);
+//         }
+//         catch (Exception ignore)
+//         {         	
+//         }
+//      }
+//   }
 
    public void testRemoveAllMessagesFromTopic() throws Exception
    {
@@ -689,45 +714,45 @@ public class JMSServerManagerTest extends JBMServerTestCase
 
    }
 
-   public void testMoveMessage() throws Exception
-   {
-      Connection conn = getConnectionFactory().createConnection("guest", "guest");
-      try
-      {
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer producer = sess.createProducer(queue1);
-         Message messageToMove = null;
-         for (int i = 0; i < 10; i++)
-         {
-            TextMessage message = sess.createTextMessage();
-            producer.send(message);
-            if (i == 5)
-            {
-               messageToMove = message;
-            }
-         }
-         jmsServerManager.moveMessage("Queue1", "Queue2", messageToMove.getJMSMessageID());
-         MessageConsumer consumer = sess.createConsumer(queue1);
-         conn.start();
-         for (int i = 0; i < 9; i++)
-         {
-            Message message = consumer.receive();
-            assertNotSame(messageToMove.getJMSMessageID(), message.getJMSMessageID());
-         }
-         consumer.close();
-         consumer = sess.createConsumer(queue2);
-         Message message = consumer.receive();
-         assertEquals(messageToMove.getJMSMessageID(), message.getJMSMessageID());
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-
-   }
+//   public void testMoveMessage() throws Exception
+//   {
+//      Connection conn = getConnectionFactory().createConnection("guest", "guest");
+//      try
+//      {
+//         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//         MessageProducer producer = sess.createProducer(queue1);
+//         Message messageToMove = null;
+//         for (int i = 0; i < 10; i++)
+//         {
+//            TextMessage message = sess.createTextMessage();
+//            producer.send(message);
+//            if (i == 5)
+//            {
+//               messageToMove = message;
+//            }
+//         }
+//         jmsServerManager.moveMessage("Queue1", "Queue2", messageToMove.getJMSMessageID());
+//         MessageConsumer consumer = sess.createConsumer(queue1);
+//         conn.start();
+//         for (int i = 0; i < 9; i++)
+//         {
+//            Message message = consumer.receive();
+//            assertNotSame(messageToMove.getJMSMessageID(), message.getJMSMessageID());
+//         }
+//         consumer.close();
+//         consumer = sess.createConsumer(queue2);
+//         Message message = consumer.receive();
+//         assertEquals(messageToMove.getJMSMessageID(), message.getJMSMessageID());
+//      }
+//      finally
+//      {
+//         if (conn != null)
+//         {
+//            conn.close();
+//         }
+//      }
+//
+//   }
 
    public void testExpireMessage() throws Exception
    {
@@ -771,51 +796,51 @@ public class JMSServerManagerTest extends JBMServerTestCase
 
    }
 
-   public void testChangeMessagePriority() throws Exception
-   {
-      Connection conn = getConnectionFactory().createConnection("guest", "guest");
-      try
-      {
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer producer = sess.createProducer(queue1);
-         producer.setPriority(9);
-         Message messageToMove = null;
-         for (int i = 0; i < 10; i++)
-         {
-            TextMessage message = sess.createTextMessage();
-
-            producer.send(message);
-            if (i == 5)
-            {
-               messageToMove = message;
-            }
-         }
-         jmsServerManager.changeMessagePriority("Queue1", messageToMove.getJMSMessageID(), 8);
-         MessageConsumer consumer = sess.createConsumer(queue1);
-         conn.start();
-         for (int i = 0; i < 9; i++)
-         {
-            Message message = consumer.receive();
-            assertNotSame(messageToMove.getJMSMessageID(), message.getJMSMessageID());
-            System.out.println("message.getJMSPriority() = " + message.getJMSPriority());
-            assertEquals(9, message.getJMSPriority());
-         }
-         Message message = consumer.receive();
-         assertEquals(8, message.getJMSPriority());
-         assertEquals(messageToMove.getJMSMessageID(), message.getJMSMessageID());
-
-         consumer.close();
-
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-
-   }
+//   public void testChangeMessagePriority() throws Exception
+//   {
+//      Connection conn = getConnectionFactory().createConnection("guest", "guest");
+//      try
+//      {
+//         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//         MessageProducer producer = sess.createProducer(queue1);
+//         producer.setPriority(9);
+//         Message messageToMove = null;
+//         for (int i = 0; i < 10; i++)
+//         {
+//            TextMessage message = sess.createTextMessage();
+//
+//            producer.send(message);
+//            if (i == 5)
+//            {
+//               messageToMove = message;
+//            }
+//         }
+//         jmsServerManager.changeMessagePriority("Queue1", messageToMove.getJMSMessageID(), 8);
+//         MessageConsumer consumer = sess.createConsumer(queue1);
+//         conn.start();
+//         for (int i = 0; i < 9; i++)
+//         {
+//            Message message = consumer.receive();
+//            assertNotSame(messageToMove.getJMSMessageID(), message.getJMSMessageID());
+//            System.out.println("message.getJMSPriority() = " + message.getJMSPriority());
+//            assertEquals(9, message.getJMSPriority());
+//         }
+//         Message message = consumer.receive();
+//         assertEquals(8, message.getJMSPriority());
+//         assertEquals(messageToMove.getJMSMessageID(), message.getJMSMessageID());
+//
+//         consumer.close();
+//
+//      }
+//      finally
+//      {
+//         if (conn != null)
+//         {
+//            conn.close();
+//         }
+//      }
+//
+//   }
 
    public void testMessageStatistics() throws Exception
    {

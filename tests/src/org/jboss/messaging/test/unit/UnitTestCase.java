@@ -252,28 +252,7 @@ public class UnitTestCase extends TestCase
       
       assertMapsEquivalent(msg1.getHeaders(), msg2.getHeaders());
       
-      assertEquals(msg1.getReferences().size(), msg2.getReferences().size());
-      
-      for (int i = 0; i < msg1.getReferences().size(); i++)
-      {
-         MessageReference ref1 = msg1.getReferences().get(i);
-         
-         MessageReference ref2 = msg2.getReferences().get(i);
-         
-         assertEquals(ref1.getScheduledDeliveryTime(), ref2.getScheduledDeliveryTime());
-         
-         assertEquals(ref1.getDeliveryCount(), ref2.getDeliveryCount());
-         
-         if (exactQueue)
-         {
-            assertTrue(ref1.getQueue() == ref2.getQueue());
-         }
-         else
-         {
-            assertEquals(ref1.getQueue().getPersistenceID(), ref2.getQueue().getPersistenceID());
-            assertEquals(ref1.getQueue().getName(), ref2.getQueue().getName());
-         }
-      }
+      assertEquals(msg1.getDurableRefCount(), msg2.getDurableRefCount());           
    }
    
    protected void assertMapsEquivalent(Map<String, Object> headers1, Map<String, Object> headers2)

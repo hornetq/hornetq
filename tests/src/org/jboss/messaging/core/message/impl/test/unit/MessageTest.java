@@ -287,23 +287,13 @@ public class MessageTest extends UnitTestCase
    {
       Message message = new MessageImpl();
       
-      assertTrue(message.getReferences().isEmpty());
-      
       Queue queue1 = queueFactory.createQueue(1, "queue1", null, false, true);
       Queue queue2 = queueFactory.createQueue(2, "queue2", null, false, true);
-
-      List<MessageReference> refs = new ArrayList<MessageReference>();
-      
+   
       MessageReference ref1 = message.createReference(queue1);
-      refs.add(ref1);
       MessageReference ref2 = message.createReference(queue2);
-      refs.add(ref2);
       MessageReference ref3 = message.createReference(queue1);
-      refs.add(ref3);
       MessageReference ref4 = message.createReference(queue2);
-      refs.add(ref4);
-      
-      assertRefListsIdenticalRefs(refs, message.getReferences());
       
       assertEquals(queue1, ref1.getQueue());
       assertEquals(queue2, ref2.getQueue());
@@ -341,66 +331,44 @@ public class MessageTest extends UnitTestCase
       //Non durable queue
       Queue queue2 = queueFactory.createQueue(2, "queue2", null, false, false);
       
-      assertEquals(0, messageDurable.getNumDurableReferences());
+      assertEquals(0, messageDurable.getDurableRefCount());
       
       MessageReference ref1 = messageDurable.createReference(queue1);
       
-      assertEquals(1, messageDurable.getNumDurableReferences());
+      assertEquals(1, messageDurable.getDurableRefCount());
       
       MessageReference ref2 = messageDurable.createReference(queue2);
       
-      assertEquals(1, messageDurable.getNumDurableReferences());
+      assertEquals(1, messageDurable.getDurableRefCount());
       
-      assertEquals(0, messageNonDurable.getNumDurableReferences());
+      assertEquals(0, messageNonDurable.getDurableRefCount());
       
       MessageReference ref3 = messageNonDurable.createReference(queue1);
       
-      assertEquals(0, messageNonDurable.getNumDurableReferences());
+      assertEquals(0, messageNonDurable.getDurableRefCount());
       
       MessageReference ref4 = messageNonDurable.createReference(queue2);
       
-      assertEquals(0, messageNonDurable.getNumDurableReferences());
-                  
-   }
-   
-   public void testDurableReferencePos()
-   {
-      Message messageDurable = new MessageImpl();
-      messageDurable.setDurable(true);
-      
-      //Durable queue
-      Queue queue1 = queueFactory.createQueue(1, "queue1", null, true, false);
-      
-      //Non durable queue
-      Queue queue2 = queueFactory.createQueue(2, "queue2", null, false, false);
-      
-      
-      MessageReference ref1 = messageDurable.createReference(queue1);
-      
-      MessageReference ref2 = messageDurable.createReference(queue2);
-      
-      MessageReference ref3 = messageDurable.createReference(queue2);
-      
-      MessageReference ref4 = messageDurable.createReference(queue1);
-      
+      assertEquals(0, messageNonDurable.getDurableRefCount());
+               
       MessageReference ref5 = messageDurable.createReference(queue1);
       
-      MessageReference ref6 = messageDurable.createReference(queue2);
+      assertEquals(2, messageDurable.getDurableRefCount());
       
-      MessageReference ref7 = messageDurable.createReference(queue1);
+      messageDurable.decrementDurableRefCount();
       
-      MessageReference ref8 = messageDurable.createReference(queue2);
+      assertEquals(1, messageDurable.getDurableRefCount());
       
-      assertEquals(0, messageDurable.getDurableReferencePos(ref1));
+      messageDurable.decrementDurableRefCount();
       
-      assertEquals(1, messageDurable.getDurableReferencePos(ref4));
+      assertEquals(0, messageDurable.getDurableRefCount());
       
-      assertEquals(2, messageDurable.getDurableReferencePos(ref5));
+      messageDurable.incrementDurableRefCount();
       
-      assertEquals(3, messageDurable.getDurableReferencePos(ref7));
-             
+      assertEquals(1, messageDurable.getDurableRefCount());                 
    }
    
+
    public void testMarshalling() throws Exception
    {
       Message msg = new MessageImpl(randomLong(), randomInt(), true, randomLong(), randomLong(), randomByte(),null, null);

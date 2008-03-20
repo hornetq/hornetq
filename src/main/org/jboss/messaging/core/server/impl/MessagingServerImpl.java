@@ -33,8 +33,8 @@ import org.jboss.messaging.core.deployers.impl.QueueSettingsDeployer;
 import org.jboss.messaging.core.deployers.impl.SecurityDeployer;
 import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.memory.impl.SimpleMemoryManager;
-import org.jboss.messaging.core.persistence.PersistenceManager;
-import org.jboss.messaging.core.persistence.impl.nullpm.NullPersistenceManager;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.persistence.impl.nullpm.NullStorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.Interceptor;
@@ -99,8 +99,7 @@ public class MessagingServerImpl implements MessagingServer
 
    // plugins
 
-   private PersistenceManager persistenceManager = new NullPersistenceManager();
-
+   private StorageManager storageManager = new NullStorageManager();
 
    private RemotingService remotingService;
    private boolean createTransport = false;
@@ -167,7 +166,7 @@ public class MessagingServerImpl implements MessagingServer
       connectionManager = new ConnectionManagerImpl();
       memoryManager = new SimpleMemoryManager();
       postOffice = new PostOfficeImpl(configuration.getMessagingServerID(),
-              persistenceManager, queueFactory, configuration.isStrictTck());
+                                      storageManager, queueFactory, configuration.isRequireDestinations());
       queueSettingsDeployer = new QueueSettingsDeployer(postOffice, queueSettingsRepository);
 
       if (createTransport)
@@ -180,6 +179,7 @@ public class MessagingServerImpl implements MessagingServer
       remotingService.addFailureListener(connectionManager);
       memoryManager.start();
       postOffice.start();
+      
       deploymentManager.start();
       deploymentManager.registerDeployer(securityDeployer);
       deploymentManager.registerDeployer(queueSettingsDeployer);
@@ -199,7 +199,7 @@ public class MessagingServerImpl implements MessagingServer
             log.warn("Error instantiating interceptor \"" + interceptorClass + "\"", e);
          }
       }
-
+      
       started = true;
    }
 
@@ -269,37 +269,22 @@ public class MessagingServerImpl implements MessagingServer
    {
       return deploymentManager;
    }
-
-
-
-   public void createQueue(String address, String name) throws Exception
-   {
-      if (postOffice.getBinding(name) == null)
-      {
-         postOffice.addBinding(address, name, null, true, false);
-      }
-
-      if (!postOffice.containsAllowableAddress(address))
-      {
-         postOffice.addAllowableAddress(address);
-      }
-   }
-
+   
    public ConnectionManager getConnectionManager()
    {
       return connectionManager;
    }
 
-   public PersistenceManager getPersistenceManager()
+   public StorageManager getStorageManager()
    {
-      return persistenceManager;
+      return storageManager;
    }
 
-   public void setPersistenceManager(PersistenceManager persistenceManager)
+   public void setStorageManager(StorageManager storageManager)
    {
-      this.persistenceManager = persistenceManager;
+      this.storageManager = storageManager;
    }
-
+   
    public PostOffice getPostOffice()
    {
       return postOffice;
@@ -352,7 +337,7 @@ public class MessagingServerImpl implements MessagingServer
       final ServerConnection connection =
          new ServerConnectionImpl(username, password,
                           remotingClientSessionID, clientVMID, clientAddress,
-                          remotingService.getDispatcher(), resourceManager, persistenceManager,
+                          remotingService.getDispatcher(), resourceManager, storageManager,
                           queueSettingsRepository,
                           postOffice, securityStore, connectionManager);
 

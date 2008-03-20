@@ -10,14 +10,14 @@ import javax.transaction.xa.Xid;
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.persistence.PersistenceManager;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.impl.QueueImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.core.transaction.TransactionSynchronization;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.test.unit.UnitTestCase;
 
@@ -44,328 +44,599 @@ public class TransactionTest extends UnitTestCase
    	queueSettings.setDefault(new QueueSettings());
    }
    
-   public void test1PCCommit() throws Exception
+   public void testNonXAConstructor() throws Exception
    {
-      List<Message> msgsToAdd = new ArrayList<Message>();
+   	StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
       
-      List<MessageReference> refsToRemove = new ArrayList<MessageReference>();
+      PostOffice po = EasyMock.createStrictMock(PostOffice.class);
       
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      final long txID = 123L;
       
-      MessageReference ref1 = this.generateReference(queue, 1);
-      msgsToAdd.add(ref1.getMessage());
+      EasyMock.expect(sm.generateTransactionID()).andReturn(txID);
+   	
+      EasyMock.replay(sm);
       
-      MessageReference ref2 = this.generateReference(queue, 2);
-      refsToRemove.add(ref2);
-                  
-      Transaction tx = new TransactionImpl();
-      
-      tx.addMessage(ref1.getMessage());
-      tx.addAcknowledgement(ref2);
-      
-      PersistenceManager pm = EasyMock.createStrictMock(PersistenceManager.class);
-      
-      pm.commitTransaction(msgsToAdd, refsToRemove);
-      
-      EasyMock.replay(pm);
-      
-      tx.commit(true, pm);
-      
-      EasyMock.verify(pm);
-      
-      assertEquals(ref1, queue.list(null).get(0));
+   	Transaction tx = new TransactionImpl(sm, po);
+   	
+   	EasyMock.verify(sm);
+   	
+   	assertEquals(txID, tx.getID());
+   	
+   	assertNull(tx.getXid());
+   	
+   	assertEquals(0, tx.getAcknowledgementsCount());
+   	
+   	assertTrue(tx.isEmpty());
    }
-   
-   public void test1PCRollback() throws Exception
-   {
-      List<Message> msgsToAdd = new ArrayList<Message>();
-      
-      List<MessageReference> refsToRemove = new ArrayList<MessageReference>();
-      
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
-      
-      MessageReference ref1 = this.generateReference(queue, 1);
-      msgsToAdd.add(ref1.getMessage());
-      
-      MessageReference ref2 = this.generateReference(queue, 2);
-      refsToRemove.add(ref2);
-                  
-      Transaction tx = new TransactionImpl();
-      tx.addMessage(ref1.getMessage());
-      tx.addAcknowledgement(ref2);
-      
-      PersistenceManager pm = EasyMock.createStrictMock(PersistenceManager.class);
-      
-      pm.updateDeliveryCount(queue, ref2);
-      
-      EasyMock.replay(pm);
-      
-      tx.rollback(pm, queueSettings);
-      
-      EasyMock.verify(pm);
- 
-      assertEquals(ref2, queue.list(null).get(0));
-   }
-   
-   public void test1PCPrepare() throws Exception
-   {
-      List<Message> msgsToAdd = new ArrayList<Message>();
-      
-      List<MessageReference> refsToRemove = new ArrayList<MessageReference>();
-      
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
-      
-      MessageReference ref1 = this.generateReference(queue, 1);
-      msgsToAdd.add(ref1.getMessage());
-      
-      MessageReference ref2 = this.generateReference(queue, 2);
-      refsToRemove.add(ref2);
-                  
-      Transaction tx = new TransactionImpl();
-      tx.addMessage(ref1.getMessage());
-      tx.addAcknowledgement(ref2);
-      
-      PersistenceManager pm = EasyMock.createStrictMock(PersistenceManager.class);
-      
-      try
-      {
-         tx.prepare(pm);
-         fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-         //OK
-      }   
-      
-      assertTrue(queue.list(null).isEmpty());
-   }
-   
-   public void test2PCPrepareCommit() throws Exception
-   {
-      List<Message> msgsToAdd = new ArrayList<Message>();
-      
-      List<MessageReference> refsToRemove = new ArrayList<MessageReference>();
-      
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
-      
-      MessageReference ref1 = this.generateReference(queue, 1);
-      msgsToAdd.add(ref1.getMessage());
-      
-      MessageReference ref2 = this.generateReference(queue, 2);
-      refsToRemove.add(ref2);
-      
-      Xid xid = generateXid();
-                  
-      Transaction tx = new TransactionImpl(xid);
-      tx.addMessage(ref1.getMessage());
-      tx.addAcknowledgement(ref2);
-      
-      PersistenceManager pm = EasyMock.createStrictMock(PersistenceManager.class);
-      
-      pm.prepareTransaction(xid, msgsToAdd, refsToRemove);
-      
-      EasyMock.replay(pm);
-      
-      tx.prepare(pm);
-      
-      EasyMock.verify(pm);
-      
-      EasyMock.reset(pm);
-      
-      pm.commitPreparedTransaction(xid);
-      
-      EasyMock.replay(pm);
-      
-      tx.commit(false, pm);
-      
-      EasyMock.verify(pm);
-   }
-   
-   public void test2PCCommitBeforePrepare() throws Exception
-   {
-      List<Message> msgsToAdd = new ArrayList<Message>();
-      
-      List<MessageReference> refsToRemove = new ArrayList<MessageReference>();
-      
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
-      
-      MessageReference ref1 = this.generateReference(queue, 1);
-      msgsToAdd.add(ref1.getMessage());
-      
-      MessageReference ref2 = this.generateReference(queue, 2);
-      refsToRemove.add(ref2);
-          
-      Xid xid = generateXid();
-      
-      Transaction tx = new TransactionImpl(xid);
-      tx.addMessage(ref1.getMessage());
-      tx.addAcknowledgement(ref2);
-      
-      PersistenceManager pm = EasyMock.createStrictMock(PersistenceManager.class);
-      
-      try
-      {    
-         tx.commit(false, pm);
          
-         fail ("Should throw exception");
+   public void testXAConstructor() throws Exception
+   {
+   	StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
+      
+      PostOffice po = EasyMock.createStrictMock(PostOffice.class);
+      
+      final long txID = 123L;
+      
+      EasyMock.expect(sm.generateTransactionID()).andReturn(txID);
+   	
+      EasyMock.replay(sm);
+      
+      Xid xid = generateXid();
+      
+   	Transaction tx = new TransactionImpl(xid, sm, po);
+   	
+   	EasyMock.verify(sm);
+   	
+   	assertEquals(txID, tx.getID());
+   	
+   	assertEquals(xid, tx.getXid());
+   	
+   	assertEquals(0, tx.getAcknowledgementsCount());
+   	
+   	assertTrue(tx.isEmpty());
+   }
+   
+   public void testState() throws Exception
+   {
+      Transaction tx = createTransaction();
+      
+      assertEquals(Transaction.State.ACTIVE, tx.getState());
+      
+      tx.suspend();
+      
+      assertEquals(Transaction.State.SUSPENDED, tx.getState());
+      
+      tx.resume();
+      
+      assertEquals(Transaction.State.ACTIVE, tx.getState());
+      
+      tx.commit();
+      
+      assertEquals(Transaction.State.COMMITTED, tx.getState());
+      
+      HierarchicalRepository<QueueSettings> repos = EasyMock.createStrictMock(HierarchicalRepository.class);
+      
+      try
+      {
+      	tx.rollback(repos);
+      	
+      	fail("Should throw exception");
       }
       catch (IllegalStateException e)
       {
-         //Ok
-      }      
+      	//OK
+      }
+      
+      try
+      {
+      	tx.commit();
+      	
+      	fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+      	//OK
+      }
+      
+      try
+      {
+      	tx.prepare();
+      	
+      	fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+      	//OK
+      }
+      
+      try
+      {
+      	tx.suspend();
+      	
+      	fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+      	//OK
+      }
+      
+      try
+      {
+      	tx.resume();
+      	
+      	fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+      	//OK
+      }
+      
+      tx = createTransaction();
+      
+      assertEquals(Transaction.State.ACTIVE, tx.getState());
+      
+      tx.rollback(repos);
+      
+      try
+      {
+      	tx.rollback(repos);
+      	
+      	fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+      	//OK
+      }
+      
+      try
+      {
+      	tx.commit();
+      	
+      	fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+      	//OK
+      }
+      
+      try
+      {
+      	tx.prepare();
+      	
+      	fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+      	//OK
+      }
+      
+      try
+      {
+      	tx.suspend();
+      	
+      	fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+      	//OK
+      }
+      
+      try
+      {
+      	tx.resume();
+      	
+      	fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+      	//OK      	      	      	
+      }
+      
+      tx = createTransaction();
+      
+      assertEquals(Transaction.State.ACTIVE, tx.getState());
+      
+      try
+      {
+      	tx.prepare();
+      	
+      	fail("Should throw exception");
+      }
+      catch (Exception e)
+      {
+      	//OK
+      }
+      
+      
+      tx = createTransactionXA();
+      
+      assertEquals(Transaction.State.ACTIVE, tx.getState());
+      
+      tx.prepare();
+      
+      tx.commit();
+      
+      try
+      {
+      	tx.rollback(repos);
+      	
+      	fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+      	//OK
+      }
+      
+      try
+      {
+      	tx.commit();
+      	
+      	fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+      	//OK
+      }
+      
+      try
+      {
+      	tx.prepare();
+      	
+      	fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+      	//OK
+      }
+      
+      try
+      {
+      	tx.suspend();
+      	
+      	fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+      	//OK
+      }
+      
+      try
+      {
+      	tx.resume();
+      	
+      	fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+      	//OK
+      }
+      
+      tx = createTransactionXA();
+      
+      assertEquals(Transaction.State.ACTIVE, tx.getState());
+      
+      tx.prepare();
+      
+      tx.rollback(repos);
+      
+      try
+      {
+      	tx.rollback(repos);
+      	
+      	fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+      	//OK
+      }
+      
+      try
+      {
+      	tx.commit();
+      	
+      	fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+      	//OK
+      }
+      
+      try
+      {
+      	tx.prepare();
+      	
+      	fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+      	//OK
+      }
+      
+      try
+      {
+      	tx.suspend();
+      	
+      	fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+      	//OK
+      }
+      
+      try
+      {
+      	tx.resume();
+      	
+      	fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+      	//OK
+      }         
    }
    
-   public void test2PCPrepareRollback() throws Exception
+   public void testSendCommit() throws Exception
    {
-      List<Message> msgsToAdd = new ArrayList<Message>();
+      //Durable queue
+      Queue queue1 = new QueueImpl(12, "queue1", null, false, true, false, -1, scheduledExecutor);
       
-      List<MessageReference> refsToRemove = new ArrayList<MessageReference>();
+      //Durable queue
+      Queue queue2 = new QueueImpl(34, "queue2", null, false, true, false, -1, scheduledExecutor);
       
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      //Non durable queue
+      Queue queue3 = new QueueImpl(65, "queue3", null, false, false, false, -1, scheduledExecutor);
       
-      MessageReference ref1 = this.generateReference(queue, 1);
-      msgsToAdd.add(ref1.getMessage());
+      //Durable message to send
       
-      MessageReference ref2 = this.generateReference(queue, 2);
-      refsToRemove.add(ref2);
+      Message message1 = this.generateMessage(1);
       
-      Xid xid = generateXid();
-                  
-      Transaction tx = new TransactionImpl(xid);
-      tx.addMessage(ref1.getMessage());
-      tx.addAcknowledgement(ref2);
+      // Non durable message to send
       
-      PersistenceManager pm = EasyMock.createStrictMock(PersistenceManager.class);
+      Message message2 = this.generateMessage(2);
       
-      pm.prepareTransaction(xid, msgsToAdd, refsToRemove);
+      message2.setDurable(false);
       
-      EasyMock.replay(pm);
       
-      tx.prepare(pm);
+      StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
       
-      EasyMock.verify(pm);
+      PostOffice po= EasyMock.createStrictMock(PostOffice.class);
       
-      EasyMock.reset(pm);
+      final long txID = 123;
       
-      pm.unprepareTransaction(xid, msgsToAdd, refsToRemove);
+      EasyMock.expect(sm.generateTransactionID()).andReturn(txID);
       
-      pm.updateDeliveryCount(queue, ref2);
+      EasyMock.replay(sm);
+            
+      Transaction tx = new TransactionImpl(sm, po);
       
-      EasyMock.replay(pm);
+      assertTrue(tx.isEmpty());
+      assertFalse(tx.isContainsPersistent());
+
+      EasyMock.verify(sm);
       
-      tx.rollback(pm, queueSettings);
+      EasyMock.reset(sm);
       
-      EasyMock.verify(pm);
+      final String address1 = "topic1";
+      
+      //Expect:
+      
+      MessageReference ref5 = message1.createReference(queue1);
+      MessageReference ref6 = message1.createReference(queue2);
+      List<MessageReference> message1Refs = new ArrayList<MessageReference>();
+      message1Refs.add(ref5);
+      message1Refs.add(ref6);
+      
+      EasyMock.expect(po.route(address1, message1)).andReturn(message1Refs);
+      
+      sm.storeMessageTransactional(txID, address1, message1);
+      
+      EasyMock.replay(po);
+      
+      EasyMock.replay(sm);
+      
+      tx.addMessage(address1, message1);
+      
+      assertFalse(tx.isEmpty());
+      assertTrue(tx.isContainsPersistent());
+      
+         
+      EasyMock.verify(po);
+      
+      EasyMock.verify(sm);
+      
+      EasyMock.reset(po);
+      
+      EasyMock.reset(sm);
+      
+                       
+      //Expect:
+      
+      final String address2 = "queue3";
+      
+      MessageReference ref7 = message2.createReference(queue3);
+      List<MessageReference> message2Refs = new ArrayList<MessageReference>();
+      message2Refs.add(ref7);
+
+      EasyMock.expect(po.route(address2, message2)).andReturn(message1Refs);
+      
+      EasyMock.replay(po);
+      
+      EasyMock.replay(sm);
+      
+      tx.addMessage(address2, message2);
+      
+      EasyMock.verify(po);
+      
+      EasyMock.verify(sm);
+      
+      EasyMock.reset(po);
+      
+      EasyMock.reset(sm);
+      
+      //Expect :
+      
+      sm.commit(txID);
+      
+      EasyMock.replay(sm);
+      
+      tx.commit();
+      
+      EasyMock.verify(sm);
+      
+      //TODO test messages are routed and refs count reduced
    }
    
-   public void testSynchronizations() throws Exception
+   
+   
+   public void testAckCommit() throws Exception
    {
-      List<Message> msgsToAdd = new ArrayList<Message>();
+      //Durable queue
+      Queue queue1 = new QueueImpl(12, "queue1", null, false, true, false, -1, scheduledExecutor);
       
-      List<MessageReference> refsToRemove = new ArrayList<MessageReference>();
+      //Durable queue
+      Queue queue2 = new QueueImpl(34, "queue2", null, false, true, false, -1, scheduledExecutor);
       
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      //Non durable queue
+      Queue queue3 = new QueueImpl(65, "queue3", null, false, false, false, -1, scheduledExecutor);
       
-      MessageReference ref1 = this.generateReference(queue, 1);
-      msgsToAdd.add(ref1.getMessage());
+      //Some refs to ack
       
-      MessageReference ref2 = this.generateReference(queue, 2);
-      refsToRemove.add(ref2);
-                  
-      Transaction tx = new TransactionImpl();
-      tx.addMessage(ref1.getMessage());
+      Message message1 = this.generateMessage(12);
+      
+      MessageReference ref1 = message1.createReference(queue1);
+      
+      MessageReference ref2 = message1.createReference(queue2);
+      
+      MessageReference ref3 = message1.createReference(queue3);
+      
+      
+      //Non durable message to ack
+      Message message2 = this.generateMessage(23);
+      
+      message2.setDurable(false);
+            
+      MessageReference ref4 = message2.createReference(queue1);
+      
+         
+      StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
+      
+      PostOffice po= EasyMock.createStrictMock(PostOffice.class);
+      
+      final long txID = 123;
+      
+      EasyMock.expect(sm.generateTransactionID()).andReturn(txID);
+      
+      EasyMock.replay(sm);
+            
+      Transaction tx = new TransactionImpl(sm, po);
+      
+      assertTrue(tx.isEmpty());
+      
+      assertFalse(tx.isContainsPersistent());
+            
+      EasyMock.verify(sm);
+      
+      EasyMock.reset(sm);
+      
+      //Expect:
+      
+      sm.storeAcknowledgeTransactional(txID, queue1.getPersistenceID(), message1.getMessageID());
+      sm.storeDeleteTransactional(txID, message1.getMessageID());
+      
+      EasyMock.replay(sm);
+      
+      tx.addAcknowledgement(ref3);
+      
+      assertFalse(tx.isEmpty());
+      assertFalse(tx.isContainsPersistent());
+      
+      tx.addAcknowledgement(ref1);
+      
+      assertTrue(tx.isContainsPersistent());
+      
       tx.addAcknowledgement(ref2);
       
-      TransactionSynchronization sync = EasyMock.createStrictMock(TransactionSynchronization.class);
+      assertTrue(tx.isContainsPersistent());
       
-      PersistenceManager pm = EasyMock.createStrictMock(PersistenceManager.class);
       
-      tx.addSynchronization(sync);
+      assertEquals(3, tx.getAcknowledgementsCount());
       
-      sync.beforeCommit();
-      sync.afterCommit();
+      EasyMock.verify(sm);
       
-      EasyMock.replay(sync);
+      EasyMock.reset(sm);
       
-      tx.commit(true, pm);
+      //Expect:
       
-      EasyMock.verify(sync);
+      //Nothing
       
-      EasyMock.reset(sync);
+      EasyMock.replay(sm);
       
-      tx = new TransactionImpl();
-      tx.addMessage(ref1.getMessage());
-      tx.addAcknowledgement(ref2);
+      tx.addAcknowledgement(ref4);
       
-      tx.addSynchronization(sync);
+      assertEquals(4, tx.getAcknowledgementsCount());
       
-      sync.beforeRollback();
-      sync.afterRollback();
+      EasyMock.verify(sm);
       
-      EasyMock.replay(sync);
+      EasyMock.reset(sm);
       
-      tx.rollback(pm, queueSettings);
+      //Expect:
       
-      EasyMock.verify(sync);            
+      sm.commit(txID);
+      
+      EasyMock.replay(sm);
+      
+      tx.commit();
+      
+      EasyMock.verify(sm);
+      
+      EasyMock.reset(sm);            
+      
+      //TODO test messages are routed and refs count reduced
    }
    
-   public void testSynchronizations2PC() throws Exception
+   // Private -------------------------------------------------------------------------
+   
+   private Transaction createTransaction()
    {
-      List<Message> msgsToAdd = new ArrayList<Message>();
+   	StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
       
-      List<MessageReference> refsToRemove = new ArrayList<MessageReference>();
+      PostOffice po = EasyMock.createStrictMock(PostOffice.class);
       
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      final long txID = 123L;
       
-      MessageReference ref1 = this.generateReference(queue, 1);
-      msgsToAdd.add(ref1.getMessage());
+      EasyMock.expect(sm.generateTransactionID()).andReturn(txID);
+   	
+      EasyMock.replay(sm);
       
-      MessageReference ref2 = this.generateReference(queue, 2);
-      refsToRemove.add(ref2);
+      Transaction tx = new TransactionImpl(sm, po);
       
-      Xid xid = generateXid();
-                  
-      Transaction tx = new TransactionImpl(xid);
-      tx.addMessage(ref1.getMessage());
-      tx.addAcknowledgement(ref2);
+      EasyMock.verify(sm);
       
-      TransactionSynchronization sync = EasyMock.createStrictMock(TransactionSynchronization.class);
-      
-      PersistenceManager pm = EasyMock.createStrictMock(PersistenceManager.class);
-      
-      tx.addSynchronization(sync);
-      
-      sync.beforeCommit();
-      sync.afterCommit();
-      
-      EasyMock.replay(sync);
-      
-      tx.prepare(pm);
-      tx.commit(false, pm);
-      
-      EasyMock.verify(sync);
-      
-      EasyMock.reset(sync);
-      
-      xid = generateXid();
-      
-      tx = new TransactionImpl(xid);
-      tx.addMessage(ref1.getMessage());
-      tx.addAcknowledgement(ref2);
-      
-      tx.addSynchronization(sync);
-      
-      sync.beforeRollback();
-      sync.afterRollback();
-      
-      EasyMock.replay(sync);
-      
-      tx.prepare(pm);
-      tx.rollback(pm, queueSettings);
-      
-      EasyMock.verify(sync);            
+      return tx;
    }
+   
+   private Transaction createTransactionXA()
+   {
+   	StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
+      
+      PostOffice po = EasyMock.createStrictMock(PostOffice.class);
+      
+      final long txID = 123L;
+      
+      EasyMock.expect(sm.generateTransactionID()).andReturn(txID);
+   	
+      EasyMock.replay(sm);
+      
+      Xid xid = this.generateXid();
+      
+      Transaction tx = new TransactionImpl(xid, sm, po);
+      
+      EasyMock.verify(sm);
+      
+      return tx;
+   }
+  
    
    // Inner classes -----------------------------------------------------------------------
-   
+
 }

@@ -73,8 +73,6 @@ public class NIOSequentialFile implements SequentialFile
 		rfile = new RandomAccessFile(file, "rw");
 
 		channel = rfile.getChannel();		
-		
-		//log.info("Opened file");
 	}
 	
 	public void fill(final int position, final int size, final byte fillCharacter) throws Exception
@@ -108,8 +106,6 @@ public class NIOSequentialFile implements SequentialFile
 		rfile = null;
 		
 		file = null;
-		
-		//log.info("Closed file");
 	}
 
 	public void delete() throws Exception
@@ -121,11 +117,7 @@ public class NIOSequentialFile implements SequentialFile
 
 	public int read(ByteBuffer bytes) throws Exception
 	{
-		//log.info("reading, position is " + channel.position());
-		
 		int bytesRead = channel.read(bytes);
-		
-		//log.info("Read " + bytesRead + " bytes");
 		
 		return bytesRead;
 	}
@@ -144,7 +136,6 @@ public class NIOSequentialFile implements SequentialFile
 
 	public void position(final int pos) throws Exception
 	{
-		//log.info("Positioning to " + pos);
 		channel.position(pos);
 	}
 }

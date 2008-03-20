@@ -24,10 +24,13 @@ package org.jboss.messaging.core.message.impl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.persistence.PersistenceManager;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 
 /**
@@ -120,22 +123,12 @@ public class MessageReferenceImpl implements MessageReference
       return queue;
    }
    
-   public void acknowledge(final PersistenceManager persistenceManager) throws Exception
-   {
-      if (message.isDurable())
-      {
-         persistenceManager.deleteReference(this);
-      }
-      
-      queue.referenceAcknowledged();
-   }
-   
-   public boolean cancel(final PersistenceManager persistenceManager,
+   public boolean cancel(final StorageManager persistenceManager, final PostOffice postOffice,
    		                final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {      
       if (message.isDurable() && queue.isDurable())
       {
-         persistenceManager.updateDeliveryCount(queue, this);
+         persistenceManager.updateDeliveryCount(this);
       }
               
       queue.referenceCancelled();
@@ -146,11 +139,22 @@ public class MessageReferenceImpl implements MessageReference
       {      	      	
          Queue DLQ = queueSettingsRepository.getMatch(queue.getName()).getDLQ();
          
+         Transaction tx = new TransactionImpl(persistenceManager, postOffice);
+                  
          if (DLQ != null)
          {
+         	Binding binding = postOffice.getBinding(DLQ.getName());
+         	
+         	if (binding == null)
+         	{
+         		throw new IllegalStateException("Cannot find binding for DLQ: " + DLQ.getName());
+         	}
+         	
             Message copyMessage = makeCopyForDLQOrExpiry(false, persistenceManager);
             
-            moveInTransaction(DLQ, copyMessage, persistenceManager);
+            tx.addMessage(binding.getAddress(), copyMessage);
+            
+            tx.addAcknowledgement(this);      
          }
          else
          {
@@ -158,7 +162,7 @@ public class MessageReferenceImpl implements MessageReference
             
             log.warn("Message has reached maximum delivery attempts, no DLQ is configured so dropping it");
             
-            acknowledge(persistenceManager);
+            tx.addAcknowledgement(this);   
          }       
          
          return false;
@@ -169,37 +173,36 @@ public class MessageReferenceImpl implements MessageReference
       }
    }
    
-   public void expire(final PersistenceManager persistenceManager,
+   public void expire(final StorageManager persistenceManager, final PostOffice postOffice,
    		final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
       Queue expiryQueue = queueSettingsRepository.getMatch(queue.getName()).getExpiryQueue();
       
+      Transaction tx = new TransactionImpl(persistenceManager, postOffice);
+      
       if (expiryQueue != null)
       {
+      	Binding binding = postOffice.getBinding(expiryQueue.getName());
+      	
+      	if (binding == null)
+      	{
+      		throw new IllegalStateException("Cannot find binding for expiry queue: " + expiryQueue.getName());
+      	}
+      	
          Message copyMessage = makeCopyForDLQOrExpiry(false, persistenceManager);
          
-         moveInTransaction(expiryQueue, copyMessage, persistenceManager);
+         tx.addMessage(binding.getAddress(), copyMessage);
+         
+         tx.addAcknowledgement(this);                 
       }
       else
       {
          log.warn("Message has expired, no expiry queue is configured so dropping it");
          
-         acknowledge(persistenceManager);
+         tx.addAcknowledgement(this);
       }
-   }
-
-   public void moveMessage(final Queue destinationQueue,
-                                  final PersistenceManager persistenceManager) throws Exception
-   {
-      TransactionImpl tx = new TransactionImpl();
-
-      message.createReference(destinationQueue);
-
-      tx.addMessage(message);
-
-      tx.addAcknowledgement(this);
-
-      tx.commit(true, persistenceManager);
+      
+      tx.commit();
    }
 
    // Public --------------------------------------------------------
@@ -215,21 +218,7 @@ public class MessageReferenceImpl implements MessageReference
    
    // Private -------------------------------------------------------
    
-   private void moveInTransaction(final Queue destinationQueue, final Message copyMessage,
-                                  final PersistenceManager persistenceManager) throws Exception
-   {
-      copyMessage.createReference(destinationQueue);
-      
-      TransactionImpl tx = new TransactionImpl();
-      
-      tx.addMessage(copyMessage);
-      
-      tx.addAcknowledgement(this);
-      
-      tx.commit(true, persistenceManager);
-   }
-   
-   private Message makeCopyForDLQOrExpiry(final boolean expiry, final PersistenceManager pm) throws Exception
+   private Message makeCopyForDLQOrExpiry(final boolean expiry, final StorageManager pm) throws Exception
    {
       /*
        We copy the message and send that to the dlq/expiry queue - this is

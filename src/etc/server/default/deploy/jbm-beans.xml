@@ -14,8 +14,8 @@
    </bean>
 
    <bean name="MessagingServer" class="org.jboss.messaging.core.server.impl.MessagingServerImpl">
-      <property name="persistenceManager">
-         <inject bean="PersistenceManager"/>
+      <property name="storageManager">
+         <inject bean="StorageManager"/>
       </property>
       <property name="remotingService">
          <inject bean="RemotingService"/>
@@ -28,42 +28,22 @@
       </property>
    </bean>
 
-   <bean name="PersistenceManager" class="org.jboss.messaging.core.persistence.impl.bdbje.BDBJEPersistenceManager">
-   
-      <property name="largeMessageRepository">${user.home}/bdbje/large</property>
-      
-      <property name="minLargeMessageSize">1000000</property>
-      
-      <property name="environment">
-         <inject bean="BDBJEEnvironment"/>
-      </property>
-            
+   <bean name="StorageManager" class="org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager">
+      <constructor>
+         <parameter>
+            <inject bean="Configuration"/>
+         </parameter>
+      </constructor>
    </bean>
-         
-   <bean name="BDBJEEnvironment" class="org.jboss.messaging.core.persistence.impl.bdbje.integration.RealBDBJEEnvironment">
-   
-      <property name="environmentPath">${user.home}/bdbje/env</property>
       
-      <property name="createEnvironment">true</property>
-      
-      <property name="syncVM">true</property>
-      
-      <property name="syncOS">true</property>
-   
-      <!-- We set the BDB cache low. We don't really use BDB for caching, and setting it large will increase
-      memory footprint since messages will be in memory twice - once in the queue and once in the cache -->
-      <property name="memoryCacheSize">1048576</property>
-            
-   </bean>
-
    <bean name="RemotingService" class="org.jboss.messaging.core.remoting.impl.mina.MinaService">
       <constructor>
          <parameter>
             <inject bean="Configuration"/>
          </parameter>
       </constructor>
-   </bean> 
-   
+   </bean>
+      
    <bean name="JMSServerManager" class="org.jboss.messaging.jms.server.impl.JMSServerManagerImpl">
       <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.messaging:service=JMSServerManager", exposedInterface=org.jboss.messaging.jms.server.JMSServerManager.class)</annotation>
       <property name="messagingServerManagement">

@@ -74,8 +74,6 @@ public class ClientProducerImpl implements ClientProducerInternal
    		                    final RemotingConnection remotingConnection, final int windowSize,
    		                    final int maxRate)
    {   	
-   	log.info("Creating producer with window size " + windowSize + " and max rate " + maxRate);
-   	
       this.session = session;
       
       this.id = id;

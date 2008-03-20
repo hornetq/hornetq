@@ -128,7 +128,7 @@ public interface Server extends Remote
     */
   // DestinationManager getDestinationManager() throws Exception;
 
-//   PersistenceManager getPersistenceManager() throws Exception;
+//   StorageManager getPersistenceManager() throws Exception;
 //
 //   /**
 //    * Only for in-VM use

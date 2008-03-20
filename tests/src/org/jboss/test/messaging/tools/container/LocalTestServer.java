@@ -133,11 +133,11 @@ public class LocalTestServer implements Server, Runnable
       {
          //Delete the BDB environment
 
-         File dir = new File(System.getProperty("user.home") + "/bdbje/env");
+         File dir = new File("/tmp/jbm-test");
 
          boolean deleted = deleteDirectory(dir);
 
-         log.info("Deleted dir: " +dir.getAbsolutePath() + " deleted: " + deleted);
+         log.info("Deleted dir: " + dir.getAbsolutePath() + " deleted: " + deleted);
       }
 
       ConfigurationHelper.addServerConfig(getServerID(), configuration);
@@ -459,7 +459,7 @@ public class LocalTestServer implements Server, Runnable
 //      return getServerPeer().getDestinationManager();
 //   }
 //
-//   public PersistenceManager getPersistenceManager()
+//   public StorageManager getPersistenceManager()
 //   {
 //      return getServerPeer().getPersistenceManagerInstance();
 //   }

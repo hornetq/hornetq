@@ -203,33 +203,20 @@ public interface Message extends Streamable
    MessageReference createReference(Queue queue);   
    
    /**
-    * 
-    * @return List of persisted references for this message
+    * Decrement the durable ref count
     */
-   List<MessageReference> getReferences();
+   void decrementDurableRefCount();
    
    /**
-    * 
-    * @return The number of durable references for this message
+    * Increment the durable ref count
     */
-   int getNumDurableReferences();
+   void incrementDurableRefCount();
    
    /**
-    * 
-    * @param reference durable from the specified position
-    * @param pos
+    * Get the current durable reference count
+    * @return
     */
-   void removeDurableReference(MessageReference reference, int pos) throws Exception;
-   
-   /**
-    * 
-    * @param reference
-    * @return The position of the reference over all durable references
-    */
-   int getDurableReferencePos(MessageReference reference);
-   
-   void addBackDurableReference(MessageReference ref);
-
+   int getDurableRefCount();
    
    /**
     * Make a copy of the message
@@ -237,7 +224,5 @@ public interface Message extends Streamable
     * @return The copy
     */
    Message copy();   
-   
-   void send() throws Exception;
-   
+    
 }

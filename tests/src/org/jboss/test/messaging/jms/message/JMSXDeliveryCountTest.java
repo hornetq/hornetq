@@ -110,6 +110,81 @@ public class JMSXDeliveryCountTest extends JBMServerTestCase
       	}
       }
    }
+   
+   public void testJMSXDeliveryCountNotDeliveredMessagesNotUpdated() throws Exception
+   {
+      Connection conn = null;
+      
+      try
+      {	      
+	      conn = getConnectionFactory().createConnection();
+	      
+	      Session s = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+	      
+	      MessageProducer p = s.createProducer(queue1);
+
+	      p.send(s.createTextMessage("message1"));
+	      p.send(s.createTextMessage("message2"));
+	      p.send(s.createTextMessage("message3"));
+	      p.send(s.createTextMessage("message4"));
+	      p.send(s.createTextMessage("message5"));
+	      	
+	      MessageConsumer c = s.createConsumer(queue1);
+	
+	      conn.start();
+	
+	      TextMessage tm = (TextMessage)c.receive(1000);
+	
+	      assertEquals("message1", tm.getText());
+	      assertFalse(tm.getJMSRedelivered());
+         assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
+	
+         s.close();
+         
+         s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         c = s.createConsumer(queue1);
+         
+         tm = (TextMessage)c.receive(1000);
+         
+         assertEquals("message1", tm.getText());
+	      assertTrue(tm.getJMSRedelivered());
+         assertEquals(2, tm.getIntProperty("JMSXDeliveryCount"));
+         
+         tm = (TextMessage)c.receive(1000);
+         
+         assertEquals("message2", tm.getText());
+	      assertFalse(tm.getJMSRedelivered());
+         assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
+         
+         tm = (TextMessage)c.receive(1000);
+         
+         assertEquals("message3", tm.getText());
+	      assertFalse(tm.getJMSRedelivered());
+         assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
+         
+         tm = (TextMessage)c.receive(1000);
+         
+         assertEquals("message4", tm.getText());
+	      assertFalse(tm.getJMSRedelivered());
+         assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
+         
+         tm = (TextMessage)c.receive(1000);
+         
+         assertEquals("message5", tm.getText());
+	      assertFalse(tm.getJMSRedelivered());
+         assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
+         
+	      tm.acknowledge();
+      }
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }
+   }
 
    public void testRedeliveryOnQueue() throws Exception
    {
@@ -296,8 +371,6 @@ public class JMSXDeliveryCountTest extends JBMServerTestCase
          assertTrue(rm.getJMSRedelivered());
          
          //Now close the session without committing
-         
-         log.info("Closing session");
          
          consumerSess.close();
          
@@ -522,10 +595,8 @@ public class JMSXDeliveryCountTest extends JBMServerTestCase
          
          tx.delistResource(consumerSess.getXAResource(), XAResource.TMSUCCESS);
          
-         log.info("Rolling back");
          mgr.rollback();
-         log.info("Rolled back");
-              
+          
          //Must close consumer first
          
          consumer.close(); 

@@ -44,25 +44,20 @@ public interface Journal extends MessagingComponent
 	
 	// Transactional operations
 	
-	void appendAddRecordTransactional(long txID, long id, byte[] record, boolean done) throws Exception;
+	long getTransactionID();
 	
-	void appendUpdateRecordTransactional(long txID, long id, byte[] record, boolean done) throws Exception;
+	void appendAddRecordTransactional(long txID, long id, byte[] record) throws Exception;
 	
-	void appendDeleteRecordTransactional(long txID, long id, boolean done) throws Exception;
+	void appendUpdateRecordTransactional(long txID, long id, byte[] record) throws Exception;
 	
-	//XA operations
+	void appendDeleteRecordTransactional(long txID, long id) throws Exception;
 	
-	void appendAddRecordPrepare(long txID, long id, byte[] record, boolean done) throws Exception;
+	void appendCommitRecord(long txID) throws Exception;
 	
-	void appendUpdateRecordPrepare(long txID, long id, byte[] record, boolean done) throws Exception;
+	void appendPrepareRecord(long txID) throws Exception;
 	
-	void appendDeleteRecordPrepare(long txID, long id, boolean done) throws Exception;
-	
-	void appendXACommitRecord(long txID) throws Exception;
-	
-	void appendXARollbackRecord(long txID) throws Exception;
-
-	
+	void appendRollbackRecord(long txID) throws Exception;
+		
 	// Load
 	
 	void load(List<RecordInfo> committedRecords,

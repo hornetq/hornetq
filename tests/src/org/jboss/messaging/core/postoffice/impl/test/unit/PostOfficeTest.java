@@ -27,7 +27,7 @@ import java.util.Map;
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.persistence.PersistenceManager;
+import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.BindingImpl;
@@ -50,7 +50,7 @@ public class PostOfficeTest extends UnitTestCase
    
    public void testAddQueue() throws Exception
    {
-      PersistenceManager pm = EasyMock.createStrictMock(PersistenceManager.class);
+      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       
@@ -101,8 +101,8 @@ public class PostOfficeTest extends UnitTestCase
    
    public void testRemoveQueue() throws Exception
    {
-      PersistenceManager pm = EasyMock.createStrictMock(PersistenceManager.class);
-      
+      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
+            
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       
       final int nodeID = 21;
@@ -164,8 +164,8 @@ public class PostOfficeTest extends UnitTestCase
    
    public void testAddRemoveMultipleWithDifferentConditions() throws Exception
    {
-      PersistenceManager pm = EasyMock.createStrictMock(PersistenceManager.class);
-      
+      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
+            
       QueueFactory qf = new FakeQueueFactory();
       
       final int nodeID = 21;

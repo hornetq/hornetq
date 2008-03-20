@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
 import org.jboss.messaging.core.server.Configuration;
+import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -87,6 +88,49 @@ public class FileConfiguration extends Configuration implements Serializable
       remotingConf.setTrustStorePassword(getString(e, "remoting-ssl-truststore-password", null));
 
       this.remotingConfig = remotingConf;
+      
+      requireDestinations = getBoolean(e, "require-destinations", requireDestinations);
+      
+      //Persistence config
+      
+      this.bindingsDirectory = getString(e, "bindings-directory", bindingsDirectory);
+      
+      this.createBindingsDir = getBoolean(e, "create-bindings-dir", createBindingsDir);
+      
+      this.journalDirectory = getString(e, "journal-directory", journalDirectory);
+      
+      this.createJournalDir = getBoolean(e, "create-journal-dir", createJournalDir);
+      
+      String s = getString(e, "journal-type", "nio");
+      
+      if (s == null || (!s.equals("nio") && !s.equals("asyncio") && !s.equals("jdbc")))
+      {
+      	throw new IllegalArgumentException("Invalid journal type " + s);
+      }
+      
+      if (s.equals("nio"))
+      {
+      	journalType = JournalType.NIO;
+      }
+      else if (s.equals("asyncio"))
+      {
+      	journalType = JournalType.ASYNCIO;
+      }
+      else if (s.equals("jdbc"))
+      {
+      	journalType = JournalType.JDBC;
+      }
+      		
+      this.journalSync = getBoolean(e, "journal-sync", true);
+      
+      this.journalFileSize = getInteger(e, "journal-file-size", 10 * 1024 * 1024);
+      
+      this.journalMinFiles = getInteger(e, "journal-min-files", 10);
+      
+      this.journalMinAvailableFiles = getInteger(e, "journal-min-available-files", 10);
+      
+      this.journalTaskPeriod = getLong(e, "journal-task-period", 5000L);
+      
       
       NodeList defaultInterceptors = e.getElementsByTagName("default-interceptors-config");
 

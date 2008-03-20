@@ -712,7 +712,7 @@ public class ServerManagement
 //      return servers.get(0).getDestinationManager();
 //   }
 //
-//   public static PersistenceManager getPersistenceManager()
+//   public static StorageManager getPersistenceManager()
 //           throws Exception
 //   {
 //

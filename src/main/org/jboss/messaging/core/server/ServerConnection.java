@@ -60,6 +60,10 @@ public interface ServerConnection
 	
 	void removeTemporaryQueue(Queue queue);
 	
+	void addTemporaryDestination(String destination);
+	
+	void removeTemporaryDestination(String destination);
+	
 	boolean isStarted();
 	
 	long getCreatedTime();

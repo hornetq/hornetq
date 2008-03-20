@@ -42,7 +42,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.CloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddAddressMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCancelMessage;
@@ -57,7 +57,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessa
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveAddressMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRollbackMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
@@ -244,20 +244,20 @@ public class ClientSessionImpl implements ClientSessionInternal
       return response;
    }
    
-   public void addAddress(final String address) throws MessagingException
+   public void addDestination(final String address, final boolean temporary) throws MessagingException
    {
       checkClosed();
       
-      SessionAddAddressMessage request = new SessionAddAddressMessage(address);
+      SessionAddDestinationMessage request = new SessionAddDestinationMessage(address, temporary);
       
       remotingConnection.send(id, request);
    }
    
-   public void removeAddress(final String address) throws MessagingException
+   public void removeDestination(final String address, final boolean temporary) throws MessagingException
    {
       checkClosed();
       
-      SessionRemoveAddressMessage request = new SessionRemoveAddressMessage(address);
+      SessionRemoveDestinationMessage request = new SessionRemoveDestinationMessage(address, temporary);
       
       remotingConnection.send(id, request);  
    }
@@ -371,7 +371,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    public void rollback() throws MessagingException
    {
       checkClosed();
-            
+                
       //We tell each consumer to clear it's buffers and ignore any deliveries with
       //delivery id > last delivery id, until it gets delivery id = lastID again
       
@@ -388,10 +388,10 @@ public class ClientSessionImpl implements ClientSessionInternal
       //We flush any remaining acks
       
       acknowledgeInternal(false);      
-      
+
       toAckCount = 0;
 
-      remotingConnection.send(id, new SessionRollbackMessage());
+      remotingConnection.send(id, new SessionRollbackMessage());   
    }
    
    public void acknowledge() throws MessagingException
@@ -406,7 +406,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       toAckCount++;
       
       acked = false;
-       
+      
       if (deliveryExpired)
       {
          remotingConnection.send(id, new SessionCancelMessage(lastID, true), true);
@@ -501,11 +501,6 @@ public class ClientSessionImpl implements ClientSessionInternal
       this.deliverID = deliverID;
       
       this.deliveryExpired = expired;
-   }
-   
-   public void flushAcks() throws MessagingException
-   {
-      acknowledgeInternal(false);
    }
    
    public void removeConsumer(final ClientConsumerInternal consumer) throws MessagingException
@@ -805,7 +800,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
       
       SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(lastID, !broken);
-      
+            
       remotingConnection.send(id, message, !block);
       
       acked = true;

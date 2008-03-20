@@ -6,18 +6,18 @@
  */
 package org.jboss.messaging.core.remoting.impl.codec;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_REMOVE_ADDRESS;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_REMOVE_DESTINATION;
 
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveAddressMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
 
 /**
  * 
- * A SessionRemoveAddressMessageCodec
+ * A SessionRemoveDestinationMessageCodec
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SessionRemoveAddressMessageCodec extends AbstractPacketCodec<SessionRemoveAddressMessage>
+public class SessionRemoveDestinationMessageCodec extends AbstractPacketCodec<SessionRemoveDestinationMessage>
 {
    // Constants -----------------------------------------------------
 
@@ -27,9 +27,9 @@ public class SessionRemoveAddressMessageCodec extends AbstractPacketCodec<Sessio
 
    // Constructors --------------------------------------------------
 
-   public SessionRemoveAddressMessageCodec()
+   public SessionRemoveDestinationMessageCodec()
    {
-      super(SESS_REMOVE_ADDRESS);
+      super(SESS_REMOVE_DESTINATION);
    }
 
    // Public --------------------------------------------------------
@@ -37,7 +37,7 @@ public class SessionRemoveAddressMessageCodec extends AbstractPacketCodec<Sessio
    // AbstractPacketCodec overrides ---------------------------------
 
    @Override
-   protected void encodeBody(SessionRemoveAddressMessage message, RemotingBuffer out) throws Exception
+   protected void encodeBody(SessionRemoveDestinationMessage message, RemotingBuffer out) throws Exception
    {
       String address = message.getAddress();
      
@@ -45,10 +45,11 @@ public class SessionRemoveAddressMessageCodec extends AbstractPacketCodec<Sessio
 
       out.putInt(bodyLength);
       out.putNullableString(address);
+      out.putBoolean(message.isTemporary());
    }
 
    @Override
-   protected SessionRemoveAddressMessage decodeBody(RemotingBuffer in)
+   protected SessionRemoveDestinationMessage decodeBody(RemotingBuffer in)
          throws Exception
    {
       int bodyLength = in.getInt();
@@ -59,7 +60,7 @@ public class SessionRemoveAddressMessageCodec extends AbstractPacketCodec<Sessio
 
       String address = in.getNullableString();
     
-      return new SessionRemoveAddressMessage(address);
+      return new SessionRemoveDestinationMessage(address, in.getBoolean());
    }
 
    // Package protected ---------------------------------------------

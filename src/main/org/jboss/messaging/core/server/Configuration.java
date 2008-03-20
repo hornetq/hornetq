@@ -64,6 +64,30 @@ public class Configuration implements RemotingConfiguration, Serializable
    protected long securityInvalidationInterval = 10000;
 
    protected RemotingConfigurationImpl remotingConfig;
+   
+   protected boolean requireDestinations;
+   
+   //Persistence config
+   
+   protected String bindingsDirectory;
+   
+   protected boolean createBindingsDir;
+   
+   protected String journalDirectory;
+   
+   protected boolean createJournalDir;
+   
+   protected JournalType journalType;
+   
+   protected boolean journalSync;
+   
+   protected int journalFileSize;
+   
+   protected int journalMinFiles;
+   
+   protected int journalMinAvailableFiles;
+   
+   protected long journalTaskPeriod;
 
    public void addPropertyChangeListener(PropertyChangeListener listener)
    {
@@ -250,6 +274,116 @@ public class Configuration implements RemotingConfiguration, Serializable
    {
       return remotingConfig.getURI();
    }
+
+	public String getBindingsDirectory()
+	{
+		return bindingsDirectory;
+	}
+
+	public void setBindingsDirectory(String bindingsDirectory)
+	{
+		this.bindingsDirectory = bindingsDirectory;
+	}
+
+	public String getJournalDirectory()
+	{
+		return journalDirectory;
+	}
+
+	public void setJournalDirectory(String journalDirectory)
+	{
+		this.journalDirectory = journalDirectory;
+	}
+
+	public JournalType getJournalType()
+	{
+		return journalType;
+	}
+
+	public void setJournalType(JournalType journalType)
+	{
+		this.journalType = journalType;
+	}
+
+	public boolean isJournalSync()
+	{
+		return journalSync;
+	}
+
+	public void setJournalSync(boolean journalSync)
+	{
+		this.journalSync = journalSync;
+	}
+
+	public int getJournalFileSize()
+	{
+		return journalFileSize;
+	}
+
+	public void setJournalFileSize(int journalFileSize)
+	{
+		this.journalFileSize = journalFileSize;
+	}
+
+	public int getJournalMinFiles()
+	{
+		return journalMinFiles;
+	}
+
+	public void setJournalMinFiles(int journalMinFiles)
+	{
+		this.journalMinFiles = journalMinFiles;
+	}
+
+	public int getJournalMinAvailableFiles()
+	{
+		return journalMinAvailableFiles;
+	}
+
+	public void setJournalMinAvailableFiles(int journalMinAvailableFiles)
+	{
+		this.journalMinAvailableFiles = journalMinAvailableFiles;
+	}
+
+	public long getJournalTaskPeriod()
+	{
+		return journalTaskPeriod;
+	}
+
+	public void setJournalTaskPeriod(long journalTaskPeriod)
+	{
+		this.journalTaskPeriod = journalTaskPeriod;
+	}
+
+	public boolean isCreateBindingsDir()
+	{
+		return createBindingsDir;
+	}
+
+	public void setCreateBindingsDir(boolean createBindingsDir)
+	{
+		this.createBindingsDir = createBindingsDir;
+	}
+
+	public boolean isCreateJournalDir()
+	{
+		return createJournalDir;
+	}
+
+	public void setCreateJournalDir(boolean createJournalDir)
+	{
+		this.createJournalDir = createJournalDir;
+	}
+
+	public boolean isRequireDestinations()
+	{
+		return requireDestinations;
+	}
+
+	public void setRequireDestinations(boolean requireDestinations)
+	{
+		this.requireDestinations = requireDestinations;
+	}
 
 
    

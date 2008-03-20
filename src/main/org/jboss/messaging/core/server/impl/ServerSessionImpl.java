@@ -42,7 +42,7 @@ import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.persistence.PersistenceManager;
+import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -113,7 +113,7 @@ public class ServerSessionImpl implements ServerSession
    
    private final PacketDispatcher dispatcher;
    
-   private final PersistenceManager persistenceManager;
+   private final StorageManager persistenceManager;
    
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
          
@@ -142,7 +142,7 @@ public class ServerSessionImpl implements ServerSession
                             final boolean autoCommitAcks,
                             final boolean xa, final ServerConnection connection,
                             final ResourceManager resourceManager, final PacketSender sender, 
-                            final PacketDispatcher dispatcher, final PersistenceManager persistenceManager,
+                            final PacketDispatcher dispatcher, final StorageManager persistenceManager,
                             final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                             final PostOffice postOffice, final SecurityStore securityStore) throws Exception
    {
@@ -154,7 +154,7 @@ public class ServerSessionImpl implements ServerSession
       
       if (!xa)
       {
-         tx = new TransactionImpl();
+         tx = new TransactionImpl(persistenceManager, postOffice);
       }
 
       this.connection = connection;
@@ -292,60 +292,46 @@ public class ServerSessionImpl implements ServerSession
    }
    
    public void send(final String address, final Message msg) throws Exception
-   {
-      //check the address exists, if it doesnt add if the user has the correct privileges
-      if (!postOffice.containsAllowableAddress(address))
-      {
-         try
-         {
-            securityStore.check(address, CheckType.CREATE, connection);
-            
-            postOffice.addAllowableAddress(address);
-         }
-         catch (MessagingException e)
-         {
-            throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
-         }
-      }
+   {      
       //check the user has write access to this address
       securityStore.check(address, CheckType.WRITE, connection);
-      // Assign the message an internal id - this is used to key it in the store
+      
       msg.setMessageID(persistenceManager.generateMessageID());
       
       // This allows the no-local consumers to filter out the messages that come
-      // from the same
-      // connection.
+      // from the same connection.
 
       msg.setConnectionID(connection.getID());
-
-      postOffice.route(address, msg);
       
-      if (!msg.getReferences().isEmpty())
+      if (autoCommitSends)
       {
-         if (autoCommitSends)
-         {
-            if (msg.getNumDurableReferences() != 0)
-            {
-               persistenceManager.addMessage(msg);
-            }
+      	List<MessageReference> refs = postOffice.route(address, msg);
 
-            msg.send();
-         }
-         else
-         {
-            tx.addMessage(msg);
-         }
+   		if (msg.getDurableRefCount() != 0)
+   		{
+   			persistenceManager.storeMessage(address, msg);
+   		}
+   		
+   		for (MessageReference ref: refs)
+   		{
+   			ref.getQueue().addLast(ref);
+   		}
+      }
+      else
+      {
+      	tx.addMessage(address, msg);
       }
    }
 
    public synchronized void acknowledge(final long deliveryID, final boolean allUpTo) throws Exception
    {
-   	//log.info("acknowledge called " + deliveryID + " all " + allUpTo);
-      // Note that we do not consider it an error if the deliveries cannot be found to be acked.
-   	// This can legitimately occur if a connection/session/consumer is closed
-      // from inside a MessageHandlers onMessage method. In this situation the close will cancel any unacked
-      // deliveries, but the subsequent call to delivered() will try and ack again and not find the last
-      // delivery on the server.
+   	/*
+       Note that we do not consider it an error if the deliveries cannot be found to be acked.
+   	 This can legitimately occur if a connection/session/consumer is closed
+       from inside a MessageHandlers onMessage method. In this situation the close will cancel any unacked
+       deliveries, but the subsequent call to delivered() will try and ack again and not find the last
+       delivery on the server.
+       */
       if (allUpTo)
       {
          // Ack all deliveries up to and including the specified id
@@ -370,12 +356,12 @@ public class ServerSessionImpl implements ServerSession
 
                if (autoCommitAcks)
                {
-                  ref.acknowledge(persistenceManager);
+               	doAck(ref);
                }
                else
                {
-                  tx.addAcknowledgement(ref);
-
+               	tx.addAcknowledgement(ref);
+               	
                   //Del count is not actually updated in storage unless it's cancelled
                   ref.incrementDeliveryCount();
                }
@@ -408,12 +394,12 @@ public class ServerSessionImpl implements ServerSession
 
                if (autoCommitAcks)
                {
-                  ref.acknowledge(persistenceManager);
+               	doAck(ref);
                }
                else
                {
                   tx.addAcknowledgement(ref);
-
+                  
                   //Del count is not actually updated in storage unless it's cancelled
                   ref.incrementDeliveryCount();
                }
@@ -426,14 +412,13 @@ public class ServerSessionImpl implements ServerSession
 
    public void rollback() throws Exception
    {
-   	//log.info("Roll back called");
       if (tx == null)
       {
          // Might be null if XA
 
-         tx = new TransactionImpl();
+         tx = new TransactionImpl(persistenceManager, postOffice);
       }
-
+      
       // Synchronize to prevent any new deliveries arriving during this recovery
       synchronized (this)
       {
@@ -441,7 +426,7 @@ public class ServerSessionImpl implements ServerSession
          // order in a single contiguous block
 
          for (Delivery del : deliveries)
-         {
+         {         	
             tx.addAcknowledgement(del.getReference());
          }
 
@@ -450,7 +435,9 @@ public class ServerSessionImpl implements ServerSession
          deliveryIDSequence -= tx.getAcknowledgementsCount();
       }
 
-      tx.rollback(persistenceManager, queueSettingsRepository);
+      tx.rollback(queueSettingsRepository);         
+      
+      tx = new TransactionImpl(persistenceManager, postOffice);
    }
 
    public void cancel(final long deliveryID, final boolean expired) throws Exception
@@ -463,7 +450,7 @@ public class ServerSessionImpl implements ServerSession
 
          synchronized (this)
          {
-            cancelTx = new TransactionImpl();
+            cancelTx = new TransactionImpl(persistenceManager, postOffice);
 
             for (Delivery del : deliveries)
             {
@@ -473,7 +460,7 @@ public class ServerSessionImpl implements ServerSession
             deliveries.clear();
          }
 
-         cancelTx.rollback(persistenceManager, queueSettingsRepository);
+         cancelTx.rollback(queueSettingsRepository);
       }
       else if (expired)
       {
@@ -490,7 +477,7 @@ public class ServerSessionImpl implements ServerSession
 
             if (delivery.getDeliveryID() == deliveryID)
             {
-               delivery.getReference().expire(persistenceManager, queueSettingsRepository);
+               delivery.getReference().expire(persistenceManager, postOffice, queueSettingsRepository);
 
                iter.remove();
 
@@ -506,7 +493,9 @@ public class ServerSessionImpl implements ServerSession
 
    public void commit() throws Exception
    {
-      tx.commit(true, persistenceManager);
+      tx.commit();
+      
+      tx = new TransactionImpl(persistenceManager, postOffice);
    }
 
    public SessionXAResponseMessage XACommit(final boolean onePhase, final Xid xid) throws Exception
@@ -528,11 +517,11 @@ public class ServerSessionImpl implements ServerSession
          return new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
       }
 
-      if (theTx.isSuspended()) { return new SessionXAResponseMessage(true,
+      if (theTx.getState() == Transaction.State.SUSPENDED) { return new SessionXAResponseMessage(true,
             XAException.XAER_PROTO,
             "Cannot commit transaction, it is suspended " + xid); }
 
-      theTx.commit(onePhase, persistenceManager);
+      theTx.commit();
 
       boolean removed = resourceManager.removeTransaction(xid);
 
@@ -550,7 +539,7 @@ public class ServerSessionImpl implements ServerSession
    {
       if (tx != null && tx.getXid().equals(xid))
       {
-         if (tx.isSuspended())
+         if (tx.getState() == Transaction.State.SUSPENDED)
          {
             final String msg = "Cannot end, transaction is suspended";
 
@@ -575,7 +564,7 @@ public class ServerSessionImpl implements ServerSession
             return new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
          }
 
-         if (!theTx.isSuspended())
+         if (theTx.getState() != Transaction.State.SUSPENDED)
          {
             final String msg = "Transaction is not suspended " + xid;
 
@@ -607,7 +596,7 @@ public class ServerSessionImpl implements ServerSession
          return new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
       }
 
-      if (theTx.isSuspended()) { return new SessionXAResponseMessage(true,
+      if (theTx.getState() == Transaction.State.SUSPENDED) { return new SessionXAResponseMessage(true,
             XAException.XAER_PROTO, "Cannot join tx, it is suspended " + xid); }
 
       tx = theTx;
@@ -634,7 +623,7 @@ public class ServerSessionImpl implements ServerSession
          return new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
       }
 
-      if (theTx.isSuspended()) { return new SessionXAResponseMessage(true,
+      if (theTx.getState() == Transaction.State.SUSPENDED) { return new SessionXAResponseMessage(true,
             XAException.XAER_PROTO,
             "Cannot prepare transaction, it is suspended " + xid); }
 
@@ -655,7 +644,7 @@ public class ServerSessionImpl implements ServerSession
       }
       else
       {
-         theTx.prepare(persistenceManager);
+         theTx.prepare();
 
          return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
       }
@@ -680,7 +669,7 @@ public class ServerSessionImpl implements ServerSession
          return new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
       }
 
-      if (!theTx.isSuspended()) { return new SessionXAResponseMessage(true,
+      if (theTx.getState() != Transaction.State.SUSPENDED) { return new SessionXAResponseMessage(true,
             XAException.XAER_PROTO,
             "Cannot resume transaction, it is not suspended " + xid); }
 
@@ -710,11 +699,11 @@ public class ServerSessionImpl implements ServerSession
          return new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
       }
 
-      if (theTx.isSuspended()) { return new SessionXAResponseMessage(true,
+      if (theTx.getState() == Transaction.State.SUSPENDED) { return new SessionXAResponseMessage(true,
             XAException.XAER_PROTO,
             "Cannot rollback transaction, it is suspended " + xid); }
 
-      theTx.rollback(persistenceManager, queueSettingsRepository);
+      theTx.rollback(queueSettingsRepository);
 
       boolean removed = resourceManager.removeTransaction(xid);
 
@@ -738,7 +727,7 @@ public class ServerSessionImpl implements ServerSession
          return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
       }
 
-      tx = new TransactionImpl(xid);
+      tx = new TransactionImpl(xid, persistenceManager, postOffice);
 
       boolean added = resourceManager.putTransaction(xid, tx);
 
@@ -763,7 +752,7 @@ public class ServerSessionImpl implements ServerSession
          return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
       }
 
-      if (tx.isSuspended())
+      if (tx.getState() == Transaction.State.SUSPENDED)
       {
          final String msg = "Cannot suspend, transaction is already suspended "
                + tx.getXid();
@@ -793,23 +782,37 @@ public class ServerSessionImpl implements ServerSession
       return resourceManager.setTimeoutSeconds(timeoutSeconds);
    }
 
-   public void addAddress(final String address) throws Exception
+   public void addDestination(final String address, final boolean temporary) throws Exception
    {
-      if (postOffice.containsAllowableAddress(address))
-      {
-         throw new MessagingException(MessagingException.ADDRESS_EXISTS, "Address already exists: " + address);
-      }
-      
       securityStore.check(address, CheckType.CREATE, connection);
       
-      postOffice.addAllowableAddress(address);
+      if (!postOffice.addDestination(address, temporary))
+      {
+      	throw new MessagingException(MessagingException.ADDRESS_EXISTS, "Address already exists: " + address);
+      }
+      else
+      {      
+         if (temporary)
+         {         
+            connection.addTemporaryDestination(address);
+         }
+      }
    }
 
-   public void removeAddress(final String address) throws Exception
+   public void removeDestination(final String address, final boolean temporary) throws Exception
    {
-      if (!postOffice.removeAllowableAddress(address))
+   	securityStore.check(address, CheckType.CREATE, connection);
+   	
+      if (!postOffice.removeDestination(address, temporary))
       {
          throw new MessagingException(MessagingException.ADDRESS_DOES_NOT_EXIST, "Address does not exist: " + address);
+      }
+      else
+      {      
+         if (temporary)
+         {
+         	connection.removeTemporaryDestination(address);
+         }
       }
    }
 
@@ -817,13 +820,11 @@ public class ServerSessionImpl implements ServerSession
          final String filterString, boolean durable, final boolean temporary) throws Exception
    {
       //make sure the user has privileges to create this address
-      if (!postOffice.containsAllowableAddress(address))
+      if (!postOffice.containsDestination(address))
       {
          try
          {
          	securityStore.check(address, CheckType.CREATE, connection);
-         	
-            postOffice.addAllowableAddress(address);
          }
          catch (MessagingException e)
          {
@@ -870,10 +871,15 @@ public class ServerSessionImpl implements ServerSession
       }
 
       Queue queue = binding.getQueue();
+      
+      if (queue.getConsumerCount() != 0)
+      {
+      	throw new MessagingException(MessagingException.ILLEGAL_STATE, "Cannot delete queue - it has consumers");
+      }
 
       if (queue.isDurable())
       {
-      	persistenceManager.deleteAllReferences(binding.getQueue());
+      	binding.getQueue().deleteAllReferences(persistenceManager);
       }
 
       if (queue.isTemporary())
@@ -964,7 +970,7 @@ public class ServerSessionImpl implements ServerSession
          throw new IllegalArgumentException("Address is null");
       }
 
-      boolean exists = postOffice.containsAllowableAddress(request.getAddress());
+      boolean exists = postOffice.containsDestination(request.getAddress());
 
       List<String> queueNames = new ArrayList<String>();
 
@@ -983,21 +989,7 @@ public class ServerSessionImpl implements ServerSession
 
    public SessionCreateBrowserResponseMessage createBrowser(final String queueName, final String selector)
          throws Exception
-   {
-      if (!postOffice.containsAllowableAddress(queueName))
-      {
-         try
-         {
-         	securityStore.check(queueName, CheckType.CREATE, connection);
-            
-            postOffice.addAllowableAddress(queueName);
-         }
-         catch (MessagingException e)
-         {
-            throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
-         }
-      }
-      
+   {      
       Binding binding = postOffice.getBinding(queueName);
 
       if (binding == null)
@@ -1054,4 +1046,34 @@ public class ServerSessionImpl implements ServerSession
    {
       return "SessionEndpoint[" + id + "]";
    }  
+   
+   // Private --------------------------------------------------------------------------------------------
+      
+   private void doAck(final MessageReference ref) throws Exception
+   {
+   	Message message = ref.getMessage();
+
+   	Queue queue = ref.getQueue();
+   	
+		if (message.isDurable() && queue.isDurable())
+		{            			
+			synchronized (message)
+			{
+				message.decrementDurableRefCount();
+
+				if (message.getDurableRefCount() == 0)
+				{
+					persistenceManager.storeDelete(message.getMessageID());
+				}
+				else
+				{
+					persistenceManager.storeAcknowledge(queue.getPersistenceID(), message.getMessageID());
+				}
+			}            			
+		} 
+		
+		queue.referenceAcknowledged();
+   }
+
+   
 }

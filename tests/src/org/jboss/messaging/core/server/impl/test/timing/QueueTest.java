@@ -26,8 +26,11 @@ import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
+import org.easymock.EasyMock;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.impl.BindingImpl;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.impl.QueueImpl;
 import org.jboss.messaging.core.server.impl.test.unit.fakes.FakeConsumer;
@@ -237,6 +240,96 @@ public class QueueTest extends UnitTestCase
       assertTrue(now2 - now >= 7000);
       
       assertTrue(consumer.getReferences().isEmpty());            
+   }
+   
+   public void testDeleteAllReferences() throws Exception
+   {
+      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      
+      StorageManager storageManager = EasyMock.createStrictMock(StorageManager.class);
+      
+      final int numMessages = 10;
+      
+      List<MessageReference> refs = new ArrayList<MessageReference>();
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         MessageReference ref = generateReference(queue, i);
+         
+         ref.getMessage().setDurable(i % 2 == 0);
+         
+         refs.add(ref);
+         
+         queue.addLast(ref);
+      }
+      
+      //Add some scheduled too
+      
+      final long waitTime = 2000;
+      
+      final int numScheduled = 10;
+      
+      for (int i = numMessages; i < numMessages + numScheduled; i++)
+      {
+         MessageReference ref = generateReference(queue, i);
+         
+         ref.setScheduledDeliveryTime(System.currentTimeMillis() + waitTime);
+         
+         ref.getMessage().setDurable(i % 2 == 0);
+         
+         refs.add(ref);
+         
+         queue.addLast(ref);
+      }
+      
+      
+      assertEquals(numMessages + numScheduled, queue.getMessageCount());   
+      assertEquals(numScheduled, queue.getScheduledCount());
+      assertEquals(0, queue.getDeliveringCount());
+      
+      //What I expect to get
+      
+      EasyMock.expect(storageManager.generateTransactionID()).andReturn(1L);
+
+      for (int i = 0; i < numMessages; i++)
+      {
+      	if (i % 2 == 0)
+      	{
+      		storageManager.storeDeleteTransactional(1, i);
+      	}
+      }
+      
+      for (int i = numMessages; i < numMessages + numScheduled; i++)
+      {
+      	if (i % 2 == 0)
+      	{
+      		storageManager.storeDeleteTransactional(1, i);
+      	}
+      }
+      
+      storageManager.commit(1);
+      
+      EasyMock.replay(storageManager);
+      
+      queue.deleteAllReferences(storageManager);
+      
+      EasyMock.verify(storageManager);
+      
+      assertEquals(0, queue.getMessageCount());   
+      assertEquals(0, queue.getScheduledCount());
+      assertEquals(0, queue.getDeliveringCount());
+      
+      Thread.sleep(waitTime + 500);
+      
+      //Make sure scheduled don't arrive
+      
+      FakeConsumer consumer = new FakeConsumer();
+      
+      queue.addConsumer(consumer);
+      
+      queue.deliver();
+      
+      assertTrue(consumer.getReferences().isEmpty());      
    }
    
    // Inner classes ---------------------------------------------------------------

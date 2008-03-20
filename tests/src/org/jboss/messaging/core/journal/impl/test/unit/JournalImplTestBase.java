@@ -21,6 +21,7 @@
   */
 package org.jboss.messaging.core.journal.impl.test.unit;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -70,6 +71,16 @@ public abstract class JournalImplTestBase extends UnitTestCase
 	private String fileExtension = "jbm";
 	
 	private SequentialFileFactory fileFactory;
+	
+	private void logThem()
+	{
+		log.info("**** loggingg attributes***");
+		log.info("recordlength:" + recordLength);
+		log.info("minfiles:" + minFiles);
+		log.info("minavailableFiles:" + minAvailableFiles);
+		log.info("filesize:" + fileSize);
+		log.info("sync:" + sync);
+	}
 						
 	protected void setUp() throws Exception
 	{
@@ -78,6 +89,10 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		prepareDirectory();
 		
 		fileFactory = getFileFactory();
+
+		transactions.clear();
+		
+		records.clear();
 	}
 	
 	protected void tearDown() throws Exception
@@ -94,6 +109,10 @@ public abstract class JournalImplTestBase extends UnitTestCase
 			{				
 			}
 		}
+		
+		fileFactory = null;
+		
+		journal = null;;
 	}
 	
 	protected abstract void prepareDirectory() throws Exception;
@@ -567,6 +586,107 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		
 	}
 	
+	public void testAddUpdateDeleteRestartAndContinue() throws Exception
+	{
+		setup(10, 10, 10 * 1024, true);
+		createJournal();
+		startJournal();
+		load();
+		add(1, 2, 3);
+		update(1, 2);
+		stopJournal();
+		createJournal();
+		startJournal();
+		loadAndCheck();
+		add(4, 5, 6);
+		update(5);
+		delete(3);
+		stopJournal();
+		createJournal();
+		startJournal();
+		loadAndCheck();
+		add(7, 8);
+		delete(1, 2);
+		delete(4, 5, 6);
+		stopJournal();
+		createJournal();
+		startJournal();
+		loadAndCheck();
+	}
+	
+	public void testAddUpdateDeleteTransactionalRestartAndContinue() throws Exception
+	{
+		setup(10, 10, 10 * 1024, true);
+		createJournal();
+		startJournal();
+		load();
+		add(1, 1, 2, 3);
+		updateTx(1, 1, 2);
+		commit(1);
+		stopJournal();
+		createJournal();
+		startJournal();
+		loadAndCheck();
+		addTx(2, 4, 5, 6);
+		update(2, 5);
+		delete(2, 3);
+		commit(2);
+		stopJournal();
+		createJournal();
+		startJournal();
+		loadAndCheck();
+		addTx(3, 7, 8);
+		deleteTx(3, 1, 2);
+		deleteTx(3, 4, 5, 6);
+		commit(3);
+		stopJournal();
+		createJournal();
+		startJournal();
+		loadAndCheck();
+	}
+	
+	public void testFillFileExactly() throws Exception
+	{		
+		this.recordLength = 500;
+		
+		int numRecords = 2;
+		
+		//The real appended record size in the journal file = SIZE_BYTE + SIZE_LONG + SIZE_INT + recordLength + SIZE_BYTE
+		
+		int realLength = 1 + 8 + 4 + this.recordLength + 1;
+		
+		int fileSize = numRecords * realLength + 8; //8 for timestamp
+						
+		setup(10, 10, fileSize, true);
+		
+		logThem();
+		
+		createJournal();
+		startJournal();
+		load();
+		
+		add(1, 2);
+		
+		stopJournal();
+		createJournal();
+		startJournal();
+		loadAndCheck();
+		
+		add(3, 4);
+		
+		stopJournal();
+		createJournal();
+		startJournal();
+		loadAndCheck();
+		
+		add(4, 5, 6, 7, 8, 9, 10);
+		
+		stopJournal();
+		createJournal();
+		startJournal();
+		loadAndCheck();		
+	}
+	
 	// Transactional tests
 	// ===================
 	
@@ -576,9 +696,10 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		createJournal();
 		startJournal();
 		load();
-		addTx(1, false, 1);
-		updateTx(1, false, 1);		
-		deleteTx(1, true, 1);		
+		addTx(1, 1);
+		updateTx(1, 1);		
+		deleteTx(1, 1);	
+		commit(1);
 		stopJournal();
 		createJournal();
 		startJournal();
@@ -591,9 +712,10 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		createJournal();
 		startJournal();
 		load();
-		addTx(1, false, 1, 2, 3);
-		updateTx(1, false, 1, 2);		
-		deleteTx(1, true, 1);		
+		addTx(1, 1, 2, 3);
+		updateTx(1, 1, 2);		
+		deleteTx(1, 1);	
+		commit(1);
 		stopJournal();
 		createJournal();
 		startJournal();
@@ -606,9 +728,10 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		createJournal();
 		startJournal();
 		load();
-		addTx(1, false, 1, 2, 3);
-		updateTx(1, false, 1, 2);		
-		deleteTx(1, true, 1, 2, 3);		
+		addTx(1, 1, 2, 3);
+		updateTx(1, 1, 2);		
+		deleteTx(1, 1, 2, 3);
+		commit(1);
 		stopJournal();
 		createJournal();
 		startJournal();
@@ -622,8 +745,9 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		startJournal();
 		load();
 		add(1, 2, 3);
-		addTx(1, false, 4, 5, 6);
-		updateTx(1, true, 1, 5);	
+		addTx(1, 4, 5, 6);
+		updateTx(1, 1, 5);
+		commit(1);
 		stopJournal();
 		createJournal();
 		startJournal();
@@ -637,8 +761,9 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		startJournal();
 		load();
 		add(1, 2, 3);
-		addTx(1, false, 4, 5, 6);
-		deleteTx(1, true, 1, 2, 3, 4, 5, 6);
+		addTx(1, 4, 5, 6);
+		deleteTx(1, 1, 2, 3, 4, 5, 6);
+		commit(1);
 		stopJournal();
 		createJournal();
 		startJournal();
@@ -652,9 +777,9 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		startJournal();
 		load();
 		add(1, 2, 3);
-		addTx(1, false, 4, 5, 6);
-		updateTx(1, false, 1, 2, 4, 5);
-		deleteTx(1, false, 1, 2, 3, 4, 5, 6);
+		addTx(1, 4, 5, 6);
+		updateTx(1, 1, 2, 4, 5);
+		deleteTx(1, 1, 2, 3, 4, 5, 6);
 		stopJournal();
 		createJournal();
 		startJournal();
@@ -668,17 +793,20 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		startJournal();
 		load();
 		
-		addTx(1, false, 1, 2, 3, 4, 5, 6);
-		updateTx(1, false, 1, 3, 5);
-		deleteTx(1, false, 1, 2, 3, 4, 5, 6);
+		addTx(1, 1, 2, 3, 4, 5, 6);
+		updateTx(1, 1, 3, 5);
+		deleteTx(1, 1, 2, 3, 4, 5, 6);
+		commit(1);
 		
-		addTx(2, false, 11, 12, 13, 14, 15, 16);
-		updateTx(2, false, 11, 13, 15);
-		deleteTx(2, false, 11, 12, 13, 14, 15, 16);
+		addTx(2, 11, 12, 13, 14, 15, 16);
+		updateTx(2, 11, 13, 15);
+		deleteTx(2, 11, 12, 13, 14, 15, 16);
+		commit(2);
 		
-		addTx(3, false, 21, 22, 23, 24, 25, 26);
-		updateTx(3, false, 21, 23, 25);
-		deleteTx(3, false, 21, 22, 23, 24, 25, 26);
+		addTx(3, 21, 22, 23, 24, 25, 26);
+		updateTx(3, 21, 23, 25);
+		deleteTx(3, 21, 22, 23, 24, 25, 26);
+		commit(3);
 		
 		stopJournal();
 		createJournal();
@@ -693,23 +821,19 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		startJournal();
 		load();
 		
-		addTx(1, false, 1, 2, 3, 4, 5, 6);
+		addTx(1, 1, 2, 3, 4, 5, 6);		
+		addTx(3, 21, 22, 23, 24, 25, 26);				
+		updateTx(1, 1, 3, 5);		
+		addTx(2, 11, 12, 13, 14, 15, 16);				
+		deleteTx(1, 1, 2, 3, 4, 5, 6);						
+		updateTx(2, 11, 13, 15);		
+		updateTx(3, 21, 23, 25);			
+		deleteTx(2, 11, 12, 13, 14, 15, 16);		
+		deleteTx(3, 21, 22, 23, 24, 25, 26);
 		
-		addTx(3, false, 21, 22, 23, 24, 25, 26);
-				
-		updateTx(1, false, 1, 3, 5);
-		
-		addTx(2, false, 11, 12, 13, 14, 15, 16);
-				
-		deleteTx(1, false, 1, 2, 3, 4, 5, 6);
-						
-		updateTx(2, false, 11, 13, 15);
-		
-		updateTx(3, false, 21, 23, 25);
-			
-		deleteTx(2, false, 11, 12, 13, 14, 15, 16);
-		
-		deleteTx(3, false, 21, 22, 23, 24, 25, 26);
+		commit(1);
+		commit(2);
+		commit(3);
 		
 		stopJournal();
 		createJournal();
@@ -724,23 +848,18 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		startJournal();
 		load();
 				
-		add(1, 2, 3, 4, 5, 6, 7, 8);
-		
-		addTx(1, false, 9, 10, 11, 12);
-		
-		addTx(2, false, 13, 14, 15, 16, 17);
-		
-		addTx(3, false, 18, 19, 20, 21, 22);
-		
-		updateTx(1, false, 1, 2, 3);
-		
-		updateTx(2, true, 4, 5, 6);
-		
-		updateTx(3, false, 7, 8);
-		
-		deleteTx(1, true, 1, 2);
-		
-		deleteTx(3, true, 7, 8);
+		add(1, 2, 3, 4, 5, 6, 7, 8);		
+		addTx(1, 9, 10, 11, 12);		
+		addTx(2, 13, 14, 15, 16, 17);		
+		addTx(3, 18, 19, 20, 21, 22);		
+		updateTx(1, 1, 2, 3);		
+		updateTx(2, 4, 5, 6);		
+		commit(2);		
+		updateTx(3, 7, 8);		
+		deleteTx(1, 1, 2);		
+		commit(1);		
+		deleteTx(3, 7, 8);		
+		commit(3);
 		
 		stopJournal();
 		createJournal();
@@ -755,11 +874,12 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		startJournal();
 		load();
 		add(1,3,5,7,10,13,56,100,102,200,201,202,203);		
-		addTx(1, false, 675, 676, 677, 700, 703);
+		addTx(1, 675, 676, 677, 700, 703);
 		update(1,3,5,7,10,13,56,100,102,200,201,202,203);		
-		updateTx(1, false, 677, 700);		
+		updateTx(1, 677, 700);		
 		delete(1,3,5,7,10,13,56,100,102,200,201,202,203);		
-		deleteTx(1, true, 703, 675, 1,3,5,7,10);		
+		deleteTx(1, 703, 675, 1,3,5,7,10);		
+		commit(1);
 		stopJournal();
 		createJournal();
 		startJournal();
@@ -772,14 +892,76 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		createJournal();
 		startJournal();
 		load();		
-		addTx(1, false, 1, 2, 3, 4, 5, 6, 7, 8, 9);					
-		deleteTx(1, true, 9, 8, 5, 3, 7, 6, 2, 1, 4);		
+		addTx(1, 1, 2, 3, 4, 5, 6, 7, 8, 9);					
+		deleteTx(1, 9, 8, 5, 3, 7, 6, 2, 1, 4);	
+		commit(1);
 		stopJournal();
 		createJournal();
 		startJournal();
 		loadAndCheck();		
 	}
 	
+	public void testAddOutsideTXThenUpdateInsideTX() throws Exception
+	{
+		setup(10, 10, 10 * 1024, true);
+		createJournal();
+		startJournal();
+		load();		
+		add(1, 2, 3);
+		updateTx(1, 1, 2, 3);
+		commit(1);
+		stopJournal();
+		createJournal();
+		startJournal();
+		loadAndCheck();
+	}
+	
+	public void testAddOutsideTXThenDeleteInsideTX() throws Exception
+	{
+		setup(10, 10, 10 * 1024, true);
+		createJournal();
+		startJournal();
+		load();		
+		add(1, 2, 3);
+		deleteTx(1, 1, 2, 3);
+		commit(1);
+		stopJournal();
+		createJournal();
+		startJournal();
+		loadAndCheck();
+	}
+	
+	public void testRollback() throws Exception
+	{
+		setup(10, 10, 10 * 1024, true);
+		createJournal();
+		startJournal();
+		load();		
+		add(1, 2, 3);
+		deleteTx(1, 1, 2, 3);
+		rollback(1);
+		stopJournal();
+		createJournal();
+		startJournal();
+		loadAndCheck();
+	}
+	
+	public void testRollbackMultiple() throws Exception
+	{
+		setup(10, 10, 10 * 1024, true);
+		createJournal();
+		startJournal();
+		load();		
+		add(1, 2, 3);
+		deleteTx(1, 1, 2, 3);
+		addTx(2, 4, 5, 6);
+		rollback(1);
+		rollback(2);
+		stopJournal();
+		createJournal();
+		startJournal();
+		loadAndCheck();
+	}
 	
 	// XA tests
 	// ========
@@ -790,9 +972,9 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		createJournal();
 		startJournal();
 		load();		
-		this.addPrepare(1, false, 1, 2, 3, 4, 5, 6, 7, 8, 9);					
-		this.updatePrepare(1, false, 1, 2, 3, 4, 7, 8);
-		this.deletePrepare(1, false, 1, 2, 3, 4, 5);		
+		addTx(1, 1, 2, 3, 4, 5, 6, 7, 8, 9);					
+		updateTx(1, 1, 2, 3, 4, 7, 8);
+		deleteTx(1, 1, 2, 3, 4, 5);		
 		stopJournal();
 		createJournal();
 		startJournal();
@@ -805,9 +987,10 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		createJournal();
 		startJournal();
 		load();		
-		this.addPrepare(1, false, 1, 2, 3, 4, 5, 6, 7, 8, 9);					
-		this.updatePrepare(1, false, 1, 2, 3, 4, 7, 8);
-		this.deletePrepare(1, true, 1, 2, 3, 4, 5);		
+		addTx(1, 1, 2, 3, 4, 5, 6, 7, 8, 9);					
+		updateTx(1, 1, 2, 3, 4, 7, 8);
+		deleteTx(1, 1, 2, 3, 4, 5);	
+		prepare(1);
 		stopJournal();
 		createJournal();
 		startJournal();
@@ -820,10 +1003,11 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		createJournal();
 		startJournal();
 		load();		
-		this.addPrepare(1, false, 1, 2, 3, 4, 5, 6, 7, 8, 9);					
-		this.updatePrepare(1, false, 1, 2,3, 4, 7, 8);
-		this.deletePrepare(1, true, 1, 2, 3, 4, 5);	
-		this.xaCommit(1);
+		addTx(1, 1, 2, 3, 4, 5, 6, 7, 8, 9);					
+		updateTx(1, 1, 2,3, 4, 7, 8);
+		deleteTx(1, 1, 2, 3, 4, 5);	
+		prepare(1);
+		commit(1);
 		stopJournal();
 		createJournal();
 		startJournal();
@@ -836,10 +1020,11 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		createJournal();
 		startJournal();
 		load();		
-		this.addPrepare(1, false, 1, 2, 3, 4, 5, 6, 7, 8, 9);					
-		this.updatePrepare(1, false, 1, 2,3, 4, 7, 8);
-		this.deletePrepare(1, true, 1, 2, 3, 4, 5);	
-		this.xaRollback(1);
+		addTx(1, 1, 2, 3, 4, 5, 6, 7, 8, 9);					
+		updateTx(1, 1, 2,3, 4, 7, 8);
+		deleteTx(1, 1, 2, 3, 4, 5);	
+		prepare(1);
+		rollback(1);
 		stopJournal();
 		createJournal();
 		startJournal();
@@ -852,10 +1037,10 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		createJournal();
 		startJournal();
 		load();		
-		this.add(1, 2, 3, 4, 5, 6);
-		this.addPrepare(1, false, 7, 8, 9, 10);					
-		this.updatePrepare(1, false, 1, 2, 3, 7, 8, 9);
-		this.deletePrepare(1, false, 1, 2, 3, 4, 5);	
+		add(1, 2, 3, 4, 5, 6);
+		addTx(1, 7, 8, 9, 10);					
+		updateTx(1, 1, 2, 3, 7, 8, 9);
+		deleteTx(1, 1, 2, 3, 4, 5);	
 		stopJournal();
 		createJournal();
 		startJournal();
@@ -868,10 +1053,11 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		createJournal();
 		startJournal();
 		load();		
-		this.add(1, 2, 3, 4, 5, 6);
-		this.addPrepare(1, false, 7, 8, 9, 10);					
-		this.updatePrepare(1, false, 1, 2, 3, 7, 8, 9);
-		this.deletePrepare(1, true, 1, 2, 3, 4, 5);	
+		add(1, 2, 3, 4, 5, 6);
+		addTx(1, 7, 8, 9, 10);					
+		updateTx(1, 1, 2, 3, 7, 8, 9);
+		deleteTx(1, 1, 2, 3, 4, 5);	
+		prepare(1);
 		stopJournal();
 		createJournal();
 		startJournal();
@@ -884,11 +1070,12 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		createJournal();
 		startJournal();
 		load();		
-		this.add(1, 2, 3, 4, 5, 6);
-		this.addPrepare(1, false, 7, 8, 9, 10);					
-		this.updatePrepare(1, false, 1, 2, 3, 7, 8, 9);
-		this.deletePrepare(1, true, 1, 2, 3, 4, 5);	
-		this.xaRollback(1);
+		add(1, 2, 3, 4, 5, 6);
+		addTx(1, 7, 8, 9, 10);					
+		updateTx(1, 1, 2, 3, 7, 8, 9);
+		deleteTx(1, 1, 2, 3, 4, 5);	
+		prepare(1);
+		rollback(1);
 		stopJournal();
 		createJournal();
 		startJournal();
@@ -901,11 +1088,12 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		createJournal();
 		startJournal();
 		load();		
-		this.add(1, 2, 3, 4, 5, 6);
-		this.addPrepare(1, false, 7, 8, 9, 10);					
-		this.updatePrepare(1, false, 1, 2, 3, 7, 8, 9);
-		this.deletePrepare(1, true, 1, 2, 3, 4, 5);	
-		this.xaCommit(1);
+		add(1, 2, 3, 4, 5, 6);
+		addTx(1, 7, 8, 9, 10);					
+		updateTx(1, 1, 2, 3, 7, 8, 9);
+		deleteTx(1, 1, 2, 3, 4, 5);	
+		prepare(1);
+		commit(1);
 		stopJournal();
 		createJournal();
 		startJournal();
@@ -918,19 +1106,22 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		createJournal();
 		startJournal();
 		load();		
-		this.add(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-		this.addPrepare(1, false, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20);
-		this.addPrepare(2, false, 21, 22, 23, 24, 25, 26, 27);
-		this.updatePrepare(1, false, 1, 3, 6, 11, 14, 17);
-		this.addPrepare(3, false, 28, 29, 30, 31, 32, 33, 34, 35);
-		this.updatePrepare(3, false, 7, 8, 9, 10);
-		this.deletePrepare(2, true, 4, 5, 6, 23, 25, 27);
-		this.deletePrepare(1, true, 1, 2, 11, 14, 15);
-		this.deletePrepare(3, true, 28, 31, 32, 9);
+		add(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+		addTx(1, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20);
+		addTx(2, 21, 22, 23, 24, 25, 26, 27);
+		updateTx(1, 1, 3, 6, 11, 14, 17);
+		addTx(3, 28, 29, 30, 31, 32, 33, 34, 35);
+		updateTx(3, 7, 8, 9, 10);
+		deleteTx(2, 4, 5, 6, 23, 25, 27);
+		prepare(2);
+		deleteTx(1, 1, 2, 11, 14, 15);
+		prepare(1);
+		deleteTx(3, 28, 31, 32, 9);
+		prepare(3);
 		
-		this.xaCommit(1);
-		this.xaRollback(2);
-		this.xaCommit(3);
+		commit(1);
+		rollback(2);
+		commit(3);
 	}
 	
 	// Private ---------------------------------------------------------------------------------
@@ -988,9 +1179,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		}
 		
 		checkTransactionsEquivalent(prepared, preparedTransactions);
-	}
-	
-	
+	}		
 	
 	private void load() throws Exception
 	{
@@ -1031,91 +1220,49 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		}
 	}
 			
-	private void addTx(long txID, boolean done, long... arguments) throws Exception
+	private void addTx(long txID, long... arguments) throws Exception
 	{
-		TransactionHolder tx = transactions.get(txID);
-		
-		if (tx == null)
-		{
-			tx = new TransactionHolder();
-			
-			transactions.put(txID, tx);
-		}
+		TransactionHolder tx = getTransaction(txID);
 		
 		for (int i = 0; i < arguments.length; i++)
 		{		
 			byte[] record = generateRecord(recordLength);
 			
-			boolean useDone = done ? i == arguments.length - 1 : false;
-			
-			journal.appendAddRecordTransactional(txID, arguments[i], record, useDone);
+			journal.appendAddRecordTransactional(txID, arguments[i], record);
 			
 			tx.records.add(new RecordInfo(arguments[i], record, false));
 			
-		}
-		
-		if (done)
-		{
-			commitTx(txID);
-		}
+		}		
 	}
 	
-	private void addPrepare(long txID, boolean done, long... arguments) throws Exception
+	private void updateTx(long txID, long... arguments) throws Exception
 	{
-		TransactionHolder tx = transactions.get(txID);
-		
-		if (tx == null)
-		{
-			tx = new TransactionHolder();
-			
-			transactions.put(txID, tx);
-		}
-		
-		for (int i = 0; i < arguments.length; i++)
-		{		
-			byte[] record = generateRecord(recordLength);
-			
-			boolean useDone = done ? i == arguments.length - 1 : false;
-			
-			journal.appendAddRecordPrepare(txID, arguments[i], record, useDone);
-			
-			tx.records.add(new RecordInfo(arguments[i], record, false));
-			
-		}
-		
-		if (done)
-		{
-			tx.prepared = true;
-		}
-	}
-	
-	private void updateTx(long txID, boolean done, long... arguments) throws Exception
-	{
-		TransactionHolder tx = transactions.get(txID);
-		
-		if (tx == null)
-		{
-			throw new IllegalStateException("Cannot find tx " + txID);
-		}
+		TransactionHolder tx = getTransaction(txID);
 		
 		for (int i = 0; i < arguments.length; i++)
 		{		
 			byte[] updateRecord = generateRecord(recordLength);
-			
-			boolean useDone = done ? i == arguments.length - 1 : false;
-						
-			journal.appendUpdateRecordTransactional(txID, arguments[i], updateRecord, useDone);
+							
+			journal.appendUpdateRecordTransactional(txID, arguments[i], updateRecord);
 			
 			tx.records.add(new RecordInfo(arguments[i], updateRecord, true));
 		}		
+	}
+
+	private void deleteTx(long txID, long... arguments) throws Exception
+	{
+		TransactionHolder tx = getTransaction(txID);
 		
-		if (done)
-		{
-			commitTx(txID);
+		for (int i = 0; i < arguments.length; i++)
+		{						
+			journal.appendDeleteRecordTransactional(txID, arguments[i]);
+			
+			tx.deletes.add(arguments[i]);			
 		}
+		
 	}
 	
-	private void updatePrepare(long txID, boolean done, long... arguments) throws Exception
+	private void prepare(long txID) throws Exception
 	{
 		TransactionHolder tx = transactions.get(txID);
 		
@@ -1129,24 +1276,12 @@ public abstract class JournalImplTestBase extends UnitTestCase
 			throw new IllegalStateException("Transaction is already prepared");
 		}
 		
-		for (int i = 0; i < arguments.length; i++)
-		{		
-			byte[] updateRecord = generateRecord(recordLength);
-			
-			boolean useDone = done ? i == arguments.length - 1 : false;
-						
-			journal.appendUpdateRecordPrepare(txID, arguments[i], updateRecord, useDone);
-			
-			tx.records.add(new RecordInfo(arguments[i], updateRecord, true));
-		}		
-		
-		if (done)
-		{
-			tx.prepared = true;
-		}
+		journal.appendPrepareRecord(txID);
+				
+		tx.prepared = true;
 	}
 	
-	private void deleteTx(long txID, boolean done, long... arguments) throws Exception
+	private void commit(long txID) throws Exception
 	{
 		TransactionHolder tx = transactions.get(txID);
 		
@@ -1155,70 +1290,12 @@ public abstract class JournalImplTestBase extends UnitTestCase
 			throw new IllegalStateException("Cannot find tx " + txID);
 		}
 		
-		for (int i = 0; i < arguments.length; i++)
-		{		
-			boolean useDone = done ? i == arguments.length - 1 : false;
-						
-			journal.appendDeleteRecordTransactional(txID, arguments[i], useDone);
-			
-			tx.deletes.add(arguments[i]);			
-		}
-		
-		if (done)
-		{
-			commitTx(txID);
-		}
-	}
-	
-	private void deletePrepare(long txID, boolean done, long... arguments) throws Exception
-	{
-		TransactionHolder tx = transactions.get(txID);
-		
-		if (tx == null)
-		{
-			throw new IllegalStateException("Cannot find tx " + txID);
-		}
-		
-		if (tx.prepared)
-		{
-			throw new IllegalStateException("Transaction is already prepared");
-		}
-		
-		for (int i = 0; i < arguments.length; i++)
-		{		
-			boolean useDone = done ? i == arguments.length - 1 : false;
-						
-			journal.appendDeleteRecordPrepare(txID, arguments[i], useDone);
-			
-			tx.deletes.add(arguments[i]);			
-		}
-		
-		if (done)
-		{
-			tx.prepared = true;
-		}
-	}
-	
-	private void xaCommit(long txID) throws Exception
-	{
-		TransactionHolder tx = transactions.get(txID);
-		
-		if (tx == null)
-		{
-			throw new IllegalStateException("Cannot find tx " + txID);
-		}
-		
-		if (!tx.prepared)
-		{
-			throw new IllegalStateException("Transaction is not prepared");
-		}
-		
-		journal.appendXACommitRecord(txID);
+		journal.appendCommitRecord(txID);
 		
 		this.commitTx(txID);
 	}
 	
-	private void xaRollback(long txID) throws Exception
+	private void rollback(long txID) throws Exception
 	{
 		TransactionHolder tx = transactions.remove(txID);
 		
@@ -1227,12 +1304,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 			throw new IllegalStateException("Cannot find tx " + txID);
 		}
 		
-		if (!tx.prepared)
-		{
-			throw new IllegalStateException("Transaction is not prepared");
-		}
-		
-		journal.appendXARollbackRecord(txID);
+		journal.appendRollbackRecord(txID);
 	}
 	
 	private void commitTx(long txID)
@@ -1265,7 +1337,20 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		}
 	}
 	
-	
+	private TransactionHolder getTransaction(long txID)
+	{
+		TransactionHolder tx = transactions.get(txID);
+		
+		if (tx == null)
+		{
+			tx = new TransactionHolder();
+			
+			transactions.put(txID, tx);
+		}
+		
+		return tx;
+	}
+			
 	private void checkTransactionsEquivalent(List<PreparedTransactionInfo> expected, List<PreparedTransactionInfo> actual)
 	{
 		assertEquals("Lists not same length", expected.size(), actual.size());

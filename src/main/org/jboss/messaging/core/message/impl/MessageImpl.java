@@ -25,16 +25,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.util.StreamUtils;
 
@@ -77,21 +74,11 @@ public class MessageImpl implements Message
    //The payload of MessageImpl instances is opaque
    private byte[] payload;
    
-   //We keep track of the persisted references for this message
-   private final List<MessageReference> references = new ArrayList<MessageReference>();
-   
    private String connectionID;
    
-   private volatile int numDurableReferences;
+   private final AtomicInteger durableRefCount = new AtomicInteger(0);
    
    private int deliveryCount;
-   
-   /*
-    * We use a semaphore of size 1, i.e. a mutex to synchronize access to the refs rather than
-    * use the synchronized keyword since java.util.Semaphore uses compareAndSet to maintain the semaphore
-    * i.e. no locking which should give better performance under high contention
-    */
-   private Semaphore refsLock = new Semaphore(1);
    
    // Constructors --------------------------------------------------
 
@@ -306,68 +293,29 @@ public class MessageImpl implements Message
    {
       MessageReference ref = new MessageReferenceImpl(this, queue);
       
-      references.add(ref);
+      //references.add(ref);
       
       if (durable && queue.isDurable())
       {
-         numDurableReferences++;
+         durableRefCount.incrementAndGet();
       }
       
       return ref;
    }
    
-   public int getNumDurableReferences()
+   public int getDurableRefCount()
    {
-      return numDurableReferences;
+   	return durableRefCount.get();
    }
    
-   public List<MessageReference> getReferences()
+   public void decrementDurableRefCount()
    {
-      return references;
+   	durableRefCount.decrementAndGet();
    }
    
-   public void removeDurableReference(final MessageReference reference, final int pos) throws Exception
+   public void incrementDurableRefCount()
    {
-      refsLock.acquire();
-      
-      try
-      {      
-         references.remove(pos);
-               
-         numDurableReferences--;                     
-      }
-      finally
-      {
-         refsLock.release();
-      }
-   }
-   
-   //TODO optimise to avoid scan
-   public int getDurableReferencePos(final MessageReference reference)
-   {
-      int pos = 0;
-      
-      for (MessageReference ref: references)
-      {
-         if (ref == reference)
-         {
-            break;
-         }
-         
-         if (ref.getQueue().isDurable())
-         {
-            pos++;
-         }         
-      }
-      
-      return pos;
-   }
-   
-   public void addBackDurableReference(final MessageReference reference)
-   {
-      references.add(reference);
-      
-      numDurableReferences++;
+   	durableRefCount.incrementAndGet();
    }
    
    public Message copy()
@@ -375,26 +323,6 @@ public class MessageImpl implements Message
       return new MessageImpl(this);
    }
 
-   public void send() throws Exception
-   {
-      refsLock.acquire();
-      
-      try
-      {      
-         for (MessageReference ref: references)
-         {
-            if (ref.getQueue().addLast(ref) == HandleStatus.BUSY)
-            {
-            	log.warn("Message not added to queue " + ref.getQueue().getName() + " since it is full");
-            }
-         }
-      }
-      finally
-      {
-         refsLock.release();
-      }
-   }
-    
    // Public --------------------------------------------------------
 
    public boolean equals(Object o)

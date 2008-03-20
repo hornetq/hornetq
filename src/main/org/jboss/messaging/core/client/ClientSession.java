@@ -25,9 +25,9 @@ public interface ClientSession extends XAResource
    
    void deleteQueue(String queueName) throws MessagingException;
    
-   void addAddress(String address) throws MessagingException;
+   void addDestination(String address, boolean temporary) throws MessagingException;
    
-   void removeAddress(String address) throws MessagingException;
+   void removeDestination(String address, boolean temporary) throws MessagingException;
    
    SessionQueueQueryResponseMessage queueQuery(String queueName) throws MessagingException;
    

@@ -22,7 +22,7 @@
 package org.jboss.messaging.core.server.impl;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -37,14 +37,14 @@ import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.DistributionPolicy;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
-import org.jboss.messaging.core.persistence.PersistenceManager;
 
 /**
  *
@@ -82,7 +82,7 @@ public class QueueImpl implements Queue
 
    private final List<Consumer> consumers  = new ArrayList<Consumer>();
 
-   private final Set<ScheduledDeliveryRunnable> scheduledRunnables = new HashSet<ScheduledDeliveryRunnable>();
+   private final Set<ScheduledDeliveryRunnable> scheduledRunnables = new LinkedHashSet<ScheduledDeliveryRunnable>();
 
    private volatile DistributionPolicy distributionPolicy = new RoundRobinDistributionPolicy();
 
@@ -233,18 +233,6 @@ public class QueueImpl implements Queue
       }
    }
 
-   public void move(MessageReference messageReference, Queue queue, PersistenceManager persistenceManager) throws Exception
-   {
-      Message newMessage = messageReference.getMessage().copy();
-      MessageReference newRef = newMessage.createReference(queue);
-      queue.addLast(newRef);
-      messageReferences.remove(messageReference , messageReference.getMessage().getPriority());
-      TransactionImpl tx = new TransactionImpl();
-      tx.addMessage(newMessage);
-      tx.addAcknowledgement(messageReference);
-      tx.commit(true, persistenceManager);
-   }
-
    public synchronized void addConsumer(final Consumer consumer)
    {
       consumers.add(consumer);
@@ -294,35 +282,44 @@ public class QueueImpl implements Queue
       }
    }
 
-   public synchronized void removeAllReferences()
+   public synchronized boolean removeReferenceWithID(final long id)
    {
-      messageReferences.clear();
-
-      if (!scheduledRunnables.isEmpty())
-      {
-         Set<ScheduledDeliveryRunnable> clone = new HashSet<ScheduledDeliveryRunnable>(scheduledRunnables);
-
-         for (ScheduledDeliveryRunnable runnable: clone)
-         {
-            runnable.cancel();
-         }
-
-         scheduledRunnables.clear();
-      }
+   	ListIterator<MessageReference> iterator = messageReferences.iterator();
+   	
+   	boolean removed = false;
+   	
+   	while (iterator.hasNext())
+   	{
+   		MessageReference ref = iterator.next();
+   		
+   		if (ref.getMessage().getMessageID() == id)
+   		{
+   			iterator.remove();
+   			
+   			removed = true;
+   			
+   			break;
+   		}
+   	}
+   	
+   	return removed;
    }
-
-   public synchronized void removeReference(final MessageReference messageReference)
+   
+   public synchronized MessageReference getReference(final long id)
    {
-      messageReferences.remove(messageReference , messageReference.getMessage().getPriority());
-
-      //FIXME - what about scheduled??
-   }
-
-   public synchronized void changePriority(final MessageReference messageReference, int priority)
-   {
-      messageReferences.remove(messageReference , messageReference.getMessage().getPriority());
-      messageReferences.addLast(messageReference, priority);
-      //FIXME - what about scheduled??
+   	ListIterator<MessageReference> iterator = messageReferences.iterator();
+   	
+   	while (iterator.hasNext())
+   	{
+   		MessageReference ref = iterator.next();
+   		
+   		if (ref.getMessage().getMessageID() == id)
+   		{
+   			return ref;
+   		}
+   	}
+   	
+   	return null;
    }
 
    public long getPersistenceID()
@@ -415,6 +412,40 @@ public class QueueImpl implements Queue
    public FlowController getFlowController()
    {
    	return flowController;
+   }
+   
+   public synchronized void deleteAllReferences(final StorageManager storageManager) throws Exception
+   {
+   	Transaction tx = new TransactionImpl(storageManager, null);
+   	   	   	
+   	ListIterator<MessageReference> iter = messageReferences.iterator();
+   	
+   	while (iter.hasNext())
+   	{
+   		MessageReference ref = iter.next();
+   		
+   		deliveringCount.incrementAndGet();
+   		
+   		tx.addAcknowledgement(ref);
+   		
+   		iter.remove();
+   	}
+   	
+   	synchronized (scheduledRunnables)
+   	{
+   		for (ScheduledDeliveryRunnable runnable: scheduledRunnables)
+   		{
+   			runnable.cancel();
+   			
+   			deliveringCount.incrementAndGet();
+   			
+   			tx.addAcknowledgement(runnable.getReference());
+   		}
+   		
+   		scheduledRunnables.clear();
+   	}
+   		
+   	tx.commit();   	
    }
    
    // Public -----------------------------------------------------------------------------
@@ -648,6 +679,11 @@ public class QueueImpl implements Queue
 
       	cancelled = true;
       }
+      
+      public MessageReference getReference()
+      {
+      	return ref;
+      }
 
       public void run()
       {
@@ -660,6 +696,8 @@ public class QueueImpl implements Queue
             if (!removed)
             {
             	log.warn("Failed to remove timeout " + this);
+            	
+            	return;
             }
          }
 

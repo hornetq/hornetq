@@ -28,7 +28,7 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.persistence.PersistenceManager;
+import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.Queue;
@@ -36,6 +36,8 @@ import org.jboss.messaging.core.server.ServerConsumer;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.TokenBucketLimiter;
 
 /**
@@ -79,7 +81,7 @@ public class ServerConsumerImpl implements ServerConsumer
    
    private final ServerSession sessionEndpoint;
 
-   private final PersistenceManager persistenceManager;
+   private final StorageManager persistenceManager;
    
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
    
@@ -96,7 +98,7 @@ public class ServerConsumerImpl implements ServerConsumer
    ServerConsumerImpl(final Queue messageQueue, final boolean noLocal, final Filter filter,
    		             final boolean autoDeleteQueue, final boolean enableFlowControl, final int maxRate,
    		             final String connectionID, final ServerSession sessionEndpoint,
-					       final PersistenceManager persistenceManager,
+					       final StorageManager persistenceManager,
 					       final HierarchicalRepository<QueueSettings> queueSettingsRepository,
 					       final PostOffice postOffice,
 					       final boolean started)
@@ -160,7 +162,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
       if (ref.getMessage().isExpired())
       {         
-         ref.expire(persistenceManager, queueSettingsRepository);
+         ref.expire(persistenceManager, postOffice, queueSettingsRepository);
          
          return HandleStatus.HANDLED;
       }
@@ -187,7 +189,11 @@ public class ServerConsumerImpl implements ServerConsumer
 
             if (connectionID.equals(conId))
             {	            	
-            	ref.acknowledge(persistenceManager);
+            	Transaction tx = new TransactionImpl(persistenceManager, postOffice);
+            	
+            	tx.addAcknowledgement(ref);
+            	
+            	tx.commit();
             	
              	return HandleStatus.HANDLED;
             }            
@@ -232,7 +238,7 @@ public class ServerConsumerImpl implements ServerConsumer
             
             if (messageQueue.isDurable())
             {
-               persistenceManager.deleteAllReferences(messageQueue);
+               messageQueue.deleteAllReferences(persistenceManager);
             }
          }
       }
