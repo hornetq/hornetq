@@ -22,8 +22,12 @@
 package org.jboss.messaging.core.journal.impl.test.unit;
 
 import java.io.File;
+import java.util.ArrayList;
 
+import org.jboss.messaging.core.journal.Journal;
+import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
+import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
 
@@ -44,6 +48,8 @@ public class RealJournalImplTest extends JournalImplTestBase
 	{				
 		File file = new File(journalDir);
 		
+		log.info("deleting directory " + journalDir);
+		
 		deleteDirectory(file);
 		
 		file.mkdir();		
@@ -53,4 +59,34 @@ public class RealJournalImplTest extends JournalImplTestBase
 	{
 		return new NIOSequentialFileFactory(journalDir);
 	}
+	
+	public void testSpeed() throws Exception
+	{
+		Journal journal =
+			new JournalImpl(10 * 1024 * 1024, 10, 10, true, new NIOSequentialFileFactory(journalDir),
+					5000, "jbm-data", "jbm");
+		
+		journal.start();
+		
+		journal.load(new ArrayList<RecordInfo>(), null);
+		
+		final int numMessages = 10000;
+		
+		byte[] data = new byte[1024];
+		
+		long start = System.currentTimeMillis();
+		
+		for (int i = 0; i < numMessages; i++)
+		{
+			journal.appendAddRecord(i, data);
+		}
+		
+		long end = System.currentTimeMillis();
+		
+		double rate = 1000 * (double)numMessages / (end - start);
+		
+		log.info("Rate " + rate + " records/sec");
+
+	}
+	
 }

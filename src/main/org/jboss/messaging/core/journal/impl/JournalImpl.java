@@ -939,7 +939,7 @@ public class JournalImpl implements Journal
 		try
 		{   					
 			checkFile(size);
-			currentFile.getFile().write(bb, false);			
+			currentFile.getFile().write(bb, sync);			
 			currentFile.extendOffset(size);
 		}
 		finally

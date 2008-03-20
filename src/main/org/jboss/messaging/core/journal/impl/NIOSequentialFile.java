@@ -130,7 +130,7 @@ public class NIOSequentialFile implements SequentialFile
 		{
 			channel.force(false);
 		}
-		
+
 		return bytesRead;
 	}
 

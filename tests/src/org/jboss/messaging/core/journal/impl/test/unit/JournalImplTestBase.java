@@ -1126,7 +1126,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 	
 	// Private ---------------------------------------------------------------------------------
 	
-	private void setup(int minFiles, int minAvailableFiles, int fileSize, boolean sync)
+	void setup(int minFiles, int minAvailableFiles, int fileSize, boolean sync)
 	{		
 		this.minFiles = minFiles;
 		this.minAvailableFiles = minAvailableFiles;
