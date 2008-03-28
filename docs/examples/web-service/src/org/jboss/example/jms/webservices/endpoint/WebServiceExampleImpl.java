@@ -38,7 +38,7 @@ import java.rmi.RemoteException;
  * @version <tt>$Revision$</tt>
  *          $Id$
  */
-@WebService(name="JMSSample")
+@WebService(serviceName="JMSSampleService", name="JMSSample")
 public class WebServiceExampleImpl implements WebServiceExample
 {
 
