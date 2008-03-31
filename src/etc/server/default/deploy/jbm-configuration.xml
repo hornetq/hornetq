@@ -49,11 +49,11 @@
       
       <!-- Storage configuration -->
                  
-      <bindings-directory>/tmp/jbm-test/data/bindings</bindings-directory>
+      <bindings-directory>${user.home}/jbm-test/data/bindings</bindings-directory>
       
       <create-bindings-dir>true</create-bindings-dir>
       
-      <journal-directory>/tmp/jbm-test/data/journal</journal-directory>
+      <journal-directory>${user.home}/jbm-test/data/journal</journal-directory>
       
       <create-journal-dir>true</create-journal-dir>
       

@@ -13,6 +13,8 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
+import java.util.Enumeration;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -48,16 +50,28 @@ public class XMLUtil
       return readerToElement(new InputStreamReader(url.openStream()));
    }
 
+   public static String readerToString(Reader r) throws Exception
+   {
+      //Read into string
+      StringBuffer buff = new StringBuffer();
+      int c;
+      while ((c = r.read()) != -1)
+      {
+         buff.append((char)c);
+      }
+      return buff.toString();
+   }
+
    public static Element readerToElement(Reader r) throws Exception
    {
       //Read into string
       StringBuffer buff = new StringBuffer();
       int c;
-      while ((c = r.read()) != -1)            
+      while ((c = r.read()) != -1)
       {
          buff.append((char)c);
       }
-      
+
       //Quick hardcoded replace, FIXME this is a kludge - use regexp to match properly
       String s = buff.toString();
       s = doReplace(s, "jboss.messaging.groupname", "MessagingPostOffice");
@@ -67,9 +81,9 @@ public class XMLUtil
       s = doReplace(s, "jboss.messaging.controlchanneludpport", "45568");
       s = doReplace(s, "jboss.messaging.ipttl", "2");
       s = doReplace(s, "jboss.messaging.ipttl", "8");
-      
+
       StringReader sreader = new StringReader(s);
-       
+
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       DocumentBuilder parser = factory.newDocumentBuilder();
       Document doc = parser.parse(new InputSource(sreader));
@@ -351,6 +365,23 @@ public class XMLUtil
       return s;
    }
 
+   public static String replaceSystemProps(String xml)
+   {
+      Properties properties = System.getProperties();
+      Enumeration e = properties.propertyNames();
+      while (e.hasMoreElements())
+      {
+         String key =  (String)e.nextElement();
+         String s = "${" +  key + "}";
+         if(xml.contains(s))
+         {
+            xml = xml.replace(s, properties.getProperty(key));
+         }
+
+      }
+      return xml;
+   }
+
    // Attributes -----------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
@@ -395,4 +426,6 @@ public class XMLUtil
 
 
    // Inner classes --------------------------------------------------------------------------------
+
+
 }

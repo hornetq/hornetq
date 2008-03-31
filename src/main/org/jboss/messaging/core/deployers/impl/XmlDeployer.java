@@ -30,10 +30,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import java.net.URL;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.Collection;
+import java.util.*;
+import java.io.InputStreamReader;
+import java.io.Reader;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -97,7 +96,7 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
 
          }
       }
-      //now check for anything thathas been removed and undeploy
+      //now check for anything that has been removed and undeploy
       if (configuration.get(url) != null)
       {
          Set<String> keys = configuration.get(url).keySet();
@@ -116,19 +115,6 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
             configuration.get(url).remove(s);
          }
       }
-   }
-
-   protected Element getRootElement(URL url)
-           throws Exception
-   {
-      return XMLUtil.urlToElement(url);
-   }
-
-   private boolean hasNodeChanged(URL url, Node child, String name)
-   {
-      String newTextContent = child.getTextContent();
-      String origTextContent = configuration.get(url).get(name).getTextContent();
-      return !newTextContent.equals(origTextContent);
    }
 
    /**
@@ -242,5 +228,24 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
     */
    public abstract void undeploy(Node node)
            throws Exception;
+
+
+
+
+   protected Element getRootElement(URL url)
+           throws Exception
+   {
+      Reader reader = new InputStreamReader(url.openStream());
+      String xml = XMLUtil.readerToString(reader);
+      xml = XMLUtil.replaceSystemProps(xml);
+      return XMLUtil.stringToElement(xml);
+   }
+
+   private boolean hasNodeChanged(URL url, Node child, String name)
+   {
+      String newTextContent = child.getTextContent();
+      String origTextContent = configuration.get(url).get(name).getTextContent();
+      return !newTextContent.equals(origTextContent);
+   }
 
 }

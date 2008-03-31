@@ -24,6 +24,8 @@ package org.jboss.messaging.core.config.impl;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 
 import java.io.Serializable;
+import java.io.Reader;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 
@@ -50,8 +52,10 @@ public class FileConfiguration extends Configuration implements Serializable
    public void start() throws Exception
    {
       URL url = getClass().getClassLoader().getResource(configurationUrl);
-      
-      Element e = XMLUtil.urlToElement(url);
+      Reader reader = new InputStreamReader(url.openStream());
+      String xml = XMLUtil.readerToString(reader);
+      xml = XMLUtil.replaceSystemProps(xml);
+      Element e = XMLUtil.stringToElement(xml);
       
       messagingServerID = getInteger(e, "server-peer-id", messagingServerID);
       

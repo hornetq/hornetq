@@ -243,6 +243,29 @@ public class XMLUtilTest extends MessagingTestCase
       XMLUtil.assertEquivalent(e, convertedAgain);
    }
 
+   public void testReplaceSystemProperties()
+   {
+      String before = "<deployment>\n" +
+           "   <test name=\"${sysprop1}\">content1</test>\n" +
+           "   <test name=\"test2\">content2</test>\n" +
+           "   <test name=\"test3\">content3</test>\n" +
+           "   <test name=\"test4\">${sysprop2}</test>\n" +
+           "   <test name=\"test5\">content5</test>\n" +
+           "   <test name=\"test6\">content6</test>\n" +
+           "</deployment>";
+      String after = "<deployment>\n" +
+           "   <test name=\"test1\">content1</test>\n" +
+           "   <test name=\"test2\">content2</test>\n" +
+           "   <test name=\"test3\">content3</test>\n" +
+           "   <test name=\"test4\">content4</test>\n" +
+           "   <test name=\"test5\">content5</test>\n" +
+           "   <test name=\"test6\">content6</test>\n" +
+           "</deployment>";
+      System.setProperty("sysprop1", "test1");
+      System.setProperty("sysprop2", "content4");
+      String replaced = XMLUtil.replaceSystemProps(before);
+      assertEquals(after, replaced);
+   }
 
 
 }
