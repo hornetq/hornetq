@@ -30,8 +30,13 @@ import java.util.Set;
 
 import javax.security.auth.Subject;
 import javax.security.auth.message.MessageInfo;
+import javax.naming.InitialContext;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.naming.directory.InitialDirContext;
 
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.util.JNDIUtil;
 import org.jboss.security.AnybodyPrincipal;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.NobodyPrincipal;
@@ -362,4 +367,41 @@ public class MockJBossSecurityManager implements AuthenticationManager, RealmMap
 
    }
 
+   public void start() throws Exception
+   {
+      bindToJndi("java:/jaas/messaging", this);
+   }
+
+   private boolean bindToJndi(final String jndiName, final Object objectToBind) throws NamingException
+   {
+      InitialContext initialContext = new InitialContext();
+      String parentContext;
+      String jndiNameInContext;
+      int sepIndex = jndiName.lastIndexOf('/');
+      if (sepIndex == -1)
+      {
+         parentContext = "";
+      }
+      else
+      {
+         parentContext = jndiName.substring(0, sepIndex);
+      }
+      jndiNameInContext = jndiName.substring(sepIndex + 1);
+      try
+      {
+         initialContext.lookup(jndiName);
+
+         log.warn("Binding for " + jndiName + " already exists");
+         return false;
+      }
+      catch (Throwable e)
+      {
+         // OK
+      }
+
+      Context c = JNDIUtil.createContext(initialContext, parentContext);
+
+      c.rebind(jndiNameInContext, objectToBind);
+      return true;
+   }
 }

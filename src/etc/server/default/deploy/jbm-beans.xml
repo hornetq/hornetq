@@ -4,7 +4,22 @@
 
    <bean name="Configuration" class="org.jboss.messaging.core.config.impl.FileConfiguration"/>
 
-   <bean name="ServiceLocator" class="org.jboss.messaging.microcontainer.ServiceLocator"/>
+   <bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JAASSecurityManager"/>
+
+  <!-- <bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl">
+      <constructor>
+         <parameter>false</parameter>
+      </constructor>
+   </bean>
+
+   <bean name="SecurityManagerDeployer" class="org.jboss.messaging.core.deployers.impl.SecurityManagerDeployer">
+      <property name="jbmSecurityManager">
+         <inject bean="JBMSecurityManager"/>
+      </property>
+      <property name="messagingServer">
+         <inject bean="MessagingServer"/>
+      </property>
+   </bean>-->
 
    <bean name="MessagingServerManagement" class="org.jboss.messaging.core.management.impl.MessagingServerManagementImpl">
       <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.messaging:service=MessagingServerManagement", exposedInterface=org.jboss.messaging.core.management.MessagingServerManagement.class)</annotation>
@@ -23,8 +38,8 @@
       <property name="configuration">
          <inject bean="Configuration"/>
       </property>
-      <property name="authenticationManager">
-         <inject bean="ServiceLocator" property="authenticationManager"/>
+      <property name="securityManager">
+         <inject bean="JBMSecurityManager"/>
       </property>
    </bean>
 

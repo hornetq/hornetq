@@ -41,7 +41,6 @@ public class ServiceContainer
 
    //private static final Logger log = Logger.getLogger(ServiceContainer.class);
 
-   private static final String CONFIGURATION_FILE_NAME = "container.xml";
 
    public static final String DO_NOT_USE_MESSAGING_MARSHALLERS = "DO_NOT_USE_MESSAGING_MARSHALLERS";
 

@@ -44,8 +44,9 @@ import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.SecurityStore;
-import org.jboss.messaging.core.security.impl.NullAuthenticationManager;
+import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
+import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
 import org.jboss.messaging.core.server.Configuration;
 import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.MessagingServer;
@@ -58,7 +59,7 @@ import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.impl.ResourceManagerImpl;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.core.version.impl.VersionImpl;
-import org.jboss.security.AuthenticationManager;
+import org.jboss.messaging.core.exception.MessagingException;
 
 /**
  * A Messaging Server
@@ -94,7 +95,7 @@ public class MessagingServerImpl implements MessagingServer
    private PostOffice postOffice;
    private Deployer securityDeployer;
    private Deployer queueSettingsDeployer;
-   private AuthenticationManager authenticationManager = new NullAuthenticationManager();
+   private JBMSecurityManager securityManager = new JBMSecurityManagerImpl(true);
    private DeploymentManager deploymentManager = new FileDeploymentManager();
 
    // plugins
@@ -158,7 +159,7 @@ public class MessagingServerImpl implements MessagingServer
       securityStore = new SecurityStoreImpl(configuration.getSecurityInvalidationInterval());
       securityRepository.setDefault(new HashSet<Role>());
       securityStore.setSecurityRepository(securityRepository);
-      securityStore.setAuthenticationManager(authenticationManager);
+      securityStore.setSecurityManager(securityManager);
       securityDeployer = new SecurityDeployer(securityRepository);
       queueSettingsRepository.setDefault(new QueueSettings());
       scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize());
@@ -310,9 +311,10 @@ public class MessagingServerImpl implements MessagingServer
    	return securityStore;
    }
 
-   public void setAuthenticationManager(AuthenticationManager authenticationManager)
+
+   public void setSecurityManager(JBMSecurityManager securityManager)
    {
-      this.authenticationManager = authenticationManager;
+      this.securityManager = securityManager;
    }
 
    public String toString()
@@ -333,7 +335,7 @@ public class MessagingServerImpl implements MessagingServer
       // security my be screwed up, on account of thread local security stack being corrupted.
 
       securityStore.authenticate(username, password);
-      
+
       final ServerConnection connection =
          new ServerConnectionImpl(username, password,
                           remotingClientSessionID, clientVMID, clientAddress,

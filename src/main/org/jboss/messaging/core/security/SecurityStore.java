@@ -37,7 +37,7 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
  */
 public interface SecurityStore
 {
-   Subject authenticate(String user, String password) throws Exception;
+   void authenticate(String user, String password) throws Exception;
    
    void check(String address, CheckType checkType, ServerConnection conn) throws Exception;
 

@@ -287,6 +287,8 @@
             todir="${jboss.home}/server/${jboss.config}/conf"/>
        <copy file="${source.etc}/server/default/deploy/queues.xml"
             todir="${jboss.home}/server/${jboss.config}/conf"/>
+       <copy file="${source.etc}/server/default/deploy/jbm-security.xml"
+            todir="${jboss.home}/server/${jboss.config}/conf"/>
        <copy
             todir="${jboss.home}/server/${jboss.config}/deploy/messaging.sar">
           <fileset dir="${build.sar}"/>
@@ -337,7 +339,7 @@
       <!--<copy todir="${build.sar}" file="${source.etc}/server/default/deploy/jbm-configuration.xml"/>-->
             <copy todir="${build.sar}">
          <fileset dir="${project.thirdparty}/apache-mina/lib">
-            <include name="mina-core.jar"/>
+            <include name="mina-core-2.0.0-M1.jar"/>
          </fileset>
          <fileset dir="${project.thirdparty}/slf4j/api/lib">
             <include name="**.jar"/>
@@ -480,6 +482,7 @@
             <include name="org/jboss/jms/wireformat/*.class"/>
             <include name="org/jboss/messaging/util/**/*.class"/>
 	    <include name="org/jboss/messaging/core/impl/message/**/*.class"/>
+             <include name="org/jboss/messaging/jms/**/*.class"/>
             <include name="org/jboss/messaging/core/contract/**/*.class"/>
             <include name="org/jboss/messaging/core/remoting/**/*.class"/>
             <include name="org/jboss/messaging/core/**/*.class"/>

@@ -21,24 +21,19 @@
   */
 package org.jboss.messaging.core.security.impl;
 
-import java.security.Principal;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.security.auth.Subject;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.SecurityStore;
+import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.HierarchicalRepositoryChangeListener;
 import org.jboss.messaging.util.ConcurrentHashSet;
-import org.jboss.security.AuthenticationManager;
-import org.jboss.security.RealmMapping;
-import org.jboss.security.SimplePrincipal;
 
 /**
  * The JBM SecurityStore implementation
@@ -70,9 +65,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
 
    private HierarchicalRepository<HashSet<Role>> securityRepository;
 
-   private AuthenticationManager authenticationManager;
-
-   private RealmMapping realmMapping;
+   JBMSecurityManager securityManager;
 
    private final Set<String> readCache = new ConcurrentHashSet<String>();
 
@@ -93,34 +86,11 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
 
    // SecurityManager implementation --------------------------------
 
-   public Subject authenticate(String user, String password) throws Exception
+   public void authenticate(String user, String password) throws Exception
    {
-      if (trace) { log.trace("authenticating user " + user); }
-
-      SimplePrincipal principal = new SimplePrincipal(user);
-
-      char[] passwordChars = null;
-
-      if (password != null)
+      if(!securityManager.validateUser(user, password))
       {
-         passwordChars = password.toCharArray();
-      }
-
-      Subject subject = new Subject();
-
-      boolean authenticated = authenticationManager.isValid(principal, passwordChars, subject);
-
-      if (authenticated)
-      {
-         // Warning! This "taints" thread local. Make sure you pop it off the stack as soon as
-         //          you're done with it.
-         SecurityActions.pushSubjectContext(principal, passwordChars, subject);
-
-         return subject;
-      }
-      else
-      {
-         throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "User " + user + " is NOT authenticated");
+         throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "Unable to validate user: " + user);  
       }
    }
 
@@ -134,33 +104,11 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
          return;
       }
 
-      // Authenticate. Successful autentication will place a new SubjectContext on thread local,
-      // which will be used in the authorization process. However, we need to make sure we clean up
-      // thread local immediately after we used the information, otherwise some other people
-      // security my be screwed up, on account of thread local security stack being corrupted.
-
-      authenticate(conn.getUsername(), conn.getPassword());
-
-      // Authorize
-      try
+      HashSet<Role> roles = securityRepository.getMatch(address);
+      if(!securityManager.validateUserAndRole(conn.getUsername(), conn.getPassword(), roles, checkType))
       {
-         if (!authorize(conn.getUsername(), address, checkType))
-         {
-            String msg = "User: " + conn.getUsername() +
-               " is not authorized to " +
-               (checkType == CheckType.READ ? "read from" :
-                  checkType == CheckType.WRITE ? "write to" : "create durable sub on") +
-               " destination " + address;
-
-           throw new MessagingException(MessagingException.SECURITY_EXCEPTION, msg);
-         }
+          throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "Unable to validate user: " + conn.getUsername());
       }
-      finally
-      {
-         // pop the Messaging SecurityContext, it did its job
-         SecurityActions.popSubjectContext();
-      }
-
       // if we get here we're granted, add to the cache
 
       switch (checkType.type)
@@ -192,14 +140,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
       invalidateCache();
    }
 
-   private void invalidateCache()
-   {
-      readCache.clear();
 
-      writeCache.clear();
-
-      createCache.clear();
-   }
 
    // Public --------------------------------------------------------
 
@@ -209,11 +150,10 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
       securityRepository.registerListener(this);
    }
 
-   public void setAuthenticationManager(AuthenticationManager authenticationManager)
-   {
-      this.authenticationManager = authenticationManager;
 
-      this.realmMapping = (RealmMapping) authenticationManager;
+   public void setSecurityManager(JBMSecurityManager securityManager)
+   {
+      this.securityManager = securityManager;
    }
 
    // Protected -----------------------------------------------------
@@ -221,6 +161,14 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
    // Package Private -----------------------------------------------
 
    // Private -------------------------------------------------------
+   private void invalidateCache()
+   {
+      readCache.clear();
+
+      writeCache.clear();
+
+      createCache.clear();
+   }
 
    private boolean checkCached(String dest, CheckType checkType)
    {
@@ -263,37 +211,6 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
       return granted;
    }
 
-   private boolean authorize(String user, String destination, CheckType checkType)
-   {
-      if (trace) { log.trace("authorizing user " + user + " for destination " + destination); }
-
-      HashSet<Role> roles = securityRepository.getMatch(destination);
-
-      Principal principal = user == null ? null : new SimplePrincipal(user);
-
-      Set rolePrincipals = getRolePrincipals(checkType, roles);
-
-      boolean hasRole = realmMapping.doesUserHaveRole(principal, rolePrincipals);
-
-      if (trace) { log.trace("user " + user + (hasRole ? " is " : " is NOT ") + "authorized"); }
-
-      return hasRole;
-   }
-
-   private Set getRolePrincipals(CheckType checkType, HashSet<Role> roles)
-   {
-      Set<SimplePrincipal> principals = new HashSet<SimplePrincipal>();
-      for (Role role : roles)
-      {
-         if((checkType.equals(CheckType.CREATE) && role.isCreate()) ||
-                 (checkType.equals(CheckType.WRITE) && role.isWrite()) ||
-                 (checkType.equals(CheckType.READ) && role.isRead()))
-         {
-            principals.add(new SimplePrincipal(role.getName()));
-         }
-      }
-      return principals;
-   }
-
    // Inner class ---------------------------------------------------
+
 }
