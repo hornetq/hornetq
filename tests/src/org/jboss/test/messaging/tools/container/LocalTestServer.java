@@ -133,7 +133,7 @@ public class LocalTestServer implements Server, Runnable
       {
          //Delete the BDB environment
 
-         File dir = new File("/tmp/jbm-test");
+         File dir = new File(System.getProperty("user.home") + File.separator + "jbm-test");
 
          boolean deleted = deleteDirectory(dir);
 
