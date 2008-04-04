@@ -670,4 +670,9 @@ public class JMSServerManagerImpl implements JMSServerManager
    {
       return messagingServerManagement.getConsumerCountForQueue(queue.getAddress());
    }
+
+   public void setInitialContext(InitialContext initialContext)
+   {
+      this.initialContext = initialContext;
+   }
 }

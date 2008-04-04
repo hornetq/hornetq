@@ -64,4 +64,6 @@ public interface ConnectorRegistry
    int getRegisteredConfigurationSize();
 
    int getConnectorCount(Configuration config);
+
+   void clear();
 }

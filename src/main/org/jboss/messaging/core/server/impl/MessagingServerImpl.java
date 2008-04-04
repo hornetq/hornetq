@@ -41,6 +41,7 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.RemotingService;
+import org.jboss.messaging.core.remoting.ConnectorRegistrySingleton;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.security.JBMSecurityManager;
@@ -232,6 +233,7 @@ public class MessagingServerImpl implements MessagingServer
       {
          remotingService.stop();
       }
+      ConnectorRegistrySingleton.REGISTRY.clear();
    }
 
    // MessagingServer implementation -----------------------------------------------------------
@@ -311,6 +313,10 @@ public class MessagingServerImpl implements MessagingServer
    	return securityStore;
    }
 
+   public JBMSecurityManager getSecurityManager()
+   {
+      return securityManager;
+   }
 
    public void setSecurityManager(JBMSecurityManager securityManager)
    {

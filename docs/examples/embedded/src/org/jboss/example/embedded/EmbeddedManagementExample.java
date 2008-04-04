@@ -25,10 +25,9 @@ import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
-import org.jboss.messaging.core.remoting.RemotingConfiguration;
-import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
 import org.jboss.messaging.core.management.MessagingServerManagement;
 import org.jboss.messaging.core.management.impl.MessagingServerManagementImpl;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jnp.server.NamingBeanImpl;
@@ -57,7 +56,10 @@ public class EmbeddedManagementExample
       mainMBean.setRmiBindAddress("localhost");
       mainMBean.setNamingInfo(namingBean);
       mainMBean.start();
-      RemotingConfigurationImpl remotingConf = new RemotingConfigurationImpl(TCP, "localhost", 5400);
+      ConfigurationImpl remotingConf = new ConfigurationImpl();
+      remotingConf.setPort(5400);
+      remotingConf.setHost("localhost");
+      remotingConf.setTransport(TCP);
       remotingConf.setInvmDisabled(true);
       MessagingServer messagingServer = new MessagingServerImpl(remotingConf);
       messagingServer.start();

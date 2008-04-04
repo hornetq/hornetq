@@ -31,6 +31,7 @@ import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.SecurityStore;
+import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.version.Version;
@@ -79,6 +80,8 @@ public interface MessagingServer extends MessagingComponent
    HierarchicalRepository<HashSet<Role>> getSecurityRepository();
    
    SecurityStore getSecurityStore();
+
+   public JBMSecurityManager getSecurityManager();
 
    HierarchicalRepository<QueueSettings> getQueueSettingsRepository();
 

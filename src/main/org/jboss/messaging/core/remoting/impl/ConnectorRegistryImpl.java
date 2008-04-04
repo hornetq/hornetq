@@ -195,6 +195,11 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
       return holder.getCount();
    }
 
+   public void clear()
+   {
+      connectors.clear();
+   }
+
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
