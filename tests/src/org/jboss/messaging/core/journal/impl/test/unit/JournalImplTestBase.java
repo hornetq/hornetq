@@ -21,7 +21,6 @@
   */
 package org.jboss.messaging.core.journal.impl.test.unit;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -30,10 +29,10 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
-import org.jboss.messaging.core.journal.Journal;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
+import org.jboss.messaging.core.journal.TestableJournal;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.test.unit.RandomUtil;
@@ -50,45 +49,31 @@ public abstract class JournalImplTestBase extends UnitTestCase
 {
 	private static final Logger log = Logger.getLogger(JournalImplTestBase.class);
 	
-	private List<RecordInfo> records = new LinkedList<RecordInfo>();
+	protected List<RecordInfo> records = new LinkedList<RecordInfo>();
 	
-	private Journal journal;
+	protected TestableJournal journal;
 	
-	private int recordLength = 1024;
+	protected int recordLength = 1024;
 	
-	private Map<Long, TransactionHolder> transactions = new LinkedHashMap<Long, TransactionHolder>();
+	protected Map<Long, TransactionHolder> transactions = new LinkedHashMap<Long, TransactionHolder>();
 	
-	private int minFiles;
+	protected int minFiles;
 	
-	private int minAvailableFiles;
+	protected int fileSize;
 	
-	private int fileSize;
+	protected boolean sync;
 	
-	private boolean sync;
+	protected String filePrefix = "jbm";
 	
-	private String filePrefix = "jbm";
+	protected String fileExtension = "jbm";
 	
-	private String fileExtension = "jbm";
-	
-	private SequentialFileFactory fileFactory;
-	
-	private void logThem()
-	{
-		log.info("**** loggingg attributes***");
-		log.info("recordlength:" + recordLength);
-		log.info("minfiles:" + minFiles);
-		log.info("minavailableFiles:" + minAvailableFiles);
-		log.info("filesize:" + fileSize);
-		log.info("sync:" + sync);
-	}
-						
+	protected SequentialFileFactory fileFactory;
+					
 	protected void setUp() throws Exception
 	{
 		super.setUp();
 		
-		prepareDirectory();
-		
-		fileFactory = getFileFactory();
+		resetFileFactory();
 
 		transactions.clear();
 		
@@ -115,1021 +100,18 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		journal = null;;
 	}
 	
-	protected abstract void prepareDirectory() throws Exception;
+	protected void resetFileFactory() throws Exception
+	{
+		fileFactory = getFileFactory();
+	}
 	
 	protected abstract SequentialFileFactory getFileFactory() throws Exception;
-	
-	// General tests
-	// =============
-	
-	public void testState() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		try
-		{
-			load();
-			fail("Should throw exception");
-		}
-		catch (IllegalStateException e)
-		{
-			//OK
-		}
-		try
-		{
-			stopJournal();
-			fail("Should throw exception");
-		}
-		catch (IllegalStateException e)
-		{
-			//OK
-		}
-		startJournal();
-		try
-		{
-			startJournal();
-			fail("Should throw exception");
-		}
-		catch (IllegalStateException e)
-		{
-			//OK
-		}
-		stopJournal();
-		startJournal();
-		load();
-		try
-		{
-			load();
-			fail("Should throw exception");
-		}
-		catch (IllegalStateException e)
-		{
-			//OK
-		}
-		try
-		{
-			startJournal();
-			fail("Should throw exception");
-		}
-		catch (IllegalStateException e)
-		{
-			//OK
-		}
-		stopJournal();		
-	}
-	
-	public void testParams() throws Exception
-	{
-		try
-		{
-			new JournalImpl(JournalImpl.MIN_FILE_SIZE - 1, 10, 10, true, fileFactory, 5000, filePrefix, fileExtension);
-			
-			fail("Should throw exception");
-		}
-		catch (IllegalArgumentException e)
-		{
-			//Ok
-		}
 		
-		try
-		{
-			new JournalImpl(10 * 1024, 1, 10, true, fileFactory, 5000, filePrefix, fileExtension);
-			
-			fail("Should throw exception");
-		}
-		catch (IllegalArgumentException e)
-		{
-			//Ok
-		}
-		
-		try
-		{
-			new JournalImpl(10 * 1024, 10, 1, true, fileFactory, 5000, filePrefix, fileExtension);
-			
-			fail("Should throw exception");
-		}
-		catch (IllegalArgumentException e)
-		{
-			//Ok
-		}
-		
-		try
-		{
-			new JournalImpl(10 * 1024, 10, 10, true, null, 5000, filePrefix, fileExtension);
-			
-			fail("Should throw exception");
-		}
-		catch (NullPointerException e)
-		{
-			//Ok
-		}
-		
-		try
-		{
-			new JournalImpl(10 * 1024, 10, 10, true, fileFactory, JournalImpl.MIN_TASK_PERIOD - 1, filePrefix, fileExtension);
-			
-			fail("Should throw exception");
-		}
-		catch (IllegalArgumentException e)
-		{
-			//Ok
-		}
-		
-		try
-		{
-			new JournalImpl(10 * 1024, 10, 10, true, fileFactory, 5000, null, fileExtension);
-			
-			fail("Should throw exception");
-		}
-		catch (NullPointerException e)
-		{
-			//Ok
-		}
-		
-		try
-		{
-			new JournalImpl(10 * 1024, 10, 10, true, fileFactory, 5000, filePrefix, null);
-			
-			fail("Should throw exception");
-		}
-		catch (NullPointerException e)
-		{
-			//Ok
-		}
-		
-	}
-
-	// Non transactional tests
-	// =======================
-	
-	public void testSimpleAdd() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		add(1);	
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-	}
-	
-	public void testMultipleAdd() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		add(1,2,3,4,5,6,7,8,9,10);		
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-	}
-	
-	public void testMultipleAddNonContiguous() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		add(1,3,5,7,10,13,56,100,102,200,201,202,203);		
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-	}
-	
-	public void testSimpleAddUpdate() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		add(1);		
-		update(1);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-	}
-	
-	public void testMultipleAddUpdate() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		add(1,2,3,4,5,6,7,8,9,10);		
-		update(1,2,4,7,9,10);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-	}
-	
-	public void testMultipleAddUpdateAll() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		add(1,2,3,4,5,6,7,8,9,10);		
-		update(1,2,3,4,5,6,7,8,9,10);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-	}
-	
-	public void testMultipleAddUpdateNonContiguous() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		add(1,3,5,7,10,13,56,100,102,200,201,202,203);	
-		add(3,7,10,13,56,100,200,202,203);	
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-	}
-	
-	public void testMultipleAddUpdateAllNonContiguous() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		add(1,3,5,7,10,13,56,100,102,200,201,202,203);
-		update(1,3,5,7,10,13,56,100,102,200,201,202,203);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-	}
-		
-	public void testSimpleAddUpdateDelete() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		add(1);		
-		update(1);
-		delete(1);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-	}
-	
-	public void testMultipleAddUpdateDelete() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		add(1,2,3,4,5,6,7,8,9,10);		
-		update(1,2,4,7,9,10);
-		delete(1,4,7,9,10);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-	}
-	
-	public void testMultipleAddUpdateDeleteAll() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		add(1,2,3,4,5,6,7,8,9,10);		
-		update(1,2,3,4,5,6,7,8,9,10);
-		update(1,2,3,4,5,6,7,8,9,10);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-	}
-	
-	public void testMultipleAddUpdateDeleteNonContiguous() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		add(1,3,5,7,10,13,56,100,102,200,201,202,203);	
-		add(3,7,10,13,56,100,200,202,203);	
-		delete(3,10,56,100,200,203);	
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-	}
-	
-	public void testMultipleAddUpdateDeleteAllNonContiguous() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		add(1,3,5,7,10,13,56,100,102,200,201,202,203);
-		update(1,3,5,7,10,13,56,100,102,200,201,202,203);
-		delete(1,3,5,7,10,13,56,100,102,200,201,202,203);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();		
-	}
-	
-	public void testMultipleAddUpdateDeleteDifferentOrder() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		add(1,3,5,7,10,13,56,100,102,200,201,202,203);
-		update(203, 202, 201, 200, 102, 100, 1, 3, 5, 7, 10, 13, 56);
-		delete(56, 13, 10, 7, 5, 3, 1, 203, 202, 201, 200, 102, 100);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();		
-	}
-		
-	public void testMultipleAddUpdateDeleteDifferentRecordLengths() throws Exception
-	{
-		setup(10, 10, 2048, true);
-		createJournal();
-		startJournal();
-		load();
-		
-		for (int i = 0; i < 1000; i++)
-		{
-			byte[] record = generateRecord(10 + (int)(1500 * Math.random()));
-			
-			journal.appendAddRecord(i, record);
-			
-			records.add(new RecordInfo(i, record, false));
-		}
-		
-		for (int i = 0; i < 1000; i++)
-		{
-			byte[] record = generateRecord(10 + (int)(1024 * Math.random()));
-			
-			journal.appendUpdateRecord(i, record);
-			
-			records.add(new RecordInfo(i, record, true));
-		}
-		
-		for (int i = 0; i < 1000; i++)
-		{
-			journal.appendDeleteRecord(i);
-			
-			removeRecordsForID(i);
-		}
-		
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-		stopJournal();			
-	}
-	
-	public void testAddUpdateDeleteManySmallFileSize() throws Exception
-	{
-		final int numberAdds = 10000;
-		
-		final int numberUpdates = 5000;
-		
-		final int numberDeletes = 3000;
-						
-		long[] adds = new long[numberAdds];
-		
-		for (int i = 0; i < numberAdds; i++)
-		{
-			adds[i] = i;
-		}
-		
-		long[] updates = new long[numberUpdates];
-		
-		for (int i = 0; i < numberUpdates; i++)
-		{
-			updates[i] = i;
-		}
-		
-		long[] deletes = new long[numberDeletes];
-		
-		for (int i = 0; i < numberDeletes; i++)
-		{
-			deletes[i] = i;
-		}
-		
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		add(adds);
-		update(updates);
-		delete(deletes);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-		
-	}
-	
-	public void testAddUpdateDeleteManyLargeFileSize() throws Exception
-	{
-		final int numberAdds = 10000;
-		
-		final int numberUpdates = 5000;
-		
-		final int numberDeletes = 3000;
-						
-		long[] adds = new long[numberAdds];
-		
-		for (int i = 0; i < numberAdds; i++)
-		{
-			adds[i] = i;
-		}
-		
-		long[] updates = new long[numberUpdates];
-		
-		for (int i = 0; i < numberUpdates; i++)
-		{
-			updates[i] = i;
-		}
-		
-		long[] deletes = new long[numberDeletes];
-		
-		for (int i = 0; i < numberDeletes; i++)
-		{
-			deletes[i] = i;
-		}
-		
-		setup(10, 10, 10 * 1024 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		add(adds);
-		update(updates);
-		delete(deletes);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-		
-	}
-	
-	public void testAddUpdateDeleteRestartAndContinue() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		add(1, 2, 3);
-		update(1, 2);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-		add(4, 5, 6);
-		update(5);
-		delete(3);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-		add(7, 8);
-		delete(1, 2);
-		delete(4, 5, 6);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-	}
-	
-	public void testAddUpdateDeleteTransactionalRestartAndContinue() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		add(1, 1, 2, 3);
-		updateTx(1, 1, 2);
-		commit(1);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-		addTx(2, 4, 5, 6);
-		update(2, 5);
-		delete(2, 3);
-		commit(2);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-		addTx(3, 7, 8);
-		deleteTx(3, 1, 2);
-		deleteTx(3, 4, 5, 6);
-		commit(3);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-	}
-	
-	public void testFillFileExactly() throws Exception
-	{		
-		this.recordLength = 500;
-		
-		int numRecords = 2;
-		
-		//The real appended record size in the journal file = SIZE_BYTE + SIZE_LONG + SIZE_INT + recordLength + SIZE_BYTE
-		
-		int realLength = 1 + 8 + 4 + this.recordLength + 1;
-		
-		int fileSize = numRecords * realLength + 8; //8 for timestamp
-						
-		setup(10, 10, fileSize, true);
-		
-		logThem();
-		
-		createJournal();
-		startJournal();
-		load();
-		
-		add(1, 2);
-		
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-		
-		add(3, 4);
-		
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-		
-		add(4, 5, 6, 7, 8, 9, 10);
-		
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();		
-	}
-	
-	// Transactional tests
-	// ===================
-	
-	public void testSimpleTransaction() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		addTx(1, 1);
-		updateTx(1, 1);		
-		deleteTx(1, 1);	
-		commit(1);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();		
-	}
-	
-	public void testTransactionDontDeleteAll() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		addTx(1, 1, 2, 3);
-		updateTx(1, 1, 2);		
-		deleteTx(1, 1);	
-		commit(1);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();		
-	}
-	
-	public void testTransactionDeleteAll() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		addTx(1, 1, 2, 3);
-		updateTx(1, 1, 2);		
-		deleteTx(1, 1, 2, 3);
-		commit(1);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();		
-	}
-	
-	public void testTransactionUpdateFromBeforeTx() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		add(1, 2, 3);
-		addTx(1, 4, 5, 6);
-		updateTx(1, 1, 5);
-		commit(1);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();		
-	}
-	
-	public void testTransactionDeleteFromBeforeTx() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		add(1, 2, 3);
-		addTx(1, 4, 5, 6);
-		deleteTx(1, 1, 2, 3, 4, 5, 6);
-		commit(1);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();		
-	}
-	
-	public void testTransactionChangesNotVisibleOutsideTX() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		add(1, 2, 3);
-		addTx(1, 4, 5, 6);
-		updateTx(1, 1, 2, 4, 5);
-		deleteTx(1, 1, 2, 3, 4, 5, 6);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();		
-	}
-	
-	public void testMultipleTransactionsDifferentIDs() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		
-		addTx(1, 1, 2, 3, 4, 5, 6);
-		updateTx(1, 1, 3, 5);
-		deleteTx(1, 1, 2, 3, 4, 5, 6);
-		commit(1);
-		
-		addTx(2, 11, 12, 13, 14, 15, 16);
-		updateTx(2, 11, 13, 15);
-		deleteTx(2, 11, 12, 13, 14, 15, 16);
-		commit(2);
-		
-		addTx(3, 21, 22, 23, 24, 25, 26);
-		updateTx(3, 21, 23, 25);
-		deleteTx(3, 21, 22, 23, 24, 25, 26);
-		commit(3);
-		
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-	}
-	
-	public void testMultipleInterleavedTransactionsDifferentIDs() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		
-		addTx(1, 1, 2, 3, 4, 5, 6);		
-		addTx(3, 21, 22, 23, 24, 25, 26);				
-		updateTx(1, 1, 3, 5);		
-		addTx(2, 11, 12, 13, 14, 15, 16);				
-		deleteTx(1, 1, 2, 3, 4, 5, 6);						
-		updateTx(2, 11, 13, 15);		
-		updateTx(3, 21, 23, 25);			
-		deleteTx(2, 11, 12, 13, 14, 15, 16);		
-		deleteTx(3, 21, 22, 23, 24, 25, 26);
-		
-		commit(1);
-		commit(2);
-		commit(3);
-		
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-	}
-	
-	public void testMultipleInterleavedTransactionsSameIDs() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-				
-		add(1, 2, 3, 4, 5, 6, 7, 8);		
-		addTx(1, 9, 10, 11, 12);		
-		addTx(2, 13, 14, 15, 16, 17);		
-		addTx(3, 18, 19, 20, 21, 22);		
-		updateTx(1, 1, 2, 3);		
-		updateTx(2, 4, 5, 6);		
-		commit(2);		
-		updateTx(3, 7, 8);		
-		deleteTx(1, 1, 2);		
-		commit(1);		
-		deleteTx(3, 7, 8);		
-		commit(3);
-		
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-	}
-	
-	public void testTransactionMixed() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		add(1,3,5,7,10,13,56,100,102,200,201,202,203);		
-		addTx(1, 675, 676, 677, 700, 703);
-		update(1,3,5,7,10,13,56,100,102,200,201,202,203);		
-		updateTx(1, 677, 700);		
-		delete(1,3,5,7,10,13,56,100,102,200,201,202,203);		
-		deleteTx(1, 703, 675, 1,3,5,7,10);		
-		commit(1);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();		
-	}
-	
-	public void testTransactionAddDeleteDifferentOrder() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();		
-		addTx(1, 1, 2, 3, 4, 5, 6, 7, 8, 9);					
-		deleteTx(1, 9, 8, 5, 3, 7, 6, 2, 1, 4);	
-		commit(1);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();		
-	}
-	
-	public void testAddOutsideTXThenUpdateInsideTX() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();		
-		add(1, 2, 3);
-		updateTx(1, 1, 2, 3);
-		commit(1);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-	}
-	
-	public void testAddOutsideTXThenDeleteInsideTX() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();		
-		add(1, 2, 3);
-		deleteTx(1, 1, 2, 3);
-		commit(1);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-	}
-	
-	public void testRollback() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();		
-		add(1, 2, 3);
-		deleteTx(1, 1, 2, 3);
-		rollback(1);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-	}
-	
-	public void testRollbackMultiple() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();		
-		add(1, 2, 3);
-		deleteTx(1, 1, 2, 3);
-		addTx(2, 4, 5, 6);
-		rollback(1);
-		rollback(2);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-	}
-	
-	// XA tests
-	// ========
-	
-	public void testXASimpleNotPrepared() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();		
-		addTx(1, 1, 2, 3, 4, 5, 6, 7, 8, 9);					
-		updateTx(1, 1, 2, 3, 4, 7, 8);
-		deleteTx(1, 1, 2, 3, 4, 5);		
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();		
-	}
-	
-	public void testXASimplePrepared() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();		
-		addTx(1, 1, 2, 3, 4, 5, 6, 7, 8, 9);					
-		updateTx(1, 1, 2, 3, 4, 7, 8);
-		deleteTx(1, 1, 2, 3, 4, 5);	
-		prepare(1);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();		
-	}
-	
-	public void testXASimpleCommit() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();		
-		addTx(1, 1, 2, 3, 4, 5, 6, 7, 8, 9);					
-		updateTx(1, 1, 2,3, 4, 7, 8);
-		deleteTx(1, 1, 2, 3, 4, 5);	
-		prepare(1);
-		commit(1);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();		
-	}
-	
-	public void testXASimpleRollback() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();		
-		addTx(1, 1, 2, 3, 4, 5, 6, 7, 8, 9);					
-		updateTx(1, 1, 2,3, 4, 7, 8);
-		deleteTx(1, 1, 2, 3, 4, 5);	
-		prepare(1);
-		rollback(1);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();		
-	}
-	
-	public void testXAChangesNotVisibleNotPrepared() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();		
-		add(1, 2, 3, 4, 5, 6);
-		addTx(1, 7, 8, 9, 10);					
-		updateTx(1, 1, 2, 3, 7, 8, 9);
-		deleteTx(1, 1, 2, 3, 4, 5);	
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();		
-	}
-	
-	public void testXAChangesNotVisiblePrepared() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();		
-		add(1, 2, 3, 4, 5, 6);
-		addTx(1, 7, 8, 9, 10);					
-		updateTx(1, 1, 2, 3, 7, 8, 9);
-		deleteTx(1, 1, 2, 3, 4, 5);	
-		prepare(1);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();		
-	}
-	
-	public void testXAChangesNotVisibleRollback() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();		
-		add(1, 2, 3, 4, 5, 6);
-		addTx(1, 7, 8, 9, 10);					
-		updateTx(1, 1, 2, 3, 7, 8, 9);
-		deleteTx(1, 1, 2, 3, 4, 5);	
-		prepare(1);
-		rollback(1);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();		
-	}
-	
-	public void testXAChangesisibleCommit() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();		
-		add(1, 2, 3, 4, 5, 6);
-		addTx(1, 7, 8, 9, 10);					
-		updateTx(1, 1, 2, 3, 7, 8, 9);
-		deleteTx(1, 1, 2, 3, 4, 5);	
-		prepare(1);
-		commit(1);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();		
-	}
-	
-	public void testXAMultiple() throws Exception
-	{
-		setup(10, 10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();		
-		add(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-		addTx(1, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20);
-		addTx(2, 21, 22, 23, 24, 25, 26, 27);
-		updateTx(1, 1, 3, 6, 11, 14, 17);
-		addTx(3, 28, 29, 30, 31, 32, 33, 34, 35);
-		updateTx(3, 7, 8, 9, 10);
-		deleteTx(2, 4, 5, 6, 23, 25, 27);
-		prepare(2);
-		deleteTx(1, 1, 2, 11, 14, 15);
-		prepare(1);
-		deleteTx(3, 28, 31, 32, 9);
-		prepare(3);
-		
-		commit(1);
-		rollback(2);
-		commit(3);
-	}
-	
 	// Private ---------------------------------------------------------------------------------
 	
-	void setup(int minFiles, int minAvailableFiles, int fileSize, boolean sync)
+	protected void setup(int minFreeFiles, int fileSize, boolean sync)
 	{		
-		this.minFiles = minFiles;
-		this.minAvailableFiles = minAvailableFiles;
+		this.minFiles = minFreeFiles;
 		this.fileSize = fileSize;
 		this.sync = sync;
 	}
@@ -1137,20 +119,23 @@ public abstract class JournalImplTestBase extends UnitTestCase
 	public void createJournal() throws Exception
 	{		
 		journal =
-			new JournalImpl(fileSize, minFiles, minAvailableFiles, sync, fileFactory, 5000, filePrefix, fileExtension);
+			new JournalImpl(fileSize, minFiles, sync, fileFactory, 1000, filePrefix, fileExtension);
 	}
 		
-	private void startJournal() throws Exception
+	protected void startJournal() throws Exception
 	{
 		journal.start();
 	}
 	
-	private void stopJournal() throws Exception
+	protected void stopJournal() throws Exception
 	{
+		//We do a reclaim in here
+		journal.checkAndReclaimFiles();
+		
 		journal.stop();		
 	}
 	
-	private void loadAndCheck() throws Exception
+	protected void loadAndCheck() throws Exception
 	{
 		List<RecordInfo> committedRecords = new ArrayList<RecordInfo>();
 		
@@ -1181,12 +166,12 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		checkTransactionsEquivalent(prepared, preparedTransactions);
 	}		
 	
-	private void load() throws Exception
+	protected void load() throws Exception
 	{
 		journal.load(null, null);
 	}
 	
-	private void add(long... arguments) throws Exception
+	protected void add(long... arguments) throws Exception
 	{
 		for (int i = 0; i < arguments.length; i++)
 		{		
@@ -1198,7 +183,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		}
 	}
 	
-	private void update(long... arguments) throws Exception
+	protected void update(long... arguments) throws Exception
 	{
 		for (int i = 0; i < arguments.length; i++)
 		{		
@@ -1210,7 +195,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		}
 	}
 	
-	private void delete(long... arguments) throws Exception
+	protected void delete(long... arguments) throws Exception
 	{
 		for (int i = 0; i < arguments.length; i++)
 		{		
@@ -1220,7 +205,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		}
 	}
 			
-	private void addTx(long txID, long... arguments) throws Exception
+	protected void addTx(long txID, long... arguments) throws Exception
 	{
 		TransactionHolder tx = getTransaction(txID);
 		
@@ -1235,7 +220,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		}		
 	}
 	
-	private void updateTx(long txID, long... arguments) throws Exception
+	protected void updateTx(long txID, long... arguments) throws Exception
 	{
 		TransactionHolder tx = getTransaction(txID);
 		
@@ -1249,7 +234,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		}		
 	}
 
-	private void deleteTx(long txID, long... arguments) throws Exception
+	protected void deleteTx(long txID, long... arguments) throws Exception
 	{
 		TransactionHolder tx = getTransaction(txID);
 		
@@ -1262,7 +247,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		
 	}
 	
-	private void prepare(long txID) throws Exception
+	protected void prepare(long txID) throws Exception
 	{
 		TransactionHolder tx = transactions.get(txID);
 		
@@ -1281,7 +266,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		tx.prepared = true;
 	}
 	
-	private void commit(long txID) throws Exception
+	protected void commit(long txID) throws Exception
 	{
 		TransactionHolder tx = transactions.get(txID);
 		
@@ -1295,7 +280,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		this.commitTx(txID);
 	}
 	
-	private void rollback(long txID) throws Exception
+	protected void rollback(long txID) throws Exception
 	{
 		TransactionHolder tx = transactions.remove(txID);
 		
@@ -1324,7 +309,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		}
 	}
 	
-	private void removeRecordsForID(long id)
+	protected void removeRecordsForID(long id)
 	{
 		for (ListIterator<RecordInfo> iter = records.listIterator(); iter.hasNext();)
 		{
@@ -1337,7 +322,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		}
 	}
 	
-	private TransactionHolder getTransaction(long txID)
+	protected TransactionHolder getTransaction(long txID)
 	{
 		TransactionHolder tx = transactions.get(txID);
 		
@@ -1351,7 +336,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		return tx;
 	}
 			
-	private void checkTransactionsEquivalent(List<PreparedTransactionInfo> expected, List<PreparedTransactionInfo> actual)
+	protected void checkTransactionsEquivalent(List<PreparedTransactionInfo> expected, List<PreparedTransactionInfo> actual)
 	{
 		assertEquals("Lists not same length", expected.size(), actual.size());
 		
@@ -1386,7 +371,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		}
 	}
 	
-	private void checkRecordsEquivalent(List<RecordInfo> expected, List<RecordInfo> actual)
+	protected void checkRecordsEquivalent(List<RecordInfo> expected, List<RecordInfo> actual)
 	{
 		assertEquals("Lists not same length", expected.size(), actual.size());
 		
@@ -1408,7 +393,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		}		
 	}
 	
-	private byte[] generateRecord(int length)
+	protected byte[] generateRecord(int length)
 	{
 		byte[] record = new byte[length];
 		for (int i = 0; i < length; i++)

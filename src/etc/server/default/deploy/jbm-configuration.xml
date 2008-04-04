@@ -69,8 +69,6 @@
       
       <journal-min-files>10</journal-min-files>
       
-      <journal-min-available-files>10</journal-min-available-files>
-      
       <journal-task-period>5000</journal-task-period>
       
    </configuration>

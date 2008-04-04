@@ -89,8 +89,6 @@ public class ConfigurationImpl implements Configuration, Serializable
    
    protected int journalMinFiles;
    
-   protected int journalMinAvailableFiles;
-   
    protected long journalTaskPeriod;
 
    // remoting config
@@ -424,17 +422,7 @@ public class ConfigurationImpl implements Configuration, Serializable
 	{
 		this.journalMinFiles = journalMinFiles;
 	}
-
-	public int getJournalMinAvailableFiles()
-	{
-		return journalMinAvailableFiles;
-	}
-
-	public void setJournalMinAvailableFiles(int journalMinAvailableFiles)
-	{
-		this.journalMinAvailableFiles = journalMinAvailableFiles;
-	}
-
+	
 	public long getJournalTaskPeriod()
 	{
 		return journalTaskPeriod;

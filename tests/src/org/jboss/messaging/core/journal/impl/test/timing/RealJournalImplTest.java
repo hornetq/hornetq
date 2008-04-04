@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.journal.impl.test.unit;
+package org.jboss.messaging.core.journal.impl.test.timing;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -55,6 +55,67 @@ public class RealJournalImplTest extends JournalImplTestUnit
 		file.mkdir();		
 		
 		return new NIOSequentialFileFactory(journalDir);
-	}	
+	}
 	
+	public void testSpeedNonTransactional() throws Exception
+	{
+		Journal journal =
+			new JournalImpl(10 * 1024 * 1024, 10, true, new NIOSequentialFileFactory(journalDir),
+					5000, "jbm-data", "jbm");
+		
+		journal.start();
+		
+		journal.load(new ArrayList<RecordInfo>(), null);
+		
+		final int numMessages = 10000;
+		
+		byte[] data = new byte[1024];
+		
+		long start = System.currentTimeMillis();
+		
+		for (int i = 0; i < numMessages; i++)
+		{
+			journal.appendAddRecord(i, data);
+		}
+		
+		long end = System.currentTimeMillis();
+		
+		double rate = 1000 * (double)numMessages / (end - start);
+		
+		log.info("Rate " + rate + " records/sec");
+
+	}
+	
+	public void testSpeedTransactional() throws Exception
+	{
+		Journal journal =
+			new JournalImpl(10 * 1024 * 1024, 10, true, new NIOSequentialFileFactory(journalDir),
+					5000, "jbm-data", "jbm");
+		
+		journal.start();
+		
+		journal.load(new ArrayList<RecordInfo>(), null);
+		
+		final int numMessages = 10000;
+		
+		byte[] data = new byte[1024];
+		
+		long start = System.currentTimeMillis();
+		
+		int count = 0;
+		for (int i = 0; i < numMessages; i++)
+		{
+			journal.appendAddRecordTransactional(i, count++, data);
+			
+			journal.appendCommitRecord(i);
+		}
+		
+		long end = System.currentTimeMillis();
+		
+		double rate = 1000 * (double)numMessages / (end - start);
+		
+		log.info("Rate " + rate + " records/sec");
+
+	}
 }
+

@@ -21,40 +21,20 @@
   */
 package org.jboss.messaging.core.journal.impl.test.unit;
 
-import java.io.File;
-import java.util.ArrayList;
-
-import org.jboss.messaging.core.journal.Journal;
-import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
-import org.jboss.messaging.core.journal.impl.JournalImpl;
-import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
-import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.journal.impl.test.unit.fakes.FakeSequentialFileFactory;
 
 /**
  * 
- * A RealJournalImplTest
+ * A FakeJournalImplTest
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class RealJournalImplTest extends JournalImplTestUnit
+public class FakeJournalImplTest extends JournalImplTestUnit
 {
-	private static final Logger log = Logger.getLogger(RealJournalImplTest.class);
-	
-	protected String journalDir = System.getProperty("user.home") + "/journal-test";
-		
 	protected SequentialFileFactory getFileFactory() throws Exception
 	{
-		File file = new File(journalDir);
-		
-		log.info("deleting directory " + journalDir);
-		
-		deleteDirectory(file);
-		
-		file.mkdir();		
-		
-		return new NIOSequentialFileFactory(journalDir);
-	}	
-	
+		return new FakeSequentialFileFactory();
+	}
 }

@@ -14,6 +14,7 @@ import org.jboss.messaging.core.journal.RecordInfo;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
+
 public class TransactionHolder
 {
 	public TransactionHolder(final long id)

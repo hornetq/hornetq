@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,16 +34,18 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.jboss.messaging.core.journal.Journal;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
+import org.jboss.messaging.core.journal.TestableJournal;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.util.Pair;
 
 /**
  * 
@@ -51,7 +54,7 @@ import org.jboss.messaging.core.logging.Logger;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class JournalImpl implements Journal
+public class JournalImpl implements TestableJournal
 {
 	private static final Logger log = Logger.getLogger(JournalImpl.class);
 	
@@ -71,7 +74,7 @@ public class JournalImpl implements Journal
    
    public static final int MIN_FILE_SIZE = 1024;
    
-   public static final int MIN_TASK_PERIOD = 5000;
+   public static final int MIN_TASK_PERIOD = 1000;
    
    //Record markers - they must be all unique
    
@@ -102,8 +105,6 @@ public class JournalImpl implements Journal
 	
 	private final int minFiles;
 	
-	private final int minAvailableFiles;
-	
 	private final boolean sync;
 	
 	private final SequentialFileFactory fileFactory;
@@ -115,10 +116,15 @@ public class JournalImpl implements Journal
 	public final String fileExtension;
 	 
 	
-	private final Queue<JournalFile> files = new ConcurrentLinkedQueue<JournalFile>();
+	private final Queue<JournalFile> dataFiles = new ConcurrentLinkedQueue<JournalFile>();
 	
-	private final Queue<JournalFile> availableFiles = new ConcurrentLinkedQueue<JournalFile>();
+	private final Queue<JournalFile> freeFiles = new ConcurrentLinkedQueue<JournalFile>();
 	
+	private Map<Long, PosFiles> posFilesMap = new ConcurrentHashMap<Long, PosFiles>();
+	
+	private Map<Long, TransactionNegPos> transactionInfos = new ConcurrentHashMap<Long, TransactionNegPos>();
+
+		
 	/*
 	 * We use a semaphore rather than synchronized since it performs better when contended
 	 */
@@ -136,11 +142,11 @@ public class JournalImpl implements Journal
 	
 	private TimerTask reclaimerTask;
 	
-	private TimerTask availableFilesTask;
-	
 	private final AtomicLong transactionIDSequence = new AtomicLong(0);
 	
-	public JournalImpl(final int fileSize, final int minFiles, final int minAvailableFiles,
+	private Reclaimer reclaimer = new Reclaimer();
+	
+	public JournalImpl(final int fileSize, final int minFiles,
 			             final boolean sync, final SequentialFileFactory fileFactory, final long taskPeriod,
 			             final String filePrefix, final String fileExtension)
 	{
@@ -151,10 +157,6 @@ public class JournalImpl implements Journal
 		if (minFiles < 2)
 		{
 			throw new IllegalArgumentException("minFiles cannot be less than 2");
-		}
-		if (minAvailableFiles < 2)
-		{
-			throw new IllegalArgumentException("minAvailableFiles cannot be less than 2");
 		}
 		if (fileFactory == null)
 		{
@@ -176,8 +178,6 @@ public class JournalImpl implements Journal
 		this.fileSize = fileSize;
 		
 		this.minFiles = minFiles;
-		
-		this.minAvailableFiles = minAvailableFiles;
 		
 		this.sync = sync;
 		
@@ -216,6 +216,8 @@ public class JournalImpl implements Journal
 		bb.flip();
 		
 		appendRecord(bb, true);
+		
+		posFilesMap.put(id, new PosFiles(currentFile));
 	}
 			
 	public void appendUpdateRecord(final long id, final byte[] record) throws Exception
@@ -223,6 +225,13 @@ public class JournalImpl implements Journal
 		if (state != STATE_LOADED)
 		{
 			throw new IllegalStateException("Journal must be loaded first");
+		}
+		
+		PosFiles posFiles = posFilesMap.get(id);
+		
+		if (posFiles == null)
+		{
+			throw new IllegalStateException("Cannot find add info " + id);
 		}
 			
 		int size = SIZE_BYTE + SIZE_LONG + SIZE_INT + record.length + SIZE_BYTE;
@@ -236,15 +245,26 @@ public class JournalImpl implements Journal
 		bb.put(DONE);		
 		bb.flip();
 		
-		appendRecord(bb, true);			
+		appendRecord(bb, true);		
+		
+		posFiles.addUpdateFile(currentFile);
 	}
-			
+		
 	public void appendDeleteRecord(long id) throws Exception
 	{
 		if (state != STATE_LOADED)
 		{
 			throw new IllegalStateException("Journal must be loaded first");
 		}
+		
+		PosFiles posFiles = posFilesMap.remove(id);
+		
+		if (posFiles == null)
+		{
+			throw new IllegalStateException("Cannot find add info " + id);
+		}
+		
+		posFiles.addDelete(currentFile);
 		
 		int size = SIZE_BYTE + SIZE_LONG + SIZE_BYTE;
 		
@@ -255,7 +275,7 @@ public class JournalImpl implements Journal
 		bb.put(DONE);		
 		bb.flip();
 								
-		appendRecord(bb, true);			
+		appendRecord(bb, true);							
 	}		
 	
 	public long getTransactionID()
@@ -270,7 +290,7 @@ public class JournalImpl implements Journal
 		{
 			throw new IllegalStateException("Journal must be loaded first");
 		}
-
+		
 		int size = SIZE_BYTE + SIZE_LONG + SIZE_LONG + SIZE_INT + record.length + SIZE_BYTE;
 
 		ByteBuffer bb = ByteBuffer.wrap(new byte[size]);
@@ -284,8 +304,12 @@ public class JournalImpl implements Journal
 		bb.flip();
 		
 		appendRecord(bb, false);
+		
+		TransactionNegPos tx = getTransactionInfo(txID);
+		
+		tx.addPos(currentFile, id);
 	}
-			
+	
 	public void appendUpdateRecordTransactional(final long txID, final long id,
 			final byte[] record) throws Exception
 	{
@@ -293,7 +317,7 @@ public class JournalImpl implements Journal
 		{
 			throw new IllegalStateException("Journal must be loaded first");
 		}
-
+		
 		int size = SIZE_BYTE + SIZE_LONG + SIZE_LONG + SIZE_INT + record.length + SIZE_BYTE;
 		
 		ByteBuffer bb = ByteBuffer.wrap(new byte[size]);
@@ -306,7 +330,11 @@ public class JournalImpl implements Journal
 		bb.put(DONE);		
 		bb.flip();
 		
-		appendRecord(bb, false);			
+		appendRecord(bb, false);
+		
+		TransactionNegPos tx = getTransactionInfo(txID);
+		
+		tx.addPos(currentFile, id);
 	}
 	
 	public void appendDeleteRecordTransactional(final long txID, final long id) throws Exception
@@ -326,15 +354,25 @@ public class JournalImpl implements Journal
 		bb.put(DONE);			
 		bb.flip();
 								
-		appendRecord(bb, false);				
+		appendRecord(bb, false);		
+		
+		TransactionNegPos tx = getTransactionInfo(txID);
+		
+		tx.addNeg(currentFile, id);		
 	}	
-	
 		
 	public void appendPrepareRecord(final long txID) throws Exception
 	{
 		if (state != STATE_LOADED)
 		{
 			throw new IllegalStateException("Journal must be loaded first");
+		}
+		
+		TransactionNegPos tx = transactionInfos.get(txID);
+		
+		if (tx == null)
+		{
+			throw new IllegalStateException("Cannot find tx with id " + txID);
 		}
 		
 		int size = SIZE_BYTE + SIZE_LONG + SIZE_BYTE;
@@ -347,6 +385,8 @@ public class JournalImpl implements Journal
 		bb.flip();
 		
 		appendRecord(bb, true);		
+		
+		tx.prepare(currentFile);
 	}
 	
 	public void appendCommitRecord(final long txID) throws Exception
@@ -356,6 +396,13 @@ public class JournalImpl implements Journal
 			throw new IllegalStateException("Journal must be loaded first");
 		}
 		
+		TransactionNegPos tx = transactionInfos.remove(txID);
+		
+		if (tx == null)
+		{
+			throw new IllegalStateException("Cannot find tx with id " + txID);
+		}
+				
 		int size = SIZE_BYTE + SIZE_LONG + SIZE_BYTE;
 		
 		ByteBuffer bb = ByteBuffer.wrap(new byte[size]);
@@ -366,6 +413,8 @@ public class JournalImpl implements Journal
 		bb.flip();
 		
 		appendRecord(bb, true);	
+		
+		tx.commit(currentFile);				
 	}
 	
 	public void appendRollbackRecord(final long txID) throws Exception
@@ -375,6 +424,13 @@ public class JournalImpl implements Journal
 			throw new IllegalStateException("Journal must be loaded first");
 		}
 		
+		TransactionNegPos tx = transactionInfos.remove(txID);
+		
+		if (tx == null)
+		{
+			throw new IllegalStateException("Cannot find tx with id " + txID);
+		}
+				
 		int size = SIZE_BYTE + SIZE_LONG + SIZE_BYTE;
 		
 		ByteBuffer bb = ByteBuffer.wrap(new byte[size]);
@@ -385,10 +441,12 @@ public class JournalImpl implements Journal
 		bb.flip();
 								
 		appendRecord(bb, true);			
+		
+		tx.rollback(currentFile);
 	}
 		
-	public void load(final List<RecordInfo> committedRecords,
-		              final List<PreparedTransactionInfo> preparedTransactions) throws Exception
+	public synchronized void load(final List<RecordInfo> committedRecords,
+		                           final List<PreparedTransactionInfo> preparedTransactions) throws Exception
 	{
 		if (state != STATE_STARTED)
 		{
@@ -419,24 +477,12 @@ public class JournalImpl implements Journal
 			
 			long orderingID = bb.getLong();
 						
-			orderedFiles.add(new JournalFile(file, orderingID));
+			orderedFiles.add(new JournalFileImpl(file, orderingID));
 			
 			file.close();
 		}
 		
-		int createNum = minFiles - orderedFiles.size();
-		
-		//Preallocate some more if necessary
-		for (int i = 0; i < createNum; i++)
-		{
-			JournalFile file = createFile();
-			
-			orderedFiles.add(file);
-			
-			file.getFile().close();
-		}
-			
-		//Now order them by ordering id - we can't use the file name for ordering since we can re-use files
+		//Now order them by ordering id - we can't use the file name for ordering since we can re-use dataFiles
 		
 		class JournalFileComparator implements Comparator<JournalFile>
 		{
@@ -489,6 +535,7 @@ public class JournalImpl implements Journal
 					case ADD_RECORD:
 					{									
 						long id = bb.getLong();				
+						
 						int size = bb.getInt();						
 						byte[] record = new byte[size];						
 						bb.get(record);						
@@ -501,7 +548,9 @@ public class JournalImpl implements Journal
 						else
 						{																				
 							records.add(new RecordInfo(id, record, false));
-							hasData = true;							
+							hasData = true;						
+
+							posFilesMap.put(id, new PosFiles(file));
 						}
 												
 						break;
@@ -509,6 +558,7 @@ public class JournalImpl implements Journal
 					case UPDATE_RECORD:						
 					{
 						long id = bb.getLong();		
+						
 						int size = bb.getInt();						
 						byte[] record = new byte[size];						
 						bb.get(record);						
@@ -521,7 +571,18 @@ public class JournalImpl implements Journal
 						else
 						{					
 							records.add(new RecordInfo(id, record, true));							
-							hasData = true;							
+							hasData = true;		
+							file.incPosCount();
+							
+						   PosFiles posFiles = posFilesMap.get(id);
+							
+							if (posFiles != null)
+							{
+								//It's legal for this to be null. The file(s) with the  may have been deleted
+								//just leaving some updates in this file
+								
+								posFiles.addUpdateFile(file);
+							}
 						}
 												
 						break;
@@ -538,7 +599,14 @@ public class JournalImpl implements Journal
 						else
 						{						
 							recordsToDelete.add(id);							
-							hasData = true;							
+							hasData = true;
+							
+							PosFiles posFiles = posFilesMap.remove(id);
+							
+							if (posFiles != null)
+							{
+								posFiles.addDelete(file);
+							}							
 						}
 						
 						break;
@@ -568,7 +636,19 @@ public class JournalImpl implements Journal
 							}
 							
 							tx.recordInfos.add(new RecordInfo(id, record, false));							
-							hasData = true;							
+							
+							TransactionNegPos tnp = transactionInfos.get(txID);
+							
+							if (tnp == null)
+							{
+								tnp = new TransactionNegPos();
+								
+								transactionInfos.put(txID, tnp);
+							}
+							
+							tnp.addPos(file, id);
+							
+							hasData = true;														
 						}
 					
 						break;
@@ -598,6 +678,17 @@ public class JournalImpl implements Journal
 							}
 							
 							tx.recordInfos.add(new RecordInfo(id, record, true));
+							
+							TransactionNegPos tnp = transactionInfos.get(txID);
+							
+							if (tnp == null)
+							{
+								tnp = new TransactionNegPos();
+								
+								transactionInfos.put(txID, tnp);
+							}
+							
+							tnp.addPos(file, id);
 
 							hasData = true;							
 						}
@@ -626,6 +717,18 @@ public class JournalImpl implements Journal
 							}
 							
 							tx.recordsToDelete.add(id);							
+							
+							TransactionNegPos tnp = transactionInfos.get(txID);
+							
+							if (tnp == null)
+							{
+								tnp = new TransactionNegPos();
+								
+								transactionInfos.put(txID, tnp);
+							}
+							
+							tnp.addNeg(file, id);
+							
 							hasData = true;							
 						}
 											
@@ -651,6 +754,15 @@ public class JournalImpl implements Journal
 							}
 														
 							tx.prepared = true;
+							
+							TransactionNegPos tnp = transactionInfos.get(txID);
+							
+							if (tnp == null)
+							{
+								throw new IllegalStateException("Cannot find tx " + txID);
+							}
+							
+							tnp.prepare(file);		
 						}
 						
 						break;
@@ -675,7 +787,16 @@ public class JournalImpl implements Journal
 							}
 							
 							records.addAll(tx.recordInfos);							
-							recordsToDelete.addAll(tx.recordsToDelete);														
+							recordsToDelete.addAll(tx.recordsToDelete);	
+							
+							TransactionNegPos tnp = transactionInfos.remove(txID);
+							
+							if (tnp == null)
+							{
+								throw new IllegalStateException("Cannot find tx " + txID);
+							}
+							
+							tnp.commit(file);							
 						}
 						
 						break;
@@ -697,7 +818,16 @@ public class JournalImpl implements Journal
 							if (tx == null)
 							{
 								throw new IllegalStateException("Cannot find tx with id " + txID);
-							}						
+							}				
+							
+							TransactionNegPos tnp = transactionInfos.remove(txID);
+							
+							if (tnp == null)
+							{
+								throw new IllegalStateException("Cannot find tx " + txID);
+							}
+							
+							tnp.rollback(file);	
 						}
 						
 						break;
@@ -733,16 +863,14 @@ public class JournalImpl implements Journal
 						
 			if (hasData)
 			{			
-				files.add(file);
+				dataFiles.add(file);
 				
-				//Files are always maintained closed - there may be a lot of them and we don't want to run out
-				//of file handles
 				file.getFile().close();				
 			}
 			else
 			{				
-				//Empty files with no data
-				availableFiles.add(file);
+				//Empty dataFiles with no data
+				freeFiles.add(file);
 				
 				//Position it ready for writing
 				file.getFile().position(SIZE_LONG);
@@ -750,18 +878,29 @@ public class JournalImpl implements Journal
 		}			
 		
 		transactionIDSequence.set(maxTransactionID + 1);
-									
-		//Now it's possible that some of the files are no longer needed
 		
-		checkFilesForReclamation();
+		//Create any more files we need
 				
-		//Check we have enough available files
+		//FIXME - size() involves a scan
+		int filesToCreate = minFiles - (dataFiles.size() + freeFiles.size());
 		
-		checkAndCreateAvailableFiles();
-						
-		for (JournalFile file: files)
+		for (int i = 0; i < filesToCreate; i++)
 		{
-			currentFile = file;						
+			freeFiles.add(createFile());
+		}
+												
+		//The current file is the last one
+		
+		Iterator<JournalFile> iter = dataFiles.iterator();
+		
+		while (iter.hasNext())
+		{
+			currentFile = iter.next();
+			
+			if (!iter.hasNext())
+			{
+				iter.remove();
+			}
 		}
 		
 		if (currentFile != null)
@@ -774,13 +913,9 @@ public class JournalImpl implements Journal
 		}
 		else
 		{
-			currentFile = availableFiles.remove();
-			
-			files.add(currentFile);
+			currentFile = freeFiles.remove();
 		}				
-		
-		startTasks();
-				
+								
 		for (RecordInfo record: records)
 		{
 			if (!recordsToDelete.contains(record.id))
@@ -794,6 +929,16 @@ public class JournalImpl implements Journal
 			if (!transaction.prepared)
 			{
 				log.warn("Uncommitted transaction with id " + transaction.transactionID + " found and discarded");
+				
+				TransactionNegPos transactionInfo = this.transactionInfos.get(transaction.transactionID);
+				
+				if (transactionInfo == null)
+				{
+					throw new IllegalStateException("Cannot find tx " + transaction.transactionID);
+				}
+				
+				//Reverse the refs
+				transactionInfo.forget();
 			}
 			else
 			{
@@ -809,17 +954,77 @@ public class JournalImpl implements Journal
 				
 		state = STATE_LOADED;
 	}
+	
+	// TestableJournal implementation --------------------------------------------------------------
 			
-	public void checkAndCreateAvailableFiles() throws Exception
+	public synchronized void checkAndReclaimFiles() throws Exception
 	{		
-		int filesToCreate = minAvailableFiles - availableFiles.size();
+		JournalFile[] files = new JournalFile[dataFiles.size()];
 		
-		for (int i = 0; i < filesToCreate; i++)
-		{
-			JournalFile file = createFile();
-
-			availableFiles.add(file);
+		reclaimer.scan(dataFiles.toArray(files));
+				
+		for (JournalFile file: dataFiles)
+		{		
+   		if (file.isCanReclaim())
+   		{
+   			//File can be reclaimed or deleted
+   			
+   			dataFiles.remove(file);
+   			
+   			//FIXME - size() involves a scan!!!
+   			if (freeFiles.size() + dataFiles.size() + 1 < minFiles)
+   			{      			
+      			//Re-initialise it
+      			
+      			long newOrderingID = generateOrderingID();
+      			
+      			ByteBuffer bb = ByteBuffer.wrap(new byte[SIZE_LONG]);
+      			
+      			bb.putLong(newOrderingID);
+      			
+      			SequentialFile sf = file.getFile();
+      			
+      			sf.open();
+      			
+      			//Note we MUST re-fill it - otherwise we won't be able to detect corrupt records
+      			
+      			//TODO - if we can avoid this somehow would be good, since filling the file is a heavyweight
+      			//operation and can impact other IO operations on the disk
+      			sf.fill(0, fileSize, FILL_CHARACTER);
+      			
+      			sf.write(bb, true);
+      			
+      			JournalFile jf = new JournalFileImpl(sf, newOrderingID);
+      			
+      			sf.position(SIZE_LONG);
+      			
+      			jf.setOffset(SIZE_LONG);
+      			
+      			freeFiles.add(jf);   
+   			}
+   			else
+   			{
+   				file.getFile().open();
+   				
+   				file.getFile().delete();
+   			}
+   		}
 		}
+	}
+	
+	public int getDataFilesCount()
+	{
+		return dataFiles.size();
+	}
+	
+	public int getFreeFilesCount()
+	{
+		return freeFiles.size();
+	}
+	
+	public int getIDMapSize()
+	{
+		return posFilesMap.size();
 	}
 	
 	// MessagingComponent implementation ---------------------------------------------------
@@ -841,93 +1046,54 @@ public class JournalImpl implements Journal
 			throw new IllegalStateException("Journal is already stopped");
 		}
 		
-		if (reclaimerTask != null)
-		{
-			reclaimerTask.cancel();
-		}
-		
-		if (availableFilesTask != null)
-		{
-			availableFilesTask.cancel();
-		}
+		stopReclaimer();
 		
 		if (currentFile != null)
 		{
 			currentFile.getFile().close();
 		}
 		
-		for (JournalFile file: availableFiles)
+		for (JournalFile file: freeFiles)
 		{
 			file.getFile().close();
 		}
 
 		currentFile = null;
 		
-		files.clear();
+		dataFiles.clear();
 		
-		availableFiles.clear();		
+		freeFiles.clear();		
 		
 		state = STATE_STOPPED;
 	}
 	
-	public void startTasks()
+	public void startReclaimer()
 	{
-//		reclaimerTask = new ReclaimerTask();
-//		timer.schedule(reclaimerTask, taskPeriod, taskPeriod);
-//		
-//		availableFilesTask = new AvailableFilesTask();
-//		timer.schedule(availableFilesTask, taskPeriod, taskPeriod);
+		if (state == STATE_STOPPED)
+		{
+			throw new IllegalStateException("Journal is stopped");
+		}
+		
+		reclaimerTask = new ReclaimerTask();
+		
+		timer.schedule(reclaimerTask, taskPeriod, taskPeriod);
+	}
+	
+	public void stopReclaimer()
+	{
+		if (state == STATE_STOPPED)
+		{
+			throw new IllegalStateException("Journal is already stopped");
+		}
+		
+		if (reclaimerTask != null)
+		{
+			reclaimerTask.cancel();
+		}
 	}
 	
 	// Public -----------------------------------------------------------------------------
-	
-	public Queue<JournalFile> getFiles()
-	{
-		return files;
-	}
-	
-	public Queue<JournalFile> getAvailableFiles()
-	{
-		return availableFiles;
-	}
-	
-	public void checkFilesForReclamation() throws Exception
-	{		
-		for (JournalFile file: files)
-		{		
-			//TODO reclamation
-   		if (false && file != currentFile)
-   		{
-   			//File can be reclaimed
-   			
-   			files.remove(file);
-   			
-   			//Re-initialise it
-   			
-   			long newOrderingID = generateOrderingID();
-   			
-   			ByteBuffer bb = ByteBuffer.wrap(new byte[SIZE_LONG]);
-   			
-   			bb.putLong(newOrderingID);
-   			
-   			SequentialFile sf = file.getFile();
-   			
-   			//Note we MUST re-fill it - otherwise we won't be able to detect corrupt records
-   			sf.fill(0, fileSize, FILL_CHARACTER);
-   			
-   			sf.write(bb, true);
-   			
-   			JournalFile jf = new JournalFile(sf, newOrderingID);
-   			
-   			sf.position(SIZE_LONG);
-   			
-   			jf.setOffset(SIZE_LONG);
-   			
-   			availableFiles.add(jf);   		
-   		}
-		}
-	}
-		
+			
 	// Private -----------------------------------------------------------------------------
 		
 	private void appendRecord(ByteBuffer bb, boolean sync) throws Exception
@@ -981,7 +1147,7 @@ public class JournalImpl implements Journal
 		
 		sequentialFile.position(SIZE_LONG);
 		
-		JournalFile info = new JournalFile(sequentialFile, orderingID);
+		JournalFile info = new JournalFileImpl(sequentialFile, orderingID);
 		
 		info.extendOffset(SIZE_LONG);
 		
@@ -1018,62 +1184,225 @@ public class JournalImpl implements Journal
 		}
 
 		if (currentFile == null || fileSize - currentFile.getOffset() < size)
-		{
-			checkAndCreateAvailableFiles();
-			
+		{					
 			currentFile.getFile().close();
 			
-		   currentFile = availableFiles.remove();			
-
-			files.add(currentFile);
-		}
-	}
-	
-	private class ReclaimerTask extends TimerTask
-	{
-		public boolean cancel()
-		{
-			timer.cancel();
+			dataFiles.add(currentFile);
 			
-			return super.cancel();
-		}
-
-		public void run()
-		{
-			try
+			//FIXME - isEmpty() involves a scan!!
+			if (!freeFiles.isEmpty())
 			{
-				//checkFilesForReclamation();
+				currentFile = freeFiles.remove();
 			}
-			catch (Exception e)
+			else
 			{
-				log.error("Failure in running reclaimer", e);
-				
-				cancel();
+				currentFile = createFile();
 			}
 		}		
 	}
 	
-	private class AvailableFilesTask extends TimerTask
+	private TransactionNegPos getTransactionInfo(final long txID)
 	{
-		public boolean cancel()
+		TransactionNegPos tx = transactionInfos.get(txID);
+		
+		if (tx == null)
+		{
+			tx = new TransactionNegPos();
+			
+			transactionInfos.put(txID, tx);
+		}
+		
+		return tx;
+	}
+				
+	
+	// Inner classes ---------------------------------------------------------------------------
+	
+	private class ReclaimerTask extends TimerTask
+	{
+		public synchronized boolean cancel()
 		{
 			timer.cancel();
 			
 			return super.cancel();
 		}
 
-		public void run()
+		public synchronized void run()
 		{
 			try
 			{
-				//checkAndCreateAvailableFiles();
+				checkAndReclaimFiles();		
 			}
 			catch (Exception e)
 			{
-				log.error("Failure in running availableFileChecker", e);
+				log.error("Failure in running ReclaimerTask", e);
 				
 				cancel();
 			}
 		}		
 	}	
+	
+	private static class PosFiles
+	{
+		private final JournalFile addFile;
+		
+		private List<JournalFile> updateFiles;
+		
+		PosFiles(final JournalFile addFile)
+		{
+			this.addFile = addFile;
+			
+			addFile.incPosCount();
+		}
+		
+		void addUpdateFile(final JournalFile updateFile)
+		{
+			if (updateFiles == null)
+			{
+				updateFiles = new ArrayList<JournalFile>();
+			}
+			
+			updateFiles.add(updateFile);
+			
+			updateFile.incPosCount();
+		}
+		
+		void addDelete(final JournalFile file)
+		{
+			file.incNegCount(addFile);
+			
+			if (updateFiles != null)
+			{
+				for (JournalFile jf: updateFiles)
+				{
+					file.incNegCount(jf);
+				}
+			}
+		}
+	}
+		
+	private class TransactionNegPos
+	{
+		private List<Pair<JournalFile, Long>> pos;
+		
+		private List<Pair<JournalFile, Long>> neg;
+		
+		private Set<JournalFile> transactionPos;
+		
+		void addTXPosCount(final JournalFile file)
+		{
+			if (transactionPos == null)
+			{
+				transactionPos = new HashSet<JournalFile>();
+			}
+						
+			if (!transactionPos.contains(file))
+			{
+				transactionPos.add(file);
+				
+				//We add a pos for the transaction itself in the file - this prevents any transactional operations
+				//being deleted before a commit or rollback is written
+				file.incPosCount();
+			}	
+		}
+		
+		void addPos(final JournalFile file, final long id)
+		{		
+			addTXPosCount(file);				
+			
+			if (pos == null)
+			{
+				pos = new ArrayList<Pair<JournalFile, Long>>();
+			}
+
+			pos.add(new Pair<JournalFile, Long>(file, id));
+		}
+		
+		void addNeg(final JournalFile file, final long id)
+		{			
+			addTXPosCount(file);		
+			
+			if (neg == null)
+			{
+				neg = new ArrayList<Pair<JournalFile, Long>>();
+			}
+			
+			neg.add(new Pair<JournalFile, Long>(file, id));			
+		}
+		
+		void commit(final JournalFile file)
+		{			
+			if (pos != null)
+			{
+				for (Pair<JournalFile, Long> p: pos)
+	   		{
+					PosFiles posFiles = posFilesMap.get(p.b);
+					
+					if (posFiles == null)
+					{
+						posFiles = new PosFiles(p.a);
+						
+						posFilesMap.put(p.b, posFiles);
+					}
+					else
+					{					
+					   posFiles.addUpdateFile(p.a);
+					}
+	   		}
+			}
+			
+			if (neg != null)
+			{
+   			for (Pair<JournalFile, Long> n: neg)
+   			{
+   				PosFiles posFiles = posFilesMap.remove(n.b);
+   				
+   				if (posFiles == null)
+   				{
+   					throw new IllegalStateException("Cannot find add info " + n.b);
+   				}
+   				
+   				posFiles.addDelete(n.a);
+   			}
+			}
+			
+			//Now add negs for the pos we added in each file in which there were transactional operations
+			
+			for (JournalFile jf: transactionPos)
+			{
+				file.incNegCount(jf);
+			}			
+		}
+		
+		void rollback(JournalFile file)
+		{		
+			//Now add negs for the pos we added in each file in which there were transactional operations
+			//Note that we do this on rollback as we do on commit, since we need to ensure the file containing
+			//the rollback record doesn't get deleted before the files with the transactional operations are deleted
+			//Otherwise we may run into problems especially with XA where we are just left with a prepare when the tx
+			//has actually been rolled back
+			
+			for (JournalFile jf: transactionPos)
+			{
+				file.incNegCount(jf);
+			}
+		}
+		
+		void prepare(JournalFile file)
+		{
+			//We don't want the prepare record getting deleted before time
+			
+			addTXPosCount(file);
+		}
+		
+		void forget()
+		{
+			//The transaction was not committed or rolled back in the file, so we reverse any pos counts we added
+			
+			for (JournalFile jf: transactionPos)
+			{
+				jf.decPosCount();
+			}
+		}
+	}
 }

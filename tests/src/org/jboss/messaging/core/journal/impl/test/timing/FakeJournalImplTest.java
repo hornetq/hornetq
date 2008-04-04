@@ -19,27 +19,23 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.journal.impl.test.unit;
+package org.jboss.messaging.core.journal.impl.test.timing;
 
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.test.unit.fakes.FakeSequentialFileFactory;
 
 /**
  * 
- * A JournalImplTest
+ * A FakeJournalImplTest
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class JournalImplTest extends JournalImplTestBase
+public class FakeJournalImplTest extends JournalImplTestUnit
 {
-	protected void prepareDirectory() throws Exception
-	{				
-		//NOOP
-	}
-	
 	protected SequentialFileFactory getFileFactory() throws Exception
 	{
 		return new FakeSequentialFileFactory();
 	}
 }
+

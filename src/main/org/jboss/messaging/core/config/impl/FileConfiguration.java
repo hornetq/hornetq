@@ -127,8 +127,6 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
       
       this.journalMinFiles = getInteger(e, "journal-min-files", 10);
       
-      this.journalMinAvailableFiles = getInteger(e, "journal-min-available-files", 10);
-      
       this.journalTaskPeriod = getLong(e, "journal-task-period", 5000L);
       
       

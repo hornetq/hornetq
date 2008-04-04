@@ -138,10 +138,6 @@ public interface Configuration
 
 //   public void setJournalMinFiles(int journalMinFiles);
 
-   public int getJournalMinAvailableFiles();
-
-//   public void setJournalMinAvailableFiles(int journalMinAvailableFiles);
-
    public long getJournalTaskPeriod();
 
 //   public void setJournalTaskPeriod(long journalTaskPeriod);

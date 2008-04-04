@@ -21,37 +21,90 @@
   */
 package org.jboss.messaging.core.journal.impl;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jboss.messaging.core.journal.SequentialFile;
+import org.jboss.messaging.core.logging.Logger;
 
 /**
  * 
- * A JournalFile
+ * A JournalFileImpl
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class JournalFile
-{
+public class JournalFileImpl implements JournalFile
+{			
+	private static final Logger log = Logger.getLogger(JournalFileImpl.class);
+		
 	private final SequentialFile file;
 	
 	private final long orderingID;
 	
 	private int offset;
+			
+	private int posCount;
 	
-	private final Set<Long> positives = new HashSet<Long>();
+	private boolean canReclaim;
 	
-	private final Set<Long> negatives = new HashSet<Long>();
-		
-	public JournalFile(final SequentialFile file, final long orderingID)
+	private Map<JournalFile, Integer> negCounts = new HashMap<JournalFile, Integer>();
+	
+	public JournalFileImpl(final SequentialFile file, final long orderingID)
 	{
 		this.file = file;
 		
 		this.orderingID = orderingID;
 	}
 	
+	public int getPosCount()
+	{
+		return posCount;
+	}
+
+	public boolean isCanReclaim()
+	{
+		return canReclaim;
+	}
+
+	public void setCanReclaim(final boolean canReclaim)
+	{
+		this.canReclaim = canReclaim;
+	}
+
+	public void incNegCount(final JournalFile file)
+	{
+		Integer count = negCounts.get(file);
+		
+		int c = count == null ? 1 : count.intValue() + 1;
+		
+		negCounts.put(file, c);
+	}
+	
+	public int getNegCount(final JournalFile file)
+	{		
+		Integer count =  negCounts.get(file);
+		
+		if (count == null)
+		{
+			return 0;
+		}
+		else
+		{
+			return count.intValue();
+		}
+	}
+
+	public void incPosCount()
+	{
+		posCount++;
+	}
+	
+	public void decPosCount()
+	{
+		posCount--;
+	}
+		
 	public void extendOffset(final int delta)
 	{
 		offset += delta;
@@ -77,13 +130,5 @@ public class JournalFile
 		return file;
 	}	
 	
-	public void addPositive(final long id)
-	{
-		this.positives.add(id);
-	}
-	
-	public void addNegative(final long id)
-	{
-		this.negatives.add(id);
-	}
+
 }
