@@ -26,6 +26,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.deployers.Deployer;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.FileDeploymentManager;
@@ -38,16 +40,14 @@ import org.jboss.messaging.core.persistence.impl.nullpm.NullStorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.Interceptor;
-import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
+import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.SecurityStore;
-import org.jboss.messaging.core.security.JBMSecurityManager;
-import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
-import org.jboss.messaging.core.server.Configuration;
+import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.QueueFactory;
@@ -59,7 +59,6 @@ import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.impl.ResourceManagerImpl;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.core.version.impl.VersionImpl;
-import org.jboss.messaging.core.exception.MessagingException;
 
 /**
  * A Messaging Server
@@ -105,7 +104,7 @@ public class MessagingServerImpl implements MessagingServer
    private RemotingService remotingService;
    private boolean createTransport = false;
 
-   private Configuration configuration = new Configuration();
+   private Configuration configuration = new ConfigurationImpl();
    private HierarchicalRepository<HashSet<Role>> securityRepository = new HierarchicalObjectRepository<HashSet<Role>>();
    private HierarchicalRepository<QueueSettings> queueSettingsRepository = new HierarchicalObjectRepository<QueueSettings>();
    private QueueFactory queueFactory;
@@ -128,13 +127,14 @@ public class MessagingServerImpl implements MessagingServer
    /**
     * called when the usewr wants the MessagingServer to handle the creation of the RemotingTransport
     *
-    * @param remotingConfiguration the RemotingConfiguration
+    * @param configuration the configuration
     */
-   public MessagingServerImpl(RemotingConfiguration remotingConfiguration)
+   public MessagingServerImpl(Configuration configuration)
    {
       this();
+      this.configuration = configuration;
       createTransport = true;
-      remotingService = new MinaService(remotingConfiguration);
+      remotingService = new MinaService(configuration);
    }
    // lifecycle methods ----------------------------------------------------------------
 

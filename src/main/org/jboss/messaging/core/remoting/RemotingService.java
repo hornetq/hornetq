@@ -7,6 +7,7 @@
 package org.jboss.messaging.core.remoting;
 
 import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.server.MessagingComponent;
 
 /**
@@ -19,7 +20,7 @@ public interface RemotingService extends MessagingComponent
 {
    PacketDispatcher getDispatcher();
 
-   RemotingConfiguration getRemotingConfiguration();
+   Configuration getConfiguration();
    
    void addInterceptor(Interceptor interceptor);
 

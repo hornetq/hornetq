@@ -17,11 +17,12 @@ import java.util.concurrent.CountDownLatch;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.RemotingException;
+import org.jboss.messaging.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
-import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.impl.mina.ServerKeepAliveFactory;
@@ -80,15 +81,15 @@ public class ServerKeepAliveTest extends TestCase
          }
       };
 
-      RemotingConfigurationImpl remotingConfig = new RemotingConfigurationImpl(TCP,
+      Configuration config = ConfigurationHelper.newConfiguration(TCP,
             "localhost", PORT);
-      remotingConfig.setKeepAliveInterval(KEEP_ALIVE_INTERVAL);
-      remotingConfig.setKeepAliveTimeout(KEEP_ALIVE_TIMEOUT);
-      service = new MinaService(remotingConfig, factory);
+      config.setKeepAliveInterval(KEEP_ALIVE_INTERVAL);
+      config.setKeepAliveTimeout(KEEP_ALIVE_TIMEOUT);
+      service = new MinaService(config, factory);
       service.start();
 
       MinaConnector connector = new MinaConnector(service
-            .getRemotingConfiguration(), new PacketDispatcherImpl());
+            .getConfiguration(), new PacketDispatcherImpl());
       final String[] sessionIDNotResponding = new String[1];
       final CountDownLatch latch = new CountDownLatch(1);
 
@@ -135,15 +136,15 @@ public class ServerKeepAliveTest extends TestCase
          }
       };
 
-      RemotingConfigurationImpl remotingConfig = new RemotingConfigurationImpl(TCP,
+      Configuration config = ConfigurationHelper.newConfiguration(TCP,
             "localhost", PORT);
-      remotingConfig.setKeepAliveInterval(KEEP_ALIVE_INTERVAL);
-      remotingConfig.setKeepAliveTimeout(KEEP_ALIVE_TIMEOUT);
-      service = new MinaService(remotingConfig, factory);
+      config.setKeepAliveInterval(KEEP_ALIVE_INTERVAL);
+      config.setKeepAliveTimeout(KEEP_ALIVE_TIMEOUT);
+      service = new MinaService(config, factory);
       service.start();
 
       MinaConnector connector = new MinaConnector(service
-            .getRemotingConfiguration(), new PacketDispatcherImpl());
+            .getConfiguration(), new PacketDispatcherImpl());
       final String[] sessionIDNotResponding = new String[1];
       final CountDownLatch latch = new CountDownLatch(1);
 

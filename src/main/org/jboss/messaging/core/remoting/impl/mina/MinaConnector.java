@@ -30,13 +30,13 @@ import org.apache.mina.common.IoSession;
 import org.apache.mina.filter.ssl.SslFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.RemotingException;
 import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
@@ -55,7 +55,7 @@ public class MinaConnector implements NIOConnector, FailureNotifier
    
    // Attributes ----------------------------------------------------
 
-   private RemotingConfiguration configuration;
+   private Configuration configuration;
 
    private NioSocketConnector connector;
 
@@ -72,12 +72,12 @@ public class MinaConnector implements NIOConnector, FailureNotifier
 
    // Public --------------------------------------------------------
 
-   public MinaConnector(RemotingConfiguration configuration, PacketDispatcher dispatcher)
+   public MinaConnector(Configuration configuration, PacketDispatcher dispatcher)
    {
       this(configuration, dispatcher, new ClientKeepAliveFactory());
    }
 
-   public MinaConnector(RemotingConfiguration configuration, PacketDispatcher dispatcher,
+   public MinaConnector(Configuration configuration, PacketDispatcher dispatcher,
          KeepAliveFactory keepAliveFactory)
    {
       assert configuration != null;
@@ -258,13 +258,12 @@ public class MinaConnector implements NIOConnector, FailureNotifier
 
       public void sessionCreated(IoSession session)
       {
-         if (log.isInfoEnabled())
-            log.info("created session " + session);
+         if (log.isTraceEnabled())
+            log.trace("created session " + session);
       }
 
       public void sessionDestroyed(IoSession session)
       {
-         log.warn("destroyed session " + session);
          RemotingException re =
             new RemotingException(MessagingException.INTERNAL_ERROR, "MINA session has been destroyed", Long.toString(session.getId()));
          fireFailure(re);

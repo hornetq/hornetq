@@ -11,8 +11,8 @@ import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.remoting.RemotingConfiguration;
-import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
+import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.remoting.impl.ConfigurationHelper;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -34,18 +34,18 @@ public class RemotingConfigurationValidatorTest extends TestCase
 
    public void testINVMConfiguration()
    {
-      RemotingConfiguration conf = RemotingConfigurationImpl.newINVMConfiguration();
-
-      validate(conf);
+      Configuration config = ConfigurationHelper.newConfiguration(INVM, "localhost", -1);
+      
+      validate(config);
    }
 
    public void testNegativePort()
    {
-      RemotingConfiguration conf = new RemotingConfigurationImpl(TCP, "localhost", -1);
+      Configuration config =  ConfigurationHelper.newConfiguration(TCP, "localhost", -1);
 
       try 
       {
-         validate(conf);
+         validate(config);
          fail("can not set a negative port");
       } catch (Exception e)
       {
@@ -55,12 +55,12 @@ public class RemotingConfigurationValidatorTest extends TestCase
    
    public void test_DisableINVM_With_INVMTransport()
    {
-      RemotingConfigurationImpl conf = new RemotingConfigurationImpl(INVM, "localhost", 9000);
-      conf.setInvmDisabled(true);
+      Configuration config = ConfigurationHelper.newConfiguration(INVM, "localhost", 9000);
+      config.setInvmDisabled(true);
       
       try 
       {
-         validate(conf);
+         validate(config);
          fail("can not disable INVM when INVM transport is set");
       } catch (Exception e)
       {
@@ -70,12 +70,12 @@ public class RemotingConfigurationValidatorTest extends TestCase
    
    public void test_EnableSSL_With_INVMTransport()
    {
-      RemotingConfigurationImpl conf = new RemotingConfigurationImpl(INVM, "localhost", 9000);
-      conf.setSSLEnabled(true);
+      Configuration config = ConfigurationHelper.newConfiguration(INVM, "localhost", 9000);
+      config.setSSLEnabled(true);
       
       try 
       {
-         validate(conf);
+         validate(config);
          fail("can not enable SSL when INVM transport is set");
       } catch (Exception e)
       {

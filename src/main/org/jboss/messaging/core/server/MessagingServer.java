@@ -23,6 +23,7 @@ package org.jboss.messaging.core.server;
 
 import java.util.HashSet;
 
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;

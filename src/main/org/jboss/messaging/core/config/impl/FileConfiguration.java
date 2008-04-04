@@ -23,15 +23,13 @@ package org.jboss.messaging.core.config.impl;
 
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 
-import java.io.Serializable;
-import java.io.Reader;
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 
 import org.jboss.messaging.core.remoting.TransportType;
-import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
-import org.jboss.messaging.core.server.Configuration;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
@@ -42,7 +40,7 @@ import org.w3c.dom.NodeList;
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class FileConfiguration extends Configuration implements Serializable
+public class FileConfiguration extends ConfigurationImpl implements Serializable
 {
 	private static final long serialVersionUID = -4766689627675039596L;
 	
@@ -71,28 +69,26 @@ public class FileConfiguration extends Configuration implements Serializable
       
       scheduledThreadPoolMaxSize = getInteger(e, "scheduled-executor-max-pool-size", scheduledThreadPoolMaxSize);
       
-      TransportType remotingTransport = TransportType.valueOf(getString(e, "remoting-transport", TCP.name()));
+      transport = TransportType.valueOf(getString(e, "remoting-transport", TCP.name()));
       
-      int remotingPort = getInteger(e, "remoting-bind-address", 5400);
-      
-      RemotingConfigurationImpl remotingConf = new RemotingConfigurationImpl(remotingTransport, "localhost", remotingPort);
-      
-      remotingConf.setTimeout(getInteger(e, "remoting-timeout", 5));
-      
-      remotingConf.setInvmDisabled(getBoolean(e, "remoting-disable-invm", false));
-      
-      remotingConf.setSSLEnabled(getBoolean(e, "remoting-enable-ssl", false));
-      
-      remotingConf.setKeyStorePath(getString(e, "remoting-ssl-keystore-path", null));
-      
-      remotingConf.setKeyStorePassword(getString(e, "remoting-ssl-keystore-password", null));
-      
-      remotingConf.setTrustStorePath(getString(e, "remoting-ssl-truststore-path", null));
-      
-      remotingConf.setTrustStorePassword(getString(e, "remoting-ssl-truststore-password", null));
+      host = getString(e, "remoting-host", "localhost");
 
-      this.remotingConfig = remotingConf;
+      port = getInteger(e, "remoting-bind-address", 5400);
       
+      timeout = getInteger(e, "remoting-timeout", 5);
+      
+      invmDisabled = getBoolean(e, "remoting-disable-invm", false);
+      
+      sslEnabled = getBoolean(e, "remoting-enable-ssl", false);
+      
+      keyStorePath = getString(e, "remoting-ssl-keystore-path", null);
+      
+      keyStorePassword = getString(e, "remoting-ssl-keystore-password", null);
+      
+      trustStorePath = getString(e, "remoting-ssl-truststore-path", null);
+      
+      trustStorePassword = getString(e, "remoting-ssl-truststore-password", null);
+
       requireDestinations = getBoolean(e, "require-destinations", requireDestinations);
       
       //Persistence config

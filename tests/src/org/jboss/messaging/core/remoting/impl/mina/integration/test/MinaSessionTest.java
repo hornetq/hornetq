@@ -10,9 +10,10 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.PORT;
 
-import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.remoting.NIOConnector;
-import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.core.remoting.impl.SessionTestBase;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
@@ -65,9 +66,9 @@ public class MinaSessionTest extends SessionTestBase
    }
    
    @Override
-   protected RemotingConfigurationImpl createRemotingConfiguration()
+   protected Configuration createRemotingConfiguration()
    {
-      return new RemotingConfigurationImpl(TCP, "localhost", PORT);
+      return ConfigurationHelper.newConfiguration(TCP, "localhost", PORT);
    }
 
    @Override

@@ -36,8 +36,7 @@ import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
-import org.jboss.messaging.core.management.MessagingServerManagement;
-import org.jboss.messaging.core.remoting.RemotingConfiguration;
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.MessagingServer;
@@ -966,8 +965,8 @@ public class JBMServerTestCase extends JBMBaseTestCase
     */
    protected void sleepIfRemoting(int time) throws Exception
    {
-      RemotingConfiguration remotingConf = servers.get(0).getMessagingServer().getRemotingService().getRemotingConfiguration();
-      if (remotingConf.isInvmDisabled())
+      Configuration config = servers.get(0).getMessagingServer().getRemotingService().getConfiguration();
+      if (config.isInvmDisabled())
       {
          Thread.sleep(time);
       }

@@ -15,12 +15,13 @@ import java.util.concurrent.CountDownLatch;
 
 import junit.framework.TestCase;
 
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
-import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
@@ -55,10 +56,10 @@ public class PacketStressTest extends TestCase
    @Override
    protected void setUp() throws Exception
    {
-      RemotingConfigurationImpl remotingConfig = new RemotingConfigurationImpl(TCP, "localhost", PORT);
-      service = new MinaService(remotingConfig);
+      Configuration config = ConfigurationHelper.newConfiguration(TCP, "localhost", PORT);
+      service = new MinaService(config);
       service.start();
-      connector = new MinaConnector(remotingConfig, new PacketDispatcherImpl());
+      connector = new MinaConnector(config, new PacketDispatcherImpl());
       
    }
    

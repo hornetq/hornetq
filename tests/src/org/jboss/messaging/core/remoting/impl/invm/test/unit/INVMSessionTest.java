@@ -9,11 +9,11 @@ package org.jboss.messaging.core.remoting.impl.invm.test.unit;
 import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.PORT;
 
-import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.remoting.NIOConnector;
-import org.jboss.messaging.core.remoting.RemotingConfiguration;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
-import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.SessionTestBase;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
 
@@ -46,9 +46,9 @@ public class INVMSessionTest extends SessionTestBase
    }
    
    @Override
-   protected RemotingConfiguration createRemotingConfiguration()
+   protected Configuration createRemotingConfiguration()
    {
-      return new RemotingConfigurationImpl(INVM, "localhost", PORT);
+      return ConfigurationHelper.newConfiguration(INVM, "localhost", PORT);
    }
    
    @Override

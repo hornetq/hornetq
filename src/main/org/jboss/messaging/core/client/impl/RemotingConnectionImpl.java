@@ -25,12 +25,12 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGISTRY;
 
 import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 
@@ -52,7 +52,7 @@ public class RemotingConnectionImpl implements RemotingConnection
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private final RemotingConfiguration remotingConfig;
+   private final Configuration config;
 
    private NIOConnector connector;
    
@@ -64,15 +64,15 @@ public class RemotingConnectionImpl implements RemotingConnection
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public RemotingConnectionImpl(final RemotingConfiguration remotingConfig, final PacketDispatcher dispatcher) throws Exception
+   public RemotingConnectionImpl(final Configuration config, final PacketDispatcher dispatcher) throws Exception
    {
-      assert remotingConfig != null;
+      assert config != null;
       assert dispatcher != null;
       
-      this.remotingConfig = remotingConfig;
+      this.config = config;
       this.dispatcher = dispatcher;
       
-      log.trace(this + " created with configuration " + remotingConfig);
+      log.trace(this + " created with configuration " + config);
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -83,11 +83,11 @@ public class RemotingConnectionImpl implements RemotingConnection
    {
       if (log.isTraceEnabled()) { log.trace(this + " started remoting connection"); }
 
-      connector = REGISTRY.getConnector(remotingConfig, dispatcher);
+      connector = REGISTRY.getConnector(config, dispatcher);
       session = connector.connect();
 
       if (log.isDebugEnabled())
-         log.debug("Using " + connector + " to connect to " + remotingConfig);
+         log.debug("Using " + connector + " to connect to " + config);
 
       log.trace(this + " started");
    }
@@ -102,7 +102,7 @@ public class RemotingConnectionImpl implements RemotingConnection
          { 
             if (listener != null)
                connector.removeFailureListener(listener);
-            NIOConnector connectorFromRegistry = REGISTRY.removeConnector(remotingConfig);
+            NIOConnector connectorFromRegistry = REGISTRY.removeConnector(config);
             if (connectorFromRegistry != null)
                connectorFromRegistry.disconnect();
          }
@@ -212,7 +212,7 @@ public class RemotingConnectionImpl implements RemotingConnection
       } else 
       {
          AbstractPacket response = (AbstractPacket) session.writeAndBlock(packet, 
-               remotingConfig.getTimeout(), SECONDS);
+               config.getTimeout(), SECONDS);
          return response;
       }
    }

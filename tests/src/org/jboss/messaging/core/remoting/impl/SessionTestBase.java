@@ -16,12 +16,12 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.impl.mina.integration.test.ReversePacketHandler;
 import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
@@ -269,7 +269,7 @@ public abstract class SessionTestBase extends TestCase
       serverDispatcher = null;
    }
    
-   protected abstract RemotingConfiguration createRemotingConfiguration();
+   protected abstract Configuration createRemotingConfiguration();
    
    protected abstract NIOConnector createNIOConnector(PacketDispatcher dispatcher);
 

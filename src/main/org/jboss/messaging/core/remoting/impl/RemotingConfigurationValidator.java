@@ -8,8 +8,8 @@ package org.jboss.messaging.core.remoting.impl;
 
 import static org.jboss.messaging.core.remoting.TransportType.INVM;
 
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.RemotingConfiguration;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -27,12 +27,12 @@ public class RemotingConfigurationValidator
 
    // Static --------------------------------------------------------
 
-   public static void validate(RemotingConfiguration configuration)
+   public static void validate(Configuration configuration)
    {
       assert configuration != null;
       
       if (log.isDebugEnabled())
-         log.debug("validating " + configuration);
+         log.debug("validating " + configuration.getURI());
       
       if (configuration.getTransport() == INVM
             && configuration.isInvmDisabled())

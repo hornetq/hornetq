@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.server;
+package org.jboss.messaging.core.config.impl;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -27,21 +27,27 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.messaging.core.remoting.RemotingConfiguration;
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.remoting.TransportType;
-import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
+import org.jboss.messaging.core.server.JournalType;
 
 /**
  * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class Configuration implements RemotingConfiguration, Serializable
+public class ConfigurationImpl implements Configuration, Serializable
 {
    private static final long serialVersionUID = 4077088945050267843L;
 
-   private static final String REMOTING_DISABLE_INVM_SYSPROP_KEY = "jbm.remoting.disable.invm";
+   public static final String REMOTING_DISABLE_INVM_SYSPROP_KEY = "jbm.remoting.disable.invm";
 
    public static final String REMOTING_ENABLE_SSL_SYSPROP_KEY = "jbm.remoting.enable.ssl";
+
+   public static final int DEFAULT_KEEP_ALIVE_INTERVAL = 10; // in seconds
+   public static final int DEFAULT_KEEP_ALIVE_TIMEOUT = 5; // in seconds
+   public static final int DEFAULT_REQRES_TIMEOUT = 5; // in seconds
+   public static final boolean DEFAULT_INVM_DISABLED = false;
+   public static final boolean DEFAULT_SSL_ENABLED = false;
 
    private PropertyChangeSupport propertyChangeSupport;
    
@@ -63,8 +69,6 @@ public class Configuration implements RemotingConfiguration, Serializable
    
    protected long securityInvalidationInterval = 10000;
 
-   protected RemotingConfigurationImpl remotingConfig;
-   
    protected boolean requireDestinations;
    
    //Persistence config
@@ -77,7 +81,7 @@ public class Configuration implements RemotingConfiguration, Serializable
    
    protected boolean createJournalDir;
    
-   protected JournalType journalType;
+   public JournalType journalType;
    
    protected boolean journalSync;
    
@@ -89,6 +93,24 @@ public class Configuration implements RemotingConfiguration, Serializable
    
    protected long journalTaskPeriod;
 
+   // remoting config
+   
+   protected TransportType transport;
+   protected String host;
+   protected int port;
+
+   protected int timeout = DEFAULT_REQRES_TIMEOUT;
+   protected int keepAliveInterval = DEFAULT_KEEP_ALIVE_INTERVAL;
+   protected int keepAliveTimeout = DEFAULT_KEEP_ALIVE_TIMEOUT;
+   protected boolean invmDisabled = DEFAULT_INVM_DISABLED;
+   protected boolean invmDisabledModified = false;
+   protected boolean sslEnabled = DEFAULT_SSL_ENABLED;
+   protected boolean sslEnabledModified = false;
+   protected String keyStorePath;
+   protected String keyStorePassword;
+   protected String trustStorePath;
+   protected String trustStorePassword;
+   
    public void addPropertyChangeListener(PropertyChangeListener listener)
    {
       if (propertyChangeSupport == null)
@@ -190,91 +212,159 @@ public class Configuration implements RemotingConfiguration, Serializable
    	return this.securityInvalidationInterval;
    }
    
+   public TransportType getTransport()
+   {
+      return transport;
+   }
+
+
+   public void setTransport(TransportType transport)
+   {
+      this.transport = transport;
+   }
+
    public String getHost()
    {
-	   return remotingConfig.getHost();
-	}
+      return host;
+   }
    
-   // FIXME required only for tests
-   public void setPort(int port)
+   public void setHost(String host)
    {
-      remotingConfig.setPort(port);
+      assert host != null;
+      
+      this.host = host;
    }
 
    public int getPort()
    {
-	   return remotingConfig.getPort();
+      return port;
    }
-
-   public TransportType getTransport() 
+   
+   public void setPort(int port)
    {
-	   return remotingConfig.getTransport();
+      this.port = port;
    }
 
+   public String getLocation()
+   {
+      return transport + "://" + host + "/" + port;
+   }
+   
+   public int getKeepAliveInterval()
+   {
+      return keepAliveInterval;
+   }
+   
+   public void setKeepAliveInterval(int keepAliveInterval)
+   {
+      this.keepAliveInterval = keepAliveInterval;
+   }
+
+   public int getKeepAliveTimeout()
+   {
+      return keepAliveTimeout;
+   }
+
+   public void setKeepAliveTimeout(int keepAliveTimeout)
+   {
+      this.keepAliveTimeout = keepAliveTimeout;
+   }
+   
+   public int getTimeout()
+   {
+      return timeout;
+   }
+
+   public String getKeyStorePath()
+   {
+      return keyStorePath;
+   }
+
+   public void setKeyStorePath(String keyStorePath)
+   {
+      this.keyStorePath = keyStorePath;
+   }
+   
+   public String getKeyStorePassword()
+   {
+      return keyStorePassword;
+   }
+   
+   public void setKeyStorePassword(String keyStorePassword)
+   {
+      this.keyStorePassword = keyStorePassword;
+   }
+
+   public String getTrustStorePath()
+   {
+      return trustStorePath;
+   }
+
+   public void setTrustStorePath(String trustStorePath)
+   {
+      this.trustStorePath = trustStorePath;
+   }
+   
+   public String getTrustStorePassword()
+   {
+      return trustStorePassword;
+   }
+   
+   public void setTrustStorePassword(String trustStorePassword)
+   {
+      this.trustStorePassword = trustStorePassword;
+   }
+   
    public boolean isInvmDisabled()
    {
-      if (System.getProperty(REMOTING_DISABLE_INVM_SYSPROP_KEY) != null)
+       if (System.getProperty(REMOTING_DISABLE_INVM_SYSPROP_KEY) != null && !invmDisabledModified)
       {
          return Boolean.parseBoolean(System.getProperty(REMOTING_DISABLE_INVM_SYSPROP_KEY));
       }
       else 
       {
-         return remotingConfig.isInvmDisabled();
+         return invmDisabled;
       }
    }
-
+   
+   public void setInvmDisabled(boolean invmDisabled)
+   {
+      this.invmDisabled = invmDisabled;
+      this.invmDisabledModified = true;
+   }
+   
    public boolean isSSLEnabled()
    {
-      if (System.getProperty(REMOTING_ENABLE_SSL_SYSPROP_KEY) != null)
+      if (System.getProperty(REMOTING_ENABLE_SSL_SYSPROP_KEY) != null && !sslEnabledModified)
       {
          return Boolean.parseBoolean(System.getProperty(REMOTING_ENABLE_SSL_SYSPROP_KEY));
       }
       else 
       {
-         return remotingConfig.isSSLEnabled();
+         return sslEnabled;
       }
    }
-
-   public int getKeepAliveInterval()
-   {
-      return remotingConfig.getKeepAliveInterval();
-   }
-
-   public int getKeepAliveTimeout()
-   {
-      return remotingConfig.getKeepAliveTimeout();
-   }
-
-   public String getKeyStorePassword()
-   {
-      return remotingConfig.getKeyStorePassword();
-   }
-
-   public String getKeyStorePath()
-   {
-      return remotingConfig.getKeyStorePath();
-   }
-
-   public int getTimeout()
-   {
-      return remotingConfig.getTimeout();
-   }
-
-   public String getTrustStorePassword()
-   {
-      return remotingConfig.getTrustStorePassword();
-   }
-
-   public String getTrustStorePath()
-   {
-      return remotingConfig.getTrustStorePath();
-   }
    
+   public void setSSLEnabled(boolean sslEnabled)
+   {
+      this.sslEnabled = sslEnabled;
+      this.sslEnabledModified = true;
+   }
+
    public String getURI()
    {
-      return remotingConfig.getURI();
+      StringBuffer buff = new StringBuffer();
+      buff.append(transport + "://" + host + ":" + port);
+      buff.append("?").append("timeout=").append(timeout);
+      buff.append("&").append("keepAliveInterval=").append(keepAliveInterval);
+      buff.append("&").append("keepAliveTimeout=").append(keepAliveTimeout);
+      buff.append("&").append("invmDisabled=").append(invmDisabled);
+      buff.append("&").append("sslEnabled=").append(sslEnabled);
+      buff.append("&").append("keyStorePath=").append(keyStorePath);
+      buff.append("&").append("trustStorePath=").append(trustStorePath);
+      return buff.toString();
    }
-
+   
 	public String getBindingsDirectory()
 	{
 		return bindingsDirectory;
@@ -384,46 +474,5 @@ public class Configuration implements RemotingConfiguration, Serializable
 	{
 		this.requireDestinations = requireDestinations;
 	}
-
-
-   
-//   /**
-//    * If the system property <code>jbm.remoting.disable.invm</code> is set, its boolean value is used 
-//    * regardless of the value of the property <code>remoting-disable-invm</code> in <code>jbm-configuration.xml</code>
-//    */
-//   public RemotingConfiguration getRemotingConfiguration() 
-//   {
-//      RemotingConfigurationImpl configuration = new RemotingConfigurationImpl(remotingTransport, "localhost", remotingBindAddress);
-//      
-//      configuration.setTimeout(remotingTimeout);
-//      
-//      if (System.getProperty(REMOTING_DISABLE_INVM_SYSPROP_KEY) != null)
-//      {
-//         configuration.setInvmDisabled(Boolean.parseBoolean(System.getProperty(REMOTING_DISABLE_INVM_SYSPROP_KEY)));
-//      }
-//      else 
-//      {
-//         configuration.setInvmDisabled(remotingDisableInvm);
-//      }
-//      
-//      if (System.getProperty(REMOTING_ENABLE_SSL_SYSPROP_KEY) != null)
-//      {
-//         configuration.setSSLEnabled(Boolean.parseBoolean(System.getProperty(REMOTING_ENABLE_SSL_SYSPROP_KEY)));
-//      }
-//      else 
-//      {
-//         configuration.setSSLEnabled(remotingEnableSSL);
-//      }
-//      
-//      configuration.setKeyStorePath(remotingSSLKeyStorePath);
-//      
-//      configuration.setKeyStorePassword(remotingSSLKeyStorePassword);
-//      
-//      configuration.setTrustStorePath(remotingSSLTrustStorePath);
-//      
-//      configuration.setTrustStorePassword(remotingSSLTrustStorePassword); 
-//      
-//      return configuration;
-//   }
 }
  

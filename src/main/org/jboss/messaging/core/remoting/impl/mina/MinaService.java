@@ -30,11 +30,11 @@ import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.jboss.beans.metadata.api.annotations.Install;
 import org.jboss.beans.metadata.api.annotations.Uninstall;
 import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.RemotingConfiguration;
 import org.jboss.messaging.core.remoting.RemotingException;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
@@ -55,7 +55,7 @@ public class MinaService implements RemotingService, FailureNotifier
 
    private boolean started = false;
    
-   private RemotingConfiguration remotingConfig;
+   private Configuration config;
    
    private NioSocketAcceptor acceptor;
 
@@ -73,19 +73,19 @@ public class MinaService implements RemotingService, FailureNotifier
 
    // Constructors --------------------------------------------------
    
-   public MinaService(RemotingConfiguration remotingConfig)
+   public MinaService(Configuration config)
    {
-      this(remotingConfig, new ServerKeepAliveFactory());
+      this(config, new ServerKeepAliveFactory());
    }
 
-   public MinaService(RemotingConfiguration remotingConfig, ServerKeepAliveFactory factory)
+   public MinaService(Configuration config, ServerKeepAliveFactory factory)
    {
-      assert remotingConfig != null;
+      assert config != null;
       assert factory != null;
 
-      validate(remotingConfig);
+      validate(config);
       
-      this.remotingConfig = remotingConfig;
+      this.config = config;
       this.factory = factory;
       this.dispatcher = new PacketDispatcherImpl(this.filters);
    }
@@ -121,31 +121,31 @@ public class MinaService implements RemotingService, FailureNotifier
    public void start() throws Exception
    {
       if (log.isDebugEnabled())
-         log.debug("Start MinaService with configuration:" + remotingConfig);
+         log.debug("Start MinaService with configuration:" + config);
       
       // if INVM transport is set, we bypass MINA setup
-      if (remotingConfig.getTransport() != INVM 
+      if (config.getTransport() != INVM 
             && acceptor == null)
       {
          acceptor = new NioSocketAcceptor();
          DefaultIoFilterChainBuilder filterChain = acceptor.getFilterChain();
 
          addMDCFilter(filterChain);
-         if (remotingConfig.isSSLEnabled())
+         if (config.isSSLEnabled())
          {
-            addSSLFilter(filterChain, false, remotingConfig.getKeyStorePath(),
-                  remotingConfig.getKeyStorePassword(), remotingConfig
-                        .getTrustStorePath(), remotingConfig
+            addSSLFilter(filterChain, false, config.getKeyStorePath(),
+                  config.getKeyStorePassword(), config
+                        .getTrustStorePath(), config
                         .getTrustStorePassword());
          }
          addCodecFilter(filterChain);
          addLoggingFilter(filterChain);
          addKeepAliveFilter(filterChain, factory,
-               remotingConfig.getKeepAliveInterval(), remotingConfig.getKeepAliveTimeout(), this);
+               config.getKeepAliveInterval(), config.getKeepAliveTimeout(), this);
          addExecutorFilter(filterChain);
 
          // Bind
-         acceptor.setDefaultLocalAddress(new InetSocketAddress(remotingConfig.getHost(), remotingConfig.getPort()));
+         acceptor.setDefaultLocalAddress(new InetSocketAddress(config.getHost(), config.getPort()));
          acceptor.setReuseAddress(true);
          acceptor.getSessionConfig().setReuseAddress(true);
          acceptor.getSessionConfig().setKeepAlive(true);
@@ -157,11 +157,11 @@ public class MinaService implements RemotingService, FailureNotifier
          acceptor.addListener(acceptorListener);
       }
       
-      boolean disableInvm = remotingConfig.isInvmDisabled();
+      boolean disableInvm = config.isInvmDisabled();
       if (log.isDebugEnabled())
          log.debug("invm optimization for remoting is " + (disableInvm ? "disabled" : "enabled"));
       if (!disableInvm)
-         REGISTRY.register(remotingConfig, dispatcher);
+         REGISTRY.register(config, dispatcher);
 
       started = true;
    }
@@ -178,7 +178,7 @@ public class MinaService implements RemotingService, FailureNotifier
          acceptor = null;
       }
       
-      REGISTRY.unregister(remotingConfig);
+      REGISTRY.unregister(config);
       
       started = false;
    }
@@ -188,9 +188,9 @@ public class MinaService implements RemotingService, FailureNotifier
       return dispatcher;
    }
    
-   public RemotingConfiguration getRemotingConfiguration()
+   public Configuration getConfiguration()
    {
-      return remotingConfig;
+      return config;
    }
    
    /**
@@ -231,11 +231,11 @@ public class MinaService implements RemotingService, FailureNotifier
       this.factory = factory;
    }
 
-   public void setRemotingConfiguration(RemotingConfiguration remotingConfig)
+   public void setRemotingConfiguration(Configuration remotingConfig)
    {
       assert started == false;
       
-      this.remotingConfig = remotingConfig;
+      this.config = remotingConfig;
    }
 
    // Package protected ---------------------------------------------

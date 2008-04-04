@@ -9,8 +9,9 @@ import junit.framework.TestCase;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.RemotingService;
+import org.jboss.messaging.core.remoting.TransportType;
+import org.jboss.messaging.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
-import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
@@ -41,7 +42,7 @@ public class MinaServiceTest extends TestCase
 
    public void testMinaConnector_Failure() throws Exception
    {
-      NIOConnector connector = new MinaConnector(new RemotingConfigurationImpl(
+      NIOConnector connector = new MinaConnector(ConfigurationHelper.newConfiguration(
             TCP, "localhost", 9000), new PacketDispatcherImpl());
 
       try
@@ -61,7 +62,7 @@ public class MinaServiceTest extends TestCase
    {
       super.setUp();
 
-      invmService = new MinaService(RemotingConfigurationImpl.newINVMConfiguration());
+      invmService = new MinaService(ConfigurationHelper.newConfiguration(TransportType.INVM, "localhost", -1));
       invmService.start();
    }
 

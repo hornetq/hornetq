@@ -33,9 +33,8 @@ import javax.jms.JMSException;
 import javax.jms.QueueConnection;
 
 import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.RemotingConfiguration;
-import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.test.messaging.jms.JMSTestCase;
 
@@ -51,7 +50,7 @@ public class ClientNetworkFailureTest extends JMSTestCase
    // Constants -----------------------------------------------------
 
    private MinaService minaService;
-   private RemotingConfiguration originalRemotingConf;
+   private Configuration originalConfig;
    private NetworkFailureFilter networkFailureFilter;
 
    // Static --------------------------------------------------------
@@ -72,16 +71,15 @@ public class ClientNetworkFailureTest extends JMSTestCase
 
       minaService = (MinaService) servers.get(0).getMessagingServer()
             .getRemotingService();
-      originalRemotingConf = minaService.getRemotingConfiguration();
+      originalConfig = minaService.getConfiguration();
       minaService.stop();
-      RemotingConfiguration oldRemotingConfig = minaService
-            .getRemotingConfiguration();
-      RemotingConfigurationImpl newRemotingConfig = new RemotingConfigurationImpl(
-            oldRemotingConfig);
-      newRemotingConfig.setInvmDisabled(true);
-      newRemotingConfig.setKeepAliveInterval(KEEP_ALIVE_INTERVAL);
-      newRemotingConfig.setKeepAliveTimeout(KEEP_ALIVE_TIMEOUT);
-      minaService.setRemotingConfiguration(newRemotingConfig);
+      Configuration oldConfig = minaService
+            .getConfiguration();
+      Configuration newConfig = oldConfig;
+      newConfig.setInvmDisabled(true);
+      newConfig.setKeepAliveInterval(KEEP_ALIVE_INTERVAL);
+      newConfig.setKeepAliveTimeout(KEEP_ALIVE_TIMEOUT);
+      minaService.setRemotingConfiguration(newConfig);
       minaService.start();
 
       networkFailureFilter = new NetworkFailureFilter();
@@ -99,7 +97,7 @@ public class ClientNetworkFailureTest extends JMSTestCase
       minaService.getFilterChain().remove("network-failure");
 
       minaService.stop();
-      minaService.setRemotingConfiguration(originalRemotingConf);
+      minaService.setRemotingConfiguration(originalConfig);
       minaService.start();
 
       super.tearDown();

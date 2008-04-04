@@ -23,12 +23,13 @@ import java.util.concurrent.CountDownLatch;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.RemotingException;
+import org.jboss.messaging.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
-import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.mina.ClientKeepAliveFactory;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
@@ -58,10 +59,10 @@ public class ClientKeepAliveTest extends TestCase
    @Override
    protected void setUp() throws Exception
    {
-      RemotingConfigurationImpl remotingConfig = new RemotingConfigurationImpl(TCP, "localhost", PORT);
-      remotingConfig.setKeepAliveInterval(KEEP_ALIVE_INTERVAL);
-      remotingConfig.setKeepAliveTimeout(KEEP_ALIVE_TIMEOUT);
-      service = new MinaService(remotingConfig);
+      Configuration config = ConfigurationHelper.newConfiguration(TCP, "localhost", PORT);
+      config.setKeepAliveInterval(KEEP_ALIVE_INTERVAL);
+      config.setKeepAliveTimeout(KEEP_ALIVE_TIMEOUT);
+      service = new MinaService(config);
       service.start();
    }
 
@@ -97,7 +98,7 @@ public class ClientKeepAliveTest extends TestCase
       };
       service.addFailureListener(listener);
 
-      MinaConnector connector = new MinaConnector(service.getRemotingConfiguration(), new PacketDispatcherImpl(), factory);
+      MinaConnector connector = new MinaConnector(service.getConfiguration(), new PacketDispatcherImpl(), factory);
       connector.connect();
 
       boolean firedKeepAliveNotification = latch.await(KEEP_ALIVE_INTERVAL
@@ -128,7 +129,7 @@ public class ClientKeepAliveTest extends TestCase
       };
       service.addFailureListener(listener);
       
-      MinaConnector connector = new MinaConnector(service.getRemotingConfiguration(), new PacketDispatcherImpl(), factory);
+      MinaConnector connector = new MinaConnector(service.getConfiguration(), new PacketDispatcherImpl(), factory);
 
       NIOSession session = connector.connect();
       String clientSessionID = session.getID();
@@ -173,7 +174,7 @@ public class ClientKeepAliveTest extends TestCase
 
       try
       {
-         MinaConnector connector = new MinaConnector(service.getRemotingConfiguration(),
+         MinaConnector connector = new MinaConnector(service.getConfiguration(),
                new PacketDispatcherImpl(), factory);
 
          NIOSession session = connector.connect();
@@ -233,9 +234,9 @@ public class ClientKeepAliveTest extends TestCase
       service.addFailureListener(listener);
       
       MinaConnector connectorNotResponding = new MinaConnector(service
-            .getRemotingConfiguration(), new PacketDispatcherImpl(), notRespondingfactory);
+            .getConfiguration(), new PacketDispatcherImpl(), notRespondingfactory);
       MinaConnector connectorResponding = new MinaConnector(service
-            .getRemotingConfiguration(), new PacketDispatcherImpl(), respondingfactory);
+            .getConfiguration(), new PacketDispatcherImpl(), respondingfactory);
 
       NIOSession sessionNotResponding = connectorNotResponding.connect();
       String clientSessionIDNotResponding = sessionNotResponding.getID();

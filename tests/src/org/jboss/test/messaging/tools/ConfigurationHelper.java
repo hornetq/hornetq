@@ -29,7 +29,8 @@ import java.util.Set;
 
 import org.jboss.kernel.spi.dependency.KernelControllerContext;
 import org.jboss.kernel.spi.dependency.KernelControllerContextAware;
-import org.jboss.messaging.core.server.Configuration;
+import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.test.messaging.tools.container.JBMPropertyKernelConfig;
 
 /**
@@ -69,7 +70,7 @@ public class ConfigurationHelper implements KernelControllerContextAware
    {
       JBMPropertyKernelConfig config = (JBMPropertyKernelConfig) kernelControllerContext.getKernel().getConfig();
       HashMap<String, Object> configuration = configs.get(config.getServerID());
-      Configuration actualConfiguration = (Configuration) kernelControllerContext.getKernel().getRegistry().getEntry("Configuration").getTarget();
+      ConfigurationImpl actualConfiguration = (ConfigurationImpl) kernelControllerContext.getKernel().getRegistry().getEntry("Configuration").getTarget();
       actualConfiguration.setMessagingServerID(config.getServerID());
       actualConfiguration.setPort(actualConfiguration.getPort() + config.getServerID());
       alterConfig(actualConfiguration, configuration);

@@ -29,9 +29,10 @@ import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
@@ -43,12 +44,15 @@ public class EmbeddedExample
 {
    public static void main(String args[]) throws Exception
    {
-      RemotingConfigurationImpl remotingConf = new RemotingConfigurationImpl(TCP, "localhost", 5400);
-      MessagingServer messagingServer = new MessagingServerImpl(remotingConf);
+      Configuration conf = new ConfigurationImpl();
+      conf.setTransport(TCP);
+      conf.setHost("localhost");
+      conf.setPort(5400);
+      MessagingServer messagingServer = new MessagingServerImpl(conf);
       messagingServer.start();
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, remotingConf, messagingServer.getVersion());
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, conf, messagingServer.getVersion());
       ClientConnection clientConnection = cf.createConnection(null, null);
-      ClientSession clientSession = clientConnection.createClientSession(false, true, true, 0, false, false);
+      ClientSession clientSession = clientConnection.createClientSession(false, true, true, -1, false, false);
       clientSession.createQueue("Queue1", "Queue1", null, false, false);
       ClientProducer clientProducer = clientSession.createProducer("Queue1");
 

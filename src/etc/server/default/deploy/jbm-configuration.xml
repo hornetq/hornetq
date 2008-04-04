@@ -23,12 +23,16 @@
       
       <require-destinations>true</require-destinations>
            
+      <!-- Remoting configuration -->
+      
       <!-- one of: TCP, INVM                                                                     -->
       <!-- INVM: the server is accessible only by clients in the same VM (no sockets are opened) --> 
       <remoting-transport>TCP</remoting-transport>
       
       <remoting-bind-address>5400</remoting-bind-address>
       
+      <remoting-host>localhost</remoting-host>
+
       <!--  timeout in seconds -->
       <remoting-timeout>5</remoting-timeout>
       

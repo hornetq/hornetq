@@ -30,9 +30,10 @@ import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
+import org.jboss.messaging.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.test.messaging.jms.SerializedClientSupport;
@@ -117,18 +118,18 @@ public class CoreClientOverSSLTest extends TestCase
    @Override
    protected void setUp() throws Exception
    {
-      RemotingConfigurationImpl remotingConf = new RemotingConfigurationImpl(TCP,
+      Configuration config = ConfigurationHelper.newConfiguration(TCP,
             "localhost", SSL_PORT);
-      remotingConf.setSSLEnabled(true);
-      remotingConf.setKeyStorePath("messaging.keystore");
-      remotingConf.setKeyStorePassword("secureexample");
-      remotingConf.setTrustStorePath("messaging.truststore");
-      remotingConf.setTrustStorePassword("secureexample");
+      config.setSSLEnabled(true);
+      config.setKeyStorePath("messaging.keystore");
+      config.setKeyStorePassword("secureexample");
+      config.setTrustStorePath("messaging.truststore");
+      config.setTrustStorePassword("secureexample");
 
-      server = new MessagingServerImpl(remotingConf);
+      server = new MessagingServerImpl(config);
       server.start();
 
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, remotingConf, server.getVersion());
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, config, server.getVersion());
       connection = cf.createConnection(null, null);
       ClientSession session = connection.createClientSession(false, true, true, -1, false, false);
       session.createQueue(QUEUE, QUEUE, null, false, false);

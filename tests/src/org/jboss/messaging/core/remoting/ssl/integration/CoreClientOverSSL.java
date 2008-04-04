@@ -32,9 +32,10 @@ import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.remoting.impl.RemotingConfigurationImpl;
+import org.jboss.messaging.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
@@ -71,16 +72,16 @@ public class CoreClientOverSSL
          String keyStorePath = args[1];
          String keyStorePassword = args[2];
 
-         RemotingConfigurationImpl remotingConf = new RemotingConfigurationImpl(TCP,
+         Configuration config = ConfigurationHelper.newConfiguration(TCP,
                "localhost", CoreClientOverSSLTest.SSL_PORT);
-         remotingConf.setSSLEnabled(sslEnabled);
-         remotingConf.setKeyStorePath(keyStorePath);
-         remotingConf.setKeyStorePassword(keyStorePassword);
+         config.setSSLEnabled(sslEnabled);
+         config.setKeyStorePath(keyStorePath);
+         config.setKeyStorePassword(keyStorePassword);
 
          // FIXME there should be another way to get a meaningful Version on the
          // client side...
          MessagingServer server = new MessagingServerImpl();
-         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, remotingConf, server.getVersion());
+         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, config, server.getVersion());
          ClientConnection conn = cf.createConnection(null, null);
          ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
          ClientProducer producer = session.createProducer(QUEUE);
