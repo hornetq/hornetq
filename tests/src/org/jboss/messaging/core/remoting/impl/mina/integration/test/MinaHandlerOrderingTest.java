@@ -16,8 +16,10 @@ import java.util.concurrent.Executors;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaHandler;
+import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
 import org.jboss.messaging.core.remoting.test.unit.TestPacketHandler;
 
@@ -39,7 +41,7 @@ public class MinaHandlerOrderingTest extends TestCase
 
    // Constants -----------------------------------------------------
 
-   private static final int MANY_MESSAGES = 10000;
+   private static final int MANY_MESSAGES = 50;
    
    // Attributes ----------------------------------------------------
 
@@ -81,7 +83,7 @@ public class MinaHandlerOrderingTest extends TestCase
       int size = handler_2.getPackets().size();
       assertTrue("handler_2 should not have received all its message (size:" + size + ")", size < MANY_MESSAGES);
 
-      assertTrue(handler_2.await(5, SECONDS));
+      assertTrue(handler_2.await(2, SECONDS));
       List<TextPacket> packetsReceivedByHandler_2 = handler_2.getPackets();
       assertEquals(MANY_MESSAGES, packetsReceivedByHandler_2.size());      
       // we check that handler_2 receives all its messages in order:
@@ -103,7 +105,21 @@ public class MinaHandlerOrderingTest extends TestCase
 
       handler_1 = new TestPacketHandler();
       clientDispatcher.register(handler_1);
-      handler_2 = new TestPacketHandler();
+      handler_2 = new TestPacketHandler() {
+        @Override
+         public void handle(Packet packet, PacketSender sender)
+         {
+           // slow down the 2nd handler
+           try
+           {
+              Thread.sleep(10);
+           } catch (InterruptedException e)
+           {
+              e.printStackTrace();
+           }           
+           super.handle(packet, sender);
+         } 
+      };
       clientDispatcher.register(handler_2);
    }
 
