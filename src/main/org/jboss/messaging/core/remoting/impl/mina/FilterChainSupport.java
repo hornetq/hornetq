@@ -17,7 +17,6 @@ import javax.net.ssl.SSLContext;
 
 import org.apache.mina.common.DefaultIoFilterChainBuilder;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
-import org.apache.mina.filter.executor.ExecutorFilter;
 import org.apache.mina.filter.keepalive.KeepAliveFilter;
 import org.apache.mina.filter.logging.LoggingFilter;
 import org.apache.mina.filter.logging.MdcInjectionFilter;
@@ -118,12 +117,6 @@ public class FilterChainSupport
       filter.setExceptionCaughtLogLevel(WARN);
 
       filterChain.addLast("logger", filter);
-   }
-
-   static void addExecutorFilter(DefaultIoFilterChainBuilder filterChain)
-   {
-      ExecutorFilter executorFilter = new ExecutorFilter();
-      filterChain.addLast("executor", executorFilter);
    }
 
    static ScheduledExecutorService addBlockingRequestResponseFilter(

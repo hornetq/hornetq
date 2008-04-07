@@ -126,19 +126,26 @@ public class RemotingConnectionImpl implements RemotingConnection
       return session.getID();
    }
  
+   public AbstractPacket send(String targetID, AbstractPacket packet)
+         throws MessagingException
+   {
+      return send(targetID, targetID, packet);
+   }
+
    /**
     * send the packet and block until a response is received (<code>oneWay</code> is set to <code>false</code>)
     */
-   public AbstractPacket send(final String id, final AbstractPacket packet) throws MessagingException
+   public AbstractPacket send(final String targetID, final String executorID, final AbstractPacket packet) throws MessagingException
    {
-      return send(id, packet, false);
+      return send(targetID, executorID, packet, false);
    }
    
-   public AbstractPacket send(final String id, final AbstractPacket packet, final boolean oneWay) throws MessagingException
+   public AbstractPacket send(final String targetID, final String executorID, final AbstractPacket packet, final boolean oneWay) throws MessagingException
    {
       assert packet != null;
 
-      packet.setTargetID(id);
+      packet.setTargetID(targetID);
+      packet.setExecutorID(executorID);
       
       AbstractPacket response;
       

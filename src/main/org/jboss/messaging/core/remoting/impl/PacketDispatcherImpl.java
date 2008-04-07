@@ -15,9 +15,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.Interceptor;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
+import org.jboss.messaging.core.remoting.PacketHandlerRegistrationListener;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 
@@ -28,7 +29,10 @@ import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
  */
 public class PacketDispatcherImpl implements PacketDispatcher, Serializable
 {
+
    // Constants -----------------------------------------------------
+
+   private static final long serialVersionUID = -4626926952268528384L;
 
    public static final Logger log = Logger.getLogger(PacketDispatcherImpl.class);
 
@@ -36,6 +40,7 @@ public class PacketDispatcherImpl implements PacketDispatcher, Serializable
 
    private Map<String, PacketHandler> handlers;
    public List<Interceptor> filters;
+   private transient PacketHandlerRegistrationListener listener;
 
    // Static --------------------------------------------------------
 
@@ -55,8 +60,6 @@ public class PacketDispatcherImpl implements PacketDispatcher, Serializable
    }
 
    // Public --------------------------------------------------------
-   
-   
 
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.remoting.impl.IPacketDispatcher#register(org.jboss.messaging.core.remoting.PacketHandler)
@@ -72,6 +75,9 @@ public class PacketDispatcherImpl implements PacketDispatcher, Serializable
       {
          log.debug("registered " + handler + " with ID " + handler.getID());
       }
+      
+      if (listener != null)
+         listener.handlerRegistered(handler.getID());
    }
 
    /* (non-Javadoc)
@@ -87,6 +93,14 @@ public class PacketDispatcherImpl implements PacketDispatcher, Serializable
       {
          log.debug("unregistered handler for " + handlerID);
       }
+      
+      if (listener != null)
+         listener.handlerUnregistered(handlerID);
+   }
+   
+   public void setListener(PacketHandlerRegistrationListener listener)
+   {
+      this.listener = listener;
    }
 
    public PacketHandler getHandler(String handlerID)

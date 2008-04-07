@@ -77,13 +77,19 @@ public abstract class AbstractPacketCodec<P extends Packet>
       {
          callbackID = null;
       }
-      int headerLength = LONG_LENGTH + sizeof(targetID) + sizeof(callbackID) + BOOLEAN_LENGTH;
+      String executorID = packet.getExecutorID();
+      if (NO_ID_SET.equals(executorID))
+      {
+         executorID = targetID;
+      }
+      int headerLength = LONG_LENGTH + sizeof(targetID) + sizeof(callbackID) + sizeof(executorID) + BOOLEAN_LENGTH;
 
       buf.put(packet.getType().byteValue());
       buf.putInt(headerLength);
       buf.putLong(correlationID);
       buf.putNullableString(targetID);
       buf.putNullableString(callbackID);
+      buf.putNullableString(executorID);
       buf.putBoolean(packet.isOneWay());
 
       encodeBody(packet, buf);
@@ -139,6 +145,13 @@ public abstract class AbstractPacketCodec<P extends Packet>
       {
          return NOT_OK;
       }
+      try
+      {
+         buffer.getNullableString();
+      } catch (CharacterCodingException e)
+      {
+         return NOT_OK;
+      }
       buffer.getBoolean(); // oneWay boolean
       if (buffer.remaining() < INT_LENGTH)
       {
@@ -168,6 +181,7 @@ public abstract class AbstractPacketCodec<P extends Packet>
       long correlationID = wrapper.getLong();
       String targetID = wrapper.getNullableString();
       String callbackID = wrapper.getNullableString();
+      String executorID = wrapper.getNullableString();
       boolean oneWay = wrapper.getBoolean();
       
       P packet = decodeBody(wrapper);
@@ -179,10 +193,16 @@ public abstract class AbstractPacketCodec<P extends Packet>
       if (targetID == null)
          targetID = NO_ID_SET;
       packet.setTargetID(targetID);
-      packet.setCorrelationID(correlationID);
+      
       if (callbackID == null)
          callbackID = NO_ID_SET;
       packet.setCallbackID(callbackID);
+      
+      if (executorID == null)
+         executorID = targetID;
+      packet.setExecutorID(executorID);
+      
+      packet.setCorrelationID(correlationID);
       packet.setOneWay(oneWay);
 
       return packet;

@@ -31,6 +31,8 @@ public class AbstractPacket implements Packet
 
    private String callbackID = NO_ID_SET;
 
+   String executorID = NO_ID_SET;
+
    private final PacketType type;
 
    /**
@@ -92,6 +94,18 @@ public class AbstractPacket implements Packet
    {
       return callbackID;
    }
+   
+  public String getExecutorID()
+  {
+     return executorID;
+  }
+  
+  public void setExecutorID(String executorID)
+  {
+     assertValidID(executorID);
+     
+     this.executorID = executorID;
+  }
 
    public void setOneWay(boolean oneWay)
    {
@@ -131,7 +145,7 @@ public class AbstractPacket implements Packet
    {
       return "PACKET[type=" + type
             + ", correlationID=" + correlationID + ", targetID=" + targetID
-            + ", callbackID=" + callbackID + ", oneWay=" + oneWay;
+            + ", callbackID=" + callbackID + ", executorID=" + executorID + ", oneWay=" + oneWay;
    }
 
    // Protected -----------------------------------------------------

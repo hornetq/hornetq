@@ -224,7 +224,7 @@ public class ServerSessionImpl implements ServerSession
    
    public synchronized void handleDelivery(final MessageReference ref, final ServerConsumer consumer) throws Exception
    {
-      Delivery delivery = new DeliveryImpl(ref, consumer.getID(), deliveryIDSequence++, sender);
+      Delivery delivery = new DeliveryImpl(ref, id, consumer.getID(), deliveryIDSequence++, sender);
 
       deliveries.add(delivery);
 

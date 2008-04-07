@@ -108,7 +108,7 @@ public class ServerProducerImpl implements ServerProducer
 		Packet packet = new ProducerReceiveTokensMessage(1);
 		
 		packet.setTargetID(id);
-			
+		packet.setExecutorID(session.getID());
 		sender.send(packet);		
 	}
 	

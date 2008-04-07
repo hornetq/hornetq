@@ -10,7 +10,6 @@ import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGIS
 import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addExecutorFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addKeepAliveFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addLoggingFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addMDCFilter;
@@ -20,6 +19,8 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.mina.common.DefaultIoFilterChainBuilder;
 import org.apache.mina.common.IdleStatus;
@@ -63,6 +64,8 @@ public class MinaService implements RemotingService, FailureNotifier
 
    private PacketDispatcher dispatcher;
 
+   private ExecutorService threadPool; 
+   
    private List<FailureListener> listeners = new ArrayList<FailureListener>();
 
    private ServerKeepAliveFactory factory;
@@ -142,7 +145,6 @@ public class MinaService implements RemotingService, FailureNotifier
          addLoggingFilter(filterChain);
          addKeepAliveFilter(filterChain, factory,
                config.getKeepAliveInterval(), config.getKeepAliveTimeout(), this);
-         addExecutorFilter(filterChain);
 
          // Bind
          acceptor.setDefaultLocalAddress(new InetSocketAddress(config.getHost(), config.getPort()));
@@ -151,7 +153,8 @@ public class MinaService implements RemotingService, FailureNotifier
          acceptor.getSessionConfig().setKeepAlive(true);
          acceptor.setCloseOnDeactivation(false);
 
-         acceptor.setHandler(new MinaHandler(dispatcher, this, true));
+         threadPool = Executors.newCachedThreadPool();
+         acceptor.setHandler(new MinaHandler(dispatcher, threadPool, this, true));
          acceptor.bind();
          acceptorListener = new MinaSessionListener();
          acceptor.addListener(acceptorListener);
@@ -176,6 +179,7 @@ public class MinaService implements RemotingService, FailureNotifier
          acceptor.unbind();
          acceptor.dispose();
          acceptor = null;
+         threadPool.shutdown();
       }
       
       REGISTRY.unregister(config);

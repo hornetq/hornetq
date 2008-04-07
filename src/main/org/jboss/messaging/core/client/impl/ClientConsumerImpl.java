@@ -245,7 +245,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          
          receiverThread = null;
 
-         remotingConnection.send(id, new CloseMessage());
+         remotingConnection.send(id, session.getID(), new CloseMessage());
 
          remotingConnection.getPacketDispatcher().unregister(id);
       }
@@ -369,7 +369,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          {
             tokensToSend = 0;
             
-            remotingConnection.send(id, new ConsumerFlowTokenMessage(tokenBatchSize), true);                  
+            remotingConnection.send(id, session.getID(), new ConsumerFlowTokenMessage(tokenBatchSize), true);                  
          }
       }
    }

@@ -81,7 +81,7 @@ public class ClientBrowserImpl implements ClientBrowser
       
       try
       {
-         remotingConnection.send(id, new CloseMessage());
+         remotingConnection.send(id, session.getID(), new CloseMessage());
       }
       finally
       {
@@ -100,7 +100,7 @@ public class ClientBrowserImpl implements ClientBrowser
    {
       checkClosed();
       
-      remotingConnection.send(id, new SessionBrowserResetMessage());
+      remotingConnection.send(id, session.getID(), new SessionBrowserResetMessage());
    }
 
    public boolean hasNextMessage() throws MessagingException
@@ -108,7 +108,7 @@ public class ClientBrowserImpl implements ClientBrowser
       checkClosed();
       
       SessionBrowserHasNextMessageResponseMessage response =
-         (SessionBrowserHasNextMessageResponseMessage)remotingConnection.send(id, new SessionBrowserHasNextMessageMessage());
+         (SessionBrowserHasNextMessageResponseMessage)remotingConnection.send(id, session.getID(), new SessionBrowserHasNextMessageMessage());
       
       return response.hasNext();
    }
@@ -118,7 +118,7 @@ public class ClientBrowserImpl implements ClientBrowser
       checkClosed();
       
       SessionBrowserNextMessageResponseMessage response =
-         (SessionBrowserNextMessageResponseMessage)remotingConnection.send(id, new SessionBrowserNextMessageMessage());
+         (SessionBrowserNextMessageResponseMessage)remotingConnection.send(id, session.getID(), new SessionBrowserNextMessageMessage());
       
       return response.getMessage();
    }
@@ -128,7 +128,7 @@ public class ClientBrowserImpl implements ClientBrowser
       checkClosed();
       
       SessionBrowserNextMessageBlockResponseMessage response =
-         (SessionBrowserNextMessageBlockResponseMessage)remotingConnection.send(id, new SessionBrowserNextMessageBlockMessage(maxMessages));
+         (SessionBrowserNextMessageBlockResponseMessage)remotingConnection.send(id, session.getID(), new SessionBrowserNextMessageBlockMessage(maxMessages));
       return response.getMessages();
    }
 

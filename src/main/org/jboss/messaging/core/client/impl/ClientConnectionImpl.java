@@ -133,7 +133,7 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    {
       checkClosed();
        
-      remotingConnection.send(id, new ConnectionStartMessage(), true);
+      remotingConnection.send(id, id, new ConnectionStartMessage(), true);
    }
    
    public void stop() throws MessagingException

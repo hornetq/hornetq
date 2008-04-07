@@ -7,6 +7,7 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+
 public interface Packet
 {
    // Public --------------------------------------------------------
@@ -21,9 +22,13 @@ public interface Packet
 
    void setTargetID(String targetID);
 
+   String getCallbackID();
+
    void setCallbackID(String callbackID);
 
-   String getCallbackID();
+   String getExecutorID();
+
+   void setExecutorID(String executorID);
 
    void setOneWay(boolean oneWay);
 
@@ -35,6 +40,4 @@ public interface Packet
     * An AbstractPacket is a request if it has a target ID and a correlation ID
     */
    public boolean isRequest();
-
-
 }

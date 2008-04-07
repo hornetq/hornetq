@@ -20,9 +20,15 @@ public interface RemotingConnection
    
    public String getSessionID();
  
-   AbstractPacket send(String id, AbstractPacket packet) throws MessagingException;
+   /**
+    * Use this method if the packet is to be executed in the context of the targetID (i.e. for
+    * sessions, connections & connections factories)
+    */
+   AbstractPacket send(String targetID, AbstractPacket packet) throws MessagingException;
+
+   AbstractPacket send(String targetID, String executorID, AbstractPacket packet) throws MessagingException;
    
-   AbstractPacket send(String id, AbstractPacket packet, boolean oneWay) throws MessagingException;
+   AbstractPacket send(String targetID, String executorID, AbstractPacket packet, boolean oneWay) throws MessagingException;
    
    void setFailureListener(FailureListener newListener);
    

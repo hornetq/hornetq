@@ -6,6 +6,11 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina.integration.test;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.remoting.PacketDispatcher;
@@ -24,6 +29,7 @@ public class MinaHandlerTest extends TestCase
 {
 
    private MinaHandler handler;
+   private ExecutorService threadPool;
    private TestPacketHandler packetHandler;
    private PacketDispatcher clientDispatcher;
 
@@ -51,7 +57,8 @@ public class MinaHandlerTest extends TestCase
    public void testReceiveUnhandledAbstractPacket() throws Exception
    {
       TextPacket packet = new TextPacket("testReceiveUnhandledAbstractPacket");
-
+      packet.setExecutorID(packetHandler.getID());
+      
       handler.messageReceived(null, packet);
 
       assertEquals(0, packetHandler.getPackets().size());
@@ -59,12 +66,15 @@ public class MinaHandlerTest extends TestCase
 
    public void testReceiveHandledAbstractPacket() throws Exception
    {
+      packetHandler.expectMessage(1);
 
       TextPacket packet = new TextPacket("testReceiveHandledAbstractPacket");
       packet.setTargetID(packetHandler.getID());
+      packet.setExecutorID(packetHandler.getID());
 
       handler.messageReceived(null, packet);
 
+      assertTrue(packetHandler.await(500, MILLISECONDS));
       assertEquals(1, packetHandler.getPackets().size());
       assertEquals(packet.getText(), packetHandler.getPackets().get(0)
             .getText());
@@ -76,7 +86,8 @@ public class MinaHandlerTest extends TestCase
    protected void setUp() throws Exception
    {
       clientDispatcher = new PacketDispatcherImpl();
-      handler = new MinaHandler(clientDispatcher, null, true);
+      threadPool = Executors.newCachedThreadPool();
+      handler = new MinaHandler(clientDispatcher, threadPool, null, true);
 
       packetHandler = new TestPacketHandler();
       clientDispatcher.register(packetHandler);
@@ -86,9 +97,11 @@ public class MinaHandlerTest extends TestCase
    protected void tearDown() throws Exception
    {
       clientDispatcher.unregister(packetHandler.getID());
+      threadPool.shutdown();
       packetHandler = null;
       clientDispatcher = null;
       handler = null;
+      threadPool = null;
    }
 
    // Package protected ---------------------------------------------

@@ -287,14 +287,14 @@ public class PacketTypeTest extends UnitTestCase
 
       assertEquals(buffer.get(), packet.getType().byteValue());
 
-      String targetID = packet.getTargetID();
-      if (NO_ID_SET.equals(packet.getTargetID()))
-         targetID = null;
-      String callbackID = packet.getCallbackID();
-      if (NO_ID_SET.equals(packet.getCallbackID()))
-         callbackID = null;
+      String targetID = (packet.getTargetID().equals(NO_ID_SET) ? null : packet
+            .getTargetID());
+      String callbackID = (packet.getCallbackID().equals(NO_ID_SET) ? null
+            : packet.getCallbackID());
+      String executorID = (packet.getExecutorID().equals(NO_ID_SET) ? null
+            : packet.getExecutorID());
 
-      int headerLength = LONG_LENGTH + sizeof(targetID) + sizeof(callbackID)
+      int headerLength = LONG_LENGTH + sizeof(targetID) + sizeof(callbackID) + sizeof(executorID)
             + BOOLEAN_LENGTH;
       assertEquals(buffer.getInt(), headerLength);
       assertEquals(buffer.getLong(), packet.getCorrelationID());
@@ -305,10 +305,14 @@ public class PacketTypeTest extends UnitTestCase
       String bufferCallbackID = buffer.getNullableString();
       if (bufferCallbackID == null)
          bufferCallbackID = NO_ID_SET;
+      String bufferExecutorID = buffer.getNullableString();
+      if (bufferExecutorID == null)
+         bufferExecutorID = NO_ID_SET;
       boolean oneWay = buffer.getBoolean();
 
       assertEquals(bufferTargetID, packet.getTargetID());
       assertEquals(bufferCallbackID, packet.getCallbackID());
+      assertEquals(bufferExecutorID, packet.getExecutorID());
       assertEquals(oneWay, packet.isOneWay());
    }
 
@@ -318,8 +322,10 @@ public class PacketTypeTest extends UnitTestCase
             .getTargetID());
       String callbackID = (packet.getCallbackID().equals(NO_ID_SET) ? null
             : packet.getCallbackID());
+      String executorID = (packet.getExecutorID().equals(NO_ID_SET) ? null
+            : packet.getExecutorID());
 
-      int headerLength = LONG_LENGTH + sizeof(targetID) + sizeof(callbackID)
+      int headerLength = LONG_LENGTH + sizeof(targetID) + sizeof(callbackID) + sizeof(executorID)
             + BOOLEAN_LENGTH;
       ByteBuffer expected = ByteBuffer.allocate(1 + 1 + INT_LENGTH
             + headerLength);
@@ -329,6 +335,7 @@ public class PacketTypeTest extends UnitTestCase
       expected.putLong(packet.getCorrelationID());
       putNullableString(targetID, expected);
       putNullableString(callbackID, expected);
+      putNullableString(executorID, expected);
       expected.put(packet.isOneWay() ? TRUE : FALSE);
       expected.flip();
 
@@ -363,6 +370,7 @@ public class PacketTypeTest extends UnitTestCase
       packet.setCallbackID(randomString());
       packet.setCorrelationID(randomLong());
       packet.setTargetID(randomString());
+      packet.setExecutorID(randomString());
 
       AbstractPacketCodec<AbstractPacket> codec = PacketCodecFactory
             .createCodecForEmptyPacket(NULL, NullPacket.class);

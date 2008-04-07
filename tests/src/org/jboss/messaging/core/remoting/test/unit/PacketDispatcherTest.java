@@ -15,6 +15,7 @@ import static org.easymock.EasyMock.verify;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.remoting.PacketHandler;
+import org.jboss.messaging.core.remoting.PacketHandlerRegistrationListener;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
@@ -113,6 +114,26 @@ public class PacketDispatcherTest extends TestCase
       verify(handler, sender);
    }
 
+   public void testRegistrationListener() throws Exception
+   {
+      PacketHandlerRegistrationListener listener = createMock(PacketHandlerRegistrationListener.class);
+      PacketHandler handler = createMock(PacketHandler.class);
+
+      String id = randomUUID().toString();
+      expect(handler.getID()).andStubReturn(id);
+      listener.handlerRegistered(id);
+      expectLastCall().once();
+      listener.handlerUnregistered(id);
+      expectLastCall().once();
+
+      replay(handler, listener);
+      
+      dispatcher.setListener(listener);
+      dispatcher.register(handler);
+      dispatcher.unregister(id);
+      
+      verify(handler, listener);
+   }
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

@@ -283,7 +283,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       //Now we send window size tokens to start the consumption
       //We even send it if windowSize == -1, since we need to start the consumer
       
-      remotingConnection.send(response.getConsumerID(), new ConsumerFlowTokenMessage(response.getWindowSize()), true);
+      remotingConnection.send(response.getConsumerID(), id, new ConsumerFlowTokenMessage(response.getWindowSize()), true);
 
       return consumer;
    }
@@ -409,7 +409,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       
       if (deliveryExpired)
       {
-         remotingConnection.send(id, new SessionCancelMessage(lastID, true), true);
+         remotingConnection.send(id, id, new SessionCancelMessage(lastID, true), true);
          
          toAckCount = 0;
       }
@@ -801,7 +801,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       
       SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(lastID, !broken);
             
-      remotingConnection.send(id, message, !block);
+      remotingConnection.send(id, id, message, !block);
       
       acked = true;
    }

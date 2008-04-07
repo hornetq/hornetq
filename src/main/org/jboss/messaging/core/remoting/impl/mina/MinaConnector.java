@@ -8,7 +8,6 @@ package org.jboss.messaging.core.remoting.impl.mina;
 
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addBlockingRequestResponseFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addExecutorFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addKeepAliveFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addLoggingFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addMDCFilter;
@@ -18,6 +17,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.mina.common.CloseFuture;
@@ -38,7 +39,7 @@ import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingException;
-import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 
 /**
@@ -57,10 +58,14 @@ public class MinaConnector implements NIOConnector, FailureNotifier
 
    private Configuration configuration;
 
-   private NioSocketConnector connector;
+   private transient NioSocketConnector connector;
+
+   private PacketDispatcher dispatcher;
 
    private ScheduledExecutorService blockingScheduler;
 
+   private ExecutorService threadPool;
+   
    private IoSession session;
 
    private List<FailureListener> listeners = new ArrayList<FailureListener>();
@@ -85,6 +90,7 @@ public class MinaConnector implements NIOConnector, FailureNotifier
       assert keepAliveFactory != null;
 
       this.configuration = configuration;
+      this.dispatcher = dispatcher;
 
       this.connector = new NioSocketConnector();
       DefaultIoFilterChainBuilder filterChain = connector.getFilterChain();
@@ -107,9 +113,6 @@ public class MinaConnector implements NIOConnector, FailureNotifier
       blockingScheduler = addBlockingRequestResponseFilter(filterChain);
       addKeepAliveFilter(filterChain, keepAliveFactory, configuration.getKeepAliveInterval(),
             configuration.getKeepAliveTimeout(), this);
-      addExecutorFilter(filterChain);
-
-      connector.setHandler(new MinaHandler(dispatcher, this, false));
       connector.getSessionConfig().setKeepAlive(true);
       connector.getSessionConfig().setReuseAddress(true);
    }
@@ -122,6 +125,9 @@ public class MinaConnector implements NIOConnector, FailureNotifier
       {
          return new MinaSession(session);
       }
+      
+      threadPool = Executors.newCachedThreadPool();
+      connector.setHandler(new MinaHandler(dispatcher, threadPool, this, false));
       InetSocketAddress address = new InetSocketAddress(configuration.getHost(), configuration.getPort());
       ConnectFuture future = connector.connect(address);
       connector.setDefaultRemoteAddress(address);
@@ -134,7 +140,7 @@ public class MinaConnector implements NIOConnector, FailureNotifier
          throw new IOException("Cannot connect to " + address.toString());
       }
       this.session = future.getSession();
-      AbstractPacket packet = new Ping(Long.toString(session.getId()));
+      Packet packet = new Ping(Long.toString(session.getId()));
       session.write(packet);
       
       return new MinaSession(session);
@@ -153,7 +159,8 @@ public class MinaConnector implements NIOConnector, FailureNotifier
       blockingScheduler.shutdown();
       connector.removeListener(ioListener);
       connector.dispose();
-
+      threadPool.shutdown();
+      
       SslFilter sslFilter = (SslFilter) session.getFilterChain().get("ssl");
       // FIXME without this hack, exceptions are thrown:
       // "Unexpected exception from SSLEngine.closeInbound()." -> because the ssl session is not stopped

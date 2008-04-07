@@ -21,7 +21,9 @@ public interface PacketDispatcher
    void register(PacketHandler handler);
 
    void unregister(String handlerID);
-
+   
+   void setListener(PacketHandlerRegistrationListener listener);
+   
    void dispatch(Packet packet, PacketSender sender) throws Exception;
 
    /** Call filters on a package */

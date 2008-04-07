@@ -43,6 +43,12 @@ public class CreateConnectionResponse extends AbstractPacket
       return connectionID;
    }
    
+   @Override
+   public String toString()
+   {
+      return getParentString() + ", connectionID" + connectionID + "]";
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

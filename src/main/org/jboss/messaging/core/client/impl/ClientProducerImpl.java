@@ -139,7 +139,7 @@ public class ClientProducerImpl implements ClientProducerInternal
    		windowSize--;
    	}
    	
-   	remotingConnection.send(id, message, !msg.isDurable());
+   	remotingConnection.send(id, session.getID(), message, !msg.isDurable());
    	 	   	
    	if (rateLimiter != null)
    	{
