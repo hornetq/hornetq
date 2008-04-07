@@ -40,6 +40,15 @@
       <!-- it is not allowed to disable invm communication when the remoting-transport is set to INVM -->
       <remoting-disable-invm>false</remoting-disable-invm>
       
+      <!-- Enable/Disable Nagle's Algorithm (resp. true/false)                           -->
+      <!-- This setting is taken into account only when remoting-transport is set to TCP -->
+      <remoting-tcp-nodelay>false</remoting-tcp-nodelay>
+      
+      <!-- Set the TCP Receive Buffer size (SO_RCVBUF).                                    -->
+      <!-- Set it to -1 if you want to use the value hinted by the Operating System      --> 
+      <!-- This setting is taken into account only when remoting-transport is set to TCP -->
+      <remoting-tcp-receive-buffer-size>-1</remoting-tcp-receive-buffer-size>
+
       <!--  if ssl is enabled, all remoting-ssl-* properties must be set -->
       <remoting-enable-ssl>false</remoting-enable-ssl>
       

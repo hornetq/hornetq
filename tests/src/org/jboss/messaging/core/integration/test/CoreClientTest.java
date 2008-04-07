@@ -9,7 +9,6 @@ import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
@@ -22,7 +21,8 @@ public class CoreClientTest extends TestCase
 
    private final String QUEUE = "CoreClientTestQueue";
    // Attributes ----------------------------------------------------
-   private Configuration conf;
+
+   private ConfigurationImpl conf;
    private MessagingServerImpl invmServer;
 
    // Static --------------------------------------------------------

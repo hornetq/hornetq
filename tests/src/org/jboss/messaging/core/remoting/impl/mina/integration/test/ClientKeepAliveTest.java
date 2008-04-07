@@ -23,7 +23,7 @@ import java.util.concurrent.CountDownLatch;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.FailureListener;
-import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.NIOSession;
@@ -59,7 +59,7 @@ public class ClientKeepAliveTest extends TestCase
    @Override
    protected void setUp() throws Exception
    {
-      Configuration config = ConfigurationHelper.newConfiguration(TCP, "localhost", PORT);
+      ConfigurationImpl config = ConfigurationHelper.newConfiguration(TCP, "localhost", PORT);
       config.setKeepAliveInterval(KEEP_ALIVE_INTERVAL);
       config.setKeepAliveTimeout(KEEP_ALIVE_TIMEOUT);
       service = new MinaService(config);

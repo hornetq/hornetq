@@ -83,6 +83,11 @@ public class ConfigurationTest extends TestCase
       assertEquals(TransportType.TCP, configuration.getTransport());
    }
    
+   public void testRemotingHost() throws Exception
+   {
+      assertEquals("localhost", configuration.getHost());
+   }
+   
    public void testSetRemotingPort() throws Exception
    {
       assertEquals(10000, configuration.getPort());
@@ -92,6 +97,41 @@ public class ConfigurationTest extends TestCase
    public void testSetRemotingTimeout() throws Exception
    {
       assertEquals(100, configuration.getTimeout());
+   }
+   
+   public void testRemotingTcpNodelay() throws Exception
+   {
+      assertEquals(true, configuration.isTcpNoDelay());
+   }
+   
+   public void testRemotingTcpReceiveBufferSize() throws Exception
+   {
+      assertEquals(8192, configuration.getTcpReceiveBufferSize());
+   }
+
+   public void testRemotingEnableSSL() throws Exception
+   {
+      assertEquals(true, configuration.isSSLEnabled());
+   }
+   
+   public void testRemotingSSLKeyStorePath() throws Exception
+   {
+      assertEquals("messaging.keystore", configuration.getKeyStorePath());
+   }
+   
+   public void testRemotingSSLKeyStorePassword() throws Exception
+   {
+      assertEquals("secureexample keystore", configuration.getKeyStorePassword());
+   }
+
+   public void testRemotingSSLTrustStorePath() throws Exception
+   {
+      assertEquals("messaging.truststore", configuration.getTrustStorePath());
+   }
+   
+   public void testRemotingSSLTrustStorePassword() throws Exception
+   {
+      assertEquals("secureexample truststore", configuration.getTrustStorePassword());
    }
    
    public void testSetInterceptorsList() throws Exception

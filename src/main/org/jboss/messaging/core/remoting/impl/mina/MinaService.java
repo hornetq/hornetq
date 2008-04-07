@@ -148,6 +148,11 @@ public class MinaService implements RemotingService, FailureNotifier
 
          // Bind
          acceptor.setDefaultLocalAddress(new InetSocketAddress(config.getHost(), config.getPort()));
+         acceptor.getSessionConfig().setTcpNoDelay(config.isTcpNoDelay());
+         if (config.getTcpReceiveBufferSize() != -1)
+         {
+            acceptor.getSessionConfig().setReceiveBufferSize(config.getTcpReceiveBufferSize());
+         }
          acceptor.setReuseAddress(true);
          acceptor.getSessionConfig().setReuseAddress(true);
          acceptor.getSessionConfig().setKeepAlive(true);

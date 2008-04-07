@@ -1,6 +1,5 @@
 package org.jboss.messaging.core.remoting.impl;
 
-import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.TransportType;
 
@@ -16,9 +15,9 @@ public class ConfigurationHelper
 
    // Public --------------------------------------------------------
 
-   public static Configuration newConfiguration(TransportType transport, String localhost, int port)
+   public static ConfigurationImpl newConfiguration(TransportType transport, String localhost, int port)
    {
-      Configuration config = new ConfigurationImpl();
+      ConfigurationImpl config = new ConfigurationImpl();
       if (transport == TransportType.INVM)
          config.setInvmDisabled(false);
       config.setTransport(transport);

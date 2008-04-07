@@ -29,7 +29,6 @@ import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
@@ -44,7 +43,7 @@ public class EmbeddedExample
 {
    public static void main(String args[]) throws Exception
    {
-      Configuration conf = new ConfigurationImpl();
+      ConfigurationImpl conf = new ConfigurationImpl();
       conf.setTransport(TCP);
       conf.setHost("localhost");
       conf.setPort(5400);

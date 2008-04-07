@@ -32,7 +32,7 @@ import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.impl.ConfigurationHelper;
@@ -72,7 +72,7 @@ public class CoreClientOverSSL
          String keyStorePath = args[1];
          String keyStorePassword = args[2];
 
-         Configuration config = ConfigurationHelper.newConfiguration(TCP,
+         ConfigurationImpl config = ConfigurationHelper.newConfiguration(TCP,
                "localhost", CoreClientOverSSLTest.SSL_PORT);
          config.setSSLEnabled(sslEnabled);
          config.setKeyStorePath(keyStorePath);

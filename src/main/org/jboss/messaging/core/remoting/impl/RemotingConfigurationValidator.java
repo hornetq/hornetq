@@ -51,6 +51,13 @@ public class RemotingConfigurationValidator
       {
          throw new IllegalStateException("Remoting port can not be negative when transport is not INVM");
       }
+      
+      if (configuration.getTcpReceiveBufferSize() != -1 && configuration.getTcpReceiveBufferSize() <= 0)
+      {
+         String message = "Invalid value for TCP receive buffer size: " + configuration.getTcpReceiveBufferSize();
+         message += ". Value must be either -1 (not specified) or greater than 0";
+         throw new IllegalStateException(message);
+      }
 
       if (log.isDebugEnabled())
          log.debug("configuration is valid.");

@@ -36,122 +36,73 @@ import org.jboss.messaging.core.server.JournalType;
 public interface Configuration
 {
 
-   public int getMessagingServerID();
+   int getMessagingServerID();
 
-   public String getSecurityDomain();
+   String getSecurityDomain();
 
-   public List<String> getDefaultInterceptors();
+   List<String> getDefaultInterceptors();
 
-   public long getMessageCounterSamplePeriod();
+   long getMessageCounterSamplePeriod();
 
-//   public void setMessageCounterSamplePeriod(long messageCounterSamplePeriod);
+   Integer getDefaultMessageCounterHistoryDayLimit();
 
-   public Integer getDefaultMessageCounterHistoryDayLimit();
+   Boolean isStrictTck();
 
-//   public void setDefaultMessageCounterHistoryDayLimit(Integer defaultMessageCounterHistoryDayLimit);
+   Boolean isClustered();
 
-   public Boolean isStrictTck();
+   Integer getScheduledThreadPoolMaxSize();
 
- //  public void setStrictTck(Boolean strictTck);
+   long getSecurityInvalidationInterval();
 
-   public Boolean isClustered();
+   TransportType getTransport();
 
-   public Integer getScheduledThreadPoolMaxSize();
+   String getHost();
 
-//   public void setScheduledThreadPoolMaxSize(int size);
+   int getPort();
 
-//   public void setClustered(Boolean clustered);
+   String getLocation();
 
-   public long getSecurityInvalidationInterval();
+   boolean isTcpNoDelay();
+   
+   int getTcpReceiveBufferSize();
 
-   public TransportType getTransport();
+   int getKeepAliveInterval();
 
-   public void setTransport(TransportType transport);
+   int getKeepAliveTimeout();
 
-   public String getHost();
+   int getTimeout();
 
-   public void setHost(String host);
+   String getKeyStorePath();
 
-   public int getPort();
+   String getKeyStorePassword();
 
-   public void setPort(int port);
+   String getTrustStorePath();
 
-   public String getLocation();
+   String getTrustStorePassword();
 
-   public int getKeepAliveInterval();
+   boolean isInvmDisabled();
 
-   public void setKeepAliveInterval(int keepAliveInterval);
+   boolean isSSLEnabled();
 
-   public int getKeepAliveTimeout();
+   String getURI();
 
-   public void setKeepAliveTimeout(int keepAliveTimeout);
+   String getBindingsDirectory();
 
-   public int getTimeout();
+   String getJournalDirectory();
 
-   public String getKeyStorePath();
+   JournalType getJournalType();
 
-   public void setKeyStorePath(String keyStorePath);
+   boolean isJournalSync();
 
-   public String getKeyStorePassword();
+   int getJournalFileSize();
 
-   public void setKeyStorePassword(String keyStorePassword);
+   int getJournalMinFiles();
 
-   public String getTrustStorePath();
+   long getJournalTaskPeriod();
 
-   public void setTrustStorePath(String trustStorePath);
+   boolean isCreateBindingsDir();
 
-   public String getTrustStorePassword();
+   boolean isCreateJournalDir();
 
-   public void setTrustStorePassword(String trustStorePassword);
-
-   public boolean isInvmDisabled();
-
-   public void setInvmDisabled(boolean invmDisabled);
-
-   public boolean isSSLEnabled();
-
-   public void setSSLEnabled(boolean sslEnabled);
-
-   public String getURI();
-
-   public String getBindingsDirectory();
-
-//   public void setBindingsDirectory(String bindingsDirectory);
-
-   public String getJournalDirectory();
-
-//   public void setJournalDirectory(String journalDirectory);
-
-   public JournalType getJournalType();
-
-//   public void setJournalType(JournalType journalType);
-
-   public boolean isJournalSync();
-
-  // public void setJournalSync(boolean journalSync);
-
-   public int getJournalFileSize();
-
- //  public void setJournalFileSize(int journalFileSize);
-
-   public int getJournalMinFiles();
-
-//   public void setJournalMinFiles(int journalMinFiles);
-
-   public long getJournalTaskPeriod();
-
-//   public void setJournalTaskPeriod(long journalTaskPeriod);
-
-   public boolean isCreateBindingsDir();
-
-  // public void setCreateBindingsDir(boolean createBindingsDir);
-
-   public boolean isCreateJournalDir();
-
-//   public void setCreateJournalDir(boolean createJournalDir);
-
-   public boolean isRequireDestinations();
-
-//   public void setRequireDestinations(boolean requireDestinations);
-
+   boolean isRequireDestinations();
 }

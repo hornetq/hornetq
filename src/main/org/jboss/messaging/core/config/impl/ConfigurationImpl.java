@@ -102,12 +102,15 @@ public class ConfigurationImpl implements Configuration, Serializable
    protected int keepAliveTimeout = DEFAULT_KEEP_ALIVE_TIMEOUT;
    protected boolean invmDisabled = DEFAULT_INVM_DISABLED;
    protected boolean invmDisabledModified = false;
+   protected boolean tcpNoDelay;
+   protected int tcpReceiveBufferSize = -1;
    protected boolean sslEnabled = DEFAULT_SSL_ENABLED;
    protected boolean sslEnabledModified = false;
    protected String keyStorePath;
    protected String keyStorePassword;
    protected String trustStorePath;
    protected String trustStorePassword;
+
    
    public void addPropertyChangeListener(PropertyChangeListener listener)
    {
@@ -128,11 +131,6 @@ public class ConfigurationImpl implements Configuration, Serializable
    	this.messagingServerID = id;
    }
   
-   public void setSecurityDomain(String securityDomain) throws Exception
-   {
-      this.securityDomain = securityDomain;
-   }
-
    public String getSecurityDomain()
    {
       return securityDomain;
@@ -165,16 +163,6 @@ public class ConfigurationImpl implements Configuration, Serializable
       return defaultMessageCounterHistoryDayLimit;
    }
 
-   public void setDefaultMessageCounterHistoryDayLimit(Integer defaultMessageCounterHistoryDayLimit)
-   {
-      if (defaultMessageCounterHistoryDayLimit < -1)
-      {
-         defaultMessageCounterHistoryDayLimit = -1;
-      }
-      
-      this.defaultMessageCounterHistoryDayLimit = defaultMessageCounterHistoryDayLimit;
-   }
-
    public Boolean isStrictTck()
    {
       return strictTck || "true".equalsIgnoreCase(System.getProperty("jboss.messaging.stricttck"));
@@ -194,17 +182,7 @@ public class ConfigurationImpl implements Configuration, Serializable
    {
    	return scheduledThreadPoolMaxSize;
    }
-   
-   public void setScheduledThreadPoolMaxSize(int size)
-   {
-   	this.scheduledThreadPoolMaxSize = size;
-   }
-
-   public void setClustered(Boolean clustered)
-   {
-      this.clustered = clustered;
-   }
-   
+      
    public long getSecurityInvalidationInterval()
    {
    	return this.securityInvalidationInterval;
@@ -214,7 +192,6 @@ public class ConfigurationImpl implements Configuration, Serializable
    {
       return transport;
    }
-
 
    public void setTransport(TransportType transport)
    {
@@ -349,6 +326,21 @@ public class ConfigurationImpl implements Configuration, Serializable
       this.sslEnabledModified = true;
    }
 
+   public boolean isTcpNoDelay()
+   {
+      return this.tcpNoDelay;
+   }
+
+   public int getTcpReceiveBufferSize()
+   {
+      return this.tcpReceiveBufferSize;
+   }
+   
+   public void setTcpReceiveBufferSize(int size)
+   {
+      this.tcpReceiveBufferSize = size;
+   }
+
    public String getURI()
    {
       StringBuffer buff = new StringBuffer();
@@ -357,6 +349,8 @@ public class ConfigurationImpl implements Configuration, Serializable
       buff.append("&").append("keepAliveInterval=").append(keepAliveInterval);
       buff.append("&").append("keepAliveTimeout=").append(keepAliveTimeout);
       buff.append("&").append("invmDisabled=").append(invmDisabled);
+      buff.append("&").append("tcpNoDelay=").append(tcpNoDelay);
+      buff.append("&").append("tcpReceiveBufferSize=").append(tcpReceiveBufferSize);
       buff.append("&").append("sslEnabled=").append(sslEnabled);
       buff.append("&").append("keyStorePath=").append(keyStorePath);
       buff.append("&").append("trustStorePath=").append(trustStorePath);
@@ -368,19 +362,9 @@ public class ConfigurationImpl implements Configuration, Serializable
 		return bindingsDirectory;
 	}
 
-	public void setBindingsDirectory(String bindingsDirectory)
-	{
-		this.bindingsDirectory = bindingsDirectory;
-	}
-
 	public String getJournalDirectory()
 	{
 		return journalDirectory;
-	}
-
-	public void setJournalDirectory(String journalDirectory)
-	{
-		this.journalDirectory = journalDirectory;
 	}
 
 	public JournalType getJournalType()
@@ -388,19 +372,9 @@ public class ConfigurationImpl implements Configuration, Serializable
 		return journalType;
 	}
 
-	public void setJournalType(JournalType journalType)
-	{
-		this.journalType = journalType;
-	}
-
 	public boolean isJournalSync()
 	{
 		return journalSync;
-	}
-
-	public void setJournalSync(boolean journalSync)
-	{
-		this.journalSync = journalSync;
 	}
 
 	public int getJournalFileSize()
@@ -408,29 +382,14 @@ public class ConfigurationImpl implements Configuration, Serializable
 		return journalFileSize;
 	}
 
-	public void setJournalFileSize(int journalFileSize)
-	{
-		this.journalFileSize = journalFileSize;
-	}
-
 	public int getJournalMinFiles()
 	{
 		return journalMinFiles;
 	}
 
-	public void setJournalMinFiles(int journalMinFiles)
-	{
-		this.journalMinFiles = journalMinFiles;
-	}
-	
 	public long getJournalTaskPeriod()
 	{
 		return journalTaskPeriod;
-	}
-
-	public void setJournalTaskPeriod(long journalTaskPeriod)
-	{
-		this.journalTaskPeriod = journalTaskPeriod;
 	}
 
 	public boolean isCreateBindingsDir()
@@ -438,29 +397,14 @@ public class ConfigurationImpl implements Configuration, Serializable
 		return createBindingsDir;
 	}
 
-	public void setCreateBindingsDir(boolean createBindingsDir)
-	{
-		this.createBindingsDir = createBindingsDir;
-	}
-
 	public boolean isCreateJournalDir()
 	{
 		return createJournalDir;
 	}
 
-	public void setCreateJournalDir(boolean createJournalDir)
-	{
-		this.createJournalDir = createJournalDir;
-	}
-
 	public boolean isRequireDestinations()
 	{
 		return requireDestinations;
-	}
-
-	public void setRequireDestinations(boolean requireDestinations)
-	{
-		this.requireDestinations = requireDestinations;
 	}
 }
  

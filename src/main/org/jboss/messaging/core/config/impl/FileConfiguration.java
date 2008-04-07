@@ -79,6 +79,10 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
       
       invmDisabled = getBoolean(e, "remoting-disable-invm", false);
       
+      tcpNoDelay = getBoolean(e, "remoting-tcp-nodelay", false);
+      
+      tcpReceiveBufferSize = getInteger(e, "remoting-tcp-receive-buffer-size", -1);
+
       sslEnabled = getBoolean(e, "remoting-enable-ssl", false);
       
       keyStorePath = getString(e, "remoting-ssl-keystore-path", null);

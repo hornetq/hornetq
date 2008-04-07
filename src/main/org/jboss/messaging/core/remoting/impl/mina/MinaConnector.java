@@ -113,6 +113,11 @@ public class MinaConnector implements NIOConnector, FailureNotifier
       blockingScheduler = addBlockingRequestResponseFilter(filterChain);
       addKeepAliveFilter(filterChain, keepAliveFactory, configuration.getKeepAliveInterval(),
             configuration.getKeepAliveTimeout(), this);
+      connector.getSessionConfig().setTcpNoDelay(configuration.isTcpNoDelay());
+      if (configuration.getTcpReceiveBufferSize() != -1)
+      {
+         connector.getSessionConfig().setReceiveBufferSize(configuration.getTcpReceiveBufferSize());
+      }
       connector.getSessionConfig().setKeepAlive(true);
       connector.getSessionConfig().setReuseAddress(true);
    }

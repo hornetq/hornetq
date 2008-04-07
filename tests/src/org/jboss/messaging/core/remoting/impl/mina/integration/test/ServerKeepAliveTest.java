@@ -18,6 +18,7 @@ import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.FailureListener;
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.RemotingException;
@@ -81,7 +82,7 @@ public class ServerKeepAliveTest extends TestCase
          }
       };
 
-      Configuration config = ConfigurationHelper.newConfiguration(TCP,
+      ConfigurationImpl config = ConfigurationHelper.newConfiguration(TCP,
             "localhost", PORT);
       config.setKeepAliveInterval(KEEP_ALIVE_INTERVAL);
       config.setKeepAliveTimeout(KEEP_ALIVE_TIMEOUT);
@@ -136,7 +137,7 @@ public class ServerKeepAliveTest extends TestCase
          }
       };
 
-      Configuration config = ConfigurationHelper.newConfiguration(TCP,
+      ConfigurationImpl config = ConfigurationHelper.newConfiguration(TCP,
             "localhost", PORT);
       config.setKeepAliveInterval(KEEP_ALIVE_INTERVAL);
       config.setKeepAliveTimeout(KEEP_ALIVE_TIMEOUT);

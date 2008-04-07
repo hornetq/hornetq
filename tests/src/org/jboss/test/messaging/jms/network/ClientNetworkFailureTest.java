@@ -34,6 +34,7 @@ import javax.jms.QueueConnection;
 
 import org.jboss.messaging.core.client.FailureListener;
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.test.messaging.jms.JMSTestCase;
@@ -75,7 +76,7 @@ public class ClientNetworkFailureTest extends JMSTestCase
       minaService.stop();
       Configuration oldConfig = minaService
             .getConfiguration();
-      Configuration newConfig = oldConfig;
+      ConfigurationImpl newConfig = (ConfigurationImpl)oldConfig;
       newConfig.setInvmDisabled(true);
       newConfig.setKeepAliveInterval(KEEP_ALIVE_INTERVAL);
       newConfig.setKeepAliveTimeout(KEEP_ALIVE_TIMEOUT);
