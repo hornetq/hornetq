@@ -1286,7 +1286,294 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		assertEquals(1, journal.getIDMapSize());
 	}
 	
+	public void testPrepareNoReclaim() throws Exception
+	{
+		setup(2, 1300, true);
+		createJournal();
+		startJournal();
+		load();
+		
+		List<String> files1 = fileFactory.listFiles(fileExtension);
+		
+		assertEquals(2, files1.size());
+		
+		assertEquals(0, journal.getDataFilesCount());
+		assertEquals(1, journal.getFreeFilesCount());
+		assertEquals(0, journal.getIDMapSize());
+					
+		addTx(1, 1);          // in file 0
+						
+		//Make sure we move on to the next file
+		
+		add(2);               // in file 1
+		
+    	List<String> files2 = fileFactory.listFiles(fileExtension);
+		
+		assertEquals(2, files2.size());
+		
+		assertEquals(1, journal.getDataFilesCount());
+		assertEquals(0, journal.getFreeFilesCount());
+		assertEquals(1, journal.getIDMapSize());
+		
+		prepare(1);          // in file 1
+		
+		List<String> files3 = fileFactory.listFiles(fileExtension);
+		
+		assertEquals(2, files3.size());
+		
+		assertEquals(1, journal.getDataFilesCount());
+		assertEquals(0, journal.getFreeFilesCount());
+		assertEquals(1, journal.getIDMapSize());
+		
+		delete(2);            // in file 1
+		
+		List<String> files4 = fileFactory.listFiles(fileExtension);
+		
+		assertEquals(2, files4.size());
+		
+		assertEquals(1, journal.getDataFilesCount());
+		assertEquals(0, journal.getFreeFilesCount());
+		assertEquals(0, journal.getIDMapSize());
+		
+		//Move on to another file
+		
+		add(3);                // in file 2
+		
+		List<String> files5 = fileFactory.listFiles(fileExtension);
+		
+		assertEquals(3, files5.size());
+		
+		assertEquals(2, journal.getDataFilesCount());
+		assertEquals(0, journal.getFreeFilesCount());
+		assertEquals(1, journal.getIDMapSize());
+				
+		journal.checkAndReclaimFiles();
+		
+		List<String> files6 = fileFactory.listFiles(fileExtension);
+		
+		assertEquals(3, files6.size());
+		
+		assertEquals(2, journal.getDataFilesCount());
+		assertEquals(0, journal.getFreeFilesCount());
+		assertEquals(1, journal.getIDMapSize());
+		
+		add(4);		// in file 3
+		
+		List<String> files7 = fileFactory.listFiles(fileExtension);
+		
+		assertEquals(4, files7.size());
+		
+		assertEquals(3, journal.getDataFilesCount());
+		assertEquals(0, journal.getFreeFilesCount());
+		assertEquals(2, journal.getIDMapSize());
+		
+		commit(1);   // in file 4
+		
+		List<String> files8 = fileFactory.listFiles(fileExtension);
+		
+		assertEquals(4, files8.size());
+		
+		assertEquals(3, journal.getDataFilesCount());
+		assertEquals(0, journal.getFreeFilesCount());
+		assertEquals(3, journal.getIDMapSize());
+		
+		//Restart
+		
+		stopJournal();
+		createJournal();
+		startJournal();
+		loadAndCheck();
 	
+	}
+	
+	public void testPrepareReclaim() throws Exception
+	{
+		setup(2, 1300, true);
+		createJournal();
+		startJournal();
+		load();
+		
+		List<String> files1 = fileFactory.listFiles(fileExtension);
+		
+		assertEquals(2, files1.size());
+		
+		assertEquals(0, journal.getDataFilesCount());
+		assertEquals(1, journal.getFreeFilesCount());
+		assertEquals(0, journal.getIDMapSize());
+					
+		addTx(1, 1);          // in file 0
+		
+	   files1 = fileFactory.listFiles(fileExtension);
+		
+		assertEquals(2, files1.size());
+		
+		assertEquals(0, journal.getDataFilesCount());
+		assertEquals(1, journal.getFreeFilesCount());
+		assertEquals(0, journal.getIDMapSize());
+						
+		//Make sure we move on to the next file
+		
+		add(2);               // in file 1
+		
+    	List<String> files2 = fileFactory.listFiles(fileExtension);
+		
+		assertEquals(2, files2.size());
+		
+		assertEquals(1, journal.getDataFilesCount());
+		assertEquals(0, journal.getFreeFilesCount());
+		assertEquals(1, journal.getIDMapSize());
+		
+		prepare(1);          // in file 1
+		
+		List<String> files3 = fileFactory.listFiles(fileExtension);
+		
+		assertEquals(2, files3.size());
+		
+		assertEquals(1, journal.getDataFilesCount());
+		assertEquals(0, journal.getFreeFilesCount());
+		assertEquals(1, journal.getIDMapSize());
+		
+		delete(2);            // in file 1
+		
+		List<String> files4 = fileFactory.listFiles(fileExtension);
+		
+		assertEquals(2, files4.size());
+		
+		assertEquals(1, journal.getDataFilesCount());
+		assertEquals(0, journal.getFreeFilesCount());
+		assertEquals(0, journal.getIDMapSize());
+		
+		//Move on to another file
+		
+		add(3);                // in file 2
+		
+		journal.checkAndReclaimFiles();
+				
+		List<String> files5 = fileFactory.listFiles(fileExtension);
+		
+		assertEquals(3, files5.size());
+		
+		assertEquals(2, journal.getDataFilesCount());
+		assertEquals(0, journal.getFreeFilesCount());
+		assertEquals(1, journal.getIDMapSize());
+				
+		journal.checkAndReclaimFiles();
+		
+		List<String> files6 = fileFactory.listFiles(fileExtension);
+		
+		assertEquals(3, files6.size());
+		
+		assertEquals(2, journal.getDataFilesCount());
+		assertEquals(0, journal.getFreeFilesCount());
+		assertEquals(1, journal.getIDMapSize());
+		
+		add(4);		// in file 3
+		
+		List<String> files7 = fileFactory.listFiles(fileExtension);
+		
+		assertEquals(4, files7.size());
+		
+		assertEquals(3, journal.getDataFilesCount());
+		assertEquals(0, journal.getFreeFilesCount());
+		assertEquals(2, journal.getIDMapSize());
+		
+		commit(1);   // in file 3
+		
+		List<String> files8 = fileFactory.listFiles(fileExtension);
+		
+		assertEquals(4, files8.size());
+		
+		assertEquals(3, journal.getDataFilesCount());
+		assertEquals(0, journal.getFreeFilesCount());
+		assertEquals(3, journal.getIDMapSize());
+		
+		delete(1);   // in file 3
+		
+		List<String> files9 = fileFactory.listFiles(fileExtension);
+		
+		assertEquals(4, files9.size());
+		
+		assertEquals(3, journal.getDataFilesCount());
+		assertEquals(0, journal.getFreeFilesCount());
+		assertEquals(2, journal.getIDMapSize());
+		
+		journal.checkAndReclaimFiles();
+		
+		List<String> files10 = fileFactory.listFiles(fileExtension);
+		
+		assertEquals(4, files10.size());
+		
+		assertEquals(3, journal.getDataFilesCount());
+		assertEquals(0, journal.getFreeFilesCount());
+		assertEquals(2, journal.getIDMapSize());
+		
+		add(5);       // in file 4
+		
+		List<String> files11 = fileFactory.listFiles(fileExtension);
+		
+		assertEquals(5, files11.size());
+		
+		assertEquals(4, journal.getDataFilesCount());
+		assertEquals(0, journal.getFreeFilesCount());
+		assertEquals(3, journal.getIDMapSize());
+		
+		journal.checkAndReclaimFiles();
+		
+		List<String> files12 = fileFactory.listFiles(fileExtension);
+		
+		//File 0, and File 1  should be deleted
+		
+		assertEquals(3, files12.size());
+		
+		assertEquals(2, journal.getDataFilesCount());
+		assertEquals(0, journal.getFreeFilesCount());
+		assertEquals(3, journal.getIDMapSize());
+		
+		
+		//Restart
+		
+		stopJournal();
+		createJournal();
+		startJournal();
+		loadAndCheck();
+		
+		delete(4);
+		
+		List<String> files13 = fileFactory.listFiles(fileExtension);
+		
+		assertEquals(3, files13.size());
+		
+		assertEquals(2, journal.getDataFilesCount());
+		assertEquals(0, journal.getFreeFilesCount());
+		assertEquals(2, journal.getIDMapSize());
+		
+		add(6);
+		
+		List<String> files14 = fileFactory.listFiles(fileExtension);
+		
+		assertEquals(4, files14.size());
+		
+		assertEquals(3, journal.getDataFilesCount());
+		assertEquals(0, journal.getFreeFilesCount());
+		assertEquals(3, journal.getIDMapSize());
+		
+		journal.checkAndReclaimFiles();
+		
+		//file 3 should now be deleted
+		
+		List<String> files15 = fileFactory.listFiles(fileExtension);
+		
+		assertEquals(3, files15.size());
+		
+		assertEquals(2, journal.getDataFilesCount());
+		assertEquals(0, journal.getFreeFilesCount());
+		assertEquals(3, journal.getIDMapSize());
+		
+		stopJournal();
+		createJournal();
+		startJournal();
+		loadAndCheck();	
+	}
 	
 	// Non transactional tests
 	// =======================

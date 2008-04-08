@@ -762,7 +762,9 @@ public class JournalImpl implements TestableJournal
 								throw new IllegalStateException("Cannot find tx " + txID);
 							}
 							
-							tnp.prepare(file);		
+							tnp.prepare(file);	
+							
+							hasData = true;			
 						}
 						
 						break;
@@ -781,22 +783,22 @@ public class JournalImpl implements TestableJournal
 						{
 							TransactionHolder tx = transactions.remove(txID);
 							
-							if (tx == null)
+							if (tx != null)
 							{
-								throw new IllegalStateException("Cannot find tx with id " + txID);
+   							records.addAll(tx.recordInfos);							
+   							recordsToDelete.addAll(tx.recordsToDelete);	
+   							
+   							TransactionNegPos tnp = transactionInfos.remove(txID);
+   							
+   							if (tnp == null)
+   							{
+   								throw new IllegalStateException("Cannot find tx " + txID);
+   							}
+   							
+   							tnp.commit(file);			
+   							
+   							hasData = true;			
 							}
-							
-							records.addAll(tx.recordInfos);							
-							recordsToDelete.addAll(tx.recordsToDelete);	
-							
-							TransactionNegPos tnp = transactionInfos.remove(txID);
-							
-							if (tnp == null)
-							{
-								throw new IllegalStateException("Cannot find tx " + txID);
-							}
-							
-							tnp.commit(file);							
 						}
 						
 						break;
@@ -815,19 +817,19 @@ public class JournalImpl implements TestableJournal
 						{
 							TransactionHolder tx = transactions.remove(txID);
 							
-							if (tx == null)
-							{
-								throw new IllegalStateException("Cannot find tx with id " + txID);
-							}				
-							
-							TransactionNegPos tnp = transactionInfos.remove(txID);
-							
-							if (tnp == null)
-							{
-								throw new IllegalStateException("Cannot find tx " + txID);
+							if (tx != null)
+							{								
+   							TransactionNegPos tnp = transactionInfos.remove(txID);
+   							
+   							if (tnp == null)
+   							{
+   								throw new IllegalStateException("Cannot find tx " + txID);
+   							}
+   							
+   							tnp.rollback(file);	
+   							
+   							hasData = true;			
 							}
-							
-							tnp.rollback(file);	
 						}
 						
 						break;
@@ -964,7 +966,7 @@ public class JournalImpl implements TestableJournal
 		reclaimer.scan(dataFiles.toArray(files));
 				
 		for (JournalFile file: dataFiles)
-		{		
+		{				
    		if (file.isCanReclaim())
    		{
    			//File can be reclaimed or deleted
@@ -1000,7 +1002,7 @@ public class JournalImpl implements TestableJournal
       			
       			jf.setOffset(SIZE_LONG);
       			
-      			freeFiles.add(jf);   
+      			freeFiles.add(jf);  
    			}
    			else
    			{

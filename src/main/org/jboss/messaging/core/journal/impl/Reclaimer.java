@@ -59,7 +59,7 @@ public class Reclaimer
 			int posCount = currentFile.getPosCount();
 
 			int totNeg = 0;
-			
+								
 			for (int j = i; j < files.length; j++)
 			{
 				totNeg += files[j].getNegCount(currentFile);
