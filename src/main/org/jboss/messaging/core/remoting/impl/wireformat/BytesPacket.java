@@ -14,7 +14,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.BYTES
  * 
  * @version <tt>$Revision$</tt>
  */
-public class BytesPacket extends AbstractPacket
+public class BytesPacket extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

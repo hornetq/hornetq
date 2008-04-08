@@ -18,7 +18,7 @@ import org.jboss.messaging.core.message.Message;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionBrowserNextMessageBlockResponseMessage extends AbstractPacket
+public class SessionBrowserNextMessageBlockResponseMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

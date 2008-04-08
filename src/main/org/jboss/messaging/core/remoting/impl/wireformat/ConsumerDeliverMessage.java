@@ -17,7 +17,7 @@ import org.jboss.messaging.core.message.Message;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class ConsumerDeliverMessage extends AbstractPacket
+public class ConsumerDeliverMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

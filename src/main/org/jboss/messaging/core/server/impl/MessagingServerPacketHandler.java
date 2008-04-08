@@ -29,7 +29,6 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.server.MessagingServer;
 
 /**
@@ -67,7 +66,7 @@ public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
    {
       Packet response = null;
      
-      PacketType type = packet.getType();
+      byte type = packet.getType();
       
       if (type == CREATECONNECTION)
       {

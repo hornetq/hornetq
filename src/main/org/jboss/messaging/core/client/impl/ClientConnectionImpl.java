@@ -21,6 +21,10 @@
   */
 package org.jboss.messaging.core.client.impl;
 
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CLOSE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_START;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_STOP;
+
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -30,11 +34,9 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.FailureListener;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.wireformat.CloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionStartMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionStopMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 
 /**
  * The client-side Connection connectionFactory class.
@@ -133,14 +135,14 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    {
       checkClosed();
        
-      remotingConnection.send(id, id, new ConnectionStartMessage(), true);
+      remotingConnection.send(id, id, new PacketImpl(CONN_START), true);
    }
    
    public void stop() throws MessagingException
    {
       checkClosed();
       
-      remotingConnection.send(id, new ConnectionStopMessage());
+      remotingConnection.send(id, new PacketImpl(CONN_STOP));
    }
 
    public void setFailureListener(final FailureListener listener) throws MessagingException
@@ -161,7 +163,7 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       {
          closeChildren();
          
-         remotingConnection.send(id, new CloseMessage());
+         remotingConnection.send(id, new PacketImpl(CLOSE));
       }
       finally
       {

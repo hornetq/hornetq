@@ -16,7 +16,7 @@ import javax.transaction.xa.Xid;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionXAGetInDoubtXidsResponseMessage extends AbstractPacket
+public class SessionXAGetInDoubtXidsResponseMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

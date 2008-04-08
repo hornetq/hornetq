@@ -14,7 +14,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_
  * 
  * @version <tt>$Revision$</tt>
  */
-public class ConnectionCreateSessionMessage extends AbstractPacket
+public class ConnectionCreateSessionMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

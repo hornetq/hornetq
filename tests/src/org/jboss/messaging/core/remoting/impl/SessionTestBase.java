@@ -23,7 +23,7 @@ import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.mina.integration.test.ReversePacketHandler;
-import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
 import org.jboss.messaging.core.remoting.test.unit.TestPacketHandler;
@@ -162,7 +162,7 @@ public abstract class SessionTestBase extends TestCase
       packet.setTargetID(serverHandler.getID());
       packet.setCallbackID(callbackHandler.getID());
 
-      AbstractPacket blockingResponse = (AbstractPacket) session.writeAndBlock(packet, REQRES_TIMEOUT, SECONDS);
+      PacketImpl blockingResponse = (PacketImpl) session.writeAndBlock(packet, REQRES_TIMEOUT, SECONDS);
       assertNotNull(blockingResponse);
       
       assertEquals(0, callbackHandler.getPackets().size());
@@ -182,7 +182,7 @@ public abstract class SessionTestBase extends TestCase
       TextPacket request = new TextPacket("testSendBlocking");
       request.setTargetID(serverPacketHandler.getID());
 
-      AbstractPacket receivedPacket = (AbstractPacket) session.writeAndBlock(request, REQRES_TIMEOUT, SECONDS);
+      PacketImpl receivedPacket = (PacketImpl) session.writeAndBlock(request, REQRES_TIMEOUT, SECONDS);
 
       assertNotNull(receivedPacket);
       assertTrue(receivedPacket instanceof TextPacket);
@@ -195,13 +195,13 @@ public abstract class SessionTestBase extends TestCase
       TextPacket request = new TextPacket("testSendBlocking");
       request.setTargetID(serverPacketHandler.getID());
 
-      AbstractPacket receivedPacket = (AbstractPacket) session.writeAndBlock(request, REQRES_TIMEOUT, SECONDS);
+      PacketImpl receivedPacket = (PacketImpl) session.writeAndBlock(request, REQRES_TIMEOUT, SECONDS);
       long correlationID = request.getCorrelationID();
       
       assertNotNull(receivedPacket);      
       assertEquals(request.getCorrelationID(), receivedPacket.getCorrelationID());
       
-      receivedPacket = (AbstractPacket) session.writeAndBlock(request, REQRES_TIMEOUT, SECONDS);
+      receivedPacket = (PacketImpl) session.writeAndBlock(request, REQRES_TIMEOUT, SECONDS);
       assertEquals(correlationID + 1, request.getCorrelationID());
       assertEquals(correlationID + 1, receivedPacket.getCorrelationID());      
    }

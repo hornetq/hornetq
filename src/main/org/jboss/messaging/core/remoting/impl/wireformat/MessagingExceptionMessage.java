@@ -16,7 +16,7 @@ import org.jboss.messaging.core.exception.MessagingException;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class MessagingExceptionMessage extends AbstractPacket
+public class MessagingExceptionMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

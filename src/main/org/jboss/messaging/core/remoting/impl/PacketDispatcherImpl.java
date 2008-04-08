@@ -7,7 +7,7 @@
 package org.jboss.messaging.core.remoting.impl;
 
 import static org.jboss.messaging.core.remoting.impl.Assert.assertValidID;
-import static org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket.NO_ID_SET;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NO_ID_SET;
 
 import java.io.Serializable;
 import java.util.List;

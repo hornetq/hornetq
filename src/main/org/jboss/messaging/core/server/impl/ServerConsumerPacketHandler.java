@@ -21,12 +21,15 @@
   */
 package org.jboss.messaging.core.server.impl;
 
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CLOSE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONS_FLOWTOKEN;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.NULL;
+
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.server.ServerConsumer;
 
 /**
@@ -55,7 +58,7 @@ public class ServerConsumerPacketHandler extends ServerPacketHandlerSupport
    {
       Packet response = null;
 
-      PacketType type = packet.getType();
+      byte type = packet.getType();
       switch (type)
       {
       case CONS_FLOWTOKEN:
@@ -73,7 +76,7 @@ public class ServerConsumerPacketHandler extends ServerPacketHandlerSupport
       // reply if necessary
       if (response == null && packet.isOneWay() == false)
       {
-         response = new NullPacket();               
+         response = new PacketImpl(NULL);               
       }
       
       return response;

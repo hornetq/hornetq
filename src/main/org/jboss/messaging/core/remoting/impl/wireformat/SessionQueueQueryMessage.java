@@ -14,7 +14,7 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SessionQueueQueryMessage extends AbstractPacket
+public class SessionQueueQueryMessage extends PacketImpl
 {
    private final String queueName;
 

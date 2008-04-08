@@ -16,7 +16,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SessionRemoveDestinationMessage extends AbstractPacket
+public class SessionRemoveDestinationMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

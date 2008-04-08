@@ -30,7 +30,7 @@ public class MinaEncoder implements MessageEncoder<Packet>
 
    // Attributes ----------------------------------------------------
 
-   private final Map<PacketType, AbstractPacketCodec> codecs;
+   private final Map<Byte, AbstractPacketCodec> codecs;
 
    // Static --------------------------------------------------------
 
@@ -38,11 +38,11 @@ public class MinaEncoder implements MessageEncoder<Packet>
 
     MinaEncoder()
    {
-      codecs = new HashMap<PacketType, AbstractPacketCodec>();
+      codecs = new HashMap<Byte, AbstractPacketCodec>();
    }
    // Public --------------------------------------------------------
 
-   public void put(PacketType type, AbstractPacketCodec codec)
+   public void put(byte type, AbstractPacketCodec codec)
    {
       codecs.put(type, codec);
    }

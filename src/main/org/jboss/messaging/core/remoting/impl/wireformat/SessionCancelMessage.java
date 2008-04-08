@@ -14,7 +14,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionCancelMessage extends AbstractPacket
+public class SessionCancelMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

@@ -116,22 +116,8 @@ import org.jboss.messaging.core.remoting.impl.codec.SessionXASetTimeoutMessageCo
 import org.jboss.messaging.core.remoting.impl.codec.SessionXASetTimeoutResponseMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionXAStartMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.TextPacketCodec;
-import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
-import org.jboss.messaging.core.remoting.impl.wireformat.CloseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionStartMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionStopMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.NullPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserResetMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCommitMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionRecoverMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionRollbackMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetInDoubtXidsMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetTimeoutMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASuspendMessage;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -159,7 +145,7 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
        addMessageDecoder(decoder);
        addMessageEncoder(Packet.class, encoder);
       
-      addCodecForEmptyPacket(encoder, decoder, NULL, NullPacket.class);
+      addCodecForEmptyPacket(encoder, decoder, NULL);
       addCodec(encoder, decoder, PROD_SEND,
             new ProducerSendMessageCodec());
       addCodec(encoder, decoder, CONS_DELIVER,
@@ -205,11 +191,9 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
       addCodec(encoder, decoder, SESS_CREATEBROWSER_RESP,
             new SessionCreateBrowserResponseMessageCodec());
 
-      addCodecForEmptyPacket(encoder, decoder, CONN_START,
-            ConnectionStartMessage.class);
+      addCodecForEmptyPacket(encoder, decoder, CONN_START);
 
-      addCodecForEmptyPacket(encoder, decoder, CONN_STOP,
-            ConnectionStopMessage.class);
+      addCodecForEmptyPacket(encoder, decoder, CONN_STOP);
 
       addCodec(encoder, decoder, CONS_FLOWTOKEN,
             new ConsumerFlowTokenMessageCodec());
@@ -219,28 +203,22 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
 
       addCodec(encoder, decoder, SESS_CANCEL, new SessionCancelMessageCodec());
 
-      addCodecForEmptyPacket(encoder, decoder, SESS_COMMIT,
-            SessionCommitMessage.class);
+      addCodecForEmptyPacket(encoder, decoder, SESS_COMMIT);
 
-      addCodecForEmptyPacket(encoder, decoder, SESS_ROLLBACK,
-            SessionRollbackMessage.class);
+      addCodecForEmptyPacket(encoder, decoder, SESS_ROLLBACK);
 
-      addCodecForEmptyPacket(encoder, decoder, CLOSE, CloseMessage.class);
+      addCodecForEmptyPacket(encoder, decoder, CLOSE);
 
-      addCodecForEmptyPacket(encoder, decoder, SESS_RECOVER,
-            SessionRecoverMessage.class);
+      addCodecForEmptyPacket(encoder, decoder, SESS_RECOVER);
 
-      addCodecForEmptyPacket(encoder, decoder, SESS_BROWSER_RESET,
-            SessionBrowserResetMessage.class);
+      addCodecForEmptyPacket(encoder, decoder, SESS_BROWSER_RESET);
 
-      addCodecForEmptyPacket(encoder, decoder, SESS_BROWSER_HASNEXTMESSAGE,
-            SessionBrowserHasNextMessageMessage.class);
+      addCodecForEmptyPacket(encoder, decoder, SESS_BROWSER_HASNEXTMESSAGE);
 
       addCodec(encoder, decoder, SESS_BROWSER_HASNEXTMESSAGE_RESP,
             new SessionBrowserHasNextMessageResponseMessageCodec());
 
-      addCodecForEmptyPacket(encoder, decoder, SESS_BROWSER_NEXTMESSAGE,
-            SessionBrowserNextMessageMessage.class);
+      addCodecForEmptyPacket(encoder, decoder, SESS_BROWSER_NEXTMESSAGE);
 
       addCodec(encoder, decoder, SESS_BROWSER_NEXTMESSAGE_RESP,
             new SessionBrowserNextMessageResponseMessageCodec());
@@ -259,14 +237,12 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
       addCodec(encoder, decoder, SESS_XA_FORGET,
             new SessionXAForgetMessageCodec());
 
-      addCodecForEmptyPacket(encoder, decoder, SESS_XA_INDOUBT_XIDS,
-            SessionXAGetInDoubtXidsMessage.class);
+      addCodecForEmptyPacket(encoder, decoder, SESS_XA_INDOUBT_XIDS);
 
       addCodec(encoder, decoder, SESS_XA_INDOUBT_XIDS_RESP,
             new SessionXAGetInDoubtXidsResponseMessageCodec());
 
-      addCodecForEmptyPacket(encoder, decoder, SESS_XA_GET_TIMEOUT,
-            SessionXAGetTimeoutMessage.class);
+      addCodecForEmptyPacket(encoder, decoder, SESS_XA_GET_TIMEOUT);
 
       addCodec(encoder, decoder, SESS_XA_GET_TIMEOUT_RESP,
             new SessionXAGetTimeoutResponseMessageCodec());
@@ -294,8 +270,7 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
       addCodec(encoder, decoder, SESS_XA_START,
             new SessionXAStartMessageCodec());
 
-      addCodecForEmptyPacket(encoder, decoder, SESS_XA_SUSPEND,
-            SessionXASuspendMessage.class);
+      addCodecForEmptyPacket(encoder, decoder, SESS_XA_SUSPEND);
 
       addCodec(encoder, decoder, SESS_REMOVE_DESTINATION,
             new SessionRemoveDestinationMessageCodec());
@@ -328,23 +303,10 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
 
    // Public --------------------------------------------------------
 
-   public static AbstractPacketCodec<AbstractPacket> createCodecForEmptyPacket(
-         PacketType type, final Class<? extends AbstractPacket> clazz)
+   public static AbstractPacketCodec<Packet> createCodecForEmptyPacket(
+         final byte type)
    {
-      return new CodecForEmptyPacket<AbstractPacket>(type)
-      {
-         @Override
-         protected AbstractPacket newPacket()
-         {
-            try
-            {
-               return (AbstractPacket) clazz.newInstance();
-            } catch (Throwable t)
-            {
-               return null;
-            }
-         }
-      };
+      return new CodecForEmptyPacket<Packet>(type);
    }
    
    // Package protected ---------------------------------------------
@@ -355,7 +317,7 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
 
    // FIXME generics definition should be in term of <P>...
    private void addCodec(MinaEncoder encoder, MinaDecoder decoder,
-         PacketType type, AbstractPacketCodec<? extends AbstractPacket> codec)
+         byte type, AbstractPacketCodec<? extends Packet> codec)
    {
       try
       {
@@ -366,23 +328,22 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
          log.error("Unable to add codec for packet " + type, e);
       }
    }
-
+   
    private void addCodecForEmptyPacket(MinaEncoder encoder,
-         MinaDecoder decoder, PacketType type,
-         Class<? extends AbstractPacket> packetClass)
+         MinaDecoder decoder, byte type)
    {
-      AbstractPacketCodec<AbstractPacket> codec = createCodecForEmptyPacket(
-            type, packetClass);
+      AbstractPacketCodec<Packet> codec = createCodecForEmptyPacket(
+            type);
       addCodec(encoder, decoder, type, codec);
    }
 
    // Inner classes -------------------------------------------------
 
-   abstract static class CodecForEmptyPacket<P extends AbstractPacket> extends
+   static class CodecForEmptyPacket<P extends Packet> extends
          AbstractPacketCodec<P>
    {
 
-      public CodecForEmptyPacket(PacketType type)
+      public CodecForEmptyPacket(byte type)
       {
          super(type);
       }
@@ -395,12 +356,10 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
       }
 
       @Override
-      protected P decodeBody(RemotingBuffer in) throws Exception
+      protected Packet decodeBody(RemotingBuffer in) throws Exception
       {
          in.getInt(); // skip body length
-         return newPacket();
+         return new PacketImpl(type);
       }
-
-      protected abstract P newPacket();
    }
 }

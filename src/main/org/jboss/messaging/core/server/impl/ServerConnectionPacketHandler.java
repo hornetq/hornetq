@@ -21,12 +21,17 @@
   */
 package org.jboss.messaging.core.server.impl;
 
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CLOSE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_CREATESESSION;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_START;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_STOP;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.NULL;
+
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.server.ServerConnection;
 
 /**
@@ -55,7 +60,7 @@ public class ServerConnectionPacketHandler extends ServerPacketHandlerSupport
    {
       Packet response = null;
 
-      PacketType type = packet.getType();
+      byte type = packet.getType();
       
       switch (type)
       {
@@ -80,7 +85,7 @@ public class ServerConnectionPacketHandler extends ServerPacketHandlerSupport
       // reply if necessary
       if (response == null && packet.isOneWay() == false)
       {
-         response = new NullPacket();               
+         response = new PacketImpl(NULL);               
       }
       
       return response;

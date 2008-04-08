@@ -21,6 +21,13 @@
   */
 package org.jboss.messaging.core.client.impl;
 
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CLOSE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_COMMIT;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_ROLLBACK;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_GET_TIMEOUT;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_INDOUBT_XIDS;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_SUSPEND;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -38,15 +45,14 @@ import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
-import org.jboss.messaging.core.remoting.impl.wireformat.CloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCancelMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCommitMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
@@ -58,13 +64,10 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessa
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionRollbackMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAForgetMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetInDoubtXidsMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetInDoubtXidsResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetTimeoutMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetTimeoutResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAJoinMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAPrepareMessage;
@@ -74,7 +77,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessag
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASuspendMessage;
 import org.jboss.messaging.jms.client.SelectorTranslator;
 
 /**
@@ -363,7 +365,7 @@ public class ClientSessionImpl implements ClientSessionInternal
         
       acknowledgeInternal(false);
       
-      remotingConnection.send(id, new SessionCommitMessage());
+      remotingConnection.send(id, new PacketImpl(SESS_COMMIT));
       
       lastCommittedID = lastID;
    }
@@ -391,7 +393,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       toAckCount = 0;
 
-      remotingConnection.send(id, new SessionRollbackMessage());   
+      remotingConnection.send(id, new PacketImpl(SESS_ROLLBACK));   
    }
    
    public void acknowledge() throws MessagingException
@@ -452,7 +454,7 @@ public class ClientSessionImpl implements ClientSessionInternal
          
          acknowledgeInternal(false);      
          
-         remotingConnection.send(id, new CloseMessage());
+         remotingConnection.send(id, new PacketImpl(CLOSE));
    
          executor.shutdown();
       }
@@ -560,11 +562,11 @@ public class ClientSessionImpl implements ClientSessionInternal
    {
       try
       {
-         AbstractPacket packet;
+         Packet packet;
          
          if (flags == XAResource.TMSUSPEND)
          {
-            packet = new SessionXASuspendMessage();                  
+            packet = new PacketImpl(SESS_XA_SUSPEND);                  
          }
          else if (flags == XAResource.TMSUCCESS)
          {
@@ -623,7 +625,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       try
       {                              
          SessionXAGetTimeoutResponseMessage response =
-            (SessionXAGetTimeoutResponseMessage)remotingConnection.send(id, new SessionXAGetTimeoutMessage());
+            (SessionXAGetTimeoutResponseMessage)remotingConnection.send(id, new PacketImpl(SESS_XA_GET_TIMEOUT));
          
          return response.getTimeoutSeconds();
       }
@@ -680,9 +682,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    {
       try
       {
-         SessionXAGetInDoubtXidsMessage packet = new SessionXAGetInDoubtXidsMessage();
-         
-         SessionXAGetInDoubtXidsResponseMessage response = (SessionXAGetInDoubtXidsResponseMessage)remotingConnection.send(id, packet);
+         SessionXAGetInDoubtXidsResponseMessage response = (SessionXAGetInDoubtXidsResponseMessage)remotingConnection.send(id, new PacketImpl(SESS_XA_INDOUBT_XIDS));
          
          List<Xid> xids = response.getXids();
          
@@ -738,7 +738,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    {
       try
       {
-         AbstractPacket packet;
+         Packet packet;
          
          if (flags == XAResource.TMJOIN)
          {

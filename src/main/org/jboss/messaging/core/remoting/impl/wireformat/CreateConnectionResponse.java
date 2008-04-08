@@ -15,7 +15,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CREAT
  * 
  * @version <tt>$Revision$</tt>
  */
-public class CreateConnectionResponse extends AbstractPacket
+public class CreateConnectionResponse extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

@@ -17,7 +17,7 @@ import org.jboss.messaging.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.core.remoting.impl.SessionTestBase;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
-import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
 
 /**
@@ -45,7 +45,7 @@ public class MinaSessionTest extends SessionTestBase
    {
       serverPacketHandler.setSleepTime(1000, MILLISECONDS);
 
-      AbstractPacket packet = new TextPacket("testSendBlockingWithTimeout");
+      PacketImpl packet = new TextPacket("testSendBlockingWithTimeout");
       packet.setTargetID(serverPacketHandler.getID());
       
       try

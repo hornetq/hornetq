@@ -9,7 +9,7 @@ package org.jboss.messaging.core.remoting.impl.codec;
 import static org.jboss.messaging.core.remoting.impl.codec.DecoderStatus.NEED_DATA;
 import static org.jboss.messaging.core.remoting.impl.codec.DecoderStatus.NOT_OK;
 import static org.jboss.messaging.core.remoting.impl.codec.DecoderStatus.OK;
-import static org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket.NO_ID_SET;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NO_ID_SET;
 
 import java.nio.charset.CharacterCodingException;
 
@@ -17,7 +17,6 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 
 /**
@@ -43,16 +42,14 @@ public abstract class AbstractPacketCodec<P extends Packet>
 
    // Attributes ----------------------------------------------------
 
-   private PacketType type;
+   protected final byte type;
 
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
    
-   protected AbstractPacketCodec(PacketType type)
+   protected AbstractPacketCodec(byte type)
    {
-      assert type != null;
-
       this.type = type;
    }
 
@@ -84,7 +81,7 @@ public abstract class AbstractPacketCodec<P extends Packet>
       }
       int headerLength = LONG_LENGTH + sizeof(targetID) + sizeof(callbackID) + sizeof(executorID) + BOOLEAN_LENGTH;
 
-      buf.put(packet.getType().byteValue());
+      buf.put(packet.getType());
       buf.putInt(headerLength);
       buf.putLong(correlationID);
       buf.putNullableString(targetID);
@@ -174,7 +171,7 @@ public abstract class AbstractPacketCodec<P extends Packet>
       return OK;
    }
 
-   public P decode(RemotingBuffer wrapper) throws Exception
+   public Packet decode(RemotingBuffer wrapper) throws Exception
    {
       wrapper.get(); // skip message type
       wrapper.getInt(); // skip header length
@@ -184,7 +181,7 @@ public abstract class AbstractPacketCodec<P extends Packet>
       String executorID = wrapper.getNullableString();
       boolean oneWay = wrapper.getBoolean();
       
-      P packet = decodeBody(wrapper);
+      Packet packet = decodeBody(wrapper);
 
       if (packet == null)
       {
@@ -213,7 +210,7 @@ public abstract class AbstractPacketCodec<P extends Packet>
    protected abstract void encodeBody(P packet, RemotingBuffer buf)
          throws Exception;
 
-   protected abstract P decodeBody(RemotingBuffer buffer) throws Exception;
+   protected abstract Packet decodeBody(RemotingBuffer buffer) throws Exception;
 
    protected static void encodeXid(Xid xid, RemotingBuffer out)
    {

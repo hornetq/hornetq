@@ -20,7 +20,7 @@ import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandlerRegistrationListener;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.RemotingException;
-import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.util.OrderedExecutorFactory;
@@ -130,7 +130,7 @@ public class MinaHandler extends IoHandlerAdapter implements PacketHandlerRegist
       final Packet packet = (Packet) message;
       String executorID = packet.getExecutorID();
       
-      if (AbstractPacket.NO_ID_SET.equals(executorID)) 
+      if (PacketImpl.NO_ID_SET.equals(executorID)) 
          throw new IllegalArgumentException("executor ID not set for " + packet);
       
       Executor executor = executors.get(executorID);

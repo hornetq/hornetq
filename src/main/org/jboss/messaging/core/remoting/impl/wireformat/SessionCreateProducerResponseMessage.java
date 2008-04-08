@@ -14,7 +14,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionCreateProducerResponseMessage extends AbstractPacket
+public class SessionCreateProducerResponseMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

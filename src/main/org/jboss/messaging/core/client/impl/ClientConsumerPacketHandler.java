@@ -1,11 +1,12 @@
 package org.jboss.messaging.core.client.impl;
 
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONS_DELIVER;
+
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerDeliverMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -37,9 +38,9 @@ public class ClientConsumerPacketHandler implements PacketHandler
    {
       try
       {
-         PacketType type = packet.getType();
+         byte type = packet.getType();
          
-         if (type == PacketType.CONS_DELIVER)
+         if (type == CONS_DELIVER)
          {
             ConsumerDeliverMessage message = (ConsumerDeliverMessage) packet;
             

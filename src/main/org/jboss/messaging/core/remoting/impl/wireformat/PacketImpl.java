@@ -15,7 +15,7 @@ import org.jboss.messaging.core.client.impl.RemotingConnection;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class AbstractPacket implements Packet
+public class PacketImpl implements Packet
 {
    // Constants -----------------------------------------------------
 
@@ -33,7 +33,7 @@ public class AbstractPacket implements Packet
 
    String executorID = NO_ID_SET;
 
-   private final PacketType type;
+   private final byte type;
 
    /**
     * <code>oneWay</code> is <code>true</code> when the packet is sent "one way"
@@ -47,16 +47,14 @@ public class AbstractPacket implements Packet
 
    // Constructors --------------------------------------------------
 
-   AbstractPacket(PacketType type)
+   public PacketImpl(byte type)
    {
-      assert type != null;
-
       this.type = type;
    }
 
    // Public --------------------------------------------------------
 
-   public PacketType getType()
+   public byte getType()
    {
       return type;
    }

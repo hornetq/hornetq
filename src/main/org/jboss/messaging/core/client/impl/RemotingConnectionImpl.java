@@ -31,8 +31,8 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 
 /**
  * 
@@ -125,8 +125,8 @@ public class RemotingConnectionImpl implements RemotingConnection
       }
       return session.getID();
    }
- 
-   public AbstractPacket send(String targetID, AbstractPacket packet)
+    
+   public Packet send(String targetID, Packet packet)
          throws MessagingException
    {
       return send(targetID, targetID, packet);
@@ -135,23 +135,23 @@ public class RemotingConnectionImpl implements RemotingConnection
    /**
     * send the packet and block until a response is received (<code>oneWay</code> is set to <code>false</code>)
     */
-   public AbstractPacket send(final String targetID, final String executorID, final AbstractPacket packet) throws MessagingException
+   public Packet send(final String targetID, final String executorID, final Packet packet) throws MessagingException
    {
       return send(targetID, executorID, packet, false);
    }
    
-   public AbstractPacket send(final String targetID, final String executorID, final AbstractPacket packet, final boolean oneWay) throws MessagingException
+   public Packet send(final String targetID, final String executorID, final Packet packet, final boolean oneWay) throws MessagingException
    {
       assert packet != null;
 
       packet.setTargetID(targetID);
       packet.setExecutorID(executorID);
       
-      AbstractPacket response;
+      Packet response;
       
       try
       {      
-         response = (AbstractPacket) send(packet, oneWay);
+         response = (Packet) send(packet, oneWay);
       }
       catch (Exception e)
       {
@@ -206,7 +206,7 @@ public class RemotingConnectionImpl implements RemotingConnection
 
    // Private --------------------------------------------------------------------------------------
 
-   private AbstractPacket send(final AbstractPacket packet, final boolean oneWay) throws Exception
+   private Packet send(final Packet packet, final boolean oneWay) throws Exception
    {
       assert packet != null;
       checkConnected();
@@ -218,7 +218,7 @@ public class RemotingConnectionImpl implements RemotingConnection
          return null;
       } else 
       {
-         AbstractPacket response = (AbstractPacket) session.writeAndBlock(packet, 
+         Packet response = (Packet) session.writeAndBlock(packet, 
                config.getTimeout(), SECONDS);
          return response;
       }

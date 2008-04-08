@@ -21,11 +21,14 @@
   */
 package org.jboss.messaging.core.server.impl;
 
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CLOSE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.NULL;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PROD_SEND;
+
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.impl.wireformat.NullPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
 import org.jboss.messaging.core.server.ServerProducer;
 
@@ -54,7 +57,7 @@ public class ServerProducerPacketHandler extends ServerPacketHandlerSupport
    {
       Packet response = null;
 
-      PacketType type = packet.getType();
+      byte type = packet.getType();
       switch (type)
       {
       case PROD_SEND:
@@ -72,7 +75,7 @@ public class ServerProducerPacketHandler extends ServerPacketHandlerSupport
       // reply if necessary
       if (response == null && packet.isOneWay() == false)
       {
-         response = new NullPacket();               
+         response = new PacketImpl(NULL);               
       }
       
       return response;

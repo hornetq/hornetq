@@ -14,7 +14,7 @@ import javax.transaction.xa.Xid;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionXAJoinMessage extends AbstractPacket
+public class SessionXAJoinMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

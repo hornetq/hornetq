@@ -14,7 +14,7 @@ import static org.jboss.messaging.core.remoting.impl.Assert.assertValidID;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class ConnectionCreateSessionResponseMessage extends AbstractPacket
+public class ConnectionCreateSessionResponseMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

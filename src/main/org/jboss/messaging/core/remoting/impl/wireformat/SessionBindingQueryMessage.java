@@ -14,7 +14,7 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SessionBindingQueryMessage extends AbstractPacket
+public class SessionBindingQueryMessage extends PacketImpl
 {
    private final String address;
 

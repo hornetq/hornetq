@@ -11,7 +11,7 @@ import java.util.List;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SessionBindingQueryResponseMessage extends AbstractPacket
+public class SessionBindingQueryResponseMessage extends PacketImpl
 {
    private final boolean exists;
    

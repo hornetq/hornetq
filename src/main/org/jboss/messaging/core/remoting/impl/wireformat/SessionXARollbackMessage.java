@@ -14,7 +14,7 @@ import javax.transaction.xa.Xid;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionXARollbackMessage extends AbstractPacket
+public class SessionXARollbackMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

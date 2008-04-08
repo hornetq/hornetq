@@ -15,7 +15,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PONG;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class Pong extends AbstractPacket
+public class Pong extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

@@ -12,7 +12,7 @@ import org.apache.mina.common.IoSession;
 import org.apache.mina.filter.reqres.Request;
 import org.apache.mina.filter.reqres.Response;
 import org.jboss.messaging.core.remoting.NIOSession;
-import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -54,7 +54,7 @@ public class MinaSession implements NIOSession
       session.write(object);
    }
 
-   public Object writeAndBlock(AbstractPacket packet, long timeout, TimeUnit timeUnit) throws Exception
+   public Object writeAndBlock(Packet packet, long timeout, TimeUnit timeUnit) throws Exception
    {
       packet.setCorrelationID(correlationCounter++);
       Request req = new Request(packet.getCorrelationID(), packet, timeout, timeUnit);

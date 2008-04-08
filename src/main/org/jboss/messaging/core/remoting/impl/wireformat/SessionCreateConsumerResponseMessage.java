@@ -16,7 +16,7 @@ import org.jboss.messaging.core.remoting.impl.Assert;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionCreateConsumerResponseMessage extends AbstractPacket
+public class SessionCreateConsumerResponseMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

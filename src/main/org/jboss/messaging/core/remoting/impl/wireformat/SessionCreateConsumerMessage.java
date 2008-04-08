@@ -12,7 +12,7 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
  *
  * @version <tt>$Revision$</tt>
  */
-public class SessionCreateConsumerMessage extends AbstractPacket
+public class SessionCreateConsumerMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

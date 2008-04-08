@@ -15,7 +15,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
  * @version <tt>$Revision$</tt>
  *
  */
-public class SessionBrowserNextMessageBlockMessage extends AbstractPacket
+public class SessionBrowserNextMessageBlockMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

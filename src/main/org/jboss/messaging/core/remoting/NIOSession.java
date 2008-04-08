@@ -8,7 +8,7 @@ package org.jboss.messaging.core.remoting;
 
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -23,7 +23,7 @@ public interface NIOSession
 
    void write(Object object) throws Exception;
 
-   Object writeAndBlock(AbstractPacket packet, long timeout, TimeUnit timeUnit) throws Exception;
+   Object writeAndBlock(Packet packet, long timeout, TimeUnit timeUnit) throws Exception;
 
    boolean isConnected();
 }

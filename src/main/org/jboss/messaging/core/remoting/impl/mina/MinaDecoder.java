@@ -18,7 +18,6 @@ import org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec;
 import org.jboss.messaging.core.remoting.impl.codec.DecoderStatus;
 import org.jboss.messaging.core.remoting.impl.codec.RemotingBuffer;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -45,9 +44,9 @@ public class MinaDecoder implements MessageDecoder
 
    // Public --------------------------------------------------------
 
-   public void put(PacketType type, AbstractPacketCodec codec)
+   public void put(byte type, AbstractPacketCodec codec)
    {
-      codecs.put(type.byteValue(), codec);
+      codecs.put(type, codec);
    }
    
    // MessageDecoder implementation ---------------------------------

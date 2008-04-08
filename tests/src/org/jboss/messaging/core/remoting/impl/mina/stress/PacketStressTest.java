@@ -24,7 +24,7 @@ import org.jboss.messaging.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
-import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.BytesPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 
@@ -90,7 +90,7 @@ public class PacketStressTest extends TestCase
       NIOSession session = connector.connect();
       
       byte[] payloadBytes = generatePayload(PAYLOAD);
-      AbstractPacket packet = new BytesPacket(payloadBytes);
+      PacketImpl packet = new BytesPacket(payloadBytes);
       packet.setTargetID(handlerID);
 
       long start = System.currentTimeMillis();

@@ -15,7 +15,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PING;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class Ping extends AbstractPacket
+public class Ping extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

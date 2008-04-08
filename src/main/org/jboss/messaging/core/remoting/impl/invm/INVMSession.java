@@ -14,7 +14,6 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 
 /**
@@ -74,9 +73,9 @@ public class INVMSession implements NIOSession
 
    public void write(final Object object) throws Exception
    {
-      assert object instanceof AbstractPacket;
+      assert object instanceof Packet;
 
-      serverDispatcher.dispatch((AbstractPacket) object,
+      serverDispatcher.dispatch((Packet) object,
             new PacketSender()
             {
                public void send(Packet response) throws Exception
@@ -97,7 +96,7 @@ public class INVMSession implements NIOSession
             });
    }
 
-   public Object writeAndBlock(final AbstractPacket request, long timeout, TimeUnit timeUnit) throws Exception
+   public Object writeAndBlock(final Packet request, long timeout, TimeUnit timeUnit) throws Exception
    {
       request.setCorrelationID(correlationCounter++);
       final Packet[] responses = new Packet[1];

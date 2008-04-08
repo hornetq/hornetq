@@ -21,6 +21,12 @@
  */
 package org.jboss.messaging.core.server.impl;
 
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CLOSE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.NULL;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_HASNEXTMESSAGE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_NEXTMESSAGE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_RESET;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -34,9 +40,8 @@ import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.impl.wireformat.NullPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageResponseMessage;
 import org.jboss.messaging.core.server.Queue;
@@ -207,7 +212,7 @@ public class ServerBrowserImpl
       {
          Packet response = null;
 
-         PacketType type = packet.getType();
+         byte type = packet.getType();
          switch (type)
          {
          case SESS_BROWSER_HASNEXTMESSAGE:
@@ -231,7 +236,7 @@ public class ServerBrowserImpl
          // reply if necessary
          if (response == null && packet.isOneWay() == false)
          {
-            response = new NullPacket();               
+            response = new PacketImpl(NULL);               
          }            
          
          return response;

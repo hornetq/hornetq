@@ -12,7 +12,7 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionXASetTimeoutResponseMessage extends AbstractPacket
+public class SessionXASetTimeoutResponseMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

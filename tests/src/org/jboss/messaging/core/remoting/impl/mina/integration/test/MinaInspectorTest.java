@@ -7,14 +7,14 @@
 package org.jboss.messaging.core.remoting.impl.mina.integration.test;
 
 import static org.apache.mina.filter.reqres.ResponseType.WHOLE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.NULL;
 
 import java.util.UUID;
 
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.remoting.impl.mina.MinaInspector;
-import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
-import org.jboss.messaging.core.remoting.impl.wireformat.NullPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -49,7 +49,7 @@ public class MinaInspectorTest extends TestCase
 
    public void testGetRequestIdForAbstractPacketWhichIsNotRequest()
    {
-      AbstractPacket packet = new NullPacket();
+      PacketImpl packet = new PacketImpl(NULL);
       packet.setTargetID(UUID.randomUUID().toString());
       assertFalse(packet.isRequest());
 
@@ -58,7 +58,7 @@ public class MinaInspectorTest extends TestCase
 
    public void testGetRequestIdForAbstractPacketWhichIsRequest()
    {
-      AbstractPacket packet = new NullPacket();
+      PacketImpl packet = new PacketImpl(NULL);
       packet.setTargetID(UUID.randomUUID().toString());
       packet.setCorrelationID(System.currentTimeMillis());
       assertTrue(packet.isRequest());
@@ -80,7 +80,7 @@ public class MinaInspectorTest extends TestCase
 
    public void testGetResponseTypeForAbstractPacket()
    {
-      AbstractPacket packet = new NullPacket();
+      PacketImpl packet = new PacketImpl(NULL);
 
       assertEquals(WHOLE, inspector.getResponseType(packet));
    }

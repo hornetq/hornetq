@@ -9,7 +9,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SessionQueueQueryResponseMessage extends AbstractPacket
+public class SessionQueueQueryResponseMessage extends PacketImpl
 {
    private final boolean exists;
    

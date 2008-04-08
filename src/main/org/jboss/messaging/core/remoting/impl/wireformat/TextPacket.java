@@ -13,7 +13,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.TEXT;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class TextPacket extends AbstractPacket
+public class TextPacket extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

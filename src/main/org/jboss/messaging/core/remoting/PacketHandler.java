@@ -6,11 +6,10 @@
  */
 package org.jboss.messaging.core.remoting;
 
-import org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 
 /**
- * A PacketHandler handles packets (as defined by {@link AbstractPacket} and its
+ * A PacketHandler handles packets (as defined by {@link Packet} and its
  * subclasses).
  * 
  * It must have an ID unique among all PacketHandlers (or at least among those

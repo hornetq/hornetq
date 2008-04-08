@@ -9,7 +9,7 @@ package org.jboss.messaging.core.remoting.impl.mina.integration.test;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static junit.framework.Assert.fail;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.reverse;
-import static org.jboss.messaging.core.remoting.impl.wireformat.AbstractPacket.NO_ID_SET;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NO_ID_SET;
 
 import java.util.concurrent.TimeUnit;
 

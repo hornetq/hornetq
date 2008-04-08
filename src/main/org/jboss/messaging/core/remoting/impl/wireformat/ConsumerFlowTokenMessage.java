@@ -14,7 +14,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONS_
  * 
  * @version <tt>$Revision$</tt>
  */
-public class ConsumerFlowTokenMessage extends AbstractPacket
+public class ConsumerFlowTokenMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
