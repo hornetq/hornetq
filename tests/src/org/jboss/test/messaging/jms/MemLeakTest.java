@@ -42,14 +42,6 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.profiler.jvmti.InventoryDataPoint;
 import org.jboss.profiler.jvmti.JVMTIInterface;
-import org.jboss.remoting.Client;
-import org.jboss.remoting.ConnectionListener;
-import org.jboss.remoting.InvocationRequest;
-import org.jboss.remoting.InvokerLocator;
-import org.jboss.remoting.ServerInvocationHandler;
-import org.jboss.remoting.ServerInvoker;
-import org.jboss.remoting.callback.InvokerCallbackHandler;
-import org.jboss.remoting.transport.Connector;
 import org.jboss.test.messaging.JBMServerTestCase;
 
 /**
@@ -703,98 +695,7 @@ public class MemLeakTest extends JBMServerTestCase
 //      
 //      Thread.sleep(20 * 60 * 1000);
 //   }
-   
-   class SimpleConnectionListener implements ConnectionListener
-   {
-      public void handleConnectionException(Throwable arg0, Client arg1)
-      {         
-      }      
-   }
 
-   // this test is hanging.. that's why I have renamed it (Clebert)
-   public void renamedtestRemotingMemLeaks() throws Throwable
-   {
-      log.info("Test remoting mem leaks");
-      
-      Thread.sleep(10 * 1000);
-      
-      Connector serverConnector = new Connector();
 
-      InvokerLocator serverLocator = new InvokerLocator("socket://localhost:9099");
 
-      serverConnector.setInvokerLocator(serverLocator.getLocatorURI());
-
-      serverConnector.create();
-      
-      serverConnector.setLeasePeriod(5000);
-      
-      serverConnector.addConnectionListener(new SimpleConnectionListener());
-
-      SimpleServerInvocationHandler invocationHandler = new SimpleServerInvocationHandler();
-
-      serverConnector.addInvocationHandler("JMS", invocationHandler);
-
-      serverConnector.start();
-
-      InvokerLocator serverLocator2 = new InvokerLocator("socket://localhost:9099/forceRemoting=true&leasing=true");
-      
-      for (int i = 0; i < 500; i++)
-      {
-         Client cl = new Client(serverLocator2);
-         
-         cl.connect();
-         
-         for (int j = 0; j < 100; j++)
-         {
-            cl.invoke("pickled onions");
-         }
-         
-         cl.disconnect();
-      }
-     
-      serverConnector.stop();
-      
-      serverConnector.destroy();      
-      
-      log.info("done");
-   }
-
-   // Public --------------------------------------------------------
-   
-   class SimpleServerInvocationHandler implements ServerInvocationHandler
-   {
-      InvokerCallbackHandler handler;
-
-      public void addListener(InvokerCallbackHandler callbackHandler)
-      {
-         this.handler = callbackHandler;
-
-      }
-
-      public Object invoke(InvocationRequest invocation) throws Throwable
-      {
-         //log.info("Received invocation:" + invocation);
-
-         return "Sausages";
-      }
-
-      public void removeListener(InvokerCallbackHandler callbackHandler)
-      {
-         // FIXME removeListener
-
-      }
-
-      public void setInvoker(ServerInvoker invoker)
-      {
-         // FIXME setInvoker
-
-      }
-
-      public void setMBeanServer(MBeanServer server)
-      {
-         // FIXME setMBeanServer
-
-      }
-
-   }
 }
