@@ -104,6 +104,7 @@ public class ConfigurationImpl implements Configuration, Serializable
    protected boolean invmDisabledModified = false;
    protected boolean tcpNoDelay;
    protected int tcpReceiveBufferSize = -1;
+   protected int tcpSendBufferSize = -1;
    protected boolean sslEnabled = DEFAULT_SSL_ENABLED;
    protected boolean sslEnabledModified = false;
    protected String keyStorePath;
@@ -340,6 +341,16 @@ public class ConfigurationImpl implements Configuration, Serializable
    {
       this.tcpReceiveBufferSize = size;
    }
+   
+   public int getTcpSendBufferSize()
+   {
+      return this.tcpSendBufferSize;
+   }
+   
+   public void setTcpSendBufferSize(int size)
+   {
+      this.tcpSendBufferSize = size;
+   }
 
    public String getURI()
    {
@@ -351,6 +362,7 @@ public class ConfigurationImpl implements Configuration, Serializable
       buff.append("&").append("invmDisabled=").append(invmDisabled);
       buff.append("&").append("tcpNoDelay=").append(tcpNoDelay);
       buff.append("&").append("tcpReceiveBufferSize=").append(tcpReceiveBufferSize);
+      buff.append("&").append("tcpSendBufferSize=").append(tcpSendBufferSize);
       buff.append("&").append("sslEnabled=").append(sslEnabled);
       buff.append("&").append("keyStorePath=").append(keyStorePath);
       buff.append("&").append("trustStorePath=").append(trustStorePath);

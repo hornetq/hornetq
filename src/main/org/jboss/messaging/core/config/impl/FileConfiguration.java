@@ -83,6 +83,8 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
       
       tcpReceiveBufferSize = getInteger(e, "remoting-tcp-receive-buffer-size", -1);
 
+      tcpSendBufferSize = getInteger(e, "remoting-tcp-send-buffer-size", -1);
+
       sslEnabled = getBoolean(e, "remoting-enable-ssl", false);
       
       keyStorePath = getString(e, "remoting-ssl-keystore-path", null);

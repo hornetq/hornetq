@@ -50,7 +50,6 @@ public class RemotingConfigurationValidatorTest extends TestCase
          fail("can not set a negative port");
       } catch (Exception e)
       {
-         
       }
    }
    
@@ -64,7 +63,6 @@ public class RemotingConfigurationValidatorTest extends TestCase
          fail("can not set tcp receive buffer size to 0");
       } catch (Exception e)
       {
-         
       }
    }
 
@@ -85,7 +83,39 @@ public class RemotingConfigurationValidatorTest extends TestCase
          fail("can not set tcp receive buffer size to a negative number other than -1");
       } catch (Exception e)
       {
-         
+      }
+   }
+   
+   public void test_TcpSendBufferSize_to_0()
+   {
+      ConfigurationImpl config =  ConfigurationHelper.newConfiguration(TCP, "localhost", 9000);
+      config.setTcpSendBufferSize(0);
+      try 
+      {
+         validate(config);
+         fail("can not set tcp send buffer size to 0");
+      } catch (Exception e)
+      {
+      }
+   }
+
+   public void test_TcpSendBufferSize_to_minusOne()
+   {
+      ConfigurationImpl config =  ConfigurationHelper.newConfiguration(TCP, "localhost", 9000);
+      config.setTcpSendBufferSize(-1);
+      validate(config);
+   }
+
+   public void test_TcpSendBufferSize_to_NegativeNumber()
+   {
+      ConfigurationImpl config =  ConfigurationHelper.newConfiguration(TCP, "localhost", 9000);
+      config.setTcpSendBufferSize(-2);
+      try 
+      {
+         validate(config);
+         fail("can not set tcp send buffer size to a negative number other than -1");
+      } catch (Exception e)
+      {
       }
    }
    

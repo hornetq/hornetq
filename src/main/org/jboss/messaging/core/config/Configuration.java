@@ -66,6 +66,8 @@ public interface Configuration
    
    int getTcpReceiveBufferSize();
 
+   int getTcpSendBufferSize();
+
    int getKeepAliveInterval();
 
    int getKeepAliveTimeout();

@@ -45,6 +45,7 @@
       <remoting-disable-invm>true</remoting-disable-invm>
       <remoting-tcp-nodelay>true</remoting-tcp-nodelay>
       <remoting-tcp-receive-buffer-size>8192</remoting-tcp-receive-buffer-size>
+      <remoting-tcp-send-buffer-size>1024</remoting-tcp-send-buffer-size>
       <remoting-enable-ssl>true</remoting-enable-ssl>
       <remoting-ssl-keystore-path>messaging.keystore</remoting-ssl-keystore-path>      
       <remoting-ssl-keystore-password>secureexample keystore</remoting-ssl-keystore-password>     

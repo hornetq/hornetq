@@ -114,9 +114,15 @@ public class MinaConnector implements NIOConnector, FailureNotifier
       addKeepAliveFilter(filterChain, keepAliveFactory, configuration.getKeepAliveInterval(),
             configuration.getKeepAliveTimeout(), this);
       connector.getSessionConfig().setTcpNoDelay(configuration.isTcpNoDelay());
-      if (configuration.getTcpReceiveBufferSize() != -1)
+      int receiveBufferSize = configuration.getTcpReceiveBufferSize();
+      if (receiveBufferSize != -1)
       {
-         connector.getSessionConfig().setReceiveBufferSize(configuration.getTcpReceiveBufferSize());
+         connector.getSessionConfig().setReceiveBufferSize(receiveBufferSize);
+      }
+      int sendBufferSize = configuration.getTcpSendBufferSize();
+      if (sendBufferSize != -1)
+      {
+         connector.getSessionConfig().setSendBufferSize(sendBufferSize);
       }
       connector.getSessionConfig().setKeepAlive(true);
       connector.getSessionConfig().setReuseAddress(true);

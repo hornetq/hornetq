@@ -109,6 +109,11 @@ public class ConfigurationTest extends TestCase
       assertEquals(8192, configuration.getTcpReceiveBufferSize());
    }
 
+   public void testRemotingTcpSendBufferSize() throws Exception
+   {
+      assertEquals(1024, configuration.getTcpSendBufferSize());
+   }
+
    public void testRemotingEnableSSL() throws Exception
    {
       assertEquals(true, configuration.isSSLEnabled());
