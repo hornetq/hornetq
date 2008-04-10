@@ -16,7 +16,7 @@ public interface Packet
 
    long getCorrelationID();
 
-   byte getType();
+   PacketType getType();
 
    String getTargetID();
 

@@ -7,6 +7,7 @@ import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerDeliverMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -38,7 +39,7 @@ public class ClientConsumerPacketHandler implements PacketHandler
    {
       try
       {
-         byte type = packet.getType();
+         PacketType type = packet.getType();
          
          if (type == CONS_DELIVER)
          {

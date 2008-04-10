@@ -272,7 +272,7 @@ public class PacketTypeTest extends UnitTestCase
    {
       checkHeaderBytes(packet, buffer.buffer().buf());
 
-      assertEquals(buffer.get(), packet.getType());
+      assertEquals(buffer.get(), packet.getType().byteValue());
 
       String targetID = (packet.getTargetID().equals(NO_ID_SET) ? null : packet
             .getTargetID());
@@ -316,7 +316,7 @@ public class PacketTypeTest extends UnitTestCase
             + BOOLEAN_LENGTH;
       ByteBuffer expected = ByteBuffer.allocate(1 + 1 + INT_LENGTH
             + headerLength);
-      expected.put(packet.getType());
+      expected.put(packet.getType().byteValue());
 
       expected.putInt(headerLength);
       expected.putLong(packet.getCorrelationID());

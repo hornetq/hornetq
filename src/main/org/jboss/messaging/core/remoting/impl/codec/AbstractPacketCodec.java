@@ -17,6 +17,7 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 
 /**
@@ -42,14 +43,16 @@ public abstract class AbstractPacketCodec<P extends Packet>
 
    // Attributes ----------------------------------------------------
 
-   protected final byte type;
+   protected final PacketType type;
 
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
    
-   protected AbstractPacketCodec(byte type)
+   protected AbstractPacketCodec(PacketType type)
    {
+      assert type != null;
+      
       this.type = type;
    }
 
@@ -81,7 +84,7 @@ public abstract class AbstractPacketCodec<P extends Packet>
       }
       int headerLength = LONG_LENGTH + sizeof(targetID) + sizeof(callbackID) + sizeof(executorID) + BOOLEAN_LENGTH;
 
-      buf.put(packet.getType());
+      buf.put(packet.getType().byteValue());
       buf.putInt(headerLength);
       buf.putLong(correlationID);
       buf.putNullableString(targetID);

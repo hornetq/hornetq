@@ -18,6 +18,7 @@ import org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec;
 import org.jboss.messaging.core.remoting.impl.codec.DecoderStatus;
 import org.jboss.messaging.core.remoting.impl.codec.RemotingBuffer;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -31,7 +32,7 @@ public class MinaDecoder implements MessageDecoder
 
    // Attributes ----------------------------------------------------
 
-   private final Map<Byte, AbstractPacketCodec> codecs;
+   private final Map<PacketType, AbstractPacketCodec> codecs;
 
    // Static --------------------------------------------------------
 
@@ -39,12 +40,12 @@ public class MinaDecoder implements MessageDecoder
 
    public MinaDecoder()
    {
-      codecs = new HashMap<Byte, AbstractPacketCodec>();
+      codecs = new HashMap<PacketType, AbstractPacketCodec>();
    }
 
    // Public --------------------------------------------------------
 
-   public void put(byte type, AbstractPacketCodec codec)
+   public void put(PacketType type, AbstractPacketCodec codec)
    {
       codecs.put(type, codec);
    }
@@ -53,7 +54,8 @@ public class MinaDecoder implements MessageDecoder
 
    public MessageDecoderResult decodable(IoSession session, IoBuffer in)
    {
-      byte type = in.get();
+      byte byteValue = in.get();
+      PacketType type = PacketType.from(byteValue);
       if (!codecs.containsKey(type))
          return MessageDecoderResult.NOT_OK;
 
@@ -67,7 +69,8 @@ public class MinaDecoder implements MessageDecoder
    public MessageDecoderResult decode(IoSession session, IoBuffer in,
          ProtocolDecoderOutput out) throws Exception
    {
-      byte type = in.get();
+      byte byteValue = in.get();
+      PacketType type = PacketType.from(byteValue);
       AbstractPacketCodec codec = codecs.get(type);
       // rewind from 1
       in.position(in.position() -1);

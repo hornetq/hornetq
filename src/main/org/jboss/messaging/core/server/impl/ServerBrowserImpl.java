@@ -42,6 +42,7 @@ import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageResponseMessage;
 import org.jboss.messaging.core.server.Queue;
@@ -212,7 +213,7 @@ public class ServerBrowserImpl
       {
          Packet response = null;
 
-         byte type = packet.getType();
+         PacketType type = packet.getType();
          switch (type)
          {
          case SESS_BROWSER_HASNEXTMESSAGE:

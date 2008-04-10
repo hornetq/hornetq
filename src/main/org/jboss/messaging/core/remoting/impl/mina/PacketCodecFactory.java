@@ -118,6 +118,7 @@ import org.jboss.messaging.core.remoting.impl.codec.SessionXAStartMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.TextPacketCodec;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -304,7 +305,7 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
    // Public --------------------------------------------------------
 
    public static AbstractPacketCodec<Packet> createCodecForEmptyPacket(
-         final byte type)
+         final PacketType type)
    {
       return new CodecForEmptyPacket<Packet>(type);
    }
@@ -317,7 +318,7 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
 
    // FIXME generics definition should be in term of <P>...
    private void addCodec(MinaEncoder encoder, MinaDecoder decoder,
-         byte type, AbstractPacketCodec<? extends Packet> codec)
+         PacketType type, AbstractPacketCodec<? extends Packet> codec)
    {
       try
       {
@@ -330,7 +331,7 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
    }
    
    private void addCodecForEmptyPacket(MinaEncoder encoder,
-         MinaDecoder decoder, byte type)
+         MinaDecoder decoder, PacketType type)
    {
       AbstractPacketCodec<Packet> codec = createCodecForEmptyPacket(
             type);
@@ -343,7 +344,7 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
          AbstractPacketCodec<P>
    {
 
-      public CodecForEmptyPacket(byte type)
+      public CodecForEmptyPacket(PacketType type)
       {
          super(type);
       }

@@ -6,6 +6,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerReceiveTokensMessage;
 
 /**
@@ -39,7 +40,7 @@ public class ClientProducerPacketHandler implements PacketHandler
    {
       try
       {
-         byte type = packet.getType();
+         PacketType type = packet.getType();
          
          if (type == PROD_RECEIVETOKENS)
          {

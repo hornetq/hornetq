@@ -33,7 +33,7 @@ public class PacketImpl implements Packet
 
    String executorID = NO_ID_SET;
 
-   private final byte type;
+   private final PacketType type;
 
    /**
     * <code>oneWay</code> is <code>true</code> when the packet is sent "one way"
@@ -47,14 +47,16 @@ public class PacketImpl implements Packet
 
    // Constructors --------------------------------------------------
 
-   public PacketImpl(byte type)
+   public PacketImpl(PacketType type)
    {
+      assert type != null;
+      
       this.type = type;
    }
 
    // Public --------------------------------------------------------
 
-   public byte getType()
+   public PacketType getType()
    {
       return type;
    }

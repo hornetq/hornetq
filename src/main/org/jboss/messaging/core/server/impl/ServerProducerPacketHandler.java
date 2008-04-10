@@ -29,6 +29,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
 import org.jboss.messaging.core.server.ServerProducer;
 
@@ -57,7 +58,7 @@ public class ServerProducerPacketHandler extends ServerPacketHandlerSupport
    {
       Packet response = null;
 
-      byte type = packet.getType();
+      PacketType type = packet.getType();
       switch (type)
       {
       case PROD_SEND:
