@@ -87,11 +87,11 @@ public class PacketDispatcherImpl implements PacketDispatcher, Serializable
    {
       assertValidID(handlerID);
 
-      handlers.remove(handlerID);
+      PacketHandler handler = handlers.remove(handlerID);
       
       if (log.isDebugEnabled())
       {
-         log.debug("unregistered handler for " + handlerID);
+         log.debug("unregistered " + handler);
       }
       
       if (listener != null)
