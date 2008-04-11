@@ -534,6 +534,7 @@
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${test.classes.dir}">
                <include name="**/org/jboss/**/*${test-mask}.class"/>
+               <exclude name="**/org/jboss/**/PacketStressTest.class"/>
             </fileset>
          </batchtest>
       </junit>
