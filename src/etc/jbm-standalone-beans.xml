@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<deployment xmlns="urn:jboss:bean-deployer:2.0">
+
+   <bean name="Naming" class="org.jnp.server.NamingBeanImpl"/>
+
+   <bean name="Main" class="org.jnp.server.Main">
+      <property name="namingInfo"><inject bean="Naming"/> </property>
+      <property name="port">1099</property>
+      <property name="bindAddress">localhost</property>
+      <property name="rmiPort">1098</property>
+      <property name="rmiBindAddress">localhost</property>
+   </bean>
+
+   <bean name="Configuration" class="org.jboss.messaging.core.config.impl.FileConfiguration"/>
+
+   <!--<bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JAASSecurityManager"/>-->
+
+   <bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl">
+      <constructor>
+         <parameter>false</parameter>
+      </constructor>
+   </bean>
+
+   <bean name="SecurityManagerDeployer" class="org.jboss.messaging.core.deployers.impl.SecurityManagerDeployer">
+      <property name="jbmSecurityManager">
+         <inject bean="JBMSecurityManager"/>
+      </property>
+      <property name="messagingServer">
+         <inject bean="MessagingServer"/>
+      </property>
+   </bean>
+
+   <bean name="MessagingServerManagement" class="org.jboss.messaging.core.management.impl.MessagingServerManagementImpl">
+      <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.messaging:service=MessagingServerManagement", exposedInterface=org.jboss.messaging.core.management.MessagingServerManagement.class)</annotation>
+      <property name="messagingServer">
+         <inject bean="MessagingServer"/>
+      </property>
+   </bean>
+
+   <bean name="MessagingServer" class="org.jboss.messaging.core.server.impl.MessagingServerImpl">
+      <property name="storageManager">
+         <inject bean="StorageManager"/>
+      </property>
+      <property name="remotingService">
+         <inject bean="RemotingService"/>
+      </property>
+      <property name="configuration">
+         <inject bean="Configuration"/>
+      </property>
+      <property name="securityManager">
+         <inject bean="JBMSecurityManager"/>
+      </property>
+   </bean>
+
+   <bean name="StorageManager" class="org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager">
+      <constructor>
+         <parameter>
+            <inject bean="Configuration"/>
+         </parameter>
+      </constructor>
+   </bean>
+
+   <bean name="RemotingService" class="org.jboss.messaging.core.remoting.impl.mina.MinaService">
+      <constructor>
+         <parameter>
+            <inject bean="Configuration"/>
+         </parameter>
+      </constructor>
+   </bean>
+
+   <bean name="JMSServerManager" class="org.jboss.messaging.jms.server.impl.JMSServerManagerImpl">
+      <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.messaging:service=JMSServerManager", exposedInterface=org.jboss.messaging.jms.server.JMSServerManager.class)</annotation>
+      <property name="messagingServerManagement">
+         <inject bean="MessagingServerManagement"/>
+      </property>
+   </bean>
+
+   <bean name="JMSServerDeployer" class="org.jboss.messaging.jms.server.impl.JMSServerDeployer">
+      <property name="jmsServerManager">
+         <inject bean="JMSServerManager"/>
+      </property>
+      <property name="messagingServer">
+         <inject bean="MessagingServer"/>
+      </property>
+   </bean>
+
+</deployment>

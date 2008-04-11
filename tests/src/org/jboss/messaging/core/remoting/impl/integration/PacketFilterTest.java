@@ -16,31 +16,61 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.jboss.kernel.spi.deployment.KernelDeployment;
-import org.jboss.test.messaging.jms.JMSTestCase;
+import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.impl.MessagingServerImpl;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.remoting.impl.ConfigurationHelper;
+import static org.jboss.messaging.core.remoting.TransportType.INVM;
+import org.jboss.messaging.core.remoting.ssl.integration.CoreClientOverSSLTest;
+import org.jboss.messaging.core.client.*;
+import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.jms.client.JBossTextMessage;
+import org.jboss.messaging.jms.JBossQueue;
+import junit.framework.TestCase;
 
-public class PacketFilterTest  extends JMSTestCase
+public class PacketFilterTest  extends TestCase
 {
+   Logger log = Logger.getLogger(PacketFilterTest.class);
 
-   
+   private MessagingServerImpl server;
+
+
    public PacketFilterTest(String name)
    {
       super(name);
-      // TODO Auto-generated constructor stub
    }
-   
-   
+
+   protected void setUp() throws Exception
+   {
+      server = new MessagingServerImpl(ConfigurationHelper.newConfiguration(INVM, null, 0));
+      server.start();
+   }
+
+   protected void tearDown() throws Exception
+   {
+      if(server != null)
+      {
+         server.stop();
+         server = null;
+      }
+   }
+
    public void testFilter() throws Throwable
    {
       DummyInterceptor interceptorA = null;
-      KernelDeployment packetFilterDeploymentB = null;
-      Connection conn = null;
-        
+      DummyInterceptorB interceptorB = null;
+
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, server.getConfiguration(), server.getVersion());
+      ClientConnection conn = null;
       try
       {
          
          // Deploy using the API
          interceptorA = new DummyInterceptor();
-         servers.get(0).getMessagingServer().getRemotingService().addInterceptor(interceptorA);
+         server.getRemotingService().addInterceptor(interceptorA);
          
          
          interceptorA.sendException=true;
@@ -57,7 +87,7 @@ public class PacketFilterTest  extends JMSTestCase
          interceptorA.sendException=false;
          
          conn = cf.createConnection();
-         conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         conn.createClientSession(false, true, true, -1, false, false);
          conn.close();
          conn = null;
          
@@ -67,16 +97,10 @@ public class PacketFilterTest  extends JMSTestCase
          
          interceptorA.clearCounter();
          DummyInterceptorB.clearCounter();
-         
-   
-         // deploy using MC
-         packetFilterDeploymentB = servers.get(0).deployXML("packetFilterDeploymentB", 
-               "<?xml version=\"1.0\" encoding=\"UTF-8\"?><deployment " +
-               "xmlns=\"urn:jboss:bean-deployer:2.0\"><bean name=\"DummyInterceptionTestB\" " +
-               "class=\"org.jboss.messaging.core.remoting.impl.integration.DummyInterceptorB\"/></deployment>");
-   
+         interceptorB = new DummyInterceptorB();
+         server.getRemotingService().addInterceptor(interceptorB);
          conn = cf.createConnection();
-         conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         conn.createClientSession(false, true, true, -1, false, false);
          conn.close();
          conn = null;
          
@@ -86,25 +110,25 @@ public class PacketFilterTest  extends JMSTestCase
          interceptorA.clearCounter();
          DummyInterceptorB.clearCounter();
    
-         servers.get(0).getMessagingServer().getRemotingService().removeInterceptor(interceptorA);
+         server.getRemotingService().removeInterceptor(interceptorA);
    
          conn = cf.createConnection();
-         conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         conn.createClientSession(false, true, true, -1, false, false);
          conn.close();
          conn = null;
          
          assertTrue(DummyInterceptorB.getCounter() > 0);
          assertTrue(interceptorA.getCounter() == 0);
-         
+
          
          log.info("Undeploying server");
-         servers.get(0).undeploy(packetFilterDeploymentB);
-         packetFilterDeploymentB = null;
+         server.getRemotingService().removeInterceptor(interceptorB);
+         interceptorB = null;
          interceptorA.clearCounter();
          DummyInterceptorB.clearCounter();
          
          conn = cf.createConnection();
-         conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         conn.createClientSession(false, true, true, -1, false, false);
          conn.close();
          conn = null;
          
@@ -121,11 +145,11 @@ public class PacketFilterTest  extends JMSTestCase
          }
          if (interceptorA != null)
          {
-            servers.get(0).getMessagingServer().getRemotingService().removeInterceptor(interceptorA);
+            server.getRemotingService().removeInterceptor(interceptorA);
          }
-         if (packetFilterDeploymentB != null)
+         if (interceptorB != null)
          {
-            try{servers.get(0).undeploy(packetFilterDeploymentB);} catch (Exception ignored){}
+            try{server.getRemotingService().removeInterceptor(interceptorB);} catch (Exception ignored){}
          }
       }
    }
@@ -134,36 +158,38 @@ public class PacketFilterTest  extends JMSTestCase
    {
       
       DummyInterceptor interceptor = null;
-      Connection conn = null;
+      ClientConnection conn = null;
         
       try
       {
          
          interceptor = new DummyInterceptor();
-         servers.get(0).getMessagingServer().getRemotingService().addInterceptor(interceptor);
-         
+         server.getRemotingService().addInterceptor(interceptor);
+         server.getPostOffice().addBinding("queue1", "queue1", null, false, false);
          
          interceptor.sendException=false;
 
+
+         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, server.getConfiguration(), server.getVersion());
          conn = cf.createConnection();
          conn.start();
-         
-         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer producer = session.createProducer(queue1);
+         ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
+         ClientProducer producer = session.createProducer("queue1");
          String msg = "msg " + UUID.randomUUID().toString();
          
          interceptor.changeMessage = true;
-
-         producer.send(session.createTextMessage(msg));
+         MessageImpl message = new MessageImpl(JBossTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte) 1);
+         message.setPayload(msg.getBytes());
+         producer.send(message);
          
-         MessageConsumer consumer = session.createConsumer(queue1);
-         TextMessage jmsMsg = (TextMessage)consumer.receive(100000);
-         assertEquals(jmsMsg.getStringProperty("DummyInterceptor"), "was here");
+         ClientConsumer consumer = session.createConsumer("queue1", null, false, false, true);
+         Message jmsMsg = consumer.receive(100000);
+         assertEquals(jmsMsg.getHeader("DummyInterceptor"), "was here");
          
          
          assertNotNull(jmsMsg);
          
-         assertEquals(msg, jmsMsg.getText());
+         assertEquals(msg, new String(jmsMsg.getPayload()));
       }
       finally
       {
@@ -182,7 +208,7 @@ public class PacketFilterTest  extends JMSTestCase
          {
             if (interceptor != null)
             {
-               servers.get(0).getMessagingServer().getRemotingService().removeInterceptor(interceptor);
+               server.getRemotingService().removeInterceptor(interceptor);
             }
          }
          catch (Exception ignored)

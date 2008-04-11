@@ -278,13 +278,13 @@
     <target name="deploy" depends="jar, sar">
         <copy file="${build.lib}/jboss-${module.name}.jar"
             todir="${jboss.home}/server/${jboss.config}/lib"/>
-       <copy file="${source.etc}/server/default/deploy/jbm-configuration.xml"
+       <copy file="src/etc/jbm-configuration.xml"
             todir="${jboss.home}/server/${jboss.config}/conf"/>
-       <copy file="${source.etc}/server/default/deploy/jbm-jndi.xml"
+       <copy file="src/etc/jbm-jndi.xml"
             todir="${jboss.home}/server/${jboss.config}/conf"/>
-       <copy file="${source.etc}/server/default/deploy/queues.xml"
+       <copy file="src/etc/queues.xml"
             todir="${jboss.home}/server/${jboss.config}/conf"/>
-       <copy file="${source.etc}/server/default/deploy/jbm-security.xml"
+       <copy file="src/etc/jbm-security.xml"
             todir="${jboss.home}/server/${jboss.config}/conf"/>
        <copy
             todir="${jboss.home}/server/${jboss.config}/deploy/messaging.sar">
@@ -332,7 +332,7 @@
    </target>
 
    <target name="sar-structure" depends="jar-structure">
-      <copy todir="${build.sar}/META-INF" file="${source.etc}/server/default/deploy/jbm-beans.xml"/>
+      <copy todir="${build.sar}/META-INF" file="src/etc/jbm-beans.xml"/>
       <!--<copy todir="${build.sar}" file="${source.etc}/server/default/deploy/jbm-configuration.xml"/>-->
             <copy todir="${build.sar}">
          <fileset dir="${project.thirdparty}/apache-mina/lib">
@@ -358,9 +358,9 @@
             <include name="**/*"/>
          </fileset>
       </copy>
-      <copy todir="${build.embedded}/config" file="${source.etc}/server/default/deploy/jbm-beans.xml"/>
-      <copy todir="${build.embedded}/config" file="${source.etc}/server/default/deploy/multiplexer-stacks.xml"/>
-      <copy todir="${build.embedded}/config" file="${source.etc}/server/default/deploy/jbm-configuration.xml"/>
+      <copy todir="${build.embedded}/config" file="src/etc/jbm-beans.xml"/>
+      <copy todir="${build.embedded}/config" file="src/etc/multiplexer-stacks.xml"/>
+      <copy todir="${build.embedded}/config" file="src/etc/jbm-configuration.xml"/>
       <chmod file="${build.embedded}/run.sh" perm="755"/>
       <jar jarfile="${build.embedded}/lib/jboss-${module.name}.jar" manifest="${build.etc}/embedded.mf">
          <fileset dir="${build.classes}" includes="**"/>

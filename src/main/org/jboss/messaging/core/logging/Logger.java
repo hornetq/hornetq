@@ -41,6 +41,10 @@ public class Logger
    
    private Logger(final Class<?> clazz)
    {
+      if(!"org.jboss.logging.Log4jLoggerPlugin.class".equals(org.jboss.logging.Logger.getPluginClassName()))
+      {
+         org.jboss.logging.Logger.setPluginClassName("org.jboss.messaging.core.logging.JBMLoggerPlugin");
+      }
       logger = org.jboss.logging.Logger.getLogger(clazz);
    }
    

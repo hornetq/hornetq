@@ -94,7 +94,7 @@ public class JMSServerManagerImpl implements JMSServerManager
    {
       try
       {
-         initialContext = new InitialContext();
+         initialContext = new InitialContext();          
       }
       catch (NamingException e)
       {

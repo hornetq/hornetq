@@ -26,7 +26,7 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.test.messaging.JBMBaseTestCase;
+import junit.framework.TestCase;
 
 /**
  * Tests the compliance with the JBoss Messaging Filter syntax.
@@ -37,7 +37,7 @@ import org.jboss.test.messaging.JBMBaseTestCase;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision: 3514 $
  */
-public class FilterTest  extends JBMBaseTestCase
+public class FilterTest  extends TestCase
 {
    private Filter filter;
    

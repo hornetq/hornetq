@@ -21,9 +21,16 @@
   */
 package org.jboss.test.messaging.jms.server;
 
-import javax.jms.Connection;
 
-import org.jboss.test.messaging.JBMServerTestCase;
+import org.jboss.messaging.core.server.ConnectionManager;
+import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.impl.MessagingServerImpl;
+import org.jboss.messaging.core.remoting.impl.ConfigurationHelper;
+import static org.jboss.messaging.core.remoting.TransportType.INVM;
+import org.jboss.messaging.core.client.ClientConnectionFactory;
+import org.jboss.messaging.core.client.ClientConnection;
+import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import junit.framework.TestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -31,20 +38,37 @@ import org.jboss.test.messaging.JBMServerTestCase;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class ConnectionManagerTest extends JBMServerTestCase
+public class ConnectionManagerTest extends TestCase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
+   private MessagingServerImpl server;
    // Constructors --------------------------------------------------
 
    public ConnectionManagerTest(String name)
    {
       super(name);
    }
+
+   protected void setUp() throws Exception
+   {
+      server = new MessagingServerImpl(ConfigurationHelper.newConfiguration(INVM, null, 0));
+      server.start();
+   }
+
+   protected void tearDown() throws Exception
+   {
+      if(server != null)
+      {
+         server.stop();
+         server = null;
+      }
+   }
+
+
 
    // TestCase overrides -------------------------------------------
 
@@ -54,12 +78,13 @@ public class ConnectionManagerTest extends JBMServerTestCase
    {
       
       assertActiveConnectionsOnTheServer(0);
-      
-      Connection conn_1 = getConnectionFactory().createConnection();
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, server.getConfiguration(), server.getVersion());
+
+      ClientConnection conn_1 = cf.createConnection();
       
       assertActiveConnectionsOnTheServer(1);
       
-      Connection conn_2 = getConnectionFactory().createConnection();
+      ClientConnection conn_2 = cf.createConnection();
       
       assertActiveConnectionsOnTheServer(2);
       
@@ -72,6 +97,14 @@ public class ConnectionManagerTest extends JBMServerTestCase
       conn_2.close();
       
       assertActiveConnectionsOnTheServer(0);
+   }
+
+   private void assertActiveConnectionsOnTheServer(int expectedSize)
+   throws Exception
+   {
+      ConnectionManager cm = server
+      .getConnectionManager();
+      assertEquals(expectedSize, cm.getActiveConnections().size());
    }
 
 }

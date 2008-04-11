@@ -34,8 +34,6 @@ import org.jboss.messaging.core.management.impl.MessagingServerManagementImpl;
 import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import org.jboss.messaging.core.security.JBMUpdateableSecurityManager;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.test.messaging.tools.container.Constants;
-import org.jboss.test.messaging.tools.container.InVMInitialContextFactory;
 
 import javax.jms.*;
 import javax.naming.NameNotFoundException;
@@ -68,7 +66,7 @@ public class JMSServerManagerimplTest extends TestCase
       messagingServerManagement.setMessagingServer(messagingServer);
       Hashtable env = new Hashtable();
       env.put("java.naming.factory.initial",
-              "org.jboss.test.messaging.tools.container.InVMSingleInitialContextFactory");
+              "org.jboss.test.util.InVMSingleInitialContextFactory");
       initialContext = new InitialContext(env);
       jmsServerManager.setInitialContext(initialContext);
    }

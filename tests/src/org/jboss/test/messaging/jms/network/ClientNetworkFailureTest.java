@@ -33,11 +33,21 @@ import javax.jms.JMSException;
 import javax.jms.QueueConnection;
 
 import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.client.ClientConnectionFactory;
+import org.jboss.messaging.core.client.ClientConnection;
+import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
-import org.jboss.test.messaging.jms.JMSTestCase;
+import org.jboss.messaging.core.remoting.impl.ConfigurationHelper;
+import static org.jboss.messaging.core.remoting.TransportType.INVM;
+import org.jboss.messaging.core.remoting.TransportType;
+import org.jboss.messaging.core.server.impl.MessagingServerImpl;
+import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.ConnectionManager;
+import org.jboss.messaging.core.logging.Logger;
+import junit.framework.TestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -45,13 +55,13 @@ import org.jboss.test.messaging.jms.JMSTestCase;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class ClientNetworkFailureTest extends JMSTestCase
+public class ClientNetworkFailureTest extends TestCase
 {
 
    // Constants -----------------------------------------------------
-
+   Logger log = Logger.getLogger(ClientNetworkFailureTest.class);
+   private MessagingServer server;
    private MinaService minaService;
-   private Configuration originalConfig;
    private NetworkFailureFilter networkFailureFilter;
 
    // Static --------------------------------------------------------
@@ -69,20 +79,16 @@ public class ClientNetworkFailureTest extends JMSTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-
-      minaService = (MinaService) servers.get(0).getMessagingServer()
-            .getRemotingService();
-      originalConfig = minaService.getConfiguration();
-      minaService.stop();
-      Configuration oldConfig = minaService
-            .getConfiguration();
-      ConfigurationImpl newConfig = (ConfigurationImpl)oldConfig;
+      ConfigurationImpl newConfig = new ConfigurationImpl();
       newConfig.setInvmDisabled(true);
+      newConfig.setHost("localhost");
+      newConfig.setPort(5400);
+      newConfig.setTransport(TransportType.TCP);
       newConfig.setKeepAliveInterval(KEEP_ALIVE_INTERVAL);
       newConfig.setKeepAliveTimeout(KEEP_ALIVE_TIMEOUT);
-      minaService.setRemotingConfiguration(newConfig);
-      minaService.start();
-
+      server = new MessagingServerImpl(newConfig);
+      server.start();
+      minaService = (MinaService) server.getRemotingService();
       networkFailureFilter = new NetworkFailureFilter();
       minaService.getFilterChain().addFirst("network-failure",
             networkFailureFilter);
@@ -94,12 +100,8 @@ public class ClientNetworkFailureTest extends JMSTestCase
    protected void tearDown() throws Exception
    {
       assertActiveConnectionsOnTheServer(0);
-
-      minaService.getFilterChain().remove("network-failure");
-
-      minaService.stop();
-      minaService.setRemotingConfiguration(originalConfig);
-      minaService.start();
+      server.stop();
+      //minaService.start();
 
       super.tearDown();
    }
@@ -109,16 +111,16 @@ public class ClientNetworkFailureTest extends JMSTestCase
    public void testServerResourcesCleanUpWhenClientCommThrowsException()
          throws Exception
    {
-      QueueConnection conn = getConnectionFactory().createQueueConnection();
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, server.getConfiguration(), server.getVersion());
+
+      ClientConnection conn = cf.createConnection();
 
       assertActiveConnectionsOnTheServer(1);
 
       final CountDownLatch exceptionLatch = new CountDownLatch(2);
-
-      conn.setExceptionListener(new ExceptionListener()
+      conn.setFailureListener(new FailureListener()
       {
-
-         public void onException(JMSException e)
+         public void onFailure(MessagingException me)
          {
             exceptionLatch.countDown();
          }
@@ -149,7 +151,9 @@ public class ClientNetworkFailureTest extends JMSTestCase
    public void testServerResourcesCleanUpWhenClientCommDropsPacket()
          throws Exception
    {
-      QueueConnection conn = getConnectionFactory().createQueueConnection();
+       ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, server.getConfiguration(), server.getVersion());
+
+      ClientConnection conn = cf.createConnection();
 
       final CountDownLatch exceptionLatch = new CountDownLatch(1);
 
@@ -162,7 +166,7 @@ public class ClientNetworkFailureTest extends JMSTestCase
       networkFailureFilter.messageReceivedDropsPacket = true;
 
       boolean gotExceptionOnTheServer = exceptionLatch.await(
-            KEEP_ALIVE_INTERVAL + KEEP_ALIVE_TIMEOUT + 3, SECONDS);
+            KEEP_ALIVE_INTERVAL + KEEP_ALIVE_TIMEOUT + 5, SECONDS);
       assertTrue(gotExceptionOnTheServer);
       assertActiveConnectionsOnTheServer(0);
 
@@ -195,5 +199,13 @@ public class ClientNetworkFailureTest extends JMSTestCase
          log.warn("got expected exception on the server");
          exceptionLatch.countDown();
       }
+   }
+
+   private void assertActiveConnectionsOnTheServer(int expectedSize)
+   throws Exception
+   {
+      ConnectionManager cm = server
+      .getConnectionManager();
+      assertEquals(expectedSize, cm.getActiveConnections().size());
    }
 }
