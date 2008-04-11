@@ -19,6 +19,9 @@
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="tests/src"/>
 	<classpathentry kind="src" path="tests/etc/ide"/>
 	<classpathentry excluding="ide/" kind="src" path="tests/etc"/>
+	<classpathentry kind="src" path="src/etc"/>
+	<classpathentry kind="src" path="tests/jms-tests/src"/>
+	<classpathentry kind="src" path="tests/jms-tests/etc"/>
 	<classpathentry kind="lib" path="thirdparty/oswego-concurrent/lib/concurrent.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jgroups/lib/jgroups.jar"/>
 	<classpathentry kind="lib" path="thirdparty/apache-log4j/lib/log4j.jar"/>
@@ -26,7 +29,6 @@
 	<classpathentry kind="lib" path="thirdparty/jboss/profiler/jvmti/lib/jboss-profiler-jvmti.jar"/>
 	<classpathentry kind="lib" path="thirdparty/hsqldb/lib/hsqldb.jar"/>
 	<classpathentry kind="lib" path="thirdparty/apache-logging/lib/commons-logging.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/serialization/lib/jboss-serialization.jar"/>
 	<classpathentry kind="lib" path="thirdparty/sun-javacc/lib/javacc.jar"/>
 	<classpathentry kind="lib" path="thirdparty/apache-xerces/lib/xercesImpl.jar"/>
 	<classpathentry kind="lib" path="thirdparty/dom4j/lib/dom4j.jar"/>
@@ -40,7 +42,7 @@
 	<classpathentry kind="lib" path="thirdparty/trove/lib/trove.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/jbossts14/lib/jbossjta.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jboss-aop-jdk50.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/common-core/lib/jboss-common-core.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/common-core/lib/jboss-common-core.jar" sourcepath="thirdparty/jboss/common-core/lib/jboss-common-core-sources.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/jboss-security-spi/lib/jboss-security-spi.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/microcontainer/lib/jboss-deployers-client.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/microcontainer/lib/jboss-deployers-core.jar"/>
@@ -63,7 +65,7 @@
 	<classpathentry kind="lib" path="thirdparty/jboss/integration/lib/jboss-transaction-spi.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/jboss-jaspi-api/lib/jboss-jaspi-api.jar"/>
 	<classpathentry kind="lib" path="thirdparty/slf4j/api/lib/slf4j-api-1.4.3.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/remoting/lib/jboss-remoting.jar"/>
+	<classpathentry kind="lib" path="tests/lib/jdbc-drivers/mysql-connector-java-5.1.5-bin.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant-junit.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/common/lib/jboss-common.jar"/>
@@ -72,10 +74,7 @@
 	<classpathentry kind="lib" path="thirdparty/jboss/jboss-javaee/lib/jboss-javaee.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/jbosssx-client/lib/jbosssx-client.jar"/>
 	<classpathentry kind="lib" path="tests/lib/easymock.jar"/>
-	<classpathentry kind="lib" path="thirdparty/apache-mina/lib/mina-core-2.0.0-M1.jar" sourcepath="thirdparty/apache-mina/lib/mina-core-2.0.0-M1-sources.jar"/>
 	<classpathentry kind="lib" path="thirdparty/slf4j/log4j/lib/slf4j-log4j12.jar"/>
-	<classpathentry kind="lib" path="src/etc/server/default/config"/>
-	<classpathentry kind="lib" path="src/etc/server/default/deploy"/>
-	<classpathentry kind="lib" path="tests/lib/jdbc-drivers/mysql-connector-java-5.1.5-bin.jar"/>
+	<classpathentry kind="lib" path="thirdparty/apache-mina/lib/mina-core-2.0.0-M2-20080411.122259-16.jar" sourcepath="thirdparty/apache-mina/lib/mina-core-2.0.0-M2-20080411.122259-16-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

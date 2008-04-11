@@ -6,7 +6,8 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import static org.apache.mina.filter.keepalive.KeepAlivePolicy.EXCEPTION;
+import static org.apache.mina.common.IdleStatus.BOTH_IDLE;
+import static org.apache.mina.filter.keepalive.KeepAliveRequestTimeoutHandler.EXCEPTION;
 import static org.apache.mina.filter.logging.LogLevel.TRACE;
 import static org.apache.mina.filter.logging.LogLevel.WARN;
 
@@ -69,7 +70,7 @@ public class FilterChainSupport
       }
 
       filterChain.addLast("keep-alive", new KeepAliveFilter(
-            new MinaKeepAliveFactory(factory, notifier), EXCEPTION, keepAliveInterval,
+            new MinaKeepAliveFactory(factory, notifier),  BOTH_IDLE, EXCEPTION, keepAliveInterval,
             keepAliveTimeout));
    }
 
