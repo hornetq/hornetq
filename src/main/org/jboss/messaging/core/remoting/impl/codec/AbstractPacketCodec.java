@@ -118,16 +118,16 @@ public abstract class AbstractPacketCodec<P extends Packet>
    {
       if (buffer.remaining() < INT_LENGTH)
       {
-         if (log.isDebugEnabled())
-            log.debug("need more data to read header length");
+         if (log.isTraceEnabled())
+            log.trace("need more data to read header length");
          // can not read next int
          return NEED_DATA;
       }
       int headerLength = buffer.getInt();
       if (buffer.remaining() < headerLength)
       {
-         if (log.isDebugEnabled())
-            log.debug("need more data to read header");
+         if (log.isTraceEnabled())
+            log.trace("need more data to read header");
          return NEED_DATA;
       }
       buffer.getLong(); // correlation ID
@@ -155,8 +155,8 @@ public abstract class AbstractPacketCodec<P extends Packet>
       buffer.getBoolean(); // oneWay boolean
       if (buffer.remaining() < INT_LENGTH)
       {
-         if (log.isDebugEnabled())
-            log.debug("need more data to read body length");
+         if (log.isTraceEnabled())
+            log.trace("need more data to read body length");
          // can not read next int
          return NEED_DATA;
       }
@@ -167,8 +167,8 @@ public abstract class AbstractPacketCodec<P extends Packet>
       }
       if (buffer.remaining() < bodyLength)
       {
-         if (log.isDebugEnabled())
-            log.debug("need more data to read body");
+         if (log.isTraceEnabled())
+            log.trace("need more data to read body");
          return NEED_DATA;
       }
       return OK;
