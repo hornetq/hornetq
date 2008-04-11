@@ -247,6 +247,26 @@
       <path refid="jboss.jnpserver.classpath"/>
    </path>
 
+    <!--
+        Setting "nodownload" to true inhibits downloading of up-to-date dependencies.
+   -->
+   <property name="nodownload" value="false"/>
+
+   <target name="createthirdparty" unless="inhibit.downloads" depends="check.inhibit.downloads">
+      <ant antfile="build-thirdparty.xml" target="generate-libraries-ent"/>
+   </target>
+
+   <target name="check.inhibit.downloads">
+      <condition property="inhibit.downloads">
+         <or>
+            <uptodate property="dependencies.current"
+                      srcfile="build-thirdparty.xml"
+                      targetfile="./thirdparty/libraries.ent"/>
+            <istrue value="${nodownload}"/>
+         </or>
+      </condition>
+   </target>
+
    <target name="clean">
       <delete dir="${build.dir}"/>
       <delete dir="${test.build.dir}"/>
@@ -254,7 +274,7 @@
       <delete dir="${test.jms.build.dir}"/>
    </target>
 
-   <target name="init">
+   <target name="init" depends="createthirdparty">
       <mkdir dir="${build.dir}"/>
       <mkdir dir="${build.classes.dir}"/>
       <mkdir dir="${build.jars.dir}"/>
