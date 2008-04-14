@@ -36,7 +36,7 @@ import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
-import org.jboss.test.messaging.jms.SerializedClientSupport;
+import org.jboss.messaging.core.util.SerializedClientSupport;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
