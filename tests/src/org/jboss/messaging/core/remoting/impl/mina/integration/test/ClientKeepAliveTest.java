@@ -7,6 +7,7 @@
 package org.jboss.messaging.core.remoting.impl.mina.integration.test;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.easymock.EasyMock.anyLong;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.isA;
@@ -17,7 +18,6 @@ import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestS
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.KEEP_ALIVE_TIMEOUT;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.PORT;
 import static org.jboss.messaging.test.unit.RandomUtil.randomLong;
-import static org.jboss.messaging.test.unit.RandomUtil.randomString;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -36,7 +36,6 @@ import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
-import org.jboss.messaging.test.unit.RandomUtil;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -80,11 +79,11 @@ public class ClientKeepAliveTest extends TestCase
       KeepAliveFactory factory = createMock(KeepAliveFactory.class);
 
       // client never send ping
-      expect(factory.ping(isA(Long.class))).andStubReturn(null);
-      expect(factory.isPing(isA(Long.class), isA(Ping.class))).andStubReturn(true);
-      expect(factory.isPing(isA(Long.class), isA(Object.class))).andStubReturn(false);
+      expect(factory.ping(anyLong())).andStubReturn(null);
+      expect(factory.isPing(anyLong(), isA(Ping.class))).andStubReturn(true);
+      expect(factory.isPing(anyLong(), isA(Object.class))).andStubReturn(false);
       // client is responding
-      expect(factory.pong(isA(Long.class), isA(Ping.class))).andReturn(new Pong(randomLong(), false)).atLeastOnce();
+      expect(factory.pong(anyLong(), isA(Ping.class))).andReturn(new Pong(randomLong(), false)).atLeastOnce();
 
       replay(factory);
 
@@ -94,7 +93,6 @@ public class ClientKeepAliveTest extends TestCase
          public void onFailure(MessagingException me)
          {
             assertTrue(me instanceof RemotingException);
-            RemotingException re = (RemotingException) me;
             latch.countDown();
          }
       };
