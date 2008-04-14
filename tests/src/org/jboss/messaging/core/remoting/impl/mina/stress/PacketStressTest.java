@@ -18,6 +18,7 @@ import junit.framework.TestCase;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.ConfigurationHelper;
@@ -26,7 +27,6 @@ import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.BytesPacket;
-import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -59,7 +59,7 @@ public class PacketStressTest extends TestCase
       Configuration config = ConfigurationHelper.newConfiguration(TCP, "localhost", PORT);
       service = new MinaService(config);
       service.start();
-      connector = new MinaConnector(config, new PacketDispatcherImpl());
+      connector = new MinaConnector(config, new PacketDispatcherImpl(null));
       
    }
    
@@ -83,7 +83,7 @@ public class PacketStressTest extends TestCase
       System.out.println();
       
       
-      final String handlerID = randomUUID().toString();
+      final long handlerID = 12346;
       CountDownLatch latch = new CountDownLatch(1);
       
       service.getDispatcher().register(new ServerHandler(handlerID, latch, spinner));
@@ -135,12 +135,12 @@ public class PacketStressTest extends TestCase
 
    private final class ServerHandler implements PacketHandler
    {
-      private final String handlerID;
+      private final long handlerID;
       private CountDownLatch latch;
       private int messagesReceived;
       private int spinner;
 
-      private ServerHandler(String handlerID, CountDownLatch latch, int spinner)
+      private ServerHandler(long handlerID, CountDownLatch latch, int spinner)
       {
          this.handlerID = handlerID;
          this.latch = latch;
@@ -148,7 +148,7 @@ public class PacketStressTest extends TestCase
          messagesReceived = 0;
       }
 
-      public String getID()
+      public long getID()
       {
          return handlerID;
       }

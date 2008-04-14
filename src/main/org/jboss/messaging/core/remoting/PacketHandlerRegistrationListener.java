@@ -14,6 +14,6 @@ package org.jboss.messaging.core.remoting;
  */
 public interface PacketHandlerRegistrationListener
 {
-   void handlerRegistered(String handlerID);
-   void handlerUnregistered(String handlerID);
+   void handlerRegistered(long handlerID);
+   void handlerUnregistered(long handlerID);
 }

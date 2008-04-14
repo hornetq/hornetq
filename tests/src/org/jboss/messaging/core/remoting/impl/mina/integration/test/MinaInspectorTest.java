@@ -50,16 +50,15 @@ public class MinaInspectorTest extends TestCase
    public void testGetRequestIdForAbstractPacketWhichIsNotRequest()
    {
       PacketImpl packet = new PacketImpl(NULL);
-      packet.setTargetID(UUID.randomUUID().toString());
-      assertFalse(packet.isRequest());
-
+      packet.setTargetID(23);
+      assertFalse(packet.isRequest());     
       assertNull(inspector.getRequestId(packet));
    }
 
    public void testGetRequestIdForAbstractPacketWhichIsRequest()
    {
       PacketImpl packet = new PacketImpl(NULL);
-      packet.setTargetID(UUID.randomUUID().toString());
+      packet.setTargetID(23);
       packet.setCorrelationID(System.currentTimeMillis());
       assertTrue(packet.isRequest());
 

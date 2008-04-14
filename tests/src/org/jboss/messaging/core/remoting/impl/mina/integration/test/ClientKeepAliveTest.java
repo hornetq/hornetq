@@ -16,6 +16,7 @@ import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.KEEP_ALIVE_INTERVAL;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.KEEP_ALIVE_TIMEOUT;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.PORT;
+import static org.jboss.messaging.test.unit.RandomUtil.randomLong;
 import static org.jboss.messaging.test.unit.RandomUtil.randomString;
 
 import java.util.concurrent.CountDownLatch;
@@ -35,6 +36,7 @@ import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
+import org.jboss.messaging.test.unit.RandomUtil;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -78,11 +80,11 @@ public class ClientKeepAliveTest extends TestCase
       KeepAliveFactory factory = createMock(KeepAliveFactory.class);
 
       // client never send ping
-      expect(factory.ping(isA(String.class))).andStubReturn(null);
-      expect(factory.isPing(isA(String.class), isA(Ping.class))).andStubReturn(true);
-      expect(factory.isPing(isA(String.class), isA(Object.class))).andStubReturn(false);
+      expect(factory.ping(isA(Long.class))).andStubReturn(null);
+      expect(factory.isPing(isA(Long.class), isA(Ping.class))).andStubReturn(true);
+      expect(factory.isPing(isA(Long.class), isA(Object.class))).andStubReturn(false);
       // client is responding
-      expect(factory.pong(isA(String.class), isA(Ping.class))).andReturn(new Pong(randomString(), false)).atLeastOnce();
+      expect(factory.pong(isA(Long.class), isA(Ping.class))).andReturn(new Pong(randomLong(), false)).atLeastOnce();
 
       replay(factory);
 
@@ -98,7 +100,7 @@ public class ClientKeepAliveTest extends TestCase
       };
       service.addFailureListener(listener);
 
-      MinaConnector connector = new MinaConnector(service.getConfiguration(), new PacketDispatcherImpl(), factory);
+      MinaConnector connector = new MinaConnector(service.getConfiguration(), new PacketDispatcherImpl(null), factory);
       connector.connect();
 
       boolean firedKeepAliveNotification = latch.await(KEEP_ALIVE_INTERVAL
@@ -115,7 +117,7 @@ public class ClientKeepAliveTest extends TestCase
    {
       KeepAliveFactory factory = new ClientKeepAliveFactoryNotResponding();
 
-      final String[] clientSessionIDNotResponding = new String[1];
+      final long[] clientSessionIDNotResponding = new long[1];
       final CountDownLatch latch = new CountDownLatch(1);
 
       FailureListener listener = new FailureListener() {
@@ -129,10 +131,10 @@ public class ClientKeepAliveTest extends TestCase
       };
       service.addFailureListener(listener);
       
-      MinaConnector connector = new MinaConnector(service.getConfiguration(), new PacketDispatcherImpl(), factory);
+      MinaConnector connector = new MinaConnector(service.getConfiguration(), new PacketDispatcherImpl(null), factory);
 
       NIOSession session = connector.connect();
-      String clientSessionID = session.getID();
+      long clientSessionID = session.getID();
 
       boolean firedKeepAliveNotification = latch.await(KEEP_ALIVE_INTERVAL
             + KEEP_ALIVE_TIMEOUT + 2, SECONDS);
@@ -148,17 +150,17 @@ public class ClientKeepAliveTest extends TestCase
    {
       KeepAliveFactory factory = new KeepAliveFactory()
       {
-         public Ping ping(String sessionID)
+         public Ping ping(long sessionID)
          {
             return null;
          }
          
-         public boolean isPing(String sessionID, Object message)
+         public boolean isPing(long sessionID, Object message)
          {
             return (message instanceof Ping);
          }
 
-         public synchronized Pong pong(String sessionID, Ping ping)
+         public synchronized Pong pong(long sessionID, Ping ping)
          {
             // like a TCP timeout, there is no response in the next 2 hours
             try
@@ -168,19 +170,19 @@ public class ClientKeepAliveTest extends TestCase
             {
                e.printStackTrace();
             }
-            return new Pong(randomString(), false);
+            return new Pong(randomLong(), false);
          }         
       };
 
       try
       {
          MinaConnector connector = new MinaConnector(service.getConfiguration(),
-               new PacketDispatcherImpl(), factory);
+               new PacketDispatcherImpl(null), factory);
 
          NIOSession session = connector.connect();
-         String clientSessionID = session.getID();
+         long clientSessionID = session.getID();
 
-         final String[] clientSessionIDNotResponding = new String[1];
+         final long[] clientSessionIDNotResponding = new long[1];
          final CountDownLatch latch = new CountDownLatch(1);
 
          FailureListener listener = new FailureListener() {
@@ -219,7 +221,7 @@ public class ClientKeepAliveTest extends TestCase
       KeepAliveFactory notRespondingfactory = new ClientKeepAliveFactoryNotResponding();
       KeepAliveFactory respondingfactory = new ClientKeepAliveFactory();
 
-      final String[] sessionIDNotResponding = new String[1];
+      final long[] sessionIDNotResponding = new long[1];
       final CountDownLatch latch = new CountDownLatch(1);
 
       FailureListener listener = new FailureListener() {
@@ -234,16 +236,16 @@ public class ClientKeepAliveTest extends TestCase
       service.addFailureListener(listener);
       
       MinaConnector connectorNotResponding = new MinaConnector(service
-            .getConfiguration(), new PacketDispatcherImpl(), notRespondingfactory);
+            .getConfiguration(), new PacketDispatcherImpl(null), notRespondingfactory);
       MinaConnector connectorResponding = new MinaConnector(service
-            .getConfiguration(), new PacketDispatcherImpl(), respondingfactory);
+            .getConfiguration(), new PacketDispatcherImpl(null), respondingfactory);
 
       NIOSession sessionNotResponding = connectorNotResponding.connect();
-      String clientSessionIDNotResponding = sessionNotResponding.getID();
+      long clientSessionIDNotResponding = sessionNotResponding.getID();
 
       
       NIOSession sessionResponding = connectorResponding.connect();
-      String clientSessionIDResponding = sessionResponding.getID();
+      long clientSessionIDResponding = sessionResponding.getID();
 
       boolean firedKeepAliveNotification = latch.await(KEEP_ALIVE_INTERVAL
             + KEEP_ALIVE_TIMEOUT + 2, SECONDS);
@@ -269,13 +271,13 @@ public class ClientKeepAliveTest extends TestCase
    private class ClientKeepAliveFactoryNotResponding extends ClientKeepAliveFactory
    {
       @Override
-      public Ping ping(String clientSessionID)
+      public Ping ping(long clientSessionID)
       {
          return null;
       }
 
       @Override
-      public Pong pong(String sessionID, Ping ping)
+      public Pong pong(long sessionID, Ping ping)
       {
          return null;
       }

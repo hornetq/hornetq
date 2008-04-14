@@ -88,8 +88,10 @@ public interface MessagingServer extends MessagingComponent
    void setPostOffice(PostOffice postOffice);
    
    CreateConnectionResponse createConnection(String username, String password,
-                                             String remotingClientSessionID, String clientVMID,
+                                             long remotingClientSessionID, String clientVMID,
                                              String clientAddress) throws Exception;
 
    DeploymentManager getDeploymentManager();
+   
+   ObjectIDGenerator getObjectIDGenerator();
 }

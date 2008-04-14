@@ -188,8 +188,8 @@ public class MessageTest extends UnitTestCase
    {
       Message message = new MessageImpl();
       
-      assertNull(message.getConnectionID());
-      String connectionID = "conn123";
+      assertEquals(0, message.getConnectionID());
+      long connectionID = 781628;
       message.setConnectionID(connectionID);
       assertEquals(connectionID, message.getConnectionID());      
    }

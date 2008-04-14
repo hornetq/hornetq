@@ -6,8 +6,8 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
@@ -16,17 +16,17 @@ import org.apache.mina.common.IoSession;
 import org.apache.mina.filter.reqres.Response;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandlerRegistrationListener;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.RemotingException;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  * @version <tt>$Revision$</tt>
  * 
@@ -43,16 +43,18 @@ public class MinaHandler extends IoHandlerAdapter implements PacketHandlerRegist
 
    private FailureNotifier failureNotifier;
 
-   private boolean closeSessionOnExceptionCaught;
+   private final boolean closeSessionOnExceptionCaught;
 
-   private OrderedExecutorFactory executorFactory;
+   private final OrderedExecutorFactory executorFactory;
 
-   private Map<String, Executor> executors = new HashMap<String, Executor>();
+   //Note! must use ConcurrentMap here to avoid race condition
+   private final ConcurrentMap<Long, Executor> executors = new ConcurrentHashMap<Long, Executor>();
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-   public MinaHandler(PacketDispatcher dispatcher, ExecutorService executorService, FailureNotifier failureNotifier, boolean closeSessionOnExceptionCaught)
+   public MinaHandler(final PacketDispatcher dispatcher, final ExecutorService executorService,
+   		             final FailureNotifier failureNotifier, final boolean closeSessionOnExceptionCaught)
    {
       assert dispatcher!= null;
       assert executorService != null;
@@ -69,12 +71,12 @@ public class MinaHandler extends IoHandlerAdapter implements PacketHandlerRegist
 
    // PacketHandlerRegistrationListener implementation --------------
 
-   public void handlerRegistered(String handlerID)
+   public void handlerRegistered(final long handlerID)
    {
       // do nothing on registration
    }
    
-   public void handlerUnregistered(String handlerID)
+   public void handlerUnregistered(final long handlerID)
    {
       executors.remove(handlerID);
    }
@@ -82,15 +84,16 @@ public class MinaHandler extends IoHandlerAdapter implements PacketHandlerRegist
    // IoHandlerAdapter overrides ------------------------------------
 
    @Override
-   public void exceptionCaught(IoSession session, Throwable cause)
+   public void exceptionCaught(final IoSession session, final Throwable cause)
          throws Exception
    {
       log.error("caught exception " + cause + " for session " + session, cause);
       
       if (failureNotifier != null)
       {
-         String serverSessionID = Long.toString(session.getId());
-         RemotingException re = new RemotingException(MessagingException.INTERNAL_ERROR, "unexpected exception", serverSessionID);
+         long serverSessionID = session.getId();
+         RemotingException re =
+         	new RemotingException(MessagingException.INTERNAL_ERROR, "unexpected exception", serverSessionID);
          re.initCause(cause);
          failureNotifier.fireFailure(re);
       }
@@ -128,16 +131,20 @@ public class MinaHandler extends IoHandlerAdapter implements PacketHandlerRegist
       }
       
       final Packet packet = (Packet) message;
-      String executorID = packet.getExecutorID();
-      
-      if (PacketImpl.NO_ID_SET.equals(executorID)) 
-         throw new IllegalArgumentException("executor ID not set for " + packet);
+      long executorID = packet.getExecutorID();
       
       Executor executor = executors.get(executorID);
       if (executor == null)
       {
-         executor = this.executorFactory.getOrderedExecutor();
-         executors.put(executorID, executor);
+         executor = executorFactory.getOrderedExecutor();
+         
+         Executor oldExecutor = executors.putIfAbsent(executorID, executor);
+         
+         if (oldExecutor != null)
+         {
+         	//Avoid race
+         	executor = oldExecutor;
+         }
       }
       
       executor.execute(new Runnable() 
@@ -146,7 +153,7 @@ public class MinaHandler extends IoHandlerAdapter implements PacketHandlerRegist
          {
             try
             {
-               messageReceived0(session, packet);
+               messageReceivedInternal(session, packet);
             } catch (Exception e)
             {
                log.error("unexpected error", e);
@@ -162,7 +169,7 @@ public class MinaHandler extends IoHandlerAdapter implements PacketHandlerRegist
 
    // Private -------------------------------------------------------
 
-   private void messageReceived0(final IoSession session, Packet packet)
+   private void messageReceivedInternal(final IoSession session, Packet packet)
          throws Exception
    {
       PacketSender sender = new PacketSender()
@@ -173,9 +180,9 @@ public class MinaHandler extends IoHandlerAdapter implements PacketHandlerRegist
             session.write(p);            
          }
          
-         public String getSessionID()
+         public long getSessionID()
          {
-            return Long.toString(session.getId());
+            return session.getId();
          }
          
          public String getRemoteAddress()

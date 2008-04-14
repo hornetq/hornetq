@@ -39,20 +39,20 @@ public class CreateConnectionMessageCodec extends
          throws Exception
    {
       int version = request.getVersion();
-      String remotingSessionID = request.getRemotingSessionID();
+      long remotingSessionID = request.getRemotingSessionID();
       String clientVMID = request.getClientVMID();
       String username = request.getUsername();
       String password = request.getPassword();
 
       int bodyLength = INT_LENGTH // version
-            + sizeof(remotingSessionID)
+            + LONG_LENGTH +
             + sizeof(clientVMID)
             + sizeof(username) 
             + sizeof(password);
 
       out.putInt(bodyLength);
       out.putInt(version);
-      out.putNullableString(remotingSessionID);
+      out.putLong(remotingSessionID);
       out.putNullableString(clientVMID);
       out.putNullableString(username);
       out.putNullableString(password);
@@ -68,7 +68,7 @@ public class CreateConnectionMessageCodec extends
          return null;
       }
       int version = in.getInt();
-      String remotingSessionID = in.getNullableString();
+      long remotingSessionID = in.getLong();
       String clientVMID = in.getNullableString();
       String username = in.getNullableString();
       String password = in.getNullableString();

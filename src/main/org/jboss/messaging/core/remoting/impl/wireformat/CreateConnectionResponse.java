@@ -6,7 +6,6 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.Assert.assertValidID;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CREATECONNECTION_RESP;
 
 /**
@@ -21,32 +20,30 @@ public class CreateConnectionResponse extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private final String connectionID;
+   private final long connectionTargetID;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public CreateConnectionResponse(final String connectionID)
+   public CreateConnectionResponse(final long connectionTargetID)
    {
       super(CREATECONNECTION_RESP);
 
-      assertValidID(connectionID);
-
-      this.connectionID = connectionID;
+      this.connectionTargetID = connectionTargetID;
    }
 
    // Public --------------------------------------------------------
 
-   public String getConnectionID()
+   public long getConnectionTargetID()
    {
-      return connectionID;
+      return connectionTargetID;
    }
    
    @Override
    public String toString()
    {
-      return getParentString() + ", connectionID" + connectionID + "]";
+      return getParentString() + ", connectionID" + connectionTargetID + "]";
    }
 
    // Package protected ---------------------------------------------

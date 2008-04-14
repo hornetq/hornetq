@@ -24,11 +24,10 @@ package org.jboss.messaging.core.server.impl;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CREATECONNECTION;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
-import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.server.MessagingServer;
 
@@ -58,9 +57,10 @@ public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
    * By switching to Long, we could reduce the size of the packet and maybe
    * increase the performance (to check after some performance tests)
    */
-   public String getID()
+   public long getID()
    {
-      return ClientConnectionFactoryImpl.id;
+   	//0 is reserved for this handler
+      return 0;
    }
 
    public Packet doHandle(final Packet packet, final PacketSender sender) throws Exception

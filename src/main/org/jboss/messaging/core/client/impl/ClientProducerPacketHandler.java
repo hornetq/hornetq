@@ -3,9 +3,9 @@ package org.jboss.messaging.core.client.impl;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PROD_RECEIVETOKENS;
 
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerReceiveTokensMessage;
 
@@ -22,16 +22,16 @@ public class ClientProducerPacketHandler implements PacketHandler
 
    private final ClientProducerInternal clientProducer;
 
-   private final String producerID;
+   private final long producerID;
 
-   public ClientProducerPacketHandler(final ClientProducerInternal clientProducer, final String producerID)
+   public ClientProducerPacketHandler(final ClientProducerInternal clientProducer, final long producerID)
    {
       this.clientProducer = clientProducer;
       
       this.producerID = producerID;
    }
 
-   public String getID()
+   public long getID()
    {
       return producerID;
    }

@@ -5,7 +5,9 @@
  * See terms of license at gnu.org.
  */
 
-package org.jboss.messaging.core.remoting.impl.wireformat;
+package org.jboss.messaging.core.remoting;
+
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 
 
 public interface Packet
@@ -18,17 +20,13 @@ public interface Packet
 
    PacketType getType();
 
-   String getTargetID();
+   long getTargetID();
 
-   void setTargetID(String targetID);
+   void setTargetID(long targetID);
 
-   String getCallbackID();
+   long getExecutorID();
 
-   void setCallbackID(String callbackID);
-
-   String getExecutorID();
-
-   void setExecutorID(String executorID);
+   void setExecutorID(long executorID);
 
    void setOneWay(boolean oneWay);
 

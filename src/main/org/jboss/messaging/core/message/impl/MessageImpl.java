@@ -74,7 +74,7 @@ public class MessageImpl implements Message
    //The payload of MessageImpl instances is opaque
    private byte[] payload;
    
-   private String connectionID;
+   private long connectionID;
    
    private final AtomicInteger durableRefCount = new AtomicInteger(0);
    
@@ -259,12 +259,12 @@ public class MessageImpl implements Message
       this.payload = payload;
    }
    
-   public String getConnectionID()
+   public long getConnectionID()
    {
       return connectionID;
    }
    
-   public void setConnectionID(final String connectionID)
+   public void setConnectionID(final long connectionID)
    {
       this.connectionID = connectionID;
    }

@@ -20,7 +20,7 @@ public class SessionCreateProducerResponseMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private final String producerID;
+   private final long producerTargetID;
    
    private final int windowSize;
    
@@ -30,11 +30,11 @@ public class SessionCreateProducerResponseMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateProducerResponseMessage(final String producerID, final int windowSize, final int maxRate)
+   public SessionCreateProducerResponseMessage(final long producerTargetID, final int windowSize, final int maxRate)
    {
       super(SESS_CREATEPRODUCER_RESP);
 
-      this.producerID = producerID;
+      this.producerTargetID = producerTargetID;
       
       this.windowSize = windowSize;
       
@@ -43,9 +43,9 @@ public class SessionCreateProducerResponseMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
-   public String getProducerID()
+   public long getProducerTargetID()
    {
-      return producerID;
+      return producerTargetID;
    }
    
    public int getWindowSize()
@@ -62,7 +62,7 @@ public class SessionCreateProducerResponseMessage extends PacketImpl
    public String toString()
    {
       StringBuffer buf = new StringBuffer(getParentString());
-      buf.append(", producerID=" + producerID);
+      buf.append(", producerTargetID=" + producerTargetID);
       buf.append(", windowSize=" + windowSize);
       buf.append(", maxRate=" + maxRate);
       buf.append("]");

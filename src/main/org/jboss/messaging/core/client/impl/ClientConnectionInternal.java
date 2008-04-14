@@ -7,6 +7,7 @@
 package org.jboss.messaging.core.client.impl;
 
 import org.jboss.messaging.core.client.ClientConnection;
+import org.jboss.messaging.core.client.ClientSession;
 
 /**
  * 
@@ -21,5 +22,5 @@ public interface ClientConnectionInternal extends ClientConnection
    
    RemotingConnection getRemotingConnection();
 
-   void removeChild(String id);
+   void removeSession(ClientSession session);
 }

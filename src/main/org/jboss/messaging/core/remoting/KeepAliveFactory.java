@@ -18,9 +18,9 @@ import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
 public interface KeepAliveFactory
 {
 
-   Ping ping(String sessionID);
+   Ping ping(long sessionID);
    
-   Pong pong(String sessionID, Ping ping);
+   Pong pong(long sessionID, Ping ping);
 
-   boolean isPing(String sessionID, Object message);
+   boolean isPing(long sessionID, Object message);
 }

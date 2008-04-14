@@ -8,8 +8,6 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATECONSUMER_RESP;
 
-import org.jboss.messaging.core.remoting.impl.Assert;
-
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -22,7 +20,7 @@ public class SessionCreateConsumerResponseMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private final String consumerID;
+   private final long consumerTargetID;
    
    private final int windowSize;
    
@@ -30,22 +28,20 @@ public class SessionCreateConsumerResponseMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateConsumerResponseMessage(final String consumerID, final int windowSize)
+   public SessionCreateConsumerResponseMessage(final long consumerID, final int windowSize)
    {
       super(SESS_CREATECONSUMER_RESP);
 
-      Assert.assertValidID(consumerID);
-
-      this.consumerID = consumerID;
+      this.consumerTargetID = consumerID;
       
       this.windowSize = windowSize;
    }
 
    // Public --------------------------------------------------------
 
-   public String getConsumerID()
+   public long getConsumerTargetID()
    {
-      return consumerID;
+      return consumerTargetID;
    }
    
    public int getWindowSize()
@@ -57,7 +53,7 @@ public class SessionCreateConsumerResponseMessage extends PacketImpl
    public String toString()
    {
       StringBuffer buf = new StringBuffer(getParentString());
-      buf.append(", consumerID=" + consumerID);
+      buf.append(", consumerTargetID=" + consumerTargetID);
       buf.append(", windowSize=" + windowSize);
       buf.append("]");
       return buf.toString();

@@ -30,9 +30,9 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 
 /**
  * 
@@ -117,17 +117,16 @@ public class RemotingConnectionImpl implements RemotingConnection
       log.trace(this + " closed");
    }
    
-   public String getSessionID()
+   public long getSessionID()
    {
       if (session == null || !session.isConnected())
       {
-         return null;
+         return -1;
       }
       return session.getID();
    }
     
-   public Packet send(String targetID, Packet packet)
-         throws MessagingException
+   public Packet send(final long targetID, final Packet packet) throws MessagingException
    {
       return send(targetID, targetID, packet);
    }
@@ -135,12 +134,12 @@ public class RemotingConnectionImpl implements RemotingConnection
    /**
     * send the packet and block until a response is received (<code>oneWay</code> is set to <code>false</code>)
     */
-   public Packet send(final String targetID, final String executorID, final Packet packet) throws MessagingException
+   public Packet send(final long targetID, final long executorID, final Packet packet) throws MessagingException
    {
       return send(targetID, executorID, packet, false);
    }
    
-   public Packet send(final String targetID, final String executorID, final Packet packet, final boolean oneWay) throws MessagingException
+   public Packet send(final long targetID, final long executorID, final Packet packet, final boolean oneWay) throws MessagingException
    {
       assert packet != null;
 

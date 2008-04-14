@@ -6,15 +6,13 @@
  */
 package org.jboss.messaging.core.remoting.impl.invm;
 
-import static java.util.UUID.randomUUID;
-
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.NIOSession;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -28,10 +26,10 @@ public class INVMSession implements NIOSession
 
    // Attributes ----------------------------------------------------
 
-   private String id;
+   private final long id;
    private long correlationCounter;
-   private PacketDispatcher clientDispatcher;
-   private PacketDispatcher serverDispatcher;
+   private final PacketDispatcher clientDispatcher;
+   private final PacketDispatcher serverDispatcher;
    private boolean connected;
    
    // Static --------------------------------------------------------
@@ -39,12 +37,12 @@ public class INVMSession implements NIOSession
 
    // Constructors --------------------------------------------------
 
-   public INVMSession(PacketDispatcher clientDispatcher, PacketDispatcher serverDispatcher)
+   public INVMSession(final long id, final PacketDispatcher clientDispatcher, final PacketDispatcher serverDispatcher)
    {
       assert clientDispatcher != null;
       assert serverDispatcher != null;
       
-      this.id = randomUUID().toString();
+      this.id = id;
       this.correlationCounter = 0;
       this.clientDispatcher = clientDispatcher;
       this.serverDispatcher = serverDispatcher;
@@ -61,7 +59,7 @@ public class INVMSession implements NIOSession
 
    // NIOSession implementation -------------------------------------
 
-   public String getID()
+   public long getID()
    {
       return id;
    }
@@ -84,7 +82,7 @@ public class INVMSession implements NIOSession
                   clientDispatcher.dispatch(response, null);   
                }
                
-               public String getSessionID()
+               public long getSessionID()
                {
                   return getID();
                }
@@ -126,7 +124,7 @@ public class INVMSession implements NIOSession
                   }
                }
 
-               public String getSessionID()
+               public long getSessionID()
                {
                   return getID();
                }

@@ -8,7 +8,6 @@
 package org.jboss.messaging.core.remoting;
 
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 
 /**
  *

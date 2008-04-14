@@ -7,11 +7,10 @@
 package org.jboss.messaging.core.remoting.impl.mina;
 
 import static org.apache.mina.filter.reqres.ResponseType.WHOLE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NO_CORRELATION_ID;
 
 import org.apache.mina.filter.reqres.ResponseInspector;
 import org.apache.mina.filter.reqres.ResponseType;
-import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
+import org.jboss.messaging.core.remoting.Packet;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -39,10 +38,16 @@ public class MinaInspector implements ResponseInspector
          return null;
       }
       Packet packet = (Packet) message;
-      if (packet.getCorrelationID() != NO_CORRELATION_ID)
-         return packet.getCorrelationID();
+      long id = packet.getCorrelationID();
+      
+      if (id == -1)
+      {
+      	return null;
+      }
       else
-         return null;
+      {
+      	return id;
+      }
    }
 
    public ResponseType getResponseType(Object message)

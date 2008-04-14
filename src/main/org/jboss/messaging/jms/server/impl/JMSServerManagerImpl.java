@@ -42,7 +42,6 @@ import org.jboss.messaging.core.management.MessagingServerManagement;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConnection;
-import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTemporaryQueue;
 import org.jboss.messaging.jms.JBossTemporaryTopic;
@@ -52,7 +51,6 @@ import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.jms.server.ConnectionInfo;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.MessageStatistics;
-import org.jboss.messaging.jms.server.SessionInfo;
 import org.jboss.messaging.jms.server.SubscriptionInfo;
 import org.jboss.messaging.util.JNDIUtil;
 import org.jboss.messaging.util.Pair;
@@ -431,12 +429,12 @@ public class JMSServerManagerImpl implements JMSServerManager
       return connectionInfos;
    }
 
-   public void dropConnection(String clientId) throws Exception
+   public void dropConnection(long clientId) throws Exception
    {
       List<ServerConnection> endpoints = messagingServerManagement.getActiveConnections();
       for (ServerConnection endpoint : endpoints)
       {
-         if (endpoint.getID().equals(clientId))
+         if (endpoint.getID() == clientId)
          {
             endpoint.close();
             break;
@@ -450,11 +448,9 @@ public class JMSServerManagerImpl implements JMSServerManager
       List<ConnectionInfo> connectionInfos = getConnectionsForUser(user);
       for (ConnectionInfo connectionInfo : connectionInfos)
       {
-
-
          for (ServerConnection endpoint : endpoints)
          {
-            if (endpoint.getID().equals(connectionInfo.getId()))
+            if (endpoint.getID() == connectionInfo.getId())
             {
                endpoint.close();
                break;
@@ -463,43 +459,43 @@ public class JMSServerManagerImpl implements JMSServerManager
       }
    }
 
-   public List<SessionInfo> getSessions() throws Exception
-   {
-      return getSessionsForConnection(null);
-   }
+//   public List<SessionInfo> getSessions() throws Exception
+//   {
+//      return getSessionsForConnection(null);
+//   }
+//
+//   public List<SessionInfo> getSessionsForConnection(long id) throws Exception
+//   {
+//      List<SessionInfo> sessionInfos = new ArrayList<SessionInfo>();
+//      List<ServerConnection> endpoints = messagingServerManagement.getActiveConnections();
+//      for (ServerConnection endpoint : endpoints)
+//      {
+//         if (id == endpoint.getID())
+//         {
+//            Collection<ServerSession> serverSessionEndpoints = endpoint.getSessions();
+//            for (ServerSession serverSessionEndpoint : serverSessionEndpoints)
+//            {
+//               sessionInfos.add(new SessionInfo(serverSessionEndpoint.getID(),
+//                       endpoint.getID()));
+//            }
+//         }
+//      }
+//      return sessionInfos;
+//   }
 
-   public List<SessionInfo> getSessionsForConnection(String id) throws Exception
-   {
-      List<SessionInfo> sessionInfos = new ArrayList<SessionInfo>();
-      List<ServerConnection> endpoints = messagingServerManagement.getActiveConnections();
-      for (ServerConnection endpoint : endpoints)
-      {
-         if (id == null || id.equals(endpoint.getID()))
-         {
-            Collection<ServerSession> serverSessionEndpoints = endpoint.getSessions();
-            for (ServerSession serverSessionEndpoint : serverSessionEndpoints)
-            {
-               sessionInfos.add(new SessionInfo(serverSessionEndpoint.getID(),
-                       endpoint.getID()));
-            }
-         }
-      }
-      return sessionInfos;
-   }
-
-   public List<SessionInfo> getSessionsForUser(String user) throws Exception
-   {
-      List<SessionInfo> sessionInfos = new ArrayList<SessionInfo>();
-      List<ServerConnection> endpoints = messagingServerManagement.getActiveConnections();
-      for (ServerConnection endpoint : endpoints)
-      {
-         if (user == null || user.equals(endpoint.getUsername()))
-         {
-            sessionInfos.addAll(getSessionsForConnection(endpoint.getID()));
-         }
-      }
-      return sessionInfos;
-   }
+//   public List<SessionInfo> getSessionsForUser(String user) throws Exception
+//   {
+//      List<SessionInfo> sessionInfos = new ArrayList<SessionInfo>();
+//      List<ServerConnection> endpoints = messagingServerManagement.getActiveConnections();
+//      for (ServerConnection endpoint : endpoints)
+//      {
+//         if (user == null || user.equals(endpoint.getUsername()))
+//         {
+//            sessionInfos.addAll(getSessionsForConnection(endpoint.getID()));
+//         }
+//      }
+//      return sessionInfos;
+//   }
 
    public void startGatheringStatistics() throws Exception
    {

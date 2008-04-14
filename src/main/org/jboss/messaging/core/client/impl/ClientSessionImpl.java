@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
@@ -45,8 +46,8 @@ import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
@@ -101,7 +102,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    private final ClientConnectionInternal connection;
       
-   private final String id;
+   private final long serverTargetID;
    
    private final int lazyAckBatchSize;
    
@@ -137,7 +138,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    private final Set<ClientProducer> producers = new HashSet<ClientProducer>();
    
-   private final Map<String, ClientConsumerInternal> consumers = new HashMap<String, ClientConsumerInternal>();
+   private final Map<Long, ClientConsumerInternal> consumers = new HashMap<Long, ClientConsumerInternal>();
    
    private final Map<String, ClientProducerInternal> producerCache;
    
@@ -152,9 +153,11 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    private final boolean blockOnAcknowledge;
    
+   private static AtomicLong clientTargetIDGenerator = new AtomicLong(0);
+   
    // Constructors ---------------------------------------------------------------------------------
    
-   public ClientSessionImpl(final ClientConnectionInternal connection, final String id,
+   public ClientSessionImpl(final ClientConnectionInternal connection, final long serverTargetID,
                             final int lazyAckBatchSize, final boolean cacheProducers,                            
                             final boolean autoCommitSends, final boolean autoCommitAcks,
                             final boolean blockOnAcknowledge,
@@ -168,7 +171,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    		throw new IllegalArgumentException("Invalid lazyAckbatchSize, valid values are > 0 or -1 (infinite)");
    	}
    	
-      this.id = id;
+      this.serverTargetID = serverTargetID;
       
       this.connection = connection;
       
@@ -214,14 +217,14 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       SessionCreateQueueMessage request = new SessionCreateQueueMessage(address, queueName, filterString, durable, temporary);
 
-      remotingConnection.send(id, request);
+      remotingConnection.send(serverTargetID, request);
    }
 
    public void deleteQueue(final String queueName) throws MessagingException
    {
       checkClosed();
 
-      remotingConnection.send(id, new SessionDeleteQueueMessage(queueName));
+      remotingConnection.send(serverTargetID, new SessionDeleteQueueMessage(queueName));
    }
    
    public SessionQueueQueryResponseMessage queueQuery(final String queueName) throws MessagingException
@@ -230,7 +233,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       
       SessionQueueQueryMessage request = new SessionQueueQueryMessage(queueName);
       
-      SessionQueueQueryResponseMessage response = (SessionQueueQueryResponseMessage)remotingConnection.send(id, request);
+      SessionQueueQueryResponseMessage response = (SessionQueueQueryResponseMessage)remotingConnection.send(serverTargetID, request);
       
       return response;
    }
@@ -241,7 +244,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       
       SessionBindingQueryMessage request = new SessionBindingQueryMessage(address);
       
-      SessionBindingQueryResponseMessage response = (SessionBindingQueryResponseMessage)remotingConnection.send(id, request);
+      SessionBindingQueryResponseMessage response = (SessionBindingQueryResponseMessage)remotingConnection.send(serverTargetID, request);
       
       return response;
    }
@@ -252,7 +255,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       
       SessionAddDestinationMessage request = new SessionAddDestinationMessage(address, temporary);
       
-      remotingConnection.send(id, request);
+      remotingConnection.send(serverTargetID, request);
    }
    
    public void removeDestination(final String address, final boolean temporary) throws MessagingException
@@ -261,7 +264,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       
       SessionRemoveDestinationMessage request = new SessionRemoveDestinationMessage(address, temporary);
       
-      remotingConnection.send(id, request);  
+      remotingConnection.send(serverTargetID, request);  
    }
    
    public ClientConsumer createConsumer(final String queueName, final String filterString, final boolean noLocal,
@@ -273,19 +276,21 @@ public class ClientSessionImpl implements ClientSessionInternal
          new SessionCreateConsumerMessage(queueName, filterString, noLocal, autoDeleteQueue,
          		                           defaultConsumerWindowSize, defaultConsumerMaxRate);
       
-      SessionCreateConsumerResponseMessage response = (SessionCreateConsumerResponseMessage)remotingConnection.send(id, request);
+      SessionCreateConsumerResponseMessage response = (SessionCreateConsumerResponseMessage)remotingConnection.send(serverTargetID, request);
+      
+      long clientTargetID = clientTargetIDGenerator.getAndIncrement();
       
       ClientConsumerInternal consumer =
-         new ClientConsumerImpl(this, response.getConsumerID(), executor, remotingConnection, direct, 1);
+         new ClientConsumerImpl(this, response.getConsumerTargetID(), clientTargetID, executor, remotingConnection, direct, 1);
 
-      consumers.put(response.getConsumerID(), consumer);
+      consumers.put(response.getConsumerTargetID(), consumer);
 
-      remotingConnection.getPacketDispatcher().register(new ClientConsumerPacketHandler(consumer, response.getConsumerID()));
+      remotingConnection.getPacketDispatcher().register(new ClientConsumerPacketHandler(consumer, response.getConsumerTargetID()));
       
       //Now we send window size tokens to start the consumption
       //We even send it if windowSize == -1, since we need to start the consumer
       
-      remotingConnection.send(response.getConsumerID(), id, new ConsumerFlowTokenMessage(response.getWindowSize()), true);
+      remotingConnection.send(response.getConsumerTargetID(), serverTargetID, new ConsumerFlowTokenMessage(response.getWindowSize()), true);
 
       return consumer;
    }
@@ -298,9 +303,9 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       SessionCreateBrowserMessage request = new SessionCreateBrowserMessage(queueName, coreSelector);
 
-      SessionCreateBrowserResponseMessage response = (SessionCreateBrowserResponseMessage)remotingConnection.send(id, request);
+      SessionCreateBrowserResponseMessage response = (SessionCreateBrowserResponseMessage)remotingConnection.send(serverTargetID, request);
 
-      ClientBrowser browser = new ClientBrowserImpl(response.getBrowserID(), this, remotingConnection);  
+      ClientBrowser browser = new ClientBrowserImpl(response.getBrowserTargetID(), this, remotingConnection);  
 
       browsers.add(browser);
 
@@ -328,15 +333,15 @@ public class ClientSessionImpl implements ClientSessionInternal
       	SessionCreateProducerMessage request = new SessionCreateProducerMessage(address, windowSize, maxRate);
       	
       	SessionCreateProducerResponseMessage response =
-      		(SessionCreateProducerResponseMessage)remotingConnection.send(id, request);
+      		(SessionCreateProducerResponseMessage)remotingConnection.send(serverTargetID, request);
       	
       	//maxRate and windowSize can be overridden by the server
       	
-      	producer = new ClientProducerImpl(this, response.getProducerID(), address,
+      	producer = new ClientProducerImpl(this, response.getProducerTargetID(), address,
       			                            remotingConnection, response.getWindowSize(),
       			                            response.getMaxRate());  
       	
-      	remotingConnection.getPacketDispatcher().register(new ClientProducerPacketHandler(producer, response.getProducerID()));
+      	remotingConnection.getPacketDispatcher().register(new ClientProducerPacketHandler(producer, response.getProducerTargetID()));
       }
 
       producers.add(producer);
@@ -365,7 +370,7 @@ public class ClientSessionImpl implements ClientSessionInternal
         
       acknowledgeInternal(false);
       
-      remotingConnection.send(id, new PacketImpl(SESS_COMMIT));
+      remotingConnection.send(serverTargetID, new PacketImpl(SESS_COMMIT));
       
       lastCommittedID = lastID;
    }
@@ -375,7 +380,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       checkClosed();
                 
       //We tell each consumer to clear it's buffers and ignore any deliveries with
-      //delivery id > last delivery id, until it gets delivery id = lastID again
+      //delivery serverTargetID > last delivery serverTargetID, until it gets delivery serverTargetID = lastID again
       
       if (autoCommitAcks)
       {
@@ -393,7 +398,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       toAckCount = 0;
 
-      remotingConnection.send(id, new PacketImpl(SESS_ROLLBACK));   
+      remotingConnection.send(serverTargetID, new PacketImpl(SESS_ROLLBACK));   
    }
    
    public void acknowledge() throws MessagingException
@@ -411,7 +416,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       
       if (deliveryExpired)
       {
-         remotingConnection.send(id, id, new SessionCancelMessage(lastID, true), true);
+         remotingConnection.send(serverTargetID, serverTargetID, new SessionCancelMessage(lastID, true), true);
          
          toAckCount = 0;
       }
@@ -454,13 +459,13 @@ public class ClientSessionImpl implements ClientSessionInternal
          
          acknowledgeInternal(false);      
          
-         remotingConnection.send(id, new PacketImpl(CLOSE));
-   
-         executor.shutdown();
+         remotingConnection.send(serverTargetID, new PacketImpl(CLOSE));            
       }
       finally
       {
-         connection.removeChild(id);
+      	executor.shutdown();
+      	
+         connection.removeSession(this);
          
          closed = true;
       }
@@ -488,9 +493,9 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    // ClientSessionInternal implementation ------------------------------------------------------------
    
-   public String getID()
+   public long getServerTargetID()
    {
-      return id;
+      return serverTargetID;
    }
    
    public ClientConnectionInternal getConnection()
@@ -507,7 +512,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    public void removeConsumer(final ClientConsumerInternal consumer) throws MessagingException
    {
-      consumers.remove(consumer.getID());
+      consumers.remove(consumer.getClientTargetID());
             
       //1. flush any unacked message to the server
       
@@ -515,7 +520,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       //2. cancel all deliveries on server but not in tx
             
-      remotingConnection.send(id, new SessionCancelMessage(-1, false));
+      remotingConnection.send(serverTargetID, new SessionCancelMessage(-1, false));
    }
    
    public void removeProducer(final ClientProducerInternal producer)
@@ -543,7 +548,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       { 
          SessionXACommitMessage packet = new SessionXACommitMessage(xid, onePhase);
                   
-         SessionXAResponseMessage response = (SessionXAResponseMessage)remotingConnection.send(id, packet);
+         SessionXAResponseMessage response = (SessionXAResponseMessage)remotingConnection.send(serverTargetID, packet);
          
          if (response.isError())
          {
@@ -584,7 +589,7 @@ public class ClientSessionImpl implements ClientSessionInternal
          //Need to flush any acks to server first
          acknowledgeInternal(false);
          
-         SessionXAResponseMessage response = (SessionXAResponseMessage)remotingConnection.send(id, packet);
+         SessionXAResponseMessage response = (SessionXAResponseMessage)remotingConnection.send(serverTargetID, packet);
          
          if (response.isError())
          {
@@ -606,7 +611,7 @@ public class ClientSessionImpl implements ClientSessionInternal
          //Need to flush any acks to server first
          acknowledgeInternal(false);
                   
-         SessionXAResponseMessage response = (SessionXAResponseMessage)remotingConnection.send(id, new SessionXAForgetMessage(xid));
+         SessionXAResponseMessage response = (SessionXAResponseMessage)remotingConnection.send(serverTargetID, new SessionXAForgetMessage(xid));
          
          if (response.isError())
          {
@@ -625,7 +630,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       try
       {                              
          SessionXAGetTimeoutResponseMessage response =
-            (SessionXAGetTimeoutResponseMessage)remotingConnection.send(id, new PacketImpl(SESS_XA_GET_TIMEOUT));
+            (SessionXAGetTimeoutResponseMessage)remotingConnection.send(serverTargetID, new PacketImpl(SESS_XA_GET_TIMEOUT));
          
          return response.getTimeoutSeconds();
       }
@@ -659,7 +664,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       {
          SessionXAPrepareMessage packet = new SessionXAPrepareMessage(xid);
          
-         SessionXAResponseMessage response = (SessionXAResponseMessage)remotingConnection.send(id, packet);
+         SessionXAResponseMessage response = (SessionXAResponseMessage)remotingConnection.send(serverTargetID, packet);
          
          if (response.isError())
          {
@@ -682,7 +687,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    {
       try
       {
-         SessionXAGetInDoubtXidsResponseMessage response = (SessionXAGetInDoubtXidsResponseMessage)remotingConnection.send(id, new PacketImpl(SESS_XA_INDOUBT_XIDS));
+         SessionXAGetInDoubtXidsResponseMessage response = (SessionXAGetInDoubtXidsResponseMessage)remotingConnection.send(serverTargetID, new PacketImpl(SESS_XA_INDOUBT_XIDS));
          
          List<Xid> xids = response.getXids();
          
@@ -703,7 +708,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       {
          SessionXARollbackMessage packet = new SessionXARollbackMessage(xid);
          
-         SessionXAResponseMessage response = (SessionXAResponseMessage)remotingConnection.send(id, packet);
+         SessionXAResponseMessage response = (SessionXAResponseMessage)remotingConnection.send(serverTargetID, packet);
          
          if (response.isError())
          {
@@ -723,7 +728,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       try
       {                              
          SessionXASetTimeoutResponseMessage response =
-            (SessionXASetTimeoutResponseMessage)remotingConnection.send(id, new SessionXASetTimeoutMessage(seconds));
+            (SessionXASetTimeoutResponseMessage)remotingConnection.send(serverTargetID, new SessionXASetTimeoutMessage(seconds));
          
          return response.isOK();
       }
@@ -763,7 +768,7 @@ public class ClientSessionImpl implements ClientSessionInternal
             throw new XAException(XAException.XAER_INVAL);
          }
                      
-         SessionXAResponseMessage response = (SessionXAResponseMessage)remotingConnection.send(id, packet);
+         SessionXAResponseMessage response = (SessionXAResponseMessage)remotingConnection.send(serverTargetID, packet);
          
          if (response.isError())
          {
@@ -801,7 +806,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       
       SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(lastID, !broken);
             
-      remotingConnection.send(id, id, message, !block);
+      remotingConnection.send(serverTargetID, serverTargetID, message, !block);
       
       acked = true;
    }

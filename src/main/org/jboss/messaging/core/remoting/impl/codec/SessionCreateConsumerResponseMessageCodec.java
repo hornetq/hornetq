@@ -37,14 +37,14 @@ public class SessionCreateConsumerResponseMessageCodec extends
    protected void encodeBody(SessionCreateConsumerResponseMessage response,
          RemotingBuffer out) throws Exception
    {
-      String consumerID = response.getConsumerID();
+      long consumerID = response.getConsumerTargetID();
       
       int windowSize = response.getWindowSize();
 
-      int bodyLength = sizeof(consumerID) + INT_LENGTH;
+      int bodyLength = LONG_LENGTH + INT_LENGTH;
        
       out.putInt(bodyLength);
-      out.putNullableString(consumerID);
+      out.putLong(consumerID);
       out.putInt(windowSize);
    }
 
@@ -58,7 +58,7 @@ public class SessionCreateConsumerResponseMessageCodec extends
          return null;
       }
 
-      String consumerID = in.getNullableString();
+      long consumerID = in.getLong();
       int windowSize = in.getInt();
 
       return new SessionCreateConsumerResponseMessage(consumerID, windowSize);

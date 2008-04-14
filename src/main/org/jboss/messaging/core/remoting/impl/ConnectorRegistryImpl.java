@@ -11,6 +11,7 @@ import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.logging.Logger;
@@ -39,7 +40,9 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
    private Map<String, PacketDispatcher> localDispatchers = new HashMap<String, PacketDispatcher>();
    
    public Map<String, NIOConnectorHolder> connectors = new HashMap<String, NIOConnectorHolder>();
-
+   
+   private final AtomicLong idCounter = new AtomicLong(0);
+   
    // Static --------------------------------------------------------
 
    /**
@@ -101,7 +104,7 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
       if (localDispatchers.containsKey(key))
       {
          PacketDispatcher localDispatcher = localDispatchers.get(key);
-         NIOConnector connector = new INVMConnector(dispatcher, localDispatcher);
+         NIOConnector connector = new INVMConnector(idCounter.getAndIncrement(), dispatcher, localDispatcher);
 
          if (log.isDebugEnabled())
             log.debug("Created " + connector + " to connect to "

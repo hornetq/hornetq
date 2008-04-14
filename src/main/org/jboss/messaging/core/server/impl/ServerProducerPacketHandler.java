@@ -21,14 +21,12 @@
   */
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.NULL;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PROD_SEND;
 
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
 import org.jboss.messaging.core.server.ServerProducer;
@@ -49,7 +47,7 @@ public class ServerProducerPacketHandler extends ServerPacketHandlerSupport
 		this.producer = producer;
 	}
 
-   public String getID()
+   public long getID()
    {
       return producer.getID();
    }

@@ -6,12 +6,12 @@
  */
 package org.jboss.messaging.core.remoting.test.unit;
 
-import static java.util.UUID.randomUUID;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
+import static org.jboss.messaging.test.unit.RandomUtil.randomLong;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.remoting.PacketHandler;
@@ -45,7 +45,7 @@ public class PacketDispatcherTest extends TestCase
    @Override
    protected void setUp() throws Exception
    {
-      dispatcher = new PacketDispatcherImpl();
+      dispatcher = new PacketDispatcherImpl(null);
    }
 
    @Override
@@ -57,7 +57,7 @@ public class PacketDispatcherTest extends TestCase
    public void testUnregisterAnUnregisteredHandlerReturnsNull() throws Exception
    {
       PacketHandler handler = createMock(PacketHandler.class);
-      String id = randomUUID().toString();
+      long id = randomLong();
       
       replay(handler);
       
@@ -70,7 +70,7 @@ public class PacketDispatcherTest extends TestCase
    public void testRegisterAndUnregisterValidHandler() throws Exception
    {
       PacketHandler handler = createMock(PacketHandler.class);
-      String id = randomUUID().toString();
+      long id = randomLong();
       expect(handler.getID()).andReturn(id).anyTimes();
       
       replay(handler);
@@ -93,7 +93,7 @@ public class PacketDispatcherTest extends TestCase
       
       TextPacket packet = new TextPacket("testDispatch");
       
-      String id = randomUUID().toString();
+      long id = randomLong();
       expect(handler.getID()).andStubReturn(id);
       handler.handle(packet, sender);
       expectLastCall().once();
@@ -119,7 +119,7 @@ public class PacketDispatcherTest extends TestCase
       PacketHandlerRegistrationListener listener = createMock(PacketHandlerRegistrationListener.class);
       PacketHandler handler = createMock(PacketHandler.class);
 
-      String id = randomUUID().toString();
+      long id = randomLong();
       expect(handler.getID()).andStubReturn(id);
       listener.handlerRegistered(id);
       expectLastCall().once();

@@ -12,14 +12,15 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 
 import junit.framework.TestCase;
 
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaHandler;
-import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
 import org.jboss.messaging.core.remoting.test.unit.TestPacketHandler;
 
@@ -99,13 +100,13 @@ public class MinaHandlerOrderingTest extends TestCase
    @Override
    protected void setUp() throws Exception
    {
-      clientDispatcher = new PacketDispatcherImpl();
+      clientDispatcher = new PacketDispatcherImpl(null);
       threadPool = Executors.newCachedThreadPool();
       handler = new MinaHandler(clientDispatcher, threadPool, null, true);
 
-      handler_1 = new TestPacketHandler();
+      handler_1 = new TestPacketHandler(23);
       clientDispatcher.register(handler_1);
-      handler_2 = new TestPacketHandler() {
+      handler_2 = new TestPacketHandler(24) {
         @Override
          public void handle(Packet packet, PacketSender sender)
          {
@@ -141,6 +142,6 @@ public class MinaHandlerOrderingTest extends TestCase
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-
+   
    // Inner classes -------------------------------------------------
 }

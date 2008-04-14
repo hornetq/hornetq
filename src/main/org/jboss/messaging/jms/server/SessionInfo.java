@@ -29,22 +29,22 @@ import java.io.Serializable;
  */
 public class SessionInfo implements Serializable
 {
-   private final String id;
+   private final long id;
    
-   private final String connectionID;
+   private final long connectionID;
 
-   public SessionInfo(final String id, final String connectionID)
+   public SessionInfo(final long id, final long connectionID)
    {
       this.id = id;
       this.connectionID = connectionID;
    }
 
-   public String getId()
+   public long getId()
    {
       return id;
    }
 
-   public String getConnectionID()
+   public long getConnectionID()
    {
       return connectionID;
    }

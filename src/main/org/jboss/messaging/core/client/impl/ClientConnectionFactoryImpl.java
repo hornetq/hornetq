@@ -53,7 +53,6 @@ import org.jboss.messaging.core.version.Version;
 public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Serializable
 {
    // Constants ------------------------------------------------------------------------------------
-   public  static final String id = "CONNECTION_FACTORY_ID";
 
    private static final long serialVersionUID = 2512460695662741413L;
    
@@ -97,7 +96,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
       this.defaultConsumerMaxRate = defaultConsumerMaxRate;
       this.defaultProducerWindowSize = defaultProducerWindowSize;
       this.defaultProducerMaxRate = defaultProducerMaxRate;
-      this.dispatcher = new PacketDispatcherImpl();
+      this.dispatcher = new PacketDispatcherImpl(null);
    }
    
    public ClientConnectionFactoryImpl(final int serverID, final Configuration config,
@@ -111,7 +110,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
       this.defaultConsumerMaxRate = -1;
       this.defaultProducerWindowSize = 1000;
       this.defaultProducerMaxRate = -1;
-      this.dispatcher = new PacketDispatcherImpl();
+      this.dispatcher = new PacketDispatcherImpl(null);
    }
 
    public ClientConnection createConnection() throws MessagingException
@@ -130,16 +129,16 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
        
          remotingConnection.start();
          
-         String sessionID = remotingConnection.getSessionID();
+         long sessionID = remotingConnection.getSessionID();
          
          CreateConnectionRequest request =
             new CreateConnectionRequest(v, sessionID, JMSClientVMIdentifier.instance, username, password);
          
          CreateConnectionResponse response =
-            (CreateConnectionResponse)remotingConnection.send(id, request);
+            (CreateConnectionResponse)remotingConnection.send(0, request);
          
          ClientConnectionImpl connection =
-            new ClientConnectionImpl(response.getConnectionID(), serverID, strictTck, remotingConnection,
+            new ClientConnectionImpl(response.getConnectionTargetID(), serverID, strictTck, remotingConnection,
             		defaultConsumerWindowSize, defaultConsumerMaxRate,
             		defaultProducerWindowSize, defaultProducerMaxRate);
 

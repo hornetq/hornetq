@@ -23,13 +23,13 @@ public class RemotingException extends MessagingException
 
    // Attributes ----------------------------------------------------
 
-   private String sessionID;
+   private long sessionID;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public RemotingException(int code, String message, String sessionID)
+   public RemotingException(int code, String message, long sessionID)
    {
       super(code, message);
       this.sessionID = sessionID;
@@ -37,7 +37,7 @@ public class RemotingException extends MessagingException
 
    // Public --------------------------------------------------------
 
-   public String getSessionID()
+   public long getSessionID()
    {
       return sessionID;
    }

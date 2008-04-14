@@ -6,7 +6,6 @@
  */
 package org.jboss.messaging.core.remoting;
 
-import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 
 /**
  * A PacketHandler handles packets (as defined by {@link Packet} and its
@@ -24,15 +23,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
  */
 public interface PacketHandler
 {
-   /*
-    * The advantage to use String as ID is that we can leverage Java 5 UUID to
-    * generate these IDs. However theses IDs are 128 bite long and it increases
-    * the size of a packet (compared to integer or long).
-    * 
-    * By switching to Long, we could reduce the size of the packet and maybe
-    * increase the performance (to check after some performance tests)
-    */
-   String getID();
+   long getID();
 
    void handle(Packet packet, PacketSender sender);
 }

@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit;
 import junit.framework.Assert;
 
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
 import org.jboss.messaging.core.remoting.test.unit.TestPacketHandler;
 
@@ -43,6 +43,11 @@ public class ReversePacketHandler extends TestPacketHandler
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
+   
+   public ReversePacketHandler(final long id)
+   {
+   	super(id);
+   }
 
    // Public --------------------------------------------------------
 
@@ -78,7 +83,7 @@ public class ReversePacketHandler extends TestPacketHandler
       }
       
       TextPacket message = (TextPacket) packet;
-      if (message.isRequest() || !NO_ID_SET.equals(message.getCallbackID()))
+      if (message.isRequest())
       {
          TextPacket response = new TextPacket(reverse(message.getText()));
          response.normalize(message);

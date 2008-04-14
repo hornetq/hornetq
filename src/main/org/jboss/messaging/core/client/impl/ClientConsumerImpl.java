@@ -63,7 +63,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private final ClientSessionInternal session;
       
-   private final String id;
+   private final long serverTargetID;
+   
+   private final long clientTargetID;
    
    private final ExecutorService sessionExecutor;
    
@@ -90,12 +92,15 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // Constructors
    // ---------------------------------------------------------------------------------
 
-   public ClientConsumerImpl(final ClientSessionInternal session, final String id,
+   public ClientConsumerImpl(final ClientSessionInternal session, final long serverTargetID,
+   		                    final long clientTargetID,
                              final ExecutorService sessionExecutor,
                              final RemotingConnection remotingConnection,
                              final boolean direct, final int tokenBatchSize)
    {
-      this.id = id;
+      this.serverTargetID = serverTargetID;
+      
+      this.clientTargetID = clientTargetID;
       
       this.session = session;
       
@@ -247,9 +252,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          
          receiverThread = null;
 
-         remotingConnection.send(id, session.getID(), new PacketImpl(CLOSE));
+         remotingConnection.send(serverTargetID, session.getServerTargetID(), new PacketImpl(CLOSE));
 
-         remotingConnection.getPacketDispatcher().unregister(id);
+         remotingConnection.getPacketDispatcher().unregister(clientTargetID);
       }
       finally
       {
@@ -265,9 +270,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // ClientConsumerInternal implementation
    // --------------------------------------------------------------
 
-   public String getID()
+   public long getClientTargetID()
    {
-      return id;
+      return clientTargetID;
    }
 
    public void handleMessage(final ConsumerDeliverMessage message) throws Exception
@@ -296,7 +301,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          }
          else
          {
-         	throw new IllegalStateException("Invalid delivery id " + delID);
+         	throw new IllegalStateException("Invalid delivery serverTargetID " + delID);
          }
       }
       
@@ -371,7 +376,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          {
             tokensToSend = 0;
             
-            remotingConnection.send(id, session.getID(), new ConsumerFlowTokenMessage(tokenBatchSize), true);                  
+            remotingConnection.send(serverTargetID, session.getServerTargetID(), new ConsumerFlowTokenMessage(tokenBatchSize), true);                  
          }
       }
    }

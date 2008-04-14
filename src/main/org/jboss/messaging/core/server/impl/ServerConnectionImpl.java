@@ -21,20 +21,20 @@
   */
 package org.jboss.messaging.core.server.impl;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.server.ConnectionManager;
+import org.jboss.messaging.core.server.ObjectIDGenerator;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.server.ServerSession;
@@ -66,13 +66,13 @@ public class ServerConnectionImpl implements ServerConnection
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private final String id;
+   private final long id;
 
    private final String username;
    
    private final String password;
 
-   private final String remotingClientSessionID;
+   private final long remotingClientSessionID;
    
    private final String clientAddress;
       
@@ -89,10 +89,12 @@ public class ServerConnectionImpl implements ServerConnection
    private final SecurityStore securityStore;
    
    private final ConnectionManager connectionManager;
+   
+   private final ObjectIDGenerator objectIDGenerator;
 
    private final long createdTime;
          
-   private final ConcurrentMap<String, ServerSession> sessions = new ConcurrentHashMap<String, ServerSession>();
+   private final Set<ServerSession> sessions = new ConcurrentHashSet<ServerSession>();
 
    private final Set<Queue> temporaryQueues = new ConcurrentHashSet<Queue>();
    
@@ -104,16 +106,17 @@ public class ServerConnectionImpl implements ServerConnection
    // Constructors ---------------------------------------------------------------------------------
       
    public ServerConnectionImpl(final String username, final String password,
-   		                      final String remotingClientSessionID, final String jmsClientVMID,
+   		                      final long remotingClientSessionID, final String jmsClientVMID,
    		                      final String clientAddress,
    		                      final PacketDispatcher dispatcher,
    		                      final ResourceManager resourceManager,
    		                      final StorageManager persistenceManager,
    		                      final HierarchicalRepository<QueueSettings> queueSettingsRepository,
    		                      final PostOffice postOffice, final SecurityStore securityStore,
-   		                      final ConnectionManager connectionManager)
+   		                      final ConnectionManager connectionManager,
+   		                      final ObjectIDGenerator objectIDGenerator)
    {
-   	id = UUID.randomUUID().toString();
+   	this.id = objectIDGenerator.generateID();
       
    	this.username = username;
       
@@ -137,6 +140,8 @@ public class ServerConnectionImpl implements ServerConnection
       
       this.connectionManager = connectionManager;
       
+      this.objectIDGenerator = objectIDGenerator;
+      
       started = false;
       
       createdTime = System.currentTimeMillis();
@@ -146,7 +151,7 @@ public class ServerConnectionImpl implements ServerConnection
 
    // ServerConnection implementation ------------------------------------------------------------
 
-   public String getID()
+   public long getID()
    {
    	return id;
    }
@@ -157,13 +162,11 @@ public class ServerConnectionImpl implements ServerConnection
    {           
       ServerSession session =
          new ServerSessionImpl(autoCommitSends, autoCommitAcks, xa, this, resourceManager,
-         		sender, dispatcher, persistenceManager, queueSettingsRepository, postOffice, securityStore);
+         		sender, dispatcher, persistenceManager, queueSettingsRepository, postOffice, securityStore,
+         		objectIDGenerator);
 
-      synchronized (sessions)
-      {
-         sessions.put(session.getID(), session);
-      }
-
+      sessions.add(session);
+      
       dispatcher.register(new ServerSessionPacketHandler(session));
       
       return new ConnectionCreateSessionResponseMessage(session.getID());
@@ -181,9 +184,9 @@ public class ServerConnectionImpl implements ServerConnection
 
    public void close() throws Exception
    {
-      Map<String, ServerSession> sessionsClone = new HashMap<String, ServerSession>(sessions);
+      Set<ServerSession> sessionsClone = new HashSet<ServerSession>(sessions);
       
-      for (ServerSession session: sessionsClone.values())
+      for (ServerSession session: sessionsClone)
       {
          session.close();
       }
@@ -235,14 +238,14 @@ public class ServerConnectionImpl implements ServerConnection
       return password;
    }
    
-   public void removeSession(final String sessionId) throws Exception
+   public void removeSession(final ServerSession session) throws Exception
    {
-      if (sessions.remove(sessionId) == null)
+      if (!sessions.remove(session))
       {
-         throw new IllegalStateException("Cannot find session with id " + sessionId + " to remove");
+         throw new IllegalStateException("Cannot find session with id " + session.getID() + " to remove");
       }      
       
-      dispatcher.unregister(sessionId);
+      dispatcher.unregister(session.getID());
    }
 
    public void addTemporaryQueue(final Queue queue)
@@ -287,7 +290,7 @@ public class ServerConnectionImpl implements ServerConnection
 
    public Collection<ServerSession> getSessions()
    {
-      return sessions.values();
+      return sessions;
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -301,11 +304,9 @@ public class ServerConnectionImpl implements ServerConnection
    
    private void setStarted(final boolean started) throws Exception
    {
-      Map<String, ServerSession> sessionsClone = null;
-      
-      sessionsClone = new HashMap<String, ServerSession>(sessions);
+      Set<ServerSession> sessionsClone = new HashSet<ServerSession>(sessions);
             
-      for (ServerSession session: sessionsClone.values() )
+      for (ServerSession session: sessionsClone)
       {
          session.setStarted(started);
       }

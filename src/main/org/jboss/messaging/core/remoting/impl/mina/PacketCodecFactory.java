@@ -68,6 +68,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.TEXT;
 
 import org.apache.mina.filter.codec.demux.DemuxingProtocolCodecFactory;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec;
 import org.jboss.messaging.core.remoting.impl.codec.BytesPacketCodec;
 import org.jboss.messaging.core.remoting.impl.codec.ConnectionCreateSessionMessageCodec;
@@ -117,7 +118,6 @@ import org.jboss.messaging.core.remoting.impl.codec.SessionXASetTimeoutResponseM
 import org.jboss.messaging.core.remoting.impl.codec.SessionXAStartMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.TextPacketCodec;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 
 /**

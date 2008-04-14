@@ -6,7 +6,6 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.Assert.assertValidID;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -20,33 +19,31 @@ public class ConnectionCreateSessionResponseMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private final String sessionID;
+   private final long sessionTargetID;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ConnectionCreateSessionResponseMessage(final String sessionID)
+   public ConnectionCreateSessionResponseMessage(final long sessionTargetID)
    {
       super(PacketType.CONN_CREATESESSION_RESP);
 
-      assertValidID(sessionID);
-
-      this.sessionID = sessionID;
+      this.sessionTargetID = sessionTargetID;
    }
 
    // Public --------------------------------------------------------
 
-   public String getSessionID()
+   public long getSessionID()
    {
-      return sessionID;
+      return sessionTargetID;
    }
 
 
    @Override
    public String toString()
    {
-      return getParentString() + ", sessionID=" + sessionID
+      return getParentString() + ", sessionTargetID=" + sessionTargetID
             + "]";
    }
 

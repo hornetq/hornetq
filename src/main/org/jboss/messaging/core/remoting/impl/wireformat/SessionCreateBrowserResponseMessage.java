@@ -6,7 +6,6 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.Assert.assertValidID;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEBROWSER_RESP;
 
 /**
@@ -22,32 +21,30 @@ public class SessionCreateBrowserResponseMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private final String browserID;
+   private final long browserTargetID;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateBrowserResponseMessage(final String browserID)
+   public SessionCreateBrowserResponseMessage(final long browserTargetID)
    {
       super(SESS_CREATEBROWSER_RESP);
 
-      assertValidID(browserID);
-
-      this.browserID = browserID;
+      this.browserTargetID = browserTargetID;
    }
 
    // Public --------------------------------------------------------
 
-   public String getBrowserID()
+   public long getBrowserTargetID()
    {
-      return browserID;
+      return browserTargetID;
    }
 
    @Override
    public String toString()
    {
-      return getParentString() + ", browserID=" + browserID + "]";
+      return getParentString() + ", browserTargetID=" + browserTargetID + "]";
    }
 
    // Package protected ---------------------------------------------

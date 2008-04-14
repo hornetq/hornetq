@@ -29,7 +29,7 @@ public class INVMSessionTest extends SessionTestBase
 
    // Attributes ----------------------------------------------------
 
-   PacketDispatcher serverDispatcher = new PacketDispatcherImpl();
+   PacketDispatcher serverDispatcher = new PacketDispatcherImpl(null);
    
    // Static --------------------------------------------------------
 
@@ -42,7 +42,7 @@ public class INVMSessionTest extends SessionTestBase
    @Override
    protected NIOConnector createNIOConnector(PacketDispatcher dispatcher)
    {
-      return new INVMConnector(dispatcher, serverDispatcher);
+      return new INVMConnector(1, dispatcher, serverDispatcher);
    }
    
    @Override

@@ -188,13 +188,13 @@ public interface Message extends Streamable
     * Get the connection id
     * @return
     */
-   String getConnectionID();
+   long getConnectionID();
    
    /**
     * Set the connection id
     * @param connectionID
     */
-   void setConnectionID(String connectionID);
+   void setConnectionID(long connectionID);
    
    
    /**

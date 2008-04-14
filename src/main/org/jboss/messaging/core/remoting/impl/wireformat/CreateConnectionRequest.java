@@ -6,7 +6,6 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.Assert.assertValidID;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CREATECONNECTION;
 
 /**
@@ -23,7 +22,7 @@ public class CreateConnectionRequest extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private final int version;
-   private final String remotingSessionID;
+   private final long remotingSessionID;
    private final String clientVMID;
    private final String username;
    private final String password;
@@ -33,12 +32,9 @@ public class CreateConnectionRequest extends PacketImpl
    // Constructors --------------------------------------------------
 
    public CreateConnectionRequest(final int version,
-         final String remotingSessionID, final String clientVMID, final String username, final String password)
+         final long remotingSessionID, final String clientVMID, final String username, final String password)
    {
       super(CREATECONNECTION);
-
-      assertValidID(remotingSessionID);
-      assertValidID(clientVMID);
 
       this.version = version;
       this.remotingSessionID = remotingSessionID;
@@ -54,7 +50,7 @@ public class CreateConnectionRequest extends PacketImpl
       return version;
    }
 
-   public String getRemotingSessionID()
+   public long getRemotingSessionID()
    {
       return remotingSessionID;
    }

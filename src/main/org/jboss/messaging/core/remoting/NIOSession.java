@@ -8,7 +8,6 @@ package org.jboss.messaging.core.remoting;
 
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -18,8 +17,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
  */
 public interface NIOSession
 {
-
-   String getID();
+   long getID();
 
    void write(Object object) throws Exception;
 

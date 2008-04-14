@@ -8,29 +8,27 @@ package org.jboss.messaging.core.remoting.test.unit;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
 
 public class TestPacketHandler implements PacketHandler
 {
-   private final String id;
+   private final long id;
    private final List<TextPacket> packets;
    private CountDownLatch latch;
    
-   public TestPacketHandler()
+   public TestPacketHandler(final long id)
    {
-      this.id = UUID.randomUUID().toString();
+      this.id = id;
       packets = new ArrayList<TextPacket>();
    }
 
-   public String getID()
+   public long getID()
    {
       return id;
    }

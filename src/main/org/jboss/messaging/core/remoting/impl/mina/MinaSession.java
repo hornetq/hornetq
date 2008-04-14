@@ -12,7 +12,7 @@ import org.apache.mina.common.IoSession;
 import org.apache.mina.filter.reqres.Request;
 import org.apache.mina.filter.reqres.Response;
 import org.jboss.messaging.core.remoting.NIOSession;
-import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
+import org.jboss.messaging.core.remoting.Packet;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -44,9 +44,9 @@ public class MinaSession implements NIOSession
 
    // Public --------------------------------------------------------
 
-   public String getID()
+   public long getID()
    {
-      return Long.toString(session.getId());
+      return session.getId();
    }
 
    public void write(Object object)

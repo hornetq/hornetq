@@ -36,13 +36,13 @@ public class PongCodec extends AbstractPacketCodec<Pong>
    @Override
    protected void encodeBody(Pong packet, RemotingBuffer out) throws Exception
    {
-      String sessionID = packet.getSessionID();
+      long sessionID = packet.getSessionID();
       boolean sessionFailed = packet.isSessionFailed();
 
-      int bodyLength = sizeof(sessionID) + BOOLEAN_LENGTH;
+      int bodyLength = LONG_LENGTH + BOOLEAN_LENGTH;
 
       out.putInt(bodyLength);
-      out.putNullableString(sessionID);
+      out.putLong(sessionID);
       out.putBoolean(sessionFailed);
    }
 
@@ -54,7 +54,7 @@ public class PongCodec extends AbstractPacketCodec<Pong>
       {
          return null;
       }
-      String sessionID = in.getNullableString();
+      long sessionID = in.getLong();
       boolean sessionFailed = in.getBoolean();
       return new Pong(sessionID, sessionFailed);
    }

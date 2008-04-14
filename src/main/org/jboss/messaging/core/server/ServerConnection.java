@@ -37,7 +37,7 @@ import java.util.Collection;
  */
 public interface ServerConnection
 {
-	String getID();
+	long getID();
 	
 	ConnectionCreateSessionResponseMessage createSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks,
                                                         PacketSender sender) throws Exception;
@@ -54,7 +54,7 @@ public interface ServerConnection
 	
 	String getPassword();
 		
-	void removeSession(String sessionID) throws Exception;
+	void removeSession(ServerSession session) throws Exception;
 	
 	void addTemporaryQueue(Queue queue);
 	

@@ -6,7 +6,6 @@
  */
 package org.jboss.messaging.core.remoting;
 
-import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 
 
 /**
@@ -17,10 +16,9 @@ import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
  */
 public interface PacketDispatcher
 {
-
    void register(PacketHandler handler);
 
-   void unregister(String handlerID);
+   void unregister(long handlerID);
    
    void setListener(PacketHandlerRegistrationListener listener);
    

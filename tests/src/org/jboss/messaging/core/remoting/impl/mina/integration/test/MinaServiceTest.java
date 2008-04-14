@@ -32,7 +32,7 @@ public class MinaServiceTest extends TestCase
 
    public void testINVMConnector_OK() throws Exception
    {
-      NIOConnector connector = new INVMConnector(new PacketDispatcherImpl(), invmService.getDispatcher());
+      NIOConnector connector = new INVMConnector(1, new PacketDispatcherImpl(null), invmService.getDispatcher());
       NIOSession session = connector.connect();
 
       assertTrue(session.isConnected());
@@ -43,7 +43,7 @@ public class MinaServiceTest extends TestCase
    public void testMinaConnector_Failure() throws Exception
    {
       NIOConnector connector = new MinaConnector(ConfigurationHelper.newConfiguration(
-            TCP, "localhost", 9000), new PacketDispatcherImpl());
+            TCP, "localhost", 9000), new PacketDispatcherImpl(null));
 
       try
       {

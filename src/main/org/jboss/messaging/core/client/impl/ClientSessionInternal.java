@@ -19,7 +19,7 @@ import org.jboss.messaging.core.exception.MessagingException;
  */
 public interface ClientSessionInternal extends ClientSession
 {
-   String getID();
+   long getServerTargetID();
    
    ClientConnectionInternal getConnection();
       

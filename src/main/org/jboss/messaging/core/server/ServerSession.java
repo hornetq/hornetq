@@ -35,6 +35,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerRe
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
+import org.jboss.messaging.core.server.impl.ServerBrowserImpl;
 
 /**
  * 
@@ -45,13 +46,13 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessag
  */
 public interface ServerSession
 {
-	String getID();
+	long getID();
 	
-	void removeBrowser(String browserID) throws Exception;
+	void removeBrowser(ServerBrowserImpl browser) throws Exception;
 	
-	void removeConsumer(String consumerID) throws Exception;
+	void removeConsumer(ServerConsumer consumer) throws Exception;
 	
-	void removeProducer(String producerID) throws Exception;
+	void removeProducer(ServerProducer producer) throws Exception;
 	
 	void close() throws Exception;
 	

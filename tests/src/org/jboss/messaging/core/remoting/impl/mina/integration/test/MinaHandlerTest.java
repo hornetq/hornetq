@@ -85,11 +85,11 @@ public class MinaHandlerTest extends TestCase
    @Override
    protected void setUp() throws Exception
    {
-      clientDispatcher = new PacketDispatcherImpl();
+      clientDispatcher = new PacketDispatcherImpl(null);
       threadPool = Executors.newCachedThreadPool();
       handler = new MinaHandler(clientDispatcher, threadPool, null, true);
 
-      packetHandler = new TestPacketHandler();
+      packetHandler = new TestPacketHandler(23);
       clientDispatcher.register(packetHandler);
    }
 

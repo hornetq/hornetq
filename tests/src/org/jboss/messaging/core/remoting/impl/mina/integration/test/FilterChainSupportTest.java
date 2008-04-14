@@ -12,7 +12,7 @@ import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addSSLFilter;
-import static org.jboss.messaging.test.unit.RandomUtil.randomString;
+import static org.jboss.messaging.test.unit.RandomUtil.randomLong;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.CountDownLatch;
@@ -32,6 +32,7 @@ import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.impl.mina.FailureNotifier;
 import org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
+import org.jboss.messaging.test.unit.RandomUtil;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -119,7 +120,7 @@ public class FilterChainSupportTest extends TestCase
       connector.setHandler(new IoHandlerAdapter());
       ConnectFuture future = connector.connect(address).awaitUninterruptibly();
       IoSession session = future.getSession();
-      session.write(new Ping(randomString()));
+      session.write(new Ping(randomLong()));
 
       boolean gotMessage = latch.await(500, MILLISECONDS);
       assertTrue(gotMessage);

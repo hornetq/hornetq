@@ -6,7 +6,6 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.Assert.assertValidID;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PING;
 
 /**
@@ -21,24 +20,22 @@ public class Ping extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private final String sessionID;
+   private final long sessionID;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public Ping(final String sessionID)
+   public Ping(final long sessionID)
    {
       super(PING);
-      
-      assertValidID(sessionID);
       
       this.sessionID = sessionID;
    }
    
    // Public --------------------------------------------------------
    
-   public String getSessionID()
+   public long getSessionID()
    {
       return sessionID;
    }

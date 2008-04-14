@@ -53,19 +53,17 @@ public class MinaKeepAliveFactory implements KeepAliveMessageFactory
 
    public Object getRequest(IoSession session)
    {
-      return innerFactory.ping(Long.toString(session.getId()));
+      return innerFactory.ping(session.getId());
    }
 
    public Object getResponse(IoSession session, Object request)
    {
-      assert request instanceof Ping;
-
-      return innerFactory.pong(Long.toString(session.getId()), (Ping) request);
+      return innerFactory.pong(session.getId(), (Ping) request);
    }
 
    public boolean isRequest(IoSession session, Object request)
    {
-      return innerFactory.isPing(Long.toString(session.getId()), request);
+      return innerFactory.isPing(session.getId(), request);
    }
 
    public boolean isResponse(IoSession session, Object response)
@@ -78,8 +76,7 @@ public class MinaKeepAliveFactory implements KeepAliveMessageFactory
             // FIXME better error code
             notifier.fireFailure(new RemotingException(
                   MessagingException.CONNECTION_TIMEDOUT,
-                  "Session has failed on the server", Long.toString(session
-                        .getId())));
+                  "Session has failed on the server", session.getId()));
          }
          return true;
       } else

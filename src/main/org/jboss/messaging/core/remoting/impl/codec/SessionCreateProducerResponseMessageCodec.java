@@ -41,12 +41,12 @@ public class SessionCreateProducerResponseMessageCodec extends
    protected void encodeBody(SessionCreateProducerResponseMessage response,
                              RemotingBuffer out) throws Exception
    {
-      String producerID = response.getProducerID();
+      long producerID = response.getProducerTargetID();
 
-      int bodyLength = sizeof(producerID) + 2 * INT_LENGTH;
+      int bodyLength = LONG_LENGTH + 2 * INT_LENGTH;
        
       out.putInt(bodyLength);
-      out.putNullableString(producerID);
+      out.putLong(producerID);
       out.putInt(response.getWindowSize());
       out.putInt(response.getMaxRate());
    }
@@ -61,7 +61,7 @@ public class SessionCreateProducerResponseMessageCodec extends
          return null;
       }
 
-      String producerID = in.getNullableString();
+      long producerID = in.getLong();
       int windowSize = in.getInt();
       int maxRate = in.getInt();
  

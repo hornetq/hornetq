@@ -65,7 +65,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private final boolean trace = log.isTraceEnabled();
 
-   private final String id;
+   private final long id;
 
    private final Queue messageQueue;
    
@@ -77,7 +77,7 @@ public class ServerConsumerImpl implements ServerConsumer
    
    private final TokenBucketLimiter limiter;
    
-   private final String connectionID;   
+   private final long connectionID;   
    
    private final ServerSession sessionEndpoint;
 
@@ -94,16 +94,16 @@ public class ServerConsumerImpl implements ServerConsumer
    private boolean started;
 
    // Constructors ---------------------------------------------------------------------------------
-
-   ServerConsumerImpl(final Queue messageQueue, final boolean noLocal, final Filter filter,
+ 
+   ServerConsumerImpl(final long id, final Queue messageQueue, final boolean noLocal, final Filter filter,
    		             final boolean autoDeleteQueue, final boolean enableFlowControl, final int maxRate,
-   		             final String connectionID, final ServerSession sessionEndpoint,
+   		             final long connectionID, final ServerSession sessionEndpoint,
 					       final StorageManager persistenceManager,
 					       final HierarchicalRepository<QueueSettings> queueSettingsRepository,
 					       final PostOffice postOffice,
 					       final boolean started)
    {
-   	id = UUID.randomUUID().toString();
+   	this.id = id;
       
       this.messageQueue = messageQueue;
       
@@ -148,7 +148,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    // ServerConsumer implementation ----------------------------------------------------------------------
 
-   public String getID()
+   public long getID()
    {
    	return id;
    }
@@ -185,9 +185,9 @@ public class ServerConsumerImpl implements ServerConsumer
          
          if (noLocal)
          {
-            String conId = message.getConnectionID();
+            long conId = message.getConnectionID();
 
-            if (connectionID.equals(conId))
+            if (connectionID == conId)
             {	            	
             	Transaction tx = new TransactionImpl(persistenceManager, postOffice);
             	
@@ -243,7 +243,7 @@ public class ServerConsumerImpl implements ServerConsumer
          }
       }
       
-      sessionEndpoint.removeConsumer(id);           
+      sessionEndpoint.removeConsumer(this);           
    }
    
    public void setStarted(final boolean started)

@@ -38,10 +38,10 @@ import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageResponseMessage;
@@ -69,7 +69,7 @@ public class ServerBrowserImpl
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private final String id;
+   private final long id;
    private final ServerSession session;
    private final Queue destination;
    private final Filter filter;
@@ -77,11 +77,11 @@ public class ServerBrowserImpl
 
    // Constructors ---------------------------------------------------------------------------------
 
-   ServerBrowserImpl(ServerSession session,
-                     Queue destination, String messageFilter) throws Exception
+   ServerBrowserImpl(final long id, final ServerSession session,
+                     final Queue destination, final String messageFilter) throws Exception
    {     
       this.session = session;
-      id = UUID.randomUUID().toString();
+      this.id = id;
       
       this.destination = destination;
 
@@ -97,7 +97,7 @@ public class ServerBrowserImpl
 
    // BrowserEndpoint implementation ---------------------------------------------------------------
 
-   public String getID()
+   public long getID()
    {
    	return id;
    }
@@ -162,7 +162,7 @@ public class ServerBrowserImpl
    {
       iterator = null;
       
-      session.removeBrowser(id);
+      session.removeBrowser(this);
       
       log.trace(this + " closed");
    }
@@ -203,8 +203,7 @@ public class ServerBrowserImpl
    
    private class ServerBrowserEndpointHandler extends ServerPacketHandlerSupport
    {
-
-      public String getID()
+      public long getID()
       {
          return ServerBrowserImpl.this.id;
       }

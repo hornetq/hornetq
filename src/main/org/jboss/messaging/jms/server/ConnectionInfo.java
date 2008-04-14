@@ -37,13 +37,13 @@ public class ConnectionInfo implements Serializable
 
    public enum status{ STARTED, STOPPED }
 
-   private final String id;
+   private final long id;
    private final String user;
    private final String address;
    private final boolean started;
    private final long created;
 
-   public ConnectionInfo(final String id, final String user, final String address,
+   public ConnectionInfo(final long id, final String user, final String address,
    		                final boolean started, final long created)
    {
       this.id = id;
@@ -53,7 +53,7 @@ public class ConnectionInfo implements Serializable
       this.created = created;
    }
 
-   public String getId()
+   public long getId()
    {
       return id;
    }

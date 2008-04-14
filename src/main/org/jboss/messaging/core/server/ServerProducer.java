@@ -11,7 +11,7 @@ import org.jboss.messaging.core.message.Message;
  */
 public interface ServerProducer
 {
-	String getID();
+	long getID();
 	
 	void close() throws Exception;
 	

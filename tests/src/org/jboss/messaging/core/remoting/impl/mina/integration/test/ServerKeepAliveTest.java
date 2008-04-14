@@ -68,13 +68,13 @@ public class ServerKeepAliveTest extends TestCase
       {
          // server does not send ping
          @Override
-         public Ping ping(String sessionID)
+         public Ping ping(long sessionID)
          {
             return null;
          }
 
          @Override
-         public Pong pong(String sessionID, Ping ping)
+         public Pong pong(long sessionID, Ping ping)
          {
             // no pong -> server is not responding
             super.pong(sessionID, ping);
@@ -90,8 +90,8 @@ public class ServerKeepAliveTest extends TestCase
       service.start();
 
       MinaConnector connector = new MinaConnector(service
-            .getConfiguration(), new PacketDispatcherImpl());
-      final String[] sessionIDNotResponding = new String[1];
+            .getConfiguration(), new PacketDispatcherImpl(null));
+      final long[] sessionIDNotResponding = new long[1];
       final CountDownLatch latch = new CountDownLatch(1);
 
       FailureListener listener = new FailureListener()
@@ -123,13 +123,13 @@ public class ServerKeepAliveTest extends TestCase
       {
          // server does not send ping
          @Override
-         public Ping ping(String sessionID)
+         public Ping ping(long sessionID)
          {
             return null;
          }
 
          @Override
-         public Pong pong(String sessionID, Ping ping)
+         public Pong pong(long sessionID, Ping ping)
          {
             // no pong -> server is not responding
             super.pong(sessionID, ping);
@@ -145,8 +145,8 @@ public class ServerKeepAliveTest extends TestCase
       service.start();
 
       MinaConnector connector = new MinaConnector(service
-            .getConfiguration(), new PacketDispatcherImpl());
-      final String[] sessionIDNotResponding = new String[1];
+            .getConfiguration(), new PacketDispatcherImpl(null));
+      final long[] sessionIDNotResponding = new long[1];
       final CountDownLatch latch = new CountDownLatch(1);
 
       FailureListener listener = new FailureListener()

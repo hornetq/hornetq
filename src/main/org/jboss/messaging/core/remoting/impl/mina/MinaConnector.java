@@ -37,9 +37,9 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingException;
-import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 
 /**
@@ -151,7 +151,7 @@ public class MinaConnector implements NIOConnector, FailureNotifier
          throw new IOException("Cannot connect to " + address.toString());
       }
       this.session = future.getSession();
-      Packet packet = new Ping(Long.toString(session.getId()));
+      Packet packet = new Ping(session.getId());
       session.write(packet);
       
       return new MinaSession(session);
@@ -283,7 +283,8 @@ public class MinaConnector implements NIOConnector, FailureNotifier
       public void sessionDestroyed(IoSession session)
       {
          RemotingException re =
-            new RemotingException(MessagingException.INTERNAL_ERROR, "MINA session has been destroyed", Long.toString(session.getId()));
+            new RemotingException(MessagingException.INTERNAL_ERROR, "MINA session has been destroyed",
+            		session.getId());
          fireFailure(re);
       }
    }

@@ -22,13 +22,11 @@
 package org.jboss.messaging.core.server.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -59,6 +57,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessag
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.server.Delivery;
+import org.jboss.messaging.core.server.ObjectIDGenerator;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.server.ServerConsumer;
@@ -69,6 +68,7 @@ import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
+import org.jboss.messaging.util.ConcurrentHashSet;
 
 /**
  * Session implementation
@@ -99,7 +99,7 @@ public class ServerSessionImpl implements ServerSession
 
    private final boolean trace = log.isTraceEnabled();
 
-   private final String id;
+   private final long id;
    
    private final boolean autoCommitSends;
 
@@ -120,12 +120,14 @@ public class ServerSessionImpl implements ServerSession
    private final PostOffice postOffice;
    
    private final SecurityStore securityStore;
-         
-   private final Map<String, ServerConsumer> consumers = new ConcurrentHashMap<String, ServerConsumer>();
-
-   private final Map<String, ServerBrowserImpl> browsers = new ConcurrentHashMap<String, ServerBrowserImpl>();
    
-   private final Map<String, ServerProducer> producers = new ConcurrentHashMap<String, ServerProducer>();
+   private final ObjectIDGenerator objectIDGenerator;
+         
+   private final Set<ServerConsumer> consumers = new ConcurrentHashSet<ServerConsumer>();
+
+   private final Set<ServerBrowserImpl> browsers = new ConcurrentHashSet<ServerBrowserImpl>();
+   
+   private final Set<ServerProducer> producers = new ConcurrentHashSet<ServerProducer>();
 
    private final LinkedList<Delivery> deliveries = new LinkedList<Delivery>();
 
@@ -144,9 +146,10 @@ public class ServerSessionImpl implements ServerSession
                             final ResourceManager resourceManager, final PacketSender sender, 
                             final PacketDispatcher dispatcher, final StorageManager persistenceManager,
                             final HierarchicalRepository<QueueSettings> queueSettingsRepository,
-                            final PostOffice postOffice, final SecurityStore securityStore) throws Exception
+                            final PostOffice postOffice, final SecurityStore securityStore,
+                            final ObjectIDGenerator objectIDGenerator) throws Exception
    {
-   	id = UUID.randomUUID().toString();
+   	this.id = objectIDGenerator.generateID();
             
       this.autoCommitSends = autoCommitSends;
 
@@ -172,6 +175,8 @@ public class ServerSessionImpl implements ServerSession
       this.postOffice = postOffice;
       
       this.securityStore = securityStore;
+      
+      this.objectIDGenerator = objectIDGenerator;
             
       if (log.isTraceEnabled())
       {
@@ -182,7 +187,7 @@ public class ServerSessionImpl implements ServerSession
    // ServerSession implementation
    // ---------------------------------------------------------------------------------------
    
-   public String getID()
+   public long getID()
    {
    	return id;
    }
@@ -192,34 +197,34 @@ public class ServerSessionImpl implements ServerSession
       return connection;
    }
 
-   public void removeBrowser(final String browserID) throws Exception
+   public void removeBrowser(final ServerBrowserImpl browser) throws Exception
    {
-      if (browsers.remove(browserID) == null)
+      if (!browsers.remove(browser))
       {
-         throw new IllegalStateException("Cannot find browser with id " + browserID + " to remove");
+         throw new IllegalStateException("Cannot find browser with id " + browser.getID() + " to remove");
       }
       
-      dispatcher.unregister(browserID);           
+      dispatcher.unregister(browser.getID());           
    }
 
-   public void removeConsumer(final String consumerID) throws Exception
+   public void removeConsumer(final ServerConsumer consumer) throws Exception
    {
-      if (consumers.remove(consumerID) == null)
+      if (!consumers.remove(consumer))
       {
-         throw new IllegalStateException("Cannot find consumer with id " + consumerID + " to remove");
+         throw new IllegalStateException("Cannot find consumer with id " + consumer.getID() + " to remove");
       }
       
-      dispatcher.unregister(consumerID);           
+      dispatcher.unregister(consumer.getID());           
    }
    
-   public void removeProducer(final String producerID) throws Exception
+   public void removeProducer(final ServerProducer producer) throws Exception
    {
-      if (producers.remove(producerID) == null)
+      if (!producers.remove(producer))
       {
-         throw new IllegalStateException("Cannot find producer with id " + producerID + " to remove");
+         throw new IllegalStateException("Cannot find producer with id " + producer.getID() + " to remove");
       }
       
-      dispatcher.unregister(producerID);           
+      dispatcher.unregister(producer.getID());           
    }
    
    public synchronized void handleDelivery(final MessageReference ref, final ServerConsumer consumer) throws Exception
@@ -233,9 +238,9 @@ public class ServerSessionImpl implements ServerSession
    
    public void setStarted(final boolean s) throws Exception
    {
-      Map<String, ServerConsumer> consumersClone = new HashMap<String, ServerConsumer>(consumers);
+      Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers);
 
-      for (ServerConsumer consumer: consumersClone.values())
+      for (ServerConsumer consumer: consumersClone)
       {
          consumer.setStarted(s);
       }
@@ -243,27 +248,27 @@ public class ServerSessionImpl implements ServerSession
 
    public void close() throws Exception
    {
-      Map<String, ServerConsumer> consumersClone = new HashMap<String, ServerConsumer>(consumers);
+      Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers);
 
-      for (ServerConsumer consumer: consumersClone.values())
+      for (ServerConsumer consumer: consumersClone)
       {
          consumer.close();
       }
 
       consumers.clear();
 
-      Map<String, ServerBrowserImpl> browsersClone = new HashMap<String, ServerBrowserImpl>(browsers);
+      Set<ServerBrowserImpl> browsersClone = new HashSet<ServerBrowserImpl>(browsers);
 
-      for (ServerBrowserImpl browser: browsersClone.values())
+      for (ServerBrowserImpl browser: browsersClone)
       {
          browser.close();
       }
 
       browsers.clear();
       
-      Map<String, ServerProducer> producersClone = new HashMap<String, ServerProducer>(producers);
+      Set<ServerProducer> producersClone = new HashSet<ServerProducer>(producers);
 
-      for (ServerProducer producer: producersClone.values())
+      for (ServerProducer producer: producersClone)
       {
          producer.close();
       }
@@ -276,7 +281,7 @@ public class ServerSessionImpl implements ServerSession
 
       deliveries.clear();
 
-      connection.removeSession(id);
+      connection.removeSession(this);
    }
    
    public void promptDelivery(final Queue queue)
@@ -919,7 +924,7 @@ public class ServerSessionImpl implements ServerSession
       maxRate = queueMaxRate != null ? queueMaxRate : maxRate;
       
       ServerConsumer consumer =
-      	new ServerConsumerImpl(binding.getQueue(), noLocal, filter, autoDeleteQueue, windowSize != -1, maxRate, connection.getID(),
+      	new ServerConsumerImpl(objectIDGenerator.generateID(), binding.getQueue(), noLocal, filter, autoDeleteQueue, windowSize != -1, maxRate, connection.getID(),
                                 this, persistenceManager, queueSettingsRepository, postOffice, connection.isStarted());
 
       dispatcher.register(new ServerConsumerPacketHandler(consumer));
@@ -927,7 +932,7 @@ public class ServerSessionImpl implements ServerSession
       SessionCreateConsumerResponseMessage response =
       	new SessionCreateConsumerResponseMessage(consumer.getID(), windowSize);
 
-      consumers.put(consumer.getID(), consumer);      
+      consumers.add(consumer);      
       
       return response;
    }
@@ -999,9 +1004,9 @@ public class ServerSessionImpl implements ServerSession
       
       securityStore.check(binding.getAddress(), CheckType.READ, connection);
       
-      ServerBrowserImpl browser = new ServerBrowserImpl(this, binding.getQueue(), selector);
+      ServerBrowserImpl browser = new ServerBrowserImpl(objectIDGenerator.generateID(), this, binding.getQueue(), selector);
 
-      browsers.put(browser.getID(), browser);
+      browsers.add(browser);
       
       dispatcher.register(browser.newHandler());
 
@@ -1029,9 +1034,9 @@ public class ServerSessionImpl implements ServerSession
    		flowController = windowSize == -1 ? null : postOffice.getFlowController(address);
    	}
    	
-   	ServerProducerImpl producer = new ServerProducerImpl(this, address, sender, flowController);
+   	ServerProducerImpl producer = new ServerProducerImpl(objectIDGenerator.generateID(), this, address, sender, flowController);
 
-   	producers.put(producer.getID(), producer);
+   	producers.add(producer);
    	
    	dispatcher.register(new ServerProducerPacketHandler(producer));
    	

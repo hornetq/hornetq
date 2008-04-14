@@ -34,7 +34,7 @@ public class ServerKeepAliveFactory implements KeepAliveFactory
    /**
     * Key = server session ID Value = client session ID
     */
-   private Map<String, String> sessions = new ConcurrentHashMap<String, String>();
+   private Map<Long, Long> sessions = new ConcurrentHashMap<Long, Long>();
 
    // Static --------------------------------------------------------
 
@@ -44,24 +44,26 @@ public class ServerKeepAliveFactory implements KeepAliveFactory
 
    // KeepAliveFactory implementation -------------------------------
 
-   public Ping ping(String sessionID)
+   public Ping ping(long sessionID)
    {
       return new Ping(sessionID);
    }
 
-   public boolean isPing(String sessionID, Object message)
+   public boolean isPing(long sessionID, Object message)
    {
       if (!(message instanceof Ping))
       {
          return false;
-      } else
+      }
+      else
       {
          Ping ping = (Ping) message;
-         String clientSessionID = ping.getSessionID();
-         if (clientSessionID.equals(sessionID))
+         long clientSessionID = ping.getSessionID();
+         if (clientSessionID == sessionID)
          {
             return false;
-         } else
+         }
+         else
          {
             if (log.isDebugEnabled())
                log.debug("associated server session " + sessionID
@@ -72,13 +74,13 @@ public class ServerKeepAliveFactory implements KeepAliveFactory
       }
    }
 
-   public Pong pong(String sessionID, Ping ping)
+   public Pong pong(long sessionID, Ping ping)
    {
-      String clientSessionID = ping.getSessionID();
+      long clientSessionID = ping.getSessionID();
       return new Pong(sessionID, sessions.containsKey(clientSessionID));
    }
 
-   public Map<String, String> getSessions()
+   public Map<Long, Long> getSessions()
    {
       return sessions;
    }

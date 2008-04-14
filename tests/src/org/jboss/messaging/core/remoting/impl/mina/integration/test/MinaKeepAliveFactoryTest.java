@@ -58,7 +58,7 @@ public class MinaKeepAliveFactoryTest extends TestCase
    public void testResponseIsAPongWithSessionNotFailed()
    {
       IoSession session = createMock(IoSession.class);
-      String sessionID = randomString();
+      long sessionID = randomLong();
       Pong pong = new Pong(sessionID, false);
       KeepAliveFactory factory = createMock(KeepAliveFactory.class);
       FailureNotifier notifier = createMock(FailureNotifier.class);
@@ -74,8 +74,8 @@ public class MinaKeepAliveFactoryTest extends TestCase
    public void testResponseIsAPongWithSessionFailed()
    {
       IoSession session = createMock(IoSession.class);
-      String sessionID = Long.toString(randomLong());
-      expect(session.getId()).andStubReturn(Long.parseLong(sessionID));
+      long sessionID = randomLong();
+      expect(session.getId()).andStubReturn(sessionID);
       Pong pong = new Pong(sessionID, true);
       KeepAliveFactory factory = createMock(KeepAliveFactory.class);
       FailureNotifier notifier = createMock(FailureNotifier.class);

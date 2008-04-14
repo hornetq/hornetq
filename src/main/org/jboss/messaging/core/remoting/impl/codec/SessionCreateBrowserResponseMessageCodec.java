@@ -37,12 +37,10 @@ public class SessionCreateBrowserResponseMessageCodec extends
    protected void encodeBody(SessionCreateBrowserResponseMessage response,
          RemotingBuffer out) throws Exception
    {
-      String browserID = response.getBrowserID();
+      long browserID = response.getBrowserTargetID();
 
-      int bodyLength = sizeof(browserID);
-      
-      out.putInt(bodyLength);
-      out.putNullableString(browserID);
+      out.putInt(LONG_LENGTH);
+      out.putLong(browserID);
    }
 
    @Override
@@ -55,7 +53,7 @@ public class SessionCreateBrowserResponseMessageCodec extends
          return null;
       }
 
-      String browserID = in.getNullableString();
+      long browserID = in.getLong();
 
       return new SessionCreateBrowserResponseMessage(browserID);
    }

@@ -56,26 +56,26 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private Map<String /* remoting session ID */, List<ServerConnection>> endpoints;
+   private Map<Long /* remoting session ID */, List<ServerConnection>> endpoints;
 
    private Set<ServerConnection> activeServerConnections;
 
    // the clients maps is for information only: to better identify the clients of
    // jboss messaging using their VM ID
-   private Map<String /* remoting session id */, String /* client vm id */> clients;
+   private Map<Long /* remoting session id */, String /* client vm id */> clients;
    
    // Constructors ---------------------------------------------------------------------------------
 
    public ConnectionManagerImpl()
    {
-      endpoints = new HashMap<String, List<ServerConnection>>();
+      endpoints = new HashMap<Long, List<ServerConnection>>();
       activeServerConnections = new HashSet<ServerConnection>();
-      clients = new HashMap<String, String>();
+      clients = new HashMap<Long, String>();
    }
 
    // ConnectionManager implementation -------------------------------------------------------------
 
-   public synchronized void registerConnection(String clientVMID, String remotingClientSessionID,
+   public synchronized void registerConnection(String clientVMID, long remotingClientSessionID,
          ServerConnection endpoint)
    {    
       List<ServerConnection> connectionEndpoints = endpoints.get(remotingClientSessionID);
@@ -95,7 +95,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
       log.debug("registered connection " + endpoint + " as " + remotingClientSessionID);
    }
    
-   public synchronized ServerConnection unregisterConnection(String remotingClientSessionID,
+   public synchronized ServerConnection unregisterConnection(long remotingClientSessionID,
          ServerConnection endpoint)
    {
       List<ServerConnection> connectionEndpoints = endpoints.get(remotingClientSessionID);
@@ -171,7 +171,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
     *        client to this server, false if the failure has been detected while trying to send a
     *        callback from this server to the client.
     */
-   private synchronized void handleClientFailure(String remotingSessionID, boolean clientToServer)
+   private synchronized void handleClientFailure(long remotingSessionID, boolean clientToServer)
    {
       String clientVMID = clients.get(remotingSessionID);
 
@@ -193,10 +193,8 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
       dump();
    }
 
-   private synchronized void closeConsumers(String remotingClientSessionID)
+   private synchronized void closeConsumers(long remotingClientSessionID)
    {
-      assert remotingClientSessionID != null;
-      
       List<ServerConnection> connectionEndpoints = endpoints.get(remotingClientSessionID);
       // the connection endpoints are copied in a new list to avoid concurrent modification exception
       List<ServerConnection> copy;
@@ -231,9 +229,9 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
          {
             buff.append("    No registered sessions\n");
          }
-         for (Entry<String, String> client : clients.entrySet())
+         for (Entry<Long, String> client : clients.entrySet())
          {
-            String remotingSessionID = client.getKey();
+            long remotingSessionID = client.getKey();
             String clientVMID = client.getValue();
             buff.append("    ").append(remotingSessionID).append(" <----> ").append(clientVMID).append("\n");
          }
@@ -242,7 +240,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
          {
             buff.append("    No registered endpoints\n");
          }
-         for (Entry<String, List<ServerConnection>> entry : endpoints.entrySet())
+         for (Entry<Long, List<ServerConnection>> entry : endpoints.entrySet())
          {
             List<ServerConnection> connectionEndpoints = entry.getValue();
             buff.append("    "  + entry.getKey() + "----->\n");

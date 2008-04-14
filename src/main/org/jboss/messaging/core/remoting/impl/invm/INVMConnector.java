@@ -29,18 +29,18 @@ public class INVMConnector implements NIOConnector
 
    private INVMSession session;
 
-   private PacketDispatcher clientDispatcher;
-   private PacketDispatcher serverDispatcher;
-   
+   private final long id;
+      
+   private final PacketDispatcher clientDispatcher;
+   private final PacketDispatcher serverDispatcher;
+     
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public INVMConnector(PacketDispatcher clientDispatcher, PacketDispatcher serverDispatcher)
+   public INVMConnector(final long id, final PacketDispatcher clientDispatcher, final PacketDispatcher serverDispatcher)
    {
-      assert clientDispatcher != null;
-      assert serverDispatcher != null;
-      
+   	this.id = id;
       this.clientDispatcher = clientDispatcher;
       this.serverDispatcher = serverDispatcher;
    }
@@ -52,7 +52,7 @@ public class INVMConnector implements NIOConnector
    public NIOSession connect()
          throws IOException
    {
-      this.session = new INVMSession(clientDispatcher, serverDispatcher);
+      this.session = new INVMSession(id, clientDispatcher, serverDispatcher);
       return session;
    }
 

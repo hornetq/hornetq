@@ -6,7 +6,6 @@
  */
 package org.jboss.messaging.core.remoting.impl;
 
-import static org.jboss.messaging.core.remoting.impl.Assert.assertValidID;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NO_ID_SET;
 
 import java.io.Serializable;
@@ -16,11 +15,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Interceptor;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketHandlerRegistrationListener;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -38,37 +37,24 @@ public class PacketDispatcherImpl implements PacketDispatcher, Serializable
 
    // Attributes ----------------------------------------------------
 
-   private Map<String, PacketHandler> handlers;
-   public List<Interceptor> filters;
+   private final Map<Long, PacketHandler> handlers;
+   public final List<Interceptor> filters;
    private transient PacketHandlerRegistrationListener listener;
 
    // Static --------------------------------------------------------
 
-   // public static final PacketDispatcher client = new PacketDispatcher();
-
    // Constructors --------------------------------------------------
 
-   public PacketDispatcherImpl()
+   public PacketDispatcherImpl(final List<Interceptor> filters)
    {
-      handlers = new ConcurrentHashMap<String, PacketHandler>();
-   }
-
-   public PacketDispatcherImpl(List<Interceptor> filters)
-   {
-      this();
+   	handlers = new ConcurrentHashMap<Long, PacketHandler>();
       this.filters = filters;
    }
 
    // Public --------------------------------------------------------
 
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.remoting.impl.IPacketDispatcher#register(org.jboss.messaging.core.remoting.PacketHandler)
-    */
-   public void register(PacketHandler handler)
-   {
-      assertValidID(handler.getID());
-      assert handler != null;
-      
+   public void register(final PacketHandler handler)
+   { 
       handlers.put(handler.getID(), handler);
 
       if (log.isDebugEnabled())
@@ -77,16 +63,13 @@ public class PacketDispatcherImpl implements PacketDispatcher, Serializable
       }
       
       if (listener != null)
+      {
          listener.handlerRegistered(handler.getID());
+      }
    }
 
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.remoting.impl.IPacketDispatcher#unregister(java.lang.String)
-    */
-   public void unregister(String handlerID)
+   public void unregister(final long handlerID)
    {
-      assertValidID(handlerID);
-
       PacketHandler handler = handlers.remove(handlerID);
       
       if (log.isDebugEnabled())
@@ -95,25 +78,25 @@ public class PacketDispatcherImpl implements PacketDispatcher, Serializable
       }
       
       if (listener != null)
+      {
          listener.handlerUnregistered(handlerID);
+      }
    }
    
-   public void setListener(PacketHandlerRegistrationListener listener)
+   public void setListener(final PacketHandlerRegistrationListener listener)
    {
       this.listener = listener;
    }
 
-   public PacketHandler getHandler(String handlerID)
+   public PacketHandler getHandler(final long handlerID)
    {
-      assertValidID(handlerID);
-
       return handlers.get(handlerID);
    }
    
-   public void dispatch(Packet packet, PacketSender sender) throws Exception
+   public void dispatch(final Packet packet, final PacketSender sender) throws Exception
    {
-      String targetID = packet.getTargetID();
-      if (NO_ID_SET.equals(targetID))
+      long targetID = packet.getTargetID();
+      if (NO_ID_SET == targetID)
       {
          log.error("Packet is not handled, it has no targetID: " + packet + ": " + System.identityHashCode(packet));
          return;
@@ -126,7 +109,6 @@ public class PacketDispatcherImpl implements PacketDispatcher, Serializable
 
          callFilters(packet);
          handler.handle(packet, sender);
-
       }
       else
       {

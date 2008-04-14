@@ -6,6 +6,7 @@ import java.util.Set;
 
 import javax.jms.Message;
 
+
 /**
  * The JMS Management interface.
  *
@@ -306,7 +307,7 @@ public interface JMSServerManager extends Serializable
     * @param clientId the client id
     * @throws Exception if a problem occurred
     */
-   void dropConnection(String clientId) throws Exception;
+   void dropConnection(long id) throws Exception;
 
    /**
     * drop all the connections for a specific user
@@ -320,7 +321,7 @@ public interface JMSServerManager extends Serializable
     * @return the session info
     * @throws Exception if a problem occurred
     */
-   public List<SessionInfo> getSessions() throws Exception;
+   //public List<SessionInfo> getSessions() throws Exception;
 
    /**
     * get the session info for a particular connection with the specified client id
@@ -328,7 +329,7 @@ public interface JMSServerManager extends Serializable
     * @return the session info
     * @throws Exception if a problem occurred
     */
-   public List<SessionInfo> getSessionsForConnection(String clientid) throws Exception;
+  // public List<SessionInfo> getSessionsForConnection(long id) throws Exception;
 
    /**
     * get the session info for a particular user
@@ -336,7 +337,7 @@ public interface JMSServerManager extends Serializable
     * @return the session info
     * @throws Exception if a problem occurred
     */
-   public List<SessionInfo> getSessionsForUser(String user) throws Exception;
+  // public List<SessionInfo> getSessionsForUser(String user) throws Exception;
 
    /**
     * Start gathering delivery statistics for all queues

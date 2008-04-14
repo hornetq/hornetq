@@ -12,8 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Interceptor;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerDeliverMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 
 public class DummyInterceptor implements Interceptor
 {

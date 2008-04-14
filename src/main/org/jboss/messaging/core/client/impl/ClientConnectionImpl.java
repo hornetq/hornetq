@@ -26,9 +26,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_STOP;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.FailureListener;
@@ -37,6 +35,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.util.ConcurrentHashSet;
 
 /**
  * The client-side Connection connectionFactory class.
@@ -60,7 +59,7 @@ public class ClientConnectionImpl implements ClientConnectionInternal
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private final String id;
+   private final long serverTargetID;
    
    private final int serverID;
 
@@ -68,7 +67,7 @@ public class ClientConnectionImpl implements ClientConnectionInternal
 
    private final boolean strictTck;
    
-   private final Map<String, ClientSession> children = new ConcurrentHashMap<String, ClientSession>();
+   private final Set<ClientSession> sessions = new ConcurrentHashSet<ClientSession>();
 
    private volatile boolean closed;
    
@@ -85,14 +84,14 @@ public class ClientConnectionImpl implements ClientConnectionInternal
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConnectionImpl(final String id, final int serverID, final boolean strictTck,
+   public ClientConnectionImpl(final long serverTargetID, final int serverID, final boolean strictTck,
                                final RemotingConnection connection,
                                final int defaultConsumerWindowSize,     
                                final int defaultConsumerMaxRate,
                                final int defaultProducerWindowSize,
                                final int defaultProducerMaxRate)
    {
-      this.id = id;
+      this.serverTargetID = serverTargetID;
       
       this.serverID = serverID;
       
@@ -119,14 +118,14 @@ public class ClientConnectionImpl implements ClientConnectionInternal
 
       ConnectionCreateSessionMessage request = new ConnectionCreateSessionMessage(xa, autoCommitSends, autoCommitAcks);
 
-      ConnectionCreateSessionResponseMessage response = (ConnectionCreateSessionResponseMessage)remotingConnection.send(id, request);   
+      ConnectionCreateSessionResponseMessage response = (ConnectionCreateSessionResponseMessage)remotingConnection.send(serverTargetID, request);   
 
       ClientSession session =
       	new ClientSessionImpl(this, response.getSessionID(), ackBatchSize, cacheProducers,
       			autoCommitSends, autoCommitAcks, blockOnAcknowledge,
       			defaultConsumerWindowSize, defaultConsumerMaxRate, defaultProducerWindowSize, defaultProducerMaxRate);
 
-      children.put(response.getSessionID(), session);
+      sessions.add(session);
 
       return session;
    }
@@ -135,14 +134,14 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    {
       checkClosed();
        
-      remotingConnection.send(id, id, new PacketImpl(CONN_START), true);
+      remotingConnection.send(serverTargetID, serverTargetID, new PacketImpl(CONN_START), true);
    }
    
    public void stop() throws MessagingException
    {
       checkClosed();
       
-      remotingConnection.send(id, new PacketImpl(CONN_STOP));
+      remotingConnection.send(serverTargetID, new PacketImpl(CONN_STOP));
    }
 
    public void setFailureListener(final FailureListener listener) throws MessagingException
@@ -163,7 +162,7 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       {
          closeChildren();
          
-         remotingConnection.send(id, new PacketImpl(CLOSE));
+         remotingConnection.send(serverTargetID, new PacketImpl(CLOSE));
       }
       finally
       {
@@ -191,9 +190,9 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       return remotingConnection;
    }
    
-   public void removeChild(String key)
+   public void removeSession(final ClientSession session)
    {
-      children.remove(key);
+      sessions.remove(session);
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -214,9 +213,9 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    
    private void closeChildren() throws MessagingException
    {
-      //We copy the set of children to prevent ConcurrentModificationException which would occur
+      //We copy the set of sessions to prevent ConcurrentModificationException which would occur
       //when the child trues to remove itself from its parent
-      Set<ClientSession> childrenClone = new HashSet<ClientSession>(children.values());
+      Set<ClientSession> childrenClone = new HashSet<ClientSession>(sessions);
       
       for (ClientSession session: childrenClone)
       {

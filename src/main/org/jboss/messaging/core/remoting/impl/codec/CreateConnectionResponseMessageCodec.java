@@ -38,12 +38,10 @@ public class CreateConnectionResponseMessageCodec extends
          RemotingBuffer out)
          throws Exception
    {
-      String id = response.getConnectionID();
+      long id = response.getConnectionTargetID();
 
-      int bodyLength = sizeof(id);
-
-      out.putInt(bodyLength);
-      out.putNullableString(id);
+      out.putInt(LONG_LENGTH);
+      out.putLong(id);
    }
 
    @Override
@@ -55,7 +53,7 @@ public class CreateConnectionResponseMessageCodec extends
       {
          return null;
       }
-      String id = in.getNullableString();
+      long id = in.getLong();
 
       return new CreateConnectionResponse(id);
    }

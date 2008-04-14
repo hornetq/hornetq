@@ -40,13 +40,13 @@ import java.util.List;
 public interface ConnectionManager extends MessagingComponent
 {
    void registerConnection(String clientVMID,
-                           String remotingClientSessionID, ServerConnection endpoint);
+                           long remotingClientSessionID, ServerConnection endpoint);
 
    /**
     * @param ServerConnection 
     * @return null if there is no such connection.
     */
-   ServerConnection unregisterConnection(String remotingClientSessionID, ServerConnection ServerConnection);
+   ServerConnection unregisterConnection(long remotingClientSessionID, ServerConnection ServerConnection);
    
    /**
     * Returns a list of active connection endpoints currently maintained by an instance of this

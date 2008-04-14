@@ -19,7 +19,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerDeliverMessage;
  */
 public interface ClientConsumerInternal extends ClientConsumer
 {   
-   String getID();
+   long getClientTargetID();
    
    void handleMessage(ConsumerDeliverMessage message) throws Exception;
    

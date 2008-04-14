@@ -3,10 +3,10 @@ package org.jboss.messaging.core.client.impl;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONS_DELIVER;
 
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerDeliverMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 
 /**
@@ -21,16 +21,16 @@ public class ClientConsumerPacketHandler implements PacketHandler
 
    private final ClientConsumerInternal clientConsumer;
 
-   private final String consumerID;
+   private final long consumerID;
 
-   public ClientConsumerPacketHandler(final ClientConsumerInternal clientConsumer, final String consumerID)
+   public ClientConsumerPacketHandler(final ClientConsumerInternal clientConsumer, final long consumerID)
    {
       this.clientConsumer = clientConsumer;
       
       this.consumerID = consumerID;
    }
 
-   public String getID()
+   public long getID()
    {
       return consumerID;
    }

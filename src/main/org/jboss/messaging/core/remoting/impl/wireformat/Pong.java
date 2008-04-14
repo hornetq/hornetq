@@ -6,7 +6,6 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.Assert.assertValidID;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PONG;
 
 /**
@@ -21,7 +20,7 @@ public class Pong extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private final String sessionID;
+   private final long sessionID;
 
    private final boolean sessionFailed;
 
@@ -29,11 +28,9 @@ public class Pong extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public Pong(final String sessionID, final boolean sessionFailed)
+   public Pong(final long sessionID, final boolean sessionFailed)
    {
       super(PONG);
-
-      assertValidID(sessionID);
 
       this.sessionID = sessionID;
       this.sessionFailed = sessionFailed;
@@ -41,7 +38,7 @@ public class Pong extends PacketImpl
 
    // Public --------------------------------------------------------
 
-   public String getSessionID()
+   public long getSessionID()
    {
       return sessionID;
    }

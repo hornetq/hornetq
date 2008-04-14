@@ -30,17 +30,17 @@ public class ClientKeepAliveFactory implements KeepAliveFactory
 
    // KeepAliveFactory implementation -------------------------------
    
-   public Ping ping(String clientSessionID)
+   public Ping ping(long clientSessionID)
    {
       return new Ping(clientSessionID);
    }
 
-   public boolean isPing(String sessionID, Object message)
+   public boolean isPing(long sessionID, Object message)
    {
       return (message instanceof Ping);
    }
 
-   public Pong pong(String sessionID, Ping ping)
+   public Pong pong(long sessionID, Ping ping)
    {
       return new Pong(sessionID, false);
    }

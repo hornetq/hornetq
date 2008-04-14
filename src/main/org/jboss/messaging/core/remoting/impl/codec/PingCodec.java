@@ -37,10 +37,10 @@ public class PingCodec extends AbstractPacketCodec<Ping>
    protected void encodeBody(Ping packet, RemotingBuffer out)
          throws Exception
    {
-      String clientSessionID = packet.getSessionID();
+      long clientSessionID = packet.getSessionID();
 
-      out.putInt(sizeof(clientSessionID));
-      out.putNullableString(clientSessionID);
+      out.putInt(LONG_LENGTH);
+      out.putLong(clientSessionID);
    }
 
    @Override
@@ -52,7 +52,7 @@ public class PingCodec extends AbstractPacketCodec<Ping>
       {
          return null;
       }
-      String clientSessionID = in.getNullableString();
+      long clientSessionID = in.getLong();
 
       return new Ping(clientSessionID);
    }

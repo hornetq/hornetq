@@ -35,12 +35,11 @@ public class ConnectionCreateSessionResponseMessageCodec extends
    @Override
    protected void encodeBody(ConnectionCreateSessionResponseMessage response, RemotingBuffer out) throws Exception
    {
-      String sessionID = response.getSessionID();
+      long sessionID = response.getSessionID();
 
-      int bodyLength = sizeof(sessionID);
-
-      out.putInt(bodyLength);
-      out.putNullableString(sessionID);
+      out.putInt(LONG_LENGTH);
+      
+      out.putLong(sessionID);
    }
 
    @Override
@@ -53,7 +52,7 @@ public class ConnectionCreateSessionResponseMessageCodec extends
          return null;
       }
 
-      String sessionID = in.getNullableString();
+      long sessionID = in.getLong();
 
       return new ConnectionCreateSessionResponseMessage(sessionID);
    }

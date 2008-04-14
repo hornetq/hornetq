@@ -44,7 +44,7 @@ public class ConnectorRegistryTest extends TestCase
    protected void setUp() throws Exception
    {
       registry = new ConnectorRegistryImpl();
-      dispatcher = new PacketDispatcherImpl();
+      dispatcher = new PacketDispatcherImpl(null);
       assertEquals(0, registry.getRegisteredConfigurationSize());
    }
    
@@ -73,8 +73,8 @@ public class ConnectorRegistryTest extends TestCase
    {
       Configuration config_1 = ConfigurationHelper.newConfiguration(TCP, "localhost", PORT);
       Configuration config_2 = ConfigurationHelper.newConfiguration(TCP, "localhost", PORT + 1);     
-      PacketDispatcher dispatcher_1 = new PacketDispatcherImpl();      
-      PacketDispatcher dispatcher_2 = new PacketDispatcherImpl();
+      PacketDispatcher dispatcher_1 = new PacketDispatcherImpl(null);      
+      PacketDispatcher dispatcher_2 = new PacketDispatcherImpl(null);
       
       assertTrue(registry.register(config_1, dispatcher_1));
       assertTrue(registry.register(config_2, dispatcher_2));

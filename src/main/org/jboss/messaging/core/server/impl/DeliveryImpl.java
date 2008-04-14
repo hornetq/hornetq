@@ -42,16 +42,16 @@ public class DeliveryImpl implements Delivery
    
    private final MessageReference reference;
    
-   private final String sessionID;
+   private final long sessionID;
 
-   private final String consumerID;
+   private final long consumerID;
    
    private final long deliveryID;
    
    private final PacketSender sender;
 
    public DeliveryImpl(final MessageReference reference, 
-                       final String sessionID, final String consumerID,
+                       final long sessionID, final long consumerID,
                        final long deliveryID, final PacketSender sender)
    {      
       this.reference = reference;

@@ -227,8 +227,8 @@ public class MinaService implements RemotingService, FailureNotifier
       if (me instanceof RemotingException)
       {
          RemotingException re = (RemotingException) me;
-         String sessionID = re.getSessionID();
-         String clientSessionID = factory.getSessions().get(sessionID);
+         long sessionID = re.getSessionID();
+         long clientSessionID = factory.getSessions().get(sessionID);
          for (FailureListener listener : listeners)
          {
             listener.onFailure(new RemotingException(re.getCode(), re.getMessage(), clientSessionID));
@@ -281,7 +281,7 @@ public class MinaService implements RemotingService, FailureNotifier
 
       public void sessionDestroyed(IoSession session)
       {
-         String sessionID = Long.toString(session.getId());
+         long sessionID = session.getId();
          if (factory.getSessions().containsKey(sessionID))
          {
             fireFailure(new RemotingException(MessagingException.INTERNAL_ERROR, "MINA session destroyed", sessionID));

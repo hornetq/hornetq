@@ -39,9 +39,9 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.persistence.impl.nullpm.NullStorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
+import org.jboss.messaging.core.remoting.ConnectorRegistrySingleton;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.RemotingService;
-import org.jboss.messaging.core.remoting.ConnectorRegistrySingleton;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.security.JBMSecurityManager;
@@ -51,6 +51,7 @@ import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.ObjectIDGenerator;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
@@ -97,6 +98,7 @@ public class MessagingServerImpl implements MessagingServer
    private Deployer queueSettingsDeployer;
    private JBMSecurityManager securityManager = new JBMSecurityManagerImpl(true);
    private DeploymentManager deploymentManager = new FileDeploymentManager();
+   private ObjectIDGenerator objectIDGenerator = new ObjectIDGeneratorImpl();
 
    // plugins
 
@@ -329,7 +331,7 @@ public class MessagingServerImpl implements MessagingServer
    }
 
    public CreateConnectionResponse createConnection(final String username, final String password,
-                                                    final String remotingClientSessionID, final String clientVMID,
+                                                    final long remotingClientSessionID, final String clientVMID,
                                                     final String clientAddress)
       throws Exception
    {
@@ -347,13 +349,19 @@ public class MessagingServerImpl implements MessagingServer
                           remotingClientSessionID, clientVMID, clientAddress,
                           remotingService.getDispatcher(), resourceManager, storageManager,
                           queueSettingsRepository,
-                          postOffice, securityStore, connectionManager);
+                          postOffice, securityStore, connectionManager,
+                          objectIDGenerator);
 
       remotingService.getDispatcher().register(new ServerConnectionPacketHandler(connection));
 
       return new CreateConnectionResponse(connection.getID());
    }
-
+   
+   public ObjectIDGenerator getObjectIDGenerator()
+   {
+   	return this.objectIDGenerator;
+   }
+   
    // Public ---------------------------------------------------------------------------------------
 
    // Package protected ----------------------------------------------------------------------------

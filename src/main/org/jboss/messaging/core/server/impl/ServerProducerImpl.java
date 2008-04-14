@@ -26,8 +26,8 @@ import java.util.UUID;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.postoffice.FlowController;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.impl.wireformat.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerReceiveTokensMessage;
 import org.jboss.messaging.core.server.ServerProducer;
 import org.jboss.messaging.core.server.ServerSession;
@@ -43,7 +43,7 @@ public class ServerProducerImpl implements ServerProducer
 {
 	private static final Logger log = Logger.getLogger(ServerProducerImpl.class);
 	
-	private final String id;
+	private final long id;
 	
 	private final ServerSession session;
 	
@@ -57,11 +57,11 @@ public class ServerProducerImpl implements ServerProducer
 	
 	// Constructors ----------------------------------------------------------------
 	
-	public ServerProducerImpl(final ServerSession session, final String address, 
+	public ServerProducerImpl(final long id, final ServerSession session, final String address, 
 			                    final PacketSender sender,
 			                    final FlowController flowController) throws Exception
 	{
-		id = UUID.randomUUID().toString();
+		this.id = id;
       
 		this.session = session;
 		
@@ -74,14 +74,14 @@ public class ServerProducerImpl implements ServerProducer
 	
 	// ServerProducer implementation --------------------------------------------
 	
-	public String getID()
+	public long getID()
 	{
 		return id;
 	}
 	
 	public void close() throws Exception
 	{
-		session.removeProducer(id);
+		session.removeProducer(this);
 	}
 	
 	
