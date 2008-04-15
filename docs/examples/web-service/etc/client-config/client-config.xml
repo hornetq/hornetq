@@ -1,8 +1,0 @@
-<!-- This is a WebServices config file used by wsstools as showed on JBoss WebServices documentation -->
-
-<configuration>
-      <wsdl-java location="./output/service.wsdl">
-        <mapping location="jaxrpc-mapping.xml" />
-      </wsdl-java>
-</configuration>
-
