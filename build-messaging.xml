@@ -68,6 +68,7 @@
    <property name="src.etc.dir" value="${src.dir}/etc"/>
    <property name="src.bin.dir" value="${src.dir}/bin"/>
    <property name="doc.dir" value="docs"/>
+   <property name="doc.examples.dir" value="${doc.dir}/examples"/>
    <property name="doc.build.dir" value="${doc.dir}/userguide/build"/>
    <property name="build.api.dir" value="${build.dir}/api"/>
 
@@ -77,6 +78,7 @@
    <property name="build.distro.config.dir" value="${build.distro.dir}/config"/>
    <property name="build.distro.bin.dir" value="${build.distro.dir}/bin"/>
    <property name="build.distro.api.dir" value="${build.distro.dir}/api"/>
+   <property name="build.distro.examples.dir" value="${build.distro.dir}/docs/examples"/>
    <!-- ======================================================================================== -->
    <!-- Thirdparty Dependency Definitions                                                        -->
    <!-- ======================================================================================== -->
@@ -484,6 +486,14 @@
             <include name="**"/>
          </fileset>
       </copy>
+
+      <mkdir dir="${build.distro.examples.dir}"/>
+      <copy todir="${build.distro.examples.dir}">
+         <fileset dir="${doc.examples.dir}">
+            <exclude name="build.properties"/>
+         </fileset>
+      </copy>
+      <echo message="lib.dir=../../../lib${line.separator}client.jar=../../../lib/jboss-messaging-client.jar" file="${build.distro.examples.dir}/build.properties"/>
    </target>
 
    <target name="userdoc">
