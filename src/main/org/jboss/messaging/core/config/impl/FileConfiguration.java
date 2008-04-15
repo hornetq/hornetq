@@ -73,7 +73,7 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
       
       host = getString(e, "remoting-host", "localhost");
 
-      port = getInteger(e, "remoting-bind-address", 5400);
+      port = getInteger(e, "remoting-bind-address", DEFAULT_REMOTING_PORT);
       
       timeout = getInteger(e, "remoting-timeout", 5);
       

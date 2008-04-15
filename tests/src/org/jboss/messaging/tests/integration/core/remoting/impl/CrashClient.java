@@ -22,106 +22,106 @@
 package org.jboss.messaging.tests.integration.core.remoting.impl;
 
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
-import junit.framework.TestCase;
+import static org.jboss.messaging.tests.integration.core.remoting.impl.ClientCrashTest.QUEUE;
+
+import java.util.Arrays;
 
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
+import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
-import org.jboss.messaging.tests.unit.core.util.SpawnedVMSupport;
+
 
 /**
- * A test that makes sure that a Messaging client gracefully exists after the last connection is
- * closed. Test for http://jira.jboss.org/jira/browse/JBMESSAGING-417.
- *
- * This is not technically a crash test, but it uses the same type of topology as the crash tests
- * (local server, remote VM client).
+ * Code to be run in an external VM, via main().
+ * 
+ * This client will open a connection, receive a message and crash.
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- * $Id$
+ * 
+ * @version <tt>$Revision$</tt>
  */
-public class ClientExitTest extends TestCase
+public class CrashClient
 {
    // Constants ------------------------------------------------------------------------------------
 
-   public static final String MESSAGE_TEXT = "kolowalu";
+   private static final Logger log = Logger.getLogger(CrashClient.class);
 
-   public static final String QUEUE = "ClientExitTestQueue";
-      
    // Static ---------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(ClientExitTest.class);
+   public static void main(String[] args) throws Exception
+   {
+      try
+      {
+         log.info("args = " + Arrays.asList(args));
+
+         if (args.length != 1)
+         {
+            log.fatal("unexpected number of args (should be 1)");
+            System.exit(1);
+         }
+
+         int numberOfConnections = Integer.parseInt(args[0]);
+
+         ConfigurationImpl config = ConfigurationHelper.newConfiguration(TCP,
+               "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
+
+         // FIXME there should be another way to get a meaningful Version on the
+         // client side...
+         MessagingServer server = new MessagingServerImpl();
+         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, config, server.getVersion());
+         ClientConnection conn = cf.createConnection();
+         ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
+         ClientProducer producer = session.createProducer(QUEUE);
+         ClientConsumer consumer = session.createConsumer(QUEUE, null, false, false, true);
+
+         if (numberOfConnections > 1)
+         {
+            // create (num - 1) unused connections
+            for (int i = 0; i < numberOfConnections - 1; i++)
+            {
+               cf.createConnection();         
+            }
+         }
+         
+         MessageImpl message = new MessageImpl(JBossTextMessage.TYPE, false, 0,
+               System.currentTimeMillis(), (byte) 1);
+         message.setPayload(ClientCrashTest.MESSAGE_TEXT_FROM_CLIENT.getBytes());
+
+         producer.send(message);
+
+         conn.start();
+         consumer.receive(5000);
+         
+         // crash
+         System.exit(9);
+      } catch (Throwable t)
+      {
+         log.error(t.getMessage(), t);
+         System.exit(1);
+      }
+   }
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private MessagingServer server;
-
-   private ClientConnection connection;
-
-   private ClientConsumer consumer;   
-
    // Constructors ---------------------------------------------------------------------------------
+
+   // Command implementation -----------------------------------------------------------------------
 
    // Public ---------------------------------------------------------------------------------------
 
-   public void testGracefulClientExit() throws Exception
-   {
-      // spawn a JVM that creates a JMS client, which sends a test message
-      Process p = SpawnedVMSupport.spawnVM(GracefulClient.class.getName());
-
-      // read the message from the queue
-
-      Message message = consumer.receive(15000);
-
-      assertNotNull(message);
-      assertEquals(MESSAGE_TEXT, new String(message.getPayload()));
-
-      // the client VM should exit by itself. If it doesn't, that means we have a problem
-      // and the test will timeout
-      log.info("waiting for the client VM to exit ...");
-      p.waitFor();
-
-      assertEquals(0, p.exitValue());
-   }
-
    // Package protected ----------------------------------------------------------------------------
 
-   @Override
-   protected void setUp() throws Exception
-   {
-      ConfigurationImpl config = ConfigurationHelper.newConfiguration(TCP,
-            "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
-      server = new MessagingServerImpl(config);
-      server.start();
-
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, config, server.getVersion());
-      connection = cf.createConnection(null, null);
-      ClientSession session = connection.createClientSession(false, true, true, -1, false, false);
-      session.createQueue(QUEUE, QUEUE, null, false, false);
-      consumer = session.createConsumer(QUEUE, null, false, false, true);
-      connection.start();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      consumer.close();
-      connection.close();
-
-      server.stop();
-
-      super.tearDown();
-   }
-   
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------

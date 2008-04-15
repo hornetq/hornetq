@@ -34,7 +34,7 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
-import org.jboss.messaging.tests.unit.core.util.SerializedClientSupport;
+import org.jboss.messaging.tests.unit.core.util.SpawnedVMSupport;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 
@@ -76,7 +76,7 @@ public class CoreClientOverSSLTest extends TestCase
 
    public void testSSL() throws Exception
    {
-      final Process p = SerializedClientSupport.spawnVM(CoreClientOverSSL.class
+      final Process p = SpawnedVMSupport.spawnVM(CoreClientOverSSL.class
             .getName(), Boolean.TRUE.toString(), "messaging.keystore",
             "secureexample");
 
@@ -85,12 +85,12 @@ public class CoreClientOverSSLTest extends TestCase
       assertEquals(MESSAGE_TEXT_FROM_CLIENT, new String(m.getPayload()));
 
       log.info("waiting for the client VM to exit ...");
-      SerializedClientSupport.assertProcessExits(true, 0, p);
+      SpawnedVMSupport.assertProcessExits(true, 0, p);
    }
 
    public void testSSLWithIncorrectKeyStorePassword() throws Exception
    {
-      Process p = SerializedClientSupport.spawnVM(CoreClientOverSSL.class
+      Process p = SpawnedVMSupport.spawnVM(CoreClientOverSSL.class
             .getName(), Boolean.TRUE.toString(), "messaging.keystore",
             "incorrectKeyStorePassword");
 
@@ -98,19 +98,19 @@ public class CoreClientOverSSLTest extends TestCase
       assertNull(m);
 
       log.info("waiting for the client VM to exit ...");
-      SerializedClientSupport.assertProcessExits(false, 0, p);
+      SpawnedVMSupport.assertProcessExits(false, 0, p);
    }
 
    public void testPlainConnectionToSSLEndpoint() throws Exception
    {
-      Process p = SerializedClientSupport.spawnVM(CoreClientOverSSL.class
+      Process p = SpawnedVMSupport.spawnVM(CoreClientOverSSL.class
             .getName(), FALSE.toString(), null, null);
 
       Message m = consumer.receive(5000);
       assertNull(m);
 
       log.info("waiting for the client VM to exit ...");
-      SerializedClientSupport.assertProcessExits(false, 0, p);
+      SpawnedVMSupport.assertProcessExits(false, 0, p);
    }
 
    // Package protected ---------------------------------------------

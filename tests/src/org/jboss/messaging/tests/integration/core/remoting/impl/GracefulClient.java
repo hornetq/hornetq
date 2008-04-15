@@ -33,10 +33,10 @@ import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
+import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 
 /**
  * Code to be run in an external VM, via main().
@@ -61,7 +61,7 @@ public class GracefulClient
       try
       {
          ConfigurationImpl config = ConfigurationHelper.newConfiguration(TCP,
-               "localhost", 9000);
+               "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
 
          // FIXME there should be another way to get a meaningful Version on the
          // client side...

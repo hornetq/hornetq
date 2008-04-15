@@ -1,37 +1,19 @@
 /*
-   * JBoss, Home of Professional Open Source
-   * Copyright 2005, JBoss Inc., and individual contributors as indicated
-   * by the @authors tag. See the copyright.txt in the distribution for a
-   * full listing of individual contributors.
-   *
-   * This is free software; you can redistribute it and/or modify it
-   * under the terms of the GNU Lesser General Public License as
-   * published by the Free Software Foundation; either version 2.1 of
-   * the License, or (at your option) any later version.
-   *
-   * This software is distributed in the hope that it will be useful,
-   * but WITHOUT ANY WARRANTY; without even the implied warranty of
-   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-   * Lesser General Public License for more details.
-   *
-   * You should have received a copy of the GNU Lesser General Public
-   * License along with this software; if not, write to the Free
-   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-   */
-package org.jboss.test.messaging.jms;
+ * JBoss, Home of Professional Open Source
+ *
+ * Distributable under LGPL license.
+ * See terms of license at gnu.org.
+ */
+package org.jboss.messaging.tests.unit.core.util;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static junit.framework.Assert.assertNotSame;
 import static junit.framework.Assert.assertSame;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectOutputStream;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -39,23 +21,20 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeoutException;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.Queue;
-
 import org.jboss.messaging.core.logging.Logger;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
+ * 
  * @version <tt>$Revision$</tt>
- *
+ * 
  */
-public class SerializedClientSupport
+public class SpawnedVMSupport
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(SerializedClientSupport.class);
+   private static final Logger log = Logger.getLogger(SpawnedVMSupport.class);
 
    // Attributes ----------------------------------------------------
 
@@ -69,7 +48,7 @@ public class SerializedClientSupport
       sb.append("java").append(' ');
 
       String classPath = System.getProperty("java.class.path");
-
+      
       // I guess it'd be simpler to check if the OS is Windows...
       if (System.getProperty("os.name").equals("Linux")
          || System.getProperty("os.name").equals("Mac OS X"))
@@ -100,33 +79,6 @@ public class SerializedClientSupport
       outputLogger.start();
 
       return process;
-   }
-
-   public static File writeToFile(String fileName, ConnectionFactory cf,
-         Queue queue) throws Exception
-   {
-      String moduleOutput = System.getProperty("java.io.tmpdir");
-      if (moduleOutput == null)
-      {
-         throw new Exception("Can't find 'module.output'");
-      }
-      File dir = new File(moduleOutput);
-
-      if (!dir.isDirectory() || !dir.canWrite())
-      {
-         throw new Exception(dir + " is either not a directory or not writable");
-      }
-
-      File file = new File(dir, fileName);
-
-      ObjectOutputStream oos = new ObjectOutputStream(
-            new FileOutputStream(file));
-      oos.writeObject(cf);
-      oos.writeObject(queue);
-      oos.flush();
-      oos.close();
-
-      return file;
    }
 
    /**
@@ -197,7 +149,7 @@ public class SerializedClientSupport
          }
       }
    }
-
+   
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
