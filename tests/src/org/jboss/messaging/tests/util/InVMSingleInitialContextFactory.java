@@ -19,30 +19,20 @@
    * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
    * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
    */
-package org.jboss.messaging.core.deployers;
+package org.jboss.messaging.tests.util;
 
-import org.jboss.messaging.core.server.MessagingComponent;
+import javax.naming.spi.InitialContextFactory;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import java.util.Hashtable;
 
 /**
- * This class manages any configuration files available. It will notify any deployers registered with it on changes.
- *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public interface DeploymentManager extends MessagingComponent
+public class InVMSingleInitialContextFactory implements InitialContextFactory
 {
-   /**
-    * registers a deployable object which will handle the deployment of URL's
-    *
-    * @param deployer The deployable object
-    * @throws Exception .
-    */
-   public void registerDeployer(Deployer deployer) throws Exception;
-
-   /**
-    * unregisters a deployable object which will handle the deployment of URL's
-    *
-    * @param deployer The deployable object
-    * @throws Exception .
-    */
-   public void unregisterDeployer(Deployer deployer);
+   public Context getInitialContext(Hashtable<?, ?> environment) throws NamingException
+   {
+      return new InVMContext();
+   }
 }

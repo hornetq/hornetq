@@ -51,7 +51,7 @@ import org.jboss.messaging.core.message.Message;
 * @author <a href="mailto:jplindfo@helsinki.fi">Juha Lindfors</a>
 * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
 * @author <a href="mailto:Scott.Stark@jboss.org">Scott Stark</a>
-* @authro <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+* @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
 * 
 * @version    $Revision: 3569 $
 *

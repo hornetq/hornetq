@@ -152,7 +152,7 @@ public class JBMBootstrapServer extends BasicBootstrap
    
    /**
     * Deploys a XML on the container
-    * @author clebert.suconic@jboss.com
+    * 
     */
    public KernelDeployment deploy(String name, String xml) throws Throwable
    {

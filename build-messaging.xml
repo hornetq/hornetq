@@ -47,11 +47,15 @@
    <property name="messaging.version.minor" value="0"/>
    <property name="messaging.version.micro" value="0"/>
    <property name="messaging.version.suffix" value="alpha1"/>
+   <property name="messaging.version.tag" value="alpha1"/>
+   <property name="messaging.version.revision" value="0"/>
    <property name="messaging.version.incrementing" value="100"/>
    <property name="messaging.version.name" value="Stilton"/>
    <property name="messaging.version.svnurl" value="https://svn.jboss.org/repos/messaging/trunk"/>
    <property name="messaging.version.string"
              value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix} (${messaging.version.name}, ${messaging.version.incrementing})"/>
+   <property name="module.version"
+             value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.revision}.${messaging.version.tag}"/>
 
 
    <!--source and build dirs-->
@@ -63,13 +67,16 @@
    <property name="src.main.dir" value="${src.dir}/main"/>
    <property name="src.etc.dir" value="${src.dir}/etc"/>
    <property name="src.bin.dir" value="${src.dir}/bin"/>
-
+   <property name="doc.dir" value="docs"/>
+   <property name="doc.build.dir" value="${doc.dir}/userguide/build"/>
+   <property name="build.api.dir" value="${build.dir}/api"/>
 
    <property name="build.distro.dir"
              value="${build.dir}/${module.name}-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}"/>
    <property name="build.distro.lib.dir" value="${build.distro.dir}/lib"/>
    <property name="build.distro.config.dir" value="${build.distro.dir}/config"/>
    <property name="build.distro.bin.dir" value="${build.distro.dir}/bin"/>
+   <property name="build.distro.api.dir" value="${build.distro.dir}/api"/>
    <!-- ======================================================================================== -->
    <!-- Thirdparty Dependency Definitions                                                        -->
    <!-- ======================================================================================== -->
@@ -188,6 +195,11 @@
       <path refid="jboss.dependencies.classpath"/>
    </path>
 
+   <path id="javadoc.classpath">
+      <path refid="compilation.classpath"/>
+      <path location="${build.classes.dir}"/>
+   </path>
+
    <path id="test.compilation.classpath">
       <path refid="compilation.classpath"/>
       <path location="${build.jars.dir}/jboss-${module.name}.jar"/>
@@ -251,7 +263,7 @@
         parent, as project root. DO NOT change this.
    -->
    <property name="external.project" value="true"/>
-    <!--
+   <!--
         Setting "nodownload" to true inhibits downloading of up-to-date dependencies.
    -->
    <property name="nodownload" value="false"/>
@@ -351,6 +363,7 @@
       <mkdir dir="${build.distro.lib.dir}"/>
       <mkdir dir="${build.distro.config.dir}"/>
       <mkdir dir="${build.distro.bin.dir}"/>
+      <mkdir dir="${build.distro.api.dir}"/>
 
       <copy todir="${build.distro.lib.dir}">
          <fileset dir="${build.jars.dir}">
@@ -452,11 +465,42 @@
          </fileset>
       </chmod>
 
+      <antcall target="userdoc"/>
+      <copy todir="${build.distro.dir}/docs/userguide">
+         <fileset dir="${doc.build.dir}">
+            <include name="**"/>
+         </fileset>
+      </copy>
+      <antcall target="javadoc"/>
+      <copy todir="${build.distro.api.dir}/">
+         <fileset dir="${build.api.dir}">
+            <include name="**"/>
+         </fileset>
+      </copy>
    </target>
 
+   <target name="userdoc">
+      <ant dir="./docs/userguide" antfile="build.xml" target="all"/>
+   </target>
+
+   <target name="javadoc">
+
+      <javadoc destdir="${build.api.dir}" author="true" version="true" use="true"
+               windowtitle="JBoss Messaging ${module.version}">
+
+         <packageset dir="${src.main.dir}" defaultexcludes="yes">
+            <include name="org/jboss/**"/>
+         </packageset>
+         <classpath refid="javadoc.classpath"/>
+         <doctitle><![CDATA[<h2>JBoss Messaging  ${module.version}</h2>]]></doctitle>
+         <bottom><![CDATA[<i>Copyright &#169; 2006 JBoss Inc. All Rights Reserved.</i>]]></bottom>
+         <tag name="todo" scope="all" description="To do:"/>
+         <group title="JMS Facade" packages="org.jboss.jms.*"/>
+         <group title="Messaging Core" packages="org.jboss.messaging.*"/>
+      </javadoc>
+   </target>
 
    <!-- test targets -->
-
 
    <target name="compile-unit-tests">
       <mkdir dir="${test.classes.dir}"/>
@@ -533,8 +577,8 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${test.classes.dir}">
-               <include name="**/org/jboss/**/*${test-mask}.class"/>
-               <exclude name="**/org/jboss/**/PacketStressTest.class"/>
+               <include name="**/org/jboss/messaging/tests/integration/**/*${test-mask}.class"/>
+               <include name="**/org/jboss/messaging/tests/unit/**/*${test-mask}.class"/>
             </fileset>
          </batchtest>
       </junit>
@@ -565,7 +609,7 @@
          <jvmarg value="-Xmx1024M"/>
          <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
          <!--<jvmarg value="-ea"/>-->
-         <sysproperty key="jbm.remoting.disable.invm" value="${disable.invm}" />
+         <sysproperty key="jbm.remoting.disable.invm" value="${disable.invm}"/>
          <classpath refid="jms.test.execution.classpath"/>
          <formatter type="xml" usefile="${junit.formatter.usefile}"/>
          <batchtest todir="${junit.batchtest.todir}"
@@ -594,6 +638,38 @@
                <exclude name="**/jms/JCAWrapperTest.class"/>
                <exclude name="**/jms/server/ServerPeerTest.class"/>
                <exclude name="**/stress/PacketStressTest.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+      <antcall target="compile-reports"/>
+   </target>
+
+   <target name="stress-tests" depends="jar, compile-unit-tests">
+      <echo message=""/>
+      <echo message="Running unit tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message=""/>
+      <mkdir dir="${test.output.dir}"/>
+      <mkdir dir="${test.reports.dir}"/>
+      <junit printsummary="${junit.printsummary}"
+             fork="on"
+             forkMode="once"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+
+         <jvmarg value="-Xmx1024M"/>
+         <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
+         <!--<jvmarg value="-ea"/>-->
+         <classpath refid="unit.test.execution.classpath"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest todir="${junit.batchtest.todir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${test.classes.dir}">
+               <include name="**/org/jboss/messaging/tests/stress/**/*${test-mask}.class"/>
             </fileset>
          </batchtest>
       </junit>

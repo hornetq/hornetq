@@ -61,7 +61,7 @@ public interface Message extends Streamable
    
    /**
     * Set whether message is durable
-    * @param reliable
+    * @param durable
     */
    void setDurable(boolean durable);
    
@@ -186,7 +186,7 @@ public interface Message extends Streamable
    
    /**
     * Get the connection id
-    * @return
+    * @return the connection id
     */
    long getConnectionID();
    
@@ -214,7 +214,7 @@ public interface Message extends Streamable
    
    /**
     * Get the current durable reference count
-    * @return
+    * @return the durable ref count
     */
    int getDurableRefCount();
    

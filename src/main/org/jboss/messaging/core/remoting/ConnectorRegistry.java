@@ -16,7 +16,7 @@ import org.jboss.messaging.core.remoting.impl.mina.MinaService;
  * 
  * When a {@link MinaService} is started, it register its {@link Configuration}.
  * 
- * When a {@link ClientImpl} is created, it gets its {@link NIOConnector} from the
+ * When a client is created, it gets its {@link NIOConnector} from the
  * ConnectorRegistry using the {@link Configuration} corresponding to the server
  * it wants to connect to. If the ConnectionRegistry contains this Configuration, it
  * implies that the Client is in the same VM than the server. In that case, we
@@ -52,7 +52,7 @@ public interface ConnectorRegistry
     * If there is only one reference, remove it from the connectors Map and
     * returns it. Otherwise return null.
     * 
-    * @param remotingConfig
+    * @param config
     *           a Configuration
     * @return the NIOConnector if there is no longer any references to it or
     *         <code>null</code>
