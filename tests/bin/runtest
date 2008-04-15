@@ -56,7 +56,7 @@ fi
 # it from there.
 #
 
-ant -Dtest.execution.classpath.file=bin/.test.execution.classpath -f $reldir/../build.xml compile get-test-execution-classpath
+ant -Dtest.execution.classpath.file=tests/bin/.test.execution.classpath -f $reldir/../../build-messaging.xml compile get-test-execution-classpath
 CLASSPATH=`cat $reldir/.test.execution.classpath`
 
 outputdir="$reldir/../output"
@@ -175,7 +175,7 @@ if [ "$remote_debug" = "true" ]; then
 fi
 
 "$JAVA_HOME/bin/java" -Xmx1024M $JAVA_OPTS -Djgroups.bind_addr=localhost -cp "$CLASSPATH" \
-org.jboss.test.messaging.tools.junit.SelectiveTestRunner $TARGET_CLASS $TARGET_TEST
+org.jboss.messaging.tests.util.junit.SelectiveTestRunner $TARGET_CLASS $TARGET_TEST
 
 #
 # stop the servers in the reverse order

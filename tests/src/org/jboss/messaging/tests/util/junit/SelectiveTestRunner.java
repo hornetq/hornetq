@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.tools.junit;
+package org.jboss.messaging.tests.util.junit;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +65,7 @@ public class SelectiveTestRunner extends TestRunner
 		}
       catch(Exception e)
       {
-			System.err.println(e.getMessage());
+         System.err.println(e.getMessage());
 			System.exit(EXCEPTION_EXIT);
 		}
    }
