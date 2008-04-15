@@ -46,5 +46,7 @@ public interface RemotingBuffer
          throws CharacterCodingException;
 
    String getNullableString() throws CharacterCodingException;
+   
+   void rewind();
 
 }

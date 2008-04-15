@@ -36,8 +36,16 @@ public class SessionQueueQueryResponseMessageCodec extends AbstractPacketCodec<S
 
    // AbstractPacketCodec overrides ---------------------------------
 
+   protected int getBodyLength(final SessionQueueQueryResponseMessage packet) throws Exception
+   {   	
+   	String filterString  = packet.getFilterString();
+      String address = packet.getAddress();
+   	int bodyLength = 3 * BOOLEAN_LENGTH + 3 * INT_LENGTH + sizeof(filterString) + sizeof(address);
+   	return bodyLength;
+   }
+   
    @Override
-   protected void encodeBody(SessionQueueQueryResponseMessage message, RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionQueueQueryResponseMessage message, final RemotingBuffer out) throws Exception
    {
       boolean exists = message.isExists();
       boolean durable = message.isDurable();
@@ -48,9 +56,6 @@ public class SessionQueueQueryResponseMessageCodec extends AbstractPacketCodec<S
       String filterString  = message.getFilterString();
       String address = message.getAddress();
      
-      int bodyLength = 1 + 1 + 1 + INT_LENGTH + INT_LENGTH + INT_LENGTH + sizeof(filterString) + sizeof(address);
-
-      out.putInt(bodyLength);
       out.putBoolean(exists);
       out.putBoolean(durable);
       out.putBoolean(temporary);
@@ -62,15 +67,9 @@ public class SessionQueueQueryResponseMessageCodec extends AbstractPacketCodec<S
    }
 
    @Override
-   protected SessionQueueQueryResponseMessage decodeBody(RemotingBuffer in)
+   protected SessionQueueQueryResponseMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-
       boolean exists = in.getBoolean();
       boolean durable = in.getBoolean();
       boolean temporary = in.getBoolean();

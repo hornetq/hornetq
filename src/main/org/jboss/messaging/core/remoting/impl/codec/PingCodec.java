@@ -11,7 +11,8 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PING;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class PingCodec extends AbstractPacketCodec<Ping>
 {
@@ -33,25 +34,22 @@ public class PingCodec extends AbstractPacketCodec<Ping>
 
    // AbstractPacketCodec overrides ---------------------------------
 
+   protected int getBodyLength(final Ping packet) throws Exception
+   {
+   	return LONG_LENGTH;
+   }
+   
    @Override
-   protected void encodeBody(Ping packet, RemotingBuffer out)
-         throws Exception
+   protected void encodeBody(final Ping packet, final RemotingBuffer out) throws Exception
    {
       long clientSessionID = packet.getSessionID();
 
-      out.putInt(LONG_LENGTH);
       out.putLong(clientSessionID);
    }
 
    @Override
-   protected Ping decodeBody(RemotingBuffer in)
-         throws Exception
+   protected Ping decodeBody(final RemotingBuffer in) throws Exception
    {
-      int bodyLength = in.getInt();
-      if (bodyLength > in.remaining())
-      {
-         return null;
-      }
       long clientSessionID = in.getLong();
 
       return new Ping(clientSessionID);

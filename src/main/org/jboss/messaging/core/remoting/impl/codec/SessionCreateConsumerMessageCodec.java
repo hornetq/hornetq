@@ -11,7 +11,8 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class SessionCreateConsumerMessageCodec extends
       AbstractPacketCodec<SessionCreateConsumerMessage>
@@ -33,8 +34,16 @@ public class SessionCreateConsumerMessageCodec extends
 
    // AbstractPacketCodec overrides ---------------------------------
 
+   protected int getBodyLength(final SessionCreateConsumerMessage packet) throws Exception
+   {   	
+   	int bodyLength = sizeof(packet.getQueueName()) +
+   	   sizeof(packet.getFilterString()) + 2 * BOOLEAN_LENGTH + 2 * INT_LENGTH;
+   	
+   	return bodyLength;
+   }
+   
    @Override
-   protected void encodeBody(SessionCreateConsumerMessage request, RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionCreateConsumerMessage request, final RemotingBuffer out) throws Exception
    {
       String queueName = request.getQueueName();
       String filterString = request.getFilterString();
@@ -43,9 +52,6 @@ public class SessionCreateConsumerMessageCodec extends
       int windowSize = request.getWindowSize();
       int maxRate = request.getMaxRate();
 
-      int bodyLength = sizeof(queueName) + sizeof(filterString) + 2 + 2 * INT_LENGTH;
-
-      out.putInt(bodyLength);
       out.putNullableString(queueName);
       out.putNullableString(filterString);
       out.putBoolean(noLocal);
@@ -55,15 +61,9 @@ public class SessionCreateConsumerMessageCodec extends
    }
 
    @Override
-   protected SessionCreateConsumerMessage decodeBody(RemotingBuffer in)
+   protected SessionCreateConsumerMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-
       String queueName = in.getNullableString();
       String filterString = in.getNullableString();
       boolean noLocal = in.getBoolean();

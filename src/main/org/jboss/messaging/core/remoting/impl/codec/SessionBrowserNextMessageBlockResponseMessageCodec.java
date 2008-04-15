@@ -18,7 +18,8 @@ import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageBlockResponseMessage;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class SessionBrowserNextMessageBlockResponseMessageCodec extends AbstractPacketCodec<SessionBrowserNextMessageBlockResponseMessage>
 {
@@ -28,10 +29,12 @@ public class SessionBrowserNextMessageBlockResponseMessageCodec extends Abstract
 
    // Static --------------------------------------------------------
 
-   public static byte[] encode(Message[] messages) throws Exception
+   public static byte[] encode(final Message[] messages) throws Exception
    {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       DataOutputStream daos = new DataOutputStream(baos);
+      
+      daos.writeInt(messages.length);
       
       for (int i = 0; i < messages.length; i++)
       {
@@ -52,36 +55,36 @@ public class SessionBrowserNextMessageBlockResponseMessageCodec extends Abstract
 
    // AbstractPacketCodec overrides ---------------------------------
 
+   //TODO remove this in next refactoring
+   private byte[] encodedMsgs;
+   
+   protected int getBodyLength(final SessionBrowserNextMessageBlockResponseMessage packet) throws Exception
+   {   	
+   	Message[] messages = packet.getMessages();
+      
+      encodedMsgs = encode(messages);
+
+      int bodyLength = INT_LENGTH + encodedMsgs.length;
+      
+      return bodyLength;
+   }
+   
    @Override
    protected void encodeBody(SessionBrowserNextMessageBlockResponseMessage response, RemotingBuffer out) throws Exception
    {
-      Message[] messages = response.getMessages();
-      
-      byte[] encodedMessages = encode(messages);
-
-      int bodyLength = INT_LENGTH + INT_LENGTH + encodedMessages.length;
-
-      out.putInt(bodyLength);
-      out.putInt(messages.length);
-      out.putInt(encodedMessages.length);
-      out.put(encodedMessages);
+      out.putInt(encodedMsgs.length);
+      out.put(encodedMsgs);
+      encodedMsgs = null;
    }
 
    @Override
-   protected SessionBrowserNextMessageBlockResponseMessage decodeBody(RemotingBuffer in)
+   protected SessionBrowserNextMessageBlockResponseMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-
-      int numOfMessages = in.getInt();
       int encodedMessagesLength = in.getInt();
       byte[] encodedMessages = new byte[encodedMessagesLength];
       in.get(encodedMessages);
-      Message[] messages = decode(numOfMessages, encodedMessages);
+      Message[] messages = decode(encodedMessages);
 
       return new SessionBrowserNextMessageBlockResponseMessage(messages);
    }
@@ -92,11 +95,14 @@ public class SessionBrowserNextMessageBlockResponseMessageCodec extends Abstract
 
    // Private ----------------------------------------------------
 
-   private Message[] decode(int numOfMessages, byte[] encodedMessages) throws Exception
+   private Message[] decode(final byte[] encodedMessages) throws Exception
    {
-      Message[] messages = new Message[numOfMessages];
+      
       ByteArrayInputStream bais = new ByteArrayInputStream(encodedMessages);
       DataInputStream dais = new DataInputStream(bais);
+      
+      int numOfMessages = dais.readInt();
+      Message[] messages = new Message[numOfMessages];
       
       for (int i = 0; i < messages.length; i++)
       {

@@ -35,27 +35,21 @@ public class SessionXASetTimeoutResponseMessageCodec extends AbstractPacketCodec
 
    // AbstractPacketCodec overrides ---------------------------------
 
+   protected int getBodyLength(final SessionXASetTimeoutResponseMessage packet) throws Exception
+   {   	
+      return BOOLEAN_LENGTH;
+   }
+   
    @Override
-   protected void encodeBody(SessionXASetTimeoutResponseMessage message, RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionXASetTimeoutResponseMessage message, final RemotingBuffer out) throws Exception
    {                 
-      int bodyLength = 1;
-      
-      out.putInt(bodyLength);
-      
       out.putBoolean(message.isOK());
    }
 
    @Override
-   protected SessionXASetTimeoutResponseMessage decodeBody(RemotingBuffer in)
+   protected SessionXASetTimeoutResponseMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-      
       boolean ok = in.getBoolean();
       
       return new SessionXASetTimeoutResponseMessage(ok);

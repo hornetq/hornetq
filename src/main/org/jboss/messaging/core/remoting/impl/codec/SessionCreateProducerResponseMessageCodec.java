@@ -37,30 +37,26 @@ public class SessionCreateProducerResponseMessageCodec extends
 
    // AbstractPacketCodec overrides ---------------------------------
 
+   protected int getBodyLength(final SessionCreateProducerResponseMessage packet) throws Exception
+   {   	
+      return LONG_LENGTH + 2 * INT_LENGTH;
+   }
+   
    @Override
-   protected void encodeBody(SessionCreateProducerResponseMessage response,
-                             RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionCreateProducerResponseMessage response,
+                             final RemotingBuffer out) throws Exception
    {
       long producerID = response.getProducerTargetID();
 
-      int bodyLength = LONG_LENGTH + 2 * INT_LENGTH;
-       
-      out.putInt(bodyLength);
       out.putLong(producerID);
       out.putInt(response.getWindowSize());
       out.putInt(response.getMaxRate());
    }
 
    @Override
-   protected SessionCreateProducerResponseMessage decodeBody(RemotingBuffer in)
+   protected SessionCreateProducerResponseMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-
       long producerID = in.getLong();
       int windowSize = in.getInt();
       int maxRate = in.getInt();

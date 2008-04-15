@@ -66,7 +66,10 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_SUSPEND;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.TEXT;
 
-import org.apache.mina.filter.codec.demux.DemuxingProtocolCodecFactory;
+import org.apache.mina.common.IoSession;
+import org.apache.mina.filter.codec.ProtocolCodecFactory;
+import org.apache.mina.filter.codec.ProtocolDecoder;
+import org.apache.mina.filter.codec.ProtocolEncoder;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec;
@@ -77,12 +80,12 @@ import org.jboss.messaging.core.remoting.impl.codec.ConsumerDeliverMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.ConsumerFlowTokenMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.CreateConnectionMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.CreateConnectionResponseMessageCodec;
+import org.jboss.messaging.core.remoting.impl.codec.EmptyPacketCodec;
 import org.jboss.messaging.core.remoting.impl.codec.MessagingExceptionMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.PingCodec;
 import org.jboss.messaging.core.remoting.impl.codec.PongCodec;
 import org.jboss.messaging.core.remoting.impl.codec.ProducerReceiveTokensMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.ProducerSendMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.RemotingBuffer;
 import org.jboss.messaging.core.remoting.impl.codec.SessionAcknowledgeMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionAddDestinationMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionBindingQueryMessageCodec;
@@ -117,19 +120,19 @@ import org.jboss.messaging.core.remoting.impl.codec.SessionXASetTimeoutMessageCo
 import org.jboss.messaging.core.remoting.impl.codec.SessionXASetTimeoutResponseMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionXAStartMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.TextPacketCodec;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class PacketCodecFactory extends DemuxingProtocolCodecFactory
+public class PacketCodecFactory implements ProtocolCodecFactory
 {
    // Constants -----------------------------------------------------
 
-   private final Logger log = Logger.getLogger(PacketCodecFactory.class);
-   private final MinaEncoder encoder;
-   private final MinaDecoder decoder;
+	private final Logger log = Logger.getLogger(PacketCodecFactory.class);
+	
+   private final MessagingCodec codec;
 
    // Attributes ----------------------------------------------------
 
@@ -140,174 +143,141 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
    // FIXME: split encoder/decoder required only on client and/or server sides
    public PacketCodecFactory()
    {
+      codec = new MessagingCodec();
 
-       decoder = new MinaDecoder();
-       encoder = new MinaEncoder();
-       addMessageDecoder(decoder);
-       addMessageEncoder(Packet.class, encoder);
+      addCodecForEmptyPacket(NULL);
       
-      addCodecForEmptyPacket(encoder, decoder, NULL);
-      addCodec(encoder, decoder, PROD_SEND,
-            new ProducerSendMessageCodec());
-      addCodec(encoder, decoder, CONS_DELIVER,
-            new ConsumerDeliverMessageCodec());
+      addCodec(PROD_SEND, new ProducerSendMessageCodec());
+      
+      addCodec(CONS_DELIVER, new ConsumerDeliverMessageCodec());
 
       // TextPacket are for testing purpose only!
-      addCodec(encoder, decoder, TEXT, new TextPacketCodec());
-      addCodec(encoder, decoder, BYTES, new BytesPacketCodec());
+      addCodec(TEXT, new TextPacketCodec());
+      addCodec(BYTES, new BytesPacketCodec());
 
-      addCodec(encoder, decoder, PING, new PingCodec());
-      addCodec(encoder, decoder, PONG, new PongCodec());
+      addCodec(PING, new PingCodec());
+      addCodec(PONG, new PongCodec());
 
-      addCodec(encoder, decoder, EXCEPTION,
-            new MessagingExceptionMessageCodec());
+      addCodec(EXCEPTION, new MessagingExceptionMessageCodec());
 
-      addCodec(encoder, decoder, CREATECONNECTION,
-            new CreateConnectionMessageCodec());
+      addCodec(CREATECONNECTION, new CreateConnectionMessageCodec());
 
-      addCodec(encoder, decoder, CREATECONNECTION_RESP,
-            new CreateConnectionResponseMessageCodec());
+      addCodec(CREATECONNECTION_RESP, new CreateConnectionResponseMessageCodec());
 
-      addCodec(encoder, decoder, CONN_CREATESESSION,
-            new ConnectionCreateSessionMessageCodec());
+      addCodec(CONN_CREATESESSION,  new ConnectionCreateSessionMessageCodec());
 
-      addCodec(encoder, decoder, CONN_CREATESESSION_RESP,
-            new ConnectionCreateSessionResponseMessageCodec());
+      addCodec(CONN_CREATESESSION_RESP, new ConnectionCreateSessionResponseMessageCodec());
 
-      addCodec(encoder, decoder, SESS_CREATECONSUMER,
-            new SessionCreateConsumerMessageCodec());
+      addCodec(SESS_CREATECONSUMER, new SessionCreateConsumerMessageCodec());
 
-      addCodec(encoder, decoder, SESS_CREATECONSUMER_RESP,
-            new SessionCreateConsumerResponseMessageCodec());
+      addCodec(SESS_CREATECONSUMER_RESP, new SessionCreateConsumerResponseMessageCodec());
 
-      addCodec(encoder, decoder, SESS_CREATEPRODUCER,
-            new SessionCreateProducerMessageCodec());
+      addCodec(SESS_CREATEPRODUCER,  new SessionCreateProducerMessageCodec());
 
-      addCodec(encoder, decoder, SESS_CREATEPRODUCER_RESP,
-            new SessionCreateProducerResponseMessageCodec());
+      addCodec(SESS_CREATEPRODUCER_RESP, new SessionCreateProducerResponseMessageCodec());
 
-      addCodec(encoder, decoder, SESS_CREATEBROWSER,
-            new SessionCreateBrowserMessageCodec());
+      addCodec(SESS_CREATEBROWSER, new SessionCreateBrowserMessageCodec());
 
-      addCodec(encoder, decoder, SESS_CREATEBROWSER_RESP,
-            new SessionCreateBrowserResponseMessageCodec());
+      addCodec(SESS_CREATEBROWSER_RESP, new SessionCreateBrowserResponseMessageCodec());
 
-      addCodecForEmptyPacket(encoder, decoder, CONN_START);
+      addCodecForEmptyPacket(CONN_START);
 
-      addCodecForEmptyPacket(encoder, decoder, CONN_STOP);
+      addCodecForEmptyPacket(CONN_STOP);
 
-      addCodec(encoder, decoder, CONS_FLOWTOKEN,
-            new ConsumerFlowTokenMessageCodec());
+      addCodec(CONS_FLOWTOKEN, new ConsumerFlowTokenMessageCodec());
 
-      addCodec(encoder, decoder, SESS_ACKNOWLEDGE,
-            new SessionAcknowledgeMessageCodec());
+      addCodec(SESS_ACKNOWLEDGE, new SessionAcknowledgeMessageCodec());
 
-      addCodec(encoder, decoder, SESS_CANCEL, new SessionCancelMessageCodec());
+      addCodec(SESS_CANCEL, new SessionCancelMessageCodec());
 
-      addCodecForEmptyPacket(encoder, decoder, SESS_COMMIT);
+      addCodecForEmptyPacket(SESS_COMMIT);
 
-      addCodecForEmptyPacket(encoder, decoder, SESS_ROLLBACK);
+      addCodecForEmptyPacket(SESS_ROLLBACK);
 
-      addCodecForEmptyPacket(encoder, decoder, CLOSE);
+      addCodecForEmptyPacket(CLOSE);
 
-      addCodecForEmptyPacket(encoder, decoder, SESS_RECOVER);
+      addCodecForEmptyPacket(SESS_RECOVER);
 
-      addCodecForEmptyPacket(encoder, decoder, SESS_BROWSER_RESET);
+      addCodecForEmptyPacket(SESS_BROWSER_RESET);
 
-      addCodecForEmptyPacket(encoder, decoder, SESS_BROWSER_HASNEXTMESSAGE);
+      addCodecForEmptyPacket(SESS_BROWSER_HASNEXTMESSAGE);
 
-      addCodec(encoder, decoder, SESS_BROWSER_HASNEXTMESSAGE_RESP,
-            new SessionBrowserHasNextMessageResponseMessageCodec());
+      addCodec(SESS_BROWSER_HASNEXTMESSAGE_RESP, new SessionBrowserHasNextMessageResponseMessageCodec());
 
-      addCodecForEmptyPacket(encoder, decoder, SESS_BROWSER_NEXTMESSAGE);
+      addCodecForEmptyPacket(SESS_BROWSER_NEXTMESSAGE);
 
-      addCodec(encoder, decoder, SESS_BROWSER_NEXTMESSAGE_RESP,
-            new SessionBrowserNextMessageResponseMessageCodec());
+      addCodec(SESS_BROWSER_NEXTMESSAGE_RESP, new SessionBrowserNextMessageResponseMessageCodec());
 
-      addCodec(encoder, decoder, SESS_BROWSER_NEXTMESSAGEBLOCK,
-            new SessionBrowserNextMessageBlockMessageCodec());
+      addCodec(SESS_BROWSER_NEXTMESSAGEBLOCK, new SessionBrowserNextMessageBlockMessageCodec());
 
-      addCodec(encoder, decoder, SESS_BROWSER_NEXTMESSAGEBLOCK_RESP,
-            new SessionBrowserNextMessageBlockResponseMessageCodec());
+      addCodec(SESS_BROWSER_NEXTMESSAGEBLOCK_RESP, new SessionBrowserNextMessageBlockResponseMessageCodec());
 
-      addCodec(encoder, decoder, SESS_XA_COMMIT,
-            new SessionXACommitMessageCodec());
+      addCodec(SESS_XA_COMMIT, new SessionXACommitMessageCodec());
 
-      addCodec(encoder, decoder, SESS_XA_END, new SessionXAEndMessageCodec());
+      addCodec(SESS_XA_END, new SessionXAEndMessageCodec());
 
-      addCodec(encoder, decoder, SESS_XA_FORGET,
-            new SessionXAForgetMessageCodec());
+      addCodec(SESS_XA_FORGET, new SessionXAForgetMessageCodec());
 
-      addCodecForEmptyPacket(encoder, decoder, SESS_XA_INDOUBT_XIDS);
+      addCodecForEmptyPacket(SESS_XA_INDOUBT_XIDS);
 
-      addCodec(encoder, decoder, SESS_XA_INDOUBT_XIDS_RESP,
-            new SessionXAGetInDoubtXidsResponseMessageCodec());
+      addCodec(SESS_XA_INDOUBT_XIDS_RESP, new SessionXAGetInDoubtXidsResponseMessageCodec());
 
-      addCodecForEmptyPacket(encoder, decoder, SESS_XA_GET_TIMEOUT);
+      addCodecForEmptyPacket(SESS_XA_GET_TIMEOUT);
 
-      addCodec(encoder, decoder, SESS_XA_GET_TIMEOUT_RESP,
-            new SessionXAGetTimeoutResponseMessageCodec());
+      addCodec(SESS_XA_GET_TIMEOUT_RESP, new SessionXAGetTimeoutResponseMessageCodec());
 
-      addCodec(encoder, decoder, SESS_XA_JOIN, new SessionXAJoinMessageCodec());
+      addCodec(SESS_XA_JOIN, new SessionXAJoinMessageCodec());
 
-      addCodec(encoder, decoder, SESS_XA_PREPARE,
-            new SessionXAPrepareMessageCodec());
+      addCodec(SESS_XA_PREPARE, new SessionXAPrepareMessageCodec());
 
-      addCodec(encoder, decoder, SESS_XA_RESP,
-            new SessionXAResponseMessageCodec());
+      addCodec(SESS_XA_RESP, new SessionXAResponseMessageCodec());
 
-      addCodec(encoder, decoder, SESS_XA_RESUME,
-            new SessionXAResumeMessageCodec());
+      addCodec(SESS_XA_RESUME, new SessionXAResumeMessageCodec());
 
-      addCodec(encoder, decoder, SESS_XA_ROLLBACK,
-            new SessionXARollbackMessageCodec());
+      addCodec(SESS_XA_ROLLBACK, new SessionXARollbackMessageCodec());
 
-      addCodec(encoder, decoder, SESS_XA_SET_TIMEOUT,
-            new SessionXASetTimeoutMessageCodec());
+      addCodec(SESS_XA_SET_TIMEOUT, new SessionXASetTimeoutMessageCodec());
 
-      addCodec(encoder, decoder, SESS_XA_SET_TIMEOUT_RESP,
-            new SessionXASetTimeoutResponseMessageCodec());
+      addCodec(SESS_XA_SET_TIMEOUT_RESP, new SessionXASetTimeoutResponseMessageCodec());
 
-      addCodec(encoder, decoder, SESS_XA_START,
-            new SessionXAStartMessageCodec());
+      addCodec(SESS_XA_START, new SessionXAStartMessageCodec());
 
-      addCodecForEmptyPacket(encoder, decoder, SESS_XA_SUSPEND);
+      addCodecForEmptyPacket(SESS_XA_SUSPEND);
 
-      addCodec(encoder, decoder, SESS_REMOVE_DESTINATION,
-            new SessionRemoveDestinationMessageCodec());
+      addCodec(SESS_REMOVE_DESTINATION, new SessionRemoveDestinationMessageCodec());
 
-      addCodec(encoder, decoder, SESS_CREATEQUEUE,
-            new SessionCreateQueueMessageCodec());
+      addCodec(SESS_CREATEQUEUE, new SessionCreateQueueMessageCodec());
 
-      addCodec(encoder, decoder, SESS_QUEUEQUERY,
-            new SessionQueueQueryMessageCodec());
+      addCodec(SESS_QUEUEQUERY,  new SessionQueueQueryMessageCodec());
 
-      addCodec(encoder, decoder, SESS_QUEUEQUERY_RESP,
-            new SessionQueueQueryResponseMessageCodec());
+      addCodec(SESS_QUEUEQUERY_RESP, new SessionQueueQueryResponseMessageCodec());
 
-      addCodec(encoder, decoder, SESS_ADD_DESTINATION,
-            new SessionAddDestinationMessageCodec());
+      addCodec(SESS_ADD_DESTINATION, new SessionAddDestinationMessageCodec());
 
-      addCodec(encoder, decoder, SESS_BINDINGQUERY,
-            new SessionBindingQueryMessageCodec());
+      addCodec(SESS_BINDINGQUERY, new SessionBindingQueryMessageCodec());
 
-      addCodec(encoder, decoder, SESS_BINDINGQUERY_RESP,
-            new SessionBindingQueryResponseMessageCodec());
+      addCodec(SESS_BINDINGQUERY_RESP, new SessionBindingQueryResponseMessageCodec());
 
-      addCodec(encoder, decoder, SESS_DELETE_QUEUE,
-            new SessionDeleteQueueMessageCodec());
+      addCodec(SESS_DELETE_QUEUE, new SessionDeleteQueueMessageCodec());
 
-      addCodec(encoder, decoder, PROD_RECEIVETOKENS,
-            new ProducerReceiveTokensMessageCodec());
-
+      addCodec(PROD_RECEIVETOKENS, new ProducerReceiveTokensMessageCodec());
    }
+   
+   public ProtocolDecoder getDecoder(IoSession session) throws Exception
+	{
+		return codec;
+	}
+
+	public ProtocolEncoder getEncoder(IoSession session) throws Exception
+	{
+		return codec;
+	}
 
    // Public --------------------------------------------------------
 
-   public static AbstractPacketCodec<Packet> createCodecForEmptyPacket(
-         final PacketType type)
+   public static AbstractPacketCodec<?> createCodecForEmptyPacket(final PacketType type)
    {
-      return new CodecForEmptyPacket<Packet>(type);
+      return new EmptyPacketCodec(type);
    }
    
    // Package protected ---------------------------------------------
@@ -316,51 +286,15 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
 
    // Private -------------------------------------------------------
 
-   // FIXME generics definition should be in term of <P>...
-   private void addCodec(MinaEncoder encoder, MinaDecoder decoder,
-         PacketType type, AbstractPacketCodec<? extends Packet> codec)
+   private void addCodec(final PacketType type, final AbstractPacketCodec<? extends Packet> c)
    {
-      try
-      {
-         decoder.put(type, codec);
-         encoder.put(type, codec);
-      } catch (Exception e)
-      {
-         log.error("Unable to add codec for packet " + type, e);
-      }
+      codec.put(type, c);
    }
    
-   private void addCodecForEmptyPacket(MinaEncoder encoder,
-         MinaDecoder decoder, PacketType type)
+   private void addCodecForEmptyPacket(final PacketType type)
    {
-      AbstractPacketCodec<Packet> codec = createCodecForEmptyPacket(
-            type);
-      addCodec(encoder, decoder, type, codec);
+      AbstractPacketCodec<?> c = createCodecForEmptyPacket(type);
+      addCodec(type, c);
    }
 
-   // Inner classes -------------------------------------------------
-
-   static class CodecForEmptyPacket<P extends Packet> extends
-         AbstractPacketCodec<P>
-   {
-
-      public CodecForEmptyPacket(PacketType type)
-      {
-         super(type);
-      }
-
-      @Override
-      protected void encodeBody(P packet, RemotingBuffer out) throws Exception
-      {
-         // no body
-         out.putInt(0);
-      }
-
-      @Override
-      protected Packet decodeBody(RemotingBuffer in) throws Exception
-      {
-         in.getInt(); // skip body length
-         return new PacketImpl(type);
-      }
-   }
 }

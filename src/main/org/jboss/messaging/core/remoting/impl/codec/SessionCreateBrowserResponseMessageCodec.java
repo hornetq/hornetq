@@ -11,7 +11,8 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserResponseMessage;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class SessionCreateBrowserResponseMessageCodec extends
       AbstractPacketCodec<SessionCreateBrowserResponseMessage>
@@ -33,26 +34,24 @@ public class SessionCreateBrowserResponseMessageCodec extends
 
    // AbstractPacketCodec overrides ---------------------------------
 
+   protected int getBodyLength(final SessionCreateBrowserResponseMessage packet) throws Exception
+   {   	
+      return LONG_LENGTH;
+   }
+   
    @Override
-   protected void encodeBody(SessionCreateBrowserResponseMessage response,
-         RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionCreateBrowserResponseMessage response,
+         final RemotingBuffer out) throws Exception
    {
       long browserID = response.getBrowserTargetID();
 
-      out.putInt(LONG_LENGTH);
       out.putLong(browserID);
    }
 
    @Override
-   protected SessionCreateBrowserResponseMessage decodeBody(RemotingBuffer in)
+   protected SessionCreateBrowserResponseMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-
       long browserID = in.getLong();
 
       return new SessionCreateBrowserResponseMessage(browserID);

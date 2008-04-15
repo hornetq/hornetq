@@ -11,7 +11,8 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.BYTES
 import org.jboss.messaging.core.remoting.impl.wireformat.BytesPacket;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class BytesPacketCodec extends AbstractPacketCodec<BytesPacket>
 {
@@ -33,30 +34,28 @@ public class BytesPacketCodec extends AbstractPacketCodec<BytesPacket>
 
    // AbstractPacketCodec overrides ---------------------------------
 
+   protected int getBodyLength(final BytesPacket packet)
+   {
+   	return INT_LENGTH + packet.getBytes().length;
+   }
+   
    @Override
-   protected void encodeBody(BytesPacket packet, RemotingBuffer out)
-         throws Exception
+   protected void encodeBody(final BytesPacket packet, final RemotingBuffer out) throws Exception
    {
       byte[] bytes = packet.getBytes();
       
-      int bodyLength = INT_LENGTH + bytes.length;
-      
-      out.putInt(bodyLength);
       out.putInt(bytes.length);
+      
       out.put(bytes);
    }
 
    @Override
-   protected BytesPacket decodeBody(RemotingBuffer in)
-         throws Exception
+   protected BytesPacket decodeBody(final RemotingBuffer in) throws Exception
    {
-      int bodyLength = in.getInt();
-      if (bodyLength > in.remaining())
-      {
-         return null;
-      }
       int byteLength = in.getInt();
+      
       byte[] bytes = new byte[byteLength];
+      
       in.get(bytes);
 
       return new BytesPacket(bytes);

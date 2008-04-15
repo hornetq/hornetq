@@ -36,31 +36,24 @@ public class SessionAddDestinationMessageCodec extends AbstractPacketCodec<Sessi
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   @Override
-   protected void encodeBody(SessionAddDestinationMessage message, RemotingBuffer out) throws Exception
+   protected int getBodyLength(final SessionAddDestinationMessage packet) throws Exception
    {
-      String address = message.getAddress();
-     
-      int bodyLength = sizeof(address);
-
-      out.putInt(bodyLength);
-      out.putNullableString(address);
+      return sizeof(packet.getAddress()) + BOOLEAN_LENGTH;
+   }
+   
+   @Override
+   protected void encodeBody(final SessionAddDestinationMessage message, final RemotingBuffer out) throws Exception
+   {
+      out.putNullableString(message.getAddress());
       out.putBoolean(message.isTemporary());
    }
 
    @Override
-   protected SessionAddDestinationMessage decodeBody(RemotingBuffer in)
+   protected SessionAddDestinationMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-
       String address = in.getNullableString();
-      boolean temp = in.getBoolean();
-    
+      boolean temp = in.getBoolean();    
       return new SessionAddDestinationMessage(address, temp);
    }
 

@@ -38,30 +38,32 @@ public class ProducerSendMessageCodec extends AbstractPacketCodec<ProducerSendMe
    // Public --------------------------------------------------------
 
    // AbstractPacketCodec overrides ---------------------------------
-
-   @Override
-   protected void encodeBody(ProducerSendMessage message, RemotingBuffer out) throws Exception
+   
+   //TOD remove this in next stage of refactoring
+   private byte[] encodedMsg;
+   
+   protected int getBodyLength(final ProducerSendMessage packet) throws Exception
    {
-      byte[] encodedMsg = StreamUtils.toBytes(message.getMessage());   
+   	encodedMsg = StreamUtils.toBytes(packet.getMessage());   
 
-      int bodyLength = INT_LENGTH + sizeof(message.getAddress()) + encodedMsg.length;
-
-      out.putInt(bodyLength);
-      out.putNullableString(message.getAddress());
-      out.putInt(encodedMsg.length);
-      out.put(encodedMsg);
+      int bodyLength = sizeof(packet.getAddress()) + INT_LENGTH + encodedMsg.length;
+      
+      return bodyLength;
    }
 
    @Override
-   protected ProducerSendMessage decodeBody(RemotingBuffer in)
+   protected void encodeBody(final ProducerSendMessage message, final RemotingBuffer out) throws Exception
+   {
+      out.putNullableString(message.getAddress());
+      out.putInt(encodedMsg.length);
+      out.put(encodedMsg);
+      encodedMsg = null;
+   }
+
+   @Override
+   protected ProducerSendMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-
       String address = in.getNullableString();
       int msgLength = in.getInt();
       byte[] encodedMsg = new byte[msgLength];

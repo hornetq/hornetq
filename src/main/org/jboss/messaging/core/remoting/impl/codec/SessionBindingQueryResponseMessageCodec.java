@@ -39,21 +39,26 @@ public class SessionBindingQueryResponseMessageCodec extends AbstractPacketCodec
 
    // AbstractPacketCodec overrides ---------------------------------
 
+   protected int getBodyLength(final SessionBindingQueryResponseMessage packet) throws Exception
+   {   	
+      List<String> queueNames = packet.getQueueNames();
 
-   @Override
-   protected void encodeBody(SessionBindingQueryResponseMessage message, RemotingBuffer out) throws Exception
-   {
-      boolean exists = message.isExists();
-      List<String> queueNames = message.getQueueNames();
-
-      int bodyLength = 1 + INT_LENGTH;
+      int bodyLength = BOOLEAN_LENGTH + INT_LENGTH;
       
       for (String queueName: queueNames)
       {
          bodyLength += sizeof(queueName);
       }
       
-      out.putInt(bodyLength);
+      return bodyLength;
+   }
+
+   @Override
+   protected void encodeBody(final SessionBindingQueryResponseMessage message, final RemotingBuffer out) throws Exception
+   {
+      boolean exists = message.isExists();
+      List<String> queueNames = message.getQueueNames();
+
       out.putBoolean(exists);
       out.putInt(queueNames.size());
       
@@ -64,15 +69,9 @@ public class SessionBindingQueryResponseMessageCodec extends AbstractPacketCodec
    }
 
    @Override
-   protected SessionBindingQueryResponseMessage decodeBody(RemotingBuffer in)
+   protected SessionBindingQueryResponseMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-
       boolean exists = in.getBoolean();
       
       int numQueues = in.getInt();

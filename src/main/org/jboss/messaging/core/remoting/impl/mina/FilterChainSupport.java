@@ -29,6 +29,7 @@ import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  * @version <tt>$Revision$</tt>
  * 
@@ -47,16 +48,16 @@ public class FilterChainSupport
 
    // Public --------------------------------------------------------
 
-   public static void addCodecFilter(DefaultIoFilterChainBuilder filterChain)
+   public static void addCodecFilter(final DefaultIoFilterChainBuilder filterChain)
    {
       assert filterChain != null;
 
-      filterChain.addLast("codec", new ProtocolCodecFilter(
-            new PacketCodecFactory()));
+      filterChain.addLast("codec", new ProtocolCodecFilter(new PacketCodecFactory()));
    }
    
-   public static void addKeepAliveFilter(DefaultIoFilterChainBuilder filterChain,
-         KeepAliveFactory factory, int keepAliveInterval, int keepAliveTimeout, FailureNotifier notifier)
+   public static void addKeepAliveFilter(final DefaultIoFilterChainBuilder filterChain,
+         final KeepAliveFactory factory, final int keepAliveInterval,
+         final int keepAliveTimeout, final FailureNotifier notifier)
    {
       assert filterChain != null;
       assert factory != null;
@@ -75,8 +76,9 @@ public class FilterChainSupport
    }
 
    public static void addSSLFilter(
-         DefaultIoFilterChainBuilder filterChain, boolean client,
-         String keystorePath, String keystorePassword, String trustStorePath, String trustStorePassword) throws Exception
+         final DefaultIoFilterChainBuilder filterChain, final boolean client,
+         final String keystorePath, final String keystorePassword, final String trustStorePath,
+         final String trustStorePassword) throws Exception
    {
       SSLContext context = SSLSupport.getInstance(client, keystorePath, keystorePassword,
             trustStorePath, trustStorePassword);
@@ -93,7 +95,7 @@ public class FilterChainSupport
    
    // Package protected ---------------------------------------------
 
-   static void addMDCFilter(DefaultIoFilterChainBuilder filterChain)
+   static void addMDCFilter(final DefaultIoFilterChainBuilder filterChain)
    {
       assert filterChain != null;
 
@@ -101,7 +103,7 @@ public class FilterChainSupport
       filterChain.addLast("mdc", mdcInjectionFilter);
    }
 
-   static void addLoggingFilter(DefaultIoFilterChainBuilder filterChain)
+   static void addLoggingFilter(final DefaultIoFilterChainBuilder filterChain)
    {
       assert filterChain != null;
 
@@ -121,7 +123,7 @@ public class FilterChainSupport
    }
 
    static ScheduledExecutorService addBlockingRequestResponseFilter(
-         DefaultIoFilterChainBuilder filterChain)
+         final DefaultIoFilterChainBuilder filterChain)
    {
       assert filterChain != null;
 

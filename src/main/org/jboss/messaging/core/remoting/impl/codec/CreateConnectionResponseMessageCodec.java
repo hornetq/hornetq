@@ -11,10 +11,10 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CREAT
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class CreateConnectionResponseMessageCodec extends
-      AbstractPacketCodec<CreateConnectionResponse>
+public class CreateConnectionResponseMessageCodec extends AbstractPacketCodec<CreateConnectionResponse>
 {
    // Constants -----------------------------------------------------
 
@@ -32,30 +32,23 @@ public class CreateConnectionResponseMessageCodec extends
    }
 
    // AbstractPackedCodec overrides----------------------------------
-
-   @Override
-   protected void encodeBody(CreateConnectionResponse response,
-         RemotingBuffer out)
-         throws Exception
+   
+   protected int getBodyLength(final CreateConnectionResponse packet) throws Exception
    {
-      long id = response.getConnectionTargetID();
-
-      out.putInt(LONG_LENGTH);
-      out.putLong(id);
+   	return LONG_LENGTH;
    }
 
    @Override
-   protected CreateConnectionResponse decodeBody(
-         RemotingBuffer in) throws Exception
+   protected void encodeBody(final CreateConnectionResponse response, final RemotingBuffer out)
+         throws Exception
    {
-      int bodyLength = in.getInt();
-      if (bodyLength > in.remaining())
-      {
-         return null;
-      }
-      long id = in.getLong();
+      out.putLong(response.getConnectionTargetID());
+   }
 
-      return new CreateConnectionResponse(id);
+   @Override
+   protected CreateConnectionResponse decodeBody(final RemotingBuffer in) throws Exception
+   {
+      return new CreateConnectionResponse(in.getLong());
    }
 
    // Package protected ---------------------------------------------

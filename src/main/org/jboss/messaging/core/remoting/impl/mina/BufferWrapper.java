@@ -154,6 +154,11 @@ public class BufferWrapper implements RemotingBuffer
       }
    }
    
+   public void rewind()
+   {
+   	buffer.rewind();
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

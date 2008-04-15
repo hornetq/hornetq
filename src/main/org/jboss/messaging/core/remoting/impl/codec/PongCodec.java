@@ -11,7 +11,8 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PONG;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class PongCodec extends AbstractPacketCodec<Pong>
 {
@@ -32,28 +33,25 @@ public class PongCodec extends AbstractPacketCodec<Pong>
    // Public --------------------------------------------------------
 
    // AbstractPacketCodec overrides ---------------------------------
+   
+   protected int getBodyLength(final Pong packet) throws Exception
+   {
+   	return LONG_LENGTH + BOOLEAN_LENGTH;
+   }
 
    @Override
-   protected void encodeBody(Pong packet, RemotingBuffer out) throws Exception
+   protected void encodeBody(final Pong packet, final RemotingBuffer out) throws Exception
    {
       long sessionID = packet.getSessionID();
       boolean sessionFailed = packet.isSessionFailed();
 
-      int bodyLength = LONG_LENGTH + BOOLEAN_LENGTH;
-
-      out.putInt(bodyLength);
       out.putLong(sessionID);
       out.putBoolean(sessionFailed);
    }
 
    @Override
-   protected Pong decodeBody(RemotingBuffer in) throws Exception
+   protected Pong decodeBody(final RemotingBuffer in) throws Exception
    {
-      int bodyLength = in.getInt();
-      if (bodyLength > in.remaining())
-      {
-         return null;
-      }
       long sessionID = in.getLong();
       boolean sessionFailed = in.getBoolean();
       return new Pong(sessionID, sessionFailed);

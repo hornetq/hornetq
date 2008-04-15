@@ -11,7 +11,8 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class SessionBrowserHasNextMessageResponseMessageCodec extends
       AbstractPacketCodec<SessionBrowserHasNextMessageResponseMessage>
@@ -33,23 +34,21 @@ public class SessionBrowserHasNextMessageResponseMessageCodec extends
 
    // AbstractPacketCodec overrides ---------------------------------
 
+   protected int getBodyLength(final SessionBrowserHasNextMessageResponseMessage packet) throws Exception
+   {   	
+      return BOOLEAN_LENGTH;
+   }
+   
    @Override
-   protected void encodeBody(SessionBrowserHasNextMessageResponseMessage response,
-         RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionBrowserHasNextMessageResponseMessage response,
+         final RemotingBuffer out) throws Exception
    {
-      out.putInt(1); //body length
       out.putBoolean(response.hasNext());
    }
 
    @Override
-   protected SessionBrowserHasNextMessageResponseMessage decodeBody(RemotingBuffer in) throws Exception
+   protected SessionBrowserHasNextMessageResponseMessage decodeBody(final RemotingBuffer in) throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-
       boolean hasNext = in.getBoolean();
 
       return new SessionBrowserHasNextMessageResponseMessage(hasNext);

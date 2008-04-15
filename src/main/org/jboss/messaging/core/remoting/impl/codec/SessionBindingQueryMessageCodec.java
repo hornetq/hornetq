@@ -36,27 +36,23 @@ public class SessionBindingQueryMessageCodec extends AbstractPacketCodec<Session
 
    // AbstractPacketCodec overrides ---------------------------------
 
+   protected int getBodyLength(final SessionBindingQueryMessage packet) throws Exception
+   {
+      return sizeof(packet.getAddress());
+   }
+   
    @Override
-   protected void encodeBody(SessionBindingQueryMessage message, RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionBindingQueryMessage message, final RemotingBuffer out) throws Exception
    {
       String address = message.getAddress();
      
-      int bodyLength = sizeof(address);
-
-      out.putInt(bodyLength);
       out.putNullableString(address);
    }
 
    @Override
-   protected SessionBindingQueryMessage decodeBody(RemotingBuffer in)
+   protected SessionBindingQueryMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-
       String address = in.getNullableString();
     
       return new SessionBindingQueryMessage(address);

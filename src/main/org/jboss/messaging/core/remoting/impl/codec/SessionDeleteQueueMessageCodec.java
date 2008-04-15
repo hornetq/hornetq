@@ -36,27 +36,24 @@ public class SessionDeleteQueueMessageCodec extends AbstractPacketCodec<SessionD
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   @Override
-   protected void encodeBody(SessionDeleteQueueMessage message, RemotingBuffer out) throws Exception
-   {
-      String queueName = message.getQueueName();
-     
+   protected int getBodyLength(final SessionDeleteQueueMessage packet) throws Exception
+   {   	
+   	String queueName = packet.getQueueName();      
       int bodyLength = sizeof(queueName);
-
-      out.putInt(bodyLength);
+   	return bodyLength;
+   }
+   
+   @Override
+   protected void encodeBody(final SessionDeleteQueueMessage message, final RemotingBuffer out) throws Exception
+   {
+      String queueName = message.getQueueName();   
       out.putNullableString(queueName);
    }
 
    @Override
-   protected SessionDeleteQueueMessage decodeBody(RemotingBuffer in)
+   protected SessionDeleteQueueMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-
       String queueName = in.getNullableString();
     
       return new SessionDeleteQueueMessage(queueName);

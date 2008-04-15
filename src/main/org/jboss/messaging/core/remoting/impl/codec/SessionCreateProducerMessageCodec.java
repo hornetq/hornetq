@@ -37,29 +37,29 @@ public class SessionCreateProducerMessageCodec extends
 
    // AbstractPacketCodec overrides ---------------------------------
 
+   protected int getBodyLength(final SessionCreateProducerMessage packet) throws Exception
+   {   	
+   	String address = packet.getAddress();
+      
+      int bodyLength = sizeof(address) + 2 * INT_LENGTH;
+      
+      return bodyLength;
+   }
+   
    @Override
-   protected void encodeBody(SessionCreateProducerMessage request, RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionCreateProducerMessage request, final RemotingBuffer out) throws Exception
    {
       String address = request.getAddress();
      
-      int bodyLength = sizeof(address) + 2 * INT_LENGTH;
-
-      out.putInt(bodyLength);
       out.putNullableString(address);
       out.putInt(request.getWindowSize());
       out.putInt(request.getMaxRate());
    }
 
    @Override
-   protected SessionCreateProducerMessage decodeBody(RemotingBuffer in)
+   protected SessionCreateProducerMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-
       String address = in.getNullableString();
       
       int windowSize = in.getInt();

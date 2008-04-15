@@ -41,38 +41,32 @@ public class SessionXAGetInDoubtXidsResponseMessageCodec extends AbstractPacketC
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   @Override
-   protected void encodeBody(SessionXAGetInDoubtXidsResponseMessage message, RemotingBuffer out) throws Exception
-   {      
-      int bodyLength = 1;
+   protected int getBodyLength(final SessionXAGetInDoubtXidsResponseMessage packet) throws Exception
+   {   	
+      int bodyLength = INT_LENGTH;
       
-      for (Xid xid: message.getXids())
+      for (Xid xid: packet.getXids())
       {
          bodyLength += getXidLength(xid);
       }
-       
-      out.putInt(bodyLength);
-      
+   	return bodyLength;
+   }
+   
+   @Override
+   protected void encodeBody(final SessionXAGetInDoubtXidsResponseMessage message, final RemotingBuffer out) throws Exception
+   {      
       out.putInt(message.getXids().size());
       
       for (Xid xid: message.getXids())
       {
         encodeXid(xid, out);
-      }
-      
+      }      
    }
 
    @Override
-   protected SessionXAGetInDoubtXidsResponseMessage decodeBody(RemotingBuffer in)
+   protected SessionXAGetInDoubtXidsResponseMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-      
       int size = in.getInt();
       
       List<Xid> xids = new ArrayList<Xid>(size);

@@ -6,21 +6,20 @@
  */
 package org.jboss.messaging.core.remoting.impl.codec;
 
-import static org.jboss.messaging.core.remoting.impl.codec.DecoderStatus.NEED_DATA;
-import static org.jboss.messaging.core.remoting.impl.codec.DecoderStatus.NOT_OK;
-import static org.jboss.messaging.core.remoting.impl.codec.DecoderStatus.OK;
-
-import java.nio.charset.CharacterCodingException;
-
 import javax.transaction.xa.Xid;
 
+import org.apache.mina.common.IoBuffer;
+import org.apache.mina.filter.codec.ProtocolDecoderOutput;
+import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public abstract class AbstractPacketCodec<P extends Packet>
 {
@@ -31,6 +30,8 @@ public abstract class AbstractPacketCodec<P extends Packet>
    public static final byte FALSE = (byte) 1;
 
    public static final int BOOLEAN_LENGTH = 1;
+   
+   public static final int BYTE_LENGTH = 1;
 
    public static final int INT_LENGTH = 4;
 
@@ -38,7 +39,8 @@ public abstract class AbstractPacketCodec<P extends Packet>
 
    public static final int LONG_LENGTH = 8;
    
-   private static final int HEADER_LENGTH = LONG_LENGTH + LONG_LENGTH + LONG_LENGTH + BOOLEAN_LENGTH;
+   public static final int HEADER_LENGTH =
+   	BYTE_LENGTH + LONG_LENGTH + LONG_LENGTH + LONG_LENGTH + BOOLEAN_LENGTH;
    
    private static final Logger log = Logger.getLogger(AbstractPacketCodec.class);
 
@@ -59,12 +61,23 @@ public abstract class AbstractPacketCodec<P extends Packet>
 
    // Public --------------------------------------------------------
 
-   public void encode(P packet, RemotingBuffer buf) throws Exception
+   public void encode(final P packet, final ProtocolEncoderOutput out) throws Exception
    {
       long correlationID = packet.getCorrelationID();
       long targetID = packet.getTargetID();
       long executorID = packet.getExecutorID();
-
+      
+      IoBuffer iobuf = IoBuffer.allocate(1024, false);
+      iobuf.setAutoExpand(true);
+      
+      RemotingBuffer buf = new BufferWrapper(iobuf);
+      
+      int messageLength = getBodyLength(packet) + HEADER_LENGTH;
+      
+      log.info("Message length is " + messageLength);
+      
+      //The standard header fields
+      buf.putInt(messageLength);
       buf.put(packet.getType().byteValue());
       buf.putLong(correlationID);
       buf.putLong(targetID);
@@ -72,9 +85,13 @@ public abstract class AbstractPacketCodec<P extends Packet>
       buf.putBoolean(packet.isOneWay());
 
       encodeBody(packet, buf);
+      
+      //for now
+      iobuf.flip();
+      out.write(iobuf);
    }
 
-   public static int sizeof(String nullableString)
+   public static int sizeof(final String nullableString)
    {
       if (nullableString == null)
       {
@@ -87,63 +104,44 @@ public abstract class AbstractPacketCodec<P extends Packet>
       }
    }
    
-   public static int getXidLength(Xid xid)
+   public static int getXidLength(final Xid xid)
    {
       return 1 + 1 + xid.getBranchQualifier().length + 1 + xid.getGlobalTransactionId().length;
    }
 
-   // MessageDecoder implementation ---------------------------------
-
-   public DecoderStatus decodable(RemotingBuffer buffer)
-   {
-   	if (buffer.remaining() < HEADER_LENGTH + INT_LENGTH)
-   	{
-   		return NEED_DATA;
-   	}
-   	
-   	buffer.getLong();
-   	buffer.getLong();
-   	buffer.getLong();
-   	buffer.getBoolean();
-   	int bodyLength = buffer.getInt();
-   	if (buffer.remaining() < bodyLength)
-   	{
-   		return NEED_DATA;
-   	}
-   	return OK;   	
-   }
-
-   public Packet decode(RemotingBuffer wrapper) throws Exception
-   {
-      wrapper.get(); // skip message type
-      long correlationID = wrapper.getLong();
-      long targetID = wrapper.getLong();
-      long executorID = wrapper.getLong();
-      boolean oneWay = wrapper.getBoolean();
+   public boolean decode(final RemotingBuffer buffer, final ProtocolDecoderOutput out) throws Exception
+   {        	   	
+      long correlationID = buffer.getLong();
+      long targetID = buffer.getLong();
+      long executorID = buffer.getLong();
+      boolean oneWay = buffer.getBoolean();
       
-      Packet packet = decodeBody(wrapper);
+      Packet packet = decodeBody(buffer);
 
-      if (packet == null)
-      {
-         return null;
-      }
-      
       packet.setCorrelationID(correlationID);
       packet.setTargetID(targetID);
       packet.setExecutorID(executorID);            
       packet.setOneWay(oneWay);
+      
+      out.write(packet);
 
-      return packet;
+      return false;
    }   
+   
+   public PacketType getType()
+   {
+   	return type;
+   }
    
    // Protected -----------------------------------------------------
 
-   protected abstract void encodeBody(P packet, RemotingBuffer buf)
-         throws Exception;
+   protected abstract int getBodyLength(P packet) throws Exception;
+   
+   protected abstract void encodeBody(P packet, RemotingBuffer buf) throws Exception;
 
    protected abstract Packet decodeBody(RemotingBuffer buffer) throws Exception;
 
-   protected static void encodeXid(Xid xid, RemotingBuffer out)
+   protected static void encodeXid(final Xid xid, final RemotingBuffer out)
    {
       out.putInt(xid.getFormatId());
       out.putInt(xid.getBranchQualifier().length);
@@ -152,7 +150,7 @@ public abstract class AbstractPacketCodec<P extends Packet>
       out.put(xid.getGlobalTransactionId());
    }
    
-   protected static Xid decodeXid(RemotingBuffer in)
+   protected static Xid decodeXid(final RemotingBuffer in)
    {
       int formatID = in.getInt();
       byte[] bq = new byte[in.getInt()];
@@ -162,9 +160,7 @@ public abstract class AbstractPacketCodec<P extends Packet>
       Xid xid = new XidImpl(bq, formatID, gtxid);      
       return xid;
    }
-   
-   
-
+     
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

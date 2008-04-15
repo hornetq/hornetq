@@ -37,29 +37,27 @@ public class SessionXAPrepareMessageCodec extends AbstractPacketCodec<SessionXAP
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   @Override
-   protected void encodeBody(SessionXAPrepareMessage message, RemotingBuffer out) throws Exception
-   {      
-      Xid xid = message.getXid();
+   protected int getBodyLength(final SessionXAPrepareMessage packet) throws Exception
+   {   	
+   	Xid xid = packet.getXid();
       
       int bodyLength = getXidLength(xid);
       
-      out.putInt(bodyLength);
+      return bodyLength;
+   }
+   
+   @Override
+   protected void encodeBody(final SessionXAPrepareMessage message, final RemotingBuffer out) throws Exception
+   {      
+      Xid xid = message.getXid();
       
       encodeXid(xid, out);
    }
 
    @Override
-   protected SessionXAPrepareMessage decodeBody(RemotingBuffer in)
+   protected SessionXAPrepareMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-      
       Xid xid = decodeXid(in);
       
       return new SessionXAPrepareMessage(xid);

@@ -14,7 +14,8 @@ import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerDeliverMessage;
 import org.jboss.messaging.util.StreamUtils;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class ConsumerDeliverMessageCodec extends AbstractPacketCodec<ConsumerDeliverMessage>
 {
@@ -35,31 +36,29 @@ public class ConsumerDeliverMessageCodec extends AbstractPacketCodec<ConsumerDel
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   @Override
-   protected void encodeBody(ConsumerDeliverMessage message, RemotingBuffer out) throws Exception
+   //TODO - remove this when in next stage of refactoring
+   private byte[] encodedMsg;
+   
+   protected int getBodyLength(final ConsumerDeliverMessage packet) throws Exception
    {
-      byte[] encodedMsg = StreamUtils.toBytes(message.getMessage());
-      long deliveryID = message.getDeliveryID();
-
-      int bodyLength = encodedMsg.length
-            + LONG_LENGTH + INT_LENGTH;
-      out.putInt(bodyLength);
-
+   	encodedMsg = StreamUtils.toBytes(packet.getMessage());
+   	
+   	return INT_LENGTH + encodedMsg.length + LONG_LENGTH; 
+   }
+   
+   @Override
+   protected void encodeBody(final ConsumerDeliverMessage message, final RemotingBuffer out) throws Exception
+   {
       out.putInt(encodedMsg.length);
       out.put(encodedMsg);
-      out.putLong(deliveryID);
+      out.putLong(message.getDeliveryID());
+      encodedMsg = null;
    }
 
    @Override
-   protected ConsumerDeliverMessage decodeBody(RemotingBuffer in)
+   protected ConsumerDeliverMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-
       int msgLength = in.getInt();
       byte[] encodedMsg = new byte[msgLength];
       in.get(encodedMsg);

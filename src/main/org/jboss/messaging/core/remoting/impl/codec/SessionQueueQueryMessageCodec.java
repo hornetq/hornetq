@@ -36,29 +36,25 @@ public class SessionQueueQueryMessageCodec extends AbstractPacketCodec<SessionQu
 
    // AbstractPacketCodec overrides ---------------------------------
 
+   protected int getBodyLength(final SessionQueueQueryMessage packet) throws Exception
+   {   	
+   	String queueName = packet.getQueueName();       
+      int bodyLength = sizeof(queueName);
+   	return bodyLength;
+   }
+   
    @Override
-   protected void encodeBody(SessionQueueQueryMessage message, RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionQueueQueryMessage message, final RemotingBuffer out) throws Exception
    {
       String queueName = message.getQueueName();
-     
-      int bodyLength = sizeof(queueName);
-
-      out.putInt(bodyLength);
       out.putNullableString(queueName);
    }
 
    @Override
-   protected SessionQueueQueryMessage decodeBody(RemotingBuffer in)
+   protected SessionQueueQueryMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-
-      String queueName = in.getNullableString();
-    
+      String queueName = in.getNullableString();    
       return new SessionQueueQueryMessage(queueName);
    }
 

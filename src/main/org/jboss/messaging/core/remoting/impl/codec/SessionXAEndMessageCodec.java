@@ -37,14 +37,16 @@ public class SessionXAEndMessageCodec extends AbstractPacketCodec<SessionXAEndMe
 
    // AbstractPacketCodec overrides ---------------------------------
 
+   protected int getBodyLength(final SessionXAEndMessage packet) throws Exception
+   {   	
+   	int bodyLength = BOOLEAN_LENGTH + getXidLength(packet.getXid());
+   	return bodyLength;
+   }
+   
    @Override
-   protected void encodeBody(SessionXAEndMessage message, RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionXAEndMessage message, final RemotingBuffer out) throws Exception
    {      
       Xid xid = message.getXid();      
-      
-      int bodyLength = 1 + getXidLength(xid);
-      
-      out.putInt(bodyLength);
       
       out.putBoolean(message.isFailed());
       
@@ -52,16 +54,8 @@ public class SessionXAEndMessageCodec extends AbstractPacketCodec<SessionXAEndMe
    }
 
    @Override
-   protected SessionXAEndMessage decodeBody(RemotingBuffer in)
-         throws Exception
+   protected SessionXAEndMessage decodeBody(final RemotingBuffer in) throws Exception
    {
-      int bodyLength = in.getInt();
-      
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-      
       boolean failed = in.getBoolean();
                   
       Xid xid = decodeXid(in);

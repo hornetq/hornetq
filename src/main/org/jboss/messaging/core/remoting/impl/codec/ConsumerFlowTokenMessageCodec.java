@@ -32,24 +32,21 @@ public class ConsumerFlowTokenMessageCodec extends AbstractPacketCodec<ConsumerF
    // Public --------------------------------------------------------
 
    // AbstractPacketCodec overrides ---------------------------------
+   
+   protected int getBodyLength(final ConsumerFlowTokenMessage packet) throws Exception
+   {
+   	return INT_LENGTH;
+   }
 
    @Override
-   protected void encodeBody(ConsumerFlowTokenMessage message, RemotingBuffer out) throws Exception
+   protected void encodeBody(final ConsumerFlowTokenMessage message, final RemotingBuffer out) throws Exception
    {
-      out.putInt(INT_LENGTH);
       out.putInt(message.getTokens());
    }
 
    @Override
-   protected ConsumerFlowTokenMessage decodeBody(RemotingBuffer in)
-         throws Exception
+   protected ConsumerFlowTokenMessage decodeBody(final RemotingBuffer in) throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-
       return new ConsumerFlowTokenMessage(in.getInt());
    }
 

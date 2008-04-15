@@ -35,26 +35,22 @@ public class SessionCancelMessageCodec extends AbstractPacketCodec<SessionCancel
 
    // AbstractPacketCodec overrides ---------------------------------
 
+   protected int getBodyLength(final SessionCancelMessage packet) throws Exception
+   {   	
+      return LONG_LENGTH + 1;
+   }
+   
    @Override
-   protected void encodeBody(SessionCancelMessage message, RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionCancelMessage message, final RemotingBuffer out) throws Exception
    {
-      int bodyLength = LONG_LENGTH + 1;
-
-      out.putInt(bodyLength);
       out.putLong(message.getDeliveryID());
       out.putBoolean(message.isExpired());
    }
 
    @Override
-   protected SessionCancelMessage decodeBody(RemotingBuffer in)
+   protected SessionCancelMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-      
       long deliveryID = in.getLong();
       boolean expired = in.getBoolean();
      

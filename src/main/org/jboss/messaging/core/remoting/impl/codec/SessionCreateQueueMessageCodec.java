@@ -36,8 +36,17 @@ public class SessionCreateQueueMessageCodec extends AbstractPacketCodec<SessionC
 
    // AbstractPacketCodec overrides ---------------------------------
 
+   protected int getBodyLength(final SessionCreateQueueMessage packet) throws Exception
+   {   	
+   	String address = packet.getAddress();
+      String queueName = packet.getQueueName();
+      String filterString = packet.getFilterString();
+   	int bodyLength = sizeof(address) + sizeof(queueName) + sizeof(filterString) + 2;
+   	return bodyLength;
+   }
+   
    @Override
-   protected void encodeBody(SessionCreateQueueMessage message, RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionCreateQueueMessage message, final RemotingBuffer out) throws Exception
    {
       String address = message.getAddress();
       String queueName = message.getQueueName();
@@ -45,9 +54,6 @@ public class SessionCreateQueueMessageCodec extends AbstractPacketCodec<SessionC
       boolean durable = message.isDurable();
       boolean temporary = message.isTemporary();
      
-      int bodyLength = sizeof(address) + sizeof(queueName) + sizeof(filterString) + 2;
-
-      out.putInt(bodyLength);
       out.putNullableString(address);
       out.putNullableString(queueName);
       out.putNullableString(filterString);
@@ -56,15 +62,9 @@ public class SessionCreateQueueMessageCodec extends AbstractPacketCodec<SessionC
    }
 
    @Override
-   protected SessionCreateQueueMessage decodeBody(RemotingBuffer in)
+   protected SessionCreateQueueMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-
       String address = in.getNullableString();
       String queueName = in.getNullableString();
       String filterString = in.getNullableString();

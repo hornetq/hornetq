@@ -10,7 +10,8 @@ import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSession
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class ConnectionCreateSessionResponseMessageCodec extends
       AbstractPacketCodec<ConnectionCreateSessionResponseMessage>
@@ -32,29 +33,22 @@ public class ConnectionCreateSessionResponseMessageCodec extends
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   @Override
-   protected void encodeBody(ConnectionCreateSessionResponseMessage response, RemotingBuffer out) throws Exception
+   protected int getBodyLength(final ConnectionCreateSessionResponseMessage packet)
    {
-      long sessionID = response.getSessionID();
-
-      out.putInt(LONG_LENGTH);
-      
-      out.putLong(sessionID);
+   	return LONG_LENGTH;
+   }
+   
+   @Override
+   protected void encodeBody(final ConnectionCreateSessionResponseMessage response, final RemotingBuffer out) throws Exception
+   {
+      out.putLong(response.getSessionID());
    }
 
    @Override
-   protected ConnectionCreateSessionResponseMessage decodeBody(RemotingBuffer in)
+   protected ConnectionCreateSessionResponseMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-
-      long sessionID = in.getLong();
-
-      return new ConnectionCreateSessionResponseMessage(sessionID);
+      return new ConnectionCreateSessionResponseMessage(in.getLong());
    }
 
    // Package protected ---------------------------------------------

@@ -36,13 +36,16 @@ public class SessionXAResponseMessageCodec extends AbstractPacketCodec<SessionXA
 
    // AbstractPacketCodec overrides ---------------------------------
 
+   protected int getBodyLength(final SessionXAResponseMessage packet) throws Exception
+   {   	
+   	int bodyLength = BOOLEAN_LENGTH + INT_LENGTH + sizeof(packet.getMessage());
+   	
+   	return bodyLength;
+   }
+   
    @Override
-   protected void encodeBody(SessionXAResponseMessage message, RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionXAResponseMessage message, final RemotingBuffer out) throws Exception
    {      
-      int bodyLength = 1 + INT_LENGTH + sizeof(message.getMessage());
-      
-      out.putInt(bodyLength);
-      
       out.putBoolean(message.isError());
       
       out.putInt(message.getResponseCode());
@@ -51,16 +54,9 @@ public class SessionXAResponseMessageCodec extends AbstractPacketCodec<SessionXA
    }
 
    @Override
-   protected SessionXAResponseMessage decodeBody(RemotingBuffer in)
+   protected SessionXAResponseMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-      
       boolean isError = in.getBoolean();
       
       int responseCode = in.getInt();

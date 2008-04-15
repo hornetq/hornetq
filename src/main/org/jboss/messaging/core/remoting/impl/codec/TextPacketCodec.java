@@ -11,7 +11,8 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.TEXT;
 import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class TextPacketCodec extends AbstractPacketCodec<TextPacket>
 {
@@ -33,13 +34,16 @@ public class TextPacketCodec extends AbstractPacketCodec<TextPacket>
 
    // AbstractPacketCodec overrides ---------------------------------
 
+   protected int getBodyLength(final TextPacket packet) throws Exception
+   {   	
+      return sizeof(packet.getText());
+   }
+   
    @Override
    protected void encodeBody(TextPacket packet, RemotingBuffer out)
          throws Exception
    {
       String text = packet.getText();
-
-      out.putInt(sizeof(text));
       out.putNullableString(text);
    }
 
@@ -47,11 +51,6 @@ public class TextPacketCodec extends AbstractPacketCodec<TextPacket>
    protected TextPacket decodeBody(RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      if (bodyLength > in.remaining())
-      {
-         return null;
-      }
       String text = in.getNullableString();
 
       return new TextPacket(text);

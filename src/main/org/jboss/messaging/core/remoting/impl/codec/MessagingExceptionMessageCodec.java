@@ -12,7 +12,8 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class MessagingExceptionMessageCodec extends AbstractPacketCodec<MessagingExceptionMessage>
 {
@@ -33,29 +34,21 @@ public class MessagingExceptionMessageCodec extends AbstractPacketCodec<Messagin
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   @Override
-   protected void encodeBody(MessagingExceptionMessage message, RemotingBuffer out) throws Exception
+   protected int getBodyLength(final MessagingExceptionMessage packet) throws Exception
    {
-      int code = message.getException().getCode();
-      String msg = message.getException().getMessage();
-
-      int bodyLength = INT_LENGTH + sizeof(msg);
-      
-      out.putInt(bodyLength);
-      out.putInt(code);
-      out.putNullableString(msg);
+   	return INT_LENGTH + sizeof(packet.getException().getMessage());
+   }
+   
+   @Override
+   protected void encodeBody(final MessagingExceptionMessage message, final RemotingBuffer out) throws Exception
+   {
+      out.putInt(message.getException().getCode());
+      out.putNullableString(message.getException().getMessage());
    }
 
    @Override
-   protected MessagingExceptionMessage decodeBody(RemotingBuffer in)
-         throws Exception
+   protected MessagingExceptionMessage decodeBody(final RemotingBuffer in) throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-
       int code = in.getInt();
       String msg = in.getNullableString();
 

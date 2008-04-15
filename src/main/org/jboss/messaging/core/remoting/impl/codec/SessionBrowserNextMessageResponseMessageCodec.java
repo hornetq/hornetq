@@ -14,7 +14,8 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessa
 import org.jboss.messaging.util.StreamUtils;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class SessionBrowserNextMessageResponseMessageCodec extends AbstractPacketCodec<SessionBrowserNextMessageResponseMessage>
 {
@@ -35,28 +36,30 @@ public class SessionBrowserNextMessageResponseMessageCodec extends AbstractPacke
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   @Override
-   protected void encodeBody(SessionBrowserNextMessageResponseMessage response, RemotingBuffer out) throws Exception
-   {      
-      byte[] encodedMsg = StreamUtils.toBytes(response.getMessage());
+   //TODO remove this in next refactoring
+   private byte[] encodedMsg;
+   
+   protected int getBodyLength(final SessionBrowserNextMessageResponseMessage packet) throws Exception
+   {   	
+   	byte[] encodedMsg = StreamUtils.toBytes(packet.getMessage());
 
       int bodyLength = INT_LENGTH + encodedMsg.length;
-
-      out.putInt(bodyLength);      
+      
+      return bodyLength;
+   }
+   
+   @Override
+   protected void encodeBody(final SessionBrowserNextMessageResponseMessage response, final RemotingBuffer out) throws Exception
+   {         
       out.putInt(encodedMsg.length);
       out.put(encodedMsg);
+      encodedMsg = null;
    }
 
    @Override
-   protected SessionBrowserNextMessageResponseMessage decodeBody(RemotingBuffer in)
+   protected SessionBrowserNextMessageResponseMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-
       int msgLength = in.getInt();
       byte[] encodedMsg = new byte[msgLength];
       in.get(encodedMsg);

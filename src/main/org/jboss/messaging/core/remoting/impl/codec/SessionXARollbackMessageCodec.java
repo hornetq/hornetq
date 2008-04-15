@@ -30,29 +30,27 @@ public class SessionXARollbackMessageCodec extends AbstractPacketCodec<SessionXA
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   @Override
-   protected void encodeBody(SessionXARollbackMessage message, RemotingBuffer out) throws Exception
-   {      
-      Xid xid = message.getXid();
+   protected int getBodyLength(final SessionXARollbackMessage packet) throws Exception
+   {   	
+   	Xid xid = packet.getXid();
       
       int bodyLength = getXidLength(xid);
       
-      out.putInt(bodyLength);
+      return bodyLength;
+   }
+   
+   @Override
+   protected void encodeBody(final SessionXARollbackMessage message, final RemotingBuffer out) throws Exception
+   {      
+      Xid xid = message.getXid();
       
       encodeXid(xid, out);
    }
 
    @Override
-   protected SessionXARollbackMessage decodeBody(RemotingBuffer in)
+   protected SessionXARollbackMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-      
       Xid xid = decodeXid(in);
       
       return new SessionXARollbackMessage(xid);

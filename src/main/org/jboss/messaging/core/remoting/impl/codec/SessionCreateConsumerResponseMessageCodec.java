@@ -11,7 +11,8 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class SessionCreateConsumerResponseMessageCodec extends
       AbstractPacketCodec<SessionCreateConsumerResponseMessage>
@@ -33,31 +34,27 @@ public class SessionCreateConsumerResponseMessageCodec extends
 
    // AbstractPacketCodec overrides ---------------------------------
 
+   protected int getBodyLength(final SessionCreateConsumerResponseMessage packet) throws Exception
+   {   	
+   	return LONG_LENGTH + INT_LENGTH;
+   }
+   
    @Override
-   protected void encodeBody(SessionCreateConsumerResponseMessage response,
-         RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionCreateConsumerResponseMessage response,
+         final RemotingBuffer out) throws Exception
    {
       long consumerID = response.getConsumerTargetID();
       
       int windowSize = response.getWindowSize();
 
-      int bodyLength = LONG_LENGTH + INT_LENGTH;
-       
-      out.putInt(bodyLength);
       out.putLong(consumerID);
       out.putInt(windowSize);
    }
 
    @Override
-   protected SessionCreateConsumerResponseMessage decodeBody(RemotingBuffer in)
+   protected SessionCreateConsumerResponseMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-
       long consumerID = in.getLong();
       int windowSize = in.getInt();
 

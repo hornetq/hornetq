@@ -11,7 +11,8 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageBlockMessage;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class SessionBrowserNextMessageBlockMessageCodec extends AbstractPacketCodec<SessionBrowserNextMessageBlockMessage>
 {
@@ -32,23 +33,21 @@ public class SessionBrowserNextMessageBlockMessageCodec extends AbstractPacketCo
 
    // AbstractPacketCodec overrides ---------------------------------
 
+   protected int getBodyLength(final SessionBrowserNextMessageBlockMessage packet) throws Exception
+   {   	
+      return LONG_LENGTH;
+   }
+   
    @Override
-   protected void encodeBody(SessionBrowserNextMessageBlockMessage request, RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionBrowserNextMessageBlockMessage request, final RemotingBuffer out) throws Exception
    {
-      out.putInt(LONG_LENGTH);
       out.putLong(request.getMaxMessages());
    }
 
    @Override
-   protected SessionBrowserNextMessageBlockMessage decodeBody(RemotingBuffer in)
+   protected SessionBrowserNextMessageBlockMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-
       long maxMessages = in.getLong();
       
       return new SessionBrowserNextMessageBlockMessage(maxMessages);

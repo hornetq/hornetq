@@ -11,7 +11,8 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class ConnectionCreateSessionMessageCodec extends
       AbstractPacketCodec<ConnectionCreateSessionMessage>
@@ -33,39 +34,23 @@ public class ConnectionCreateSessionMessageCodec extends
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   @Override
-   protected void encodeBody(ConnectionCreateSessionMessage request, RemotingBuffer out) throws Exception
+   protected int getBodyLength(final ConnectionCreateSessionMessage packet)
    {
-      boolean xa = request.isXA();
-      boolean autoCommitSends = request.isAutoCommitSends();
-      boolean autoCommitAcks = request.isAutoCommitAcks();
-      
-
-      int bodyLength = 3;
-
-      out.putInt(bodyLength);
-
-      out.putBoolean(xa);
-      out.putBoolean(autoCommitSends);
-      out.putBoolean(autoCommitAcks);
-      
+   	return 3 * BOOLEAN_LENGTH;
+   }
+   
+   @Override
+   protected void encodeBody(final ConnectionCreateSessionMessage request, final RemotingBuffer out) throws Exception
+   {
+      out.putBoolean(request.isXA());
+      out.putBoolean(request.isAutoCommitSends());
+      out.putBoolean(request.isAutoCommitAcks());      
    }
 
    @Override
-   protected ConnectionCreateSessionMessage decodeBody(RemotingBuffer in)
-         throws Exception
+   protected ConnectionCreateSessionMessage decodeBody(final RemotingBuffer in) throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-
-      boolean xa = in.getBoolean();
-      boolean autoCommitSends = in.getBoolean();
-      boolean autoCommitAcks = in.getBoolean();
-
-      return new ConnectionCreateSessionMessage(xa, autoCommitSends, autoCommitAcks);
+      return new ConnectionCreateSessionMessage(in.getBoolean(), in.getBoolean(), in.getBoolean());
    }
 
    // Package protected ---------------------------------------------

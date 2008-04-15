@@ -37,29 +37,24 @@ public class SessionXAForgetMessageCodec extends AbstractPacketCodec<SessionXAFo
 
    // AbstractPacketCodec overrides ---------------------------------
 
+   protected int getBodyLength(final SessionXAForgetMessage packet) throws Exception
+   {   	
+   	int bodyLength = getXidLength(packet.getXid());
+   	return bodyLength;
+   }
+   
    @Override
-   protected void encodeBody(SessionXAForgetMessage message, RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionXAForgetMessage message, final RemotingBuffer out) throws Exception
    {      
       Xid xid = message.getXid();
-      
-      int bodyLength = getXidLength(xid);
-      
-      out.putInt(bodyLength);
       
       encodeXid(xid, out);
    }
 
    @Override
-   protected SessionXAForgetMessage decodeBody(RemotingBuffer in)
+   protected SessionXAForgetMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-      
       Xid xid = decodeXid(in);
       
       return new SessionXAForgetMessage(xid);

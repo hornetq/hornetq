@@ -7,12 +7,15 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
+import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
+import org.jboss.messaging.util.StreamUtils;
 
 /**
  * 
  * A SessionAcknowledgeMessageCodec
  * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -35,26 +38,22 @@ public class SessionAcknowledgeMessageCodec extends AbstractPacketCodec<SessionA
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   @Override
-   protected void encodeBody(SessionAcknowledgeMessage message, RemotingBuffer out) throws Exception
+   protected int getBodyLength(final SessionAcknowledgeMessage packet) throws Exception
    {
-      int bodyLength = LONG_LENGTH + 1;
-
-      out.putInt(bodyLength);
+      return LONG_LENGTH + 1;
+   }
+   
+   @Override
+   protected void encodeBody(final SessionAcknowledgeMessage message, final RemotingBuffer out) throws Exception
+   {
       out.putLong(message.getDeliveryID());
       out.putBoolean(message.isAllUpTo());
    }
 
    @Override
-   protected SessionAcknowledgeMessage decodeBody(RemotingBuffer in)
+   protected SessionAcknowledgeMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-      
       long deliveryID = in.getLong();
       boolean isAllUpTo = in.getBoolean();
      

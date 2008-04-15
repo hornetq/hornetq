@@ -36,23 +36,21 @@ public class ProducerReceiveTokensMessageCodec extends AbstractPacketCodec<Produ
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   @Override
-   protected void encodeBody(ProducerReceiveTokensMessage message, RemotingBuffer out) throws Exception
+   protected int getBodyLength(final ProducerReceiveTokensMessage packet) throws Exception
    {
-      out.putInt(INT_LENGTH);
+   	return INT_LENGTH;
+   }
+   
+   @Override
+   protected void encodeBody(final ProducerReceiveTokensMessage message, final RemotingBuffer out) throws Exception
+   {
       out.putInt(message.getTokens());
    }
 
    @Override
-   protected ProducerReceiveTokensMessage decodeBody(RemotingBuffer in)
+   protected ProducerReceiveTokensMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      int bodyLength = in.getInt();
-      if (in.remaining() < bodyLength)
-      {
-         return null;
-      }
-
       return new ProducerReceiveTokensMessage(in.getInt());
    }
 
