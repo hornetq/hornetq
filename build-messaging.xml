@@ -120,7 +120,6 @@
    <property name="test.jms.build.dir" value="${test.jms.dir}/build"/>
    <property name="test.jms.src.dir" value="${test.jms.dir}/src"/>
    <property name="test.jms.classes.dir" value="${test.jms.dir}/build/classes"/>
-   <property name="test.jms.etc.dir" value="${test.jms.build.dir}/etc"/>
    <property name="disable.invm" value="false"/>
 
    <!--
@@ -233,7 +232,7 @@
    </path>
 
    <path id="jms.test.execution.classpath">
-      <pathelement location="${test.jms.etc.dir}"/>
+      <pathelement location="${src.etc.dir}"/>
       <pathelement location="${test.jms.dir}/etc"/>
       <pathelement location="${test.jms.classes.dir}"/>
       <path refid="jms.test.compilation.classpath"/>
@@ -493,7 +492,10 @@
             <exclude name="build.properties"/>
          </fileset>
       </copy>
-      <echo message="lib.dir=../../../lib${line.separator}client.jar=../../../lib/jboss-messaging-client.jar" file="${build.distro.examples.dir}/build.properties"/>
+      <echo message="lib.dir=../../../lib${line.separator}client.jar=../../../lib/jboss-messaging-client.jar"
+            file="${build.distro.examples.dir}/build.properties"/>
+      <echo message="java.naming.factory.initial=org.jnp.interfaces.NamingContextFactory${line.separator}java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces"
+            file="${build.distro.config.dir}/jndi.properties"/>
    </target>
 
    <target name="userdoc">
@@ -553,20 +555,6 @@
              destdir="${test.jms.classes.dir}">
          <classpath refid="jms.test.compilation.classpath"/>
       </javac>
-      <!--<javac destdir="${test.jms.classes.dir}"
-             optimize="${javac.optimize}"
-             target="1.5"
-             source="1.5"
-             debug="${javac.debug}"
-             depend="${javac.depend}"
-             verbose="${javac.verbose}"
-             deprecation="${javac.deprecation}"
-             includeJavaRuntime="${javac.include.java.runtime}"
-             failonerror="${javac.fail.onerror}">
-         <src path="${test.jms.src.dir}"/>
-         <classpath refid="jms.test.compilation.classpath"/>
-         <include name="**/*.java"/>
-      </javac>-->
    </target>
 
    <target name="unit-tests" depends="jar, compile-unit-tests">
@@ -608,12 +596,6 @@
       <echo message=""/>
       <mkdir dir="${test.output.dir}"/>
       <mkdir dir="${test.reports.dir}"/>
-      <mkdir dir="${test.jms.etc.dir}"/>
-      <copy todir="${test.jms.etc.dir}">
-         <fileset dir="${src.etc.dir}">
-            <include name="*.xml"/>
-         </fileset>
-      </copy>
       <junit printsummary="${junit.printsummary}"
              fork="on"
              forkMode="once"
