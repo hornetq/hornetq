@@ -10,6 +10,10 @@ import static java.util.UUID.randomUUID;
 
 import java.util.Random;
 
+import javax.transaction.xa.Xid;
+
+import org.jboss.messaging.core.transaction.impl.XidImpl;
+
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 
@@ -45,10 +49,21 @@ public class RandomUtil
    {
       return Integer.valueOf(random.nextInt()).byteValue();
    }
+   
+   public static boolean randomBoolean()
+   {
+      return random.nextBoolean();
+   }
 
    public static byte[] randomBytes()
    {
       return randomString().getBytes();
+   }
+   
+   
+   public static Xid randomXid()
+   {      
+      return new XidImpl(randomBytes(), randomInt(), randomBytes());
    }
 
    // Constructors --------------------------------------------------

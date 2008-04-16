@@ -33,7 +33,7 @@ public class SessionBrowserNextMessageBlockMessageCodec extends AbstractPacketCo
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final SessionBrowserNextMessageBlockMessage packet) throws Exception
+   public int getBodyLength(final SessionBrowserNextMessageBlockMessage packet) throws Exception
    {   	
       return LONG_LENGTH;
    }

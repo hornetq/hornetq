@@ -33,7 +33,7 @@ public class CreateConnectionMessageCodec extends  AbstractPacketCodec<CreateCon
 
    // AbstractPackedCodec overrides----------------------------------
 
-   protected int getBodyLength(final CreateConnectionRequest packet) throws Exception
+   public int getBodyLength(final CreateConnectionRequest packet) throws Exception
    {
       int bodyLength = INT_LENGTH // version
             + LONG_LENGTH +

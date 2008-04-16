@@ -42,7 +42,7 @@ public class ProducerSendMessageCodec extends AbstractPacketCodec<ProducerSendMe
    //TOD remove this in next stage of refactoring
    private byte[] encodedMsg;
    
-   protected int getBodyLength(final ProducerSendMessage packet) throws Exception
+   public int getBodyLength(final ProducerSendMessage packet) throws Exception
    {
    	encodedMsg = StreamUtils.toBytes(packet.getMessage());   
 

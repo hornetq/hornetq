@@ -39,7 +39,7 @@ public class ConsumerDeliverMessageCodec extends AbstractPacketCodec<ConsumerDel
    //TODO - remove this when in next stage of refactoring
    private byte[] encodedMsg;
    
-   protected int getBodyLength(final ConsumerDeliverMessage packet) throws Exception
+   public int getBodyLength(final ConsumerDeliverMessage packet) throws Exception
    {
    	encodedMsg = StreamUtils.toBytes(packet.getMessage());
    	

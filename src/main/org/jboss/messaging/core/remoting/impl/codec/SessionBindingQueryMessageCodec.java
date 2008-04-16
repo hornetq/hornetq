@@ -36,7 +36,7 @@ public class SessionBindingQueryMessageCodec extends AbstractPacketCodec<Session
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final SessionBindingQueryMessage packet) throws Exception
+   public int getBodyLength(final SessionBindingQueryMessage packet) throws Exception
    {
       return sizeof(packet.getAddress());
    }

@@ -34,7 +34,7 @@ public class TextPacketCodec extends AbstractPacketCodec<TextPacket>
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final TextPacket packet) throws Exception
+   public int getBodyLength(final TextPacket packet) throws Exception
    {   	
       return sizeof(packet.getText());
    }

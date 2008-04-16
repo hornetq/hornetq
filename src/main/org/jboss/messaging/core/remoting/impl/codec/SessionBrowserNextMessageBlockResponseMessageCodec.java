@@ -58,7 +58,7 @@ public class SessionBrowserNextMessageBlockResponseMessageCodec extends Abstract
    //TODO remove this in next refactoring
    private byte[] encodedMsgs;
    
-   protected int getBodyLength(final SessionBrowserNextMessageBlockResponseMessage packet) throws Exception
+   public int getBodyLength(final SessionBrowserNextMessageBlockResponseMessage packet) throws Exception
    {   	
    	Message[] messages = packet.getMessages();
       

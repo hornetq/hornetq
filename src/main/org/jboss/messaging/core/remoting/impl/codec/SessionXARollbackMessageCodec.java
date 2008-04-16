@@ -30,7 +30,7 @@ public class SessionXARollbackMessageCodec extends AbstractPacketCodec<SessionXA
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final SessionXARollbackMessage packet) throws Exception
+   public int getBodyLength(final SessionXARollbackMessage packet) throws Exception
    {   	
    	Xid xid = packet.getXid();
       

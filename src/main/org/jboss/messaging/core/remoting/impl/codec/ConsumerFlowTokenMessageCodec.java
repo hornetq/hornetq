@@ -33,7 +33,7 @@ public class ConsumerFlowTokenMessageCodec extends AbstractPacketCodec<ConsumerF
 
    // AbstractPacketCodec overrides ---------------------------------
    
-   protected int getBodyLength(final ConsumerFlowTokenMessage packet) throws Exception
+   public int getBodyLength(final ConsumerFlowTokenMessage packet) throws Exception
    {
    	return INT_LENGTH;
    }

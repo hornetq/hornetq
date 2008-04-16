@@ -59,36 +59,44 @@ public class MessagingCodec extends CumulativeProtocolDecoder implements Protoco
 	
 	protected boolean doDecode(final IoSession session, final IoBuffer in, final ProtocolDecoderOutput out) throws Exception
 	{
-		if (in.remaining() > AbstractPacketCodec.INT_LENGTH)
+	   int start = in.position();
+	   
+	   if (in.remaining() <= AbstractPacketCodec.INT_LENGTH)
    	{
-   		int length = in.getInt();
-   		
-   		log.info("length is " + length);
-   		
-   		if (in.remaining() < length)
-   		{
-   			//Need more data
-   			return true;
-   		}
+         in.position(start);
+         return false;
    	}
-   	else
+		
+   	int length = in.getInt();
+
+      if (in.remaining() < length)
    	{
-   		//Need more data
-   		return true;
+         in.position(start);
+         return false;
    	}
-							
-		byte packetType = in.get();
 		
-		log.info("packet type is " + packetType);
+      int limit = in.limit();
+		in.limit(in.position() + length);
+		byte byteType = in.get();
+		PacketType packetType = PacketType.from(byteType);
 		
-      AbstractPacketCodec codec = codecs.get(packetType);
-      
-      if (codec == null)
-      {
-         throw new IllegalStateException("no encoder has been registered for " + packetType);
-      }
-                  
-      return codec.decode(new BufferWrapper(in), out);
+		try
+		{
+		   AbstractPacketCodec codec = codecs.get(packetType);
+
+		   if (codec == null)
+		   {
+		      throw new IllegalStateException("no encoder has been registered for " + packetType);
+		   }
+
+		   codec.decode(new BufferWrapper(in.slice()), out);
+		   return true;
+		} finally 
+		{
+		   in.position(in.limit());
+		   in.limit(limit);
+		}
+
 	}
 	
 	// Public --------------------------------------------------------

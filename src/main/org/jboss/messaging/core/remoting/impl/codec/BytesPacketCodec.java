@@ -34,7 +34,7 @@ public class BytesPacketCodec extends AbstractPacketCodec<BytesPacket>
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final BytesPacket packet)
+   public int getBodyLength(final BytesPacket packet)
    {
    	return INT_LENGTH + packet.getBytes().length;
    }

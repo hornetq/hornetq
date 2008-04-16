@@ -34,14 +34,14 @@ public class SessionXAGetInDoubtXidsResponseMessageCodec extends AbstractPacketC
 
    public SessionXAGetInDoubtXidsResponseMessageCodec()
    {
-      super(PacketType.SESS_XA_INDOUBT_XIDS);
+      super(PacketType.SESS_XA_INDOUBT_XIDS_RESP);
    }
 
    // Public --------------------------------------------------------
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final SessionXAGetInDoubtXidsResponseMessage packet) throws Exception
+   public int getBodyLength(final SessionXAGetInDoubtXidsResponseMessage packet) throws Exception
    {   	
       int bodyLength = INT_LENGTH;
       

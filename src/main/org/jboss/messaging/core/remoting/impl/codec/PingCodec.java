@@ -34,7 +34,7 @@ public class PingCodec extends AbstractPacketCodec<Ping>
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final Ping packet) throws Exception
+   public int getBodyLength(final Ping packet) throws Exception
    {
    	return LONG_LENGTH;
    }

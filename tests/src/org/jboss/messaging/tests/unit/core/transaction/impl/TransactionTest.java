@@ -1,5 +1,7 @@
 package org.jboss.messaging.tests.unit.core.transaction.impl;
 
+import static org.jboss.messaging.tests.util.RandomUtil.randomXid;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -81,7 +83,7 @@ public class TransactionTest extends UnitTestCase
    	
       EasyMock.replay(sm);
       
-      Xid xid = generateXid();
+      Xid xid = randomXid();
       
    	Transaction tx = new TransactionImpl(xid, sm, po);
    	
@@ -627,7 +629,7 @@ public class TransactionTest extends UnitTestCase
    	
       EasyMock.replay(sm);
       
-      Xid xid = this.generateXid();
+      Xid xid = randomXid();
       
       Transaction tx = new TransactionImpl(xid, sm, po);
       

@@ -53,6 +53,11 @@ public class BufferWrapper implements RemotingBuffer
 
    // RemotingBuffer implementation ----------------------------------------------
 
+   public byte[] array()
+   {
+      return buffer.array();
+   }
+
    public int remaining()
    {
       return buffer.remaining();
@@ -157,6 +162,11 @@ public class BufferWrapper implements RemotingBuffer
    public void rewind()
    {
    	buffer.rewind();
+   }
+
+   public void flip()
+   {
+      buffer.flip();
    }
    
    // Package protected ---------------------------------------------

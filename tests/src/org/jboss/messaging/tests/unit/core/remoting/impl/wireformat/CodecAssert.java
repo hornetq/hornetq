@@ -6,9 +6,11 @@
  */
 package org.jboss.messaging.tests.unit.core.remoting.impl.wireformat;
 
-import junit.framework.Assert;
+import java.util.List;
 
-import org.jboss.messaging.core.transaction.impl.XidImpl;
+import javax.transaction.xa.Xid;
+
+import junit.framework.Assert;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -24,13 +26,16 @@ public class CodecAssert extends Assert
 
    // Static --------------------------------------------------------
 
-   static void assertSameXids(XidImpl[] expected, XidImpl[] actual)
+   static void assertSameXids(List<Xid> expected, List<Xid> actual)
    {
-      assertEquals(expected.length, actual.length);
-      for (int i = 0; i < expected.length; i++)
+      assertNotNull(expected);
+      assertNotNull(actual);
+      assertEquals(expected.size(), actual.size());
+
+      for (int i = 0; i < expected.size(); i++)
       {
-         XidImpl expectedXid = expected[i];
-         XidImpl actualXid = actual[i];
+         Xid expectedXid = expected.get(i);
+         Xid actualXid = actual.get(i);
          assertEqualsByteArrays(expectedXid.getBranchQualifier(), actualXid
                .getBranchQualifier());
          assertEquals(expectedXid.getFormatId(), actualXid.getFormatId());

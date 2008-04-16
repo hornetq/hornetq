@@ -34,7 +34,7 @@ public class PongCodec extends AbstractPacketCodec<Pong>
 
    // AbstractPacketCodec overrides ---------------------------------
    
-   protected int getBodyLength(final Pong packet) throws Exception
+   public int getBodyLength(final Pong packet) throws Exception
    {
    	return LONG_LENGTH + BOOLEAN_LENGTH;
    }

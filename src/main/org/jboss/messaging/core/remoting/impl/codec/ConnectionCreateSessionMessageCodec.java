@@ -34,7 +34,7 @@ public class ConnectionCreateSessionMessageCodec extends
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final ConnectionCreateSessionMessage packet)
+   public int getBodyLength(final ConnectionCreateSessionMessage packet)
    {
    	return 3 * BOOLEAN_LENGTH;
    }

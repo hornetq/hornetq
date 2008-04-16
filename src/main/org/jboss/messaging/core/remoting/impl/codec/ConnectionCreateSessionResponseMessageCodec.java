@@ -33,7 +33,7 @@ public class ConnectionCreateSessionResponseMessageCodec extends
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final ConnectionCreateSessionResponseMessage packet)
+   public int getBodyLength(final ConnectionCreateSessionResponseMessage packet)
    {
    	return LONG_LENGTH;
    }

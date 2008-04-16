@@ -39,7 +39,7 @@ public class SessionBindingQueryResponseMessageCodec extends AbstractPacketCodec
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final SessionBindingQueryResponseMessage packet) throws Exception
+   public int getBodyLength(final SessionBindingQueryResponseMessage packet) throws Exception
    {   	
       List<String> queueNames = packet.getQueueNames();
 

@@ -36,7 +36,7 @@ public class ProducerReceiveTokensMessageCodec extends AbstractPacketCodec<Produ
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final ProducerReceiveTokensMessage packet) throws Exception
+   public int getBodyLength(final ProducerReceiveTokensMessage packet) throws Exception
    {
    	return INT_LENGTH;
    }

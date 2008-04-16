@@ -34,7 +34,7 @@ public class SessionCreateConsumerMessageCodec extends
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final SessionCreateConsumerMessage packet) throws Exception
+   public int getBodyLength(final SessionCreateConsumerMessage packet) throws Exception
    {   	
    	int bodyLength = sizeof(packet.getQueueName()) +
    	   sizeof(packet.getFilterString()) + 2 * BOOLEAN_LENGTH + 2 * INT_LENGTH;

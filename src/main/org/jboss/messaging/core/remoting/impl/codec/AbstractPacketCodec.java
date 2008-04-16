@@ -74,8 +74,6 @@ public abstract class AbstractPacketCodec<P extends Packet>
       
       int messageLength = getBodyLength(packet) + HEADER_LENGTH;
       
-      log.info("Message length is " + messageLength);
-      
       //The standard header fields
       buf.putInt(messageLength);
       buf.put(packet.getType().byteValue());
@@ -106,14 +104,16 @@ public abstract class AbstractPacketCodec<P extends Packet>
    
    public static int getXidLength(final Xid xid)
    {
-      return 1 + 1 + xid.getBranchQualifier().length + 1 + xid.getGlobalTransactionId().length;
+      return INT_LENGTH + INT_LENGTH + xid.getBranchQualifier().length + INT_LENGTH + xid.getGlobalTransactionId().length;
    }
 
-   public boolean decode(final RemotingBuffer buffer, final ProtocolDecoderOutput out) throws Exception
+   public void decode(final RemotingBuffer buffer, final ProtocolDecoderOutput out) throws Exception
    {        	   	
       long correlationID = buffer.getLong();
       long targetID = buffer.getLong();
       long executorID = buffer.getLong();
+      if (executorID == -1)
+         executorID = targetID;
       boolean oneWay = buffer.getBoolean();
       
       Packet packet = decodeBody(buffer);
@@ -124,24 +124,22 @@ public abstract class AbstractPacketCodec<P extends Packet>
       packet.setOneWay(oneWay);
       
       out.write(packet);
-
-      return false;
    }   
    
    public PacketType getType()
    {
    	return type;
    }
-   
-   // Protected -----------------------------------------------------
 
-   protected abstract int getBodyLength(P packet) throws Exception;
+   public abstract int getBodyLength(P packet) throws Exception;
+
+   // Protected -----------------------------------------------------
    
    protected abstract void encodeBody(P packet, RemotingBuffer buf) throws Exception;
 
    protected abstract Packet decodeBody(RemotingBuffer buffer) throws Exception;
 
-   protected static void encodeXid(final Xid xid, final RemotingBuffer out)
+   public static void encodeXid(final Xid xid, final RemotingBuffer out)
    {
       out.putInt(xid.getFormatId());
       out.putInt(xid.getBranchQualifier().length);

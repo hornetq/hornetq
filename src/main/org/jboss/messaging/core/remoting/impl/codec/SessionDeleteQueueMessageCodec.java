@@ -36,7 +36,7 @@ public class SessionDeleteQueueMessageCodec extends AbstractPacketCodec<SessionD
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final SessionDeleteQueueMessage packet) throws Exception
+   public int getBodyLength(final SessionDeleteQueueMessage packet) throws Exception
    {   	
    	String queueName = packet.getQueueName();      
       int bodyLength = sizeof(queueName);

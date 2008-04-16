@@ -36,7 +36,7 @@ public class SessionXAResponseMessageCodec extends AbstractPacketCodec<SessionXA
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final SessionXAResponseMessage packet) throws Exception
+   public int getBodyLength(final SessionXAResponseMessage packet) throws Exception
    {   	
    	int bodyLength = BOOLEAN_LENGTH + INT_LENGTH + sizeof(packet.getMessage());
    	

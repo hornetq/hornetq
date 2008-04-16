@@ -34,7 +34,7 @@ public class SessionCreateBrowserResponseMessageCodec extends
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final SessionCreateBrowserResponseMessage packet) throws Exception
+   public int getBodyLength(final SessionCreateBrowserResponseMessage packet) throws Exception
    {   	
       return LONG_LENGTH;
    }

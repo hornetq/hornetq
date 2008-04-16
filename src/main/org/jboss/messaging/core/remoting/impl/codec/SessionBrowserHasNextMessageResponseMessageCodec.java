@@ -34,7 +34,7 @@ public class SessionBrowserHasNextMessageResponseMessageCodec extends
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final SessionBrowserHasNextMessageResponseMessage packet) throws Exception
+   public int getBodyLength(final SessionBrowserHasNextMessageResponseMessage packet) throws Exception
    {   	
       return BOOLEAN_LENGTH;
    }

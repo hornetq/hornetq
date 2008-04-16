@@ -264,19 +264,7 @@ public class UnitTestCase extends TestCase
          assertEquals(entry.getValue(), headers2.get(entry.getKey()));
       }
    }
-   
-   protected XidImpl generateXid()
-   {      
-      String id1 = java.util.UUID.randomUUID().toString();
-      
-      String id2 = java.util.UUID.randomUUID().toString();
-      
-      int id = (int)(Math.random() * 100);
-      
-      XidImpl xid = new XidImpl(id1.getBytes(), id, id2.getBytes());
-      
-      return xid;
-   }
+
    
 
 }

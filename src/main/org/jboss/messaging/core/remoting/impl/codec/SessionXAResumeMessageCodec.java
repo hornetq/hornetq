@@ -37,7 +37,7 @@ public class SessionXAResumeMessageCodec extends AbstractPacketCodec<SessionXARe
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final SessionXAResumeMessage packet) throws Exception
+   public int getBodyLength(final SessionXAResumeMessage packet) throws Exception
    {   	
    	Xid xid = packet.getXid();
       

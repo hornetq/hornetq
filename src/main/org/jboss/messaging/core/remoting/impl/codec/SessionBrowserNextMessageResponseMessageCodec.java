@@ -39,9 +39,9 @@ public class SessionBrowserNextMessageResponseMessageCodec extends AbstractPacke
    //TODO remove this in next refactoring
    private byte[] encodedMsg;
    
-   protected int getBodyLength(final SessionBrowserNextMessageResponseMessage packet) throws Exception
+   public int getBodyLength(final SessionBrowserNextMessageResponseMessage packet) throws Exception
    {   	
-   	byte[] encodedMsg = StreamUtils.toBytes(packet.getMessage());
+   	encodedMsg = StreamUtils.toBytes(packet.getMessage());
 
       int bodyLength = INT_LENGTH + encodedMsg.length;
       

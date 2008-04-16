@@ -37,7 +37,7 @@ public class SessionCreateProducerMessageCodec extends
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final SessionCreateProducerMessage packet) throws Exception
+   public int getBodyLength(final SessionCreateProducerMessage packet) throws Exception
    {   	
    	String address = packet.getAddress();
       

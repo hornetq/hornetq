@@ -33,7 +33,7 @@ public class EmptyPacketCodec extends AbstractPacketCodec<PacketImpl>
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final PacketImpl packet)
+   public int getBodyLength(final PacketImpl packet)
    {
    	return 0;
    }

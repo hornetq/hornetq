@@ -37,27 +37,26 @@ public class SessionXACommitMessageCodec extends AbstractPacketCodec<SessionXACo
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final SessionXACommitMessage packet) throws Exception
+   public int getBodyLength(final SessionXACommitMessage packet) throws Exception
    {   	
-   	int bodyLength = BOOLEAN_LENGTH + getXidLength(packet.getXid());
+   	int bodyLength = getXidLength(packet.getXid()) + BOOLEAN_LENGTH;
    	return bodyLength;
    }
    
    @Override
    protected void encodeBody(final SessionXACommitMessage message, final RemotingBuffer out) throws Exception
    {      
-      out.putBoolean(message.isOnePhase());      
       encodeXid(message.getXid(), out);      
+      out.putBoolean(message.isOnePhase());      
    }
 
    @Override
    protected SessionXACommitMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      boolean onePhase = in.getBoolean();
-            
       Xid xid = decodeXid(in);
-            
+      boolean onePhase = in.getBoolean();
+                  
       return new SessionXACommitMessage(xid, onePhase);
    }
 

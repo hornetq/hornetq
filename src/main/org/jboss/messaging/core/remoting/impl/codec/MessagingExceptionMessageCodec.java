@@ -34,7 +34,7 @@ public class MessagingExceptionMessageCodec extends AbstractPacketCodec<Messagin
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final MessagingExceptionMessage packet) throws Exception
+   public int getBodyLength(final MessagingExceptionMessage packet) throws Exception
    {
    	return INT_LENGTH + sizeof(packet.getException().getMessage());
    }

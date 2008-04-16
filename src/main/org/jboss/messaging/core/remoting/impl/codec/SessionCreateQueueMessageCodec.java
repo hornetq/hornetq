@@ -36,7 +36,7 @@ public class SessionCreateQueueMessageCodec extends AbstractPacketCodec<SessionC
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final SessionCreateQueueMessage packet) throws Exception
+   public int getBodyLength(final SessionCreateQueueMessage packet) throws Exception
    {   	
    	String address = packet.getAddress();
       String queueName = packet.getQueueName();

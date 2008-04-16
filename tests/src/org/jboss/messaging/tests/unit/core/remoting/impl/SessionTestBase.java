@@ -17,12 +17,14 @@ import java.util.concurrent.atomic.AtomicLong;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.tests.integration.core.remoting.mina.ReversePacketHandler;
 import org.jboss.messaging.tests.unit.core.remoting.TestPacketHandler;
+import org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
@@ -35,6 +37,8 @@ import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 public abstract class SessionTestBase extends TestCase
 {
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(SessionTestBase.class);
 
    // Attributes ----------------------------------------------------
 
@@ -69,7 +73,7 @@ public abstract class SessionTestBase extends TestCase
    {
       serverPacketHandler.expectMessage(1);
 
-      TextPacket packet = new TextPacket("testSendOneWay");
+      TextPacket packet = new TextPacket("testWrite");
       packet.setTargetID(serverPacketHandler.getID());
       
       session.write(packet);

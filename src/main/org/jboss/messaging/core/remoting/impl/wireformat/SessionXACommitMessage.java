@@ -33,7 +33,6 @@ public class SessionXACommitMessage extends PacketImpl
       super(PacketType.SESS_XA_COMMIT);
       
       this.xid = xid;
-      
       this.onePhase = onePhase;
    }
 
@@ -47,6 +46,12 @@ public class SessionXACommitMessage extends PacketImpl
    public boolean isOnePhase()
    {
       return onePhase;
+   }
+
+   @Override
+   public String toString()
+   {
+      return getParentString() + ", xid=" + xid + ", onePhae=" + onePhase + "]";
    }
    
    // Package protected ---------------------------------------------

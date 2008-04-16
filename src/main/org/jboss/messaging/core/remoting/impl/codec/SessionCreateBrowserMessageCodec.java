@@ -34,7 +34,7 @@ public class SessionCreateBrowserMessageCodec extends
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final SessionCreateBrowserMessage packet) throws Exception
+   public int getBodyLength(final SessionCreateBrowserMessage packet) throws Exception
    {   	
    	String queueName = packet.getQueueName();
       String filterString = packet.getFilterString();

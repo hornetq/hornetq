@@ -36,7 +36,7 @@ public class SessionAddDestinationMessageCodec extends AbstractPacketCodec<Sessi
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final SessionAddDestinationMessage packet) throws Exception
+   public int getBodyLength(final SessionAddDestinationMessage packet) throws Exception
    {
       return sizeof(packet.getAddress()) + BOOLEAN_LENGTH;
    }

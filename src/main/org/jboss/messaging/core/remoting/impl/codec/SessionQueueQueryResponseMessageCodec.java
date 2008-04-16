@@ -36,7 +36,7 @@ public class SessionQueueQueryResponseMessageCodec extends AbstractPacketCodec<S
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final SessionQueueQueryResponseMessage packet) throws Exception
+   public int getBodyLength(final SessionQueueQueryResponseMessage packet) throws Exception
    {   	
    	String filterString  = packet.getFilterString();
       String address = packet.getAddress();

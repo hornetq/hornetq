@@ -36,7 +36,7 @@ public class SessionXAGetTimeoutResponseMessageCodec extends AbstractPacketCodec
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final SessionXAGetTimeoutResponseMessage packet) throws Exception
+   public int getBodyLength(final SessionXAGetTimeoutResponseMessage packet) throws Exception
    {   	
    	return INT_LENGTH;
    }

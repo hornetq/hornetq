@@ -7,9 +7,7 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
-import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
-import org.jboss.messaging.util.StreamUtils;
 
 /**
  * 
@@ -38,7 +36,7 @@ public class SessionAcknowledgeMessageCodec extends AbstractPacketCodec<SessionA
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final SessionAcknowledgeMessage packet) throws Exception
+   public int getBodyLength(final SessionAcknowledgeMessage packet) throws Exception
    {
       return LONG_LENGTH + 1;
    }

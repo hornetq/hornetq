@@ -35,7 +35,7 @@ public class SessionCancelMessageCodec extends AbstractPacketCodec<SessionCancel
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final SessionCancelMessage packet) throws Exception
+   public int getBodyLength(final SessionCancelMessage packet) throws Exception
    {   	
       return LONG_LENGTH + 1;
    }

@@ -49,4 +49,6 @@ public interface RemotingBuffer
    
    void rewind();
 
+   byte[] array();
+
 }

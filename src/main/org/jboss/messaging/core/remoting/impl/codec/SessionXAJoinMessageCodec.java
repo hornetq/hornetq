@@ -37,7 +37,7 @@ public class SessionXAJoinMessageCodec extends AbstractPacketCodec<SessionXAJoin
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final SessionXAJoinMessage packet) throws Exception
+   public int getBodyLength(final SessionXAJoinMessage packet) throws Exception
    {   	
    	Xid xid = packet.getXid();
       

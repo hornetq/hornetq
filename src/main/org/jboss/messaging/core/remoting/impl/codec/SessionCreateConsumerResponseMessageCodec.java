@@ -34,7 +34,7 @@ public class SessionCreateConsumerResponseMessageCodec extends
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   protected int getBodyLength(final SessionCreateConsumerResponseMessage packet) throws Exception
+   public int getBodyLength(final SessionCreateConsumerResponseMessage packet) throws Exception
    {   	
    	return LONG_LENGTH + INT_LENGTH;
    }
