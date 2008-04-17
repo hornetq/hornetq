@@ -7,6 +7,7 @@
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CREATECONNECTION_RESP;
+import org.jboss.messaging.core.version.Version;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -21,16 +22,19 @@ public class CreateConnectionResponse extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private final long connectionTargetID;
+
+   private final Version serverVersion;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public CreateConnectionResponse(final long connectionTargetID)
+   public CreateConnectionResponse(final long connectionTargetID, final Version serverVersion)
    {
       super(CREATECONNECTION_RESP);
 
       this.connectionTargetID = connectionTargetID;
+      this.serverVersion = serverVersion;
    }
 
    // Public --------------------------------------------------------
@@ -39,7 +43,12 @@ public class CreateConnectionResponse extends PacketImpl
    {
       return connectionTargetID;
    }
-   
+
+   public Version getServerVersion()
+   {
+      return serverVersion;
+   }
+
    @Override
    public String toString()
    {

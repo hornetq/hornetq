@@ -201,7 +201,7 @@ public class JBossConnectionFactory implements
       {
          ClientConnection res = connectionFactory.createConnection(username, password);
                     
-         return new JBossConnection(res, type, connectionFactory.getServerVersion(), clientID, dupsOKBatchSize);
+         return new JBossConnection(res, type, clientID, dupsOKBatchSize);
       }
       catch (MessagingException e)
       {

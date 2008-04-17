@@ -80,8 +80,6 @@ public class JBossConnection implements
    
    private final int connectionType;
    
-   private final Version version;
-   
    private final int dupsOKBatchSize;
    
    private volatile ExceptionListener exceptionListener;
@@ -94,14 +92,12 @@ public class JBossConnection implements
               
    // Constructors ---------------------------------------------------------------------------------
 
-   public JBossConnection(final ClientConnection connection, final int connectionType, final Version version,
+   public JBossConnection(final ClientConnection connection, final int connectionType,
                           final String clientID, final int dupsOKBatchSize)
    {
       this.connection = connection;
       
       this.connectionType = connectionType;
-      
-      this.version = version;
       
       this.clientID = clientID;
       
@@ -151,7 +147,7 @@ public class JBossConnection implements
 
       if (metaData == null)
       {
-         metaData = new JBossConnectionMetaData(version);
+         metaData = new JBossConnectionMetaData(connection.getServerVersion());
       }
 
       return metaData;

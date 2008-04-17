@@ -164,7 +164,7 @@ public class ClientCrashTest extends TestCase
       server = new MessagingServerImpl(config);
       server.start();
 
-      cf = new ClientConnectionFactoryImpl(0, config, server.getVersion());
+      cf = new ClientConnectionFactoryImpl(0, config);
    }
 
    @Override

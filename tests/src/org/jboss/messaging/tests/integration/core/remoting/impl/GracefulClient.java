@@ -66,7 +66,7 @@ public class GracefulClient
          // FIXME there should be another way to get a meaningful Version on the
          // client side...
          MessagingServer server = new MessagingServerImpl();
-         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, config, server.getVersion());
+         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, config);
          ClientConnection conn = cf.createConnection(null, null);
          ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
          ClientProducer producer = session.createProducer(QUEUE);

@@ -77,7 +77,7 @@ public class ConnectionManagerTest extends TestCase
    {
       
       assertActiveConnectionsOnTheServer(0);
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, server.getConfiguration(), server.getVersion());
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, server.getConfiguration());
 
       ClientConnection conn_1 = cf.createConnection();
       

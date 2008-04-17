@@ -323,6 +323,9 @@
          <include name="**/*.java"/>
          <classpath refid="compilation.classpath"/>
       </javac>
+
+      <echo message="messaging.version.versionName=${messaging.version.name}${line.separator}messaging.version.majorVersion=${messaging.version.major}${line.separator}messaging.version.minorVersion=${messaging.version.minor}${line.separator}messaging.version.microVersion=${messaging.version.micro}${line.separator}messaging.version.incrementingVersion=${messaging.version.incrementing}${line.separator}messaging.version.versionSuffix=${messaging.version.suffix}${line.separator}"
+            file="${build.classes.dir}/version.properties"/>
    </target>
 
    <!-- ======================================================================================== -->
@@ -345,6 +348,7 @@
 
       <jar jarfile="${build.jars.dir}/jboss-${module.name}-client.jar">
          <fileset dir="${build.classes.dir}">
+            <include name="version.properties"/>
             <include name="org/jboss/messaging/jms/**/*.class"/>
             <include name="org/jboss/messaging/core/client/**/*.class"/>
             <include name="org/jboss/messaging/core/exception/**/*.class"/>
@@ -695,7 +699,7 @@
       </junitreport>
    </target>
 
-    <property name="test.execution.classpath.file" value=".test.execution.classpath"/>
+   <property name="test.execution.classpath.file" value=".test.execution.classpath"/>
 
    <target name="get-unit-test-execution-classpath" depends="init">
       <pathconvert refid="unit.test.execution.classpath"

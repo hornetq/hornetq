@@ -183,6 +183,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMess
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
+import org.jboss.messaging.core.version.impl.VersionImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.StreamUtils;
 
@@ -469,17 +470,24 @@ public class PacketTypeTest extends UnitTestCase
    public void testCreateConnectionResponse() throws Exception
    {
       CreateConnectionResponse response = new CreateConnectionResponse(
-            randomLong());
+            randomLong(), new VersionImpl("test", 1,2,3,4,"xxx"));
       AbstractPacketCodec<CreateConnectionResponse> codec = new CreateConnectionResponseMessageCodec();
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(response, codec,
-            response.getConnectionTargetID());
+            response.getConnectionTargetID(),
+              response.getServerVersion().getVersionName(),
+              response.getServerVersion().getMajorVersion(),
+              response.getServerVersion().getMinorVersion(),
+              response.getServerVersion().getMicroVersion(),
+              response.getServerVersion().getIncrementingVersion(),
+              response.getServerVersion().getVersionSuffix());
 
       assertTrue(decodedPacket instanceof CreateConnectionResponse);
       CreateConnectionResponse decodedResponse = (CreateConnectionResponse) decodedPacket;
       assertEquals(PacketType.CREATECONNECTION_RESP, decodedResponse.getType());
       assertEquals(response.getConnectionTargetID(), decodedResponse
             .getConnectionTargetID());
+      assertEquals(response.getServerVersion().getFullVersion(), decodedResponse.getServerVersion().getFullVersion());
    }
 
    public void testConnectionCreateSessionMessage() throws Exception

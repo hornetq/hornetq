@@ -9,6 +9,8 @@ package org.jboss.messaging.core.remoting.impl.codec;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CREATECONNECTION_RESP;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
+import org.jboss.messaging.core.version.impl.VersionImpl;
+import org.jboss.messaging.core.version.Version;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -32,23 +34,43 @@ public class CreateConnectionResponseMessageCodec extends AbstractPacketCodec<Cr
    }
 
    // AbstractPackedCodec overrides----------------------------------
-   
+
    public int getBodyLength(final CreateConnectionResponse packet) throws Exception
    {
-   	return LONG_LENGTH;
+      return LONG_LENGTH +
+              sizeof(packet.getServerVersion().getVersionName()) +
+              INT_LENGTH +
+              INT_LENGTH +
+              INT_LENGTH +
+              INT_LENGTH +
+              sizeof(packet.getServerVersion().getVersionSuffix());
    }
 
    @Override
    protected void encodeBody(final CreateConnectionResponse response, final RemotingBuffer out)
-         throws Exception
+           throws Exception
    {
       out.putLong(response.getConnectionTargetID());
+      out.putNullableString(response.getServerVersion().getVersionName());
+      out.putInt(response.getServerVersion().getMajorVersion());
+      out.putInt(response.getServerVersion().getMinorVersion());
+      out.putInt(response.getServerVersion().getMicroVersion());
+      out.putInt(response.getServerVersion().getIncrementingVersion());
+      out.putNullableString(response.getServerVersion().getVersionSuffix());
    }
 
    @Override
    protected CreateConnectionResponse decodeBody(final RemotingBuffer in) throws Exception
    {
-      return new CreateConnectionResponse(in.getLong());
+      long connectionTargetID = in.getLong();
+      String versionName = in.getNullableString();
+      int majorVersion = in.getInt();
+      int minorVersion = in.getInt();
+      int microVersion = in.getInt();
+      int incrementingVersion = in.getInt();
+      String versionSuffix = in.getNullableString();
+      Version version =  new VersionImpl(versionName, majorVersion, minorVersion, microVersion, incrementingVersion, versionSuffix);
+      return new CreateConnectionResponse(connectionTargetID, version);
    }
 
    // Package protected ---------------------------------------------

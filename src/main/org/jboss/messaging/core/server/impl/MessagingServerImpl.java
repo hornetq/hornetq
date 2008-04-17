@@ -61,6 +61,7 @@ import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.impl.ResourceManagerImpl;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.core.version.impl.VersionImpl;
+import org.jboss.messaging.core.exception.MessagingException;
 
 /**
  * A Messaging Server
@@ -122,7 +123,7 @@ public class MessagingServerImpl implements MessagingServer
    {
       //We need to hard code the version information into a source file
 
-      version = new VersionImpl("Stilton", 2, 0, 0, 100, "alpha1");
+      version = VersionImpl.load();
 
       started = false;
    }
@@ -332,11 +333,17 @@ public class MessagingServerImpl implements MessagingServer
 
    public CreateConnectionResponse createConnection(final String username, final String password,
                                                     final long remotingClientSessionID, final String clientVMID,
-                                                    final String clientAddress)
+                                                    final String clientAddress,
+                                                    final int incrementVersion)
       throws Exception
    {
       log.trace("creating a new connection for user " + username);
 
+      if(version.getIncrementingVersion() < incrementVersion)
+      {
+         throw new MessagingException(MessagingException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS,
+                 "client not compatible with version: " + version.getFullVersion());
+      }
       // Authenticate. Successful autentication will place a new SubjectContext on thread local,
       // which will be used in the authorization process. However, we need to make sure we clean
       // up thread local immediately after we used the information, otherwise some other people
@@ -354,7 +361,7 @@ public class MessagingServerImpl implements MessagingServer
 
       remotingService.getDispatcher().register(new ServerConnectionPacketHandler(connection));
 
-      return new CreateConnectionResponse(connection.getID());
+      return new CreateConnectionResponse(connection.getID(), version);
    }
    
    public ObjectIDGenerator getObjectIDGenerator()

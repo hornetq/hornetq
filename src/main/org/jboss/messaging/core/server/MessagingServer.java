@@ -89,7 +89,8 @@ public interface MessagingServer extends MessagingComponent
    
    CreateConnectionResponse createConnection(String username, String password,
                                              long remotingClientSessionID, String clientVMID,
-                                             String clientAddress) throws Exception;
+                                             String clientAddress,
+                                             int incrementVersion) throws Exception;
 
    DeploymentManager getDeploymentManager();
    

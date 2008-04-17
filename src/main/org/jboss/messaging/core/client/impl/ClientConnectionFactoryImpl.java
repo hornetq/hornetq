@@ -33,6 +33,7 @@ import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.version.Version;
+import org.jboss.messaging.core.version.impl.VersionImpl;
 
 
 /**
@@ -63,8 +64,6 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
    private final Configuration config;
    
    private final PacketDispatcher dispatcher;
-
-   private final Version serverVersion;
  
    private final int serverID;
    
@@ -83,14 +82,12 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
     
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConnectionFactoryImpl(final int serverID, final Configuration config,
-   		                             final Version serverVersion, final boolean strictTck,
+   public ClientConnectionFactoryImpl(final int serverID, final Configuration config, final boolean strictTck,
                                       final int defaultConsumerWindowSize, final int defaultConsumerMaxRate,
                                       final int defaultProducerWindowSize, final int defaultProducerMaxRate)
    {
       this.serverID = serverID;
       this.config = config;
-      this.serverVersion = serverVersion;
       this.strictTck = strictTck;
       this.defaultConsumerWindowSize = defaultConsumerWindowSize;  
       this.defaultConsumerMaxRate = defaultConsumerMaxRate;
@@ -99,12 +96,10 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
       this.dispatcher = new PacketDispatcherImpl(null);
    }
    
-   public ClientConnectionFactoryImpl(final int serverID, final Configuration config,
-                                      final Version serverVersion)
+   public ClientConnectionFactoryImpl(final int serverID, final Configuration config)
    {
       this.serverID = serverID;
       this.config = config;
-      this.serverVersion = serverVersion;
       this.strictTck = false;
       this.defaultConsumerWindowSize = 1000;      
       this.defaultConsumerMaxRate = -1;
@@ -120,7 +115,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
    
    public ClientConnection createConnection(final String username, final String password) throws MessagingException
    {
-      int v = serverVersion.getIncrementingVersion();
+      Version clientVersion = VersionImpl.load();
                        
       RemotingConnection remotingConnection = null;
       try
@@ -132,7 +127,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
          long sessionID = remotingConnection.getSessionID();
          
          CreateConnectionRequest request =
-            new CreateConnectionRequest(v, sessionID, JMSClientVMIdentifier.instance, username, password);
+            new CreateConnectionRequest(clientVersion.getIncrementingVersion(), sessionID, JMSClientVMIdentifier.instance, username, password);
          
          CreateConnectionResponse response =
             (CreateConnectionResponse)remotingConnection.send(0, request);
@@ -140,8 +135,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
          ClientConnectionImpl connection =
             new ClientConnectionImpl(response.getConnectionTargetID(), serverID, strictTck, remotingConnection,
             		defaultConsumerWindowSize, defaultConsumerMaxRate,
-            		defaultProducerWindowSize, defaultProducerMaxRate);
-
+            		defaultProducerWindowSize, defaultProducerMaxRate, response.getServerVersion());
          return connection;
       }
       catch (Throwable t)
@@ -177,11 +171,6 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
    public Configuration getConfiguration()
    {
       return config;
-   }
-   
-   public Version getServerVersion()
-   {
-      return serverVersion;
    }
 
 	public int getConsumerWindowSize()

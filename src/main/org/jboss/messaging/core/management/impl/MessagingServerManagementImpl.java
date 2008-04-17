@@ -117,7 +117,6 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
    {
       return new ClientConnectionFactoryImpl(messagingServer.getConfiguration().getMessagingServerID(),
               messagingServer.getConfiguration(),
-              messagingServer.getVersion(),
               messagingServer.getConfiguration().isStrictTck() || strictTck,
               consumerWindowSize, consumerMaxRate,
               producerWindowSize, producerMaxRate);

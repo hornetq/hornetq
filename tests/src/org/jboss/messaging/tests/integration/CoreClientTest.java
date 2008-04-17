@@ -54,7 +54,7 @@ public class CoreClientTest extends TestCase
    
    public void testINVMCoreClient() throws Exception
    {
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, invmServer.getConfiguration(), invmServer.getVersion());
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, invmServer.getConfiguration());
       ClientConnection conn = cf.createConnection();
       
       ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
@@ -75,7 +75,9 @@ public class CoreClientTest extends TestCase
       
       conn.close();
    }
-      
+
+
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

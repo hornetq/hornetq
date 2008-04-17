@@ -104,7 +104,7 @@ public class ClientNetworkFailureTest extends TestCase
    public void testServerResourcesCleanUpWhenClientCommThrowsException()
          throws Exception
    {
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, server.getConfiguration(), server.getVersion());
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, server.getConfiguration());
 
       ClientConnection conn = cf.createConnection();
 
@@ -144,7 +144,7 @@ public class ClientNetworkFailureTest extends TestCase
    public void testServerResourcesCleanUpWhenClientCommDropsPacket()
          throws Exception
    {
-       ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, server.getConfiguration(), server.getVersion());
+       ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, server.getConfiguration());
 
       ClientConnection conn = cf.createConnection();
 

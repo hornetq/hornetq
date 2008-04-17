@@ -35,6 +35,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.ConcurrentHashSet;
 
 /**
@@ -78,6 +79,8 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    private final int defaultProducerWindowSize;
    
    private final int defaultProducerMaxRate;
+
+   private final Version serverVersion;
    
 
    // Static ---------------------------------------------------------------------------------------
@@ -89,7 +92,8 @@ public class ClientConnectionImpl implements ClientConnectionInternal
                                final int defaultConsumerWindowSize,     
                                final int defaultConsumerMaxRate,
                                final int defaultProducerWindowSize,
-                               final int defaultProducerMaxRate)
+                               final int defaultProducerMaxRate,
+                               final Version serverVersion)
    {
       this.serverTargetID = serverTargetID;
       
@@ -106,6 +110,8 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       this.defaultProducerWindowSize = defaultProducerWindowSize;
       
       this.defaultProducerMaxRate = defaultProducerMaxRate;
+
+      this.serverVersion = serverVersion;
    }
    
    // ClientConnection implementation --------------------------------------------------------------
@@ -193,6 +199,11 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    public void removeSession(final ClientSession session)
    {
       sessions.remove(session);
+   }
+
+   public Version getServerVersion()
+   {
+      return serverVersion;
    }
 
    // Public ---------------------------------------------------------------------------------------

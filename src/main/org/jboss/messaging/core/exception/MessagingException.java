@@ -58,6 +58,8 @@ public class MessagingException extends Exception
    public static final int ADDRESS_DOES_NOT_EXIST = 106;
    
    public static final int ADDRESS_EXISTS = 107;
+
+   public static final int INCOMPATIBLE_CLIENT_SERVER_VERSIONS = 108;
    
    private int code;
    

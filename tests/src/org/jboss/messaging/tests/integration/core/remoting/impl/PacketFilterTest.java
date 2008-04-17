@@ -52,7 +52,7 @@ public class PacketFilterTest  extends TestCase
       DummyInterceptor interceptorA = null;
       DummyInterceptorB interceptorB = null;
 
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, server.getConfiguration(), server.getVersion());
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, server.getConfiguration());
       ClientConnection conn = null;
       try
       {
@@ -159,7 +159,7 @@ public class PacketFilterTest  extends TestCase
          interceptor.sendException=false;
 
 
-         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, server.getConfiguration(), server.getVersion());
+         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, server.getConfiguration());
          conn = cf.createConnection();
          conn.start();
          ClientSession session = conn.createClientSession(false, true, true, -1, false, false);

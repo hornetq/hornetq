@@ -35,7 +35,5 @@ public interface ClientConnectionFactory
 {         
    ClientConnection createConnection() throws MessagingException;
    
-   ClientConnection createConnection(String username, String password) throws MessagingException; 
-   
-   Version getServerVersion();   
+   ClientConnection createConnection(String username, String password) throws MessagingException;   
 }
