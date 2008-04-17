@@ -224,6 +224,9 @@ public class MinaService implements RemotingService, FailureNotifier
 
    public void fireFailure(MessagingException me)
    {
+      if (acceptor.isDisposing())
+         return;
+      
       if (me instanceof RemotingException)
       {
          RemotingException re = (RemotingException) me;
