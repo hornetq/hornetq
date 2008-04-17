@@ -34,6 +34,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.core.version.impl.VersionImpl;
+import org.jboss.messaging.util.VersionLoader;
 
 
 /**
@@ -115,7 +116,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
    
    public ClientConnection createConnection(final String username, final String password) throws MessagingException
    {
-      Version clientVersion = VersionImpl.load();
+      Version clientVersion = VersionLoader.load();
                        
       RemotingConnection remotingConnection = null;
       try

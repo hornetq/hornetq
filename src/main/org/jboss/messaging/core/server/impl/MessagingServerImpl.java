@@ -62,6 +62,7 @@ import org.jboss.messaging.core.transaction.impl.ResourceManagerImpl;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.core.version.impl.VersionImpl;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.util.VersionLoader;
 
 /**
  * A Messaging Server
@@ -123,7 +124,7 @@ public class MessagingServerImpl implements MessagingServer
    {
       //We need to hard code the version information into a source file
 
-      version = VersionImpl.load();
+      version = VersionLoader.load();
 
       started = false;
    }

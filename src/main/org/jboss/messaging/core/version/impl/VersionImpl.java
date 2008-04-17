@@ -60,33 +60,6 @@ public class VersionImpl implements Version, Streamable, Serializable
       this.versionSuffix = versionSuffix;
    }
 
-   public static Version load()
-   {
-      Properties versionProps = new Properties();
-      InputStream in = VersionImpl.class.getClassLoader().getResourceAsStream("version.properties");
-      if (in == null)
-      {
-         throw new RuntimeException("version.properties is not available");
-      }
-      try
-      {
-         versionProps.load(in);
-         String versionName = versionProps.getProperty("messaging.version.versionName");
-         int majorVersion = Integer.valueOf(versionProps.getProperty("messaging.version.majorVersion"));
-         int minorVersion = Integer.valueOf(versionProps.getProperty("messaging.version.minorVersion"));
-         int microVersion = Integer.valueOf(versionProps.getProperty("messaging.version.microVersion"));
-         int incrementingVersion = Integer.valueOf(versionProps.getProperty("messaging.version.incrementingVersion"));
-         String versionSuffix = versionProps.getProperty("messaging.version.versionSuffix");
-         return new VersionImpl(versionName, majorVersion, minorVersion, microVersion, incrementingVersion, versionSuffix);
-      }
-      catch (IOException e)
-      {
-         //if we get here then the messaging hasnt been built properly and the version.properties is skewed in some way
-         throw new RuntimeException("unable to load version.properties", e);
-      }
-
-   }
-
    // Version implementation ------------------------------------------
 
    public String getFullVersion()
