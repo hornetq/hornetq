@@ -23,14 +23,11 @@ package org.jboss.messaging.core.server.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
 
 import org.jboss.messaging.core.client.FailureListener;
-import org.jboss.messaging.core.client.impl.JMSClientVMIdentifier;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.RemotingException;
@@ -57,25 +54,17 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
    // Attributes -----------------------------------------------------------------------------------
 
    private Map<Long /* remoting session ID */, List<ServerConnection>> endpoints;
-
-   private Set<ServerConnection> activeServerConnections;
-
-   // the clients maps is for information only: to better identify the clients of
-   // jboss messaging using their VM ID
-   private Map<Long /* remoting session id */, String /* client vm id */> clients;
    
    // Constructors ---------------------------------------------------------------------------------
 
    public ConnectionManagerImpl()
    {
       endpoints = new HashMap<Long, List<ServerConnection>>();
-      activeServerConnections = new HashSet<ServerConnection>();
-      clients = new HashMap<Long, String>();
    }
 
    // ConnectionManager implementation -------------------------------------------------------------
 
-   public synchronized void registerConnection(String clientVMID, long remotingClientSessionID,
+   public synchronized void registerConnection(long remotingClientSessionID,
          ServerConnection endpoint)
    {    
       List<ServerConnection> connectionEndpoints = endpoints.get(remotingClientSessionID);
@@ -88,10 +77,6 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
       connectionEndpoints.add(endpoint);
 
-      activeServerConnections.add(endpoint);
-
-      clients.put(remotingClientSessionID, clientVMID);
-
       log.debug("registered connection " + endpoint + " as " + remotingClientSessionID);
    }
    
@@ -102,19 +87,13 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
       if (connectionEndpoints != null)
       {
-         boolean removed = connectionEndpoints.remove(endpoint);
-
-         if (removed)
-         {
-            activeServerConnections.remove(endpoint);
-         }
+         connectionEndpoints.remove(endpoint);
 
          log.debug("unregistered connection " + endpoint + " with remoting session ID " + remotingClientSessionID);
 
          if (connectionEndpoints.isEmpty())
          {
             endpoints.remove(remotingClientSessionID);           
-            clients.remove(remotingClientSessionID);
          }
 
          return endpoint;
@@ -126,21 +105,12 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
    {
       // I will make a copy to avoid ConcurrentModification
       List<ServerConnection> list = new ArrayList<ServerConnection>();
-      list.addAll(activeServerConnections);
+      for (List<ServerConnection> connections : endpoints.values())
+      {
+         list.addAll(connections);
+      }
       return list;
    }      
-      
-   // MessagingComponent implementation ------------------------------------------------------------
-   
-   public void start() throws Exception
-   {
-      //NOOP
-   }
-   
-   public void stop() throws Exception
-   {
-      //NOOP
-   }
 
    // FailureListener implementation --------------------------------------------------------------
    
@@ -149,6 +119,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
       if (me instanceof RemotingException)
       {
          RemotingException re = (RemotingException) me;
+         log.warn(re.getMessage(), re);
          handleClientFailure(re.getSessionID(), true);
       }
    }
@@ -173,18 +144,11 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
     */
    private synchronized void handleClientFailure(long remotingSessionID, boolean clientToServer)
    {
-      String clientVMID = clients.get(remotingSessionID);
-
-      if (clientVMID == null)
-      {
-         return;
-      }
-      
       log.warn("A problem has been detected " +
          (clientToServer ?
             "with the connection to remote client ":
             "trying to send a message to remote client ") +
-         remotingSessionID + ", client VM ID=" + clientVMID + ". It is possible the client has exited without closing " +
+         remotingSessionID + ". It is possible the client has exited without closing " +
          "its connection(s) or the network has failed. All connection resources " +
          "corresponding to that client process will now be removed.");
 
@@ -223,18 +187,6 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
       if (log.isDebugEnabled())
       {
          StringBuffer buff = new StringBuffer("*********** Dumping connections\n");
-         buff.append("this client VM ID: ").append(JMSClientVMIdentifier.instance).append("\n");
-         buff.append("remoting session ID <----> client VM ID:\n");
-         if (clients.size() == 0)
-         {
-            buff.append("    No registered sessions\n");
-         }
-         for (Entry<Long, String> client : clients.entrySet())
-         {
-            long remotingSessionID = client.getKey();
-            String clientVMID = client.getValue();
-            buff.append("    ").append(remotingSessionID).append(" <----> ").append(clientVMID).append("\n");
-         }
          buff.append("remoting session ID -----> server connection endpoints:\n");
          if (endpoints.size() == 0)
          {

@@ -37,10 +37,9 @@ import java.util.List;
  *
  * $Id$
  */
-public interface ConnectionManager extends MessagingComponent
+public interface ConnectionManager
 {
-   void registerConnection(String clientVMID,
-                           long remotingClientSessionID, ServerConnection endpoint);
+   void registerConnection(long remotingClientSessionID, ServerConnection endpoint);
 
    /**
     * @param ServerConnection 

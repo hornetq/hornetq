@@ -75,7 +75,6 @@ public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
          
          response = server.createConnection(request.getUsername(), request.getPassword(),
          		                             request.getRemotingSessionID(),
-                                            request.getClientVMID(),
                                             sender.getRemoteAddress(),
                                             request.getVersion());
       }     

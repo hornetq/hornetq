@@ -23,7 +23,6 @@ public class CreateConnectionRequest extends PacketImpl
 
    private final int version;
    private final long remotingSessionID;
-   private final String clientVMID;
    private final String username;
    private final String password;
 
@@ -32,13 +31,12 @@ public class CreateConnectionRequest extends PacketImpl
    // Constructors --------------------------------------------------
 
    public CreateConnectionRequest(final int version,
-         final long remotingSessionID, final String clientVMID, final String username, final String password)
+         final long remotingSessionID, final String username, final String password)
    {
       super(CREATECONNECTION);
 
       this.version = version;
       this.remotingSessionID = remotingSessionID;
-      this.clientVMID = clientVMID;
       this.username = username;
       this.password = password;
    }
@@ -53,11 +51,6 @@ public class CreateConnectionRequest extends PacketImpl
    public long getRemotingSessionID()
    {
       return remotingSessionID;
-   }
-   
-   public String getClientVMID()
-   {
-      return clientVMID;
    }
 
    public String getUsername()
@@ -76,7 +69,6 @@ public class CreateConnectionRequest extends PacketImpl
       StringBuffer buf = new StringBuffer(getParentString());
       buf.append(", version=" + version);
       buf.append(", remotingSessionID=" + remotingSessionID);
-      buf.append(", clientVMID=" + clientVMID);
       buf.append(", username=" + username);
       buf.append(", password=" + password);
       buf.append("]");

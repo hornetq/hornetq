@@ -37,7 +37,6 @@ public class CreateConnectionMessageCodec extends  AbstractPacketCodec<CreateCon
    {
       int bodyLength = INT_LENGTH // version
             + LONG_LENGTH +
-            + sizeof(packet.getClientVMID())
             + sizeof(packet.getUsername()) 
             + sizeof(packet.getPassword());
       return bodyLength;
@@ -49,13 +48,11 @@ public class CreateConnectionMessageCodec extends  AbstractPacketCodec<CreateCon
    {
       int version = request.getVersion();
       long remotingSessionID = request.getRemotingSessionID();
-      String clientVMID = request.getClientVMID();
       String username = request.getUsername();
       String password = request.getPassword();
 
       out.putInt(version);
       out.putLong(remotingSessionID);
-      out.putNullableString(clientVMID);
       out.putNullableString(username);
       out.putNullableString(password);
    }
@@ -65,11 +62,10 @@ public class CreateConnectionMessageCodec extends  AbstractPacketCodec<CreateCon
    {
       int version = in.getInt();
       long remotingSessionID = in.getLong();
-      String clientVMID = in.getNullableString();
       String username = in.getNullableString();
       String password = in.getNullableString();
 
-      return new CreateConnectionRequest(version, remotingSessionID, clientVMID, username, password);
+      return new CreateConnectionRequest(version, remotingSessionID, username, password);
    }
 
    // Package protected ---------------------------------------------

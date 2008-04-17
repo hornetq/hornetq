@@ -33,7 +33,6 @@ import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.version.Version;
-import org.jboss.messaging.core.version.impl.VersionImpl;
 import org.jboss.messaging.util.VersionLoader;
 
 
@@ -128,7 +127,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
          long sessionID = remotingConnection.getSessionID();
          
          CreateConnectionRequest request =
-            new CreateConnectionRequest(clientVersion.getIncrementingVersion(), sessionID, JMSClientVMIdentifier.instance, username, password);
+            new CreateConnectionRequest(clientVersion.getIncrementingVersion(), sessionID, username, password);
          
          CreateConnectionResponse response =
             (CreateConnectionResponse)remotingConnection.send(0, request);

@@ -106,7 +106,7 @@ public class ServerConnectionImpl implements ServerConnection
    // Constructors ---------------------------------------------------------------------------------
       
    public ServerConnectionImpl(final String username, final String password,
-   		                      final long remotingClientSessionID, final String jmsClientVMID,
+   		                      final long remotingClientSessionID,
    		                      final String clientAddress,
    		                      final PacketDispatcher dispatcher,
    		                      final ResourceManager resourceManager,
@@ -146,7 +146,7 @@ public class ServerConnectionImpl implements ServerConnection
       
       createdTime = System.currentTimeMillis();
 
-      connectionManager.registerConnection(jmsClientVMID, remotingClientSessionID, this);
+      connectionManager.registerConnection(remotingClientSessionID, this);
    }
 
    // ServerConnection implementation ------------------------------------------------------------

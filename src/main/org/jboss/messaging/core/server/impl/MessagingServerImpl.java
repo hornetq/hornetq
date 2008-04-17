@@ -60,7 +60,6 @@ import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.impl.ResourceManagerImpl;
 import org.jboss.messaging.core.version.Version;
-import org.jboss.messaging.core.version.impl.VersionImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.util.VersionLoader;
 
@@ -181,7 +180,6 @@ public class MessagingServerImpl implements MessagingServer
       }
       // Start the wired components
       securityDeployer.start();
-      connectionManager.start();
       remotingService.addFailureListener(connectionManager);
       memoryManager.start();
       postOffice.start();
@@ -224,7 +222,6 @@ public class MessagingServerImpl implements MessagingServer
       securityDeployer.stop();
       queueSettingsDeployer.stop();
       deploymentManager.stop();
-      connectionManager.stop();
       remotingService.removeFailureListener(connectionManager);
       connectionManager = null;
       memoryManager.stop();
@@ -333,8 +330,7 @@ public class MessagingServerImpl implements MessagingServer
    }
 
    public CreateConnectionResponse createConnection(final String username, final String password,
-                                                    final long remotingClientSessionID, final String clientVMID,
-                                                    final String clientAddress,
+                                                    final long remotingClientSessionID, final String clientAddress,
                                                     final int incrementVersion)
       throws Exception
    {
@@ -354,7 +350,7 @@ public class MessagingServerImpl implements MessagingServer
 
       final ServerConnection connection =
          new ServerConnectionImpl(username, password,
-                          remotingClientSessionID, clientVMID, clientAddress,
+                          remotingClientSessionID, clientAddress,
                           remotingService.getDispatcher(), resourceManager, storageManager,
                           queueSettingsRepository,
                           postOffice, securityStore, connectionManager,

@@ -445,15 +445,14 @@ public class PacketTypeTest extends UnitTestCase
    {
       int version = randomInt();
       long remotingSessionID = randomLong();
-      String clientVMID = randomString();
       String username = null;
       String password = null;
       CreateConnectionRequest request = new CreateConnectionRequest(version,
-            remotingSessionID, clientVMID, username, password);
+            remotingSessionID, username, password);
       AbstractPacketCodec<CreateConnectionRequest> codec = new CreateConnectionMessageCodec();
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(request, codec,
-            version, remotingSessionID, clientVMID, username, password);
+            version, remotingSessionID, username, password);
 
       assertTrue(decodedPacket instanceof CreateConnectionRequest);
       CreateConnectionRequest decodedRequest = (CreateConnectionRequest) decodedPacket;
@@ -462,7 +461,6 @@ public class PacketTypeTest extends UnitTestCase
       assertEquals(request.getVersion(), decodedRequest.getVersion());
       assertEquals(request.getRemotingSessionID(), decodedRequest
             .getRemotingSessionID());
-      assertEquals(request.getClientVMID(), decodedRequest.getClientVMID());
       assertEquals(request.getUsername(), decodedRequest.getUsername());
       assertEquals(request.getPassword(), decodedRequest.getPassword());
    }
