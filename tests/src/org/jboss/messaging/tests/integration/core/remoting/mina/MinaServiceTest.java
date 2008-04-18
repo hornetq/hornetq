@@ -15,6 +15,7 @@ import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
+import org.jboss.messaging.core.client.impl.LocationImpl;
 
 public class MinaServiceTest extends TestCase
 {
@@ -42,7 +43,7 @@ public class MinaServiceTest extends TestCase
 
    public void testMinaConnector_Failure() throws Exception
    {
-      NIOConnector connector = new MinaConnector(ConfigurationHelper.newConfiguration(
+      NIOConnector connector = new MinaConnector(new LocationImpl(
             TCP, "localhost", 9000), new PacketDispatcherImpl(null));
 
       try

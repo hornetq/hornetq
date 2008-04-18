@@ -9,6 +9,8 @@ package org.jboss.messaging.core.remoting;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
+import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.client.ConnectionParams;
 
 
 /**
@@ -35,15 +37,15 @@ public interface ConnectorRegistry
     * @return <code>true</code> if this Configuration has not already been
     *         registered, <code>false</code> else
     */
-   boolean register(Configuration config, PacketDispatcher serverDispatcher);
+   boolean register(Location location, PacketDispatcher serverDispatcher);
 
    /**
     * @return <code>true</code> if this Configuration was registered,
     *         <code>false</code> else
     */
-   boolean unregister(Configuration config);
+   boolean unregister(Location location);
 
-   NIOConnector getConnector(Configuration config, PacketDispatcher dispatcher);
+   NIOConnector getConnector(Location location, ConnectionParams connectionParams, PacketDispatcher dispatcher);
 
    /**
     * Decrement the number of references on the NIOConnector corresponding to
@@ -59,11 +61,11 @@ public interface ConnectorRegistry
     * @throws IllegalStateException
     *            if no NIOConnector were created for the given Configuration
     */
-   NIOConnector removeConnector(Configuration config);
+   NIOConnector removeConnector(Location location);
 
    int getRegisteredConfigurationSize();
 
-   int getConnectorCount(Configuration config);
+   int getConnectorCount(Location location);
 
    void clear();
 }

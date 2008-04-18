@@ -24,19 +24,13 @@ package org.jboss.messaging.tests.integration.core.remoting.impl;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import static org.jboss.messaging.tests.integration.core.remoting.impl.ClientExitTest.QUEUE;
 
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
-import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientProducer;
-import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.*;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
-import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 
 /**
  * Code to be run in an external VM, via main().
@@ -60,12 +54,8 @@ public class GracefulClient
    {
       try
       {
-         ConfigurationImpl config = ConfigurationHelper.newConfiguration(TCP,
-               "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
+         Location config = new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
 
-         // FIXME there should be another way to get a meaningful Version on the
-         // client side...
-         MessagingServer server = new MessagingServerImpl();
          ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, config);
          ClientConnection conn = cf.createConnection(null, null);
          ClientSession session = conn.createClientSession(false, true, true, -1, false, false);

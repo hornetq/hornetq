@@ -25,7 +25,8 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGISTRY;
 
 import org.jboss.messaging.core.client.FailureListener;
-import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.NIOConnector;
@@ -52,7 +53,9 @@ public class RemotingConnectionImpl implements RemotingConnection
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private final Configuration config;
+   private final Location location;
+
+   private final ConnectionParams connectionParams;
 
    private NIOConnector connector;
    
@@ -64,15 +67,17 @@ public class RemotingConnectionImpl implements RemotingConnection
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public RemotingConnectionImpl(final Configuration config, final PacketDispatcher dispatcher) throws Exception
+   public RemotingConnectionImpl(final Location location, ConnectionParams connectionParams, final PacketDispatcher dispatcher) throws Exception
    {
-      assert config != null;
+      assert location != null;
       assert dispatcher != null;
+      assert connectionParams != null;
       
-      this.config = config;
+      this.location = location;
+      this.connectionParams = connectionParams;
       this.dispatcher = dispatcher;
       
-      log.trace(this + " created with configuration " + config);
+      log.trace(this + " created with configuration " + location);
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -83,11 +88,11 @@ public class RemotingConnectionImpl implements RemotingConnection
    {
       if (log.isTraceEnabled()) { log.trace(this + " started remoting connection"); }
 
-      connector = REGISTRY.getConnector(config, dispatcher);
+      connector = REGISTRY.getConnector(location, connectionParams, dispatcher);
       session = connector.connect();
 
       if (log.isDebugEnabled())
-         log.debug("Using " + connector + " to connect to " + config);
+         log.debug("Using " + connector + " to connect to " + location);
 
       log.trace(this + " started");
    }
@@ -102,7 +107,7 @@ public class RemotingConnectionImpl implements RemotingConnection
          { 
             if (listener != null)
                connector.removeFailureListener(listener);
-            NIOConnector connectorFromRegistry = REGISTRY.removeConnector(config);
+            NIOConnector connectorFromRegistry = REGISTRY.removeConnector(location);
             if (connectorFromRegistry != null)
                connectorFromRegistry.disconnect();
          }
@@ -218,7 +223,7 @@ public class RemotingConnectionImpl implements RemotingConnection
       } else 
       {
          Packet response = (Packet) session.writeAndBlock(packet, 
-               config.getTimeout(), SECONDS);
+               connectionParams.getTimeout(), SECONDS);
          return response;
       }
    }

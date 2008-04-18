@@ -175,7 +175,7 @@ public class MinaService implements RemotingService, FailureNotifier
       if (log.isDebugEnabled())
          log.debug("invm optimization for remoting is " + (disableInvm ? "disabled" : "enabled"));
       if (!disableInvm)
-         REGISTRY.register(config, dispatcher);
+         REGISTRY.register(config.getLocation(), dispatcher);
 
       started = true;
    }
@@ -193,7 +193,7 @@ public class MinaService implements RemotingService, FailureNotifier
          threadPool.shutdown();
       }
       
-      REGISTRY.unregister(config);
+      REGISTRY.unregister(config.getLocation());
       
       started = false;
    }

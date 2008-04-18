@@ -25,7 +25,8 @@ import java.io.Serializable;
 
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientConnectionFactory;
-import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
@@ -61,7 +62,9 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
 
    // Attributes -----------------------------------------------------------------------------------
    
-   private final Configuration config;
+   private final Location location;
+
+   private final ConnectionParams connectionParams;
    
    private final PacketDispatcher dispatcher;
  
@@ -82,30 +85,46 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
     
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConnectionFactoryImpl(final int serverID, final Configuration config, final boolean strictTck,
+   public ClientConnectionFactoryImpl(final int serverID, final Location location, final ConnectionParams connectionParams,
+                                      final boolean strictTck,
                                       final int defaultConsumerWindowSize, final int defaultConsumerMaxRate,
                                       final int defaultProducerWindowSize, final int defaultProducerMaxRate)
    {
       this.serverID = serverID;
-      this.config = config;
+      this.location = location;
       this.strictTck = strictTck;
       this.defaultConsumerWindowSize = defaultConsumerWindowSize;  
       this.defaultConsumerMaxRate = defaultConsumerMaxRate;
       this.defaultProducerWindowSize = defaultProducerWindowSize;
       this.defaultProducerMaxRate = defaultProducerMaxRate;
       this.dispatcher = new PacketDispatcherImpl(null);
+      this.connectionParams = connectionParams;
    }
    
-   public ClientConnectionFactoryImpl(final int serverID, final Configuration config)
+   public ClientConnectionFactoryImpl(final int serverID, final Location location)
    {
       this.serverID = serverID;
-      this.config = config;
+      this.location = location;
       this.strictTck = false;
       this.defaultConsumerWindowSize = 1000;      
       this.defaultConsumerMaxRate = -1;
       this.defaultProducerWindowSize = 1000;
       this.defaultProducerMaxRate = -1;
       this.dispatcher = new PacketDispatcherImpl(null);
+      connectionParams = new ConnectionParamsImpl();
+   }
+
+   public ClientConnectionFactoryImpl(final int serverID,  final Location location, final ConnectionParams connectionParams)
+   {
+      this.serverID = serverID;
+      this.location = location;
+      this.strictTck = false;
+      this.defaultConsumerWindowSize = 1000;
+      this.defaultConsumerMaxRate = -1;
+      this.defaultProducerWindowSize = 1000;
+      this.defaultProducerMaxRate = -1;
+      this.dispatcher = new PacketDispatcherImpl(null);
+      this.connectionParams = connectionParams;
    }
 
    public ClientConnection createConnection() throws MessagingException
@@ -120,7 +139,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
       RemotingConnection remotingConnection = null;
       try
       {
-         remotingConnection = new RemotingConnectionImpl(config, dispatcher);
+         remotingConnection = new RemotingConnectionImpl(location, connectionParams,  dispatcher);
        
          remotingConnection.start();
          
@@ -131,12 +150,10 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
          
          CreateConnectionResponse response =
             (CreateConnectionResponse)remotingConnection.send(0, request);
-         
-         ClientConnectionImpl connection =
-            new ClientConnectionImpl(response.getConnectionTargetID(), serverID, strictTck, remotingConnection,
-            		defaultConsumerWindowSize, defaultConsumerMaxRate,
-            		defaultProducerWindowSize, defaultProducerMaxRate, response.getServerVersion());
-         return connection;
+
+         return new ClientConnectionImpl(response.getConnectionTargetID(), serverID, strictTck, remotingConnection,
+               defaultConsumerWindowSize, defaultConsumerMaxRate,
+               defaultProducerWindowSize, defaultProducerMaxRate, response.getServerVersion());
       }
       catch (Throwable t)
       {
@@ -167,11 +184,6 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Ser
    }
    
    // ClientConnectionFactory implementation ---------------------------------------------
-   
-   public Configuration getConfiguration()
-   {
-      return config;
-   }
 
 	public int getConsumerWindowSize()
 	{

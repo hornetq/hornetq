@@ -30,6 +30,10 @@ import java.util.List;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.server.JournalType;
+import org.jboss.messaging.core.client.impl.LocationImpl;
+import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
+import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.client.ConnectionParams;
 
 /**
  * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>
@@ -222,9 +226,9 @@ public class ConfigurationImpl implements Configuration, Serializable
       this.port = port;
    }
 
-   public String getLocation()
+   public Location getLocation()
    {
-      return transport + "://" + host + "/" + port;
+      return new LocationImpl(transport, host, port);
    }
    
    public int getKeepAliveInterval()
@@ -419,5 +423,21 @@ public class ConfigurationImpl implements Configuration, Serializable
 	{
 		return requireDestinations;
 	}
+
+   public ConnectionParams getConnectionParams()
+   {
+      ConnectionParams connectionParams = new ConnectionParamsImpl();
+      connectionParams.setInvmDisabled(invmDisabled);
+      connectionParams.setInvmDisabledModified(invmDisabledModified);
+      connectionParams.setKeepAliveInterval(keepAliveInterval);
+      connectionParams.setKeepAliveTimeout(keepAliveTimeout);
+      connectionParams.setSSLEnabled(sslEnabled);
+      connectionParams.setSSLEnabledModified(sslEnabledModified);
+      connectionParams.setTcpNoDelay(tcpNoDelay);
+      connectionParams.setTcpReceiveBufferSize(tcpReceiveBufferSize);
+      connectionParams.setTcpSendBufferSize(tcpSendBufferSize);
+      connectionParams.setTimeout(timeout);
+      return connectionParams;
+   }
 }
  

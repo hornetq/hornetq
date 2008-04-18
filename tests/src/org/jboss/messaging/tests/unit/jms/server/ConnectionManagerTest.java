@@ -29,6 +29,7 @@ import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.client.impl.LocationImpl;
 import junit.framework.TestCase;
 
 /**
@@ -77,7 +78,7 @@ public class ConnectionManagerTest extends TestCase
    {
       
       assertActiveConnectionsOnTheServer(0);
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, server.getConfiguration());
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, new LocationImpl(INVM));
 
       ClientConnection conn_1 = cf.createConnection();
       

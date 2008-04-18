@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.ConnectorRegistry;
 import org.jboss.messaging.core.remoting.NIOConnector;
@@ -21,6 +20,8 @@ import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
+import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.client.ConnectionParams;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -49,11 +50,11 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
     * @return <code>true</code> if this Configuration has not already been registered,
     *         <code>false</code> else
     */
-   public boolean register(Configuration config, PacketDispatcher serverDispatcher)
+   public boolean register(Location location, PacketDispatcher serverDispatcher)
    {
-      assert config != null;
+      assert location != null;
       assert serverDispatcher != null;
-      String key = config.getLocation();
+      String key = location.getLocation();
 
       PacketDispatcher previousDispatcher = localDispatchers.get(key);
 
@@ -70,9 +71,9 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
     * @return <code>true</code> if this Configuration was registered,
     *         <code>false</code> else
     */  
-   public boolean unregister(Configuration config)
+   public boolean unregister(Location location)
    {      
-      PacketDispatcher dispatcher = localDispatchers.remove(config.getLocation());
+      PacketDispatcher dispatcher = localDispatchers.remove(location.getLocation());
 
        if(log.isDebugEnabled())
        {
@@ -82,10 +83,10 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
        return (dispatcher != null);
    }
 
-   public synchronized NIOConnector getConnector(Configuration config, PacketDispatcher dispatcher)
+   public synchronized NIOConnector getConnector(Location location, ConnectionParams connectionParams,  PacketDispatcher dispatcher)
    {
-      assert config != null;
-      String key = config.getLocation();
+      assert location != null;
+      String key = location.getLocation();
       
       if (connectors.containsKey(key))
       {
@@ -117,11 +118,11 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
 
       NIOConnector connector = null;
 
-      TransportType transport = config.getTransport();
+      TransportType transport = location.getTransport();
 
       if (transport == TCP)
       {
-         connector = new MinaConnector(config, dispatcher);
+         connector = new MinaConnector(location, connectionParams, dispatcher);
       }
 
       if (connector == null)
@@ -132,7 +133,7 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
 
       if (log.isDebugEnabled())
          log.debug("Created " + connector + " to connect to "
-               + config);
+               + location);
       
       NIOConnectorHolder holder = new NIOConnectorHolder(connector);
       connectors.put(key, holder);
@@ -153,10 +154,10 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
     * @throws IllegalStateException
     *            if no NIOConnector were created for the given Configuration
     */
-   public synchronized NIOConnector removeConnector(Configuration config)
+   public synchronized NIOConnector removeConnector(Location location)
    {
-      assert config != null;
-      String key = config.getLocation();
+      assert location != null;
+      String key = location.getLocation();
 
       NIOConnectorHolder holder = connectors.get(key);
       if (holder == null)
@@ -187,9 +188,9 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
       return registeredConfigs.size();
    }
 
-   public int getConnectorCount(Configuration remotingConfig)
+   public int getConnectorCount(Location location)
    {
-      String key = remotingConfig.getLocation();
+      String key = location.getLocation();
       NIOConnectorHolder holder = connectors.get(key);
       if (holder == null)
       {

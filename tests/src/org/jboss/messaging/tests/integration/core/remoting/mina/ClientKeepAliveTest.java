@@ -21,6 +21,7 @@ import java.util.concurrent.CountDownLatch;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
@@ -95,7 +96,7 @@ public class ClientKeepAliveTest extends TestCase
       };
       service.addFailureListener(listener);
 
-      MinaConnector connector = new MinaConnector(service.getConfiguration(), new PacketDispatcherImpl(null), factory);
+      MinaConnector connector = new MinaConnector(new LocationImpl(TCP, "localhost", TestSupport.PORT), new PacketDispatcherImpl(null), factory);
       connector.connect();
 
       boolean firedKeepAliveNotification = latch.await(TestSupport.KEEP_ALIVE_INTERVAL
@@ -126,7 +127,7 @@ public class ClientKeepAliveTest extends TestCase
       };
       service.addFailureListener(listener);
       
-      MinaConnector connector = new MinaConnector(service.getConfiguration(), new PacketDispatcherImpl(null), factory);
+      MinaConnector connector = new MinaConnector(new LocationImpl(TCP, "localhost", TestSupport.PORT), new PacketDispatcherImpl(null), factory);
 
       NIOSession session = connector.connect();
       long clientSessionID = session.getID();
@@ -171,7 +172,7 @@ public class ClientKeepAliveTest extends TestCase
 
       try
       {
-         MinaConnector connector = new MinaConnector(service.getConfiguration(),
+         MinaConnector connector = new MinaConnector(new LocationImpl(TCP, "localhost", TestSupport.PORT),
                new PacketDispatcherImpl(null), factory);
 
          NIOSession session = connector.connect();
@@ -230,10 +231,8 @@ public class ClientKeepAliveTest extends TestCase
       };
       service.addFailureListener(listener);
       
-      MinaConnector connectorNotResponding = new MinaConnector(service
-            .getConfiguration(), new PacketDispatcherImpl(null), notRespondingfactory);
-      MinaConnector connectorResponding = new MinaConnector(service
-            .getConfiguration(), new PacketDispatcherImpl(null), respondingfactory);
+      MinaConnector connectorNotResponding = new MinaConnector(new LocationImpl(TCP, "localhost", TestSupport.PORT), new PacketDispatcherImpl(null), notRespondingfactory);
+      MinaConnector connectorResponding = new MinaConnector(new LocationImpl(TCP, "localhost", TestSupport.PORT), new PacketDispatcherImpl(null), respondingfactory);
 
       NIOSession sessionNotResponding = connectorNotResponding.connect();
       long clientSessionIDNotResponding = sessionNotResponding.getID();

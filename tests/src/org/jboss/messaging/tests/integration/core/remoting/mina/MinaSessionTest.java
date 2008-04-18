@@ -18,6 +18,7 @@ import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
+import org.jboss.messaging.core.client.impl.LocationImpl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -61,7 +62,7 @@ public class MinaSessionTest extends SessionTestBase
    @Override
    protected NIOConnector createNIOConnector(PacketDispatcher dispatcher)
    {
-      return new MinaConnector(createRemotingConfiguration(), dispatcher);
+      return new MinaConnector(new LocationImpl(TCP, "localhost", TestSupport.PORT), dispatcher);
    }
    
    @Override

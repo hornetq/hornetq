@@ -25,17 +25,12 @@ import static org.jboss.messaging.core.remoting.TransportType.TCP;
 
 import java.util.Arrays;
 
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
-import org.jboss.messaging.core.client.ClientProducer;
-import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.*;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.client.impl.LocationImpl;
+import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
-import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 
 /**
@@ -70,16 +65,13 @@ public class CoreClientOverSSL
          String keyStorePath = args[1];
          String keyStorePassword = args[2];
 
-         ConfigurationImpl config = ConfigurationHelper.newConfiguration(TCP,
-               "localhost", CoreClientOverSSLTest.SSL_PORT);
-         config.setSSLEnabled(sslEnabled);
-         config.setKeyStorePath(keyStorePath);
-         config.setKeyStorePassword(keyStorePassword);
+         Location config = new LocationImpl(TCP, "localhost", CoreClientOverSSLTest.SSL_PORT);
+         ConnectionParams connectionParams = new ConnectionParamsImpl();
+         connectionParams.setSSLEnabled(sslEnabled);
+         connectionParams.setKeyStorePath(keyStorePath);
+         connectionParams.setKeyStorePassword(keyStorePassword);
 
-         // FIXME there should be another way to get a meaningful Version on the
-         // client side...
-         MessagingServer server = new MessagingServerImpl();
-         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, config);
+         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, config, connectionParams);
          ClientConnection conn = cf.createConnection(null, null);
          ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
          ClientProducer producer = session.createProducer(CoreClientOverSSLTest.QUEUE);

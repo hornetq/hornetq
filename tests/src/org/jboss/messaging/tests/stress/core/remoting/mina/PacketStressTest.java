@@ -58,7 +58,7 @@ public class PacketStressTest extends TestCase
       Configuration config = ConfigurationHelper.newConfiguration(TCP, "localhost", PORT);
       service = new MinaService(config);
       service.start();
-      connector = new MinaConnector(config, new PacketDispatcherImpl(null));
+      connector = new MinaConnector(config.getLocation(), new PacketDispatcherImpl(null));
       
    }
    

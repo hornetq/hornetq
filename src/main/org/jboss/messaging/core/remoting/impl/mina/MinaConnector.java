@@ -31,7 +31,9 @@ import org.apache.mina.common.IoSession;
 import org.apache.mina.filter.ssl.SslFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.jboss.messaging.core.client.FailureListener;
-import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.client.ConnectionParams;
+import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
@@ -56,7 +58,9 @@ public class MinaConnector implements NIOConnector, FailureNotifier
    
    // Attributes ----------------------------------------------------
 
-   private Configuration configuration;
+   private Location location;
+
+   private ConnectionParams connectionParams;
 
    private transient NioSocketConnector connector;
 
@@ -76,34 +80,46 @@ public class MinaConnector implements NIOConnector, FailureNotifier
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-
-   public MinaConnector(Configuration configuration, PacketDispatcher dispatcher)
+   public MinaConnector(Location location, PacketDispatcher dispatcher)
    {
-      this(configuration, dispatcher, new ClientKeepAliveFactory());
+      this(location, new ConnectionParamsImpl(),  dispatcher, new ClientKeepAliveFactory());
    }
 
-   public MinaConnector(Configuration configuration, PacketDispatcher dispatcher,
+   public MinaConnector(Location location, ConnectionParams connectionParams, PacketDispatcher dispatcher)
+   {
+      this(location, connectionParams,  dispatcher, new ClientKeepAliveFactory());
+   }
+
+   public MinaConnector(Location location, PacketDispatcher dispatcher,
          KeepAliveFactory keepAliveFactory)
    {
-      assert configuration != null;
+      this(location, new ConnectionParamsImpl(), dispatcher, keepAliveFactory);
+   }
+
+   public MinaConnector(Location location, ConnectionParams connectionParams, PacketDispatcher dispatcher,
+         KeepAliveFactory keepAliveFactory)
+   {
+      assert location != null;
       assert dispatcher != null;
       assert keepAliveFactory != null;
+      assert connectionParams != null;
 
-      this.configuration = configuration;
+      this.location = location;
+      this.connectionParams = connectionParams;
       this.dispatcher = dispatcher;
 
       this.connector = new NioSocketConnector();
       DefaultIoFilterChainBuilder filterChain = connector.getFilterChain();
 
       addMDCFilter(filterChain);
-      if (configuration.isSSLEnabled())
+      if (connectionParams.isSSLEnabled())
       {
          try
          {
-            addSSLFilter(filterChain, true, configuration.getKeyStorePath(), configuration.getKeyStorePassword(), null, null);
+            addSSLFilter(filterChain, true, connectionParams.getKeyStorePath(), connectionParams.getKeyStorePassword(), null, null);
          } catch (Exception e)
          {
-            IllegalStateException ise = new IllegalStateException("Unable to create MinaConnector for " + configuration);
+            IllegalStateException ise = new IllegalStateException("Unable to create MinaConnector for " + location);
             ise.initCause(e);
             throw ise;
          }
@@ -111,15 +127,15 @@ public class MinaConnector implements NIOConnector, FailureNotifier
       addCodecFilter(filterChain);
       addLoggingFilter(filterChain);
       blockingScheduler = addBlockingRequestResponseFilter(filterChain);
-      addKeepAliveFilter(filterChain, keepAliveFactory, configuration.getKeepAliveInterval(),
-            configuration.getKeepAliveTimeout(), this);
-      connector.getSessionConfig().setTcpNoDelay(configuration.isTcpNoDelay());
-      int receiveBufferSize = configuration.getTcpReceiveBufferSize();
+      addKeepAliveFilter(filterChain, keepAliveFactory, connectionParams.getKeepAliveInterval(),
+            connectionParams.getKeepAliveTimeout(), this);
+      connector.getSessionConfig().setTcpNoDelay(connectionParams.isTcpNoDelay());
+      int receiveBufferSize = connectionParams.getTcpReceiveBufferSize();
       if (receiveBufferSize != -1)
       {
          connector.getSessionConfig().setReceiveBufferSize(receiveBufferSize);
       }
-      int sendBufferSize = configuration.getTcpSendBufferSize();
+      int sendBufferSize = connectionParams.getTcpSendBufferSize();
       if (sendBufferSize != -1)
       {
          connector.getSessionConfig().setSendBufferSize(sendBufferSize);
@@ -139,7 +155,7 @@ public class MinaConnector implements NIOConnector, FailureNotifier
       
       threadPool = Executors.newCachedThreadPool();
       connector.setHandler(new MinaHandler(dispatcher, threadPool, this, false));
-      InetSocketAddress address = new InetSocketAddress(configuration.getHost(), configuration.getPort());
+      InetSocketAddress address = new InetSocketAddress(location.getHost(), location.getPort());
       ConnectFuture future = connector.connect(address);
       connector.setDefaultRemoteAddress(address);
       ioListener = new IoServiceListenerAdapter();
@@ -219,7 +235,7 @@ public class MinaConnector implements NIOConnector, FailureNotifier
 
    public String getServerURI()
    { 
-      return configuration.getURI();
+      return location.getLocation() + connectionParams.getURI();
    }
    
    // FailureNotifier implementation -------------------------------
@@ -237,7 +253,7 @@ public class MinaConnector implements NIOConnector, FailureNotifier
    @Override
    public String toString()
    {
-      return "MinaConnector@" + System.identityHashCode(this) + "[configuration=" + configuration + "]"; 
+      return "MinaConnector@" + System.identityHashCode(this) + "[configuration=" + location + "]"; 
    }
    // Package protected ---------------------------------------------
 

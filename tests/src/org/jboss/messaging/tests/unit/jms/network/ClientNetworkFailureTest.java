@@ -32,10 +32,12 @@ import org.jboss.messaging.core.client.FailureListener;
 import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.TransportType;
+import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.ConnectionManager;
@@ -104,7 +106,7 @@ public class ClientNetworkFailureTest extends TestCase
    public void testServerResourcesCleanUpWhenClientCommThrowsException()
          throws Exception
    {
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, server.getConfiguration());
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, new LocationImpl(TCP, "localhost", 5400));
 
       ClientConnection conn = cf.createConnection();
 
@@ -144,7 +146,7 @@ public class ClientNetworkFailureTest extends TestCase
    public void testServerResourcesCleanUpWhenClientCommDropsPacket()
          throws Exception
    {
-       ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, server.getConfiguration());
+       ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, new LocationImpl(TCP, "localhost", 5400));
 
       ClientConnection conn = cf.createConnection();
 

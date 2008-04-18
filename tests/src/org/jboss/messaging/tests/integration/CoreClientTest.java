@@ -9,6 +9,7 @@ import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
@@ -54,7 +55,7 @@ public class CoreClientTest extends TestCase
    
    public void testINVMCoreClient() throws Exception
    {
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, invmServer.getConfiguration());
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, new LocationImpl(INVM));
       ClientConnection conn = cf.createConnection();
       
       ClientSession session = conn.createClientSession(false, true, true, -1, false, false);

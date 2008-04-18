@@ -25,6 +25,8 @@ import java.util.List;
 
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.server.JournalType;
+import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.client.ConnectionParams;
 
 /**
  * 
@@ -60,7 +62,7 @@ public interface Configuration
 
    int getPort();
 
-   String getLocation();
+   Location getLocation();
 
    boolean isTcpNoDelay();
    
@@ -107,4 +109,6 @@ public interface Configuration
    boolean isCreateJournalDir();
 
    boolean isRequireDestinations();
+
+   ConnectionParams getConnectionParams();
 }

@@ -15,6 +15,7 @@ import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import org.jboss.messaging.core.client.*;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.jms.client.JBossTextMessage;
@@ -52,7 +53,7 @@ public class PacketFilterTest  extends TestCase
       DummyInterceptor interceptorA = null;
       DummyInterceptorB interceptorB = null;
 
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, server.getConfiguration());
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, new LocationImpl(INVM));
       ClientConnection conn = null;
       try
       {
@@ -159,7 +160,7 @@ public class PacketFilterTest  extends TestCase
          interceptor.sendException=false;
 
 
-         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, server.getConfiguration());
+         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, new LocationImpl(INVM));
          conn = cf.createConnection();
          conn.start();
          ClientSession session = conn.createClientSession(false, true, true, -1, false, false);

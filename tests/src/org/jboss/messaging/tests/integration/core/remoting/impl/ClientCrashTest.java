@@ -30,6 +30,7 @@ import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
@@ -164,7 +165,7 @@ public class ClientCrashTest extends TestCase
       server = new MessagingServerImpl(config);
       server.start();
 
-      cf = new ClientConnectionFactoryImpl(0, config);
+      cf = new ClientConnectionFactoryImpl(0, new LocationImpl(TCP,"localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT));
    }
 
    @Override

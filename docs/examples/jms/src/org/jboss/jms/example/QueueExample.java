@@ -26,6 +26,7 @@ import javax.naming.NamingException;
 import javax.jms.*;
 import java.util.ResourceBundle;
 import java.util.Properties;
+import java.io.IOException;
 
 /**
  * A simple JMS Queue example that creates a producer and consumer on a queue and sends a message.
@@ -46,12 +47,47 @@ public class QueueExample
          connection = cf.createConnection();
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer producer = session.createProducer(queue);
-         Message message = session.createTextMessage("This is a text message!");
-         producer.send(message);
-         MessageConsumer messageConsumer = session.createConsumer(queue);
+
+
+         MessageConsumer messageConsumer = session.createConsumer(queue, "MYHEADER='one'");
+         messageConsumer.setMessageListener(new MessageListener()
+         {
+            public void onMessage(Message message)
+            {
+               System.out.println("ml1");
+            }
+         });
+
+         MessageConsumer messageConsumer2 = session.createConsumer(queue,"MYHEADER='two'");
+         messageConsumer2.setMessageListener(new MessageListener()
+         {
+            public void onMessage(Message message)
+            {
+               System.out.println("ml2");
+            }
+         });
+         for(int i = 0; i < 10; i++)
+         {
+            Message message = session.createTextMessage("This is a text message " + i);
+            if(i == 0 || i==2 || i==4 || i==6 || i==8 )
+            {
+               message.setStringProperty("MYHEADER", "one");
+            }
+            else
+            {
+               message.setStringProperty("MYHEADER", "two");
+            }
+            producer.send(message);
+         }
          connection.start();
-         TextMessage message2 = (TextMessage) messageConsumer.receive(5000);
-         System.out.println("message = " + message2.getText());
+         try
+         {
+            System.in.read();
+         }
+         catch (IOException e)
+         {
+            e.printStackTrace();
+         }
       }
       catch (NamingException e)
       {

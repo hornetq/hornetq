@@ -86,7 +86,7 @@ public class ServerKeepAliveTest extends TestCase
       service.start();
 
       MinaConnector connector = new MinaConnector(service
-            .getConfiguration(), new PacketDispatcherImpl(null));
+            .getConfiguration().getLocation(), service.getConfiguration().getConnectionParams(), new PacketDispatcherImpl(null));
       final long[] sessionIDNotResponding = new long[1];
       final CountDownLatch latch = new CountDownLatch(1);
 
@@ -141,7 +141,7 @@ public class ServerKeepAliveTest extends TestCase
       service.start();
 
       MinaConnector connector = new MinaConnector(service
-            .getConfiguration(), new PacketDispatcherImpl(null));
+            .getConfiguration().getLocation(), new PacketDispatcherImpl(null));
       final long[] sessionIDNotResponding = new long[1];
       final CountDownLatch latch = new CountDownLatch(1);
 
