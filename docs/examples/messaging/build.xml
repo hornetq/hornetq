@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- =========================================================================================== -->
+<!--                                                                                             -->
+<!-- JBoss, Home of Professional Open Source                                                     -->
+<!-- Copyright 2005, JBoss Inc., and individual contributors as indicated                        -->
+<!-- by the @authors tag. See the copyright.txt in the distribution for a                        -->
+<!-- full listing of individual contributors.                                                    -->
+<!--                                                                                             -->
+<!-- This is free software; you can redistribute it and/or modify it                             -->
+<!-- under the terms of the GNU Lesser General Public License as                                 -->
+<!-- published by the Free Software Foundation; either version 2.1 of                            -->
+<!-- the License, or (at your option) any later version.                                         -->
+<!--                                                                                             -->
+<!-- This software is distributed in the hope that it will be useful,                            -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of                              -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU                            -->
+<!-- Lesser General Public License for more details.                                             -->
+<!--                                                                                             -->
+<!-- You should have received a copy of the GNU Lesser General Public                            -->
+<!-- License along with this software; if not, write to the Free                                 -->
+<!-- Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA                          -->
+<!-- 02110-1301 USA, or see the FSF site: http://www.fsf.org.                                    -->
+<!--                                                                                             -->
+<!-- =========================================================================================== -->
+
+
+<!-- =========================================================================================== -->
+<!--                                                                                             -->
+<!-- $Id: build.xml 4037 2008-04-11 13:12:57Z ataylor $ -->
+<!--                                                                                             -->
+<!-- =========================================================================================== -->
+
+
+<project default="compile" name="JBoss Messaging JMS Examples">
+
+   <property file="../build.properties"/>
+
+   <property name="src.dir" value="src"/>
+   <property name="build.dir" value="build"/>
+
+   <path id="compile.classpath">
+      <fileset dir="${lib.dir}">
+         <include name="**/*.jar"/>
+      </fileset>
+   </path>
+
+   <path id="runtime.classpath">
+      <path refid="compile.classpath"/>
+      <pathelement location="${build.dir}"/>
+      <pathelement location="${client.jar}"/>
+   </path>
+
+   <target name="clean">
+      <delete dir="${build.dir}"/>
+   </target>
+
+   <target name="init">
+      <mkdir dir="${build.dir}"/>
+   </target>
+
+
+   <target name="compile" depends="init">
+      <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on"
+         source="1.5">
+         <classpath refid="compile.classpath"/>
+      </javac>
+   </target>
+
+    <target name="SimpleClient" depends="compile">
+      <java classname="org.jboss.messaging.example.SimpleClient" fork="true">
+         <classpath refid="runtime.classpath"/>
+      </java>
+   </target>
+
+</project>
