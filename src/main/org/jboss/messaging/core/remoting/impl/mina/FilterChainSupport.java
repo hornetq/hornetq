@@ -7,7 +7,6 @@
 package org.jboss.messaging.core.remoting.impl.mina;
 
 import static org.apache.mina.common.IdleStatus.BOTH_IDLE;
-import static org.apache.mina.common.IdleStatus.READER_IDLE;
 import static org.apache.mina.filter.keepalive.KeepAliveRequestTimeoutHandler.EXCEPTION;
 import static org.apache.mina.filter.logging.LogLevel.TRACE;
 import static org.apache.mina.filter.logging.LogLevel.WARN;
@@ -18,7 +17,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import javax.net.ssl.SSLContext;
 
 import org.apache.mina.common.DefaultIoFilterChainBuilder;
-import org.apache.mina.common.IdleStatus;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.keepalive.KeepAliveFilter;
 import org.apache.mina.filter.logging.LoggingFilter;
@@ -72,9 +70,8 @@ public class FilterChainSupport
                + ", keepAliveInterval=" + keepAliveInterval);
       }
 
-      // FIXME: IdleStatus.BOTH_IDLE should be used but it is buggy: https://issues.apache.org/jira/browse/DIRMINA-569
       KeepAliveFilter filter = new KeepAliveFilter(
-            new MinaKeepAliveFactory(factory, notifier), READER_IDLE, EXCEPTION, keepAliveInterval,
+            new MinaKeepAliveFactory(factory, notifier), BOTH_IDLE, EXCEPTION, keepAliveInterval,
             keepAliveTimeout);
       filter.setForwardEvent(true);
       filterChain.addLast("keep-alive", filter);

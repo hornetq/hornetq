@@ -224,9 +224,6 @@ public class MinaService implements RemotingService, FailureNotifier
 
    public void fireFailure(MessagingException me)
    {
-      if (acceptor.isDisposing())
-         return;
-      
       if (me instanceof RemotingException)
       {
          RemotingException re = (RemotingException) me;
@@ -284,6 +281,9 @@ public class MinaService implements RemotingService, FailureNotifier
 
       public void sessionDestroyed(IoSession session)
       {
+         if (session.isClosing())
+            return;
+
          long sessionID = session.getId();
          if (factory.getSessions().containsKey(sessionID))
          {
