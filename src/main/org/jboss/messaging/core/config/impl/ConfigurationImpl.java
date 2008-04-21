@@ -337,6 +337,11 @@ public class ConfigurationImpl implements Configuration, Serializable
       return this.tcpNoDelay;
    }
 
+   public void setTcpNoDelay(boolean tcpNoDelay)
+   {
+      this.tcpNoDelay = tcpNoDelay;
+   }
+
    public int getTcpReceiveBufferSize()
    {
       return this.tcpReceiveBufferSize;
