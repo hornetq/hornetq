@@ -52,7 +52,7 @@ import org.jboss.messaging.util.VersionLoader;
  *
  * $Id: ClientConnectionFactoryImpl.java 3602 2008-01-21 17:48:32Z timfox $
  */
-public class ClientConnectionFactoryImpl implements ClientConnectionFactory, Serializable
+public class ClientConnectionFactoryImpl implements ClientConnectionFactory
 {
    // Constants ------------------------------------------------------------------------------------
 

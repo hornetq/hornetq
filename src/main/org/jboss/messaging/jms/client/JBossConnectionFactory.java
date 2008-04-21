@@ -22,6 +22,7 @@
 package org.jboss.messaging.jms.client;
 
 import java.io.Serializable;
+import java.io.IOException;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -41,8 +42,12 @@ import javax.naming.Reference;
 
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientConnectionFactory;
+import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.client.ConnectionParams;
+import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.jms.referenceable.SerializableObjectRefAddr;
 
 /**
@@ -67,24 +72,52 @@ public class JBossConnectionFactory implements
    
    // Attributes -----------------------------------------------------------------------------------
    
-   private final ClientConnectionFactory connectionFactory;
+   private transient ClientConnectionFactory connectionFactory;
    
    private final String clientID;
    
    private final int dupsOKBatchSize;
 
+   private final Location location;
+
+   private final ConnectionParams connectionParams;
+
+   private final int serverID;
+
+   private final boolean strictTck;
+
+   private final int defaultConsumerWindowSize;
+
+   private final int defaultConsumerMaxRate;
+
+   private final int defaultProducerWindowSize;
+
+   private final int defaultProducerMaxRate;
+
    // Constructors ---------------------------------------------------------------------------------
    
-   public JBossConnectionFactory(final ClientConnectionFactory connectionFactory, final String clientID,
-   		                        final int dupsOKBatchSize)
+   public JBossConnectionFactory(final String clientID,
+   		                        final int dupsOKBatchSize,
+                                 final Location location,
+                                 final ConnectionParams connectionParams,
+                                 final int serverID,
+                                 final boolean strictTck,
+                                 final int defaultConsumerWindowSize,
+                                 final int defaultConsumerMaxRate,
+                                 final int defaultProducerWindowSize,
+                                 final int defaultProducerMaxRate)
    {
-      this.connectionFactory = connectionFactory;     
-      
       this.clientID = clientID;
-      
       this.dupsOKBatchSize = dupsOKBatchSize;
+      this.location = location;
+      this.connectionParams = connectionParams;
+      this.serverID = serverID;
+      this.strictTck = strictTck;
+      this.defaultConsumerMaxRate = defaultConsumerMaxRate;
+      this.defaultConsumerWindowSize = defaultConsumerWindowSize;
+      this.defaultProducerMaxRate = defaultProducerMaxRate;
+      this.defaultProducerWindowSize = defaultProducerWindowSize;
    }
-   
    // ConnectionFactory implementation -------------------------------------------------------------
    
    public Connection createConnection() throws JMSException
@@ -186,6 +219,18 @@ public class JBossConnectionFactory implements
    
    public ClientConnectionFactory getDelegate()
    {
+      if(connectionFactory == null)
+         {
+            connectionFactory = new ClientConnectionFactoryImpl(serverID,
+                    location,
+                    connectionParams,
+                    strictTck,
+                    defaultConsumerWindowSize,
+                    defaultConsumerMaxRate,
+                    defaultProducerWindowSize,
+                    defaultProducerMaxRate);
+
+         }
       return connectionFactory;
    }
    
@@ -199,6 +244,18 @@ public class JBossConnectionFactory implements
    {
       try
       {
+         if(connectionFactory == null)
+         {
+            connectionFactory = new ClientConnectionFactoryImpl(serverID,
+                    location,
+                    connectionParams,
+                    strictTck,
+                    defaultConsumerWindowSize,
+                    defaultConsumerMaxRate,
+                    defaultProducerWindowSize, 
+                    defaultProducerMaxRate);
+            
+         }
          ClientConnection res = connectionFactory.createConnection(username, password);
                     
          return new JBossConnection(res, type, clientID, dupsOKBatchSize);

@@ -31,6 +31,7 @@ import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConnection;
+import org.jboss.messaging.core.config.Configuration;
 
 /**
  * This interface describes the core management interface exposed by the server
@@ -84,18 +85,6 @@ public interface MessagingServerManagement
     * @throws Exception if a problem occurred
     */
    List<Queue> getQueuesForAddress(String address) throws Exception;
-
-   /**
-    * create a client connection factory
-    * @param strictTck if it is strict TCK
-    * @param consumerWindowSize the consumer window size
-    * @param consumerMaxRate the consumer max rate
-    * @param producerWindowSize the producer window size
-    * @param producerMaxRate the producer max rate
-    * @return the connection factory
-    */
-   ClientConnectionFactory createClientConnectionFactory(boolean strictTck,
-   		int consumerWindowSize, int consumerMaxRate, int producerWindowSize, int producerMaxRate);
 
    /**
     * remove all the messages for a specific address
@@ -267,5 +256,7 @@ public interface MessagingServerManagement
     * @return the addresses
     */
    Set<String> listAvailableAddresses();
+
+   Configuration getConfiguration();
 
 }

@@ -26,7 +26,7 @@ import org.jboss.messaging.core.remoting.PacketSender;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class PacketDispatcherImpl implements PacketDispatcher, Serializable
+public class PacketDispatcherImpl implements PacketDispatcher
 {
 
    // Constants -----------------------------------------------------

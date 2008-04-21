@@ -249,11 +249,13 @@ public class JMSServerManagerImpl implements JMSServerManager
       JBossConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         ClientConnectionFactory clientConnectionFactory =
-         	messagingServerManagement.createClientConnectionFactory(strictTck,
-         			consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate);
-         log.debug(this + " created local connectionFactory " + clientConnectionFactory);
-         cf = new JBossConnectionFactory(clientConnectionFactory, clientID, dupsOKBatchSize);
+         cf = new JBossConnectionFactory( clientID, dupsOKBatchSize,
+                 messagingServerManagement.getConfiguration().getLocation(),
+                 messagingServerManagement.getConfiguration().getConnectionParams(),
+                 messagingServerManagement.getConfiguration().getMessagingServerID(),
+                 messagingServerManagement.getConfiguration().isStrictTck() || strictTck,
+                 consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate
+                 );
       }
       if (!bindToJndi(jndiBinding, cf))
       {
@@ -276,11 +278,13 @@ public class JMSServerManagerImpl implements JMSServerManager
       JBossConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         ClientConnectionFactory clientConnectionFactory =
-         	messagingServerManagement.createClientConnectionFactory(strictTck,
-         			consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate);
-         log.debug(this + " created local connectionFactory " + clientConnectionFactory);
-         cf = new JBossConnectionFactory(clientConnectionFactory, clientID, dupsOKBatchSize);
+         cf = new JBossConnectionFactory( clientID, dupsOKBatchSize,
+                 messagingServerManagement.getConfiguration().getLocation(),
+                 messagingServerManagement.getConfiguration().getConnectionParams(),
+                 messagingServerManagement.getConfiguration().getMessagingServerID(),
+                 messagingServerManagement.getConfiguration().isStrictTck() || strictTck,
+                 consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate
+                 );
       }
       for (String jndiBinding : jndiBindings)
       {

@@ -45,6 +45,7 @@ import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConnection;
+import org.jboss.messaging.core.config.Configuration;
 
 /**
  * This interface describes the properties and operations that comprise the management interface of the
@@ -109,18 +110,6 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
    public boolean removeDestination(String address) throws Exception
    {
       return messagingServer.getPostOffice().removeDestination(address, false);
-   }
-
-   public ClientConnectionFactory createClientConnectionFactory(boolean strictTck,
-   		                                                       int consumerWindowSize, int consumerMaxRate,
-   		                                                       int producerWindowSize, int producerMaxRate)
-   {
-      return new ClientConnectionFactoryImpl(messagingServer.getConfiguration().getMessagingServerID(),
-              messagingServer.getConfiguration().getLocation(),
-              messagingServer.getConfiguration().getConnectionParams(),
-              messagingServer.getConfiguration().isStrictTck() || strictTck,
-              consumerWindowSize, consumerMaxRate,
-              producerWindowSize, producerMaxRate);
    }
 
    public void removeAllMessagesForAddress(String address) throws Exception
@@ -417,6 +406,11 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
    public Set<String> listAvailableAddresses()
    {
       return messagingServer.getPostOffice().listAllDestinations();
+   }
+
+   public Configuration getConfiguration()
+   {
+      return messagingServer.getConfiguration();
    }
 
    // Private ---------------------------------------------------------------------------
