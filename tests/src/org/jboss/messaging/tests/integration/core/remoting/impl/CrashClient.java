@@ -31,15 +31,13 @@ import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
-import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 
 
 /**
@@ -74,13 +72,8 @@ public class CrashClient
 
          int numberOfConnections = Integer.parseInt(args[0]);
 
-         ConfigurationImpl config = ConfigurationHelper.newConfiguration(TCP,
-               "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
-
-         // FIXME there should be another way to get a meaningful Version on the
-         // client side...
-         MessagingServer server = new MessagingServerImpl();
-         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT));
+         Location location = new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
+         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, location);
          ClientConnection conn = cf.createConnection();
          ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
          ClientProducer producer = session.createProducer(QUEUE);
