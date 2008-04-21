@@ -1,23 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="docs/examples/queue-failover/src"/>
-	<classpathentry kind="src" path="docs/examples/embedded/src"/>
 	<classpathentry kind="src" path="output/gen-parsers"/>
-	<classpathentry kind="src" path="docs/examples/bridge/src"/>
-	<classpathentry kind="src" path="docs/examples/stateless-clustered/src"/>
-	<classpathentry kind="src" path="docs/examples/mdb-failure/src"/>
-	<classpathentry kind="src" path="docs/examples/distributed-queue/src"/>
-	<classpathentry kind="src" path="docs/examples/common/src"/>
-	<classpathentry kind="src" path="docs/examples/distributed-topic/src"/>
-	<classpathentry kind="src" path="docs/examples/http/src"/>
-	<classpathentry kind="src" path="docs/examples/mdb/src"/>
-	<classpathentry kind="src" path="docs/examples/queue/src"/>
-	<classpathentry kind="src" path="docs/examples/secure-socket/src"/>
-	<classpathentry kind="src" path="docs/examples/stateless/src"/>
-	<classpathentry kind="src" path="docs/examples/topic/src"/>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="src/main"/>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="tests/src"/>
-	<classpathentry kind="src" path="tests/etc/ide"/>
 	<classpathentry excluding="ide/" kind="src" path="tests/etc"/>
 	<classpathentry kind="src" path="src/etc"/>
 	<classpathentry kind="src" path="tests/jms-tests/src"/>
@@ -75,6 +60,6 @@
 	<classpathentry kind="lib" path="thirdparty/jboss/jbosssx-client/lib/jbosssx-client.jar"/>
 	<classpathentry kind="lib" path="tests/lib/easymock.jar"/>
 	<classpathentry kind="lib" path="thirdparty/slf4j/log4j/lib/slf4j-log4j12.jar"/>
-	<classpathentry kind="lib" path="thirdparty/apache-mina/lib/mina-core-2.0.0-M2-20080411.122259-16.jar" sourcepath="thirdparty/apache-mina/lib/mina-core-2.0.0-M2-20080411.122259-16-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="thirdparty/apache-mina/lib/mina-core-2.0.0-M2-20080418.144850.jar" sourcepath="thirdparty/apache-mina/lib/mina-core-2.0.0-M2-20080418.144850-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -648,7 +648,7 @@
         <root url="jar://$PROJECT_DIR$/thirdparty/slf4j/log4j/lib/slf4j-log4j12.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/apache-logging/lib/commons-logging.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/slf4j/api/lib/slf4j-api-1.4.3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-mina/lib/mina-core-2.0.0-M1.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/apache-mina/lib/mina-core-2.0.0-M2-20080418.144850.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
