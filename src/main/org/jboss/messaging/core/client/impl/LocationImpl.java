@@ -69,4 +69,10 @@ public class LocationImpl implements Location
    {
       return port;
    }
+   
+   @Override
+   public String toString()
+   {
+      return getLocation();
+   }
 }
