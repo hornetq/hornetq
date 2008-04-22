@@ -29,7 +29,7 @@ import org.apache.mina.filter.ssl.SslFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
-import org.jboss.messaging.core.remoting.impl.mina.FailureNotifier;
+import org.jboss.messaging.core.remoting.impl.mina.CleanUpNotifier;
 import org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 
@@ -74,7 +74,7 @@ public class FilterChainSupportTest extends TestCase
 
       DefaultIoFilterChainBuilder filterChain = new DefaultIoFilterChainBuilder();
       KeepAliveFactory factory = createMock(KeepAliveFactory.class);
-      FailureNotifier notifier = createMock(FailureNotifier.class);
+      CleanUpNotifier notifier = createMock(CleanUpNotifier.class);
 
       replay(factory, notifier);
 

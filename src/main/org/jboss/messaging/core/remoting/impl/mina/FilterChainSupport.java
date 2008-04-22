@@ -57,7 +57,7 @@ public class FilterChainSupport
    
    public static void addKeepAliveFilter(final DefaultIoFilterChainBuilder filterChain,
          final KeepAliveFactory factory, final int keepAliveInterval,
-         final int keepAliveTimeout, final FailureNotifier notifier)
+         final int keepAliveTimeout, final CleanUpNotifier notifier)
    {
       assert filterChain != null;
       assert factory != null;

@@ -28,7 +28,7 @@ import static org.jboss.messaging.tests.integration.core.remoting.mina.TestSuppo
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
-import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
@@ -113,15 +113,15 @@ public class ClientNetworkFailureTest extends TestCase
       assertActiveConnectionsOnTheServer(1);
 
       final CountDownLatch exceptionLatch = new CountDownLatch(2);
-      conn.setFailureListener(new FailureListener()
+      conn.setRemotingSessionListener(new RemotingSessionListener()
       {
-         public void onFailure(MessagingException me)
+         public void sessionDestroyed(long sessionID, MessagingException me)
          {
             exceptionLatch.countDown();
          }
       });
-      FailureListener listener = new FailureListenerWithLatch(exceptionLatch);
-      minaService.addFailureListener(listener);
+      RemotingSessionListener listener = new FailureListenerWithLatch(exceptionLatch);
+      minaService.addRemotingSessionListener(listener);
 
       networkFailureFilter.messageSentThrowsException = new IOException(
             "Client is unreachable");
@@ -140,7 +140,7 @@ public class ClientNetworkFailureTest extends TestCase
       {
       }
 
-      minaService.removeFailureListener(listener);
+      minaService.removeRemotingSessionListener(listener);
    }
 
    public void testServerResourcesCleanUpWhenClientCommDropsPacket()
@@ -152,8 +152,8 @@ public class ClientNetworkFailureTest extends TestCase
 
       final CountDownLatch exceptionLatch = new CountDownLatch(1);
 
-      FailureListener listener = new FailureListenerWithLatch(exceptionLatch);
-      minaService.addFailureListener(listener);
+      RemotingSessionListener listener = new FailureListenerWithLatch(exceptionLatch);
+      minaService.addRemotingSessionListener(listener);
 
       assertActiveConnectionsOnTheServer(1);
 
@@ -180,7 +180,7 @@ public class ClientNetworkFailureTest extends TestCase
 
    // Private -------------------------------------------------------
 
-   private final class FailureListenerWithLatch implements FailureListener
+   private final class FailureListenerWithLatch implements RemotingSessionListener
    {
       private final CountDownLatch exceptionLatch;
 
@@ -189,7 +189,7 @@ public class ClientNetworkFailureTest extends TestCase
          this.exceptionLatch = exceptionLatch;
       }
 
-      public void onFailure(MessagingException me)
+      public void sessionDestroyed(long sessionID, MessagingException me)
       {
          log.warn("got expected exception on the server");
          exceptionLatch.countDown();

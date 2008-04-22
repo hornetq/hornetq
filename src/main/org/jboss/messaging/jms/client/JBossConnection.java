@@ -45,7 +45,7 @@ import javax.jms.XATopicSession;
 
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.client.impl.ClientConnectionInternal;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -166,11 +166,11 @@ public class JBossConnection implements
       {
          if (listener == null)
          {
-            connection.setFailureListener(null);                 
+            connection.setRemotingSessionListener(null);                 
          }
          else
          {
-            connection.setFailureListener(new JMSFailureListener());
+            connection.setRemotingSessionListener(new JMSFailureListener());
          }
          
          exceptionListener = listener;
@@ -457,10 +457,13 @@ public class JBossConnection implements
 
    // Inner classes --------------------------------------------------------------------------------
    
-   private class JMSFailureListener implements FailureListener
+   private class JMSFailureListener implements RemotingSessionListener
    {
-      public void onFailure(final MessagingException me)
+      public void sessionDestroyed(long sessionID, MessagingException me)
       {
+         if (me == null)
+            return;
+         
          JMSException je = new JMSException(me.toString());
          
          je.initCause(me);

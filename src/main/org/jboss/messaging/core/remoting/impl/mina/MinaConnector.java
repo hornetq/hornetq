@@ -30,9 +30,9 @@ import org.apache.mina.common.IoServiceListener;
 import org.apache.mina.common.IoSession;
 import org.apache.mina.filter.ssl.SslFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
-import org.jboss.messaging.core.client.FailureListener;
-import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.ConnectionParams;
+import org.jboss.messaging.core.client.RemotingSessionListener;
+import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -41,7 +41,6 @@ import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.RemotingException;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 
 /**
@@ -50,7 +49,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class MinaConnector implements NIOConnector, FailureNotifier
+public class MinaConnector implements NIOConnector, CleanUpNotifier
 {
    // Constants -----------------------------------------------------
 
@@ -72,7 +71,7 @@ public class MinaConnector implements NIOConnector, FailureNotifier
    
    private IoSession session;
 
-   private List<FailureListener> listeners = new ArrayList<FailureListener>();
+   private List<RemotingSessionListener> listeners = new ArrayList<RemotingSessionListener>();
    private IoServiceListenerAdapter ioListener;
 
    // Static --------------------------------------------------------
@@ -211,7 +210,7 @@ public class MinaConnector implements NIOConnector, FailureNotifier
       return closed;
    }
 
-   public synchronized void addFailureListener(final FailureListener listener)
+   public synchronized void addSessionListener(final RemotingSessionListener listener)
    {
       assert listener != null;
       assert connector != null;
@@ -222,7 +221,7 @@ public class MinaConnector implements NIOConnector, FailureNotifier
          log.trace("added listener " + listener + " to " + this);
    }
 
-   public synchronized void removeFailureListener(FailureListener listener)
+   public synchronized void removeSessionListener(RemotingSessionListener listener)
    {
       assert listener != null;
       assert connector != null;
@@ -240,12 +239,17 @@ public class MinaConnector implements NIOConnector, FailureNotifier
    
    // FailureNotifier implementation -------------------------------
    
-   public synchronized void fireFailure(MessagingException me)
+   public synchronized void fireCleanup(long sessionID, MessagingException me)
    {
-      for (FailureListener listener: listeners)
+      for (RemotingSessionListener listener: listeners)
       {
-         listener.onFailure(me);
+         listener.sessionDestroyed(sessionID, me);
       }
+   }
+   
+   public void fireCleanup(long sessionID)
+   {
+      fireCleanup(sessionID, null);
    }
 
    // Public --------------------------------------------------------
@@ -298,10 +302,8 @@ public class MinaConnector implements NIOConnector, FailureNotifier
 
       public void sessionDestroyed(IoSession session)
       {
-         RemotingException re =
-            new RemotingException(MessagingException.INTERNAL_ERROR, "MINA session has been destroyed",
-            		session.getId());
-         fireFailure(re);
+         fireCleanup(session.getId(), 
+               new MessagingException(MessagingException.INTERNAL_ERROR, "MINA session has been destroyed"));
       }
    }
 }

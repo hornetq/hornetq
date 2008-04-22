@@ -16,7 +16,7 @@ import org.jboss.messaging.core.exception.MessagingException;
  * @version <tt>$Revision$</tt>
  *
  */
-public interface FailureNotifier
+public interface CleanUpNotifier
 {
-   public abstract void fireFailure(MessagingException e);
+   void fireCleanup(long sessionID, MessagingException e);
 }

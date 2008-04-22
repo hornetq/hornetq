@@ -27,10 +27,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.RemotingException;
 import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.ServerConnection;
 
@@ -43,7 +42,7 @@ import org.jboss.messaging.core.server.ServerConnection;
  *
  * $Id: ConnectionManagerImpl.java 3778 2008-02-24 12:15:29Z timfox $
  */
-public class ConnectionManagerImpl implements ConnectionManager, FailureListener
+public class ConnectionManagerImpl implements ConnectionManager, RemotingSessionListener
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -113,15 +112,14 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
    }      
 
    // FailureListener implementation --------------------------------------------------------------
-   
-   public void onFailure(MessagingException me)
+
+   public void sessionDestroyed(long sessionID, MessagingException me)
    {
-      if (me instanceof RemotingException)
+      if (me != null)
       {
-         RemotingException re = (RemotingException) me;
-         log.warn(re.getMessage(), re);
-         handleClientFailure(re.getSessionID(), true);
+         log.warn(me.getMessage(), me);
       }
+      closeConsumers(sessionID);
    }
    
    // Public ---------------------------------------------------------------------------------------
@@ -137,29 +135,20 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
    // Private --------------------------------------------------------------------------------------
 
-   /**
-    * @param clientToServer - true if the failure has been detected on a direct connection from
-    *        client to this server, false if the failure has been detected while trying to send a
-    *        callback from this server to the client.
-    */
-   private synchronized void handleClientFailure(long remotingSessionID, boolean clientToServer)
-   {
-      log.warn("A problem has been detected " +
-         (clientToServer ?
-            "with the connection to remote client ":
-            "trying to send a message to remote client ") +
-         remotingSessionID + ". It is possible the client has exited without closing " +
-         "its connection(s) or the network has failed. All connection resources " +
-         "corresponding to that client process will now be removed.");
-
-      closeConsumers(remotingSessionID);
-      
-      dump();
-   }
-
    private synchronized void closeConsumers(long remotingClientSessionID)
    {
       List<ServerConnection> connectionEndpoints = endpoints.get(remotingClientSessionID);
+      
+      if (connectionEndpoints == null || connectionEndpoints.isEmpty())
+         return;
+      
+      // we still have connections open for the session
+      
+      log.warn("A problem has been detected with the connection to remote client " +
+            remotingClientSessionID + ". It is possible the client has exited without closing " +
+            "its connection(s) or the network has failed. All connection resources " +
+            "corresponding to that client process will now be removed.");
+
       // the connection endpoints are copied in a new list to avoid concurrent modification exception
       List<ServerConnection> copy;
       if (connectionEndpoints != null)
@@ -180,6 +169,8 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
             log.error("Failed to close connection", e);
          }          
       }
+      
+      dump();
    }
    
    private void dump()

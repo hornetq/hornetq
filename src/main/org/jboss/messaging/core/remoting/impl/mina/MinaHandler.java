@@ -20,7 +20,6 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandlerRegistrationListener;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.RemotingException;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 
@@ -41,7 +40,7 @@ public class MinaHandler extends IoHandlerAdapter implements PacketHandlerRegist
 
    private final PacketDispatcher dispatcher;
 
-   private FailureNotifier failureNotifier;
+   private CleanUpNotifier failureNotifier;
 
    private final boolean closeSessionOnExceptionCaught;
 
@@ -54,7 +53,7 @@ public class MinaHandler extends IoHandlerAdapter implements PacketHandlerRegist
 
    // Constructors --------------------------------------------------
    public MinaHandler(final PacketDispatcher dispatcher, final ExecutorService executorService,
-   		             final FailureNotifier failureNotifier, final boolean closeSessionOnExceptionCaught)
+   		             final CleanUpNotifier failureNotifier, final boolean closeSessionOnExceptionCaught)
    {
       assert dispatcher!= null;
       assert executorService != null;
@@ -92,10 +91,10 @@ public class MinaHandler extends IoHandlerAdapter implements PacketHandlerRegist
       if (failureNotifier != null)
       {
          long serverSessionID = session.getId();
-         RemotingException re =
-         	new RemotingException(MessagingException.INTERNAL_ERROR, "unexpected exception", serverSessionID);
-         re.initCause(cause);
-         failureNotifier.fireFailure(re);
+         MessagingException me =
+         	new MessagingException(MessagingException.INTERNAL_ERROR, "unexpected exception");
+         me.initCause(cause);
+         failureNotifier.fireCleanup(serverSessionID, me);
       }
       if (closeSessionOnExceptionCaught)
       {

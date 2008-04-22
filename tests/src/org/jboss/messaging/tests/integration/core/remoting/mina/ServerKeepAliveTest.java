@@ -10,21 +10,21 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicLong;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.NIOSession;
-import org.jboss.messaging.core.remoting.RemotingException;
-import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.impl.mina.ServerKeepAliveFactory;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
+import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -87,29 +87,28 @@ public class ServerKeepAliveTest extends TestCase
 
       MinaConnector connector = new MinaConnector(service
             .getConfiguration().getLocation(), service.getConfiguration().getConnectionParams(), new PacketDispatcherImpl(null));
-      final long[] sessionIDNotResponding = new long[1];
+
+      final AtomicLong sessionIDNotResponding = new AtomicLong(-1);
       final CountDownLatch latch = new CountDownLatch(1);
 
-      FailureListener listener = new FailureListener()
+      RemotingSessionListener listener = new RemotingSessionListener()
       {
-         public void onFailure(MessagingException me)
+         public void sessionDestroyed(long sessionID, MessagingException me)
          {
-            assertTrue(me instanceof RemotingException);
-            RemotingException re = (RemotingException) me;
-            sessionIDNotResponding[0] = re.getSessionID();
+            sessionIDNotResponding.set(sessionID);
             latch.countDown();
          }
       };
-      connector.addFailureListener(listener);
+      connector.addSessionListener(listener);
 
       NIOSession session = connector.connect();
 
       boolean firedKeepAliveNotification = latch.await(TestSupport.KEEP_ALIVE_INTERVAL
             + TestSupport.KEEP_ALIVE_TIMEOUT + 2, SECONDS);
       assertTrue(firedKeepAliveNotification);
-      assertEquals(session.getID(), sessionIDNotResponding[0]);
+      assertEquals(session.getID(), sessionIDNotResponding.longValue());
 
-      connector.removeFailureListener(listener);
+      connector.removeSessionListener(listener);
       connector.disconnect();
    }
 
@@ -142,29 +141,28 @@ public class ServerKeepAliveTest extends TestCase
 
       MinaConnector connector = new MinaConnector(service
             .getConfiguration().getLocation(), new PacketDispatcherImpl(null));
-      final long[] sessionIDNotResponding = new long[1];
+
+      final AtomicLong sessionIDNotResponding = new AtomicLong(-1);
       final CountDownLatch latch = new CountDownLatch(1);
 
-      FailureListener listener = new FailureListener()
+      RemotingSessionListener listener = new RemotingSessionListener()
       {
-         public void onFailure(MessagingException me)
+         public void sessionDestroyed(long sessionID, MessagingException me)
          {
-            assertTrue(me instanceof RemotingException);
-            RemotingException re = (RemotingException) me;
-            sessionIDNotResponding[0] = re.getSessionID();
+            sessionIDNotResponding.set(sessionID);
             latch.countDown();
          }
       };
-      connector.addFailureListener(listener);
+      connector.addSessionListener(listener);
 
       NIOSession session = connector.connect();
 
       boolean firedKeepAliveNotification = latch.await(TestSupport.KEEP_ALIVE_INTERVAL
             + TestSupport.KEEP_ALIVE_TIMEOUT + 2, SECONDS);
       assertTrue(firedKeepAliveNotification);
-      assertEquals(session.getID(), sessionIDNotResponding[0]);
+      assertEquals(session.getID(), sessionIDNotResponding.longValue());
 
-      connector.removeFailureListener(listener);
+      connector.removeSessionListener(listener);
       connector.disconnect();
    }
 

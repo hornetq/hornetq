@@ -29,7 +29,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
@@ -150,11 +150,11 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       remotingConnection.send(serverTargetID, new PacketImpl(CONN_STOP));
    }
 
-   public void setFailureListener(final FailureListener listener) throws MessagingException
+   public void setRemotingSessionListener(final RemotingSessionListener listener) throws MessagingException
    {
       checkClosed();
       
-      remotingConnection.setFailureListener(listener);
+      remotingConnection.setRemotingSessionListener(listener);
    }
    
    public synchronized void close() throws MessagingException

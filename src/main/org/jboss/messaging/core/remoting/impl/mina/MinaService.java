@@ -30,15 +30,15 @@ import org.apache.mina.common.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.jboss.beans.metadata.api.annotations.Install;
 import org.jboss.beans.metadata.api.annotations.Uninstall;
-import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.RemotingException;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
+import org.jboss.messaging.core.server.ConnectionManager;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -46,7 +46,7 @@ import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class MinaService implements RemotingService, FailureNotifier
+public class MinaService implements RemotingService, CleanUpNotifier
 {
    // Constants -----------------------------------------------------
 
@@ -66,7 +66,7 @@ public class MinaService implements RemotingService, FailureNotifier
 
    private ExecutorService threadPool; 
    
-   private List<FailureListener> listeners = new ArrayList<FailureListener>();
+   private List<RemotingSessionListener> listeners = new ArrayList<RemotingSessionListener>();
 
    private ServerKeepAliveFactory factory;
    
@@ -105,14 +105,14 @@ public class MinaService implements RemotingService, FailureNotifier
       this.filters.remove(filter);
    }
 
-   public void addFailureListener(FailureListener listener)
+   public void addRemotingSessionListener(RemotingSessionListener listener)
    {
       assert listener != null;
 
       listeners.add(listener);
    }
 
-   public void removeFailureListener(FailureListener listener)
+   public void removeRemotingSessionListener(RemotingSessionListener listener)
    {
       assert listener != null;
 
@@ -222,21 +222,19 @@ public class MinaService implements RemotingService, FailureNotifier
 
    // FailureNotifier implementation -------------------------------
 
-   public void fireFailure(MessagingException me)
+   public void fireCleanup(long sessionID, MessagingException me)
    {
-      if (me instanceof RemotingException)
+      if (factory.getSessions().containsKey(sessionID))
       {
-         RemotingException re = (RemotingException) me;
-         long sessionID = re.getSessionID();
          long clientSessionID = factory.getSessions().containsKey(sessionID)?factory.getSessions().get(sessionID):0;
-         for (FailureListener listener : listeners)
+         for (RemotingSessionListener listener : listeners)
          {
-            listener.onFailure(new RemotingException(re.getCode(), re.getMessage(), clientSessionID));
+            listener.sessionDestroyed(clientSessionID, me);
          }
          factory.getSessions().remove(sessionID);  
-      }      
+      }
    }
-
+   
    // Public --------------------------------------------------------
 
    public void setKeepAliveFactory(ServerKeepAliveFactory factory)
@@ -281,14 +279,7 @@ public class MinaService implements RemotingService, FailureNotifier
 
       public void sessionDestroyed(IoSession session)
       {
-         if (session.isClosing())
-            return;
-
-         long sessionID = session.getId();
-         if (factory.getSessions().containsKey(sessionID))
-         {
-            fireFailure(new RemotingException(MessagingException.INTERNAL_ERROR, "MINA session destroyed", sessionID));
-         }
+         fireCleanup(session.getId(), null);
       }
-   }
+   }  
 }

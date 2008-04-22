@@ -1,6 +1,6 @@
 package org.jboss.messaging.core.client.impl;
 
-import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
@@ -30,7 +30,7 @@ public interface RemotingConnection
    
    Packet send(long targetID, long executorID, Packet packet, boolean oneWay) throws MessagingException;
    
-   void setFailureListener(FailureListener newListener);
+   void setRemotingSessionListener(RemotingSessionListener newListener);
    
    PacketDispatcher getPacketDispatcher();
 }

@@ -24,7 +24,7 @@ package org.jboss.messaging.core.client.impl;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGISTRY;
 
-import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -61,7 +61,7 @@ public class RemotingConnectionImpl implements RemotingConnection
    
    private NIOSession session;
    
-   private FailureListener listener;
+   private RemotingSessionListener listener;
 
    private transient PacketDispatcher dispatcher;
 
@@ -106,7 +106,7 @@ public class RemotingConnectionImpl implements RemotingConnection
          if (connector != null)
          { 
             if (listener != null)
-               connector.removeFailureListener(listener);
+               connector.removeSessionListener(listener);
             NIOConnector connectorFromRegistry = REGISTRY.removeConnector(location);
             if (connectorFromRegistry != null)
                connectorFromRegistry.disconnect();
@@ -181,7 +181,7 @@ public class RemotingConnectionImpl implements RemotingConnection
       } 
    }
    
-   public synchronized void setFailureListener(final FailureListener newListener)
+   public synchronized void setRemotingSessionListener(final RemotingSessionListener newListener)
    {
       if (listener != null && newListener != null)
       {
@@ -190,11 +190,11 @@ public class RemotingConnectionImpl implements RemotingConnection
 
       if (newListener != null)
       {
-         connector.addFailureListener(newListener);
+         connector.addSessionListener(newListener);
       }
       else 
       {
-         connector.removeFailureListener(listener);
+         connector.removeSessionListener(listener);
       }
       this.listener = newListener;
    }

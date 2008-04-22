@@ -8,7 +8,7 @@ package org.jboss.messaging.core.remoting;
 
 import java.io.IOException;
 
-import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.client.RemotingSessionListener;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -22,9 +22,9 @@ public interface NIOConnector
 
    boolean disconnect();
 
-   void addFailureListener(FailureListener listener);
+   void addSessionListener(RemotingSessionListener listener);
 
-   void removeFailureListener(FailureListener listener);
+   void removeSessionListener(RemotingSessionListener listener);
 
    String getServerURI();
 }

@@ -180,7 +180,7 @@ public class MessagingServerImpl implements MessagingServer
       }
       // Start the wired components
       securityDeployer.start();
-      remotingService.addFailureListener(connectionManager);
+      remotingService.addRemotingSessionListener(connectionManager);
       memoryManager.start();
       postOffice.start();
       
@@ -222,7 +222,7 @@ public class MessagingServerImpl implements MessagingServer
       securityDeployer.stop();
       queueSettingsDeployer.stop();
       deploymentManager.stop();
-      remotingService.removeFailureListener(connectionManager);
+      remotingService.removeRemotingSessionListener(connectionManager);
       connectionManager = null;
       memoryManager.stop();
       memoryManager = null;

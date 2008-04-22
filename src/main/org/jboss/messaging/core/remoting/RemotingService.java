@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting;
 
-import org.jboss.messaging.core.client.FailureListener;
+import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.server.MessagingComponent;
 
@@ -26,7 +26,7 @@ public interface RemotingService extends MessagingComponent
 
    void removeInterceptor(Interceptor interceptor);
 
-   void addFailureListener(FailureListener listener);
+   void addRemotingSessionListener(RemotingSessionListener listener);
 
-   void removeFailureListener(FailureListener listener);  
+   void removeRemotingSessionListener(RemotingSessionListener listener);
 }

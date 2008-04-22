@@ -11,7 +11,6 @@ import org.apache.mina.filter.keepalive.KeepAliveMessageFactory;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
-import org.jboss.messaging.core.remoting.RemotingException;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
 
@@ -32,14 +31,14 @@ public class MinaKeepAliveFactory implements KeepAliveMessageFactory
 
    private KeepAliveFactory innerFactory;
 
-   private FailureNotifier notifier;
+   private CleanUpNotifier notifier;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    public MinaKeepAliveFactory(KeepAliveFactory factory,
-         FailureNotifier notifier)
+         CleanUpNotifier notifier)
    {
       assert factory != null;
 
@@ -73,10 +72,9 @@ public class MinaKeepAliveFactory implements KeepAliveMessageFactory
          Pong pong = (Pong) response;
          if (pong.isSessionFailed() && notifier != null)
          {
-            // FIXME better error code
-            notifier.fireFailure(new RemotingException(
+            notifier.fireCleanup(session.getId(), new MessagingException(
                   MessagingException.CONNECTION_TIMEDOUT,
-                  "Session has failed on the server", session.getId()));
+                  "Session has failed on the server"));
          }
          return true;
       } else

@@ -6,6 +6,7 @@
  */
 package org.jboss.messaging.tests.integration.core.remoting.mina;
 
+import static org.easymock.EasyMock.anyLong;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.expectLastCall;
@@ -18,7 +19,7 @@ import junit.framework.TestCase;
 import org.apache.mina.common.IoSession;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
-import org.jboss.messaging.core.remoting.impl.mina.FailureNotifier;
+import org.jboss.messaging.core.remoting.impl.mina.CleanUpNotifier;
 import org.jboss.messaging.core.remoting.impl.mina.MinaKeepAliveFactory;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
 
@@ -44,7 +45,7 @@ public class MinaKeepAliveFactoryTest extends TestCase
    {
       IoSession session = createMock(IoSession.class);
       KeepAliveFactory factory = createMock(KeepAliveFactory.class);
-      FailureNotifier notifier = createMock(FailureNotifier.class);
+      CleanUpNotifier notifier = createMock(CleanUpNotifier.class);
       replay(session, factory, notifier);
 
       MinaKeepAliveFactory minaFactory = new MinaKeepAliveFactory(factory, notifier);
@@ -60,7 +61,7 @@ public class MinaKeepAliveFactoryTest extends TestCase
       long sessionID = randomLong();
       Pong pong = new Pong(sessionID, false);
       KeepAliveFactory factory = createMock(KeepAliveFactory.class);
-      FailureNotifier notifier = createMock(FailureNotifier.class);
+      CleanUpNotifier notifier = createMock(CleanUpNotifier.class);
       replay(session, factory, notifier);
 
       MinaKeepAliveFactory minaFactory = new MinaKeepAliveFactory(factory, notifier);
@@ -77,11 +78,11 @@ public class MinaKeepAliveFactoryTest extends TestCase
       expect(session.getId()).andStubReturn(sessionID);
       Pong pong = new Pong(sessionID, true);
       KeepAliveFactory factory = createMock(KeepAliveFactory.class);
-      FailureNotifier notifier = createMock(FailureNotifier.class);
-      notifier.fireFailure(isA(MessagingException.class));
+      CleanUpNotifier notifier = createMock(CleanUpNotifier.class);
+      notifier.fireCleanup(anyLong(), isA(MessagingException.class));
       expectLastCall().once();
       replay(session, factory, notifier);
-
+      
       MinaKeepAliveFactory minaFactory = new MinaKeepAliveFactory(factory, notifier);
 
       assertTrue(minaFactory.isResponse(session, pong));

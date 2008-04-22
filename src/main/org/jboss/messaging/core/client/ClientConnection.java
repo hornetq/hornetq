@@ -23,7 +23,7 @@ public interface ClientConnection
 
    void stop() throws MessagingException;
 
-   void setFailureListener(FailureListener listener) throws MessagingException;
+   void setRemotingSessionListener(RemotingSessionListener listener) throws MessagingException;
   
    void close() throws MessagingException;
    
