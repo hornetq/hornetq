@@ -189,7 +189,7 @@ public class ConnectionManagerImpl implements ConnectionManager, RemotingSession
             buff.append("    "  + entry.getKey() + "----->\n");
             for (ServerConnection sce : connectionEndpoints)
             {
-               buff.append("        " + sce + " (" + System.identityHashCode(sce) + ")\n");
+               buff.append("        " + sce + " (" + System.identityHashCode(sce) + ") " + sce.getClientAddress() + "\n");
             }
          }
          buff.append("*** Dumped connections");
