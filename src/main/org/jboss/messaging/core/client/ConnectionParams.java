@@ -14,6 +14,11 @@ public interface ConnectionParams extends Serializable
    int DEFAULT_REQRES_TIMEOUT = 5; // in seconds
    boolean DEFAULT_INVM_DISABLED = false;
    boolean DEFAULT_SSL_ENABLED = false;
+   public final static String REMOTING_SSL_KEYSTORE_PATH = "remoting.ssl.keystore.path";
+   public final static String REMOTING_SSL_KEYSTORE_PASSWORD = "remoting.ssl.keystore.password";
+   public final static String REMOTING_SSL_TRUSTSTORE_PATH = "remoting.ssl.truststore.path";
+   public final static String REMOTING_SSL_TRUSTSTORE_PASSWORD = "remoting.ssl.truststore.password";
+   public final static String REMOTING_ENABLE_SSL = "remoting.enable.ssl";
 
    int getTimeout();
 

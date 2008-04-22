@@ -228,7 +228,7 @@ public class MinaService implements RemotingService, FailureNotifier
       {
          RemotingException re = (RemotingException) me;
          long sessionID = re.getSessionID();
-         long clientSessionID = factory.getSessions().get(sessionID);
+         long clientSessionID = factory.getSessions().containsKey(sessionID)?factory.getSessions().get(sessionID):0;
          for (FailureListener listener : listeners)
          {
             listener.onFailure(new RemotingException(re.getCode(), re.getMessage(), clientSessionID));

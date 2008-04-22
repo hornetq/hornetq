@@ -463,6 +463,10 @@
             <include name="*.xml"/>
             <include name="jndi.properties"/>
          </fileset>
+         <fileset dir="${test.dir}/etc">
+            <include name="messaging.keystore"/>
+            <include name="messaging.truststore"/>
+         </fileset>
       </copy>
 
       <copy todir="${build.distro.bin.dir}">
@@ -496,7 +500,7 @@
             <exclude name="build.properties"/>
          </fileset>
       </copy>
-      <echo message="lib.dir=../../../lib${line.separator}client.jar=../../../lib/jboss-messaging-client.jar"
+      <echo message="lib.dir=../../../lib${line.separator}client.jar=../../../lib/jboss-messaging-client.jar${line.separator}config.dir=../../../config"
             file="${build.distro.examples.dir}/build.properties"/>
       <echo message="java.naming.factory.initial=org.jnp.interfaces.NamingContextFactory${line.separator}java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces"
             file="${build.distro.config.dir}/jndi.properties"/>

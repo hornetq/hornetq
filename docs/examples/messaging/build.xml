@@ -32,7 +32,7 @@
 <!-- =========================================================================================== -->
 
 
-<project default="compile" name="JBoss Messaging JMS Examples">
+<project default="compile" name="JBoss Messaging Examples">
 
    <property file="../build.properties"/>
 
@@ -43,12 +43,13 @@
       <fileset dir="${lib.dir}">
          <include name="**/*.jar"/>
       </fileset>
+      <pathelement location="${client.jar}"/>
    </path>
 
    <path id="runtime.classpath">
       <path refid="compile.classpath"/>
       <pathelement location="${build.dir}"/>
-      <pathelement location="${client.jar}"/>
+      <pathelement location="${config.dir}"/>
    </path>
 
    <target name="clean">
@@ -62,13 +63,19 @@
 
    <target name="compile" depends="init">
       <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on"
-         source="1.5">
+             source="1.5">
          <classpath refid="compile.classpath"/>
       </javac>
    </target>
 
-    <target name="SimpleClient" depends="compile">
+   <target name="SimpleClient" depends="compile">
       <java classname="org.jboss.messaging.example.SimpleClient" fork="true">
+         <classpath refid="runtime.classpath"/>
+      </java>
+   </target>
+
+   <target name="SSLClient" depends="compile">
+      <java classname="org.jboss.messaging.example.SSLClient" fork="true">
          <classpath refid="runtime.classpath"/>
       </java>
    </target>

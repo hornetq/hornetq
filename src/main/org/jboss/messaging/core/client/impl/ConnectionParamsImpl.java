@@ -128,7 +128,8 @@ public class ConnectionParamsImpl implements ConnectionParams
 
    public boolean isSSLEnabled()
    {
-      return sslEnabled;
+      String sslEnabledProperty = System.getProperty(REMOTING_ENABLE_SSL);
+      return sslEnabledProperty==null?sslEnabled:sslEnabledProperty.equalsIgnoreCase("true");
    }
 
    public void setSSLEnabled(boolean sslEnabled)
@@ -148,7 +149,8 @@ public class ConnectionParamsImpl implements ConnectionParams
 
    public String getKeyStorePath()
    {
-      return keyStorePath;
+      String sslKeystorePath = System.getProperty(REMOTING_SSL_KEYSTORE_PATH);
+      return sslKeystorePath == null?keyStorePath:sslKeystorePath;
    }
 
    public void setKeyStorePath(String keyStorePath)
@@ -158,7 +160,8 @@ public class ConnectionParamsImpl implements ConnectionParams
 
    public String getKeyStorePassword()
    {
-      return keyStorePassword;
+      String keyStorePass = System.getProperty(REMOTING_SSL_KEYSTORE_PASSWORD);
+      return keyStorePass == null?keyStorePassword:keyStorePass;
    }
 
    public void setKeyStorePassword(String keyStorePassword)
@@ -168,7 +171,8 @@ public class ConnectionParamsImpl implements ConnectionParams
 
    public String getTrustStorePath()
    {
-      return trustStorePath;
+      String sslTruststorePath = System.getProperty(REMOTING_SSL_TRUSTSTORE_PATH);
+      return sslTruststorePath==null?trustStorePath:sslTruststorePath;
    }
 
    public void setTrustStorePath(String trustStorePath)
@@ -178,7 +182,8 @@ public class ConnectionParamsImpl implements ConnectionParams
 
    public String getTrustStorePassword()
    {
-      return trustStorePassword;
+      String trustStorePass = System.getProperty(REMOTING_SSL_TRUSTSTORE_PASSWORD);
+      return trustStorePass==null?trustStorePassword:trustStorePass;
    }
 
    public void setTrustStorePassword(String trustStorePassword)
