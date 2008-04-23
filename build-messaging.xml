@@ -500,7 +500,7 @@
             <exclude name="build.properties"/>
          </fileset>
       </copy>
-      <echo message="lib.dir=../../../lib${line.separator}client.jar=../../../lib/jboss-messaging-client.jar${line.separator}config.dir=../../../config"
+      <echo message="lib.dir=../../../lib${line.separator}client.jar=../../../lib/jboss-messaging-client.jar${line.separator}config.dir=../../../config${line.separator}server.jar=../../../lib/jboss-messaging.jar"
             file="${build.distro.examples.dir}/build.properties"/>
       <echo message="java.naming.factory.initial=org.jnp.interfaces.NamingContextFactory${line.separator}java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces"
             file="${build.distro.config.dir}/jndi.properties"/>

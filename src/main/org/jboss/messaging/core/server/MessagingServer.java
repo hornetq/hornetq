@@ -81,6 +81,8 @@ public interface MessagingServer extends MessagingComponent
    
    SecurityStore getSecurityStore();
 
+   void setSecurityManager(JBMSecurityManager securityManager);
+
    public JBMSecurityManager getSecurityManager();
 
    HierarchicalRepository<QueueSettings> getQueueSettingsRepository();

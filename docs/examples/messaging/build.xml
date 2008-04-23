@@ -44,6 +44,7 @@
          <include name="**/*.jar"/>
       </fileset>
       <pathelement location="${client.jar}"/>
+      <pathelement location="${server.jar}"/>
    </path>
 
    <path id="runtime.classpath">
@@ -76,6 +77,12 @@
 
    <target name="SSLClient" depends="compile">
       <java classname="org.jboss.messaging.example.SSLClient" fork="true">
+         <classpath refid="runtime.classpath"/>
+      </java>
+   </target>
+
+   <target name="EmbeddedExample" depends="compile">
+      <java classname="org.jboss.messaging.example.EmbeddedExample" fork="true">
          <classpath refid="runtime.classpath"/>
       </java>
    </target>
