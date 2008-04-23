@@ -26,30 +26,54 @@ import org.jboss.messaging.core.client.impl.*;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 
 /**
  * Uses the core messaging API to send and receive a message to a queue.
+ *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public class SimpleClient
 {
-   public static void main(String[] args) throws Exception
+   public static void main(String[] args)
    {
-      Location location = new LocationImpl(TransportType.TCP, "localhost", 5400);
-      ConnectionParams connectionParams = new ConnectionParamsImpl();
-      ClientConnectionFactory connectionFactory = new ClientConnectionFactoryImpl(0, location, connectionParams);
-      ClientConnection clientConnection = connectionFactory.createConnection();
-      ClientSession clientSession = clientConnection.createClientSession(false, true, true, 100, true, false);
-      ClientProducer clientProducer = clientSession.createProducer("queuejms.testQueue");
-      Message message = new MessageImpl(JBossTextMessage.TYPE, false, 0,
-            System.currentTimeMillis(), (byte) 1);
-      message.setPayload("Hello!".getBytes());
-      clientProducer.send(message);
-      ClientConsumer clientConsumer = clientSession.createConsumer("queuejms.testQueue", null, false, false, false);
-      clientConnection.start();
-      Message msg = clientConsumer.receive(5000);
-      System.out.println("msg.getPayload() = " + new String(msg.getPayload()));
-      clientConnection.close();
+      ClientConnection clientConnection = null;
+      try
+      {
+         Location location = new LocationImpl(TransportType.TCP, "localhost", 5400);
+         ConnectionParams connectionParams = new ConnectionParamsImpl();
+         ClientConnectionFactory connectionFactory = new ClientConnectionFactoryImpl(0, location, connectionParams);
+         clientConnection = connectionFactory.createConnection();
+         ClientSession clientSession = clientConnection.createClientSession(false, true, true, 100, true, false);
+         ClientProducer clientProducer = clientSession.createProducer("queuejms.testQueue");
+         Message message = new MessageImpl(JBossTextMessage.TYPE, false, 0,
+                 System.currentTimeMillis(), (byte) 1);
+         message.setPayload("Hello!".getBytes());
+         clientProducer.send(message);
+         ClientConsumer clientConsumer = clientSession.createConsumer("queuejms.testQueue", null, false, false, false);
+         clientConnection.start();
+         Message msg = clientConsumer.receive(5000);
+         System.out.println("msg.getPayload() = " + new String(msg.getPayload()));
+      }
+      catch(Exception e)
+      {
+         e.printStackTrace();
+      }
+      finally
+      {
+         if (clientConnection != null)
+         {
+            try
+            {
+               clientConnection.close();
+            }
+            catch (MessagingException e1)
+            {
+               //
+            }
+         }
+      }
+
    }
 }

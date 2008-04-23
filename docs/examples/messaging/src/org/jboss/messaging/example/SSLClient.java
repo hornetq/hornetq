@@ -28,6 +28,7 @@ import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 
 /**
@@ -38,33 +39,55 @@ import org.jboss.messaging.jms.client.JBossTextMessage;
  */
 public class SSLClient
 {
-   public static void main(String[] args) throws Exception
+   public static void main(String[] args)
    {
-      Location location = new LocationImpl(TransportType.TCP, "localhost", 5400);
-      ConnectionParams connectionParams = new ConnectionParamsImpl();
-      connectionParams.setSSLEnabled(true);
-      connectionParams.setKeyStorePath("messaging.keystore");
-      connectionParams.setTrustStorePath("messaging.truststore");
-      connectionParams.setKeyStorePassword("secureexample");
-      connectionParams.setTrustStorePassword("secureexample");
-      //it is also possible to set up ssl by using system properties.
-      /*System.setProperty(ConnectionParams.REMOTING_ENABLE_SSL, "true");
-      System.setProperty(ConnectionParams.REMOTING_SSL_KEYSTORE_PATH,"messaging.keystore");
-      System.setProperty(ConnectionParams.REMOTING_SSL_KEYSTORE_PASSWORD,"secureexample");
-      System.setProperty(ConnectionParams.REMOTING_SSL_TRUSTSTORE_PATH,"messaging.truststore");
-      System.setProperty(ConnectionParams.REMOTING_SSL_TRUSTSTORE_PASSWORD,"secureexample");*/
-      ClientConnectionFactory connectionFactory = new ClientConnectionFactoryImpl(0, location, connectionParams);
-      ClientConnection clientConnection = connectionFactory.createConnection(null, null);
-      ClientSession clientSession = clientConnection.createClientSession(false, true, true, 100, true, false);
-      ClientProducer clientProducer = clientSession.createProducer("queuejms.testQueue");
-      Message message = new MessageImpl(JBossTextMessage.TYPE, false, 0,
-            System.currentTimeMillis(), (byte) 1);
-      message.setPayload("Hello!".getBytes());
-      clientProducer.send(message);
-      ClientConsumer clientConsumer = clientSession.createConsumer("queuejms.testQueue", null, false, false, false);
-      clientConnection.start();
-      Message msg = clientConsumer.receive(5000);
-      System.out.println("msg.getPayload() = " + new String(msg.getPayload()));
-      clientConnection.close();
+      ClientConnection clientConnection = null;
+      try
+      {
+         Location location = new LocationImpl(TransportType.TCP, "localhost", 5400);
+         ConnectionParams connectionParams = new ConnectionParamsImpl();
+         connectionParams.setSSLEnabled(true);
+         connectionParams.setKeyStorePath("messaging.keystore");
+         connectionParams.setTrustStorePath("messaging.truststore");
+         connectionParams.setKeyStorePassword("secureexample");
+         connectionParams.setTrustStorePassword("secureexample");
+         //it is also possible to set up ssl by using system properties.
+         /*System.setProperty(ConnectionParams.REMOTING_ENABLE_SSL, "true");
+            System.setProperty(ConnectionParams.REMOTING_SSL_KEYSTORE_PATH,"messaging.keystore");
+            System.setProperty(ConnectionParams.REMOTING_SSL_KEYSTORE_PASSWORD,"secureexample");
+            System.setProperty(ConnectionParams.REMOTING_SSL_TRUSTSTORE_PATH,"messaging.truststore");
+            System.setProperty(ConnectionParams.REMOTING_SSL_TRUSTSTORE_PASSWORD,"secureexample");*/
+         ClientConnectionFactory connectionFactory = new ClientConnectionFactoryImpl(0, location, connectionParams);
+         clientConnection = connectionFactory.createConnection(null, null);
+         ClientSession clientSession = clientConnection.createClientSession(false, true, true, 100, true, false);
+         ClientProducer clientProducer = clientSession.createProducer("queuejms.testQueue");
+         Message message = new MessageImpl(JBossTextMessage.TYPE, false, 0,
+               System.currentTimeMillis(), (byte) 1);
+         message.setPayload("Hello!".getBytes());
+         clientProducer.send(message);
+         ClientConsumer clientConsumer = clientSession.createConsumer("queuejms.testQueue", null, false, false, false);
+         clientConnection.start();
+         Message msg = clientConsumer.receive(5000);
+         System.out.println("msg.getPayload() = " + new String(msg.getPayload()));
+      }
+      catch(Exception e)
+      {
+         e.printStackTrace();
+      }
+      finally
+      {
+         if(clientConnection != null)
+         {
+            try
+            {
+               clientConnection.close();
+            }
+            catch (MessagingException e1)
+            {
+               //
+            }
+         }
+      }
+
    }
 }
