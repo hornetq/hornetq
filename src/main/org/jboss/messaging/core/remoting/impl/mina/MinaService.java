@@ -133,7 +133,7 @@ public class MinaService implements RemotingService, CleanUpNotifier
          acceptor = new NioSocketAcceptor();
          DefaultIoFilterChainBuilder filterChain = acceptor.getFilterChain();
 
-         addMDCFilter(filterChain);
+         // addMDCFilter(filterChain);
          if (config.isSSLEnabled())
          {
             addSSLFilter(filterChain, false, config.getKeyStorePath(),
@@ -142,7 +142,7 @@ public class MinaService implements RemotingService, CleanUpNotifier
                         .getTrustStorePassword());
          }
          addCodecFilter(filterChain);
-         addLoggingFilter(filterChain);
+         // addLoggingFilter(filterChain);
          addKeepAliveFilter(filterChain, factory,
                config.getKeepAliveInterval(), config.getKeepAliveTimeout(), this);
 

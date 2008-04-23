@@ -110,7 +110,7 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
       this.connector = new NioSocketConnector();
       DefaultIoFilterChainBuilder filterChain = connector.getFilterChain();
 
-      addMDCFilter(filterChain);
+      // addMDCFilter(filterChain);
       if (connectionParams.isSSLEnabled())
       {
          try
@@ -124,7 +124,7 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
          }
       }
       addCodecFilter(filterChain);
-      addLoggingFilter(filterChain);
+      // addLoggingFilter(filterChain);
       blockingScheduler = addBlockingRequestResponseFilter(filterChain);
       addKeepAliveFilter(filterChain, keepAliveFactory, connectionParams.getKeepAliveInterval(),
             connectionParams.getKeepAliveTimeout(), this);
