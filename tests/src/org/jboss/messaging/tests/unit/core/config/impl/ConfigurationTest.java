@@ -52,22 +52,7 @@ public class ConfigurationTest extends TestCase
    {
       assertEquals("failed to set ServerPeerId", 10, configuration.getMessagingServerID());
    }
-  
-   public void testSetSecurityDomain() throws Exception
-   {
-      assertEquals("failed to set security domain", "java:/jaas/messagingtest", configuration.getSecurityDomain());
-   }
-  
-   public void testSetMessageCounterSamplePeriod() throws Exception
-   {
-      assertEquals("failed to set Message Counter sample period", 50000, configuration.getMessageCounterSamplePeriod());
-   }
-
-   public void testSetDefaultMessageCounterHistory() throws Exception
-   {
-      assertEquals("failed to set default message counter history", new Integer(21), configuration.getDefaultMessageCounterHistoryDayLimit());
-   }
-
+   
    public void testSetStrictTck() throws Exception
    {
       assertEquals("failed to set strict tck", Boolean.TRUE, configuration.isStrictTck());

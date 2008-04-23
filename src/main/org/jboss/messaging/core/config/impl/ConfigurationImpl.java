@@ -53,18 +53,10 @@ public class ConfigurationImpl implements Configuration, Serializable
    public static final int DEFAULT_REQRES_TIMEOUT = 5; // in seconds
    public static final boolean DEFAULT_INVM_DISABLED = false;
    public static final boolean DEFAULT_SSL_ENABLED = false;
-
-   private PropertyChangeSupport propertyChangeSupport;
    
    protected int messagingServerID = 0;
    
-   protected String securityDomain;
-   
    protected List<String> defaultInterceptors = new ArrayList<String>();
-
-   protected long messageCounterSamplePeriod = (long) 10000;// Default is 1 minute
-
-   protected int defaultMessageCounterHistoryDayLimit = 1;
 
    protected boolean strictTck = false;
 
@@ -117,16 +109,6 @@ public class ConfigurationImpl implements Configuration, Serializable
    protected String trustStorePath;
    protected String trustStorePassword;
 
-   
-   public void addPropertyChangeListener(PropertyChangeListener listener)
-   {
-      if (propertyChangeSupport == null)
-      {
-         propertyChangeSupport = new PropertyChangeSupport(this);
-      }
-      propertyChangeSupport.addPropertyChangeListener(listener);
-   }
-
    public int getMessagingServerID()
    {
       return messagingServerID;
@@ -136,37 +118,10 @@ public class ConfigurationImpl implements Configuration, Serializable
    {
    	this.messagingServerID = id;
    }
-  
-   public String getSecurityDomain()
-   {
-      return securityDomain;
-   }
    
    public List<String> getDefaultInterceptors()
    {
       return defaultInterceptors;
-   }
-
-   public long getMessageCounterSamplePeriod()
-   {
-      return messageCounterSamplePeriod;
-   }
-
-   public void setMessageCounterSamplePeriod(long messageCounterSamplePeriod)
-   {
-      if (messageCounterSamplePeriod < 1000)
-      {
-         throw new IllegalArgumentException("Cannot set MessageCounterSamplePeriod < 1000 ms");
-      }
-      
-      propertyChangeSupport.firePropertyChange("messageCounterSamplePeriod", this.messageCounterSamplePeriod, messageCounterSamplePeriod);
-      
-      this.messageCounterSamplePeriod = messageCounterSamplePeriod;
-   }
-
-   public Integer getDefaultMessageCounterHistoryDayLimit()
-   {
-      return defaultMessageCounterHistoryDayLimit;
    }
 
    public Boolean isStrictTck()

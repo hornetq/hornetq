@@ -40,13 +40,7 @@ public interface Configuration
 
    int getMessagingServerID();
 
-   String getSecurityDomain();
-
    List<String> getDefaultInterceptors();
-
-   long getMessageCounterSamplePeriod();
-
-   Integer getDefaultMessageCounterHistoryDayLimit();
 
    Boolean isStrictTck();
 

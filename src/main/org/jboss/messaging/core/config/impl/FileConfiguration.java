@@ -57,12 +57,6 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
       
       messagingServerID = getInteger(e, "server-peer-id", messagingServerID);
       
-      securityDomain = getString(e, "security-domain", securityDomain);
-      
-      messageCounterSamplePeriod = getLong(e, "message-counter-sample-period", messageCounterSamplePeriod);
-      
-      defaultMessageCounterHistoryDayLimit = getInteger(e, "default-message-counter-history-day-limit", defaultMessageCounterHistoryDayLimit);
-      
       strictTck = getBoolean(e, "strict-tck", strictTck);
       
       clustered = getBoolean(e, "clustered", clustered);

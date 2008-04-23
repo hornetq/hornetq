@@ -6,15 +6,6 @@
       <!-- The unique id of the server peer - in a cluster each node MUST have a unique value - must be an integer -->
       <server-peer-id>0</server-peer-id>
       
-      <!-- The JAAS security domain to use for JBoss Messaging -->
-      <security-domain>java:/jaas/messaging</security-domain>
-      
-      <!-- The periodicity of the message counter manager enquiring on queues for statistics -->
-      <message-counter-sample-period>5000</message-counter-sample-period>
-      
-      <!-- The maximum number of days results to maintain in the message counter history -->
-      <default-message-counter-history-day-limit>-1</default-message-counter-history-day-limit>
-      
       <strict-tck>true</strict-tck>
       
       <clustered>false</clustered>
