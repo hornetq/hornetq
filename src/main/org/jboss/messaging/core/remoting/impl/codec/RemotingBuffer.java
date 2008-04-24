@@ -6,10 +6,10 @@
  */
 package org.jboss.messaging.core.remoting.impl.codec;
 
-import java.nio.charset.CharacterCodingException;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  * @version <tt>$Revision$</tt>
  * 
@@ -42,10 +42,13 @@ public interface RemotingBuffer
 
    boolean getBoolean();
 
-   void putNullableString(String nullableString)
-         throws CharacterCodingException;
+   void putNullableString(String nullableString);
 
-   String getNullableString() throws CharacterCodingException;
+   String getNullableString();
+   
+   void putString(String nullableString);
+
+   String getString();
    
    void rewind();
 

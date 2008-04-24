@@ -9,7 +9,6 @@ package org.jboss.messaging.core.remoting.impl.mina;
 import static org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec.FALSE;
 import static org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec.TRUE;
 
-import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
@@ -17,10 +16,18 @@ import java.nio.charset.CharsetEncoder;
 import org.apache.mina.common.IoBuffer;
 import org.jboss.messaging.core.remoting.impl.codec.RemotingBuffer;
 
+/**
+ * 
+ * A BufferWrapper
+ * 
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ *
+ */
 public class BufferWrapper implements RemotingBuffer
 {
    // Constants -----------------------------------------------------
-
+	
    // used to terminate encoded Strings
    public static final byte NULL_BYTE = (byte) 0;
 
@@ -63,27 +70,27 @@ public class BufferWrapper implements RemotingBuffer
       return buffer.remaining();
    }
 
-   public void put(byte byteValue)
+   public void put(final byte byteValue)
    {
       buffer.put(byteValue);
    }
 
-   public void put(byte[] byteArray)
+   public void put(final byte[] byteArray)
    {
       buffer.put(byteArray);
    }
 
-   public void putInt(int intValue)
+   public void putInt(final int intValue)
    {
       buffer.putInt(intValue);
    }
 
-   public void putLong(long longValue)
+   public void putLong(final long longValue)
    {
       buffer.putLong(longValue);
    }
 
-   public void putFloat(float floatValue)
+   public void putFloat(final float floatValue)
    {
       buffer.putFloat(floatValue);
    }
@@ -113,7 +120,7 @@ public class BufferWrapper implements RemotingBuffer
       return buffer.getFloat();
    }
 
-   public void putBoolean(boolean b)
+   public void putBoolean(final boolean b)
    {
       if (b)
       {
@@ -130,33 +137,54 @@ public class BufferWrapper implements RemotingBuffer
       return (b == TRUE);
    }
 
-   public void putNullableString(String nullableString)
-         throws CharacterCodingException
+   public void putNullableString(final String nullableString)
    {
-
       if (nullableString == null)
       {
          buffer.put(NULL_STRING);
-      } else
+      }
+      else
       {
          buffer.put(NOT_NULL_STRING);
-         buffer.putString(nullableString, UTF_8_ENCODER);
-         buffer.put(NULL_BYTE);
+         putString(nullableString);
       }
    }
 
-   public String getNullableString() throws CharacterCodingException
+   public String getNullableString()
    {
       byte check = buffer.get();
       if (check == NULL_STRING)
       {
          return null;
-      } else
-      {
-         assert check == NOT_NULL_STRING;
-
-         return buffer.getString(UTF_8_DECODER);
       }
+      else
+      {
+         return getString();
+      }
+   }
+   
+   public void putString(final String string)
+   {
+   	int len = string.length();
+      buffer.putInt(len);
+      for (int i = 0; i < len; i++)
+      {   
+      	buffer.putChar(string.charAt(i));
+      }
+   }
+
+   public String getString()
+   {
+   	int len = buffer.getInt();
+      char[] chars = new char[len];
+      for (int i = 0; i < len; i++)
+      {
+      	chars[i] = buffer.getChar();
+      }
+                     
+      String string =  new String(chars);
+      
+      return string;
    }
    
    public void rewind()

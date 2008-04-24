@@ -308,6 +308,7 @@ public class PacketTypeTest extends UnitTestCase
       buffer.rewind();
 
       Packet decodedPacket = decode(buffer, codec, bodyLength);
+      
       return decodedPacket;
    }
 
@@ -321,8 +322,6 @@ public class PacketTypeTest extends UnitTestCase
       Object encodedMessage = out.getEncodedMessage();
 
       assertNotNull(encodedMessage);
-
-      log.info("encoded message is " + encodedMessage);
 
       assertTrue(encodedMessage instanceof IoBuffer);
 

@@ -39,6 +39,8 @@ public abstract class AbstractPacketCodec<P extends Packet>
 
    public static final int LONG_LENGTH = 8;
    
+   public static final int CHAR_LENGTH = 2;
+   
    public static final int HEADER_LENGTH =
    	BYTE_LENGTH + LONG_LENGTH + LONG_LENGTH + LONG_LENGTH + BOOLEAN_LENGTH;
    
@@ -93,12 +95,11 @@ public abstract class AbstractPacketCodec<P extends Packet>
    {
       if (nullableString == null)
       {
-         return 1; // NULL_STRING byte
+         return BYTE_LENGTH; // NULL_STRING byte
       }
       else
       {
-         return nullableString.getBytes().length + 2;// NOT_NULL_STRING +
-         // NULL_BYTE
+         return BYTE_LENGTH + INT_LENGTH + CHAR_LENGTH * nullableString.length();
       }
    }
    

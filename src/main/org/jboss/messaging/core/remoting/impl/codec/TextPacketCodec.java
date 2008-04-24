@@ -53,6 +53,8 @@ public class TextPacketCodec extends AbstractPacketCodec<TextPacket>
    {
       String text = in.getNullableString();
 
+      
+      
       return new TextPacket(text);
    }
 

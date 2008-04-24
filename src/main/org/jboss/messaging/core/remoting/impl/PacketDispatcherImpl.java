@@ -8,7 +8,6 @@ package org.jboss.messaging.core.remoting.impl;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NO_ID_SET;
 
-import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -145,7 +144,7 @@ public class PacketDispatcherImpl implements PacketDispatcher
    {
       if (log.isDebugEnabled())
       {
-         StringBuffer buf = new StringBuffer("Registered PacketHandlers (Ê" + this + "):\n");
+         StringBuffer buf = new StringBuffer("Registered PacketHandlers (" + this + "):\n");
          Iterator<Entry<Long, PacketHandler>> iterator = handlers.entrySet().iterator();
          while (iterator.hasNext())
          {
