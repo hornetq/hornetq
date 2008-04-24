@@ -9,8 +9,10 @@ package org.jboss.messaging.core.remoting.impl;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NO_ID_SET;
 
 import java.io.Serializable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.messaging.core.logging.Logger;
@@ -59,7 +61,7 @@ public class PacketDispatcherImpl implements PacketDispatcher
 
       if (log.isDebugEnabled())
       {
-         log.debug("registered " + handler + " with ID " + handler.getID());
+         log.debug("registered " + handler + " with ID " + handler.getID() + " (" + this + ")");
       }
       
       if (listener != null)
@@ -72,6 +74,11 @@ public class PacketDispatcherImpl implements PacketDispatcher
    {
       PacketHandler handler = handlers.remove(handlerID);
       
+      if (handler == null)
+      {
+         log.warn("no handler defined for " + handlerID);
+         dump();      
+      }
       if (log.isDebugEnabled())
       {
          log.debug("unregistered " + handler);
@@ -134,5 +141,20 @@ public class PacketDispatcherImpl implements PacketDispatcher
 
    // Private -------------------------------------------------------
 
+   private void dump() 
+   {
+      if (log.isDebugEnabled())
+      {
+         StringBuffer buf = new StringBuffer("Registered PacketHandlers (Ê" + this + "):\n");
+         Iterator<Entry<Long, PacketHandler>> iterator = handlers.entrySet().iterator();
+         while (iterator.hasNext())
+         {
+            Map.Entry<java.lang.Long, org.jboss.messaging.core.remoting.PacketHandler> entry = (Map.Entry<java.lang.Long, org.jboss.messaging.core.remoting.PacketHandler>) iterator
+                  .next();
+            buf.append(entry.getKey() + " : " + entry.getValue() + "\n");
+         }
+         log.debug(buf.toString());
+      }
+   }
    // Inner classes -------------------------------------------------
 }
