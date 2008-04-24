@@ -165,7 +165,7 @@ public class ClientCrashTest extends TestCase
       server = new MessagingServerImpl(config);
       server.start();
 
-      cf = new ClientConnectionFactoryImpl(0, new LocationImpl(TCP,"localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT));
+      cf = new ClientConnectionFactoryImpl(new LocationImpl(TCP,"localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT));
    }
 
    @Override

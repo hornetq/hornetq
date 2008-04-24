@@ -56,7 +56,7 @@ public class GracefulClient
       {
          Location config = new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
 
-         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, config);
+         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(config);
          ClientConnection conn = cf.createConnection(null, null);
          ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
          ClientProducer producer = session.createProducer(QUEUE);

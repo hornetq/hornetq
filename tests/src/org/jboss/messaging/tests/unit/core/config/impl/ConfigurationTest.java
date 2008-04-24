@@ -48,11 +48,6 @@ public class ConfigurationTest extends TestCase
       configuration = null;
    }
 
-   public void testSetServerPeerId() throws Exception
-   {
-      assertEquals("failed to set ServerPeerId", 10, configuration.getMessagingServerID());
-   }
-   
    public void testSetStrictTck() throws Exception
    {
       assertEquals("failed to set strict tck", Boolean.TRUE, configuration.isStrictTck());

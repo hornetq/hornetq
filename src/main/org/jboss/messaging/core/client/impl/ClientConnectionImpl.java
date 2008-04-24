@@ -62,8 +62,6 @@ public class ClientConnectionImpl implements ClientConnectionInternal
 
    private final long serverTargetID;
    
-   private final int serverID;
-
    private final RemotingConnection remotingConnection;
 
    private final boolean strictTck;
@@ -87,7 +85,8 @@ public class ClientConnectionImpl implements ClientConnectionInternal
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConnectionImpl(final long serverTargetID, final int serverID, final boolean strictTck,
+   public ClientConnectionImpl(final long serverTargetID,
+   									 final boolean strictTck,
                                final RemotingConnection connection,
                                final int defaultConsumerWindowSize,     
                                final int defaultConsumerMaxRate,
@@ -96,8 +95,6 @@ public class ClientConnectionImpl implements ClientConnectionInternal
                                final Version serverVersion)
    {
       this.serverTargetID = serverTargetID;
-      
-      this.serverID = serverID;
       
       this.strictTck = strictTck;
       
@@ -185,11 +182,6 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    }
    
    // ClientConnectionInternal implementation --------------------------------------------------------
-   
-   public int getServerID()
-   {
-      return serverID;
-   }
    
    public RemotingConnection getRemotingConnection()
    {

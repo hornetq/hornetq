@@ -55,8 +55,6 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
       xml = XMLUtil.replaceSystemProps(xml);
       Element e = XMLUtil.stringToElement(xml);
       
-      messagingServerID = getInteger(e, "server-peer-id", messagingServerID);
-      
       strictTck = getBoolean(e, "strict-tck", strictTck);
       
       clustered = getBoolean(e, "clustered", clustered);

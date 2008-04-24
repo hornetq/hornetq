@@ -359,12 +359,6 @@ public class JBossConnection implements
       return "JBossConnection->" + connection;
    }
    
-   //For testing only
-   public int getServerID()
-   {
-      return ((ClientConnectionInternal)connection).getServerID();
-   }
-   
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------

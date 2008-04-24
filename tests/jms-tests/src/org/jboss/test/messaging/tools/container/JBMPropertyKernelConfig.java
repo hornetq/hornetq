@@ -31,20 +31,9 @@ import org.jboss.kernel.plugins.config.property.PropertyKernelConfig;
  */
 public class JBMPropertyKernelConfig extends PropertyKernelConfig
 {
-   private int serverID = -1;
    public JBMPropertyKernelConfig(Properties properties)
    {
       super(properties);    //To change body of overridden methods use File | Settings | File Templates.
    }
 
-
-   public int getServerID()
-   {
-      return serverID;
-   }
-
-   public void setServerID(int serverID)
-   {
-      this.serverID = serverID;
-   }
 }

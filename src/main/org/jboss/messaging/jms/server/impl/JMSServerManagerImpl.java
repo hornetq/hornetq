@@ -251,8 +251,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       {
          cf = new JBossConnectionFactory( clientID, dupsOKBatchSize,
                  messagingServerManagement.getConfiguration().getLocation(),
-                 messagingServerManagement.getConfiguration().getConnectionParams(),
-                 messagingServerManagement.getConfiguration().getMessagingServerID(),
+                 messagingServerManagement.getConfiguration().getConnectionParams(),                 
                  messagingServerManagement.getConfiguration().isStrictTck() || strictTck,
                  consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate
                  );
@@ -281,7 +280,6 @@ public class JMSServerManagerImpl implements JMSServerManager
          cf = new JBossConnectionFactory( clientID, dupsOKBatchSize,
                  messagingServerManagement.getConfiguration().getLocation(),
                  messagingServerManagement.getConfiguration().getConnectionParams(),
-                 messagingServerManagement.getConfiguration().getMessagingServerID(),
                  messagingServerManagement.getConfiguration().isStrictTck() || strictTck,
                  consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate
                  );

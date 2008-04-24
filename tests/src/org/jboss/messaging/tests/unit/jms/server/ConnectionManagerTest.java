@@ -78,7 +78,7 @@ public class ConnectionManagerTest extends TestCase
    {
       
       assertActiveConnectionsOnTheServer(0);
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, new LocationImpl(INVM));
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(new LocationImpl(INVM));
 
       ClientConnection conn_1 = cf.createConnection();
       

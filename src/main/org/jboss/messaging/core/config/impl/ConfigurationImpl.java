@@ -21,19 +21,17 @@
  */
 package org.jboss.messaging.core.config.impl;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.messaging.core.client.ConnectionParams;
+import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
+import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.server.JournalType;
-import org.jboss.messaging.core.client.impl.LocationImpl;
-import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
-import org.jboss.messaging.core.client.Location;
-import org.jboss.messaging.core.client.ConnectionParams;
 
 /**
  * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>
@@ -53,8 +51,6 @@ public class ConfigurationImpl implements Configuration, Serializable
    public static final int DEFAULT_REQRES_TIMEOUT = 5; // in seconds
    public static final boolean DEFAULT_INVM_DISABLED = false;
    public static final boolean DEFAULT_SSL_ENABLED = false;
-   
-   protected int messagingServerID = 0;
    
    protected List<String> defaultInterceptors = new ArrayList<String>();
 
@@ -109,16 +105,6 @@ public class ConfigurationImpl implements Configuration, Serializable
    protected String trustStorePath;
    protected String trustStorePassword;
 
-   public int getMessagingServerID()
-   {
-      return messagingServerID;
-   }
-   
-   public void setMessagingServerID(int id)
-   {
-   	this.messagingServerID = id;
-   }
-   
    public List<String> getDefaultInterceptors()
    {
       return defaultInterceptors;

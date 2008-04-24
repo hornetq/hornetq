@@ -70,7 +70,7 @@ public interface PostOffice extends MessagingComponent
       
    List<MessageReference> route(String address, Message message) throws Exception;
    
-   void routeFromCluster(String address, Message message) throws Exception;
+  // void routeFromCluster(String address, Message message) throws Exception;
    
    //Flow control
    

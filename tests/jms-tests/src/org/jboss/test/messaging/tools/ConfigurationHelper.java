@@ -68,12 +68,11 @@ public class ConfigurationHelper implements KernelControllerContextAware
 
    public void start()
    {
-      JBMPropertyKernelConfig config = (JBMPropertyKernelConfig) kernelControllerContext.getKernel().getConfig();
-      HashMap<String, Object> configuration = configs.get(config.getServerID());
-      ConfigurationImpl actualConfiguration = (ConfigurationImpl) kernelControllerContext.getKernel().getRegistry().getEntry("Configuration").getTarget();
-      actualConfiguration.setMessagingServerID(config.getServerID());
-      actualConfiguration.setPort(actualConfiguration.getPort() + config.getServerID());
-      alterConfig(actualConfiguration, configuration);
+//      JBMPropertyKernelConfig config = (JBMPropertyKernelConfig) kernelControllerContext.getKernel().getConfig();
+//      ConfigurationImpl actualConfiguration = (ConfigurationImpl) kernelControllerContext.getKernel().getRegistry().getEntry("Configuration").getTarget();
+//      actualConfiguration.setMessagingServerID(config.getServerID());
+//      actualConfiguration.setPort(actualConfiguration.getPort() + config.getServerID());
+//      alterConfig(actualConfiguration, configuration);
    }
 
    public static void addServerConfig(int serverID, HashMap<String, Object> configuration)
@@ -86,7 +85,7 @@ public class ConfigurationHelper implements KernelControllerContextAware
    {
       Hashtable<String, Serializable> env = new Hashtable<String, Serializable>();
       env.put("java.naming.factory.initial", "org.jboss.test.messaging.tools.container.InVMInitialContextFactory");
-      env.put("jboss.messaging.test.server.index", "" + configuration.getMessagingServerID());
+      env.put("jboss.messaging.test.server.index", "0");
       return env;
    }
 

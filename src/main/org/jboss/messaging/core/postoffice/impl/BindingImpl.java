@@ -32,9 +32,7 @@ import org.jboss.messaging.core.server.Queue;
  *
  */
 public class BindingImpl implements Binding
-{
-   private final int nodeID;
-   
+{ 
    private final String address;
    
    private final Queue queue;
@@ -43,10 +41,8 @@ public class BindingImpl implements Binding
    
    private int hash;
       
-   public BindingImpl(final int nodeID, final String address, final Queue queue)
+   public BindingImpl(final String address, final Queue queue)
    {
-      this.nodeID = nodeID;
-      
       this.address = address;
       
       this.queue = queue;
@@ -55,11 +51,6 @@ public class BindingImpl implements Binding
    public String getAddress()
    {
       return address;
-   }
-
-   public int getNodeID()
-   {
-      return nodeID;
    }
 
    public Queue getQueue()
@@ -75,9 +66,8 @@ public class BindingImpl implements Binding
       }
       Binding bother = (Binding)other;
       
-      return (this.nodeID == bother.getNodeID()) &&
-              this.address.equals(bother.getAddress()) &&
-              this.queue.equals(bother.getQueue());
+      return (this.address.equals(bother.getAddress()) &&
+              this.queue.equals(bother.getQueue()));
    }
    
    public int hashCode()
@@ -85,7 +75,6 @@ public class BindingImpl implements Binding
       if (!hashAssigned)
       {
          hash = 17;
-         hash = 37 * hash + nodeID;
          hash = 37 * hash + address.hashCode();
          hash = 37 * hash + queue.hashCode();
                 

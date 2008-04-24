@@ -170,11 +170,7 @@ public class QueueTest extends JMSTestCase
          {
          	conn1 = cf.createConnection();
 
-         	assertEquals(0, getServerId(conn1));
-
          	conn2 = cf.createConnection();
-
-         	assertEquals(0, getServerId(conn2));
 
          	Session s = conn1.createSession(true, Session.AUTO_ACKNOWLEDGE);
 

@@ -141,7 +141,7 @@ public class LocalTestServer implements Server, Runnable
       ConfigurationHelper.addServerConfig(getServerID(), configuration);
 
       JBMPropertyKernelConfig propertyKernelConfig = new JBMPropertyKernelConfig(System.getProperties());
-      propertyKernelConfig.setServerID(getServerID());
+      //propertyKernelConfig.setServerID(getServerID());
       bootstrap = new JBMBootstrapServer(containerConfig, propertyKernelConfig);
       System.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME, ""+getServerID());
       bootstrap.run();

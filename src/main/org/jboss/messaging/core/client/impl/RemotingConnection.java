@@ -1,5 +1,6 @@
 package org.jboss.messaging.core.client.impl;
 
+import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.Packet;
@@ -33,4 +34,6 @@ public interface RemotingConnection
    void setRemotingSessionListener(RemotingSessionListener newListener);
    
    PacketDispatcher getPacketDispatcher();
+   
+   public Location getLocation();
 }

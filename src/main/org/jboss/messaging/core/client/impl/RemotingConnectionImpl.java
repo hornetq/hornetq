@@ -203,6 +203,11 @@ public class RemotingConnectionImpl implements RemotingConnection
    {
       return dispatcher;
    }
+   
+   public Location getLocation()
+   {
+   	return location;
+   }
 
    // Package protected ----------------------------------------------------------------------------
 

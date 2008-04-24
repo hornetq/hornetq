@@ -54,9 +54,7 @@ public class PostOfficeTest extends UnitTestCase
       
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       
-      final int nodeID = 21;
-      
-      PostOffice po = new PostOfficeImpl(nodeID, pm, qf, false);
+      PostOffice po = new PostOfficeImpl(pm, qf, false);
       
       final long id = 324;
       final String name = "wibb22";
@@ -70,7 +68,7 @@ public class PostOfficeTest extends UnitTestCase
             
       final String condition = "queue.wibble";
 
-      Binding expected = new BindingImpl(nodeID, condition, queue);
+      Binding expected = new BindingImpl(condition, queue);
       
       pm.addBinding(EasyMock.eq(expected));
       
@@ -105,9 +103,7 @@ public class PostOfficeTest extends UnitTestCase
             
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       
-      final int nodeID = 21;
-      
-      PostOffice po = new PostOfficeImpl(nodeID, pm, qf, false);
+      PostOffice po = new PostOfficeImpl(pm, qf, false);
       
       final long id = 324;
       final String name = "wibb22";
@@ -121,7 +117,7 @@ public class PostOfficeTest extends UnitTestCase
             
       final String condition = "queue.wibble";
  
-      Binding expected = new BindingImpl(nodeID, condition, queue);
+      Binding expected = new BindingImpl(condition, queue);
       
       pm.addBinding(EasyMock.eq(expected));
       
@@ -168,9 +164,7 @@ public class PostOfficeTest extends UnitTestCase
             
       QueueFactory qf = new FakeQueueFactory();
       
-      final int nodeID = 21;
-      
-      PostOffice po = new PostOfficeImpl(nodeID, pm, qf, false);
+      PostOffice po = new PostOfficeImpl(pm, qf, false);
       
       final String condition1 = "queue.wibble";      
                 

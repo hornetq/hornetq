@@ -72,12 +72,12 @@ public class QueueSettingsDeployerTest extends TestCase
       queueSettings.setMessageCounterHistoryDayLimit(1000);
       Queue mockDLQ = EasyMock.createMock(Queue.class);
       queueSettings.setDLQ(mockDLQ);
-      EasyMock.expect(postOffice.getBinding("DLQtest")).andReturn(new BindingImpl(0, "DLQtest", mockDLQ));
-      EasyMock.expect(postOffice.getBinding("DLQtest")).andReturn(new BindingImpl(0, "DLQtest", mockDLQ));
+      EasyMock.expect(postOffice.getBinding("DLQtest")).andReturn(new BindingImpl("DLQtest", mockDLQ));
+      EasyMock.expect(postOffice.getBinding("DLQtest")).andReturn(new BindingImpl("DLQtest", mockDLQ));
       Queue mockQ = EasyMock.createMock(Queue.class);
       queueSettings.setExpiryQueue(mockQ);
-      EasyMock.expect(postOffice.getBinding("ExpiryQueueTest")).andReturn(new BindingImpl(0, "ExpiryQueueTest", mockQ));
-      EasyMock.expect(postOffice.getBinding("ExpiryQueueTest")).andReturn(new BindingImpl(0, "ExpiryQueueTest", mockQ));
+      EasyMock.expect(postOffice.getBinding("ExpiryQueueTest")).andReturn(new BindingImpl("ExpiryQueueTest", mockQ));
+      EasyMock.expect(postOffice.getBinding("ExpiryQueueTest")).andReturn(new BindingImpl("ExpiryQueueTest", mockQ));
 
       EasyMock.replay(postOffice);
 

@@ -3,9 +3,6 @@
    
       <!-- TODO!! Should specify all available properties in here -->
    
-      <!-- The unique id of the server peer - in a cluster each node MUST have a unique value - must be an integer -->
-      <server-peer-id>0</server-peer-id>
-      
       <strict-tck>true</strict-tck>
       
       <clustered>false</clustered>

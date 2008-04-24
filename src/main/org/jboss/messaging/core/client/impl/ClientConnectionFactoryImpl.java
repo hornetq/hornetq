@@ -68,8 +68,6 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
    
    private final PacketDispatcher dispatcher;
  
-   private final int serverID;
-   
    private final boolean strictTck;
       
    private final int defaultConsumerWindowSize;
@@ -85,12 +83,11 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
     
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConnectionFactoryImpl(final int serverID, final Location location, final ConnectionParams connectionParams,
+   public ClientConnectionFactoryImpl(final Location location, final ConnectionParams connectionParams,
                                       final boolean strictTck,
                                       final int defaultConsumerWindowSize, final int defaultConsumerMaxRate,
                                       final int defaultProducerWindowSize, final int defaultProducerMaxRate)
    {
-      this.serverID = serverID;
       this.location = location;
       this.strictTck = strictTck;
       this.defaultConsumerWindowSize = defaultConsumerWindowSize;  
@@ -101,9 +98,8 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
       this.connectionParams = connectionParams;
    }
    
-   public ClientConnectionFactoryImpl(final int serverID, final Location location)
+   public ClientConnectionFactoryImpl(final Location location)
    {
-      this.serverID = serverID;
       this.location = location;
       this.strictTck = false;
       this.defaultConsumerWindowSize = 1000;      
@@ -114,9 +110,8 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
       connectionParams = new ConnectionParamsImpl();
    }
 
-   public ClientConnectionFactoryImpl(final int serverID,  final Location location, final ConnectionParams connectionParams)
+   public ClientConnectionFactoryImpl(final Location location, final ConnectionParams connectionParams)
    {
-      this.serverID = serverID;
       this.location = location;
       this.strictTck = false;
       this.defaultConsumerWindowSize = 1000;
@@ -151,7 +146,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
          CreateConnectionResponse response =
             (CreateConnectionResponse)remotingConnection.send(0, request);
 
-         return new ClientConnectionImpl(response.getConnectionTargetID(), serverID, strictTck, remotingConnection,
+         return new ClientConnectionImpl(response.getConnectionTargetID(), strictTck, remotingConnection,
                defaultConsumerWindowSize, defaultConsumerMaxRate,
                defaultProducerWindowSize, defaultProducerMaxRate, response.getServerVersion());
       }
@@ -195,11 +190,6 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
 		return defaultProducerWindowSize;
 	}
 
-	public int getServerID()
-	{
-		return serverID;
-	}
-
 	public boolean isStrictTck()
 	{
 		return strictTck;
@@ -209,9 +199,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
 	{
 		return defaultProducerMaxRate;
 	}
-	
-	
-   
+		  
    // Public ---------------------------------------------------------------------------------------
       
    // Protected ------------------------------------------------------------------------------------

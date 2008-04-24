@@ -480,7 +480,7 @@ public class JournalStorageManager implements StorageManager
 				Queue queue = queueFactory.createQueue(id, queueName, filter, true, false);
 
 				
-				Binding binding = new BindingImpl(0, address, queue);
+				Binding binding = new BindingImpl(address, queue);
 
 				bindings.add(binding);      
 			}

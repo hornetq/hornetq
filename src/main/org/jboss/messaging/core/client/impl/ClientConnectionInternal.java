@@ -18,8 +18,6 @@ import org.jboss.messaging.core.client.ClientSession;
  */
 public interface ClientConnectionInternal extends ClientConnection
 {
-   int getServerID();
-   
    RemotingConnection getRemotingConnection();
 
    void removeSession(ClientSession session);

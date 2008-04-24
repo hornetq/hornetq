@@ -33,8 +33,6 @@ import org.jboss.messaging.core.server.Queue;
  */
 public interface Binding
 {
-   int getNodeID();
-   
    String getAddress();
    
    Queue getQueue();

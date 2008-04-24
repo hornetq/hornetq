@@ -71,7 +71,7 @@ public class CoreClientOverSSL
          connectionParams.setKeyStorePath(keyStorePath);
          connectionParams.setKeyStorePassword(keyStorePassword);
 
-         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, config, connectionParams);
+         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(config, connectionParams);
          ClientConnection conn = cf.createConnection(null, null);
          ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
          ClientProducer producer = session.createProducer(CoreClientOverSSLTest.QUEUE);

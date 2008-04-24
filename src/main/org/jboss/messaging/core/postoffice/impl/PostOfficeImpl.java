@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.postoffice.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -56,7 +57,7 @@ public class PostOfficeImpl implements PostOffice
 {  
    private static final Logger log = Logger.getLogger(PostOfficeImpl.class);
    
-   private final int nodeID;
+   //private final int nodeID;
    
    private final ConcurrentMap<String, List<Binding>> mappings = new ConcurrentHashMap<String, List<Binding>>();
    
@@ -72,11 +73,9 @@ public class PostOfficeImpl implements PostOffice
    
    private final StorageManager storageManager;
     
-   public PostOfficeImpl(final int nodeID, final StorageManager storageManager,
+   public PostOfficeImpl(final StorageManager storageManager,
    		                final QueueFactory queueFactory, final boolean checkAllowable)
    {
-      this.nodeID = nodeID;
-      
       this.storageManager = storageManager;
       
       this.queueFactory = queueFactory;
@@ -173,22 +172,16 @@ public class PostOfficeImpl implements PostOffice
    
    public List<Binding> getBindingsForAddress(final String address)
    {
-      List<Binding> list = new ArrayList<Binding>();
-      
       List<Binding> bindings = mappings.get(address);
       
       if (bindings != null)
       {
-         for (Binding binding: bindings)
-         {
-            if (binding.getNodeID() == nodeID)
-            {
-               list.add(binding);
-            }
-         }
-      }         
-         
-      return list;
+      	return bindings;
+      }
+      else
+      {
+      	return Collections.emptyList();
+      }
    }
    
    public Binding getBinding(final String queueName)
@@ -229,27 +222,27 @@ public class PostOfficeImpl implements PostOffice
       return refs;
    }
    
-   public void routeFromCluster(final String address, final Message message) throws Exception
-   {     
-      List<Binding> bindings = mappings.get(address);
-      
-      for (Binding binding: bindings)
-      {
-         Queue queue = binding.getQueue();
-         
-         if (binding.getNodeID() == nodeID)
-         {         
-            if (queue.getFilter() == null || queue.getFilter().match(message))
-            {         
-               MessageReference ref = message.createReference(queue);
-
-               //We never route durably from other nodes - so no need to persist
-
-               queue.addLast(ref);             
-            }
-         }
-      }
-   }
+//   public void routeFromCluster(final String address, final Message message) throws Exception
+//   {     
+//      List<Binding> bindings = mappings.get(address);
+//      
+//      for (Binding binding: bindings)
+//      {
+//         Queue queue = binding.getQueue();
+//         
+//         if (binding.getNodeID() == nodeID)
+//         {         
+//            if (queue.getFilter() == null || queue.getFilter().match(message))
+//            {         
+//               MessageReference ref = message.createReference(queue);
+//
+//               //We never route durably from other nodes - so no need to persist
+//
+//               queue.addLast(ref);             
+//            }
+//         }
+//      }
+//   }
 
    public Map<String, List<Binding>> getMappings()
    {
@@ -268,7 +261,7 @@ public class PostOfficeImpl implements PostOffice
    {
       Queue queue = queueFactory.createQueue(-1, name, filter, durable, temporary);
       
-      Binding binding = new BindingImpl(this.nodeID, address, queue);
+      Binding binding = new BindingImpl(address, queue);
       
       return binding;
    }

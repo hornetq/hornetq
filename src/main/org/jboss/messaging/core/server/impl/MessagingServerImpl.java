@@ -151,11 +151,6 @@ public class MessagingServerImpl implements MessagingServer
          return;
       }
 
-      if (configuration.getMessagingServerID() < 0)
-      {
-         throw new IllegalStateException("MessagingServer ID not set");
-      }
-
       log.debug(this + " starting");
 
       // Create the wired components
@@ -170,8 +165,7 @@ public class MessagingServerImpl implements MessagingServer
       queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository);
       connectionManager = new ConnectionManagerImpl();
       memoryManager = new SimpleMemoryManager();
-      postOffice = new PostOfficeImpl(configuration.getMessagingServerID(),
-                                      storageManager, queueFactory, configuration.isRequireDestinations());
+      postOffice = new PostOfficeImpl(storageManager, queueFactory, configuration.isRequireDestinations());
       queueSettingsDeployer = new QueueSettingsDeployer(postOffice, queueSettingsRepository);
 
       if (createTransport)
@@ -322,11 +316,6 @@ public class MessagingServerImpl implements MessagingServer
    public void setSecurityManager(JBMSecurityManager securityManager)
    {
       this.securityManager = securityManager;
-   }
-
-   public String toString()
-   {
-      return "MessagingServer[" + configuration.getMessagingServerID() + "]";
    }
 
    public CreateConnectionResponse createConnection(final String username, final String password,

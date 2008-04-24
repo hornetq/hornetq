@@ -37,9 +37,6 @@ import org.jboss.messaging.core.client.ConnectionParams;
  */
 public interface Configuration
 {
-
-   int getMessagingServerID();
-
    List<String> getDefaultInterceptors();
 
    Boolean isStrictTck();

@@ -21,18 +21,18 @@
    */
 package org.jboss.messaging.core.client.impl;
 
-import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.client.Location;
-
-import java.io.Serializable;
+import org.jboss.messaging.core.remoting.TransportType;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="tim.fox@redhat.com">Tim Fox</a>
  */
 public class LocationImpl implements Location
 {
-
-   protected TransportType transport;
+	private static final long serialVersionUID = -1101852656621257742L;
+	
+	protected TransportType transport;
    protected String host;
    protected int port = DEFAULT_REMOTING_PORT;
 
@@ -74,5 +74,18 @@ public class LocationImpl implements Location
    public String toString()
    {
       return getLocation();
+   }
+   
+   public boolean equals(Object other)
+   {
+   	if (other instanceof Location == false)
+   	{
+   		return false;
+   	}
+   	Location lother = (Location)other;
+   	
+   	return this.transport.equals(lother.getLocation()) &&
+   	       this.host.equals(lother.getHost()) &&
+   	       this.port == lother.getPort();
    }
 }

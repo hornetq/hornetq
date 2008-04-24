@@ -650,7 +650,8 @@ public class ClientSessionImpl implements ClientSessionInternal
       
       ClientSessionImpl other = (ClientSessionImpl)xares;
       
-      return this.connection.getServerID() == other.getConnection().getServerID();
+      return connection.getRemotingConnection().getLocation()
+                .equals(other.getConnection().getRemotingConnection().getLocation());
    }
 
    public int prepare(final Xid xid) throws XAException

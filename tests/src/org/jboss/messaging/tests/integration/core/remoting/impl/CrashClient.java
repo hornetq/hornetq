@@ -73,7 +73,7 @@ public class CrashClient
          int numberOfConnections = Integer.parseInt(args[0]);
 
          Location location = new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
-         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(0, location);
+         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location);
          ClientConnection conn = cf.createConnection();
          ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
          ClientProducer producer = session.createProducer(QUEUE);
