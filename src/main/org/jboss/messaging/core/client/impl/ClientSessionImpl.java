@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
@@ -152,8 +151,6 @@ public class ClientSessionImpl implements ClientSessionInternal
    private final boolean autoCommitSends;
    
    private final boolean blockOnAcknowledge;
-   
-   private static AtomicLong clientTargetIDGenerator = new AtomicLong(0);
    
    // Constructors ---------------------------------------------------------------------------------
    
@@ -278,10 +275,8 @@ public class ClientSessionImpl implements ClientSessionInternal
       
       SessionCreateConsumerResponseMessage response = (SessionCreateConsumerResponseMessage)remotingConnection.send(serverTargetID, request);
       
-      long clientTargetID = clientTargetIDGenerator.getAndIncrement();
-      
       ClientConsumerInternal consumer =
-         new ClientConsumerImpl(this, response.getConsumerTargetID(), clientTargetID, executor, remotingConnection, direct, 1);
+         new ClientConsumerImpl(this, response.getConsumerTargetID(), response.getConsumerTargetID(), executor, remotingConnection, direct, 1);
 
       consumers.put(response.getConsumerTargetID(), consumer);
 
