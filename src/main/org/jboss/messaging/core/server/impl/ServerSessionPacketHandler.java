@@ -248,10 +248,4 @@ public class ServerSessionPacketHandler extends ServerPacketHandlerSupport
 
       return response;
    }
-
-   @Override
-   public String toString()
-   {
-      return "ServerSessionPacketHandler[id=" + session.getID() + "]";
-   }
 }

@@ -80,10 +80,4 @@ public class ServerConsumerPacketHandler extends ServerPacketHandlerSupport
       
       return response;
    }
-
-   @Override
-   public String toString()
-   {
-      return "ServerConsumerEndpointPacketHandler[id=" + consumer.getID() + "]";
-   }
 }

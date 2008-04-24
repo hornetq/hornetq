@@ -241,11 +241,5 @@ public class ServerBrowserImpl
          
          return response;
       }
-
-      @Override
-      public String toString()
-      {
-         return "ServerBrowserEndpointHandler[id=" + id + "]";
-      }
    }
 }

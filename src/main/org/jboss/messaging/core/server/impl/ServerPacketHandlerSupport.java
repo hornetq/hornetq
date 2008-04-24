@@ -83,4 +83,9 @@ public abstract class ServerPacketHandlerSupport implements PacketHandler
    
    protected abstract Packet doHandle(final Packet packet, final PacketSender sender) throws Exception;
 
+   @Override
+   public String toString()
+   {
+      return (this.getClass().getName() + "[id=" + getID() + "]");
+   }
 }

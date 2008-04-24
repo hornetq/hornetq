@@ -87,10 +87,4 @@ public class ServerConnectionPacketHandler extends ServerPacketHandlerSupport
       
       return response;
    }
-
-   @Override
-   public String toString()
-   {
-      return "ConnectionAdvisedPacketHandler[id=" + connection.getID() + "]";
-   }
 }
