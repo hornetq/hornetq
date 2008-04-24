@@ -328,6 +328,14 @@
             file="${build.classes.dir}/version.properties"/>
    </target>
 
+   <target name="build-native">
+       <exec dir="native" executable="make">
+          <arg line="clean"/>
+       </exec>
+      <exec dir="native" executable="bash">
+         <arg line="bootstrap"/>
+      </exec>
+   </target>
    <!-- ======================================================================================== -->
    <!-- Archival Tasks                                                                           -->
    <!-- ======================================================================================== -->
@@ -578,9 +586,9 @@
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
-             timeout="${junit.timeout}">
+             timeout="${junit.timeout}" >
          <sysproperty key="user.home" value="${user.home}"/>
-
+         <jvmarg value="-Djava.library.path=native/src/.libs"/>
          <jvmarg value="-Xmx1024M"/>
          <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
          <!--<jvmarg value="-ea"/>-->

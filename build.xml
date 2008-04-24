@@ -74,6 +74,9 @@
        <ant antfile="build-messaging.xml" target="compile"/>
    </target>
 
+   <target name="build-native" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="build-native"/>
+   </target>
    <!-- ======================================================================================== -->
    <!-- Archival Tasks                                                                           -->
    <!-- ======================================================================================== -->
