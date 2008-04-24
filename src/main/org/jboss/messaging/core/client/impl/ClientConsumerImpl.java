@@ -63,9 +63,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private final ClientSessionInternal session;
       
-   private final long serverTargetID;
-   
-   private final long clientTargetID;
+   private final long targetID;
    
    private final ExecutorService sessionExecutor;
    
@@ -92,15 +90,21 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // Constructors
    // ---------------------------------------------------------------------------------
 
-   public ClientConsumerImpl(final ClientSessionInternal session, final long serverTargetID,
-   		                    final long clientTargetID,
+   /**
+    * Create a ClientConsumerImpl.
+    * 
+    * The targetID is the same for the consumer on the client side and on the server side.
+    * 
+    * The targetID is not globally unique: the same ID can be used by 2 different servers.
+    * This is not an issue since the scope of the targetID remains within the RemotingConnection
+    * (and its PacketDispatcher) to a single server.
+    */
+   public ClientConsumerImpl(final ClientSessionInternal session, final long targetID,
                              final ExecutorService sessionExecutor,
                              final RemotingConnection remotingConnection,
                              final boolean direct, final int tokenBatchSize)
    {
-      this.serverTargetID = serverTargetID;
-      
-      this.clientTargetID = clientTargetID;
+      this.targetID = targetID;
       
       this.session = session;
       
@@ -252,9 +256,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          
          receiverThread = null;
 
-         remotingConnection.send(serverTargetID, session.getServerTargetID(), new PacketImpl(CLOSE));
+         remotingConnection.send(targetID, session.getServerTargetID(), new PacketImpl(CLOSE));
 
-         remotingConnection.getPacketDispatcher().unregister(clientTargetID);
+         remotingConnection.getPacketDispatcher().unregister(targetID);
       }
       finally
       {
@@ -272,7 +276,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    public long getClientTargetID()
    {
-      return clientTargetID;
+      return targetID;
    }
 
    public void handleMessage(final ConsumerDeliverMessage message) throws Exception
@@ -376,7 +380,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          {
             tokensToSend = 0;
             
-            remotingConnection.send(serverTargetID, session.getServerTargetID(), new ConsumerFlowTokenMessage(tokenBatchSize), true);                  
+            remotingConnection.send(targetID, session.getServerTargetID(), new ConsumerFlowTokenMessage(tokenBatchSize), true);                  
          }
       }
    }

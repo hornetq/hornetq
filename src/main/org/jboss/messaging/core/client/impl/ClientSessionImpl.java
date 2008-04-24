@@ -276,7 +276,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       SessionCreateConsumerResponseMessage response = (SessionCreateConsumerResponseMessage)remotingConnection.send(serverTargetID, request);
       
       ClientConsumerInternal consumer =
-         new ClientConsumerImpl(this, response.getConsumerTargetID(), response.getConsumerTargetID(), executor, remotingConnection, direct, 1);
+         new ClientConsumerImpl(this, response.getConsumerTargetID(), executor, remotingConnection, direct, 1);
 
       consumers.put(response.getConsumerTargetID(), consumer);
 
