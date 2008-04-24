@@ -2415,4 +2415,27 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		commit(3);
 	}
 
+	public void testTransactionOnDifferentFiles() throws Exception
+   {
+      setup(2, 512 + 2*1024, true);
+
+      createJournal();
+      startJournal();
+      load();
+
+      addTx(1, 1, 2, 3, 4, 5, 6);
+      updateTx(1, 1, 3, 5);
+      deleteTx(1, 1, 2, 3, 4, 5, 6);
+      commit(1);
+      
+      addTx(2, 11, 12);
+      
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+      
+      
+   }
+
 }
