@@ -57,7 +57,7 @@ public class SSLClient
             System.setProperty(ConnectionParams.REMOTING_SSL_KEYSTORE_PASSWORD,"secureexample");
             System.setProperty(ConnectionParams.REMOTING_SSL_TRUSTSTORE_PATH,"messaging.truststore");
             System.setProperty(ConnectionParams.REMOTING_SSL_TRUSTSTORE_PASSWORD,"secureexample");*/
-         ClientConnectionFactory connectionFactory = new ClientConnectionFactoryImpl(0, location, connectionParams);
+         ClientConnectionFactory connectionFactory = new ClientConnectionFactoryImpl(location, connectionParams);
          clientConnection = connectionFactory.createConnection(null, null);
          ClientSession clientSession = clientConnection.createClientSession(false, true, true, 100, true, false);
          ClientProducer clientProducer = clientSession.createProducer("queuejms.testQueue");

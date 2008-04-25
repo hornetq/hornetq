@@ -43,7 +43,7 @@ public class SimpleClient
       {
          Location location = new LocationImpl(TransportType.TCP, "localhost", 5400);
          ConnectionParams connectionParams = new ConnectionParamsImpl();
-         ClientConnectionFactory connectionFactory = new ClientConnectionFactoryImpl(0, location, connectionParams);
+         ClientConnectionFactory connectionFactory = new ClientConnectionFactoryImpl(location, connectionParams);
          clientConnection = connectionFactory.createConnection();
          ClientSession clientSession = clientConnection.createClientSession(false, true, true, 100, true, false);
          ClientProducer clientProducer = clientSession.createProducer("queuejms.testQueue");

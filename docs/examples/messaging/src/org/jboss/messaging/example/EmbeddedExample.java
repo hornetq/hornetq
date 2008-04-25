@@ -79,7 +79,7 @@ public class EmbeddedExample
          //then we create a client as normal
          Location location = new LocationImpl(TransportType.INVM);
          ConnectionParams connectionParams = new ConnectionParamsImpl();
-         ClientConnectionFactory connectionFactory = new ClientConnectionFactoryImpl(0, location, connectionParams);
+         ClientConnectionFactory connectionFactory = new ClientConnectionFactoryImpl(location, connectionParams);
 
          clientConnection = connectionFactory.createConnection();
          ClientSession clientSession = clientConnection.createClientSession(false, true, true, 100, true, false);
