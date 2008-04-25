@@ -55,6 +55,12 @@ public interface Configuration
 
    Location getLocation();
 
+   /**
+    * The server ID is used only when the messaging server
+    * is started in INVM transport. 
+    */
+   int getServerID();
+   
    boolean isTcpNoDelay();
    
    int getTcpReceiveBufferSize();

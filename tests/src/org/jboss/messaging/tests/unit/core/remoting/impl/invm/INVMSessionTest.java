@@ -7,15 +7,14 @@
 package org.jboss.messaging.tests.unit.core.remoting.impl.invm;
 
 import static org.jboss.messaging.core.remoting.TransportType.INVM;
-import static org.jboss.messaging.tests.integration.core.remoting.mina.TestSupport.PORT;
 
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
-import org.jboss.messaging.tests.unit.core.remoting.impl.SessionTestBase;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
+import org.jboss.messaging.tests.unit.core.remoting.impl.SessionTestBase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -48,7 +47,9 @@ public class INVMSessionTest extends SessionTestBase
    @Override
    protected Configuration createRemotingConfiguration()
    {
-      return ConfigurationHelper.newConfiguration(INVM, "localhost", PORT);
+      ConfigurationImpl config = new ConfigurationImpl();
+      config.setTransport(INVM);
+      return config;
    }
    
    @Override

@@ -7,19 +7,25 @@
 
 package org.jboss.messaging.tests.integration.core.remoting.impl;
 
+import static org.jboss.messaging.core.remoting.TransportType.INVM;
+
 import java.util.UUID;
 
-import org.jboss.messaging.core.server.impl.MessagingServerImpl;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
-import static org.jboss.messaging.core.remoting.TransportType.INVM;
-import org.jboss.messaging.core.client.*;
+import junit.framework.TestCase;
+
+import org.jboss.messaging.core.client.ClientConnection;
+import org.jboss.messaging.core.client.ClientConnectionFactory;
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
-import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
-import junit.framework.TestCase;
 
 public class PacketFilterTest  extends TestCase
 {
@@ -35,7 +41,9 @@ public class PacketFilterTest  extends TestCase
 
    protected void setUp() throws Exception
    {
-      server = new MessagingServerImpl(ConfigurationHelper.newConfiguration(INVM, null, 0));
+      ConfigurationImpl config = new ConfigurationImpl();
+      config.setTransport(INVM);
+      server = new MessagingServerImpl(config);
       server.start();
    }
 
@@ -53,7 +61,7 @@ public class PacketFilterTest  extends TestCase
       DummyInterceptor interceptorA = null;
       DummyInterceptorB interceptorB = null;
 
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(new LocationImpl(INVM));
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(new LocationImpl(0));
       ClientConnection conn = null;
       try
       {
@@ -160,7 +168,7 @@ public class PacketFilterTest  extends TestCase
          interceptor.sendException=false;
 
 
-         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(new LocationImpl(INVM));
+         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(new LocationImpl(0));
          conn = cf.createConnection();
          conn.start();
          ClientSession session = conn.createClientSession(false, true, true, -1, false, false);

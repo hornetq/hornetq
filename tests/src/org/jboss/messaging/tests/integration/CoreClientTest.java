@@ -55,7 +55,7 @@ public class CoreClientTest extends TestCase
    
    public void testINVMCoreClient() throws Exception
    {
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(new LocationImpl(INVM));
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(new LocationImpl(0));
       ClientConnection conn = cf.createConnection();
       
       ClientSession session = conn.createClientSession(false, true, true, -1, false, false);

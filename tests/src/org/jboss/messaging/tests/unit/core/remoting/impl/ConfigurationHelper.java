@@ -15,12 +15,10 @@ public class ConfigurationHelper
 
    // Public --------------------------------------------------------
 
-   public static ConfigurationImpl newConfiguration(TransportType transport, String localhost, int port)
+   public static ConfigurationImpl newTCPConfiguration(String localhost, int port)
    {
       ConfigurationImpl config = new ConfigurationImpl();
-      if (transport == TransportType.INVM)
-         config.setInvmDisabled(false);
-      config.setTransport(transport);
+      config.setTransport(TransportType.TCP);
       config.setHost(localhost);
       config.setPort(port);
       return config;

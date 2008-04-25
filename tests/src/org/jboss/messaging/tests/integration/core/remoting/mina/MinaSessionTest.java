@@ -68,7 +68,7 @@ public class MinaSessionTest extends SessionTestBase
    @Override
    protected Configuration createRemotingConfiguration()
    {
-      return ConfigurationHelper.newConfiguration(TCP, "localhost", TestSupport.PORT);
+      return ConfigurationHelper.newTCPConfiguration("localhost", TestSupport.PORT);
    }
 
    @Override

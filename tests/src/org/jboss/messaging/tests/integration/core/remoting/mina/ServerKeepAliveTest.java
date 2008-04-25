@@ -7,7 +7,6 @@
 package org.jboss.messaging.tests.integration.core.remoting.mina;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
@@ -78,7 +77,7 @@ public class ServerKeepAliveTest extends TestCase
          }
       };
 
-      ConfigurationImpl config = ConfigurationHelper.newConfiguration(TCP,
+      ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration(
             "localhost", TestSupport.PORT);
       config.setKeepAliveInterval(TestSupport.KEEP_ALIVE_INTERVAL);
       config.setKeepAliveTimeout(TestSupport.KEEP_ALIVE_TIMEOUT);
@@ -132,7 +131,7 @@ public class ServerKeepAliveTest extends TestCase
          }
       };
 
-      ConfigurationImpl config = ConfigurationHelper.newConfiguration(TCP,
+      ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration(
             "localhost", TestSupport.PORT);
       config.setKeepAliveInterval(TestSupport.KEEP_ALIVE_INTERVAL);
       config.setKeepAliveTimeout(TestSupport.KEEP_ALIVE_TIMEOUT);

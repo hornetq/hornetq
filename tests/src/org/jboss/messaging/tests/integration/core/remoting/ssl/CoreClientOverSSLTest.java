@@ -22,7 +22,6 @@
 package org.jboss.messaging.tests.integration.core.remoting.ssl;
 
 import static java.lang.Boolean.FALSE;
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.ClientConnection;
@@ -33,10 +32,10 @@ import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
-import org.jboss.messaging.tests.unit.core.util.SpawnedVMSupport;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
+import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
+import org.jboss.messaging.tests.unit.core.util.SpawnedVMSupport;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -118,7 +117,7 @@ public class CoreClientOverSSLTest extends TestCase
    @Override
    protected void setUp() throws Exception
    {
-      ConfigurationImpl config = ConfigurationHelper.newConfiguration(TCP,
+      ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration(
             "localhost", SSL_PORT);
       config.setSSLEnabled(true);
       config.setKeyStorePath("messaging.keystore");

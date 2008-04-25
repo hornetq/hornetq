@@ -58,7 +58,7 @@ public class ClientKeepAliveTest extends TestCase
    @Override
    protected void setUp() throws Exception
    {
-      ConfigurationImpl config = ConfigurationHelper.newConfiguration(TCP, "localhost", TestSupport.PORT);
+      ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", TestSupport.PORT);
       config.setKeepAliveInterval(TestSupport.KEEP_ALIVE_INTERVAL);
       config.setKeepAliveTimeout(TestSupport.KEEP_ALIVE_TIMEOUT);
       service = new MinaService(config);

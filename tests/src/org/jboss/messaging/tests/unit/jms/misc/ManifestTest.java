@@ -21,21 +21,23 @@
    */
 package org.jboss.messaging.tests.unit.jms.misc;
 
-import junit.framework.TestCase;
+import static org.jboss.messaging.core.remoting.TransportType.INVM;
+
+import java.io.File;
+import java.util.Properties;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionMetaData;
-import java.util.Properties;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
-import java.util.jar.Attributes;
-import java.io.File;
 
+import junit.framework.TestCase;
+
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
-import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
-import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.jms.client.JBossConnectionMetaData;
 
 /**
@@ -78,7 +80,9 @@ public class ManifestTest extends TestCase
 
       try
       {
-         MessagingServer server = new MessagingServerImpl(ConfigurationHelper.newConfiguration(TransportType.INVM, null, 0));
+         ConfigurationImpl config = new ConfigurationImpl();
+         config.setTransport(INVM);
+         MessagingServer server = new MessagingServerImpl(config);
          //server.getVersion()
 
 	      ConnectionMetaData meta = new JBossConnectionMetaData(server.getVersion());

@@ -7,7 +7,6 @@
 package org.jboss.messaging.tests.unit.core.remoting;
 
 import static org.jboss.messaging.core.remoting.TransportType.INVM;
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
 import junit.framework.TestCase;
 
@@ -35,14 +34,15 @@ public class RemotingConfigurationValidatorTest extends TestCase
 
    public void testINVMConfiguration()
    {
-      Configuration config = ConfigurationHelper.newConfiguration(INVM, "localhost", -1);
+      ConfigurationImpl config = new ConfigurationImpl();
+      config.setTransport(INVM);
       
       validate(config);
    }
 
    public void testNegativePort()
    {
-      Configuration config =  ConfigurationHelper.newConfiguration(TCP, "localhost", -1);
+      Configuration config =  ConfigurationHelper.newTCPConfiguration("localhost", -1);
 
       try 
       {
@@ -55,7 +55,7 @@ public class RemotingConfigurationValidatorTest extends TestCase
    
    public void test_TcpReceiveBufferSize_to_0()
    {
-      ConfigurationImpl config =  ConfigurationHelper.newConfiguration(TCP, "localhost", 9000);
+      ConfigurationImpl config =  ConfigurationHelper.newTCPConfiguration("localhost", 9000);
       config.setTcpReceiveBufferSize(0);
       try 
       {
@@ -68,14 +68,14 @@ public class RemotingConfigurationValidatorTest extends TestCase
 
    public void test_TcpReceiveBufferSize_to_minusOne()
    {
-      ConfigurationImpl config =  ConfigurationHelper.newConfiguration(TCP, "localhost", 9000);
+      ConfigurationImpl config =  ConfigurationHelper.newTCPConfiguration("localhost", 9000);
       config.setTcpReceiveBufferSize(-1);
       validate(config);
    }
 
    public void test_TcpReceiveBufferSize_to_NegativeNumber()
    {
-      ConfigurationImpl config =  ConfigurationHelper.newConfiguration(TCP, "localhost", 9000);
+      ConfigurationImpl config =  ConfigurationHelper.newTCPConfiguration("localhost", 9000);
       config.setTcpReceiveBufferSize(-2);
       try 
       {
@@ -88,7 +88,7 @@ public class RemotingConfigurationValidatorTest extends TestCase
    
    public void test_TcpSendBufferSize_to_0()
    {
-      ConfigurationImpl config =  ConfigurationHelper.newConfiguration(TCP, "localhost", 9000);
+      ConfigurationImpl config =  ConfigurationHelper.newTCPConfiguration("localhost", 9000);
       config.setTcpSendBufferSize(0);
       try 
       {
@@ -101,14 +101,14 @@ public class RemotingConfigurationValidatorTest extends TestCase
 
    public void test_TcpSendBufferSize_to_minusOne()
    {
-      ConfigurationImpl config =  ConfigurationHelper.newConfiguration(TCP, "localhost", 9000);
+      ConfigurationImpl config =  ConfigurationHelper.newTCPConfiguration("localhost", 9000);
       config.setTcpSendBufferSize(-1);
       validate(config);
    }
 
    public void test_TcpSendBufferSize_to_NegativeNumber()
    {
-      ConfigurationImpl config =  ConfigurationHelper.newConfiguration(TCP, "localhost", 9000);
+      ConfigurationImpl config =  ConfigurationHelper.newTCPConfiguration("localhost", 9000);
       config.setTcpSendBufferSize(-2);
       try 
       {
@@ -121,7 +121,8 @@ public class RemotingConfigurationValidatorTest extends TestCase
    
    public void test_DisableINVM_With_INVMTransport()
    {
-      ConfigurationImpl config = ConfigurationHelper.newConfiguration(INVM, "localhost", 9000);
+      ConfigurationImpl config = new ConfigurationImpl();
+      config.setTransport(INVM);
       config.setInvmDisabled(true);
       
       try 
@@ -136,7 +137,8 @@ public class RemotingConfigurationValidatorTest extends TestCase
    
    public void test_EnableSSL_With_INVMTransport()
    {
-      ConfigurationImpl config = ConfigurationHelper.newConfiguration(INVM, "localhost", 9000);
+      ConfigurationImpl config = new ConfigurationImpl();
+      config.setTransport(INVM);
       config.setSSLEnabled(true);
       
       try 

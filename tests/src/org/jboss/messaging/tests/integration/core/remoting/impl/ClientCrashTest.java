@@ -160,12 +160,11 @@ public class ClientCrashTest extends TestCase
    {
       super.setUp();
 
-      ConfigurationImpl config = ConfigurationHelper.newConfiguration(TCP,
-            "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
+      ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
       server = new MessagingServerImpl(config);
       server.start();
 
-      cf = new ClientConnectionFactoryImpl(new LocationImpl(TCP,"localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT));
+      cf = new ClientConnectionFactoryImpl(new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT));
    }
 
    @Override

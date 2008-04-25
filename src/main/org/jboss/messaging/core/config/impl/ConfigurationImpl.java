@@ -89,7 +89,8 @@ public class ConfigurationImpl implements Configuration, Serializable
    protected TransportType transport;
    protected String host;
    protected int port = DEFAULT_REMOTING_PORT;
-
+   protected int serverID = 0;
+   
    protected int timeout = DEFAULT_REQRES_TIMEOUT;
    protected int keepAliveInterval = DEFAULT_KEEP_ALIVE_INTERVAL;
    protected int keepAliveTimeout = DEFAULT_KEEP_ALIVE_TIMEOUT;
@@ -169,7 +170,20 @@ public class ConfigurationImpl implements Configuration, Serializable
 
    public Location getLocation()
    {
-      return new LocationImpl(transport, host, port);
+      if (transport == TransportType.INVM)
+         return new LocationImpl(serverID);
+      else
+         return new LocationImpl(transport, host, port);
+   }
+   
+   public int getServerID()
+   {
+      return serverID;
+   }
+   
+   public void setServerID(int serverID)
+   {
+      this.serverID = serverID;
    }
    
    public int getKeepAliveInterval()

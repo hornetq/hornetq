@@ -1,21 +1,21 @@
 package org.jboss.messaging.tests.integration.core.remoting.mina;
 
+import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 
 import java.io.IOException;
 
 import junit.framework.TestCase;
 
+import org.jboss.messaging.core.client.impl.LocationImpl;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.RemotingService;
-import org.jboss.messaging.core.remoting.TransportType;
-import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
-import org.jboss.messaging.core.client.impl.LocationImpl;
 
 public class MinaServiceTest extends TestCase
 {
@@ -63,7 +63,9 @@ public class MinaServiceTest extends TestCase
    {
       super.setUp();
 
-      invmService = new MinaService(ConfigurationHelper.newConfiguration(TransportType.INVM, "localhost", -1));
+      ConfigurationImpl config = new ConfigurationImpl();
+      config.setTransport(INVM);
+      invmService = new MinaService(config);
       invmService.start();
    }
 

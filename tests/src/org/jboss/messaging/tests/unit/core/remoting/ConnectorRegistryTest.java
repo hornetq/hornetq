@@ -7,18 +7,17 @@
 package org.jboss.messaging.tests.unit.core.remoting;
 
 import static org.jboss.messaging.core.remoting.TransportType.INVM;
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import static org.jboss.messaging.tests.integration.core.remoting.mina.TestSupport.PORT;
 import junit.framework.TestCase;
 
+import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.remoting.ConnectorRegistry;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.core.remoting.impl.ConnectorRegistryImpl;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
-import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
+import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -58,7 +57,7 @@ public class ConnectorRegistryTest extends TestCase
    
    public void testConfigurationRegistration() throws Exception
    {
-      Configuration config = ConfigurationHelper.newConfiguration(TCP, "localhost", PORT);
+      Configuration config = ConfigurationHelper.newTCPConfiguration("localhost", PORT);
       
       assertTrue(registry.register(config.getLocation(), dispatcher));
       assertFalse(registry.register(config.getLocation(), dispatcher));
@@ -72,8 +71,8 @@ public class ConnectorRegistryTest extends TestCase
    
    public void testRegistrationForTwoConfigurations() throws Exception
    {
-      Configuration config_1 = ConfigurationHelper.newConfiguration(TCP, "localhost", PORT);
-      Configuration config_2 = ConfigurationHelper.newConfiguration(TCP, "localhost", PORT + 1);     
+      Configuration config_1 = ConfigurationHelper.newTCPConfiguration("localhost", PORT);
+      Configuration config_2 = ConfigurationHelper.newTCPConfiguration("localhost", PORT + 1);     
       PacketDispatcher dispatcher_1 = new PacketDispatcherImpl(null);      
       PacketDispatcher dispatcher_2 = new PacketDispatcherImpl(null);
       
@@ -86,7 +85,7 @@ public class ConnectorRegistryTest extends TestCase
    
    public void testINVMConnectorFromTCPConfiguration() throws Exception
    {
-      Configuration config = ConfigurationHelper.newConfiguration(TCP, "localhost", PORT);
+      Configuration config = ConfigurationHelper.newTCPConfiguration("localhost", PORT);
       
       // config is registered -> client and server are in the same vm
       assertTrue(registry.register(config.getLocation(), dispatcher));
@@ -103,7 +102,7 @@ public class ConnectorRegistryTest extends TestCase
    
    public void testTCPConnectorFromTCPConfiguration() throws Exception
    {
-      Configuration config = ConfigurationHelper.newConfiguration(TCP, "localhost", PORT);
+      Configuration config = ConfigurationHelper.newTCPConfiguration("localhost", PORT);
       
       // config is not registered -> client and server are not in the same vm
       
@@ -117,7 +116,7 @@ public class ConnectorRegistryTest extends TestCase
    
    public void testConnectorCount() throws Exception
    {
-      Configuration config = ConfigurationHelper.newConfiguration(TCP, "localhost", PORT);
+      Configuration config = ConfigurationHelper.newTCPConfiguration("localhost", PORT);
       assertEquals(0, registry.getConnectorCount(config.getLocation()));
 
       NIOConnector connector1 = registry.getConnector(config.getLocation(), new ConnectionParamsImpl(), dispatcher);
@@ -143,8 +142,8 @@ public class ConnectorRegistryTest extends TestCase
    
    public void testConnectorCount_2() throws Exception
    {
-      Configuration config1 = ConfigurationHelper.newConfiguration(TCP, "localhost", PORT);
-      Configuration config2 = ConfigurationHelper.newConfiguration(TCP, "127.0.0.1", PORT);
+      Configuration config1 = ConfigurationHelper.newTCPConfiguration("localhost", PORT);
+      Configuration config2 = ConfigurationHelper.newTCPConfiguration("127.0.0.1", PORT);
 
       assertNotSame(config1, config2);
       
@@ -169,8 +168,8 @@ public class ConnectorRegistryTest extends TestCase
     */
    public void testConfigurationEquality() throws Exception
    {
-      Configuration config1 = ConfigurationHelper.newConfiguration(TCP, "localhost", PORT);
-      Configuration config2 = ConfigurationHelper.newConfiguration(TCP, "localhost", PORT);
+      Configuration config1 = ConfigurationHelper.newTCPConfiguration("localhost", PORT);
+      Configuration config2 = ConfigurationHelper.newTCPConfiguration("localhost", PORT);
 
       assertNotSame(config1, config2);
 

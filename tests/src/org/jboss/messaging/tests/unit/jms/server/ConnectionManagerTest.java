@@ -22,6 +22,7 @@
 package org.jboss.messaging.tests.unit.jms.server;
 
 
+import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
@@ -30,6 +31,9 @@ import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
+import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+
 import junit.framework.TestCase;
 
 /**
@@ -55,7 +59,9 @@ public class ConnectionManagerTest extends TestCase
 
    protected void setUp() throws Exception
    {
-      server = new MessagingServerImpl(ConfigurationHelper.newConfiguration(INVM, null, 0));
+      ConfigurationImpl config = new ConfigurationImpl();
+      config.setTransport(TransportType.INVM);
+      server = new MessagingServerImpl(config);
       server.start();
    }
 
@@ -78,7 +84,7 @@ public class ConnectionManagerTest extends TestCase
    {
       
       assertActiveConnectionsOnTheServer(0);
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(new LocationImpl(INVM));
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(new LocationImpl(0));
 
       ClientConnection conn_1 = cf.createConnection();
       

@@ -55,7 +55,7 @@ public class PacketStressTest extends TestCase
    @Override
    protected void setUp() throws Exception
    {
-      Configuration config = ConfigurationHelper.newConfiguration(TCP, "localhost", PORT);
+      Configuration config = ConfigurationHelper.newTCPConfiguration("localhost", PORT);
       service = new MinaService(config);
       service.start();
       connector = new MinaConnector(config.getLocation(), new PacketDispatcherImpl(null));

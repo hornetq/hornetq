@@ -11,8 +11,6 @@ import java.io.Serializable;
  */
 public interface Location extends Serializable
 {
-   int DEFAULT_REMOTING_PORT = 5400;
-
    String getLocation();
 
    TransportType getTransport();
@@ -20,4 +18,6 @@ public interface Location extends Serializable
    String getHost();
 
    int getPort();
+
+   public int getServerID();
 }

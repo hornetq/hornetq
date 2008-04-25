@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.client.impl;
 
 import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.TransportType;
 
 /**
@@ -34,17 +35,22 @@ public class LocationImpl implements Location
 	
 	protected TransportType transport;
    protected String host;
-   protected int port = DEFAULT_REMOTING_PORT;
-
-   public LocationImpl(TransportType transport)
+   protected int port = ConfigurationImpl.DEFAULT_REMOTING_PORT;
+   private int serverID;
+   
+   public LocationImpl(int serverID)
    {
-      assert transport == TransportType.INVM;
-      this.transport = transport;
+      this.transport = TransportType.INVM;
+      this.serverID = serverID;
    }
 
    public LocationImpl(TransportType transport, String host, int port)
    {
-      assert (transport == TransportType.INVM) || (host != null && port > 0);
+      assert host != null;
+      assert port > 0;
+      if (transport != TransportType.TCP && transport != TransportType.HTTP)
+         throw new IllegalArgumentException("only HTTP and TCP transports are allowed for remote location");
+      
       this.transport = transport;
       this.host = host;
       this.port = port;
@@ -52,7 +58,10 @@ public class LocationImpl implements Location
 
    public String getLocation()
    {
-      return transport + (transport == TransportType.INVM?"":"://" + host + ":" + port);
+      if (transport == TransportType.INVM)
+         return "invm://" + serverID;
+      else
+         return transport +  "://" + host + ":" + port;
    }
 
    public TransportType getTransport()
@@ -70,6 +79,11 @@ public class LocationImpl implements Location
       return port;
    }
    
+   public int getServerID()
+   {
+      return serverID;
+   }
+   
    @Override
    public String toString()
    {
@@ -84,7 +98,13 @@ public class LocationImpl implements Location
    	}
    	Location lother = (Location)other;
    	
-   	return this.transport.equals(lother.getLocation()) &&
+   	if (transport != lother.getTransport())
+   	   return false;
+   	
+   	if (transport == TransportType.INVM)
+   	   return serverID == lother.getServerID();
+   	else
+   	   return this.transport.equals(lother.getTransport()) &&
    	       this.host.equals(lother.getHost()) &&
    	       this.port == lother.getPort();
    }

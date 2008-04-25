@@ -99,7 +99,7 @@ public class ClientExitTest extends TestCase
    @Override
    protected void setUp() throws Exception
    {
-      ConfigurationImpl config = ConfigurationHelper.newConfiguration(TCP,
+      ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration(
             "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
       server = new MessagingServerImpl(config);
       server.start();
