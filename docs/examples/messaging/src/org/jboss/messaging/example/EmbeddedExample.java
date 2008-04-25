@@ -23,7 +23,6 @@ package org.jboss.messaging.example;
 
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
-import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.client.*;
@@ -56,6 +55,7 @@ public class EmbeddedExample
          //create a new server with an invm transport, we could use TCP if needed
          ConfigurationImpl configuration = new ConfigurationImpl();
          configuration.setTransport(TransportType.INVM);
+         configuration.setServerID(0);
          messagingServer = new MessagingServerImpl(configuration);
          //lets use our own security manager, we could use the default if needed but we would need to make sure that
          // jbm-security.xml and queues.xml are in the classpath
@@ -77,7 +77,7 @@ public class EmbeddedExample
          messagingServer.getPostOffice().addBinding("atestq", "atestq", null, false, false);
 
          //then we create a client as normal
-         Location location = new LocationImpl(TransportType.INVM);
+         Location location = new LocationImpl(0);
          ConnectionParams connectionParams = new ConnectionParamsImpl();
          ClientConnectionFactory connectionFactory = new ClientConnectionFactoryImpl(location, connectionParams);
 
