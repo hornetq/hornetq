@@ -2425,10 +2425,12 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       addTx(1, 1, 2, 3, 4, 5, 6);
       updateTx(1, 1, 3, 5);
-      deleteTx(1, 1, 2, 3, 4, 5, 6);
       commit(1);
+      deleteTx(2, 1, 2, 3, 4, 5, 6);
+      commit(2);
       
-      addTx(2, 11, 12);
+      // Just to make sure the commit won't be released. The commit will be on the same file as addTx(3);
+      addTx(3, 11, 12);
       
       stopJournal();
       createJournal();
