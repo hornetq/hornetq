@@ -163,30 +163,6 @@ public class BufferWrapper implements RemotingBuffer
       }
    }
    
-   public void putString(final String string)
-   {
-   	int len = string.length();
-      buffer.putInt(len);
-      for (int i = 0; i < len; i++)
-      {   
-      	buffer.putChar(string.charAt(i));
-      }
-   }
-
-   public String getString()
-   {
-   	int len = buffer.getInt();
-      char[] chars = new char[len];
-      for (int i = 0; i < len; i++)
-      {
-      	chars[i] = buffer.getChar();
-      }
-                     
-      String string =  new String(chars);
-      
-      return string;
-   }
-   
    public void rewind()
    {
    	buffer.rewind();
@@ -203,5 +179,31 @@ public class BufferWrapper implements RemotingBuffer
 
    // Private -------------------------------------------------------
 
+   private void putString(final String string)
+   {
+      assert string != null;
+      
+      int len = string.length();
+      buffer.putInt(len);
+      for (int i = 0; i < len; i++)
+      {   
+         buffer.putChar(string.charAt(i));
+      }
+   }
+
+   private String getString()
+   {
+      int len = buffer.getInt();
+      char[] chars = new char[len];
+      for (int i = 0; i < len; i++)
+      {
+         chars[i] = buffer.getChar();
+      }
+                     
+      String string =  new String(chars);
+      
+      return string;
+   }
+   
    // Inner classes -------------------------------------------------
 }

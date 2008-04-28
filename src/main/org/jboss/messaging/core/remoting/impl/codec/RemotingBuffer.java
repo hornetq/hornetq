@@ -46,10 +46,6 @@ public interface RemotingBuffer
 
    String getNullableString();
    
-   void putString(String nullableString);
-
-   String getString();
-   
    void rewind();
 
    byte[] array();
