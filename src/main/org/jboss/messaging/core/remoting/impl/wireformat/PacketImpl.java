@@ -17,10 +17,6 @@ public class PacketImpl implements Packet
 {
 	// Constants -----------------------------------------------------
 
-	public static final long NO_ID_SET = -1L;
-
-	// Attributes ----------------------------------------------------
-
 	private long correlationID = NO_ID_SET;
 
 	private long targetID = NO_ID_SET;

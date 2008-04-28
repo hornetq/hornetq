@@ -359,7 +359,7 @@ public class PacketTypeTest extends UnitTestCase
 
    public void testNullPacket() throws Exception
    {
-      PacketImpl packet = new PacketImpl(NULL);
+      Packet packet = new PacketImpl(NULL);
       long cid = randomLong();
       packet.setCorrelationID(cid);
       packet.setTargetID(randomLong());
@@ -623,7 +623,7 @@ public class PacketTypeTest extends UnitTestCase
 
    public void testStartConnectionMessage() throws Exception
    {
-      PacketImpl packet = new PacketImpl(CONN_START);
+      Packet packet = new PacketImpl(CONN_START);
       AbstractPacketCodec codec = PacketCodecFactory
             .createCodecForEmptyPacket(CONN_START);
 
@@ -634,7 +634,7 @@ public class PacketTypeTest extends UnitTestCase
 
    public void testStopConnectionMessage() throws Exception
    {
-      PacketImpl packet = new PacketImpl(CONN_STOP);
+      Packet packet = new PacketImpl(CONN_STOP);
       AbstractPacketCodec codec = PacketCodecFactory
             .createCodecForEmptyPacket(CONN_STOP);
 
@@ -725,7 +725,7 @@ public class PacketTypeTest extends UnitTestCase
 
    public void testSessionCommitMessage() throws Exception
    {
-      PacketImpl message = new PacketImpl(SESS_COMMIT);
+      Packet message = new PacketImpl(SESS_COMMIT);
       AbstractPacketCodec codec = PacketCodecFactory
             .createCodecForEmptyPacket(SESS_COMMIT);
 
@@ -736,7 +736,7 @@ public class PacketTypeTest extends UnitTestCase
 
    public void testSessionRollbackMessage() throws Exception
    {
-      PacketImpl message = new PacketImpl(SESS_ROLLBACK);
+      Packet message = new PacketImpl(SESS_ROLLBACK);
       AbstractPacketCodec codec = PacketCodecFactory
             .createCodecForEmptyPacket(SESS_ROLLBACK);
 
@@ -747,7 +747,7 @@ public class PacketTypeTest extends UnitTestCase
 
    public void testSessionRecoverMessage() throws Exception
    {
-      PacketImpl message = new PacketImpl(SESS_RECOVER);
+      Packet message = new PacketImpl(SESS_RECOVER);
       AbstractPacketCodec codec = PacketCodecFactory
             .createCodecForEmptyPacket(SESS_RECOVER);
 
@@ -758,7 +758,7 @@ public class PacketTypeTest extends UnitTestCase
 
    public void testCloseMessage() throws Exception
    {
-      PacketImpl message = new PacketImpl(CLOSE);
+      Packet message = new PacketImpl(CLOSE);
       AbstractPacketCodec codec = PacketCodecFactory
             .createCodecForEmptyPacket(CLOSE);
 
@@ -802,7 +802,7 @@ public class PacketTypeTest extends UnitTestCase
 
    public void testBrowserResetMessage() throws Exception
    {
-      PacketImpl message = new PacketImpl(SESS_BROWSER_RESET);
+      Packet message = new PacketImpl(SESS_BROWSER_RESET);
       AbstractPacketCodec codec = PacketCodecFactory
             .createCodecForEmptyPacket(SESS_BROWSER_RESET);
 
@@ -813,7 +813,7 @@ public class PacketTypeTest extends UnitTestCase
 
    public void testBrowserHasNextMessageRequest() throws Exception
    {
-      PacketImpl request = new PacketImpl(SESS_BROWSER_HASNEXTMESSAGE);
+      Packet request = new PacketImpl(SESS_BROWSER_HASNEXTMESSAGE);
       AbstractPacketCodec codec = PacketCodecFactory
             .createCodecForEmptyPacket(SESS_BROWSER_HASNEXTMESSAGE);
 
@@ -840,7 +840,7 @@ public class PacketTypeTest extends UnitTestCase
 
    public void testBrowserNextMessageRequest() throws Exception
    {
-      PacketImpl request = new PacketImpl(SESS_BROWSER_NEXTMESSAGE);
+      Packet request = new PacketImpl(SESS_BROWSER_NEXTMESSAGE);
       AbstractPacketCodec codec = PacketCodecFactory
             .createCodecForEmptyPacket(SESS_BROWSER_NEXTMESSAGE);
 
@@ -949,7 +949,7 @@ public class PacketTypeTest extends UnitTestCase
 
    public void testSessionXAGetInDoubtXidsMessage() throws Exception
    {
-      PacketImpl request = new PacketImpl(SESS_XA_INDOUBT_XIDS);
+      Packet request = new PacketImpl(SESS_XA_INDOUBT_XIDS);
       AbstractPacketCodec codec = createCodecForEmptyPacket(SESS_XA_INDOUBT_XIDS);
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(request, codec);
@@ -980,7 +980,7 @@ public class PacketTypeTest extends UnitTestCase
 
    public void testSessionXAGetTimeoutMessage() throws Exception
    {
-      PacketImpl message = new PacketImpl(SESS_XA_GET_TIMEOUT);
+      Packet message = new PacketImpl(SESS_XA_GET_TIMEOUT);
       AbstractPacketCodec codec = createCodecForEmptyPacket(PacketType.SESS_XA_GET_TIMEOUT);
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(message, codec);
@@ -1125,7 +1125,7 @@ public class PacketTypeTest extends UnitTestCase
 
    public void testSessionXASuspendMessage() throws Exception
    {
-      PacketImpl message = new PacketImpl(SESS_XA_SUSPEND);
+      Packet message = new PacketImpl(SESS_XA_SUSPEND);
       AbstractPacketCodec codec = PacketCodecFactory
             .createCodecForEmptyPacket(PacketType.SESS_XA_SUSPEND);
 

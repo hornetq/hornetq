@@ -14,6 +14,8 @@ public interface Packet
 {
    // Public --------------------------------------------------------
 
+   public static final long NO_ID_SET = -1L;
+
    void setCorrelationID(long correlationID);
 
    long getCorrelationID();

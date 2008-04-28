@@ -241,7 +241,7 @@ public class ServerSessionPacketHandler extends ServerPacketHandlerSupport
       }
       
       // reply if necessary
-      if (response == null && packet.getCorrelationID() != PacketImpl.NO_ID_SET)
+      if (response == null && packet.getCorrelationID() != Packet.NO_ID_SET)
       {
          response = new PacketImpl(NULL);               
       }

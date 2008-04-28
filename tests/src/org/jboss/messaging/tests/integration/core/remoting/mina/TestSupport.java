@@ -16,7 +16,7 @@ public abstract class TestSupport
 {
    // Constants -----------------------------------------------------
 
-   public static final int MANY_MESSAGES = 500;
+   public static final int MANY_MESSAGES = 50000;
 
    public static final int KEEP_ALIVE_INTERVAL = 2; // in seconds
 

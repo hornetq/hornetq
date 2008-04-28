@@ -27,7 +27,6 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 
 /**
  * 
@@ -67,7 +66,7 @@ public abstract class ServerPacketHandlerSupport implements PacketHandler
       }
       
       // reply if necessary
-      if (response != null && packet.getCorrelationID() != PacketImpl.NO_ID_SET)
+      if (response != null && packet.getCorrelationID() != Packet.NO_ID_SET)
       {
          response.normalize(packet);
          
