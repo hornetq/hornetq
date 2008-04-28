@@ -80,7 +80,7 @@ public class ServerConnectionPacketHandler extends ServerPacketHandlerSupport
       }
 
       // reply if necessary
-      if (response == null && packet.isOneWay() == false)
+      if (response == null && packet.getCorrelationID() != PacketImpl.NO_ID_SET)
       {
          response = new PacketImpl(NULL);               
       }

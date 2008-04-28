@@ -6,7 +6,6 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.core.client.impl.RemotingConnection;
 import org.jboss.messaging.core.remoting.Packet;
 
 /**
@@ -29,14 +28,6 @@ public class PacketImpl implements Packet
 	private long executorID = NO_ID_SET;
 
 	private final PacketType type;
-
-	/**
-	 * <code>oneWay</code> is <code>true</code> when the packet is sent "one way"
-	 * by the client which does not expect any response to it.
-	 * 
-	 * @see RemotingConnection#sendOneWay(AbstractPacket)
-	 */
-	private boolean oneWay = false;
 
 	// Static --------------------------------------------------------
 
@@ -86,16 +77,6 @@ public class PacketImpl implements Packet
 		this.executorID = executorID;
 	}
 
-	public void setOneWay(boolean oneWay)
-	{
-		this.oneWay = oneWay;
-	}
-
-	public boolean isOneWay()
-	{
-		return oneWay;
-	}
-
 	public void normalize(Packet other)
 	{
 		assert other != null;
@@ -123,7 +104,7 @@ public class PacketImpl implements Packet
 	 {
 		 return "PACKET[type=" + type
 		 + ", correlationID=" + correlationID + ", targetID=" + targetID
-		 + ", executorID=" + executorID + ", oneWay=" + oneWay;
+		 + ", executorID=" + executorID;
 	 }
 
 	 // Protected -----------------------------------------------------

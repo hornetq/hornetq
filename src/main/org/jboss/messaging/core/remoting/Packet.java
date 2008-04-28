@@ -27,10 +27,6 @@ public interface Packet
    long getExecutorID();
 
    void setExecutorID(long executorID);
-
-   void setOneWay(boolean oneWay);
-
-   boolean isOneWay();
    
    void normalize(Packet other);
 

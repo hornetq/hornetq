@@ -42,7 +42,7 @@ public abstract class AbstractPacketCodec<P extends Packet>
    public static final int CHAR_LENGTH = 2;
    
    public static final int HEADER_LENGTH =
-   	BYTE_LENGTH + LONG_LENGTH + LONG_LENGTH + LONG_LENGTH + BOOLEAN_LENGTH;
+   	BYTE_LENGTH + LONG_LENGTH + LONG_LENGTH + LONG_LENGTH;
    
    private static final Logger log = Logger.getLogger(AbstractPacketCodec.class);
 
@@ -82,7 +82,6 @@ public abstract class AbstractPacketCodec<P extends Packet>
       buf.putLong(correlationID);
       buf.putLong(targetID);
       buf.putLong(executorID);
-      buf.putBoolean(packet.isOneWay());
 
       encodeBody(packet, buf);
       
@@ -115,14 +114,13 @@ public abstract class AbstractPacketCodec<P extends Packet>
       long executorID = buffer.getLong();
       if (executorID == -1)
          executorID = targetID;
-      boolean oneWay = buffer.getBoolean();
       
       Packet packet = decodeBody(buffer);
 
       packet.setCorrelationID(correlationID);
       packet.setTargetID(targetID);
-      packet.setExecutorID(executorID);            
-      packet.setOneWay(oneWay);
+      packet.setExecutorID(executorID);
+
       
       out.write(packet);
    }   

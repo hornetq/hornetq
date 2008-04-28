@@ -279,12 +279,10 @@ public class PacketTypeTest extends UnitTestCase
       long correlationID = buffer.getLong();
       long targetID = buffer.getLong();
       long executorID = buffer.getLong();
-      boolean oneWay = buffer.getBoolean();
 
       assertEquals(packet.getCorrelationID(), correlationID);
       assertEquals(packet.getTargetID(), targetID);
       assertEquals(packet.getExecutorID(), executorID);
-      assertEquals(oneWay, packet.isOneWay());
    }
 
    private static void checkBody(RemotingBuffer buffer, int bodyLength,

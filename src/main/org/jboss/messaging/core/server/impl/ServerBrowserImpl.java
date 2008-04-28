@@ -41,6 +41,7 @@ import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
@@ -234,7 +235,7 @@ public class ServerBrowserImpl
          }
 
          // reply if necessary
-         if (response == null && packet.isOneWay() == false)
+         if (response == null && packet.getCorrelationID() != PacketImpl.NO_ID_SET)
          {
             response = new PacketImpl(NULL);               
          }            

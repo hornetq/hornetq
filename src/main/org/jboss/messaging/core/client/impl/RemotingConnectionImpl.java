@@ -219,7 +219,6 @@ public class RemotingConnectionImpl implements RemotingConnection
    {
       assert packet != null;
       checkConnected();
-      packet.setOneWay(oneWay);
 
       if (oneWay)
       {
