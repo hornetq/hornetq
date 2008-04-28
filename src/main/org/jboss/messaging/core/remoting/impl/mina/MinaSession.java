@@ -7,6 +7,7 @@
 package org.jboss.messaging.core.remoting.impl.mina;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.mina.common.IoSession;
 import org.apache.mina.filter.reqres.Request;
@@ -28,7 +29,7 @@ public class MinaSession implements NIOSession
 
    private final IoSession session;
 
-   private long correlationCounter;
+   private AtomicLong correlationCounter;
    
    // Static --------------------------------------------------------
 
@@ -39,7 +40,7 @@ public class MinaSession implements NIOSession
       assert session != null;
 
       this.session = session;
-      correlationCounter = 0;
+      correlationCounter = new AtomicLong(0);
    }
 
    // Public --------------------------------------------------------
@@ -56,7 +57,7 @@ public class MinaSession implements NIOSession
 
    public Object writeAndBlock(Packet packet, long timeout, TimeUnit timeUnit) throws Exception
    {
-      packet.setCorrelationID(correlationCounter++);
+      packet.setCorrelationID(correlationCounter.incrementAndGet());
       Request req = new Request(packet.getCorrelationID(), packet, timeout, timeUnit);
       session.write(req);
       Response response = req.awaitResponse();
