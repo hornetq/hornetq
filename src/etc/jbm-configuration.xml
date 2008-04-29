@@ -37,6 +37,11 @@
       <!-- This setting is taken into account only when remoting-transport is set to TCP -->
       <remoting-tcp-receive-buffer-size>-1</remoting-tcp-receive-buffer-size>
 
+      <!-- Set the TCP Send Buffer size (SO_SNDBUF).                                     -->
+      <!-- Set it to -1 if you want to use the value hinted by the Operating System      --> 
+      <!-- This setting is taken into account only when remoting-transport is set to TCP -->
+      <remoting-tcp-send-buffer-size>-1</remoting-tcp-send-buffer-size>
+
       <!--  if ssl is enabled, all remoting-ssl-* properties must be set -->
       <remoting-enable-ssl>false</remoting-enable-ssl>
       
