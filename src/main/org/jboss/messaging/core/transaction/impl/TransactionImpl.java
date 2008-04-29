@@ -118,7 +118,12 @@ public class TransactionImpl implements Transaction
 		}
 	}
 
-	public void addAcknowledgement(final MessageReference acknowledgement)
+   public List<MessageReference> getAcknowledgements()
+   {
+      return new ArrayList<MessageReference>(acknowledgements);
+   }
+
+   public void addAcknowledgement(final MessageReference acknowledgement)
 			throws Exception
 	{
 		if (state != State.ACTIVE)

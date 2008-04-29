@@ -56,13 +56,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryRespon
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.SecurityStore;
-import org.jboss.messaging.core.server.Delivery;
-import org.jboss.messaging.core.server.ObjectIDGenerator;
-import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.ServerConnection;
-import org.jboss.messaging.core.server.ServerConsumer;
-import org.jboss.messaging.core.server.ServerProducer;
-import org.jboss.messaging.core.server.ServerSession;
+import org.jboss.messaging.core.server.*;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
@@ -100,33 +94,33 @@ public class ServerSessionImpl implements ServerSession
    private final boolean trace = log.isTraceEnabled();
 
    private final long id;
-   
+
    private final boolean autoCommitSends;
 
    private final boolean autoCommitAcks;
-   
+
    private final ServerConnection connection;
-   
+
    private final ResourceManager resourceManager;
 
    private final PacketSender sender;
-   
+
    private final PacketDispatcher dispatcher;
-   
+
    private final StorageManager persistenceManager;
-   
+
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
-         
+
    private final PostOffice postOffice;
-   
+
    private final SecurityStore securityStore;
-   
+
    private final ObjectIDGenerator objectIDGenerator;
-         
+
    private final Set<ServerConsumer> consumers = new ConcurrentHashSet<ServerConsumer>();
 
    private final Set<ServerBrowserImpl> browsers = new ConcurrentHashSet<ServerBrowserImpl>();
-   
+
    private final Set<ServerProducer> producers = new ConcurrentHashSet<ServerProducer>();
 
    private final LinkedList<Delivery> deliveries = new LinkedList<Delivery>();
@@ -137,24 +131,26 @@ public class ServerSessionImpl implements ServerSession
 
    private Transaction tx;
 
+   private ArrayList<Queue> stopped = new ArrayList<Queue>();
+
    // Constructors
    // ---------------------------------------------------------------------------------
 
    public ServerSessionImpl(final boolean autoCommitSends,
                             final boolean autoCommitAcks,
                             final boolean xa, final ServerConnection connection,
-                            final ResourceManager resourceManager, final PacketSender sender, 
+                            final ResourceManager resourceManager, final PacketSender sender,
                             final PacketDispatcher dispatcher, final StorageManager persistenceManager,
                             final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                             final PostOffice postOffice, final SecurityStore securityStore,
                             final ObjectIDGenerator objectIDGenerator) throws Exception
    {
    	this.id = objectIDGenerator.generateID();
-            
+
       this.autoCommitSends = autoCommitSends;
 
       this.autoCommitAcks = autoCommitAcks;
-      
+
       if (!xa)
       {
          tx = new TransactionImpl(persistenceManager, postOffice);
@@ -163,21 +159,21 @@ public class ServerSessionImpl implements ServerSession
       this.connection = connection;
 
       this.resourceManager = resourceManager;
-            
+
       this.sender = sender;
-    
+
       this.dispatcher = dispatcher;
-      
+
       this.persistenceManager = persistenceManager;
-      
+
       this.queueSettingsRepository = queueSettingsRepository;
-      
+
       this.postOffice = postOffice;
-      
+
       this.securityStore = securityStore;
-      
+
       this.objectIDGenerator = objectIDGenerator;
-            
+
       if (log.isTraceEnabled())
       {
          log.trace("created server session endpoint for " + sender.getRemoteAddress());
@@ -186,12 +182,12 @@ public class ServerSessionImpl implements ServerSession
 
    // ServerSession implementation
    // ---------------------------------------------------------------------------------------
-   
+
    public long getID()
    {
    	return id;
    }
-   
+
    public ServerConnection getConnection()
    {
       return connection;
@@ -203,8 +199,8 @@ public class ServerSessionImpl implements ServerSession
       {
          throw new IllegalStateException("Cannot find browser with id " + browser.getID() + " to remove");
       }
-      
-      dispatcher.unregister(browser.getID());           
+
+      dispatcher.unregister(browser.getID());
    }
 
    public void removeConsumer(final ServerConsumer consumer) throws Exception
@@ -213,29 +209,35 @@ public class ServerSessionImpl implements ServerSession
       {
          throw new IllegalStateException("Cannot find consumer with id " + consumer.getID() + " to remove");
       }
-      
-      dispatcher.unregister(consumer.getID());           
+
+      dispatcher.unregister(consumer.getID());
    }
-   
+
    public void removeProducer(final ServerProducer producer) throws Exception
    {
       if (!producers.remove(producer))
       {
          throw new IllegalStateException("Cannot find producer with id " + producer.getID() + " to remove");
       }
-      
-      dispatcher.unregister(producer.getID());           
+
+      dispatcher.unregister(producer.getID());
    }
-   
-   public synchronized void handleDelivery(final MessageReference ref, final ServerConsumer consumer) throws Exception
+
+   public synchronized HandleStatus handleDelivery(final MessageReference ref, final ServerConsumer consumer) throws Exception
    {
+      //if the queue we are delivering to has been stopped then dont deliver!
+      if (stopped.contains(ref.getQueue()))
+      {
+         return HandleStatus.BUSY;
+      }
       Delivery delivery = new DeliveryImpl(ref, id, consumer.getID(), deliveryIDSequence++, sender);
 
       deliveries.add(delivery);
 
       delivery.deliver();
+      return HandleStatus.HANDLED;
    }
-   
+
    public void setStarted(final boolean s) throws Exception
    {
       Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers);
@@ -265,7 +267,7 @@ public class ServerSessionImpl implements ServerSession
       }
 
       browsers.clear();
-      
+
       Set<ServerProducer> producersClone = new HashSet<ServerProducer>(producers);
 
       for (ServerProducer producer: producersClone)
@@ -274,7 +276,7 @@ public class ServerSessionImpl implements ServerSession
       }
 
       producers.clear();
-      
+
       rollback();
 
       executor.shutdown();
@@ -283,7 +285,7 @@ public class ServerSessionImpl implements ServerSession
 
       connection.removeSession(this);
    }
-   
+
    public void promptDelivery(final Queue queue)
    {
       // TODO - do we really need to prompt on a different thread?
@@ -295,19 +297,19 @@ public class ServerSessionImpl implements ServerSession
          }
       });
    }
-   
+
    public void send(final String address, final Message msg) throws Exception
-   {      
+   {
       //check the user has write access to this address
       securityStore.check(address, CheckType.WRITE, connection);
-      
+
       msg.setMessageID(persistenceManager.generateMessageID());
-      
+
       // This allows the no-local consumers to filter out the messages that come
       // from the same connection.
 
       msg.setConnectionID(connection.getID());
-      
+
       if (autoCommitSends)
       {
       	List<MessageReference> refs = postOffice.route(address, msg);
@@ -316,7 +318,7 @@ public class ServerSessionImpl implements ServerSession
    		{
    			persistenceManager.storeMessage(address, msg);
    		}
-   		
+
    		for (MessageReference ref: refs)
    		{
    			ref.getQueue().addLast(ref);
@@ -366,7 +368,7 @@ public class ServerSessionImpl implements ServerSession
                else
                {
                	tx.addAcknowledgement(ref);
-               	
+
                   //Del count is not actually updated in storage unless it's cancelled
                   ref.incrementDeliveryCount();
                }
@@ -404,7 +406,7 @@ public class ServerSessionImpl implements ServerSession
                else
                {
                   tx.addAcknowledgement(ref);
-                  
+
                   //Del count is not actually updated in storage unless it's cancelled
                   ref.incrementDeliveryCount();
                }
@@ -423,25 +425,40 @@ public class ServerSessionImpl implements ServerSession
 
          tx = new TransactionImpl(persistenceManager, postOffice);
       }
-      
-      // Synchronize to prevent any new deliveries arriving during this recovery
+
+      // Synchronize to prevent any new deliveries arriving during this recovery. also we stop any queues that are having
+      // messages rolled back, if their are any messages in mid delivery then these will not be delivered. 
       synchronized (this)
       {
          // Add any unacked deliveries into the tx. Doing this ensures all references are rolled back in the correct
          // order in a single contiguous block
 
          for (Delivery del : deliveries)
-         {         	
+         {
             tx.addAcknowledgement(del.getReference());
          }
-
+         //stop the queue delivering for all the queues where messages are being rolled back
+         List<MessageReference> acks = tx.getAcknowledgements();
+         for (MessageReference ack : acks)
+         {
+            stopped.add(ack.getQueue());
+         }
+         for (Queue queue : stopped)
+         {
+            queue.stopDelivery();
+         }
          deliveries.clear();
-
          deliveryIDSequence -= tx.getAcknowledgementsCount();
       }
+      tx.rollback(queueSettingsRepository);
+      //once we have done the rollbackwe can restart any queues which will flush any awaiting deliveries
+      ArrayList<Queue> toRestart = new ArrayList<Queue>(stopped);
+      stopped.clear();
+      for (Queue queue : toRestart)
+      {
+         queue.startDelivery();
+      }
 
-      tx.rollback(queueSettingsRepository);         
-      
       tx = new TransactionImpl(persistenceManager, postOffice);
    }
 
@@ -499,7 +516,7 @@ public class ServerSessionImpl implements ServerSession
    public void commit() throws Exception
    {
       tx.commit();
-      
+
       tx = new TransactionImpl(persistenceManager, postOffice);
    }
 
@@ -790,15 +807,15 @@ public class ServerSessionImpl implements ServerSession
    public void addDestination(final String address, final boolean temporary) throws Exception
    {
       securityStore.check(address, CheckType.CREATE, connection);
-      
+
       if (!postOffice.addDestination(address, temporary))
       {
       	throw new MessagingException(MessagingException.ADDRESS_EXISTS, "Address already exists: " + address);
       }
       else
-      {      
+      {
          if (temporary)
-         {         
+         {
             connection.addTemporaryDestination(address);
          }
       }
@@ -807,13 +824,13 @@ public class ServerSessionImpl implements ServerSession
    public void removeDestination(final String address, final boolean temporary) throws Exception
    {
    	securityStore.check(address, CheckType.CREATE, connection);
-   	
+
       if (!postOffice.removeDestination(address, temporary))
       {
          throw new MessagingException(MessagingException.ADDRESS_DOES_NOT_EXIST, "Address does not exist: " + address);
       }
       else
-      {      
+      {
          if (temporary)
          {
          	connection.removeTemporaryDestination(address);
@@ -876,7 +893,7 @@ public class ServerSessionImpl implements ServerSession
       }
 
       Queue queue = binding.getQueue();
-      
+
       if (queue.getConsumerCount() != 0)
       {
       	throw new MessagingException(MessagingException.ILLEGAL_STATE, "Cannot delete queue - it has consumers");
@@ -903,26 +920,26 @@ public class ServerSessionImpl implements ServerSession
       {
          throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
       }
-      
+
       securityStore.check(binding.getAddress(), CheckType.READ, connection);
-      
+
       Filter filter = null;
 
       if (filterString != null)
       {
          filter = new FilterImpl(filterString);
       }
-      
+
       //Flow control values if specified on queue override those passed in from client
-      
+
       Integer queueWindowSize = queueSettingsRepository.getMatch(queueName).getConsumerWindowSize();
-      
+
       windowSize = queueWindowSize != null ? queueWindowSize : windowSize;
-      
+
       Integer queueMaxRate = queueSettingsRepository.getMatch(queueName).getConsumerMaxRate();
-      
+
       maxRate = queueMaxRate != null ? queueMaxRate : maxRate;
-      
+
       ServerConsumer consumer =
       	new ServerConsumerImpl(objectIDGenerator.generateID(), binding.getQueue(), noLocal, filter, autoDeleteQueue, windowSize != -1, maxRate, connection.getID(),
                                 this, persistenceManager, queueSettingsRepository, postOffice, connection.isStarted());
@@ -932,8 +949,8 @@ public class ServerSessionImpl implements ServerSession
       SessionCreateConsumerResponseMessage response =
       	new SessionCreateConsumerResponseMessage(consumer.getID(), windowSize);
 
-      consumers.add(consumer);      
-      
+      consumers.add(consumer);
+
       return response;
    }
 
@@ -994,20 +1011,20 @@ public class ServerSessionImpl implements ServerSession
 
    public SessionCreateBrowserResponseMessage createBrowser(final String queueName, final String selector)
          throws Exception
-   {      
+   {
       Binding binding = postOffice.getBinding(queueName);
 
       if (binding == null)
       {
          throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
       }
-      
+
       securityStore.check(binding.getAddress(), CheckType.READ, connection);
-      
+
       ServerBrowserImpl browser = new ServerBrowserImpl(objectIDGenerator.generateID(), this, binding.getQueue(), selector);
 
       browsers.add(browser);
-      
+
       dispatcher.register(browser.newHandler());
 
       return new SessionCreateBrowserResponseMessage(browser.getID());
@@ -1024,44 +1041,44 @@ public class ServerSessionImpl implements ServerSession
     */
    public SessionCreateProducerResponseMessage createProducer(final String address, final int windowSize,
    		                                                     final int maxRate) throws Exception
-   { 	
+   {
    	FlowController flowController = null;
-   	
+
    	final int maxRateToUse = maxRate;
-   	
+
    	if (address != null)
    	{
    		flowController = windowSize == -1 ? null : postOffice.getFlowController(address);
    	}
-   	
+
    	ServerProducerImpl producer = new ServerProducerImpl(objectIDGenerator.generateID(), this, address, sender, flowController);
 
    	producers.add(producer);
-   	
+
    	dispatcher.register(new ServerProducerPacketHandler(producer));
-   	
+
    	final int windowToUse = flowController == null ? -1 : flowController.getInitialTokens(windowSize, producer);
-   	   	   	
+
    	return new SessionCreateProducerResponseMessage(producer.getID(), windowToUse, maxRateToUse);
    }
-   
+
    // Public ---------------------------------------------------------------------------------------------
-   
+
    public String toString()
    {
       return "SessionEndpoint[" + id + "]";
-   }  
-   
+   }
+
    // Private --------------------------------------------------------------------------------------------
-      
+
    private void doAck(final MessageReference ref) throws Exception
    {
    	Message message = ref.getMessage();
 
    	Queue queue = ref.getQueue();
-   	
+
 		if (message.isDurable() && queue.isDurable())
-		{            			
+		{
 			synchronized (message)
 			{
 				message.decrementDurableRefCount();
@@ -1074,11 +1091,11 @@ public class ServerSessionImpl implements ServerSession
 				{
 					persistenceManager.storeAcknowledge(queue.getPersistenceID(), message.getMessageID());
 				}
-			}            			
-		} 
-		
+			}
+		}
+
 		queue.referenceAcknowledged();
    }
 
-   
+
 }

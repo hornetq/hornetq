@@ -108,4 +108,8 @@ public interface Queue
    MessageReference getReference(long id);
    
    void deleteAllReferences(StorageManager storageManager) throws Exception;
+
+   void stopDelivery();
+
+   void startDelivery();
 }

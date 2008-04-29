@@ -97,6 +97,8 @@ public class QueueImpl implements Queue
    private AtomicInteger deliveringCount = new AtomicInteger(0);
    
    private volatile FlowController flowController;
+
+   private boolean delivering = true; 
    
    public QueueImpl(final long persistenceID, final String name, final Filter filter, final boolean clustered,
                     final boolean durable, final boolean temporary, final int maxSize,
@@ -447,7 +449,18 @@ public class QueueImpl implements Queue
    		
    	tx.commit();   	
    }
-   
+
+   public void stopDelivery()
+   {
+      delivering = false;
+   }
+
+   public void startDelivery()
+   {
+      delivering = true;
+      deliver();
+   }
+
    // Public -----------------------------------------------------------------------------
 
    public boolean equals(Object other)
@@ -580,7 +593,7 @@ public class QueueImpl implements Queue
 
    private HandleStatus deliver(final MessageReference reference)
    {
-      if (consumers.isEmpty())
+      if (consumers.isEmpty() || !delivering)
       {
          return HandleStatus.BUSY;
       }

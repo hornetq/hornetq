@@ -28,6 +28,8 @@ import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 
+import java.util.List;
+
 /**
  * 
  * A JBoss Messaging internal transaction
@@ -44,7 +46,9 @@ public interface Transaction
    void rollback(HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
    
    void addMessage(String address, Message message) throws Exception;
-   
+
+   List<MessageReference> getAcknowledgements();
+
    void addAcknowledgement(MessageReference acknowledgement) throws Exception;
    
    int getAcknowledgementsCount();
