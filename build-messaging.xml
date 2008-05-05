@@ -623,6 +623,7 @@
              timeout="${junit.timeout}">
 
          <jvmarg value="-Xmx1024M"/>
+         <jvmarg value="-Djava.library.path=native/src/.libs"/>
          <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
          <!--<jvmarg value="-ea"/>-->
          <sysproperty key="jbm.remoting.disable.invm" value="${disable.invm}"/>

@@ -21,7 +21,11 @@
   */
 package org.jboss.messaging.tests.unit.core.journal.impl.timing;
 
+import java.util.ArrayList;
+
 import org.jboss.messaging.tests.unit.core.journal.impl.JournalImplTestBase;
+import org.jboss.messaging.core.journal.PreparedTransactionInfo;
+import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.logging.Logger;
 
 /**
@@ -33,138 +37,143 @@ import org.jboss.messaging.core.logging.Logger;
  */
 public abstract class JournalImplTestUnit extends JournalImplTestBase
 {
-	private static final Logger log = Logger.getLogger(JournalImplTestUnit.class);
-	
-	
-	
-	public void testAddUpdateDeleteManyLargeFileSize() throws Exception
-	{
-		final int numberAdds = 10000;
-		
-		final int numberUpdates = 5000;
-		
-		final int numberDeletes = 3000;
-						
-		long[] adds = new long[numberAdds];
-		
-		for (int i = 0; i < numberAdds; i++)
-		{
-			adds[i] = i;
-		}
-		
-		long[] updates = new long[numberUpdates];
-		
-		for (int i = 0; i < numberUpdates; i++)
-		{
-			updates[i] = i;
-		}
-		
-		long[] deletes = new long[numberDeletes];
-		
-		for (int i = 0; i < numberDeletes; i++)
-		{
-			deletes[i] = i;
-		}
-		
-		setup(10, 10 * 1024 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		add(adds);
-		update(updates);
-		delete(deletes);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-		
-	}
-	
-	public void testAddUpdateDeleteManySmallFileSize() throws Exception
-	{
-		final int numberAdds = 10000;
-		
-		final int numberUpdates = 5000;
-		
-		final int numberDeletes = 3000;
-						
-		long[] adds = new long[numberAdds];
-		
-		for (int i = 0; i < numberAdds; i++)
-		{
-			adds[i] = i;
-		}
-		
-		long[] updates = new long[numberUpdates];
-		
-		for (int i = 0; i < numberUpdates; i++)
-		{
-			updates[i] = i;
-		}
-		
-		long[] deletes = new long[numberDeletes];
-		
-		for (int i = 0; i < numberDeletes; i++)
-		{
-			deletes[i] = i;
-		}
-		
-		setup(10, 10 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		add(adds);
-		update(updates);
-		delete(deletes);
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-		
-	}
-	
-	public void testReclaimAndReload() throws Exception
-	{
-		setup(5, 10 * 1024 * 1024, true);
-		createJournal();
-		startJournal();
-		load();
-		
-		journal.startReclaimer();
-		
-		long start = System.currentTimeMillis();
-						
-		for (int count = 0; count < 100000; count++)
-		{
-			add(count);
-			
-			if (count >= 5000)
-			{
-				delete(count - 5000);
-			}
-			
-			if (count % 10000 == 0)
-			{
-				log.info("Done: " + count);
-			}
-		}
-		
-		long end = System.currentTimeMillis();
-		
-		double rate = 1000 * ((double)100000) / (end - start);
-		
-		log.info("Rate of " + rate + " adds/removes per sec");
-					
-		stopJournal();
-		createJournal();
-		startJournal();
-		loadAndCheck();
-		
-		assertEquals(5000, journal.getIDMapSize());
-		
-		stopJournal();
-	}
-	
+   private static final Logger log = Logger.getLogger(JournalImplTestUnit.class);
+   
+   
+   
+   public void testAddUpdateDeleteManyLargeFileSize() throws Exception
+   {
+      final int numberAdds = 10000;
+      
+      final int numberUpdates = 5000;
+      
+      final int numberDeletes = 3000;
+                  
+      long[] adds = new long[numberAdds];
+      
+      for (int i = 0; i < numberAdds; i++)
+      {
+         adds[i] = i;
+      }
+      
+      long[] updates = new long[numberUpdates];
+      
+      for (int i = 0; i < numberUpdates; i++)
+      {
+         updates[i] = i;
+      }
+      
+      long[] deletes = new long[numberDeletes];
+      
+      for (int i = 0; i < numberDeletes; i++)
+      {
+         deletes[i] = i;
+      }
+      
+      setup(10, 10 * 1024 * 1024, true);
+      createJournal();
+      startJournal();
+      load();
+      add(adds);
+      update(updates);
+      delete(deletes);
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+      
+   }
+   
+   public void testAddUpdateDeleteManySmallFileSize() throws Exception
+   {
+      final int numberAdds = 10000;
+      
+      final int numberUpdates = 5000;
+      
+      final int numberDeletes = 3000;
+                  
+      long[] adds = new long[numberAdds];
+      
+      for (int i = 0; i < numberAdds; i++)
+      {
+         adds[i] = i;
+      }
+      
+      long[] updates = new long[numberUpdates];
+      
+      for (int i = 0; i < numberUpdates; i++)
+      {
+         updates[i] = i;
+      }
+      
+      long[] deletes = new long[numberDeletes];
+      
+      for (int i = 0; i < numberDeletes; i++)
+      {
+         deletes[i] = i;
+      }
+      
+      setup(10, 10 * 1024, true);
+      createJournal();
+      startJournal();
+      load();
+      add(adds);
+      update(updates);
+      delete(deletes);
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+      
+   }
+   
+   public void testReclaimAndReload() throws Exception
+   {
+      setup(2, 10 * 1024 * 1024, false);
+      createJournal();
+      startJournal();
+      load();
+      
+      journal.startReclaimer();
+      
+      long start = System.currentTimeMillis();
+      
+                  
+      byte[] record = generateRecord(recordLength);
+
+      for (int count = 0; count < 100000; count++)
+      {
+         journal.appendAddRecord(count, record);
+         
+         if (count >= 5000)
+         {
+            journal.appendDeleteRecord(count - 5000);
+         }
+         
+         if (count % 10000 == 0)
+         {
+            log.info("Done: " + count);
+         }
+      }
+      
+      long end = System.currentTimeMillis();
+      
+      double rate = 1000 * ((double)100000) / (end - start);
+      
+      log.info("Rate of " + rate + " adds/removes per sec");
+      
+      log.info("Reclaim status = " + debugJournal());
+               
+      stopJournal();
+      createJournal();
+      startJournal();
+      journal.load(new ArrayList<RecordInfo>(), new ArrayList<PreparedTransactionInfo>());
+      
+      assertEquals(5000, journal.getIDMapSize());
+      
+      stopJournal();
+   }
+   
 }
 
 

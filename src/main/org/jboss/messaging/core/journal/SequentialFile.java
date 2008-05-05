@@ -37,17 +37,29 @@ public interface SequentialFile
 	 */
 	void open() throws Exception;
 	
+	int getAlignment() throws Exception;
+	
+	int calculateBlockStart(int position) throws Exception;
+	
 	String getFileName();
 	
 	void fill(int position, int size, byte fillCharacter) throws Exception;
 	
 	void delete() throws Exception;
-
+	
+	int write(ByteBuffer bytes, boolean sync, IOCallback callback) throws Exception;
+	
 	int write(ByteBuffer bytes, boolean sync) throws Exception;
-	   
+	
+	int read(ByteBuffer bytes, IOCallback callback) throws Exception;
+	
 	int read(ByteBuffer bytes) throws Exception;
 	
 	void position(int pos) throws Exception;
 	
 	void close() throws Exception;
+	
+	ByteBuffer newBuffer(int size);
+	
+	ByteBuffer wrapBuffer(byte bytes[]);
 }

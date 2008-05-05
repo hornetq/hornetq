@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import org.jboss.messaging.core.journal.Journal;
 import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
+import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
@@ -57,6 +58,7 @@ public class RealJournalImplTest extends JournalImplTestUnit
 		return new NIOSequentialFileFactory(journalDir);
 	}
 	
+	
 	public void testSpeedNonTransactional() throws Exception
 	{
 		Journal journal =
@@ -83,6 +85,16 @@ public class RealJournalImplTest extends JournalImplTestUnit
 		double rate = 1000 * (double)numMessages / (end - start);
 		
 		log.info("Rate " + rate + " records/sec");
+		
+      journal.stop();
+      
+      journal =
+         new JournalImpl(10 * 1024 * 1024,  10, true, new NIOSequentialFileFactory(journalDir),
+               5000, "jbm-data", "jbm");
+      
+      journal.start();
+      journal.load(new ArrayList<RecordInfo>(), null);
+		
 
 	}
 	

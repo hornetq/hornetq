@@ -19,28 +19,45 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.journal.impl;
+
+package org.jboss.messaging.tests.unit.core.journal.impl;
+
+import java.io.File;
+import java.nio.ByteBuffer;
 
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
+import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
 
-/**
- * 
- * A NIOSequentialFileFactory
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- */
-public class NIOSequentialFileFactory extends AbstractSequentialFactory implements SequentialFileFactory 
+public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
 {
-	public NIOSequentialFileFactory(final String journalDir)
-	{
-		super(journalDir);
-	}	
-	
-	public SequentialFile createSequentialFile(final String fileName, final boolean sync)
-	{
-		return new NIOSequentialFile(journalDir, fileName, sync);
-	}
+
+   protected String journalDir = System.getProperty("user.home") + "/journal-test";
+   
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+
+      File file = new File(journalDir);
+      
+      deleteDirectory(file);
+      
+      file.mkdir();     
+   }
+
+   protected SequentialFileFactory createFactory()
+   {
+      return new AIOSequentialFileFactory(journalDir);
+   }
+   
+   public void testBuffer() throws Exception
+   {
+      SequentialFile file = factory.createSequentialFile("filtetmp.log", true);
+      file.open();
+      ByteBuffer buff = file.newBuffer(10);
+      assertEquals(512, buff.limit());
+      //ByteBuffer buffer = 
+   }
+   
 
 }

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jboss.messaging.core.journal.IOCallback;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
@@ -40,212 +41,250 @@ import org.jboss.messaging.core.logging.Logger;
  */
 public class FakeSequentialFileFactory implements SequentialFileFactory
 {
-	private static final Logger log = Logger.getLogger(FakeSequentialFileFactory.class);
-		
-	private Map<String, FakeSequentialFile> fileMap = new ConcurrentHashMap<String, FakeSequentialFile>();
-	
-	public SequentialFile createSequentialFile(final String fileName, final boolean sync) throws Exception
-	{
-		FakeSequentialFile sf = fileMap.get(fileName);
-		
-		if (sf == null)
-		{						
-		   sf = new FakeSequentialFile(fileName, sync);
-		   
-		   fileMap.put(fileName, sf);
-		}
-		else
-		{		
-			sf.data.position(0);
-			
-			//log.info("positioning data to 0");
-		}
-						
-		return sf;
-	}
-	
-	public List<String> listFiles(final String extension)
-	{
-		List<String> files = new ArrayList<String>();
-		
-		for (String s: fileMap.keySet())
-		{
-			if (s.endsWith("." + extension))
-			{
-				files.add(s);
-			}
-		}
-		
-		return files;
-	}
-	
-	public Map<String, FakeSequentialFile> getFileMap()
-	{
-		return fileMap;
-	}
-	
-	public void clear()
-	{
-		fileMap.clear();
-	}
-	
-	public class FakeSequentialFile implements SequentialFile
-	{
-		private volatile boolean open;
-		
-		private final String fileName;
-		
-		private final boolean sync;
-		
-		private volatile ByteBuffer data;
-		
-		public ByteBuffer getData()
-		{
-			return data;
-		}
-		
-		public boolean isSync()
-		{
-			return sync;
-		}
-		
-		public boolean isOpen()
-		{
-			//log.info("is open" + System.identityHashCode(this) +" open is now " + open);
-			return open;
-		}
-		
-		public FakeSequentialFile(final String fileName, final boolean sync)
-		{
-			this.fileName = fileName;
-			
-			this.sync = sync;		
-		}
+   private static final Logger log = Logger.getLogger(FakeSequentialFileFactory.class);
+      
+   private Map<String, FakeSequentialFile> fileMap = new ConcurrentHashMap<String, FakeSequentialFile>();
+   
+   public SequentialFile createSequentialFile(final String fileName, final boolean sync) throws Exception
+   {
+      FakeSequentialFile sf = fileMap.get(fileName);
+      
+      if (sf == null)
+      {                 
+         sf = new FakeSequentialFile(fileName, sync);
+         
+         fileMap.put(fileName, sf);
+      }
+      else
+      {     
+         sf.data.position(0);
+         
+         //log.info("positioning data to 0");
+      }
+                  
+      return sf;
+   }
+   
+   public List<String> listFiles(final String extension)
+   {
+      List<String> files = new ArrayList<String>();
+      
+      for (String s: fileMap.keySet())
+      {
+         if (s.endsWith("." + extension))
+         {
+            files.add(s);
+         }
+      }
+      
+      return files;
+   }
+   
+   public Map<String, FakeSequentialFile> getFileMap()
+   {
+      return fileMap;
+   }
+   
+   public void clear()
+   {
+      fileMap.clear();
+   }
+   
+   public class FakeSequentialFile implements SequentialFile
+   {
+      private volatile boolean open;
+      
+      private final String fileName;
+      
+      private final boolean sync;
+      
+      private volatile ByteBuffer data;
+      
+      public ByteBuffer getData()
+      {
+         return data;
+      }
+      
+      public boolean isSync()
+      {
+         return sync;
+      }
+      
+      public boolean isOpen()
+      {
+         //log.info("is open" + System.identityHashCode(this) +" open is now " + open);
+         return open;
+      }
+      
+      public FakeSequentialFile(final String fileName, final boolean sync)
+      {
+         this.fileName = fileName;
+         
+         this.sync = sync;    
+      }
 
-		public void close() throws Exception
-		{
-			open = false;
-			
-			if (data != null)
-			{
-				data.position(0);
-			}
-		}
+      public void close() throws Exception
+      {
+         open = false;
+         
+         if (data != null)
+         {
+            data.position(0);
+         }
+      }
 
-		public void delete() throws Exception
-		{
-			if (!open)
-			{
-				throw new IllegalStateException("Is closed");
-			}
-			close();
-			
-			fileMap.remove(fileName);
-		}
+      public void delete() throws Exception
+      {
+         if (!open)
+         {
+            throw new IllegalStateException("Is closed");
+         }
+         close();
+         
+         fileMap.remove(fileName);
+      }
 
-		public String getFileName()
-		{
-			if (!open)
-			{
-				throw new IllegalStateException("Is closed");
-			}
-			return fileName;
-		}
-		
-		public void open() throws Exception
-		{
-			open = true;
-		}
+      public String getFileName()
+      {
+         return fileName;
+      }
+      
+      public void open() throws Exception
+      {
+         open = true;
+      }
 
-		public void fill(int pos, int size, byte fillCharacter) throws Exception
-		{		
-			if (!open)
-			{
-				throw new IllegalStateException("Is closed");
-			}
-			
-			checkAndResize(pos + size);
-			
-			//log.info("size is " + size + " pos is " + pos);
-			
-			for (int i = pos; i < size + pos; i++)
-			{
-				data.array()[i] = fillCharacter;
-				
-				//log.info("Filling " + pos + " with char " + fillCharacter);
-			}						
-		}
-		
-		public int read(ByteBuffer bytes) throws Exception
-		{
-			if (!open)
-			{
-				throw new IllegalStateException("Is closed");
-			}
-			
-			//log.info("read called " + bytes.array().length);
-			
-			byte[] bytesRead = new byte[bytes.array().length];
-			
-			//log.info("reading, data pos is " + data.position() + " data size is " + data.array().length);
-			
-			data.get(bytesRead);
-			
-			bytes.put(bytesRead);
-			
-			return bytesRead.length;
-		}
+      public void fill(int pos, int size, byte fillCharacter) throws Exception
+      {     
+         if (!open)
+         {
+            throw new IllegalStateException("Is closed");
+         }
+         
+         checkAndResize(pos + size);
+         
+         //log.info("size is " + size + " pos is " + pos);
+         
+         for (int i = pos; i < size + pos; i++)
+         {
+            data.array()[i] = fillCharacter;
+            
+            //log.info("Filling " + pos + " with char " + fillCharacter);
+         }                 
+      }
+      
+      public int read(ByteBuffer bytes) throws Exception
+      {
+         return read(bytes, null);
+      }
+      
+      public int read(ByteBuffer bytes, IOCallback callback) throws Exception
+      {
+         if (!open)
+         {
+            throw new IllegalStateException("Is closed");
+         }
+         
+         //log.info("read called " + bytes.array().length);
+         
+         byte[] bytesRead = new byte[bytes.array().length];
+         
+         //log.info("reading, data pos is " + data.position() + " data size is " + data.array().length);
+         
+         data.get(bytesRead);
+         
+         bytes.put(bytesRead);
+         
+         bytes.rewind();
+         
+         if (callback != null) callback.done();
+         
+         return bytesRead.length;
+      }
 
-		public void position(int pos) throws Exception
-		{
-			if (!open)
-			{
-				throw new IllegalStateException("Is closed");
-			}
-			
-			//log.info("reset called");
-			
-			data.position(pos);
-		}
+      public void position(int pos) throws Exception
+      {
+         if (!open)
+         {
+            throw new IllegalStateException("Is closed");
+         }
+         
+         //log.info("reset called");
+         
+         data.position(pos);
+      }
 
-		public int write(ByteBuffer bytes, boolean sync) throws Exception
-		{
-			if (!open)
-			{
-				throw new IllegalStateException("Is closed");
-			}
-			
-			int position = data == null ? 0 : data.position();
-			
-			checkAndResize(bytes.capacity() + position);
-			
-			//log.info("write called, position is " + data.position() + " bytes is " + bytes.array().length);
-			
-			data.put(bytes);
-			
-			return bytes.array().length;
-		}
-		
-		private void checkAndResize(int size)
-		{
-			int oldpos = data == null ? 0 : data.position();
-			
-			if (data == null || data.array().length < size)
-			{
-				byte[] newBytes = new byte[size];
-				
-				if (data != null)
-				{
-					System.arraycopy(data.array(), 0, newBytes, 0, data.array().length);
-				}
-				
-				data = ByteBuffer.wrap(newBytes);
-				
-				data.position(oldpos);
-			}
-		}
+      public int write(ByteBuffer bytes, boolean sync, IOCallback callback) throws Exception
+      {
+         if (!open)
+         {
+            throw new IllegalStateException("Is closed");
+         }
+         
+         int position = data == null ? 0 : data.position();
+         
+         checkAndResize(bytes.capacity() + position);
+         
+         //log.info("write called, position is " + data.position() + " bytes is " + bytes.array().length);
+         
+         data.put(bytes);
+         
+         if (callback!=null) callback.done();
+         
+         return bytes.array().length;
+         
+      }
+      
+      public int write(ByteBuffer bytes, boolean sync) throws Exception
+      {
+         return write(bytes, sync, null);
+      }
+      
+      private void checkAndResize(int size)
+      {
+         int oldpos = data == null ? 0 : data.position();
+         
+         if (data == null || data.array().length < size)
+         {
+            byte[] newBytes = new byte[size];
+            
+            if (data != null)
+            {
+               System.arraycopy(data.array(), 0, newBytes, 0, data.array().length);
+            }
+            
+            data = ByteBuffer.wrap(newBytes);
+            
+            data.position(oldpos);
+         }
+      }
+
+      public ByteBuffer newBuffer(int size)
+      {
+         return ByteBuffer.allocate(size);
+      }
+
+      public ByteBuffer wrapBuffer(byte[] bytes)
+      {
+         return ByteBuffer.wrap(bytes);
+      }
+
+      public int getAlignment() throws Exception
+      {
+         return 1;
+      }
+
+      public int calculateBlockStart(int position) throws Exception
+      {
+         return position;
+      }
+      
+      public String toString()
+      {
+         return "FakeSequentialFile:" + this.fileName;
+      }
 
 
-	}
+   }
 
 }

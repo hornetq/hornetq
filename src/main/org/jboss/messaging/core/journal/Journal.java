@@ -36,6 +36,9 @@ public interface Journal extends MessagingComponent
 {
 	// Non transactional operations
 	
+	// TODO: Implement callbacks
+	void appendAddRecord(long id, byte[] record, IOCallback callback) throws Exception;
+	
 	void appendAddRecord(long id, byte[] record) throws Exception;
 	
 	void appendUpdateRecord(long id, byte[] record) throws Exception;
@@ -57,7 +60,7 @@ public interface Journal extends MessagingComponent
 	void appendPrepareRecord(long txID) throws Exception;
 	
 	void appendRollbackRecord(long txID) throws Exception;
-		
+	
 	// Load
 	
 	void load(List<RecordInfo> committedRecords,
@@ -68,5 +71,7 @@ public interface Journal extends MessagingComponent
 	void startReclaimer();
 	
 	void stopReclaimer();
+	
+	int getAlignment() throws Exception;
 	
 }

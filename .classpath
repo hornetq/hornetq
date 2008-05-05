@@ -52,7 +52,6 @@
 	<classpathentry kind="lib" path="thirdparty/jboss/integration/lib/jboss-transaction-spi.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/jboss-jaspi-api/lib/jboss-jaspi-api.jar"/>
 	<classpathentry kind="lib" path="thirdparty/slf4j/api/lib/slf4j-api-1.4.3.jar"/>
-	<classpathentry kind="lib" path="tests/lib/jdbc-drivers/mysql-connector-java-5.1.5-bin.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant-junit.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/common/lib/jboss-common.jar"/>

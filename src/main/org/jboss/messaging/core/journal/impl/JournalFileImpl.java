@@ -23,6 +23,7 @@ package org.jboss.messaging.core.journal.impl;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.logging.Logger;
@@ -129,6 +130,32 @@ public class JournalFileImpl implements JournalFile
 	{
 		return file;
 	}	
+   
+	public String toString()
+	{
+		try
+		{
+			return "JournalFileImpl: " + file.getFileName();
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			return "Error:" + e.toString();
+		}
+	}
 	
-
+	/** Receive debug information about the journal */
+	public String debug()
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		for (Entry<JournalFile, Integer> entry: negCounts.entrySet())
+		{
+			builder.append(" file = " + entry.getKey() + " negcount value = " + entry.getValue() + "\n");
+		}
+		
+		return builder.toString();
+	}
+	
+	
 }

@@ -79,8 +79,7 @@ public:
 	
 	// Finishes the polling thread (if any) and return
 	void stopPoller(THREAD_CONTEXT threadContext);
-	
-	void preAllocate(THREAD_CONTEXT threadContext, int numberOfBlocks, size_t size);
+	void preAllocate(THREAD_CONTEXT threadContext, off_t position, int blocks, size_t size, int fillChar);
 	
 	void pollEvents(THREAD_CONTEXT threadContext);
 	

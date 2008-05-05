@@ -19,27 +19,51 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
+
+
 package org.jboss.messaging.tests.unit.core.journal.impl;
 
+import java.io.File;
+
 import org.jboss.messaging.core.journal.SequentialFileFactory;
-import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
+import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
+import org.jboss.messaging.core.logging.Logger;
+
 
 /**
  * 
- * A FakeJournalImplTest
- * 
+ * A RealJournalImplTest
+ * you need to define -Djava.library.path=${project-root}/native/src/.libs when calling the JVM
+ * If you are running this test in eclipse you should do:
+ *   I - Run->Open Run Dialog
+ *   II - Find the class on the list (you will find it if you already tried running this testcase before)  
+ *   III - Add -Djava.library.path=<your project place>/native/src/.libs
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class FakeJournalImplTest extends JournalImplTestUnit
+public class RealAIOJournalImplTest extends JournalImplTestUnit
 {
-	protected SequentialFileFactory getFileFactory() throws Exception
-	{
-		return new FakeSequentialFileFactory();
-	}
+   private static final Logger log = Logger.getLogger(RealAIOJournalImplTest.class);
+   
+   protected String journalDir = System.getProperty("user.home") + "/journal-test";
+      
+   protected SequentialFileFactory getFileFactory() throws Exception
+   {
+      File file = new File(journalDir);
+      
+      log.info("deleting directory " + journalDir);
+      
+      deleteDirectory(file);
+      
+      file.mkdir();     
+      
+      return new AIOSequentialFileFactory(journalDir);
+   }  
 
    protected int getAlignment()
    {
-      return 1;
+      return 512;
    }
+   
 }

@@ -81,14 +81,16 @@ AsyncFile::AsyncFile(std::string & _fileName, AIOController * _controller, int _
 #endif
 
 	events = (struct io_event *)malloc (maxIO * sizeof (struct io_event));
+	
+	if (events == 0)
+	{
+		throw AIOException (1, "Can't allocate ioEvents");
+	}
 
 }
 
 AsyncFile::~AsyncFile()
 {
-	::pthread_mutex_destroy(&fileMutex);
-	::pthread_mutex_destroy(&pollerMutex);
-	free(events);
 	if (io_queue_release(aioContext))
 	{
 		throw AIOException(2,"Can't release aio");
@@ -97,6 +99,14 @@ AsyncFile::~AsyncFile()
 	{
 		throw AIOException(2,"Can't close file");
 	}
+	free(events);
+	::pthread_mutex_destroy(&fileMutex);
+	::pthread_mutex_destroy(&pollerMutex);
+}
+
+int isException (THREAD_CONTEXT threadContext)
+{
+	return JNI_ENV(threadContext)->ExceptionOccurred() != 0;
 }
 
 void AsyncFile::pollEvents(THREAD_CONTEXT threadContext)
@@ -114,7 +124,12 @@ void AsyncFile::pollEvents(THREAD_CONTEXT threadContext)
 	
 	while (pollerRunning)
 	{
-		int result = io_getevents(this->aioContext, 1, maxIO, events, &oneSecond);
+		if (isException(threadContext))
+		{
+			return;
+		}
+		int result = io_getevents(this->aioContext, 1, maxIO, events, 0);
+		
 		
 #ifdef DEBUG
 		fprintf (stderr, "poll, pollerRunning=%d\n", pollerRunning); fflush(stderr);
@@ -134,39 +149,40 @@ void AsyncFile::pollEvents(THREAD_CONTEXT threadContext)
 			
 			struct iocb * iocbp = events[i].obj;
 	
-			CallbackAdapter * adapter = (CallbackAdapter *) iocbp->data;
-			
-			long result = events[i].res;
-			if (result < 0)
+			if (iocbp->data == (void *) -1)
 			{
-				std::string strerror = io_error(result);
-				adapter->onError(threadContext, result, strerror);
+				pollerRunning = 0;
+//				controller->log(threadContext, 2, "Received poller request to stop");
 			}
 			else
 			{
-				adapter->completeBlock(threadContext);
-				adapter->deleteRef(threadContext);
+				CallbackAdapter * adapter = (CallbackAdapter *) iocbp->data;
+				
+				long result = events[i].res;
+				if (result < 0)
+				{
+					std::string strerror = io_error(result);
+					adapter->onError(threadContext, result, strerror);
+				}
+				else
+				{
+					adapter->completeBlock(threadContext);
+					adapter->deleteRef(threadContext);
+				}
 			}
 			
 			delete iocbp;
 		}
 	}
 	
-	controller->log(threadContext, 2, "Poller finished execution");
+//	controller->log(threadContext, 2, "Poller finished execution");
 	
 }
 
 
-void AsyncFile::preAllocate(THREAD_CONTEXT threadContext, int blocks, size_t size)
+void AsyncFile::preAllocate(THREAD_CONTEXT , off_t position, int blocks, size_t size, int fillChar)
 {
-	size_t currentSize = lseek (fileHandle, 0, SEEK_END);
-	
-	if (currentSize >= blocks * size)
-	{
-		controller->log(threadContext,2,"File being reused");
-		return;
-	}
-	
+
 	if (size % ALIGNMENT != 0)
 	{
 		throw AIOException (101, "You can only pre allocate files in multiples of 512");
@@ -178,10 +194,10 @@ void AsyncFile::preAllocate(THREAD_CONTEXT threadContext, int blocks, size_t siz
 		throw AIOException(10, "Error on posix_memalign");
 	}
 	
-	memset(preAllocBuffer, 0, size);
+	memset(preAllocBuffer, fillChar, size);
 	
 	
-	if (::lseek (fileHandle, 0, SEEK_SET) < 0) throw AIOException (11, "Error positioning the file");
+	if (::lseek (fileHandle, position, SEEK_SET) < 0) throw AIOException (11, "Error positioning the file");
 	
 	for (int i=0; i<blocks; i++)
 	{
@@ -191,7 +207,7 @@ void AsyncFile::preAllocate(THREAD_CONTEXT threadContext, int blocks, size_t siz
 		}
 	}
 	
-	if (::lseek (fileHandle, 0, SEEK_SET) < 0) throw AIOException (11, "Error positioning the file");
+	if (::lseek (fileHandle, position, SEEK_SET) < 0) throw AIOException (11, "Error positioning the file");
 	
 	free (preAllocBuffer);
 }
@@ -285,7 +301,22 @@ void AsyncFile::read(THREAD_CONTEXT threadContext, long position, size_t size, v
 void AsyncFile::stopPoller(THREAD_CONTEXT threadContext)
 {
 	pollerRunning = 0;
-	controller->log(threadContext, 2,"Setting poller to stop");
+	
+	
+	struct iocb * iocb = new struct iocb();
+	::io_prep_pwrite(iocb, fileHandle, 0, 0, 0);
+	iocb->data = (void *) -1;
+
+	int result = 0;
+	
+	while ((result = ::io_submit(aioContext, 1, &iocb)) == (-EAGAIN))
+	{
+		fprintf(stderr, "Couldn't send request to stop poller, trying again");
+		controller->log(threadContext, 1, "Couldn't send request to stop poller, trying again");
+		::usleep(WAIT_FOR_SPOT);
+	}
+	
+//	controller->log(threadContext, 2,"Sent data to stop");
 	// It will wait the Poller to gives up its lock
 	LockClass lock(&pollerMutex);
 }

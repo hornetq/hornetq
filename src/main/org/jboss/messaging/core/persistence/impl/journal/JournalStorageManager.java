@@ -21,6 +21,7 @@ import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
+import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
@@ -84,9 +85,9 @@ public class JournalStorageManager implements StorageManager
 	
 	public JournalStorageManager(Configuration config)
 	{
-		if (config.getJournalType() != JournalType.NIO)
+		if (config.getJournalType() != JournalType.NIO && config.getJournalType() != JournalType.ASYNCIO)
 		{
-			throw new IllegalArgumentException("Only support NIO journal");
+			throw new IllegalArgumentException("Only NIO and AsyncIO are supported journals");
 		}
 		
 		String bindingsDir = config.getBindingsDirectory();
@@ -99,7 +100,7 @@ public class JournalStorageManager implements StorageManager
 		checkAndCreateDir(bindingsDir, config.isCreateBindingsDir());
 			
 	   SequentialFileFactory bindingsFF = new NIOSequentialFileFactory(bindingsDir);
-	      
+      
 	   bindingsJournal = new JournalImpl(1024 * 1024, 2, true, bindingsFF, 10000, "jbm-bindings", "bindings");
 	      
 	   String journalDir = config.getJournalDirectory();
@@ -111,7 +112,31 @@ public class JournalStorageManager implements StorageManager
 	   
 	   checkAndCreateDir(journalDir, config.isCreateBindingsDir());
 	       
-	   SequentialFileFactory journalFF = new NIOSequentialFileFactory(journalDir);
+      SequentialFileFactory journalFF = null;
+      
+      if (config.getJournalType() == JournalType.ASYNCIO)
+      {
+         if (!AIOSequentialFileFactory.isSupported())
+         {
+            log.warn("AIO wasn't located on this platform, using just standard Java NIO. If you are on Linux, install LibAIO and the required wrapper and you will get a lot of performance benefit");
+            journalFF = new NIOSequentialFileFactory(bindingsDir);
+         }
+         else
+         {
+            journalFF = new AIOSequentialFileFactory(bindingsDir);
+            log.info("AIO loaded successfully");
+         }
+      }
+      else 
+      if (config.getJournalType() == JournalType.NIO)
+      {
+         journalFF = new NIOSequentialFileFactory(bindingsDir);
+      }
+      else
+      if (config.getJournalType() == JournalType.JDBC)
+      { // Sanity check only... this is previously tested
+         throw new IllegalArgumentException("JDBC Journal is not supported yet");
+      }
 	      
 	   messageJournal = new JournalImpl(config.getJournalFileSize(), 
 	   		config.getJournalMinFiles(), config.isJournalSync(), journalFF,

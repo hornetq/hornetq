@@ -20,10 +20,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.asyncio.AIOCallback;
-import org.jboss.messaging.core.asyncio.impl.JlibAIO;
+import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.core.logging.Logger;
 
-// you need to define java.library.path=${project-root}/native/src/.libs
+/**
+ * 
+ * you need to define -Djava.library.path=${project-root}/native/src/.libs when calling the JVM
+ * If you are running this test in eclipse you should do:
+ *   I - Run->Open Run Dialog
+ *   II - Find the class on the list (you will find it if you already tried running this testcase before)  
+ *   III - Add -Djava.library.path=<your project place>/native/src/.libs
+ *   */
 public class MultiThreadWriteNativeTest extends TestCase
 {
 
@@ -47,12 +54,12 @@ public class MultiThreadWriteNativeTest extends TestCase
    static class ExecClass implements Runnable
    {
        
-       JlibAIO aio;
+       AsynchronousFileImpl aio;
        ByteBuffer buffer;
        AIOCallback callback;
        
        
-       public ExecClass(JlibAIO aio, ByteBuffer buffer, AIOCallback callback)
+       public ExecClass(AsynchronousFileImpl aio, ByteBuffer buffer, AIOCallback callback)
        {
            this.aio = aio;
            this.buffer = buffer;
@@ -81,7 +88,7 @@ public class MultiThreadWriteNativeTest extends TestCase
 
    
    
-   private static void addData(JlibAIO aio, ByteBuffer buffer, AIOCallback callback) throws Exception
+   private static void addData(AsynchronousFileImpl aio, ByteBuffer buffer, AIOCallback callback) throws Exception
    {
        //aio.write(getNewPosition()*SIZE, SIZE, buffer, callback);
        executor.execute(new ExecClass(aio, buffer, callback));
@@ -125,10 +132,11 @@ public class MultiThreadWriteNativeTest extends TestCase
    private void executeTest(boolean sync) throws Throwable
    {
        log.info(sync?"Sync test:":"Async test");
-       JlibAIO jlibAIO = new JlibAIO();
+       AsynchronousFileImpl jlibAIO = new AsynchronousFileImpl();
        jlibAIO.open(FILE_NAME, 21000);
        log.debug("Preallocating file");
-       jlibAIO.preAllocate(NUMBER_OF_THREADS,  SIZE * NUMBER_OF_LINES);
+      
+       jlibAIO.fill(0l, NUMBER_OF_THREADS,  SIZE * NUMBER_OF_LINES, (byte)0);
        log.debug("Done Preallocating file");
        
        CountDownLatch latchStart = new CountDownLatch (NUMBER_OF_THREADS + 1);
@@ -179,9 +187,9 @@ public class MultiThreadWriteNativeTest extends TestCase
        Throwable failed = null;
        CountDownLatch latchStart;
        boolean sync;
-       JlibAIO libaio;
+       AsynchronousFileImpl libaio;
 
-       public ThreadProducer(String name, CountDownLatch latchStart, JlibAIO libaio, boolean sync)
+       public ThreadProducer(String name, CountDownLatch latchStart, AsynchronousFileImpl libaio, boolean sync)
        {
            super(name);
            this.latchStart = latchStart;
@@ -281,9 +289,9 @@ public class MultiThreadWriteNativeTest extends TestCase
        boolean errorCalled = false;
        CountDownLatch latchDone;
        ByteBuffer releaseMe;
-       JlibAIO libaio;
+       AsynchronousFileImpl libaio;
        
-       public LocalCallback(CountDownLatch latchDone, ByteBuffer releaseMe, JlibAIO libaio)
+       public LocalCallback(CountDownLatch latchDone, ByteBuffer releaseMe, AsynchronousFileImpl libaio)
        {
            this.latchDone = latchDone;
            this.releaseMe = releaseMe;

@@ -19,38 +19,64 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
+
 package org.jboss.messaging.tests.unit.core.journal.impl;
 
-import java.io.File;
+import java.nio.ByteBuffer;
 
+import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
-import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
-import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
-/**
- * 
- * A RealJournalImplTest
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- */
-public class RealJournalImplTest extends JournalImplTestUnit
+public abstract class FileFactoryTestBase extends UnitTestCase
 {
-	private static final Logger log = Logger.getLogger(RealJournalImplTest.class);
-	
-	protected String journalDir = System.getProperty("user.home") + "/journal-test";
-		
-	protected SequentialFileFactory getFileFactory() throws Exception
-	{
-		File file = new File(journalDir);
-		
-		log.info("deleting directory " + journalDir);
-		
-		deleteDirectory(file);
-		
-		file.mkdir();		
-		
-		return new NIOSequentialFileFactory(journalDir);
-	}	
-	
+   protected abstract SequentialFileFactory createFactory();
+   
+   protected SequentialFileFactory factory;
+
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      
+      factory = createFactory();
+   }
+   
+
+   
+   // Protected ---------------------------------
+   
+   protected void checkFill(SequentialFile file, int pos, int size, byte fillChar) throws Exception
+   {
+      file.fill(pos, size, fillChar);
+      
+      file.close();
+      
+      file.open();
+      
+      file.position(pos);
+      
+      
+      
+      ByteBuffer bb = ByteBuffer.allocateDirect(size);
+      
+      int bytesRead = file.read(bb);
+      
+      assertEquals(size, bytesRead);
+      
+      bb.rewind();
+      
+      byte bytes[] = new byte[size];
+      
+      bb.get(bytes);
+      
+      for (int i = 0; i < size; i++)
+      {
+         //log.info(" i is " + i);
+         assertEquals(fillChar, bytes[i]);
+      }
+            
+   }
+   
+   
+
 }

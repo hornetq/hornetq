@@ -41,7 +41,7 @@ public:
 	/*
 	 * level = 0-error, 1-warn, 2-info, 3-debug
 	 */
-	void log(THREAD_CONTEXT threadContext, short level, char * message);
+	void log(THREAD_CONTEXT threadContext, short level, const char * message);
 	
 	int fileHandle;
 	AsyncFile fileOutput;

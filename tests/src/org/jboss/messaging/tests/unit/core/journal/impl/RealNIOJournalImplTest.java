@@ -19,28 +19,47 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.journal.impl;
 
-import org.jboss.messaging.core.journal.SequentialFile;
+
+package org.jboss.messaging.tests.unit.core.journal.impl;
+
+import java.io.File;
+
 import org.jboss.messaging.core.journal.SequentialFileFactory;
+import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
+import org.jboss.messaging.core.logging.Logger;
+
 
 /**
  * 
- * A NIOSequentialFileFactory
+ * A RealJournalImplTest
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class NIOSequentialFileFactory extends AbstractSequentialFactory implements SequentialFileFactory 
+public class RealNIOJournalImplTest extends JournalImplTestUnit
 {
-	public NIOSequentialFileFactory(final String journalDir)
-	{
-		super(journalDir);
-	}	
-	
-	public SequentialFile createSequentialFile(final String fileName, final boolean sync)
-	{
-		return new NIOSequentialFile(journalDir, fileName, sync);
-	}
-
+   private static final Logger log = Logger.getLogger(RealNIOJournalImplTest.class);
+   
+   protected String journalDir = System.getProperty("user.home") + "/journal-test";
+      
+   protected SequentialFileFactory getFileFactory() throws Exception
+   {
+      File file = new File(journalDir);
+      
+      log.info("deleting directory " + journalDir);
+      
+      deleteDirectory(file);
+      
+      file.mkdir();     
+      
+      return new NIOSequentialFileFactory(journalDir);
+   }
+   
+   protected int getAlignment()
+   {
+      return 1;
+   }
+   
+   
 }

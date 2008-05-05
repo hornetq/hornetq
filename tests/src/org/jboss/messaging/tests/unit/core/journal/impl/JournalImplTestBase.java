@@ -68,13 +68,13 @@ public abstract class JournalImplTestBase extends UnitTestCase
 	protected String fileExtension = "jbm";
 	
 	protected SequentialFileFactory fileFactory;
-					
+	
 	protected void setUp() throws Exception
 	{
 		super.setUp();
 		
 		resetFileFactory();
-
+		
 		transactions.clear();
 		
 		records.clear();
@@ -91,7 +91,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 				journal.stop();
 			}
 			catch (Exception ignore)
-			{				
+			{           
 			}
 		}
 		
@@ -106,22 +106,22 @@ public abstract class JournalImplTestBase extends UnitTestCase
 	}
 	
 	protected abstract SequentialFileFactory getFileFactory() throws Exception;
-		
+	
 	// Private ---------------------------------------------------------------------------------
 	
 	protected void setup(int minFreeFiles, int fileSize, boolean sync)
-	{		
+	{     
 		this.minFiles = minFreeFiles;
 		this.fileSize = fileSize;
 		this.sync = sync;
 	}
 	
 	public void createJournal() throws Exception
-	{		
+	{     
 		journal =
 			new JournalImpl(fileSize, minFiles, sync, fileFactory, 1000, filePrefix, fileExtension);
 	}
-		
+	
 	protected void startJournal() throws Exception
 	{
 		journal.start();
@@ -129,10 +129,18 @@ public abstract class JournalImplTestBase extends UnitTestCase
 	
 	protected void stopJournal() throws Exception
 	{
+		stopJournal(true);
+	}
+	
+	protected void stopJournal(boolean reclaim) throws Exception
+	{
 		//We do a reclaim in here
-		journal.checkAndReclaimFiles();
+		if (reclaim)
+		{
+			journal.checkAndReclaimFiles();
+		}
 		
-		journal.stop();		
+		journal.stop();      
 	}
 	
 	protected void loadAndCheck() throws Exception
@@ -164,7 +172,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		}
 		
 		checkTransactionsEquivalent(prepared, preparedTransactions);
-	}		
+	}     
 	
 	protected void load() throws Exception
 	{
@@ -173,51 +181,57 @@ public abstract class JournalImplTestBase extends UnitTestCase
 	
 	protected void add(long... arguments) throws Exception
 	{
+		addWithSize(recordLength, arguments);
+	}
+	
+	protected void addWithSize(int size, long... arguments) throws Exception
+	{
 		for (int i = 0; i < arguments.length; i++)
-		{		
-			byte[] record = generateRecord(recordLength);
+		{     
+			byte[] record = generateRecord(size);
 			
 			journal.appendAddRecord(arguments[i], record);
 			
-			records.add(new RecordInfo(arguments[i], record, false));			
+			records.add(new RecordInfo(arguments[i], record, false));         
 		}
 	}
 	
 	protected void update(long... arguments) throws Exception
 	{
 		for (int i = 0; i < arguments.length; i++)
-		{		
+		{     
 			byte[] updateRecord = generateRecord(recordLength);
 			
 			journal.appendUpdateRecord(arguments[i], updateRecord);
 			
-			records.add(new RecordInfo(arguments[i], updateRecord, true));	
+			records.add(new RecordInfo(arguments[i], updateRecord, true)); 
 		}
 	}
 	
 	protected void delete(long... arguments) throws Exception
 	{
 		for (int i = 0; i < arguments.length; i++)
-		{		
+		{     
 			journal.appendDeleteRecord(arguments[i]);
 			
 			removeRecordsForID(arguments[i]);
 		}
 	}
-			
+	
 	protected void addTx(long txID, long... arguments) throws Exception
 	{
 		TransactionHolder tx = getTransaction(txID);
 		
 		for (int i = 0; i < arguments.length; i++)
-		{		
-			byte[] record = generateRecord(recordLength);
+		{  
+			// SIZE_BYTE + SIZE_LONG + SIZE_LONG + SIZE_INT + record.length + SIZE_BYTE
+			byte[] record = generateRecord(recordLength - JournalImpl.SIZE_ADD_RECORD_TX );
 			
 			journal.appendAddRecordTransactional(txID, arguments[i], record);
 			
 			tx.records.add(new RecordInfo(arguments[i], record, false));
 			
-		}		
+		}     
 	}
 	
 	protected void updateTx(long txID, long... arguments) throws Exception
@@ -225,24 +239,24 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		TransactionHolder tx = getTransaction(txID);
 		
 		for (int i = 0; i < arguments.length; i++)
-		{		
-			byte[] updateRecord = generateRecord(recordLength);
-							
+		{     
+			byte[] updateRecord = generateRecord(recordLength - JournalImpl.SIZE_UPDATE_RECORD_TX );
+			
 			journal.appendUpdateRecordTransactional(txID, arguments[i], updateRecord);
 			
 			tx.records.add(new RecordInfo(arguments[i], updateRecord, true));
-		}		
+		}     
 	}
-
+	
 	protected void deleteTx(long txID, long... arguments) throws Exception
 	{
 		TransactionHolder tx = getTransaction(txID);
 		
 		for (int i = 0; i < arguments.length; i++)
-		{						
+		{                 
 			journal.appendDeleteRecordTransactional(txID, arguments[i]);
 			
-			tx.deletes.add(arguments[i]);			
+			tx.deletes.add(arguments[i]);       
 		}
 		
 	}
@@ -262,7 +276,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		}
 		
 		journal.appendPrepareRecord(txID);
-				
+		
 		tx.prepared = true;
 	}
 	
@@ -335,7 +349,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		
 		return tx;
 	}
-			
+	
 	protected void checkTransactionsEquivalent(List<PreparedTransactionInfo> expected, List<PreparedTransactionInfo> actual)
 	{
 		assertEquals("Lists not same length", expected.size(), actual.size());
@@ -390,7 +404,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 			assertEquals("type not same", rexpected.isUpdate, ractual.isUpdate);
 			
 			assertByteArraysEquivalent(rexpected.data, ractual.data);
-		}		
+		}     
 	}
 	
 	protected byte[] generateRecord(int length)
@@ -401,6 +415,11 @@ public abstract class JournalImplTestBase extends UnitTestCase
 			record[i] = RandomUtil.randomByte();
 		}
 		return record;
+	}
+	
+	protected String debugJournal() throws Exception
+	{
+		return "***************************************************\n" + ((JournalImpl)journal).debug() + "***************************************************\n" ;
 	}
 	
 	class TransactionHolder

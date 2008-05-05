@@ -27,7 +27,7 @@ AIOController::AIOController(std::string fileName, int maxIO) : logger(0), fileO
 {
 }
 
-void AIOController::log(THREAD_CONTEXT threadContext, short level, char * message)
+void AIOController::log(THREAD_CONTEXT threadContext, short level, const char * message)
 {
 	jmethodID methodID = 0;
 	

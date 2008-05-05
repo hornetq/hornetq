@@ -265,6 +265,11 @@ public class UnitTestCase extends TestCase
       }
    }
 
+	protected int calculateRecordSize(int size, int alignment)
+   {
+      return ((size / alignment) + (size % alignment != 0 ? 1 : 0)) * alignment;
+   }
+
    
 
 }

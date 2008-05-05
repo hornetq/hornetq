@@ -31,13 +31,14 @@ class JNICallbackAdapter : public CallbackAdapter
 {
 private:
 	AIOController * controller;
-	jobject obj;
+	jobject callback;
+	jobject fileController;
 	int refs;
     void destroy(THREAD_CONTEXT threadContext);
 	
 public:
 	// _ob must be a global Reference (use createGloblReferente before calling the constructor)
-	JNICallbackAdapter(AIOController * _controller, jobject _ob);
+	JNICallbackAdapter(AIOController * _controller, jobject _callback, jobject _fileController);
 	virtual ~JNICallbackAdapter();
 	void done(THREAD_CONTEXT threadContext);
 	void onError(THREAD_CONTEXT threadContext, long error, std::string error);
