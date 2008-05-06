@@ -6,7 +6,8 @@
  */
 package org.jboss.messaging.core.remoting.impl.invm;
 
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.NIOSession;
@@ -31,6 +32,7 @@ public class INVMSession implements NIOSession
    private final PacketDispatcher clientDispatcher;
    private final PacketDispatcher serverDispatcher;
    private boolean connected;
+   private ExecutorService executor = Executors.newSingleThreadExecutor();
    
    // Static --------------------------------------------------------
    private static final Logger log = Logger.getLogger(INVMSession.class);
@@ -53,6 +55,7 @@ public class INVMSession implements NIOSession
 
    public boolean close()
    {
+      executor.shutdownNow();
       connected = false;
       return true;
    }
@@ -73,25 +76,42 @@ public class INVMSession implements NIOSession
    {
      // assert packet instanceof Packet;
 
-      serverDispatcher.dispatch((Packet) packet,
-            new PacketSender()
+      //Must be executed on different thread
+      
+      executor.execute(new Runnable()
+      {
+         public void run()
+         {
+            try
             {
-               public void send(Packet response) throws Exception
-               {                  
-                  serverDispatcher.callFilters(response);
-                  clientDispatcher.dispatch(response, null);   
-               }
-               
-               public long getSessionID()
-               {
-                  return getID();
-               }
-               
-               public String getRemoteAddress()
-               {
-                  return "invm";
-               }
-            });
+               serverDispatcher.dispatch((Packet) packet,
+                     new PacketSender()
+                     {
+                        public void send(Packet response) throws Exception
+                        {                  
+                           serverDispatcher.callFilters(response);
+                           clientDispatcher.dispatch(response, null);   
+                        }
+                        
+                        public long getSessionID()
+                        {
+                           return getID();
+                        }
+                        
+                        public String getRemoteAddress()
+                        {
+                           return "invm";
+                        }
+                     });
+            }
+            catch (Exception e)
+            {
+               log.error("Failed to execute dispatch", e);
+            }
+         }
+      });
+            
+      
    }
 
 //   public Object writeAndBlock(final Packet request, long timeout, TimeUnit timeUnit) throws Exception

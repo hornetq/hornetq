@@ -1,24 +1,24 @@
 /*
-  * JBoss, Home of Professional Open Source
-  * Copyright 2005, JBoss Inc., and individual contributors as indicated
-  * by the @authors tag. See the copyright.txt in the distribution for a
-  * full listing of individual contributors.
-  *
-  * This is free software; you can redistribute it and/or modify it
-  * under the terms of the GNU Lesser General Public License as
-  * published by the Free Software Foundation; either version 2.1 of
-  * the License, or (at your option) any later version.
-  *
-  * This software is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  * Lesser General Public License for more details.
-  *
-  * You should have received a copy of the GNU Lesser General Public
-  * License along with this software; if not, write to the Free
-  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-  */
+ * JBoss, Home of Professional Open Source
+ * Copyright 2005, JBoss Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.test.messaging.jms;
 
 import java.io.Serializable;
@@ -47,7 +47,7 @@ public class MessageProducerTest extends JMSTestCase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -62,62 +62,62 @@ public class MessageProducerTest extends JMSTestCase
    public void testSendForeignWithForeignDestinationSet() throws Exception
    {   	   	
       Connection conn = null;      
- 
+
       try
       {
-      	conn = cf.createConnection();
+         conn = cf.createConnection();
 
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          MessageProducer p = sess.createProducer(queue1);
-         
+
          MessageConsumer c = sess.createConsumer(queue1);
 
          conn.start();
-        
+
          Message foreign = new SimpleJMSMessage(new SimpleDestination());
-         
+
          foreign.setJMSDestination(new SimpleDestination());
-         
+
          //the producer destination should override the foreign destination and the send should succeed
-         
+
          p.send(foreign);
 
          Message m = c.receive(1000);
-         
+
          assertNotNull(m);
-         
+
       }
       finally
       {
          conn.close();
       }
    }
-   
+
    private static class SimpleDestination implements Destination, Serializable
    {
    }
-   
+
    public void testSendToQueuePersistent() throws Exception
    {
-   	sendToQueue(true);
+      sendToQueue(true);
    }
-   
+
    public void testSendToQueueNonPersistent() throws Exception
    {
-   	sendToQueue(false);
+      sendToQueue(false);
    }
-   
+
    private void sendToQueue(boolean persistent) throws Exception
    {
       Connection pconn = null;      
       Connection cconn = null;
-      
+
       try
       {
-      	pconn = cf.createConnection();
-      	cconn = cf.createConnection();
-      	
+         pconn = cf.createConnection();
+         cconn = cf.createConnection();
+
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer p = ps.createProducer(queue1);
@@ -140,16 +140,54 @@ public class MessageProducerTest extends JMSTestCase
       }
    }
 
+   public void testSpeed() throws Exception
+   {
+      Connection pconn = null;      
+
+      try
+      {
+         pconn = cf.createConnection();
+
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageProducer p = ps.createProducer(queue1);
+         
+         p.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+         final int numMessages = 10000;
+
+         long start = System.currentTimeMillis();
+
+         for (int i = 0; i < numMessages; i++)
+         {
+            Message msg = ps.createMessage();
+
+            p.send(msg);
+         }
+
+         long end = System.currentTimeMillis();
+
+         double actualRate = 1000 * (double)numMessages / ( end - start);
+
+         log.info("rate " + actualRate + " msgs /sec");
+
+      }
+      finally
+      {
+
+      }
+   }
+
    public void testTransactedSendPersistent() throws Exception
    {
-   	transactedSend(true);
+      transactedSend(true);
    }
-   
+
    public void testTransactedSendNonPersistent() throws Exception
    {
-   	transactedSend(false);
+      transactedSend(false);
    }
-   
+
    private void transactedSend(boolean persistent) throws Exception
    {
       Connection pconn = null;
@@ -157,9 +195,9 @@ public class MessageProducerTest extends JMSTestCase
 
       try
       {
-      	pconn = cf.createConnection();
-      	cconn = cf.createConnection();
-      	
+         pconn = cf.createConnection();
+         cconn = cf.createConnection();
+
          cconn.start();
 
          Session ts = pconn.createSession(true, -1);
@@ -183,7 +221,7 @@ public class MessageProducerTest extends JMSTestCase
          cconn.close();
       }
    }
-   
+
    //I moved this into it's own class so we can catch any exception that occurs
    //Since this test intermittently fails.
    //(As an aside, technically this test is invalid anyway since the sessions is used for sending
@@ -191,18 +229,18 @@ public class MessageProducerTest extends JMSTestCase
    private class Sender implements Runnable
    {
       volatile Exception ex;
-      
+
       MessageProducer prod;
-      
+
       Message m;
-      
+
       Sender(MessageProducer prod, Message m)
       {
          this.prod = prod;
-         
+
          this.m = m;
       }
-      
+
       public synchronized void run()
       {
          try
@@ -212,20 +250,20 @@ public class MessageProducerTest extends JMSTestCase
          catch(Exception e)
          {
             log.error(e);
-            
+
             ex = e;
          }
       }
    }
-   
+
    public void testPersistentSendToTopic() throws Exception
    {
-   	sendToTopic(true);
+      sendToTopic(true);
    }
-   
+
    public void testNonPersistentSendToTopic() throws Exception
    {
-   	sendToTopic(false);      
+      sendToTopic(false);      
    }
 
    private void sendToTopic(boolean persistent) throws Exception
@@ -239,15 +277,15 @@ public class MessageProducerTest extends JMSTestCase
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          final MessageProducer p = ps.createProducer(topic1);
-         
+
          p.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
-         
+
          MessageConsumer c = cs.createConsumer(topic1);
 
          cconn.start();
 
          TextMessage m1 = ps.createTextMessage("test");
-          
+
          Sender sender = new Sender(p, m1);
 
          Thread t = new Thread(sender, "Producer Thread");
@@ -255,7 +293,7 @@ public class MessageProducerTest extends JMSTestCase
          t.start();
 
          TextMessage m2 = (TextMessage)c.receive(5000);
-         
+
          if (sender.ex != null)
          {
             //If an exception was caught in sending we rethrow here so as not to lose it
@@ -273,7 +311,7 @@ public class MessageProducerTest extends JMSTestCase
          cconn.close();
       }
    }
-   
+
 
 
    /**
@@ -342,7 +380,7 @@ public class MessageProducerTest extends JMSTestCase
          p.send(m);         
 
          TextMessage rec = (TextMessage)c.receive(3000);
-         
+
          assertEquals("something", rec.getText());
 
       }
@@ -395,35 +433,35 @@ public class MessageProducerTest extends JMSTestCase
          pconn.close();
       }
    }
-   
+
    //Is this test valid?
    //How can we check if the destination is valid if it is created on the client side only??
 
    // TODO - verify what spec says about this and enable/delete the test accordingly
 
-//   public void testCreateProducerOnInexistentDestination() throws Exception
-//   {
-//      Connection pconn = cf.createConnection();
-//
-//      try
-//      {
-//         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//
-//         try
-//         {
-//            ps.createProducer(new JBossTopic("NoSuchTopic"));
-//            fail("should throw exception");
-//         }
-//         catch(InvalidDestinationException e)
-//         {
-//            // OK
-//         }
-//      }
-//      finally
-//      {
-//         pconn.close();
-//      }
-//   }  
+// public void testCreateProducerOnInexistentDestination() throws Exception
+// {
+// Connection pconn = cf.createConnection();
+
+// try
+// {
+// Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+// try
+// {
+// ps.createProducer(new JBossTopic("NoSuchTopic"));
+// fail("should throw exception");
+// }
+// catch(InvalidDestinationException e)
+// {
+// // OK
+// }
+// }
+// finally
+// {
+// pconn.close();
+// }
+// }  
 
    //
    // disabled MessageID tests
@@ -781,13 +819,13 @@ public class MessageProducerTest extends JMSTestCase
    }
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
-   
-   
+
+
 
 }

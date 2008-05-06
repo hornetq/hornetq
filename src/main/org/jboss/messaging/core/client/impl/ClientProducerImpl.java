@@ -126,25 +126,27 @@ public class ClientProducerImpl implements ClientProducerInternal
    {
    	ProducerSendMessage message = new ProducerSendMessage(address, msg.copy());
    	
-   	//We only flow control with non-anonymous producers
-   	if (address == null)
-   	{
-   		while (windowSize == 0)
-   		{
-				synchronized (this)
-				{
-					try
-					{						
-					   wait();						
-					}
-					catch (InterruptedException e)
-					{   						
-					}
-				}		
-   		}
-   		
-   		windowSize--;
-   	}
+   	//TODO flow control disabled for now
+   	
+//   	//We only flow control with non-anonymous producers
+//   	if (address == null)
+//   	{
+//   		while (windowSize == 0)
+//   		{
+//				synchronized (this)
+//				{
+//					try
+//					{						
+//					   wait();						
+//					}
+//					catch (InterruptedException e)
+//					{   						
+//					}
+//				}		
+//   		}
+//   		
+//   		windowSize--;
+//   	}
    	
    	if (msg.isDurable())
    	{
@@ -155,12 +157,12 @@ public class ClientProducerImpl implements ClientProducerInternal
    	   remotingConnection.sendOneWay(serverTargetID, session.getServerTargetID(), message);
    	}
    	 	   	
-   	if (rateLimiter != null)
-   	{
-   	   // Rate flow control
-      	   		
-   		rateLimiter.limit();
-   	}
+//   	if (rateLimiter != null)
+//   	{
+//   	   // Rate flow control
+//      	   		
+//   		rateLimiter.limit();
+//   	}
    }
             
    public void registerAcknowledgementHandler(final AcknowledgementHandler handler)

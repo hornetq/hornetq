@@ -1052,10 +1052,12 @@ public class ServerSessionImpl implements ServerSession
 
    	final int maxRateToUse = maxRate;
 
-   	if (address != null)
-   	{
-   		flowController = windowSize == -1 ? null : postOffice.getFlowController(address);
-   	}
+   	// TODO Flow control disabled for now
+   	
+//   	if (address != null)
+//   	{
+//   		flowController = windowSize == -1 ? null : postOffice.getFlowController(address);
+//   	}
    	
    	long id = dispatcher.generateID();
 

@@ -60,7 +60,7 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
       PacketDispatcher previousDispatcher = localDispatchers.get(key);
 
       localDispatchers.put(key, serverDispatcher);
-      if(log.isDebugEnabled())
+      if (log.isDebugEnabled())
       {
          log.debug("registered " + key + " for " + serverDispatcher);
       }
@@ -88,8 +88,6 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
    {
       assert location != null;
       String key = location.getLocation();
-      
-      log.info("*** Getting connector for " + location);
       
       if (connectors.containsKey(key))
       {         
