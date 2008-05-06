@@ -50,7 +50,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 		{
 			log.trace(name + " being loaded");
 			System.loadLibrary(name);
-			return true;
+			return isNativeLoaded();
 		}
 		catch (Throwable e)
 		{
@@ -71,6 +71,10 @@ public class AsynchronousFileImpl implements AsynchronousFile
 			{
 				loaded = true;
 				break;
+			}
+			else
+			{
+				log.debug("Library " + library + " not found!");
 			}
 		}
 		
@@ -271,6 +275,9 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	private static native void closeInternal(long handler);
 	
 	private static native void stopPoller(long handler);
+	
+	/** A native method that does nothing, and just validate if the ELF dependencies are loaded and on the correct platform as this binary format */
+	private static native boolean isNativeLoaded();
 	
 	/** Poll asynchrounous events from internal queues */
 	private static native void internalPollEvents(long handler);

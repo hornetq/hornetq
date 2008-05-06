@@ -223,3 +223,10 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 		throwException(env, "java/lang/RuntimeException", e.what());
 	}
 }
+
+/** It does nothing... just return true to make sure it has all the binary dependencies */
+JNIEXPORT jboolean JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_isNativeLoaded
+  (JNIEnv *, jclass)
+{
+	return 1;
+}

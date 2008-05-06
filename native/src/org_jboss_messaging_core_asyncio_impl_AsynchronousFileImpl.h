@@ -59,6 +59,14 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 
 /*
  * Class:     org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl
+ * Method:    isNativeLoaded
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_isNativeLoaded
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl
  * Method:    internalPollEvents
  * Signature: (J)V
  */

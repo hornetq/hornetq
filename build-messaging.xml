@@ -194,6 +194,7 @@
    <path id="compilation.classpath">
       <path refid="external.dependencies.classpath"/>
       <path refid="jboss.dependencies.classpath"/>
+   	<path location="${build.classes.dir}"/>
    </path>
 
    <path id="javadoc.classpath">
@@ -323,6 +324,9 @@
          <include name="**/*.java"/>
          <classpath refid="compilation.classpath"/>
       </javac>
+      <javah class="org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl" 
+             classpathref="compilation.classpath" destdir="./native/src"/>
+   	
 
       <echo message="messaging.version.versionName=${messaging.version.name}${line.separator}messaging.version.majorVersion=${messaging.version.major}${line.separator}messaging.version.minorVersion=${messaging.version.minor}${line.separator}messaging.version.microVersion=${messaging.version.micro}${line.separator}messaging.version.incrementingVersion=${messaging.version.incrementing}${line.separator}messaging.version.versionSuffix=${messaging.version.suffix}${line.separator}"
             file="${build.classes.dir}/version.properties"/>
