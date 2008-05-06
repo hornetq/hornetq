@@ -7,8 +7,11 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CREATECONNECTION;
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
+import org.jboss.messaging.util.DataConstants;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -35,8 +38,8 @@ public class CreateConnectionMessageCodec extends  AbstractPacketCodec<CreateCon
 
    public int getBodyLength(final CreateConnectionRequest packet) throws Exception
    {
-      int bodyLength = INT_LENGTH // version
-            + LONG_LENGTH +
+      int bodyLength = SIZE_INT // version
+            + SIZE_LONG +
             + sizeof(packet.getUsername()) 
             + sizeof(packet.getPassword());
       return bodyLength;

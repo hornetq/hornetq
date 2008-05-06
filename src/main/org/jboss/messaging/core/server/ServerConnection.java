@@ -21,11 +21,12 @@
   */
 package org.jboss.messaging.core.server;
 
+import java.util.Collection;
+
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.security.SecurityStore;
-
-import java.util.Collection;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -60,9 +61,9 @@ public interface ServerConnection
 	
 	void removeTemporaryQueue(Queue queue);
 	
-	void addTemporaryDestination(String destination);
+	void addTemporaryDestination(SimpleString destination);
 	
-	void removeTemporaryDestination(String destination);
+	void removeTemporaryDestination(SimpleString destination);
 	
 	boolean isStarted();
 	

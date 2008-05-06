@@ -26,12 +26,15 @@ import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
+import org.jboss.messaging.util.SimpleString;
 
 public class PacketFilterTest  extends TestCase
 {
    Logger log = Logger.getLogger(PacketFilterTest.class);
 
    private MessagingServerImpl server;
+   
+   private static final SimpleString QUEUE1 = new SimpleString("queue1");
 
 
    public PacketFilterTest(String name)
@@ -163,7 +166,7 @@ public class PacketFilterTest  extends TestCase
          
          interceptor = new DummyInterceptor();
          server.getRemotingService().addInterceptor(interceptor);
-         server.getPostOffice().addBinding("queue1", "queue1", null, false, false);
+         server.getPostOffice().addBinding(QUEUE1, QUEUE1, null, false, false);
          
          interceptor.sendException=false;
 
@@ -172,7 +175,7 @@ public class PacketFilterTest  extends TestCase
          conn = cf.createConnection();
          conn.start();
          ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
-         ClientProducer producer = session.createProducer("queue1");
+         ClientProducer producer = session.createProducer(QUEUE1);
          String msg = "msg " + UUID.randomUUID().toString();
          
          interceptor.changeMessage = true;
@@ -180,7 +183,7 @@ public class PacketFilterTest  extends TestCase
          message.setPayload(msg.getBytes());
          producer.send(message);
          
-         ClientConsumer consumer = session.createConsumer("queue1", null, false, false, true);
+         ClientConsumer consumer = session.createConsumer(QUEUE1, null, false, false, true);
          Message jmsMsg = consumer.receive(100000);
          assertEquals(jmsMsg.getHeader("DummyInterceptor"), "was here");
          

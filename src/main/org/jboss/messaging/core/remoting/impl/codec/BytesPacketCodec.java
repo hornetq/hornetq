@@ -7,8 +7,11 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.BYTES;
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.BytesPacket;
+import org.jboss.messaging.util.DataConstants;
+
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -36,7 +39,7 @@ public class BytesPacketCodec extends AbstractPacketCodec<BytesPacket>
 
    public int getBodyLength(final BytesPacket packet)
    {
-   	return INT_LENGTH + packet.getBytes().length;
+   	return SIZE_INT + packet.getBytes().length;
    }
    
    @Override

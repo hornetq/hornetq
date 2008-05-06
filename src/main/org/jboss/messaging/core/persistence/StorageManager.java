@@ -31,6 +31,7 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -49,14 +50,14 @@ public interface StorageManager extends MessagingComponent
    long generateTransactionID();
    
       
-   void storeMessage(String address, Message message) throws Exception;
+   void storeMessage(SimpleString address, Message message) throws Exception;
    
    void storeAcknowledge(long queueID, long messageID) throws Exception;
    
    void storeDelete(long messageID) throws Exception;
     
    
-   void storeMessageTransactional(long txID, String address, Message message) throws Exception;
+   void storeMessageTransactional(long txID, SimpleString address, Message message) throws Exception;
    
    void storeAcknowledgeTransactional(long txID, long queueID, long messageiD) throws Exception;
    
@@ -81,12 +82,12 @@ public interface StorageManager extends MessagingComponent
    
    void deleteBinding(Binding binding) throws Exception;
    
-   boolean addDestination(String destination) throws Exception;
+   boolean addDestination(SimpleString destination) throws Exception;
    
-   boolean deleteDestination(String destination) throws Exception;
+   boolean deleteDestination(SimpleString destination) throws Exception;
    
    
    void loadBindings(QueueFactory queueFactory, List<Binding> bindings,
-   		            List<String> destinations) throws Exception;
+   		            List<SimpleString> destinations) throws Exception;
       
 }

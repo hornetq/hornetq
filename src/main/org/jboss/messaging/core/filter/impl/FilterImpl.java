@@ -28,6 +28,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.util.SimpleString;
 
 /**
 * This class implements a JBoss Messaging filter
@@ -61,6 +62,8 @@ public class FilterImpl implements Filter
 {
   private static final Logger log = Logger.getLogger(FilterImpl.class);
   
+  private final SimpleString sfilterString;
+  
   private final String filterString;
 
   private final Map<String, Identifier> identifiers = new HashMap<String, Identifier>();
@@ -69,9 +72,11 @@ public class FilterImpl implements Filter
   
   private final FilterParser parser = new FilterParser();
   
-  public FilterImpl(final String filterString) throws MessagingException
+  //TODO - convert to work natively with SimpleString
+  public FilterImpl(final SimpleString str) throws MessagingException
   {
-     this.filterString = filterString;
+     this.filterString = str == null ? null : str.toString();
+     this.sfilterString = str;
 
      try
      {
@@ -85,9 +90,9 @@ public class FilterImpl implements Filter
   
   // Filter implementation ---------------------------------------------------------------------
   
-  public String getFilterString()
+  public SimpleString getFilterString()
   {
-     return filterString;
+     return sfilterString;
   }
   
   public boolean match(final Message message)

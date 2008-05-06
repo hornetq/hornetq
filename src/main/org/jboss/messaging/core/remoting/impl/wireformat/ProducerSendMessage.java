@@ -9,6 +9,7 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PROD_SEND;
 
 import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -22,7 +23,7 @@ public class ProducerSendMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-	private String address;
+	private final SimpleString address;
 	
    private final Message message;
 
@@ -30,7 +31,7 @@ public class ProducerSendMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public ProducerSendMessage(final String address, final Message message)
+   public ProducerSendMessage(final SimpleString address, final Message message)
    {
       super(PROD_SEND);
 
@@ -41,7 +42,7 @@ public class ProducerSendMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
-   public String getAddress()
+   public SimpleString getAddress()
    {
    	return address;
    }

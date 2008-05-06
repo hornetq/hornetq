@@ -7,9 +7,11 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.EXCEPTION;
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.jboss.messaging.util.DataConstants;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -36,7 +38,7 @@ public class MessagingExceptionMessageCodec extends AbstractPacketCodec<Messagin
 
    public int getBodyLength(final MessagingExceptionMessage packet) throws Exception
    {
-   	return INT_LENGTH + sizeof(packet.getException().getMessage());
+   	return SIZE_INT + sizeof(packet.getException().getMessage());
    }
    
    @Override

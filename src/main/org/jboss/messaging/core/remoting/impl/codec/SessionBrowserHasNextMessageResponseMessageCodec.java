@@ -7,8 +7,10 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_HASNEXTMESSAGE_RESP;
+import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
+import org.jboss.messaging.util.DataConstants;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -36,7 +38,7 @@ public class SessionBrowserHasNextMessageResponseMessageCodec extends
 
    public int getBodyLength(final SessionBrowserHasNextMessageResponseMessage packet) throws Exception
    {   	
-      return BOOLEAN_LENGTH;
+      return SIZE_BOOLEAN;
    }
    
    @Override

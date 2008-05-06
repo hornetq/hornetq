@@ -22,10 +22,11 @@
 package org.jboss.messaging.tests.unit.core.settings.impl;
 
 import junit.framework.TestCase;
+
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.impl.QueueImpl;
-import org.jboss.messaging.core.server.impl.RoundRobinDistributionPolicy;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -52,8 +53,8 @@ public class QueueSettingsTest extends TestCase
       QueueSettings queueSettings = new QueueSettings();
       QueueSettings queueSettingsToMerge = new QueueSettings();
       queueSettingsToMerge.setClustered(true);
-      Queue DLQ = new QueueImpl(0,"testDLQ", null, false, false, false, 0, null);
-      Queue exp = new QueueImpl(0,"testExpiryQueue", null, false, false, false, 0, null);
+      Queue DLQ = new QueueImpl(0,new SimpleString("testDLQ"), null, false, false, false, 0, null);
+      Queue exp = new QueueImpl(0,new SimpleString("testExpiryQueue"), null, false, false, false, 0, null);
       queueSettingsToMerge.setDLQ(DLQ);
       queueSettingsToMerge.setExpiryQueue(exp);
       queueSettingsToMerge.setMaxDeliveryAttempts(1000);
@@ -77,8 +78,8 @@ public class QueueSettingsTest extends TestCase
       QueueSettings queueSettings = new  QueueSettings();
       QueueSettings queueSettingsToMerge = new QueueSettings();
       queueSettingsToMerge.setClustered(true);
-       Queue DLQ = new QueueImpl(0,"testDLQ", null, false, false, false, 0, null);
-      Queue exp = new QueueImpl(0,"testExpiryQueue", null, false, false, false, 0, null);
+       Queue DLQ = new QueueImpl(0,new SimpleString("testDLQ"), null, false, false, false, 0, null);
+      Queue exp = new QueueImpl(0,new SimpleString("testExpiryQueue"), null, false, false, false, 0, null);
       queueSettingsToMerge.setDLQ(DLQ);
       queueSettingsToMerge.setExpiryQueue(exp);
       queueSettingsToMerge.setMaxDeliveryAttempts(1000);
@@ -89,7 +90,7 @@ public class QueueSettingsTest extends TestCase
 
       QueueSettings queueSettingsToMerge2 = new QueueSettings();
       queueSettingsToMerge2.setClustered(true);
-      Queue exp2 = new QueueImpl(0,"testExpiryQueue2", null, false, false, false, 0, null);
+      Queue exp2 = new QueueImpl(0,new SimpleString("testExpiryQueue2"), null, false, false, false, 0, null);
       queueSettingsToMerge2.setExpiryQueue(exp2);
       queueSettingsToMerge2.setMaxSize(2001);
       queueSettingsToMerge2.setRedeliveryDelay((long)2003);
@@ -111,8 +112,8 @@ public class QueueSettingsTest extends TestCase
       QueueSettings queueSettings = new  QueueSettings();
       QueueSettings queueSettingsToMerge = new QueueSettings();
       queueSettingsToMerge.setClustered(true);
-       Queue DLQ = new QueueImpl(0,"testDLQ", null, false, false, false, 0, null);
-      Queue exp = new QueueImpl(0,"testExpiryQueue", null, false, false, false, 0, null);
+       Queue DLQ = new QueueImpl(0,new SimpleString("testDLQ"), null, false, false, false, 0, null);
+      Queue exp = new QueueImpl(0,new SimpleString("testExpiryQueue"), null, false, false, false, 0, null);
       queueSettingsToMerge.setDLQ(DLQ);
       queueSettingsToMerge.setExpiryQueue(exp);
       queueSettingsToMerge.setMaxDeliveryAttempts(1000);
@@ -123,8 +124,8 @@ public class QueueSettingsTest extends TestCase
 
       QueueSettings queueSettingsToMerge2 = new QueueSettings();
       queueSettingsToMerge2.setClustered(false);
-      Queue exp2 = new QueueImpl(0,"testExpiryQueue2", null, false, false, false, 0, null);
-      Queue DLQ2 = new QueueImpl(0,"testDlq2", null, false, false, false, 0, null);
+      Queue exp2 = new QueueImpl(0,new SimpleString("testExpiryQueue2"), null, false, false, false, 0, null);
+      Queue DLQ2 = new QueueImpl(0,new SimpleString("testDlq2"), null, false, false, false, 0, null);
       queueSettingsToMerge2.setExpiryQueue(exp2);
       queueSettingsToMerge2.setDLQ(DLQ2);
       queueSettingsToMerge2.setMaxDeliveryAttempts(2000);

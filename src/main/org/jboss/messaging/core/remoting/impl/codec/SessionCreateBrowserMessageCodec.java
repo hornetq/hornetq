@@ -9,6 +9,7 @@ package org.jboss.messaging.core.remoting.impl.codec;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEBROWSER;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserMessage;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -36,10 +37,10 @@ public class SessionCreateBrowserMessageCodec extends
 
    public int getBodyLength(final SessionCreateBrowserMessage packet) throws Exception
    {   	
-   	String queueName = packet.getQueueName();
-      String filterString = packet.getFilterString();
+   	SimpleString queueName = packet.getQueueName();
+      SimpleString filterString = packet.getFilterString();
 
-      int bodyLength = sizeof(queueName) + sizeof(filterString);
+      int bodyLength = SimpleString.sizeofString(queueName) + SimpleString.sizeofNullableString(filterString);
       
       return bodyLength;
    }
@@ -47,19 +48,19 @@ public class SessionCreateBrowserMessageCodec extends
    @Override
    protected void encodeBody(final SessionCreateBrowserMessage request, final RemotingBuffer out) throws Exception
    {
-      String queueName = request.getQueueName();
-      String filterString = request.getFilterString();
+      SimpleString queueName = request.getQueueName();
+      SimpleString filterString = request.getFilterString();
 
-      out.putNullableString(queueName);
-      out.putNullableString(filterString);
+      out.putSimpleString(queueName);
+      out.putNullableSimpleString(filterString);
    }
 
    @Override
    protected SessionCreateBrowserMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      String queueName = in.getNullableString();
-      String filterString = in.getNullableString();
+      SimpleString queueName = in.getSimpleString();
+      SimpleString filterString = in.getNullableSimpleString();
 
       return new SessionCreateBrowserMessage(queueName, filterString);
    }

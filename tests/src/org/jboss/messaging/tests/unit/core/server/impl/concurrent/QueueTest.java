@@ -32,6 +32,7 @@ import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeConsumer;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeQueueFactory;
 import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -51,7 +52,7 @@ public class QueueTest extends UnitTestCase
     */
    public void testConcurrentAddsDeliver() throws Exception
    {
-      Queue queue = queueFactory.createQueue(1, "queue1", null, false, true);
+      Queue queue = queueFactory.createQueue(1, new SimpleString("queue1"), null, false, true);
       
       FakeConsumer consumer = new FakeConsumer();
       

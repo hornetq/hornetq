@@ -38,7 +38,7 @@ public class JBossTemporaryTopic extends JBossTopic implements TemporaryTopic
       
 	private static final long serialVersionUID = 845450764835635266L;
 
-	private static final String JMS_TEMP_TOPIC_ADDRESS_PREFIX = "topictempjms.";
+	public static final String JMS_TEMP_TOPIC_ADDRESS_PREFIX = "topictempjms.";
    
    // Static --------------------------------------------------------
    

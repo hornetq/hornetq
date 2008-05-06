@@ -7,6 +7,7 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_NEXTMESSAGEBLOCK_RESP;
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -16,6 +17,7 @@ import java.io.DataOutputStream;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageBlockResponseMessage;
+import org.jboss.messaging.util.DataConstants;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -64,7 +66,7 @@ public class SessionBrowserNextMessageBlockResponseMessageCodec extends Abstract
       
       encodedMsgs = encode(messages);
 
-      int bodyLength = INT_LENGTH + encodedMsgs.length;
+      int bodyLength = SIZE_INT + encodedMsgs.length;
       
       return bodyLength;
    }

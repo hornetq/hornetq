@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.filter;
 
 import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -34,5 +35,5 @@ public interface Filter
 {
    boolean match(Message message);
    
-   String getFilterString();
+   SimpleString getFilterString();
 }

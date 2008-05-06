@@ -21,13 +21,22 @@
    */
 package org.jboss.messaging.example;
 
-import org.jboss.messaging.core.client.*;
-import org.jboss.messaging.core.client.impl.*;
-import org.jboss.messaging.core.remoting.TransportType;
+import org.jboss.messaging.core.client.ClientConnection;
+import org.jboss.messaging.core.client.ClientConnectionFactory;
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ConnectionParams;
+import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
+import org.jboss.messaging.core.client.impl.LocationImpl;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.jms.client.JBossTextMessage;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * Uses the core messaging API to send and receive a message to a queue.
@@ -46,12 +55,13 @@ public class SimpleClient
          ClientConnectionFactory connectionFactory = new ClientConnectionFactoryImpl(location, connectionParams);
          clientConnection = connectionFactory.createConnection();
          ClientSession clientSession = clientConnection.createClientSession(false, true, true, 100, true, false);
-         ClientProducer clientProducer = clientSession.createProducer("queuejms.testQueue");
+         SimpleString queue = new SimpleString("queuejms.testQueue");
+         ClientProducer clientProducer = clientSession.createProducer(queue);
          Message message = new MessageImpl(JBossTextMessage.TYPE, false, 0,
                  System.currentTimeMillis(), (byte) 1);
          message.setPayload("Hello!".getBytes());
          clientProducer.send(message);
-         ClientConsumer clientConsumer = clientSession.createConsumer("queuejms.testQueue", null, false, false, false);
+         ClientConsumer clientConsumer = clientSession.createConsumer(queue, null, false, false, false);
          clientConnection.start();
          Message msg = clientConsumer.receive(5000);
          System.out.println("msg.getPayload() = " + new String(msg.getPayload()));

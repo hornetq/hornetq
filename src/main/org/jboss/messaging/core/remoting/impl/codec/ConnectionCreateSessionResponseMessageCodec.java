@@ -6,8 +6,11 @@
  */
 package org.jboss.messaging.core.remoting.impl.codec;
 
+import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
+
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
+import org.jboss.messaging.util.DataConstants;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -35,7 +38,7 @@ public class ConnectionCreateSessionResponseMessageCodec extends
 
    public int getBodyLength(final ConnectionCreateSessionResponseMessage packet)
    {
-   	return LONG_LENGTH;
+   	return SIZE_LONG;
    }
    
    @Override

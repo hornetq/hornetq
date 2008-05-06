@@ -6,6 +6,8 @@
  */
 package org.jboss.messaging.core.remoting.impl.codec;
 
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +15,7 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetInDoubtXidsResponseMessage;
+import org.jboss.messaging.util.DataConstants;
 
 
 /**
@@ -43,7 +46,7 @@ public class SessionXAGetInDoubtXidsResponseMessageCodec extends AbstractPacketC
 
    public int getBodyLength(final SessionXAGetInDoubtXidsResponseMessage packet) throws Exception
    {   	
-      int bodyLength = INT_LENGTH;
+      int bodyLength = SIZE_INT;
       
       for (Xid xid: packet.getXids())
       {

@@ -7,8 +7,11 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATECONSUMER_RESP;
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
+import org.jboss.messaging.util.DataConstants;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -36,7 +39,7 @@ public class SessionCreateConsumerResponseMessageCodec extends
 
    public int getBodyLength(final SessionCreateConsumerResponseMessage packet) throws Exception
    {   	
-   	return LONG_LENGTH + INT_LENGTH;
+   	return SIZE_LONG + SIZE_INT;
    }
    
    @Override

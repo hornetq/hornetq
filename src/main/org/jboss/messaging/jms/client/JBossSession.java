@@ -70,6 +70,7 @@ import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTemporaryQueue;
 import org.jboss.messaging.jms.JBossTemporaryTopic;
 import org.jboss.messaging.jms.JBossTopic;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -340,7 +341,7 @@ public class JBossSession implements
       
       try
       {
-         ClientProducer producer = session.createProducer(jbd == null ? null : jbd.getAddress());
+         ClientProducer producer = session.createProducer(jbd == null ? null : jbd.getSimpleAddress());
 
          return new JBossMessageProducer(producer, jbd);
       }
@@ -392,7 +393,7 @@ public class JBossSession implements
 
       try
       {      
-         SessionQueueQueryResponseMessage response = session.queueQuery(queue.getAddress());
+         SessionQueueQueryResponseMessage response = session.queueQuery(queue.getSimpleAddress());
 
          if (!response.isExists())
          {
@@ -421,7 +422,7 @@ public class JBossSession implements
       
       try
       {      
-         SessionBindingQueryResponseMessage response = session.bindingQuery(topic.getAddress());
+         SessionBindingQueryResponseMessage response = session.bindingQuery(topic.getSimpleAddress());
          
          if (!response.isExists())
          {
@@ -470,44 +471,44 @@ public class JBossSession implements
       {               
          selectorString = "".equals(selectorString) ? null : selectorString;
          
-         String coreFilterString = null;
+         SimpleString coreFilterString = null;
          
          if (selectorString != null)
          {
-            coreFilterString = SelectorTranslator.convertToJBMFilterString(selectorString);
+            coreFilterString = new SimpleString(SelectorTranslator.convertToJBMFilterString(selectorString));
          }
          
          ClientConsumer consumer;
          
          if (dest instanceof Queue)
          {
-            SessionQueueQueryResponseMessage response = session.queueQuery(dest.getAddress());
+            SessionQueueQueryResponseMessage response = session.queueQuery(dest.getSimpleAddress());
             
             if (!response.isExists())
             {
                throw new InvalidDestinationException("Queue " + dest.getName() + " does not exist");
             }
             
-            consumer = session.createConsumer(dest.getAddress(), coreFilterString, noLocal, false, false);
+            consumer = session.createConsumer(dest.getSimpleAddress(), coreFilterString, noLocal, false, false);
          }
          else
          {
-            SessionBindingQueryResponseMessage response = session.bindingQuery(dest.getAddress());
+            SessionBindingQueryResponseMessage response = session.bindingQuery(dest.getSimpleAddress());
             
             if (!response.isExists())
             {
                throw new InvalidDestinationException("Topic " + dest.getName() + " does not exist");
             }
                           
-            String queueName;
+            SimpleString queueName;
             
             if (subscriptionName == null)
             {
                //Non durable sub
               
-               queueName = UUID.randomUUID().toString();
+               queueName = new SimpleString(UUID.randomUUID().toString());
                
-               session.createQueue(dest.getAddress(), queueName, coreFilterString, false, false);
+               session.createQueue(dest.getSimpleAddress(), queueName, coreFilterString, false, false);
                
                consumer = session.createConsumer(queueName, null, noLocal, true, false);
             }
@@ -525,14 +526,14 @@ public class JBossSession implements
                   throw new InvalidDestinationException("Cannot create a durable subscription on a temporary topic");
                }
                
-               queueName =
-                  JBossTopic.createQueueNameForDurableSubscription(connection.getClientID(), subscriptionName);
+               queueName = new SimpleString(
+                  JBossTopic.createQueueNameForDurableSubscription(connection.getClientID(), subscriptionName));
                
                SessionQueueQueryResponseMessage subResponse = session.queueQuery(queueName);
                
                if (!subResponse.isExists())
                {
-                  session.createQueue(dest.getAddress(), queueName, coreFilterString, true, false);
+                  session.createQueue(dest.getSimpleAddress(), queueName, coreFilterString, true, false);
                }
                else
                {
@@ -548,7 +549,7 @@ public class JBossSession implements
                   // Changing a durable subscriber is equivalent to unsubscribing (deleting) the old
                   // one and creating a new one.
                   
-                  String oldFilterString = subResponse.getFilterString();
+                  SimpleString oldFilterString = subResponse.getFilterString();
                   
                   boolean selectorChanged =
                      (coreFilterString == null && oldFilterString != null) ||
@@ -557,9 +558,9 @@ public class JBossSession implements
                               !oldFilterString.equals(coreFilterString));
                   
    
-                  String oldTopicName = subResponse.getAddress();
+                  SimpleString oldTopicName = subResponse.getAddress();
                   
-                  boolean topicChanged = !oldTopicName.equals(dest.getAddress());
+                  boolean topicChanged = !oldTopicName.equals(dest.getSimpleAddress());
                   
                   if (selectorChanged || topicChanged)
                   {
@@ -567,7 +568,7 @@ public class JBossSession implements
                      session.deleteQueue(queueName);
                      
                      //Create the new one
-                     session.createQueue(dest.getAddress(), queueName, coreFilterString, true, false);        
+                     session.createQueue(dest.getSimpleAddress(), queueName, coreFilterString, true, false);        
                   }                          
                }
                
@@ -617,7 +618,7 @@ public class JBossSession implements
       return createBrowser(queue, null);
    }
 
-   public QueueBrowser createBrowser(final Queue queue, String messageSelector) throws JMSException
+   public QueueBrowser createBrowser(final Queue queue, String filterString) throws JMSException
    {
       //As per spec. section 4.11
       if (sessionType == TYPE_TOPIC_SESSION)
@@ -632,18 +633,20 @@ public class JBossSession implements
       {
          throw new InvalidDestinationException("Not a JBossQueue:" + queue);
       }
-      if ("".equals(messageSelector))
+      if ("".equals(filterString))
       {
-         messageSelector = null;
+      	filterString = null;
       }
 
       JBossQueue jbq = (JBossQueue)queue;
       
       try
       {      
-         ClientBrowser browser = session.createBrowser(jbq.getAddress(), messageSelector);
+         String coreSelector = SelectorTranslator.convertToJBMFilterString(filterString);
+      	
+         ClientBrowser browser = session.createBrowser(jbq.getSimpleAddress(), coreSelector == null ? null : new SimpleString(coreSelector));
    
-         return new JBossQueueBrowser(queue, messageSelector, browser);
+         return new JBossQueueBrowser(queue, filterString, browser);
       }
       catch (MessagingException e)
       {
@@ -665,9 +668,9 @@ public class JBossSession implements
       {      
          JBossTemporaryQueue queue = new JBossTemporaryQueue(this, queueName);
                            
-         session.createQueue(queue.getAddress(), queue.getAddress(), null, false, true);
+         session.createQueue(queue.getSimpleAddress(), queue.getSimpleAddress(), null, false, true);
          
-         session.addDestination(queue.getAddress(), true);
+         session.addDestination(queue.getSimpleAddress(), true);
          
          return queue;      
       }
@@ -691,7 +694,7 @@ public class JBossSession implements
       {      
          JBossTemporaryTopic topic = new JBossTemporaryTopic(this, topicName);
                            
-         session.addDestination(topic.getAddress(), true);
+         session.addDestination(topic.getSimpleAddress(), true);
          
          return topic;
       }
@@ -709,7 +712,7 @@ public class JBossSession implements
          throw new IllegalStateException("Cannot unsubscribe using a QueueSession");
       }
       
-      String queueName = JBossTopic.createQueueNameForDurableSubscription(connection.getClientID(), name);
+      SimpleString queueName = new SimpleString(JBossTopic.createQueueNameForDurableSubscription(connection.getClientID(), name));
       
       try
       {      
@@ -828,7 +831,7 @@ public class JBossSession implements
       {
          if (destination instanceof Topic)
          {
-            SessionBindingQueryResponseMessage response = session.bindingQuery(destination.getAddress());
+            SessionBindingQueryResponseMessage response = session.bindingQuery(destination.getSimpleAddress());
             
             if (!response.isExists())
             {
@@ -844,7 +847,7 @@ public class JBossSession implements
          }
          else
          {
-            SessionQueueQueryResponseMessage response = session.queueQuery(destination.getAddress());
+            SessionQueueQueryResponseMessage response = session.queueQuery(destination.getSimpleAddress());
             
             if (!response.isExists())
             {
@@ -858,7 +861,7 @@ public class JBossSession implements
                                                destination.getName() + " since it has subscribers");
             }
          }   
-         session.removeDestination(destination.getAddress(), true);
+         session.removeDestination(destination.getSimpleAddress(), true);
       }
       catch (MessagingException e)
       {

@@ -12,6 +12,7 @@ import javax.transaction.xa.XAResource;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  *  
@@ -20,29 +21,29 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryRespon
  */
 public interface ClientSession extends XAResource
 {   
-   void createQueue(String address, String queueName, String filterString, boolean durable, boolean temporary)
+   void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString, boolean durable, boolean temporary)
                     throws MessagingException;
    
-   void deleteQueue(String queueName) throws MessagingException;
+   void deleteQueue(SimpleString queueName) throws MessagingException;
    
-   void addDestination(String address, boolean temporary) throws MessagingException;
+   void addDestination(SimpleString address, boolean temporary) throws MessagingException;
    
-   void removeDestination(String address, boolean temporary) throws MessagingException;
+   void removeDestination(SimpleString address, boolean temporary) throws MessagingException;
    
-   SessionQueueQueryResponseMessage queueQuery(String queueName) throws MessagingException;
+   SessionQueueQueryResponseMessage queueQuery(SimpleString queueName) throws MessagingException;
    
-   SessionBindingQueryResponseMessage bindingQuery(String address) throws MessagingException;
+   SessionBindingQueryResponseMessage bindingQuery(SimpleString address) throws MessagingException;
    
-   ClientConsumer createConsumer(String queueName, String filterString, boolean noLocal,
+   ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean noLocal,
                                  boolean autoDeleteQueue, boolean direct) throws MessagingException;
    
-   ClientBrowser createBrowser(String queueName, String messageSelector) throws MessagingException;
+   ClientBrowser createBrowser(SimpleString queueName, SimpleString filterString) throws MessagingException;
    
-   ClientProducer createProducer(String address) throws MessagingException;
+   ClientProducer createProducer(SimpleString address) throws MessagingException;
    
-   ClientProducer createRateLimitedProducer(String address, int rate) throws MessagingException;
+   ClientProducer createRateLimitedProducer(SimpleString address, int rate) throws MessagingException;
    
-   ClientProducer createProducerWithWindowSize(String address, int windowSize) throws MessagingException;
+   ClientProducer createProducerWithWindowSize(SimpleString address, int windowSize) throws MessagingException;
    
    XAResource getXAResource();
 

@@ -7,8 +7,10 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_NEXTMESSAGEBLOCK;
+import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageBlockMessage;
+import org.jboss.messaging.util.DataConstants;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -35,7 +37,7 @@ public class SessionBrowserNextMessageBlockMessageCodec extends AbstractPacketCo
 
    public int getBodyLength(final SessionBrowserNextMessageBlockMessage packet) throws Exception
    {   	
-      return LONG_LENGTH;
+      return SIZE_LONG;
    }
    
    @Override

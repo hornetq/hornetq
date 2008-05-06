@@ -28,6 +28,7 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  *
@@ -51,10 +52,10 @@ public class QueueFactoryImpl implements QueueFactory
       this.scheduledExecutor = scheduledExecutor;
    }
    
-   public Queue createQueue(final long persistenceID, final String name, final Filter filter,
+   public Queue createQueue(final long persistenceID, final SimpleString name, final Filter filter,
                             final boolean durable, final boolean temporary)
    {
-      QueueSettings queueSettings = queueSettingsRepository.getMatch(name);
+      QueueSettings queueSettings = queueSettingsRepository.getMatch(name.toString());
             
       Queue queue = new QueueImpl(persistenceID, name, filter, queueSettings.isClustered(), durable, temporary,
       		queueSettings.getMaxSize(), scheduledExecutor);

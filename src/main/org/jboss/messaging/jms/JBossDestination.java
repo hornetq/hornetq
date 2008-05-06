@@ -28,6 +28,7 @@ import javax.naming.NamingException;
 import javax.naming.Reference;
 
 import org.jboss.messaging.jms.referenceable.SerializableObjectRefAddr;
+import org.jboss.messaging.util.SimpleString;
 
 
 /**
@@ -47,12 +48,46 @@ public abstract class JBossDestination implements Destination, Serializable/*, R
    {
       return input.replace("\\", "\\\\").replace(".", "\\.");
    }
+	
+	public static JBossDestination fromAddress(final String address)
+	{
+		if (address.startsWith(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX))
+		{
+			String name = address.substring(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX.length());
+			
+			return new JBossQueue(address, name);
+		}
+		else if (address.startsWith(JBossTopic.JMS_TOPIC_ADDRESS_PREFIX))
+		{
+			String name = address.substring(JBossTopic.JMS_TOPIC_ADDRESS_PREFIX.length());
+			
+			return new JBossTopic(address, name);
+		}
+		else if (address.startsWith(JBossTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX))
+		{
+			String name = address.substring(JBossTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX.length());
+			
+			return new JBossTemporaryQueue(null, name);
+		}
+		else if (address.startsWith(JBossTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX))
+		{
+			String name = address.substring(JBossTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX.length());
+			
+			return new JBossTemporaryTopic(null, name);
+		}
+		else
+		{
+			throw new IllegalArgumentException("Invalid address " + address);
+		}
+	}
       
    // Attributes ----------------------------------------------------
 
    protected final String name;
    
    private final String address;
+   
+   private final SimpleString simpleAddress;
          
    // Constructors --------------------------------------------------
 
@@ -61,6 +96,8 @@ public abstract class JBossDestination implements Destination, Serializable/*, R
       this.address = address;
       
       this.name = name;
+      
+      this.simpleAddress = new SimpleString(address);
    }
    
    // Referenceable implementation ---------------------------------------
@@ -78,6 +115,11 @@ public abstract class JBossDestination implements Destination, Serializable/*, R
    public String getAddress()
    {
       return address;
+   }
+   
+   public SimpleString getSimpleAddress()
+   {
+   	return simpleAddress;
    }
    
    public String getName()

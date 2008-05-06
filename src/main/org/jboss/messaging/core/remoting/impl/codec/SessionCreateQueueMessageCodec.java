@@ -7,8 +7,10 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEQUEUE;
+import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -38,25 +40,26 @@ public class SessionCreateQueueMessageCodec extends AbstractPacketCodec<SessionC
 
    public int getBodyLength(final SessionCreateQueueMessage packet) throws Exception
    {   	
-   	String address = packet.getAddress();
-      String queueName = packet.getQueueName();
-      String filterString = packet.getFilterString();
-   	int bodyLength = sizeof(address) + sizeof(queueName) + sizeof(filterString) + 2;
+   	SimpleString address = packet.getAddress();
+      SimpleString queueName = packet.getQueueName();
+      SimpleString filterString = packet.getFilterString();
+   	int bodyLength = SimpleString.sizeofString(address) + SimpleString.sizeofString(queueName) +
+   	SimpleString.sizeofNullableString(filterString) + 2 * SIZE_BOOLEAN;
    	return bodyLength;
    }
    
    @Override
    protected void encodeBody(final SessionCreateQueueMessage message, final RemotingBuffer out) throws Exception
    {
-      String address = message.getAddress();
-      String queueName = message.getQueueName();
-      String filterString = message.getFilterString();
+      SimpleString address = message.getAddress();
+      SimpleString queueName = message.getQueueName();
+      SimpleString filterString = message.getFilterString();
       boolean durable = message.isDurable();
       boolean temporary = message.isTemporary();
      
-      out.putNullableString(address);
-      out.putNullableString(queueName);
-      out.putNullableString(filterString);
+      out.putSimpleString(address);
+      out.putSimpleString(queueName);
+      out.putNullableSimpleString(filterString);
       out.putBoolean(durable);
       out.putBoolean(temporary);
    }
@@ -65,9 +68,9 @@ public class SessionCreateQueueMessageCodec extends AbstractPacketCodec<SessionC
    protected SessionCreateQueueMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      String address = in.getNullableString();
-      String queueName = in.getNullableString();
-      String filterString = in.getNullableString();
+      SimpleString address = in.getSimpleString();
+      SimpleString queueName = in.getSimpleString();
+      SimpleString filterString = in.getNullableSimpleString();
       boolean durable = in.getBoolean();
       boolean temporary = in.getBoolean();
     

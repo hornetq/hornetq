@@ -23,6 +23,7 @@ package org.jboss.messaging.core.postoffice.impl;
 
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -33,7 +34,7 @@ import org.jboss.messaging.core.server.Queue;
  */
 public class BindingImpl implements Binding
 { 
-   private final String address;
+   private final SimpleString address;
    
    private final Queue queue;
    
@@ -41,14 +42,14 @@ public class BindingImpl implements Binding
    
    private int hash;
       
-   public BindingImpl(final String address, final Queue queue)
+   public BindingImpl(final SimpleString address, final Queue queue)
    {
       this.address = address;
       
       this.queue = queue;
    }
    
-   public String getAddress()
+   public SimpleString getAddress()
    {
       return address;
    }

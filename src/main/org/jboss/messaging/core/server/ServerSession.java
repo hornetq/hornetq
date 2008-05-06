@@ -36,6 +36,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessag
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
 import org.jboss.messaging.core.server.impl.ServerBrowserImpl;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -62,7 +63,7 @@ public interface ServerSession
 	
 	void promptDelivery(Queue queue);
 	
-	void send(String address, Message msg) throws Exception;
+	void send(SimpleString address, Message msg) throws Exception;
 
    void acknowledge(long deliveryID, boolean allUpTo) throws Exception;
 
@@ -96,22 +97,22 @@ public interface ServerSession
 
    boolean setXATimeout(int timeoutSeconds);
 
-   void addDestination(String address, boolean temporary) throws Exception;
+   void addDestination(SimpleString address, boolean temporary) throws Exception;
 
-   void removeDestination(String address, boolean temporary) throws Exception;
+   void removeDestination(SimpleString address, boolean temporary) throws Exception;
 
-   void createQueue(String address, String queueName, String filterString, boolean durable, boolean temporary) throws Exception;
+   void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString, boolean durable, boolean temporary) throws Exception;
 
-   void deleteQueue(String queueName) throws Exception;
+   void deleteQueue(SimpleString queueName) throws Exception;
 
-   SessionCreateConsumerResponseMessage createConsumer(String queueName, String filterString, boolean noLocal,
+   SessionCreateConsumerResponseMessage createConsumer(SimpleString queueName, SimpleString filterString, boolean noLocal,
    		                                              boolean autoDeleteQueue, int windowSize, int maxRate) throws Exception;
    
-   SessionCreateProducerResponseMessage createProducer(String address, int windowSize, int maxRate) throws Exception;   
+   SessionCreateProducerResponseMessage createProducer(SimpleString address, int windowSize, int maxRate) throws Exception;   
 
    SessionQueueQueryResponseMessage executeQueueQuery(SessionQueueQueryMessage request) throws Exception;
 
    SessionBindingQueryResponseMessage executeBindingQuery(SessionBindingQueryMessage request) throws Exception;
 
-   SessionCreateBrowserResponseMessage createBrowser(String queueName, String selector) throws Exception;
+   SessionCreateBrowserResponseMessage createBrowser(SimpleString queueName, SimpleString filterString) throws Exception;
 }

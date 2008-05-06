@@ -4,6 +4,8 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
 
 import java.util.List;
 
+import org.jboss.messaging.util.SimpleString;
+
 /**
  * 
  * A SessionBindingQueryResponseMessage
@@ -15,9 +17,9 @@ public class SessionBindingQueryResponseMessage extends PacketImpl
 {
    private final boolean exists;
    
-   private final List<String> queueNames;
+   private final List<SimpleString> queueNames;
    
-   public SessionBindingQueryResponseMessage(final boolean exists, final List<String> queueNames)
+   public SessionBindingQueryResponseMessage(final boolean exists, final List<SimpleString> queueNames)
    {
       super(SESS_BINDINGQUERY_RESP);
 
@@ -31,7 +33,7 @@ public class SessionBindingQueryResponseMessage extends PacketImpl
       return exists;
    }
 
-   public List<String> getQueueNames()
+   public List<SimpleString> getQueueNames()
    {
       return this.queueNames;
    }

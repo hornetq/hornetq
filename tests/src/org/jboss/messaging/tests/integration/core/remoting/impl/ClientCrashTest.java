@@ -41,6 +41,7 @@ import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.tests.unit.core.util.SpawnedVMSupport;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * A test that makes sure that a Messaging server cleans up the associated
@@ -56,7 +57,7 @@ public class ClientCrashTest extends TestCase
 {
    // Constants -----------------------------------------------------
 
-   public static final String QUEUE = "ClientCrashTestQueue";
+   public static final SimpleString QUEUE = new SimpleString("ClientCrashTestQueue");
    public static final String MESSAGE_TEXT_FROM_SERVER = "ClientCrashTest from server";
    public static final String MESSAGE_TEXT_FROM_CLIENT = "ClientCrashTest from client";
 

@@ -7,8 +7,11 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PONG;
+import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
+import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
+import org.jboss.messaging.util.DataConstants;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -36,7 +39,7 @@ public class PongCodec extends AbstractPacketCodec<Pong>
    
    public int getBodyLength(final Pong packet) throws Exception
    {
-   	return LONG_LENGTH + BOOLEAN_LENGTH;
+   	return SIZE_LONG + SIZE_BOOLEAN;
    }
 
    @Override

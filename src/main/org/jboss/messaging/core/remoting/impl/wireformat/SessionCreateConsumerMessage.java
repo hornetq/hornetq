@@ -6,6 +6,8 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+import org.jboss.messaging.util.SimpleString;
+
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -18,9 +20,9 @@ public class SessionCreateConsumerMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private final String queueName;
+   private final SimpleString queueName;
    
-   private final String filterString;
+   private final SimpleString filterString;
    
    private final boolean noLocal;
    
@@ -34,7 +36,7 @@ public class SessionCreateConsumerMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateConsumerMessage(final String queueName, final String filterString,
+   public SessionCreateConsumerMessage(final SimpleString queueName, final SimpleString filterString,
    		                              final boolean noLocal, final boolean autoDeleteQueue,
    		                              final int windowSize, final int maxRate)
    {
@@ -64,12 +66,12 @@ public class SessionCreateConsumerMessage extends PacketImpl
       return buff.toString();
    }
 
-   public String getQueueName()
+   public SimpleString getQueueName()
    {
       return queueName;
    }
 
-   public String getFilterString()
+   public SimpleString getFilterString()
    {
       return filterString;
    }

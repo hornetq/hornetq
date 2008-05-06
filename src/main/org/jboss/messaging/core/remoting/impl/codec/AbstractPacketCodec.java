@@ -6,6 +6,10 @@
  */
 package org.jboss.messaging.core.remoting.impl.codec;
 
+import static org.jboss.messaging.util.DataConstants.SIZE_BYTE;
+import static org.jboss.messaging.util.DataConstants.SIZE_CHAR;
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+
 import javax.transaction.xa.Xid;
 
 import org.apache.mina.common.IoBuffer;
@@ -16,6 +20,7 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
+import org.jboss.messaging.util.DataConstants;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -25,24 +30,7 @@ public abstract class AbstractPacketCodec<P extends Packet>
 {
    // Constants -----------------------------------------------------
 
-   public static final byte TRUE = (byte) 0;
-
-   public static final byte FALSE = (byte) 1;
-
-   public static final int BOOLEAN_LENGTH = 1;
-   
-   public static final int BYTE_LENGTH = 1;
-
-   public static final int INT_LENGTH = 4;
-
-   public static final int FLOAT_LENGTH = 4;
-
-   public static final int LONG_LENGTH = 8;
-   
-   public static final int CHAR_LENGTH = 2;
-   
-   public static final int HEADER_LENGTH =
-   	BYTE_LENGTH + LONG_LENGTH + LONG_LENGTH + LONG_LENGTH;
+   public static final int HEADER_LENGTH = DataConstants.SIZE_BYTE + 3 * DataConstants.SIZE_LONG;
    
    private static final Logger log = Logger.getLogger(AbstractPacketCodec.class);
 
@@ -51,6 +39,18 @@ public abstract class AbstractPacketCodec<P extends Packet>
    protected final PacketType type;
 
    // Static --------------------------------------------------------
+   
+   public static int sizeof(final String nullableString)
+   {
+      if (nullableString == null)
+      {
+         return SIZE_BYTE; // NULL_STRING byte
+      }
+      else
+      {
+         return SIZE_BYTE + SIZE_INT + SIZE_CHAR * nullableString.length();
+      }
+   }
    
    // Constructors --------------------------------------------------
    
@@ -89,22 +89,10 @@ public abstract class AbstractPacketCodec<P extends Packet>
       iobuf.flip();
       out.write(iobuf);
    }
-
-   public static int sizeof(final String nullableString)
-   {
-      if (nullableString == null)
-      {
-         return BYTE_LENGTH; // NULL_STRING byte
-      }
-      else
-      {
-         return BYTE_LENGTH + INT_LENGTH + CHAR_LENGTH * nullableString.length();
-      }
-   }
    
    public static int getXidLength(final Xid xid)
    {
-      return INT_LENGTH + INT_LENGTH + xid.getBranchQualifier().length + INT_LENGTH + xid.getGlobalTransactionId().length;
+      return SIZE_INT + SIZE_INT + xid.getBranchQualifier().length + SIZE_INT + xid.getGlobalTransactionId().length;
    }
 
    public void decode(final RemotingBuffer buffer, final ProtocolDecoderOutput out) throws Exception

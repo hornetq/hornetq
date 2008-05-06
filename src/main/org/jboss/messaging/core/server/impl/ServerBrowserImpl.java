@@ -21,16 +21,11 @@
  */
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.NULL;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_HASNEXTMESSAGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_NEXTMESSAGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_RESET;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
@@ -41,13 +36,13 @@ import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageResponseMessage;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerSession;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * Concrete implementation of BrowserEndpoint.
@@ -88,7 +83,7 @@ public class ServerBrowserImpl
 
 		if (messageFilter != null)
 		{	
-		   filter = new FilterImpl(messageFilter);
+		   filter = new FilterImpl(new SimpleString(messageFilter));
 		}
 		else
 		{

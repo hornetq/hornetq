@@ -133,11 +133,11 @@ public class MessageReferenceImpl implements MessageReference
               
       queue.referenceCancelled();
 
-      int maxDeliveries = queueSettingsRepository.getMatch(queue.getName()).getMaxDeliveryAttempts();
+      int maxDeliveries = queueSettingsRepository.getMatch(queue.getName().toString()).getMaxDeliveryAttempts();
       
       if (maxDeliveries > 0 && deliveryCount >= maxDeliveries)
       {      	      	
-         Queue DLQ = queueSettingsRepository.getMatch(queue.getName()).getDLQ();
+         Queue DLQ = queueSettingsRepository.getMatch(queue.getName().toString()).getDLQ();
          
          Transaction tx = new TransactionImpl(persistenceManager, postOffice);
                   
@@ -176,7 +176,7 @@ public class MessageReferenceImpl implements MessageReference
    public void expire(final StorageManager persistenceManager, final PostOffice postOffice,
    		final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
-      Queue expiryQueue = queueSettingsRepository.getMatch(queue.getName()).getExpiryQueue();
+      Queue expiryQueue = queueSettingsRepository.getMatch(queue.getName().toString()).getExpiryQueue();
       
       Transaction tx = new TransactionImpl(persistenceManager, postOffice);
       

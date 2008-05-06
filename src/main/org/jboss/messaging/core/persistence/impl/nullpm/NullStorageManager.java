@@ -32,6 +32,7 @@ import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -53,7 +54,7 @@ public class NullStorageManager implements StorageManager
 	{
 	}
 
-	public boolean addDestination(String destination) throws Exception
+	public boolean addDestination(SimpleString destination) throws Exception
 	{
 		return true;
 	}
@@ -66,13 +67,13 @@ public class NullStorageManager implements StorageManager
 	{
 	}
 
-	public boolean deleteDestination(String destination) throws Exception
+	public boolean deleteDestination(SimpleString destination) throws Exception
 	{
 		return true;
 	}
 
 	public void loadBindings(QueueFactory queueFactory, List<Binding> bindings,
-			List<String> destinations) throws Exception
+			List<SimpleString> destinations) throws Exception
 	{
 	}
 
@@ -107,11 +108,11 @@ public class NullStorageManager implements StorageManager
 	{
 	}
 
-	public void storeMessage(String address, Message message) throws Exception
+	public void storeMessage(SimpleString address, Message message) throws Exception
 	{
 	}
 
-	public void storeMessageTransactional(long txID, String address,
+	public void storeMessageTransactional(long txID, SimpleString address,
 			Message message) throws Exception
 	{
 	}

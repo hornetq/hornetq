@@ -29,6 +29,7 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.server.MessagingComponent;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -53,31 +54,29 @@ import org.jboss.messaging.core.server.MessagingComponent;
  */
 public interface PostOffice extends MessagingComponent
 {   
-   boolean addDestination(String address, boolean temporary) throws Exception;
+   boolean addDestination(SimpleString address, boolean temporary) throws Exception;
    
-   boolean removeDestination(String address, boolean temporary) throws Exception;
+   boolean removeDestination(SimpleString address, boolean temporary) throws Exception;
    
-   boolean containsDestination(String address);
+   boolean containsDestination(SimpleString address);
 
-   Binding addBinding(String address, String queueName, Filter filter,
+   Binding addBinding(SimpleString address, SimpleString queueName, Filter filter,
                       boolean durable, boolean temporary) throws Exception;
    
-   Binding removeBinding(String queueName) throws Exception;
+   Binding removeBinding(SimpleString queueName) throws Exception;
    
-   List<Binding> getBindingsForAddress(String address) throws Exception;
+   List<Binding> getBindingsForAddress(SimpleString address) throws Exception;
    
-   Binding getBinding(String queueName) throws Exception;
+   Binding getBinding(SimpleString queueName) throws Exception;
       
-   List<MessageReference> route(String address, Message message) throws Exception;
-   
-  // void routeFromCluster(String address, Message message) throws Exception;
+   List<MessageReference> route(SimpleString address, Message message) throws Exception;
    
    //Flow control
    
-   FlowController getFlowController(String address);
+   FlowController getFlowController(SimpleString address);
      
    //For testing only
-   Map<String, List<Binding>> getMappings();
+   Map<SimpleString, List<Binding>> getMappings();
 
-   Set<String> listAllDestinations();
+   Set<SimpleString> listAllDestinations();
 }

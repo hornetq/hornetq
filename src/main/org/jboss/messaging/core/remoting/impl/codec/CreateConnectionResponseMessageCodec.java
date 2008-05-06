@@ -11,6 +11,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CREAT
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.version.impl.VersionImpl;
 import org.jboss.messaging.core.version.Version;
+import org.jboss.messaging.util.DataConstants;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -37,12 +38,9 @@ public class CreateConnectionResponseMessageCodec extends AbstractPacketCodec<Cr
 
    public int getBodyLength(final CreateConnectionResponse packet) throws Exception
    {
-      return LONG_LENGTH +
+      return DataConstants.SIZE_LONG +
               sizeof(packet.getServerVersion().getVersionName()) +
-              INT_LENGTH +
-              INT_LENGTH +
-              INT_LENGTH +
-              INT_LENGTH +
+              4 * DataConstants.SIZE_INT +
               sizeof(packet.getServerVersion().getVersionSuffix());
    }
 

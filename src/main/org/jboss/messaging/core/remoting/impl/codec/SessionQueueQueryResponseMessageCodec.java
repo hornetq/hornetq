@@ -7,8 +7,11 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_QUEUEQUERY_RESP;
+import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -38,9 +41,10 @@ public class SessionQueueQueryResponseMessageCodec extends AbstractPacketCodec<S
 
    public int getBodyLength(final SessionQueueQueryResponseMessage packet) throws Exception
    {   	
-   	String filterString  = packet.getFilterString();
-      String address = packet.getAddress();
-   	int bodyLength = 3 * BOOLEAN_LENGTH + 3 * INT_LENGTH + sizeof(filterString) + sizeof(address);
+   	SimpleString filterString  = packet.getFilterString();
+      SimpleString address = packet.getAddress();
+   	int bodyLength = 3 * SIZE_BOOLEAN + 3 * SIZE_INT + SimpleString.sizeofNullableString(filterString) +
+   	SimpleString.sizeofNullableString(address);
    	return bodyLength;
    }
    
@@ -53,8 +57,8 @@ public class SessionQueueQueryResponseMessageCodec extends AbstractPacketCodec<S
       int maxSize = message.getMaxSize();
       int consumerCount = message.getConsumerCount();
       int messageCount = message.getMessageCount();
-      String filterString  = message.getFilterString();
-      String address = message.getAddress();
+      SimpleString filterString  = message.getFilterString();
+      SimpleString address = message.getAddress();
      
       out.putBoolean(exists);
       out.putBoolean(durable);
@@ -62,8 +66,8 @@ public class SessionQueueQueryResponseMessageCodec extends AbstractPacketCodec<S
       out.putInt(maxSize);
       out.putInt(consumerCount);
       out.putInt(messageCount);
-      out.putNullableString(filterString);
-      out.putNullableString(address);
+      out.putNullableSimpleString(filterString);
+      out.putNullableSimpleString(address);
    }
 
    @Override
@@ -76,8 +80,8 @@ public class SessionQueueQueryResponseMessageCodec extends AbstractPacketCodec<S
       int maxSize = in.getInt();
       int consumerCount = in.getInt();
       int messageCount = in.getInt();
-      String filterString  = in.getNullableString();
-      String address = in.getNullableString();
+      SimpleString filterString  = in.getNullableSimpleString();
+      SimpleString address = in.getNullableSimpleString();
     
       if (exists)
       {

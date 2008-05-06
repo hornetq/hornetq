@@ -26,6 +26,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
+import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TokenBucketLimiter;
 
 /**
@@ -48,7 +49,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
    private boolean trace = log.isTraceEnabled();
    
-   private final String address;
+   private final SimpleString address;
    
    private final long serverTargetID;
    
@@ -71,7 +72,7 @@ public class ClientProducerImpl implements ClientProducerInternal
    // Constructors ---------------------------------------------------------------------------------
       
    public ClientProducerImpl(final ClientSessionInternal session, final long serverTargetID,
-   		                    final String address,
+   		                    final SimpleString address,
    		                    final RemotingConnection remotingConnection, final int windowSize,
    		                    final int maxRate)
    {   	
@@ -97,7 +98,7 @@ public class ClientProducerImpl implements ClientProducerInternal
    
    // ClientProducer implementation ----------------------------------------------------------------
 
-   public String getAddress()
+   public SimpleString getAddress()
    {
    	return address;
    }
@@ -109,14 +110,14 @@ public class ClientProducerImpl implements ClientProducerInternal
       doSend(null, msg);
    }
    
-   public void send(final String address, final Message msg) throws MessagingException
+   public void send(final SimpleString address, final Message msg) throws MessagingException
    {
       checkClosed();
       
       doSend(address, msg);
    }
    
-   private void doSend(final String address, final Message msg) throws MessagingException
+   private void doSend(final SimpleString address, final Message msg) throws MessagingException
    {
    	ProducerSendMessage message = new ProducerSendMessage(address, msg.copy());
    	

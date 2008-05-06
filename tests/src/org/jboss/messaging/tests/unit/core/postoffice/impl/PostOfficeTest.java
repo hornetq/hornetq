@@ -36,6 +36,7 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeQueueFactory;
 import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -57,7 +58,7 @@ public class PostOfficeTest extends UnitTestCase
       PostOffice po = new PostOfficeImpl(pm, qf, false);
       
       final long id = 324;
-      final String name = "wibb22";
+      final SimpleString name = new SimpleString("wibb22");
       final Filter filter = new FakeFilter();
       final boolean durable = true;
       final boolean temporary = true;
@@ -66,7 +67,7 @@ public class PostOfficeTest extends UnitTestCase
       
       EasyMock.expect(qf.createQueue(-1, name, filter, durable, temporary)).andReturn(queue);
             
-      final String condition = "queue.wibble";
+      final SimpleString condition = new SimpleString("queue.wibble");
 
       Binding expected = new BindingImpl(condition, queue);
       
@@ -106,7 +107,7 @@ public class PostOfficeTest extends UnitTestCase
       PostOffice po = new PostOfficeImpl(pm, qf, false);
       
       final long id = 324;
-      final String name = "wibb22";
+      final SimpleString name = new SimpleString("wibb22");
       final Filter filter = new FakeFilter();
       final boolean durable = true;
       final boolean temporary = true;
@@ -115,7 +116,7 @@ public class PostOfficeTest extends UnitTestCase
       
       EasyMock.expect(qf.createQueue(-1, name, filter, durable, temporary)).andReturn(queue);
             
-      final String condition = "queue.wibble";
+      final SimpleString condition = new SimpleString("queue.wibble");
  
       Binding expected = new BindingImpl(condition, queue);
       
@@ -166,17 +167,24 @@ public class PostOfficeTest extends UnitTestCase
       
       PostOffice po = new PostOfficeImpl(pm, qf, false);
       
-      final String condition1 = "queue.wibble";      
+      final SimpleString condition1 = new SimpleString("queue.wibble");      
                 
-      po.addBinding(condition1, "queue1", null, false, false);      
-      Map<String, List<Binding>> mappings = po.getMappings();      
+      SimpleString squeue1 = new SimpleString("queue1");
+      SimpleString squeue2 = new SimpleString("queue2");
+      SimpleString squeue3 = new SimpleString("queue3");
+      SimpleString squeue4 = new SimpleString("queue4");
+      SimpleString squeue5 = new SimpleString("queue5");
+      SimpleString squeue6 = new SimpleString("queue6");
+      
+      po.addBinding(condition1, squeue1, null, false, false);      
+      Map<SimpleString, List<Binding>> mappings = po.getMappings();      
       assertEquals(1, mappings.size());
       
-      po.addBinding(condition1, "queue2", null, false, false);     
+      po.addBinding(condition1, squeue2, null, false, false);     
       mappings = po.getMappings();      
       assertEquals(1, mappings.size());
       
-      po.addBinding(condition1, "queue3", null, false, false); 
+      po.addBinding(condition1, squeue3, null, false, false); 
       mappings = po.getMappings();      
       assertEquals(1, mappings.size());
       
@@ -186,53 +194,53 @@ public class PostOfficeTest extends UnitTestCase
       
       Binding binding1 = bindings.get(0);
       Queue queue1 = binding1.getQueue();
-      assertEquals("queue1", queue1.getName());
+      assertEquals(squeue1, queue1.getName());
             
       Binding binding2 = bindings.get(1);
       Queue queue2 = binding2.getQueue();
-      assertEquals("queue2", queue2.getName());
+      assertEquals(squeue2, queue2.getName());
       
       Binding binding3 = bindings.get(2);
       Queue queue3 = binding3.getQueue();
-      assertEquals("queue3", queue3.getName());
+      assertEquals(squeue3, queue3.getName());
       
-      final String condition2 = "queue.wibble2"; 
+      final SimpleString condition2 = new SimpleString("queue.wibble2"); 
       
-      po.addBinding(condition2, "queue4", null, false, false);       
+      po.addBinding(condition2, squeue4, null, false, false);       
       mappings = po.getMappings();      
       assertEquals(2, mappings.size());
       
-      po.addBinding(condition2, "queue5", null, false, false); 
+      po.addBinding(condition2, squeue5, null, false, false); 
       mappings = po.getMappings();      
       assertEquals(2, mappings.size());
       
-      final String condition3 = "topic.wibblexyz"; 
+      final SimpleString condition3 = new SimpleString("topic.wibblexyz"); 
       
-      po.addBinding(condition3, "queue6", null, false, false);       
+      po.addBinding(condition3, squeue6, null, false, false);       
       mappings = po.getMappings();      
       assertEquals(3, mappings.size());
       
-      po.removeBinding("queue6");
+      po.removeBinding(squeue6);
       mappings = po.getMappings();      
       assertEquals(2, mappings.size());
       
-      po.removeBinding("queue4");
+      po.removeBinding(squeue4);
       mappings = po.getMappings();      
       assertEquals(2, mappings.size());
       
-      po.removeBinding("queue5");
+      po.removeBinding(squeue5);
       mappings = po.getMappings();      
       assertEquals(1, mappings.size());
       
-      po.removeBinding("queue1");
+      po.removeBinding(squeue1);
       mappings = po.getMappings();      
       assertEquals(1, mappings.size());
       
-      po.removeBinding("queue2");
+      po.removeBinding(squeue2);
       mappings = po.getMappings();      
       assertEquals(1, mappings.size());
       
-      po.removeBinding("queue3");
+      po.removeBinding(squeue3);
       mappings = po.getMappings();      
       assertEquals(0, mappings.size());      
    }
@@ -242,9 +250,9 @@ public class PostOfficeTest extends UnitTestCase
    
    class FakeFilter implements Filter
    {
-		public String getFilterString()
+		public SimpleString getFilterString()
 		{
-			return "aardvark";
+			return new SimpleString("aardvark");
 		}
 
 		public boolean match(Message message)

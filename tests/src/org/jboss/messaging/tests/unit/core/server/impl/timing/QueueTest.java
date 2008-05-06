@@ -34,6 +34,7 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.impl.QueueImpl;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeConsumer;
 import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -80,7 +81,7 @@ public class QueueTest extends UnitTestCase
    
    public void testScheduledNoConsumer() throws Exception
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, new SimpleString("queue1"), null, false, true, false, -1, scheduledExecutor);
            
       //Send one scheduled
       
@@ -146,7 +147,7 @@ public class QueueTest extends UnitTestCase
    
    private void testScheduled(boolean direct)
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, new SimpleString("queue1"), null, false, true, false, -1, scheduledExecutor);
       
       FakeConsumer consumer = null;
       
@@ -243,7 +244,7 @@ public class QueueTest extends UnitTestCase
    
    public void testDeleteAllReferences() throws Exception
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, new SimpleString("queue1"), null, false, true, false, -1, scheduledExecutor);
       
       StorageManager storageManager = EasyMock.createStrictMock(StorageManager.class);
       

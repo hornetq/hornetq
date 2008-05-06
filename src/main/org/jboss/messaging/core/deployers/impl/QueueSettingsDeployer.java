@@ -21,10 +21,10 @@
    */
 package org.jboss.messaging.core.deployers.impl;
 
-import org.jboss.messaging.core.deployers.Deployer;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.util.SimpleString;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -91,7 +91,7 @@ public class QueueSettingsDeployer extends XmlDeployer
          }
          else if (DLQ_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
-            String queueName = child.getTextContent();
+            SimpleString queueName = new SimpleString(child.getTextContent());
             
             if (postOffice.getBinding(queueName) == null)
             {
@@ -102,7 +102,7 @@ public class QueueSettingsDeployer extends XmlDeployer
          }
          else if (EXPIRY_QUEUE_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
-            String queueName = child.getTextContent();
+         	SimpleString queueName = new SimpleString(child.getTextContent());
             
             if (postOffice.getBinding(queueName) == null)
             {

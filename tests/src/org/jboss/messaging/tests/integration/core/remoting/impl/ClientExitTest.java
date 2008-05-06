@@ -37,6 +37,7 @@ import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.tests.unit.core.util.SpawnedVMSupport;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * A test that makes sure that a Messaging client gracefully exists after the last connection is
@@ -56,7 +57,7 @@ public class ClientExitTest extends TestCase
 
    public static final String MESSAGE_TEXT = "kolowalu";
 
-   public static final String QUEUE = "ClientExitTestQueue";
+   public static final SimpleString QUEUE = new SimpleString("ClientExitTestQueue");
       
    // Static ---------------------------------------------------------------------------------------
 

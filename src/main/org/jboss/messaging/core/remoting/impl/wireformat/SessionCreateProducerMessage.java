@@ -6,6 +6,8 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+import org.jboss.messaging.util.SimpleString;
+
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -18,7 +20,7 @@ public class SessionCreateProducerMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private final String address;
+   private final SimpleString address;
    
    private final int windowSize;
    
@@ -28,7 +30,7 @@ public class SessionCreateProducerMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateProducerMessage(final String address, final int windowSize, final int maxRate)
+   public SessionCreateProducerMessage(final SimpleString address, final int windowSize, final int maxRate)
    {
       super(PacketType.SESS_CREATEPRODUCER);
 
@@ -52,7 +54,7 @@ public class SessionCreateProducerMessage extends PacketImpl
       return buff.toString();
    }
 
-   public String getAddress()
+   public SimpleString getAddress()
    {
       return address;
    }

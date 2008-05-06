@@ -7,8 +7,10 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PING;
+import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
+import org.jboss.messaging.util.DataConstants;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -36,7 +38,7 @@ public class PingCodec extends AbstractPacketCodec<Ping>
 
    public int getBodyLength(final Ping packet) throws Exception
    {
-   	return LONG_LENGTH;
+   	return SIZE_LONG;
    }
    
    @Override

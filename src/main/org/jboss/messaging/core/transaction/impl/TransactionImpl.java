@@ -38,6 +38,7 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -98,7 +99,7 @@ public class TransactionImpl implements Transaction
 		return id;
 	}
 
-	public void addMessage(final String address, final Message message)
+	public void addMessage(final SimpleString address, final Message message)
 			throws Exception
 	{
 		if (state != State.ACTIVE)

@@ -7,8 +7,11 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEPRODUCER;
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
+import org.jboss.messaging.util.DataConstants;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -39,9 +42,9 @@ public class SessionCreateProducerMessageCodec extends
 
    public int getBodyLength(final SessionCreateProducerMessage packet) throws Exception
    {   	
-   	String address = packet.getAddress();
+   	SimpleString address = packet.getAddress();
       
-      int bodyLength = sizeof(address) + 2 * INT_LENGTH;
+      int bodyLength = SimpleString.sizeofString(address) + 2 * SIZE_INT;
       
       return bodyLength;
    }
@@ -49,9 +52,9 @@ public class SessionCreateProducerMessageCodec extends
    @Override
    protected void encodeBody(final SessionCreateProducerMessage request, final RemotingBuffer out) throws Exception
    {
-      String address = request.getAddress();
+      SimpleString address = request.getAddress();
      
-      out.putNullableString(address);
+      out.putSimpleString(address);
       out.putInt(request.getWindowSize());
       out.putInt(request.getMaxRate());
    }
@@ -60,7 +63,7 @@ public class SessionCreateProducerMessageCodec extends
    protected SessionCreateProducerMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      String address = in.getNullableString();
+      SimpleString address = in.getSimpleString();
       
       int windowSize = in.getInt();
       

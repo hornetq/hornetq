@@ -56,13 +56,21 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryRespon
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.SecurityStore;
-import org.jboss.messaging.core.server.*;
+import org.jboss.messaging.core.server.Delivery;
+import org.jboss.messaging.core.server.HandleStatus;
+import org.jboss.messaging.core.server.ObjectIDGenerator;
+import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.ServerConnection;
+import org.jboss.messaging.core.server.ServerConsumer;
+import org.jboss.messaging.core.server.ServerProducer;
+import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.ConcurrentHashSet;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * Session implementation
@@ -298,10 +306,10 @@ public class ServerSessionImpl implements ServerSession
       });
    }
 
-   public void send(final String address, final Message msg) throws Exception
+   public void send(final SimpleString address, final Message msg) throws Exception
    {
       //check the user has write access to this address
-      securityStore.check(address, CheckType.WRITE, connection);
+      securityStore.check(address.toString(), CheckType.WRITE, connection);
 
       msg.setMessageID(persistenceManager.generateMessageID());
 
@@ -804,9 +812,9 @@ public class ServerSessionImpl implements ServerSession
       return resourceManager.setTimeoutSeconds(timeoutSeconds);
    }
 
-   public void addDestination(final String address, final boolean temporary) throws Exception
+   public void addDestination(final SimpleString address, final boolean temporary) throws Exception
    {
-      securityStore.check(address, CheckType.CREATE, connection);
+      securityStore.check(address.toString(), CheckType.CREATE, connection);
 
       if (!postOffice.addDestination(address, temporary))
       {
@@ -821,9 +829,9 @@ public class ServerSessionImpl implements ServerSession
       }
    }
 
-   public void removeDestination(final String address, final boolean temporary) throws Exception
+   public void removeDestination(final SimpleString address, final boolean temporary) throws Exception
    {
-   	securityStore.check(address, CheckType.CREATE, connection);
+   	securityStore.check(address.toString(), CheckType.CREATE, connection);
 
       if (!postOffice.removeDestination(address, temporary))
       {
@@ -838,15 +846,15 @@ public class ServerSessionImpl implements ServerSession
       }
    }
 
-   public void createQueue(final String address, final String queueName,
-         final String filterString, boolean durable, final boolean temporary) throws Exception
+   public void createQueue(final SimpleString address, final SimpleString queueName,
+         final SimpleString filterString, boolean durable, final boolean temporary) throws Exception
    {
       //make sure the user has privileges to create this address
       if (!postOffice.containsDestination(address))
       {
          try
          {
-         	securityStore.check(address, CheckType.CREATE, connection);
+         	securityStore.check(address.toString(), CheckType.CREATE, connection);
          }
          catch (MessagingException e)
          {
@@ -883,7 +891,7 @@ public class ServerSessionImpl implements ServerSession
       }
    }
 
-   public void deleteQueue(final String queueName) throws Exception
+   public void deleteQueue(final SimpleString queueName) throws Exception
    {
       Binding binding = postOffice.removeBinding(queueName);
 
@@ -910,7 +918,7 @@ public class ServerSessionImpl implements ServerSession
       }
    }
 
-   public SessionCreateConsumerResponseMessage createConsumer(final String queueName, final String filterString,
+   public SessionCreateConsumerResponseMessage createConsumer(final SimpleString queueName, final SimpleString filterString,
                                                               final boolean noLocal, final boolean autoDeleteQueue,
                                                               int windowSize, int maxRate) throws Exception
    {
@@ -921,7 +929,7 @@ public class ServerSessionImpl implements ServerSession
          throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
       }
 
-      securityStore.check(binding.getAddress(), CheckType.READ, connection);
+      securityStore.check(binding.getAddress().toString(), CheckType.READ, connection);
 
       Filter filter = null;
 
@@ -932,11 +940,11 @@ public class ServerSessionImpl implements ServerSession
 
       //Flow control values if specified on queue override those passed in from client
 
-      Integer queueWindowSize = queueSettingsRepository.getMatch(queueName).getConsumerWindowSize();
+      Integer queueWindowSize = queueSettingsRepository.getMatch(queueName.toString()).getConsumerWindowSize();
 
       windowSize = queueWindowSize != null ? queueWindowSize : windowSize;
 
-      Integer queueMaxRate = queueSettingsRepository.getMatch(queueName).getConsumerMaxRate();
+      Integer queueMaxRate = queueSettingsRepository.getMatch(queueName.toString()).getConsumerMaxRate();
 
       maxRate = queueMaxRate != null ? queueMaxRate : maxRate;
 
@@ -971,7 +979,7 @@ public class ServerSessionImpl implements ServerSession
 
          Filter filter = queue.getFilter();
 
-         String filterString = filter == null ? null : filter.getFilterString();
+         SimpleString filterString = filter == null ? null : filter.getFilterString();
 
          response = new SessionQueueQueryResponseMessage(queue.isDurable(), queue.isTemporary(), queue.getMaxSize(),
                                            queue.getConsumerCount(), queue.getMessageCount(),
@@ -994,7 +1002,7 @@ public class ServerSessionImpl implements ServerSession
 
       boolean exists = postOffice.containsDestination(request.getAddress());
 
-      List<String> queueNames = new ArrayList<String>();
+      List<SimpleString> queueNames = new ArrayList<SimpleString>();
 
       if (exists)
       {
@@ -1009,7 +1017,7 @@ public class ServerSessionImpl implements ServerSession
       return new SessionBindingQueryResponseMessage(exists, queueNames);
    }
 
-   public SessionCreateBrowserResponseMessage createBrowser(final String queueName, final String selector)
+   public SessionCreateBrowserResponseMessage createBrowser(final SimpleString queueName, final SimpleString filterString)
          throws Exception
    {
       Binding binding = postOffice.getBinding(queueName);
@@ -1019,9 +1027,10 @@ public class ServerSessionImpl implements ServerSession
          throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
       }
 
-      securityStore.check(binding.getAddress(), CheckType.READ, connection);
+      securityStore.check(binding.getAddress().toString(), CheckType.READ, connection);
 
-      ServerBrowserImpl browser = new ServerBrowserImpl(objectIDGenerator.generateID(), this, binding.getQueue(), selector);
+      ServerBrowserImpl browser = new ServerBrowserImpl(objectIDGenerator.generateID(),
+            this, binding.getQueue(), filterString == null ? null : filterString.toString());
 
       browsers.add(browser);
 
@@ -1039,7 +1048,7 @@ public class ServerSessionImpl implements ServerSession
     * is set and there are not sufficient empty spaces in the queue, or it is overridden by any producer-window_size
     * specified on the queue
     */
-   public SessionCreateProducerResponseMessage createProducer(final String address, final int windowSize,
+   public SessionCreateProducerResponseMessage createProducer(final SimpleString address, final int windowSize,
    		                                                     final int maxRate) throws Exception
    {
    	FlowController flowController = null;

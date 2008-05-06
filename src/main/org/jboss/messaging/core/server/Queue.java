@@ -26,8 +26,9 @@ import java.util.List;
 
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.FlowController;
+import org.jboss.messaging.util.SimpleString;
 
 
 /**
@@ -95,7 +96,7 @@ public interface Queue
    
    boolean isDurable();
    
-   String getName();
+   SimpleString getName();
    
    int getMessagesAdded();
 

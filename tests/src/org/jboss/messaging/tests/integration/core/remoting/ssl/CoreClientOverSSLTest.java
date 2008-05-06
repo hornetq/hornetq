@@ -36,6 +36,7 @@ import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.tests.unit.core.util.SpawnedVMSupport;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -48,7 +49,7 @@ public class CoreClientOverSSLTest extends TestCase
    // Constants -----------------------------------------------------
 
    public static final String MESSAGE_TEXT_FROM_CLIENT = "CoreClientOverSSLTest from client";
-   public static final String QUEUE = "QueueOverSSL";
+   public static final SimpleString QUEUE = new SimpleString("QueueOverSSL");
    public static final int SSL_PORT = 5402;
 
    // Static --------------------------------------------------------

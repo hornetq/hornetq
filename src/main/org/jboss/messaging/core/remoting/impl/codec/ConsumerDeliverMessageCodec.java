@@ -7,10 +7,13 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONS_DELIVER;
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
 
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerDeliverMessage;
+import org.jboss.messaging.util.DataConstants;
 import org.jboss.messaging.util.StreamUtils;
 
 /**
@@ -43,7 +46,7 @@ public class ConsumerDeliverMessageCodec extends AbstractPacketCodec<ConsumerDel
    {
    	encodedMsg = StreamUtils.toBytes(packet.getMessage());
    	
-   	return INT_LENGTH + encodedMsg.length + LONG_LENGTH; 
+   	return SIZE_INT + encodedMsg.length + SIZE_LONG; 
    }
    
    @Override

@@ -9,6 +9,7 @@ package org.jboss.messaging.core.remoting.impl.codec;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_QUEUEQUERY;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -38,23 +39,23 @@ public class SessionQueueQueryMessageCodec extends AbstractPacketCodec<SessionQu
 
    public int getBodyLength(final SessionQueueQueryMessage packet) throws Exception
    {   	
-   	String queueName = packet.getQueueName();       
-      int bodyLength = sizeof(queueName);
+   	SimpleString queueName = packet.getQueueName();       
+      int bodyLength = SimpleString.sizeofString(queueName);
    	return bodyLength;
    }
    
    @Override
    protected void encodeBody(final SessionQueueQueryMessage message, final RemotingBuffer out) throws Exception
    {
-      String queueName = message.getQueueName();
-      out.putNullableString(queueName);
+      SimpleString queueName = message.getQueueName();
+      out.putSimpleString(queueName);
    }
 
    @Override
    protected SessionQueueQueryMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      String queueName = in.getNullableString();    
+      SimpleString queueName = in.getSimpleString();    
       return new SessionQueueQueryMessage(queueName);
    }
 

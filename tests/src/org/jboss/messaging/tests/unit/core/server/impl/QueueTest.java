@@ -40,6 +40,7 @@ import org.jboss.messaging.core.server.impl.RoundRobinDistributionPolicy;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeConsumer;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeFilter;
 import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -54,11 +55,13 @@ public class QueueTest extends UnitTestCase
 	
 	private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
+	private static final SimpleString queue1 = new SimpleString("queue1");
+	
    public void testID()
    {
       final long id = 123;
       
-      Queue queue = new QueueImpl(id, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(id, queue1, null, false, true, false, -1, scheduledExecutor);
       
       assertEquals(id, queue.getPersistenceID());
       
@@ -71,7 +74,7 @@ public class QueueTest extends UnitTestCase
    
    public void testName()
    {
-      final String name = "oobblle";
+      final SimpleString name = new SimpleString("oobblle");
       
       Queue queue = new QueueImpl(1, name, null, false, true, false, -1, scheduledExecutor);
       
@@ -80,33 +83,33 @@ public class QueueTest extends UnitTestCase
    
    public void testClustered()
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
       
       assertFalse(queue.isClustered());
       
-      queue = new QueueImpl(1, "queue1", null, true, true, false, -1, scheduledExecutor);
+      queue = new QueueImpl(1, queue1, null, true, true, false, -1, scheduledExecutor);
       
       assertTrue(queue.isClustered());
    }
    
    public void testDurable()
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, false, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, false, false, -1, scheduledExecutor);
       
       assertFalse(queue.isDurable());
       
-      queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
       
       assertTrue(queue.isDurable());
    }
    
    public void testTemporary()
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, false, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, false, false, -1, scheduledExecutor);
       
       assertFalse(queue.isTemporary());
       
-      queue = new QueueImpl(1, "queue1", null, false, false, true, -1, scheduledExecutor);
+      queue = new QueueImpl(1, queue1, null, false, false, true, -1, scheduledExecutor);
       
       assertTrue(queue.isTemporary());
    }
@@ -117,7 +120,7 @@ public class QueueTest extends UnitTestCase
       
       final int id = 123;
       
-      Queue queue = new QueueImpl(id, "queue1", null, false, true, false, maxSize, scheduledExecutor);
+      Queue queue = new QueueImpl(id, queue1, null, false, true, false, maxSize, scheduledExecutor);
       
       assertEquals(id, queue.getPersistenceID());
       
@@ -138,7 +141,7 @@ public class QueueTest extends UnitTestCase
       
       Consumer cons3 = new FakeConsumer();
       
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
       
       assertEquals(0, queue.getConsumerCount());
       
@@ -179,7 +182,7 @@ public class QueueTest extends UnitTestCase
    
    public void testGetSetDistributionPolicy()
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
       
       assertNotNull(queue.getDistributionPolicy());
       
@@ -194,7 +197,7 @@ public class QueueTest extends UnitTestCase
    
    public void testGetSetFilter()
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
       
       assertNull(queue.getFilter());
       
@@ -204,21 +207,21 @@ public class QueueTest extends UnitTestCase
       
       assertEquals(filter, queue.getFilter());
       
-      queue = new QueueImpl(1, "queue1", filter, false, true, false, -1, scheduledExecutor);
+      queue = new QueueImpl(1, queue1, filter, false, true, false, -1, scheduledExecutor);
       
       assertEquals(filter, queue.getFilter());
    }
    
    public void testDefaultMaxSize()
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
       
       assertEquals(-1, queue.getMaxSize());        
    }
    
    public void testSimpleAddLast()
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
       
       final int numMessages = 10;
       
@@ -237,7 +240,7 @@ public class QueueTest extends UnitTestCase
    
    public void testSimpleDirectDelivery()
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
       
       FakeConsumer consumer = new FakeConsumer();
       
@@ -265,7 +268,7 @@ public class QueueTest extends UnitTestCase
    
    public void testSimpleNonDirectDelivery()
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
       
       final int numMessages = 10;
       
@@ -303,7 +306,7 @@ public class QueueTest extends UnitTestCase
    
    public void testBusyConsumer()
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
       
       FakeConsumer consumer = new FakeConsumer();
       
@@ -347,7 +350,7 @@ public class QueueTest extends UnitTestCase
    
    public void testBusyConsumerThenAddMoreMessages()
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
       
       FakeConsumer consumer = new FakeConsumer();
       
@@ -414,7 +417,7 @@ public class QueueTest extends UnitTestCase
          
    public void testAddFirstAddLast()
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
       
       final int numMessages = 10;
       
@@ -469,7 +472,7 @@ public class QueueTest extends UnitTestCase
    
    public void testChangeConsumersAndDeliver() throws Exception
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
                   
       final int numMessages = 10;
       
@@ -620,7 +623,7 @@ public class QueueTest extends UnitTestCase
    
    public void testConsumerReturningNull()
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
       
       class NullConsumer implements Consumer
       {
@@ -648,7 +651,7 @@ public class QueueTest extends UnitTestCase
    
    public void testRoundRobinWithQueueing()
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
       
       assertTrue(queue.getDistributionPolicy() instanceof RoundRobinDistributionPolicy);
                   
@@ -693,7 +696,7 @@ public class QueueTest extends UnitTestCase
    
    public void testRoundRobinDirect()
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
       
       assertTrue(queue.getDistributionPolicy() instanceof RoundRobinDistributionPolicy);
                   
@@ -736,7 +739,7 @@ public class QueueTest extends UnitTestCase
    
    public void testDeleteAllReferences() throws Exception
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
       
       StorageManager storageManager = EasyMock.createStrictMock(StorageManager.class);
       
@@ -822,7 +825,7 @@ public class QueueTest extends UnitTestCase
    {
       final int maxSize = 20;
       
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, maxSize, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, maxSize, scheduledExecutor);
       
       List<MessageReference> refs = new ArrayList<MessageReference>();
       
@@ -896,7 +899,7 @@ public class QueueTest extends UnitTestCase
    
    public void testWithPriorities()
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
       
       final int numMessages = 10;
       
@@ -963,7 +966,7 @@ public class QueueTest extends UnitTestCase
    
    public void testConsumerWithFilterAddAndRemove()
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
       
       Filter filter = new FakeFilter("fruit", "orange");
       
@@ -972,7 +975,7 @@ public class QueueTest extends UnitTestCase
    
    public void testList()
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
       
       final int numMessages = 20;
       
@@ -996,7 +999,7 @@ public class QueueTest extends UnitTestCase
    
    public void testListWithFilter()
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
       
       final int numMessages = 20;
       
@@ -1062,7 +1065,7 @@ public class QueueTest extends UnitTestCase
    
    public void testConsumeWithFiltersAddAndRemoveConsumer() throws Exception
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
       
       Filter filter = new FakeFilter("fruit", "orange");
       
@@ -1135,7 +1138,7 @@ public class QueueTest extends UnitTestCase
    
    private void testConsumerWithFilters(boolean direct) throws Exception
    {
-      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
       
       Filter filter = new FakeFilter("fruit", "orange");
       

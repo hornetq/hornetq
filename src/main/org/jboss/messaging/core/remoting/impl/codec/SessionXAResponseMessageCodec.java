@@ -6,8 +6,12 @@
  */
 package org.jboss.messaging.core.remoting.impl.codec;
 
+import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
+import org.jboss.messaging.util.DataConstants;
 
 
 /**
@@ -38,7 +42,7 @@ public class SessionXAResponseMessageCodec extends AbstractPacketCodec<SessionXA
 
    public int getBodyLength(final SessionXAResponseMessage packet) throws Exception
    {   	
-   	int bodyLength = BOOLEAN_LENGTH + INT_LENGTH + sizeof(packet.getMessage());
+   	int bodyLength = SIZE_BOOLEAN + SIZE_INT + sizeof(packet.getMessage());
    	
    	return bodyLength;
    }

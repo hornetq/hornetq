@@ -6,6 +6,8 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,6 +21,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
+import org.jboss.messaging.util.DataConstants;
 
 /**
  * 
@@ -63,7 +66,7 @@ public class MessagingCodec extends CumulativeProtocolDecoder implements
    {
       int start = in.position();
 
-      if (in.remaining() <= AbstractPacketCodec.INT_LENGTH)
+      if (in.remaining() <= SIZE_INT)
       {
          in.position(start);
          return false;

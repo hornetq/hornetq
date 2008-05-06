@@ -21,23 +21,30 @@
    */
 package org.jboss.messaging.example;
 
-import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.impl.MessagingServerImpl;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.remoting.TransportType;
-import org.jboss.messaging.core.client.*;
-import org.jboss.messaging.core.client.impl.LocationImpl;
-import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
+import java.util.HashSet;
+
+import org.jboss.messaging.core.client.ClientConnection;
+import org.jboss.messaging.core.client.ClientConnectionFactory;
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ConnectionParams;
+import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
+import org.jboss.messaging.core.client.impl.LocationImpl;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.core.security.JBMSecurityManager;
+import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.security.CheckType;
+import org.jboss.messaging.core.security.JBMSecurityManager;
+import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
-
-import java.util.HashSet;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * A simple embedded server is started with an INVM transport, a message is sentr and received.
@@ -74,7 +81,10 @@ public class EmbeddedExample
          //start the server
          messagingServer.start();
          //add a new binding
-         messagingServer.getPostOffice().addBinding("atestq", "atestq", null, false, false);
+         
+         SimpleString atestq = new SimpleString("atestq");
+         
+         messagingServer.getPostOffice().addBinding(atestq, atestq, null, false, false);
 
          //then we create a client as normal
          Location location = new LocationImpl(0);
@@ -83,12 +93,12 @@ public class EmbeddedExample
 
          clientConnection = connectionFactory.createConnection();
          ClientSession clientSession = clientConnection.createClientSession(false, true, true, 100, true, false);
-         ClientProducer clientProducer = clientSession.createProducer("atestq");
+         ClientProducer clientProducer = clientSession.createProducer(atestq);
          Message message = new MessageImpl(JBossTextMessage.TYPE, false, 0,
                  System.currentTimeMillis(), (byte) 1);
          message.setPayload("Hello!".getBytes());
          clientProducer.send(message);
-         ClientConsumer clientConsumer = clientSession.createConsumer("atestq", null, false, false, false);
+         ClientConsumer clientConsumer = clientSession.createConsumer(atestq, null, false, false, false);
          clientConnection.start();
          Message msg = clientConsumer.receive(5000);
          System.out.println("msg.getPayload() = " + new String(msg.getPayload()));

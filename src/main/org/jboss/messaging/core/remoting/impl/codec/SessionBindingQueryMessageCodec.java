@@ -9,6 +9,7 @@ package org.jboss.messaging.core.remoting.impl.codec;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BINDINGQUERY;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -38,22 +39,22 @@ public class SessionBindingQueryMessageCodec extends AbstractPacketCodec<Session
 
    public int getBodyLength(final SessionBindingQueryMessage packet) throws Exception
    {
-      return sizeof(packet.getAddress());
+      return SimpleString.sizeofString(packet.getAddress());
    }
    
    @Override
    protected void encodeBody(final SessionBindingQueryMessage message, final RemotingBuffer out) throws Exception
    {
-      String address = message.getAddress();
+      SimpleString address = message.getAddress();
      
-      out.putNullableString(address);
+      out.putSimpleString(address);
    }
 
    @Override
    protected SessionBindingQueryMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      String address = in.getNullableString();
+      SimpleString address = in.getSimpleString();
     
       return new SessionBindingQueryMessage(address);
    }

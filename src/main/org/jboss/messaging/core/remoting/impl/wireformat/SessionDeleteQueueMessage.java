@@ -8,6 +8,8 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_DELETE_QUEUE;
 
+import org.jboss.messaging.util.SimpleString;
+
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -20,13 +22,13 @@ public class SessionDeleteQueueMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private final String queueName;
+   private final SimpleString queueName;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionDeleteQueueMessage(final String queueName)
+   public SessionDeleteQueueMessage(final SimpleString queueName)
    {
       super(SESS_DELETE_QUEUE);
 
@@ -44,7 +46,7 @@ public class SessionDeleteQueueMessage extends PacketImpl
       return buff.toString();
    }
    
-   public String getQueueName()
+   public SimpleString getQueueName()
    {
       return queueName;
    }

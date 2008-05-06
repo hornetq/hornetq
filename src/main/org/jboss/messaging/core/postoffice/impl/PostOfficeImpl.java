@@ -45,6 +45,7 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.ConcurrentSet;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -59,13 +60,13 @@ public class PostOfficeImpl implements PostOffice
    
    //private final int nodeID;
    
-   private final ConcurrentMap<String, List<Binding>> mappings = new ConcurrentHashMap<String, List<Binding>>();
+   private final ConcurrentMap<SimpleString, List<Binding>> mappings = new ConcurrentHashMap<SimpleString, List<Binding>>();
    
-   private final ConcurrentSet<String> destinations = new ConcurrentHashSet<String>();
+   private final ConcurrentSet<SimpleString> destinations = new ConcurrentHashSet<SimpleString>();
    
-   private final ConcurrentMap<String, Binding> nameMap = new ConcurrentHashMap<String, Binding>();
+   private final ConcurrentMap<SimpleString, Binding> nameMap = new ConcurrentHashMap<SimpleString, Binding>();
    
-   private final ConcurrentMap<String, FlowController> flowControllers = new ConcurrentHashMap<String, FlowController>();
+   private final ConcurrentMap<SimpleString, FlowController> flowControllers = new ConcurrentHashMap<SimpleString, FlowController>();
    
    private final QueueFactory queueFactory;
    
@@ -99,7 +100,7 @@ public class PostOfficeImpl implements PostOffice
    
    // PostOffice implementation -----------------------------------------------
 
-   public boolean addDestination(final String address, final boolean temporary) throws Exception
+   public boolean addDestination(final SimpleString address, final boolean temporary) throws Exception
    {      
    	boolean added = destinations.addIfAbsent(address);
    	
@@ -116,7 +117,7 @@ public class PostOfficeImpl implements PostOffice
    	return added;
    }
    
-   public boolean removeDestination(final String address, final boolean temporary) throws Exception
+   public boolean removeDestination(final SimpleString address, final boolean temporary) throws Exception
    {      
       boolean removed = destinations.remove(address);
       
@@ -133,17 +134,17 @@ public class PostOfficeImpl implements PostOffice
       return removed;
    }
    
-   public boolean containsDestination(final String address)
+   public boolean containsDestination(final SimpleString address)
    {
       return destinations.contains(address);
    }
 
-   public Set<String> listAllDestinations()
+   public Set<SimpleString> listAllDestinations()
    {
       return destinations;
    }
 
-   public Binding addBinding(final String address, final String queueName, final Filter filter, 
+   public Binding addBinding(final SimpleString address, final SimpleString queueName, final Filter filter, 
                              final boolean durable, final boolean temporary) throws Exception
    {
       Binding binding = createBinding(address, queueName, filter, durable, temporary);
@@ -158,7 +159,7 @@ public class PostOfficeImpl implements PostOffice
       return binding;      
    }
          
-   public Binding removeBinding(final String queueName) throws Exception
+   public Binding removeBinding(final SimpleString queueName) throws Exception
    {
       Binding binding = removeQueueInMemory(queueName);
       
@@ -170,7 +171,7 @@ public class PostOfficeImpl implements PostOffice
       return binding;
    }
    
-   public List<Binding> getBindingsForAddress(final String address)
+   public List<Binding> getBindingsForAddress(final SimpleString address)
    {
       List<Binding> bindings = mappings.get(address);
       
@@ -184,12 +185,12 @@ public class PostOfficeImpl implements PostOffice
       }
    }
    
-   public Binding getBinding(final String queueName)
+   public Binding getBinding(final SimpleString queueName)
    {
       return nameMap.get(queueName);
    }
          
-   public List<MessageReference> route(final String address, final Message message) throws Exception
+   public List<MessageReference> route(final SimpleString address, final Message message) throws Exception
    {
       if (checkAllowable)
       {
@@ -244,19 +245,19 @@ public class PostOfficeImpl implements PostOffice
 //      }
 //   }
 
-   public Map<String, List<Binding>> getMappings()
+   public Map<SimpleString, List<Binding>> getMappings()
    {
       return mappings;
    }
 
-   public FlowController getFlowController(String address)
+   public FlowController getFlowController(SimpleString address)
    {   	
    	return flowControllers.get(address);
    }
 
    // Private -----------------------------------------------------------------
    
-   private Binding createBinding(final String address, final String name, final Filter filter,
+   private Binding createBinding(final SimpleString address, final SimpleString name, final Filter filter,
                                  final boolean durable, final boolean temporary)
    {
       Queue queue = queueFactory.createQueue(-1, name, filter, durable, temporary);
@@ -289,7 +290,7 @@ public class PostOfficeImpl implements PostOffice
       binding.getQueue().setFlowController(flowController);
    }
    
-   private Binding removeQueueInMemory(final String queueName) throws Exception
+   private Binding removeQueueInMemory(final SimpleString queueName) throws Exception
    {
       Binding binding = nameMap.remove(queueName);
       
@@ -333,7 +334,7 @@ public class PostOfficeImpl implements PostOffice
    {
       List<Binding> bindings = new ArrayList<Binding>();
       
-      List<String> dests = new ArrayList<String>();
+      List<SimpleString> dests = new ArrayList<SimpleString>();
       
       storageManager.loadBindings(queueFactory, bindings, dests);
    	

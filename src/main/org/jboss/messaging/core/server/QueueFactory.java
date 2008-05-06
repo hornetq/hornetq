@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.server;
 
 import org.jboss.messaging.core.filter.Filter;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -35,6 +36,6 @@ import org.jboss.messaging.core.filter.Filter;
  */
 public interface QueueFactory
 {
-   Queue createQueue(long persistenceID, String name, Filter filter,
+   Queue createQueue(long persistenceID, SimpleString name, Filter filter,
                      boolean durable, boolean temporary);
 }

@@ -6,10 +6,13 @@
  */
 package org.jboss.messaging.core.remoting.impl.codec;
 
+import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
+
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
+import org.jboss.messaging.util.DataConstants;
 
 /**
  * 
@@ -39,7 +42,7 @@ public class SessionXAEndMessageCodec extends AbstractPacketCodec<SessionXAEndMe
 
    public int getBodyLength(final SessionXAEndMessage packet) throws Exception
    {   	
-   	int bodyLength = getXidLength(packet.getXid()) + BOOLEAN_LENGTH;
+   	int bodyLength = getXidLength(packet.getXid()) + SIZE_BOOLEAN;
    	return bodyLength;
    }
    

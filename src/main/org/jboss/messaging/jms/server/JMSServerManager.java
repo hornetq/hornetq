@@ -59,23 +59,23 @@ public interface JMSServerManager extends Serializable
     */
    boolean destroyTopic(String name) throws Exception;
 
-   /**
-    * returns a list of all the JMS queues
-    * @return all queues
-    */
-   Set<String> listAllQueues();
-
-   /**
-    * returns a list of all the JMS topics
-    * @return all topics
-    */
-   Set<String> listAllTopics();
-
-   /**
-    * returns all the temporary destinations
-    * @return all temporary destinations
-    */
-   Set<String> listTemporaryDestinations();
+//   /**
+//    * returns a list of all the JMS queues
+//    * @return all queues
+//    */
+//   Set<String> listAllQueues();
+//
+//   /**
+//    * returns a list of all the JMS topics
+//    * @return all topics
+//    */
+//   Set<String> listAllTopics();
+//
+//   /**
+//    * returns all the temporary destinations
+//    * @return all temporary destinations
+//    */
+//   Set<String> listTemporaryDestinations();
 
    /**
     * Creates a connection factory
@@ -125,61 +125,61 @@ public interface JMSServerManager extends Serializable
     */
    boolean destroyConnectionFactory(String name) throws Exception;
 
-   /**
-    * list all messages for a specific queue
-    * @param queue the queue to inspect
-    * @return all messages
-    * @throws Exception if a problem occurred
-    */
-   public List<Message> listMessagesForQueue(String queue) throws Exception;
-
-   /**
-    * list the messages on a specific queue dependant on the ListType.
-    * ListType.ALL returns all messages
-    * ListType.DURABLE returns all durable messages
-    * ListType.NON_DURABLE returns all non durable messages
-    * @param queue the queue to inspect
-    * @param listType the list type.
-    * @return the messages
-    * @throws Exception if a problem occurred
-    */
-   public List<Message> listMessagesForQueue(String queue, ListType listType) throws Exception;
-
-   /**
-    * list all messages for a specific subscription
-    * @param subscription the subscription to inspect
-    * @return all messages
-    * @throws Exception if a problem occurred
-    */
-   public List<Message> listMessagesForSubscription(String subscription) throws Exception;
-
-   /**
-    * list the messages on a specific subscription dependant on the ListType.
-    * ListType.ALL returns all messages
-    * ListType.DURABLE returns all durable messages
-    * ListType.NON_DURABLE returns all non durable messages
-    * @param subscription the subscription to inspect
-    * @param listType the list type
-    * @return the messages
-    * @throws Exception if a problem occurred
-    */
-   public List<Message> listMessagesForSubscription(String subscription, ListType listType) throws Exception;
-
-   /**
-    * removes a particular message from a queue
-    * @param queue the name of the queue
-    * @param messageId the id of the message to remove
-    * @throws Exception if a problem occurred
-    */
- //  void removeMessageFromQueue(String queue, String messageId) throws Exception;
-
-   /**
-    * removes a particular message from a topic
-    * @param topic the name of the topic
-    * @param messageId the id of the message
-    * @throws Exception if a problem occurred
-    */
- //  void removeMessageFromTopic(String topic, String messageId) throws Exception;
+//   /**
+//    * list all messages for a specific queue
+//    * @param queue the queue to inspect
+//    * @return all messages
+//    * @throws Exception if a problem occurred
+//    */
+//   public List<Message> listMessagesForQueue(String queue) throws Exception;
+//
+//   /**
+//    * list the messages on a specific queue dependant on the ListType.
+//    * ListType.ALL returns all messages
+//    * ListType.DURABLE returns all durable messages
+//    * ListType.NON_DURABLE returns all non durable messages
+//    * @param queue the queue to inspect
+//    * @param listType the list type.
+//    * @return the messages
+//    * @throws Exception if a problem occurred
+//    */
+//   public List<Message> listMessagesForQueue(String queue, ListType listType) throws Exception;
+//
+//   /**
+//    * list all messages for a specific subscription
+//    * @param subscription the subscription to inspect
+//    * @return all messages
+//    * @throws Exception if a problem occurred
+//    */
+//   public List<Message> listMessagesForSubscription(String subscription) throws Exception;
+//
+//   /**
+//    * list the messages on a specific subscription dependant on the ListType.
+//    * ListType.ALL returns all messages
+//    * ListType.DURABLE returns all durable messages
+//    * ListType.NON_DURABLE returns all non durable messages
+//    * @param subscription the subscription to inspect
+//    * @param listType the list type
+//    * @return the messages
+//    * @throws Exception if a problem occurred
+//    */
+//   public List<Message> listMessagesForSubscription(String subscription, ListType listType) throws Exception;
+//
+//   /**
+//    * removes a particular message from a queue
+//    * @param queue the name of the queue
+//    * @param messageId the id of the message to remove
+//    * @throws Exception if a problem occurred
+//    */
+// //  void removeMessageFromQueue(String queue, String messageId) throws Exception;
+//
+//   /**
+//    * removes a particular message from a topic
+//    * @param topic the name of the topic
+//    * @param messageId the id of the message
+//    * @throws Exception if a problem occurred
+//    */
+// //  void removeMessageFromTopic(String topic, String messageId) throws Exception;
 
    /**
     * removes all messages from a particular queue
@@ -194,33 +194,33 @@ public interface JMSServerManager extends Serializable
     * @throws Exception if a problem occurred
     */
    void removeAllMessagesForTopic(String topic) throws Exception;
-
-   /**
-    * moves a message from one queue to another
-    * @param fromQueue the name of the queue to find the message
-    * @param toQueue the name of the queue to move the message to
-    * @param messageID the id of the message
-    * @throws Exception if a problem occurred
-    */
-   //void moveMessage(String fromQueue, String toQueue, String messageID) throws Exception;
-
-   /**
-    * expires a message
-    * @param queue the name of the queue
-    * @param messageId the message id
-    * @throws Exception if a problem occurred
-    */
-   void expireMessage(String queue, String messageId) throws Exception;
-
-   /**
-    * changes the priority of a message.
-    * @param queue the name of the queue
-    * @param messageId the id of the message
-    * @param priority the priority to change the message to
-    * @throws Exception if a problem occurred
-    */
- //  void changeMessagePriority(String queue, String messageId, int priority) throws Exception;
-
+//
+//   /**
+//    * moves a message from one queue to another
+//    * @param fromQueue the name of the queue to find the message
+//    * @param toQueue the name of the queue to move the message to
+//    * @param messageID the id of the message
+//    * @throws Exception if a problem occurred
+//    */
+//   //void moveMessage(String fromQueue, String toQueue, String messageID) throws Exception;
+//
+//   /**
+//    * expires a message
+//    * @param queue the name of the queue
+//    * @param messageId the message id
+//    * @throws Exception if a problem occurred
+//    */
+//   void expireMessage(String queue, String messageId) throws Exception;
+//
+//   /**
+//    * changes the priority of a message.
+//    * @param queue the name of the queue
+//    * @param messageId the id of the message
+//    * @param priority the priority to change the message to
+//    * @throws Exception if a problem occurred
+//    */
+// //  void changeMessagePriority(String queue, String messageId, int priority) throws Exception;
+//
    /**
     * returns how many messages a queue is currently holding
     * @param queue the name of the queue
@@ -236,142 +236,142 @@ public interface JMSServerManager extends Serializable
     * @throws Exception if a problem occurred
     */
    List<SubscriptionInfo> listSubscriptions(String topic) throws Exception;
-
-   /**
-    * lists all the subscriptions for a specific topic for a specific ListType.
-    * ListType.ALL returns all subscriptions
-    * ListType.DURABLE returns all durable subscriptions
-    * ListType.NON_DURABLE returns all non durable subscriptions
-    *
-    * @param topicName the name of the topic
-    * @param listType the list type
-    * @return the subscriptions
-    * @throws Exception if a problem occurred
-    */
-   List<SubscriptionInfo> listSubscriptions(String topicName, ListType listType) throws Exception;
-
-   /**
-    * count the subscriptions a topic currently has
-    * @param topic the name of the topic
-    * @return the number of subscriptions
-    * @throws Exception if a problem occurred
-    */
-   int getSubscriptionsCountForTopic(String topic) throws Exception;
-
-  /**
-    * count the subscriptions a topic currently has of a specific type.
-    * ListType.ALL returns all subscriptions
-    * ListType.DURABLE returns all durable subscriptions
-    * ListType.NON_DURABLE returns all non durable subscriptions
-   *
-    * @param topic the name of the topic
-    * @param listType the list type
-    * @return the number of subscriptions
-    * @throws Exception if a problem occurred
-    */
-   int getSubscriptionsCountForTopic(String topic, ListType listType) throws Exception;
-
-   /**
-    * drops a particular subscription
-    *
-    * @param subscription the id of the subscription
-    * @throws Exception if a problem occurred
-    */
-   void dropSubscription(String subscription) throws Exception;
-
-   /**
-    * count the consumers for a specific queue
-    * @param queue the name of the queue
-    * @return the number of consumers
-    * @throws Exception if a problem occurred
-    */
-   int getConsumerCountForQueue(String queue) throws Exception;
-
-   /**
-    * returns info on all the current active connections
-    * @return the connections info
-    * @throws Exception if a problem occurred
-    */
-   List<ConnectionInfo> getConnections() throws Exception;
-
-   /**
-    * return the connections info for a particular user.
-    * @param user the user
-    * @return the connections info
-    * @throws Exception if a problem occurred
-    */
-   List<ConnectionInfo> getConnectionsForUser(String user) throws Exception;
-
-   /**
-    * drops the connection with the specified client id
-    * @param clientId the client id
-    * @throws Exception if a problem occurred
-    */
-   void dropConnection(long id) throws Exception;
-
-   /**
-    * drop all the connections for a specific user
-    * @param user the user
-    * @throws Exception if a problem occurred
-    */
-   void dropConnectionsForUser(String user) throws Exception;
-
-   /**
-    * list all the sessions info
-    * @return the session info
-    * @throws Exception if a problem occurred
-    */
-   //public List<SessionInfo> getSessions() throws Exception;
-
-   /**
-    * get the session info for a particular connection with the specified client id
-    * @param clientid the client id
-    * @return the session info
-    * @throws Exception if a problem occurred
-    */
-  // public List<SessionInfo> getSessionsForConnection(long id) throws Exception;
-
-   /**
-    * get the session info for a particular user
-    * @param user the user
-    * @return the session info
-    * @throws Exception if a problem occurred
-    */
-  // public List<SessionInfo> getSessionsForUser(String user) throws Exception;
-
-   /**
-    * Start gathering delivery statistics for all queues
-    * @throws Exception if a problem occurred
-    */
-   void startGatheringStatistics() throws Exception;
-
-   /**
-    * Start gathering delivery statistics for a specified queue
-    * @param queue the name of the queue
-    * @throws Exception if a problem occurred
-    */
-   void startGatheringStatisticsForQueue(String queue) throws Exception;
-
-   /**
-    * stop gathering delivery statistics for all queues
-    * @return the delivery statistics at the time of stopping gathering
-    * @throws Exception if a problem occurred
-    */
-   List<MessageStatistics> stopGatheringStatistics() throws Exception;
-
-   /**
-    * stop gathering statistics for a specified queue
-    * @param queue the name of the queue
-    * @return the delivery statistics for that queue at the time of stopping gathering
-    * @throws Exception if a problem occurred
-    */
-   MessageStatistics stopGatheringStatisticsForQueue(String queue) throws Exception;
-
-   /**
-    * list all message delivery statistics. This will include statistics up to the point this method is called.
-    * The gathering of statistics will carry on.
-    * @return the delivery statistics
-    * @throws Exception if a problem occurred
-    */
-   List<MessageStatistics> getStatistics() throws Exception;
+//
+//   /**
+//    * lists all the subscriptions for a specific topic for a specific ListType.
+//    * ListType.ALL returns all subscriptions
+//    * ListType.DURABLE returns all durable subscriptions
+//    * ListType.NON_DURABLE returns all non durable subscriptions
+//    *
+//    * @param topicName the name of the topic
+//    * @param listType the list type
+//    * @return the subscriptions
+//    * @throws Exception if a problem occurred
+//    */
+//   List<SubscriptionInfo> listSubscriptions(String topicName, ListType listType) throws Exception;
+//
+//   /**
+//    * count the subscriptions a topic currently has
+//    * @param topic the name of the topic
+//    * @return the number of subscriptions
+//    * @throws Exception if a problem occurred
+//    */
+//   int getSubscriptionsCountForTopic(String topic) throws Exception;
+//
+//  /**
+//    * count the subscriptions a topic currently has of a specific type.
+//    * ListType.ALL returns all subscriptions
+//    * ListType.DURABLE returns all durable subscriptions
+//    * ListType.NON_DURABLE returns all non durable subscriptions
+//   *
+//    * @param topic the name of the topic
+//    * @param listType the list type
+//    * @return the number of subscriptions
+//    * @throws Exception if a problem occurred
+//    */
+//   int getSubscriptionsCountForTopic(String topic, ListType listType) throws Exception;
+//
+//   /**
+//    * drops a particular subscription
+//    *
+//    * @param subscription the id of the subscription
+//    * @throws Exception if a problem occurred
+//    */
+//   void dropSubscription(String subscription) throws Exception;
+//
+//   /**
+//    * count the consumers for a specific queue
+//    * @param queue the name of the queue
+//    * @return the number of consumers
+//    * @throws Exception if a problem occurred
+//    */
+//   int getConsumerCountForQueue(String queue) throws Exception;
+//
+//   /**
+//    * returns info on all the current active connections
+//    * @return the connections info
+//    * @throws Exception if a problem occurred
+//    */
+//   List<ConnectionInfo> getConnections() throws Exception;
+//
+//   /**
+//    * return the connections info for a particular user.
+//    * @param user the user
+//    * @return the connections info
+//    * @throws Exception if a problem occurred
+//    */
+//   List<ConnectionInfo> getConnectionsForUser(String user) throws Exception;
+//
+//   /**
+//    * drops the connection with the specified client id
+//    * @param clientId the client id
+//    * @throws Exception if a problem occurred
+//    */
+//   void dropConnection(long id) throws Exception;
+//
+//   /**
+//    * drop all the connections for a specific user
+//    * @param user the user
+//    * @throws Exception if a problem occurred
+//    */
+//   void dropConnectionsForUser(String user) throws Exception;
+//
+//   /**
+//    * list all the sessions info
+//    * @return the session info
+//    * @throws Exception if a problem occurred
+//    */
+//   //public List<SessionInfo> getSessions() throws Exception;
+//
+//   /**
+//    * get the session info for a particular connection with the specified client id
+//    * @param clientid the client id
+//    * @return the session info
+//    * @throws Exception if a problem occurred
+//    */
+//  // public List<SessionInfo> getSessionsForConnection(long id) throws Exception;
+//
+//   /**
+//    * get the session info for a particular user
+//    * @param user the user
+//    * @return the session info
+//    * @throws Exception if a problem occurred
+//    */
+//  // public List<SessionInfo> getSessionsForUser(String user) throws Exception;
+//
+//   /**
+//    * Start gathering delivery statistics for all queues
+//    * @throws Exception if a problem occurred
+//    */
+//   void startGatheringStatistics() throws Exception;
+//
+//   /**
+//    * Start gathering delivery statistics for a specified queue
+//    * @param queue the name of the queue
+//    * @throws Exception if a problem occurred
+//    */
+//   void startGatheringStatisticsForQueue(String queue) throws Exception;
+//
+//   /**
+//    * stop gathering delivery statistics for all queues
+//    * @return the delivery statistics at the time of stopping gathering
+//    * @throws Exception if a problem occurred
+//    */
+//   List<MessageStatistics> stopGatheringStatistics() throws Exception;
+//
+//   /**
+//    * stop gathering statistics for a specified queue
+//    * @param queue the name of the queue
+//    * @return the delivery statistics for that queue at the time of stopping gathering
+//    * @throws Exception if a problem occurred
+//    */
+//   MessageStatistics stopGatheringStatisticsForQueue(String queue) throws Exception;
+//
+//   /**
+//    * list all message delivery statistics. This will include statistics up to the point this method is called.
+//    * The gathering of statistics will carry on.
+//    * @return the delivery statistics
+//    * @throws Exception if a problem occurred
+//    */
+//   List<MessageStatistics> getStatistics() throws Exception;
 }

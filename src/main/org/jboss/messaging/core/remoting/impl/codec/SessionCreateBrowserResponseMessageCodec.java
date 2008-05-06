@@ -7,8 +7,10 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEBROWSER_RESP;
+import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserResponseMessage;
+import org.jboss.messaging.util.DataConstants;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -36,7 +38,7 @@ public class SessionCreateBrowserResponseMessageCodec extends
 
    public int getBodyLength(final SessionCreateBrowserResponseMessage packet) throws Exception
    {   	
-      return LONG_LENGTH;
+      return SIZE_LONG;
    }
    
    @Override

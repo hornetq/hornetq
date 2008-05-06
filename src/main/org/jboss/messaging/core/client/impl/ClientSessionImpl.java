@@ -77,7 +77,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessag
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
-import org.jboss.messaging.jms.client.SelectorTranslator;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -139,7 +139,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    private final Map<Long, ClientConsumerInternal> consumers = new HashMap<Long, ClientConsumerInternal>();
    
-   private final Map<String, ClientProducerInternal> producerCache;
+   private final Map<SimpleString, ClientProducerInternal> producerCache;
    
    //For testing only
    private boolean forceNotSameRM;
@@ -190,7 +190,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       
       if (cacheProducers)
       {
-      	producerCache = new HashMap<String, ClientProducerInternal>();
+      	producerCache = new HashMap<SimpleString, ClientProducerInternal>();
       }
       else
       {
@@ -206,7 +206,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    // ClientSession implementation -----------------------------------------------------------------
 
-   public void createQueue(final String address, final String queueName, final String filterString,
+   public void createQueue(final SimpleString address, final SimpleString queueName, final SimpleString filterString,
    		                  final boolean durable, final boolean temporary)
                            throws MessagingException
    {
@@ -217,14 +217,14 @@ public class ClientSessionImpl implements ClientSessionInternal
       remotingConnection.send(serverTargetID, request);
    }
 
-   public void deleteQueue(final String queueName) throws MessagingException
+   public void deleteQueue(final SimpleString queueName) throws MessagingException
    {
       checkClosed();
 
       remotingConnection.send(serverTargetID, new SessionDeleteQueueMessage(queueName));
    }
    
-   public SessionQueueQueryResponseMessage queueQuery(final String queueName) throws MessagingException
+   public SessionQueueQueryResponseMessage queueQuery(final SimpleString queueName) throws MessagingException
    {
       checkClosed();
       
@@ -235,7 +235,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       return response;
    }
    
-   public SessionBindingQueryResponseMessage bindingQuery(final String address) throws MessagingException
+   public SessionBindingQueryResponseMessage bindingQuery(final SimpleString address) throws MessagingException
    {
       checkClosed();
       
@@ -246,7 +246,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       return response;
    }
    
-   public void addDestination(final String address, final boolean temporary) throws MessagingException
+   public void addDestination(final SimpleString address, final boolean temporary) throws MessagingException
    {
       checkClosed();
       
@@ -255,7 +255,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       remotingConnection.send(serverTargetID, request);
    }
    
-   public void removeDestination(final String address, final boolean temporary) throws MessagingException
+   public void removeDestination(final SimpleString address, final boolean temporary) throws MessagingException
    {
       checkClosed();
       
@@ -264,7 +264,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       remotingConnection.send(serverTargetID, request);  
    }
    
-   public ClientConsumer createConsumer(final String queueName, final String filterString, final boolean noLocal,
+   public ClientConsumer createConsumer(final SimpleString queueName, final SimpleString filterString, final boolean noLocal,
                                         final boolean autoDeleteQueue, final boolean direct) throws MessagingException
    {
       checkClosed();
@@ -290,13 +290,11 @@ public class ClientSessionImpl implements ClientSessionInternal
       return consumer;
    }
    
-   public ClientBrowser createBrowser(final String queueName, final String messageSelector) throws MessagingException
+   public ClientBrowser createBrowser(final SimpleString queueName, final SimpleString filterString) throws MessagingException
    {
       checkClosed();
 
-      String coreSelector = SelectorTranslator.convertToJBMFilterString(messageSelector);
-
-      SessionCreateBrowserMessage request = new SessionCreateBrowserMessage(queueName, coreSelector);
+      SessionCreateBrowserMessage request = new SessionCreateBrowserMessage(queueName, filterString);
 
       SessionCreateBrowserResponseMessage response = (SessionCreateBrowserResponseMessage)remotingConnection.send(serverTargetID, request);
 
@@ -307,12 +305,12 @@ public class ClientSessionImpl implements ClientSessionInternal
       return browser;
    }
 
-   public ClientProducer createProducer(final String address) throws MessagingException
+   public ClientProducer createProducer(final SimpleString address) throws MessagingException
    {
       return createProducer(address, defaultProducerWindowSize, defaultProducerMaxRate);
    }
       
-   public ClientProducer createProducer(final String address, final int windowSize, final int maxRate) throws MessagingException
+   public ClientProducer createProducer(final SimpleString address, final int windowSize, final int maxRate) throws MessagingException
    {
       checkClosed();
       
@@ -344,12 +342,12 @@ public class ClientSessionImpl implements ClientSessionInternal
       return producer;
    }
    
-   public ClientProducer createRateLimitedProducer(String address, int rate) throws MessagingException
+   public ClientProducer createRateLimitedProducer(SimpleString address, int rate) throws MessagingException
    {
    	return createProducer(address, -1, rate);
    }
    
-   public ClientProducer createProducerWithWindowSize(String address, int windowSize) throws MessagingException
+   public ClientProducer createProducerWithWindowSize(SimpleString address, int windowSize) throws MessagingException
    {
    	return createProducer(address, windowSize, 0);
    }

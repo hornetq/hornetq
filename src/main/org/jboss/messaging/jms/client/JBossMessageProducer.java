@@ -44,6 +44,7 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.JBossDestination;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -320,7 +321,7 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
          message.setJMSTimestamp(0);
       }
       
-      String address = null;
+      SimpleString address = null;
       
       if (destination == null)
       {
@@ -344,7 +345,7 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
       		}
       	}
       	
-      	address = destination.getAddress();
+      	address = destination.getSimpleAddress();
       }
       
       JBossMessage jbm;

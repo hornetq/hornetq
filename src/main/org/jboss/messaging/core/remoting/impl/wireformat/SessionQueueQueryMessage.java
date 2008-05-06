@@ -6,6 +6,8 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+import org.jboss.messaging.util.SimpleString;
+
 
 /**
  * 
@@ -16,16 +18,16 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
  */
 public class SessionQueueQueryMessage extends PacketImpl
 {
-   private final String queueName;
+   private final SimpleString queueName;
 
-   public SessionQueueQueryMessage(final String queueName)
+   public SessionQueueQueryMessage(final SimpleString queueName)
    {
       super(PacketType.SESS_QUEUEQUERY);
 
       this.queueName = queueName;            
    }
 
-   public String getQueueName()
+   public SimpleString getQueueName()
    {
       return queueName;
    }

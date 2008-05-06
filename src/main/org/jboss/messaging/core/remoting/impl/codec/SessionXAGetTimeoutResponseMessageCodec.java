@@ -6,8 +6,11 @@
  */
 package org.jboss.messaging.core.remoting.impl.codec;
 
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetTimeoutResponseMessage;
+import org.jboss.messaging.util.DataConstants;
 
 
 /**
@@ -38,7 +41,7 @@ public class SessionXAGetTimeoutResponseMessageCodec extends AbstractPacketCodec
 
    public int getBodyLength(final SessionXAGetTimeoutResponseMessage packet) throws Exception
    {   	
-   	return INT_LENGTH;
+   	return SIZE_INT;
    }
    
    @Override

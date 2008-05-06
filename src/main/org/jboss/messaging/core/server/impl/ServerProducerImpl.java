@@ -21,8 +21,6 @@
   */
 package org.jboss.messaging.core.server.impl;
 
-import java.util.UUID;
-
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.postoffice.FlowController;
@@ -31,6 +29,7 @@ import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerReceiveTokensMessage;
 import org.jboss.messaging.core.server.ServerProducer;
 import org.jboss.messaging.core.server.ServerSession;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -47,7 +46,7 @@ public class ServerProducerImpl implements ServerProducer
 	
 	private final ServerSession session;
 	
-	private final String address;
+	private final SimpleString address;
 	
 	private final FlowController flowController;
 	
@@ -57,7 +56,7 @@ public class ServerProducerImpl implements ServerProducer
 	
 	// Constructors ----------------------------------------------------------------
 	
-	public ServerProducerImpl(final long id, final ServerSession session, final String address, 
+	public ServerProducerImpl(final long id, final ServerSession session, final SimpleString address, 
 			                    final PacketSender sender,
 			                    final FlowController flowController) throws Exception
 	{
@@ -85,7 +84,7 @@ public class ServerProducerImpl implements ServerProducer
 	}
 	
 	
-	public void send(final String address, final Message message) throws Exception
+	public void send(final SimpleString address, final Message message) throws Exception
 	{		
 		if (address != null)
 		{

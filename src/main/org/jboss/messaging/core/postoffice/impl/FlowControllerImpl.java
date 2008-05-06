@@ -30,6 +30,7 @@ import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerProducer;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -48,11 +49,11 @@ public class FlowControllerImpl implements FlowController
 	
 	private final PostOffice postOffice;
 	
-	private final String address;
+	private final SimpleString address;
 	
 	private final java.util.Queue<ServerProducer> waitingList = new ConcurrentLinkedQueue<ServerProducer>();
 	
-	public FlowControllerImpl(String address, PostOffice postOffice) throws Exception
+	public FlowControllerImpl(final SimpleString address, final PostOffice postOffice) throws Exception
 	{
 		this.address = address;
 		
@@ -61,7 +62,7 @@ public class FlowControllerImpl implements FlowController
 		fillPot();
 	}
 	
-	public synchronized int getInitialTokens(int windowSize, ServerProducer producer)
+	public synchronized int getInitialTokens(final int windowSize, final ServerProducer producer)
 	{
 		int num = Math.min(windowSize, tokenPot);
 		
@@ -102,7 +103,7 @@ public class FlowControllerImpl implements FlowController
 		}					
 	}
 		
-	public synchronized void messageReceived(ServerProducer producer, int windowSize) throws Exception
+	public synchronized void messageReceived(final ServerProducer producer, final int windowSize) throws Exception
 	{		
 		if (tokenPot == 0)
 		{

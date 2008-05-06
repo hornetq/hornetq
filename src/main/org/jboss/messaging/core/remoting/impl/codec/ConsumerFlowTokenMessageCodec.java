@@ -7,8 +7,10 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONS_FLOWTOKEN;
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
+import org.jboss.messaging.util.DataConstants;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -35,7 +37,7 @@ public class ConsumerFlowTokenMessageCodec extends AbstractPacketCodec<ConsumerF
    
    public int getBodyLength(final ConsumerFlowTokenMessage packet) throws Exception
    {
-   	return INT_LENGTH;
+   	return SIZE_INT;
    }
 
    @Override

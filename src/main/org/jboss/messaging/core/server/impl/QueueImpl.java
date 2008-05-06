@@ -45,6 +45,7 @@ import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  *
@@ -64,7 +65,7 @@ public class QueueImpl implements Queue
 
    private volatile long persistenceID = -1;
 
-   private final String name;
+   private final SimpleString name;
    
    private volatile Filter filter;
 
@@ -100,7 +101,7 @@ public class QueueImpl implements Queue
 
    private boolean delivering = true; 
    
-   public QueueImpl(final long persistenceID, final String name, final Filter filter, final boolean clustered,
+   public QueueImpl(final long persistenceID, final SimpleString name, final Filter filter, final boolean clustered,
                     final boolean durable, final boolean temporary, final int maxSize,
                     final ScheduledExecutorService scheduledExecutor)
    {
@@ -140,7 +141,7 @@ public class QueueImpl implements Queue
       return temporary;
    }
 
-   public String getName()
+   public SimpleString getName()
    {
       return name;
    }

@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.postoffice;
 
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.util.SimpleString;
 
 
 /**
@@ -33,7 +34,7 @@ import org.jboss.messaging.core.server.Queue;
  */
 public interface Binding
 {
-   String getAddress();
+   SimpleString getAddress();
    
    Queue getQueue();
 }

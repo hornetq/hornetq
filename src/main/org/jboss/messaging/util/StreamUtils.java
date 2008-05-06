@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.messaging.core.logging.Logger;
+
 /**
  * A StreamUtils
  *
@@ -49,6 +51,9 @@ import java.util.Set;
  */
 public class StreamUtils
 {
+   public static final Logger log = Logger.getLogger(StreamUtils.class);
+
+   
    private static final int BUFFER_SIZE = 4096;
    
    public static final byte NULL = 0;
@@ -76,6 +81,8 @@ public class StreamUtils
    public static final byte LIST = 11;
    
    public static final byte SERIALIZABLE = 12;
+   
+   public static final byte SIMPLE_STRING = 13;
             
    public static Object readObject(DataInputStream in, boolean longStrings)
       throws IOException, ClassNotFoundException
@@ -101,6 +108,11 @@ public class StreamUtils
             value = in.readUTF();
          }
          break;      
+         case SIMPLE_STRING:
+            byte[] data = new byte[in.readInt()];
+            in.read(data);
+            value = new SimpleString(data);
+            break;
          case MAP:
          {
             value = readMap(in, false);
@@ -174,6 +186,14 @@ public class StreamUtils
             //Limited to < 64K Strings
             out.writeUTF((String)object);
          }
+      }
+      else if (object instanceof SimpleString)
+      {
+         //TODO - this will disappear in next refactoring
+         out.writeByte(SIMPLE_STRING);
+         SimpleString ss = (SimpleString)object;
+         out.writeInt(ss.getData().length);
+         out.write(ss.getData());
       }
       else if (containerTypes && object instanceof Map)
       {

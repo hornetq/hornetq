@@ -7,11 +7,14 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BINDINGQUERY_RESP;
+import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -41,13 +44,13 @@ public class SessionBindingQueryResponseMessageCodec extends AbstractPacketCodec
 
    public int getBodyLength(final SessionBindingQueryResponseMessage packet) throws Exception
    {   	
-      List<String> queueNames = packet.getQueueNames();
+      List<SimpleString> queueNames = packet.getQueueNames();
 
-      int bodyLength = BOOLEAN_LENGTH + INT_LENGTH;
+      int bodyLength = SIZE_BOOLEAN + SIZE_INT;
       
-      for (String queueName: queueNames)
+      for (SimpleString queueName: queueNames)
       {
-         bodyLength += sizeof(queueName);
+         bodyLength += SimpleString.sizeofString(queueName);
       }
       
       return bodyLength;
@@ -57,14 +60,14 @@ public class SessionBindingQueryResponseMessageCodec extends AbstractPacketCodec
    protected void encodeBody(final SessionBindingQueryResponseMessage message, final RemotingBuffer out) throws Exception
    {
       boolean exists = message.isExists();
-      List<String> queueNames = message.getQueueNames();
+      List<SimpleString> queueNames = message.getQueueNames();
 
       out.putBoolean(exists);
       out.putInt(queueNames.size());
       
-      for (String queueName: queueNames)
+      for (SimpleString queueName: queueNames)
       {
-         out.putNullableString(queueName);
+         out.putSimpleString(queueName);
       }      
    }
 
@@ -76,11 +79,11 @@ public class SessionBindingQueryResponseMessageCodec extends AbstractPacketCodec
       
       int numQueues = in.getInt();
       
-      List<String> queueNames = new ArrayList<String>(numQueues);
+      List<SimpleString> queueNames = new ArrayList<SimpleString>(numQueues);
       
       for (int i = 0; i < numQueues; i++)
       {
-         queueNames.add(in.getNullableString());
+         queueNames.add(in.getSimpleString());
       }
           
       return new SessionBindingQueryResponseMessage(exists, queueNames);

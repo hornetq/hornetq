@@ -6,10 +6,7 @@
  */
 package org.jboss.messaging.tests.unit.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec.FALSE;
 import static org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec.HEADER_LENGTH;
-import static org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec.LONG_LENGTH;
-import static org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec.TRUE;
 import static org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec.encodeXid;
 import static org.jboss.messaging.core.remoting.impl.mina.PacketCodecFactory.createCodecForEmptyPacket;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.BYTES;
@@ -73,6 +70,9 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomXid;
+import static org.jboss.messaging.util.DataConstants.FALSE;
+import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
+import static org.jboss.messaging.util.DataConstants.TRUE;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -185,6 +185,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
 import org.jboss.messaging.core.version.impl.VersionImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.StreamUtils;
 
 /**
@@ -226,6 +227,10 @@ public class PacketTypeTest extends UnitTestCase
             buffer.putFloat(((Float) arg).floatValue());
          else if (arg instanceof String)
             buffer.putNullableString((String) arg);
+         else if (arg instanceof SimpleString)
+            buffer.putSimpleString((SimpleString)arg);
+         else if (arg instanceof NullableStringHolder)
+            buffer.putNullableSimpleString(((NullableStringHolder)arg).str);
          else if (arg == null)
             buffer.putNullableString(null);
          else if (arg instanceof byte[])
@@ -246,8 +251,8 @@ public class PacketTypeTest extends UnitTestCase
             buffer.putInt(argsInList.size());
             for (Object argInList : argsInList)
             {
-               if (argInList instanceof String)
-                  buffer.putNullableString((String) argInList);
+               if (argInList instanceof SimpleString)
+                  buffer.putSimpleString((SimpleString) argInList);
                else if (argInList instanceof Xid)
                   encodeXid((Xid)argInList, buffer);
                else
@@ -379,7 +384,7 @@ public class PacketTypeTest extends UnitTestCase
    public void testPing() throws Exception
    {
       Ping ping = new Ping(randomLong());
-      int bodyLength = LONG_LENGTH;
+      int bodyLength = SIZE_LONG;
       AbstractPacketCodec<Ping> codec = new PingCodec();
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(ping, codec, ping
@@ -523,13 +528,13 @@ public class PacketTypeTest extends UnitTestCase
 
    public void testProducerSendMessage() throws Exception
    {
-      ProducerSendMessage packet = new ProducerSendMessage(randomString(),
+      ProducerSendMessage packet = new ProducerSendMessage(new SimpleString(randomString()),
             new MessageImpl());
       byte[] messageBytes = StreamUtils.toBytes(packet.getMessage());
       AbstractPacketCodec codec = new ProducerSendMessageCodec();
 
-      Packet decodedPacket = encodeAndCheckBytesAndDecode(packet, codec, packet
-            .getAddress(), StreamUtils.toBytes(packet.getMessage()));
+      Packet decodedPacket = encodeAndCheckBytesAndDecode(packet, codec, new NullableStringHolder(packet
+            .getAddress()), StreamUtils.toBytes(packet.getMessage()));
 
       assertTrue(decodedPacket instanceof ProducerSendMessage);
       ProducerSendMessage decodedMessage = (ProducerSendMessage) decodedPacket;
@@ -541,14 +546,14 @@ public class PacketTypeTest extends UnitTestCase
 
    public void testSessionCreateConsumerMessage() throws Exception
    {
-      String destination = "queue.SessionCreateConsumerMessage";
+      SimpleString destination = new SimpleString("queue.SessionCreateConsumerMessage");
       SessionCreateConsumerMessage request = new SessionCreateConsumerMessage(
-            destination, "color = 'red'", false, false, randomInt(),
+            destination, new SimpleString("color = 'red'"), false, false, randomInt(),
             randomInt());
       AbstractPacketCodec codec = new SessionCreateConsumerMessageCodec();
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(request, codec,
-            request.getQueueName(), request.getFilterString(), request
+            request.getQueueName(), new NullableStringHolder(request.getFilterString()), request
                   .isNoLocal(), request.isAutoDeleteQueue(), request
                   .getWindowSize(), request.getMaxRate());
 
@@ -563,6 +568,8 @@ public class PacketTypeTest extends UnitTestCase
       assertEquals(request.getWindowSize(), decodedRequest.getWindowSize());
       assertEquals(request.getMaxRate(), decodedRequest.getMaxRate());
    }
+   
+  
 
    public void testSessionCreateConsumerResponseMessage() throws Exception
    {
@@ -584,7 +591,7 @@ public class PacketTypeTest extends UnitTestCase
 
    public void testSessionCreateProducerMessage() throws Exception
    {
-      String destination = "queue.testSessionCreateProducerMessage";
+      SimpleString destination = new SimpleString("queue.testSessionCreateProducerMessage");
       int windowSize = randomInt();
       int maxRate = randomInt();
       SessionCreateProducerMessage request = new SessionCreateProducerMessage(
@@ -769,13 +776,13 @@ public class PacketTypeTest extends UnitTestCase
 
    public void testSessionCreateBrowserMessage() throws Exception
    {
-      String destination = "queue.testCreateBrowserRequest";
+      SimpleString destination = new SimpleString("queue.testCreateBrowserRequest");
       SessionCreateBrowserMessage request = new SessionCreateBrowserMessage(
-            destination, "color = 'red'");
+            destination, new SimpleString("color = 'red'"));
       AbstractPacketCodec codec = new SessionCreateBrowserMessageCodec();
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(request, codec,
-            request.getQueueName(), request.getFilterString());
+            request.getQueueName(), new NullableStringHolder(request.getFilterString()));
 
       assertTrue(decodedPacket instanceof SessionCreateBrowserMessage);
       SessionCreateBrowserMessage decodedRequest = (SessionCreateBrowserMessage) decodedPacket;
@@ -1137,7 +1144,7 @@ public class PacketTypeTest extends UnitTestCase
    public void testSessionRemoveDestinationMessage() throws Exception
    {
       SessionRemoveDestinationMessage message = new SessionRemoveDestinationMessage(
-            randomString(), randomBoolean());
+            new SimpleString(randomString()), randomBoolean());
       AbstractPacketCodec codec = new SessionRemoveDestinationMessageCodec();
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(message, codec,
@@ -1153,13 +1160,13 @@ public class PacketTypeTest extends UnitTestCase
    public void testSessionCreateQueueMessage() throws Exception
    {
       SessionCreateQueueMessage message = new SessionCreateQueueMessage(
-            randomString(), randomString(), randomString(), randomBoolean(),
+            new SimpleString(randomString()), new SimpleString(randomString()),
+            new SimpleString(randomString()), randomBoolean(),
             randomBoolean());
       AbstractPacketCodec codec = new SessionCreateQueueMessageCodec();
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(message, codec,
-            message.getAddress(), message.getQueueName(), message
-                  .getFilterString(), message.isDurable(), message
+            message.getAddress(), message.getQueueName(), new NullableStringHolder(message.getFilterString()), message.isDurable(), message
                   .isTemporary());
 
       assertTrue(decodedPacket instanceof SessionCreateQueueMessage);
@@ -1177,7 +1184,7 @@ public class PacketTypeTest extends UnitTestCase
    public void testSessionQueueQueryMessage() throws Exception
    {
       SessionQueueQueryMessage message = new SessionQueueQueryMessage(
-            randomString());
+            new SimpleString(randomString()));
       AbstractPacketCodec codec = new SessionQueueQueryMessageCodec();
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(message, codec,
@@ -1193,14 +1200,14 @@ public class PacketTypeTest extends UnitTestCase
    {
       SessionQueueQueryResponseMessage message = new SessionQueueQueryResponseMessage(
             randomBoolean(), randomBoolean(), randomInt(), randomInt(),
-            randomInt(), randomString(), randomString());
+            randomInt(), new SimpleString(randomString()), new SimpleString(randomString()));
       AbstractPacketCodec codec = new SessionQueueQueryResponseMessageCodec();
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(message, codec,
             message.isExists(), message.isDurable(), message.isTemporary(),
             message.getMaxSize(), message.getConsumerCount(), message
-                  .getMessageCount(), message.getFilterString(), message
-                  .getAddress());
+                  .getMessageCount(), new NullableStringHolder(message.getFilterString()),
+                  new NullableStringHolder(message.getAddress()));
 
       assertTrue(decodedPacket instanceof SessionQueueQueryResponseMessage);
       SessionQueueQueryResponseMessage decodedMessage = (SessionQueueQueryResponseMessage) decodedPacket;
@@ -1219,7 +1226,7 @@ public class PacketTypeTest extends UnitTestCase
    public void testSessionAddAddressMessage() throws Exception
    {
       SessionAddDestinationMessage message = new SessionAddDestinationMessage(
-            randomString(), randomBoolean());
+            new SimpleString(randomString()), randomBoolean());
       AbstractPacketCodec<SessionAddDestinationMessage> codec = new SessionAddDestinationMessageCodec();
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(message, codec,
@@ -1235,7 +1242,7 @@ public class PacketTypeTest extends UnitTestCase
    public void testSessionBindingQueryMessage() throws Exception
    {
       SessionBindingQueryMessage message = new SessionBindingQueryMessage(
-            randomString());
+            new SimpleString(randomString()));
       AbstractPacketCodec codec = new SessionBindingQueryMessageCodec();
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(message, codec,
@@ -1251,10 +1258,10 @@ public class PacketTypeTest extends UnitTestCase
    public void testSessionBindingQueryResponseMessage() throws Exception
    {
       boolean exists = true;
-      List<String> queueNames = new ArrayList<String>();
-      queueNames.add(randomString());
-      queueNames.add(randomString());
-      queueNames.add(randomString());
+      List<SimpleString> queueNames = new ArrayList<SimpleString>();
+      queueNames.add(new SimpleString(randomString()));
+      queueNames.add(new SimpleString(randomString()));
+      queueNames.add(new SimpleString(randomString()));
       SessionBindingQueryResponseMessage message = new SessionBindingQueryResponseMessage(
             exists, queueNames);
       AbstractPacketCodec codec = new SessionBindingQueryResponseMessageCodec();
@@ -1267,7 +1274,7 @@ public class PacketTypeTest extends UnitTestCase
       assertEquals(SESS_BINDINGQUERY_RESP, decodedMessage.getType());
       assertEquals(message.isExists(), decodedMessage.isExists());
 
-      List<String> decodedNames = decodedMessage.getQueueNames();
+      List<SimpleString> decodedNames = decodedMessage.getQueueNames();
       assertEquals(queueNames.size(), decodedNames.size());
       for (int i = 0; i < queueNames.size(); i++)
       {
@@ -1278,7 +1285,7 @@ public class PacketTypeTest extends UnitTestCase
    public void testDeleteQueueRequest() throws Exception
    {
       SessionDeleteQueueMessage message = new SessionDeleteQueueMessage(
-            randomString());
+            new SimpleString(randomString()));
       AbstractPacketCodec codec = new SessionDeleteQueueMessageCodec();
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(message, codec,
@@ -1341,5 +1348,14 @@ public class PacketTypeTest extends UnitTestCase
          return message;
       }
 
+   }
+   
+   private class NullableStringHolder
+   {
+      public SimpleString str;
+      NullableStringHolder(SimpleString str)
+      {
+         this.str = str;
+      }
    }
 }

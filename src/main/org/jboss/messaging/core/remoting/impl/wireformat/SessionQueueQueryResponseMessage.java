@@ -2,6 +2,8 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_QUEUEQUERY_RESP;
 
+import org.jboss.messaging.util.SimpleString;
+
 /**
  * 
  * A SessionQueueQueryResponseMessage
@@ -23,12 +25,12 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
    
    private final int messageCount;
    
-   private final String filterString;
+   private final SimpleString filterString;
    
-   private final String address;
+   private final SimpleString address;
    
    public SessionQueueQueryResponseMessage(final boolean durable, final boolean temporary, final int maxSize, 
-   		final int consumerCount, final int messageCount, final String filterString, final String address)
+   		final int consumerCount, final int messageCount, final SimpleString filterString, final SimpleString address)
    {
    	this(durable, temporary, maxSize, consumerCount, messageCount, filterString, address, true);
    }
@@ -39,7 +41,7 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
    }
    
    private SessionQueueQueryResponseMessage(final boolean durable, final boolean temporary, final int maxSize, 
-   		final int consumerCount, final int messageCount, final String filterString, final String address,
+   		final int consumerCount, final int messageCount, final SimpleString filterString, final SimpleString address,
    		final boolean exists)
    {
       super(SESS_QUEUEQUERY_RESP);
@@ -91,12 +93,12 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
       return messageCount;
    }
    
-   public String getFilterString()
+   public SimpleString getFilterString()
    {
       return filterString;
    }
    
-   public String getAddress()
+   public SimpleString getAddress()
    {
       return address;
    }

@@ -22,6 +22,7 @@ import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -380,13 +381,13 @@ public class TransactionTest extends UnitTestCase
    public void testSendCommit() throws Exception
    {
       //Durable queue
-      Queue queue1 = new QueueImpl(12, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue1 = new QueueImpl(12, new SimpleString("queue1"), null, false, true, false, -1, scheduledExecutor);
       
       //Durable queue
-      Queue queue2 = new QueueImpl(34, "queue2", null, false, true, false, -1, scheduledExecutor);
+      Queue queue2 = new QueueImpl(34, new SimpleString("queue2"), null, false, true, false, -1, scheduledExecutor);
       
       //Non durable queue
-      Queue queue3 = new QueueImpl(65, "queue3", null, false, false, false, -1, scheduledExecutor);
+      Queue queue3 = new QueueImpl(65, new SimpleString("queue3"), null, false, false, false, -1, scheduledExecutor);
       
       //Durable message to send
       
@@ -418,7 +419,7 @@ public class TransactionTest extends UnitTestCase
       
       EasyMock.reset(sm);
       
-      final String address1 = "topic1";
+      final SimpleString address1 = new SimpleString("topic1");
       
       //Expect:
       
@@ -453,7 +454,7 @@ public class TransactionTest extends UnitTestCase
                        
       //Expect:
       
-      final String address2 = "queue3";
+      final SimpleString address2 = new SimpleString("queue3");
       
       MessageReference ref7 = message2.createReference(queue3);
       List<MessageReference> message2Refs = new ArrayList<MessageReference>();
@@ -493,13 +494,13 @@ public class TransactionTest extends UnitTestCase
    public void testAckCommit() throws Exception
    {
       //Durable queue
-      Queue queue1 = new QueueImpl(12, "queue1", null, false, true, false, -1, scheduledExecutor);
+      Queue queue1 = new QueueImpl(12, new SimpleString("queue1"), null, false, true, false, -1, scheduledExecutor);
       
       //Durable queue
-      Queue queue2 = new QueueImpl(34, "queue2", null, false, true, false, -1, scheduledExecutor);
+      Queue queue2 = new QueueImpl(34, new SimpleString("queue2"), null, false, true, false, -1, scheduledExecutor);
       
       //Non durable queue
-      Queue queue3 = new QueueImpl(65, "queue3", null, false, false, false, -1, scheduledExecutor);
+      Queue queue3 = new QueueImpl(65, new SimpleString("queue3"), null, false, false, false, -1, scheduledExecutor);
       
       //Some refs to ack
       

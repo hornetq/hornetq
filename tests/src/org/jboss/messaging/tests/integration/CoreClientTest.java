@@ -15,12 +15,13 @@ import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
+import org.jboss.messaging.util.SimpleString;
 
 public class CoreClientTest extends TestCase
 {
    // Constants -----------------------------------------------------
 
-   private final String QUEUE = "CoreClientTestQueue";
+   private final SimpleString QUEUE = new SimpleString("CoreClientTestQueue");
    // Attributes ----------------------------------------------------
 
    private ConfigurationImpl conf;

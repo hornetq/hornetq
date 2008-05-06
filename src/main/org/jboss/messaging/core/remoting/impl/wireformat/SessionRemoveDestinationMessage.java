@@ -8,6 +8,8 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_REMOVE_DESTINATION;
 
+import org.jboss.messaging.util.SimpleString;
+
 
 /**
  * 
@@ -22,7 +24,7 @@ public class SessionRemoveDestinationMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
    
-   private final String address;
+   private final SimpleString address;
    
    private final boolean temporary;
    
@@ -30,7 +32,7 @@ public class SessionRemoveDestinationMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
    
-   public SessionRemoveDestinationMessage(final String address, final boolean temporary)
+   public SessionRemoveDestinationMessage(final SimpleString address, final boolean temporary)
    {
       super(SESS_REMOVE_DESTINATION);
       
@@ -41,7 +43,7 @@ public class SessionRemoveDestinationMessage extends PacketImpl
 
    // Public --------------------------------------------------------
    
-   public String getAddress()
+   public SimpleString getAddress()
    {
       return address;
    }

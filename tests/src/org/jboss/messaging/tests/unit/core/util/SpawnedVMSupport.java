@@ -68,11 +68,11 @@ public class SpawnedVMSupport
 
       String commandLine = sb.toString();
 
-      log.trace("command line: " + commandLine);
+      log.info("command line: " + commandLine);
 
       Process process = Runtime.getRuntime().exec(commandLine);
 
-      log.trace("process: " + process);
+      log.info("process: " + process);
 
       ProcessLogger outputLogger = new ProcessLogger(process.getInputStream(),
             className);
@@ -142,7 +142,7 @@ public class SpawnedVMSupport
             BufferedReader br = new BufferedReader(isr);
             String line = null;
             while ((line = br.readLine()) != null)
-               processLogger.debug(line);
+               processLogger.info(line);
          } catch (IOException ioe)
          {
             ioe.printStackTrace();

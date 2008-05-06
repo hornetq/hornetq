@@ -7,10 +7,12 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PROD_SEND;
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
+import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.StreamUtils;
 
 /**
@@ -46,7 +48,7 @@ public class ProducerSendMessageCodec extends AbstractPacketCodec<ProducerSendMe
    {
    	encodedMsg = StreamUtils.toBytes(packet.getMessage());   
 
-      int bodyLength = sizeof(packet.getAddress()) + INT_LENGTH + encodedMsg.length;
+      int bodyLength = SimpleString.sizeofNullableString(packet.getAddress()) + SIZE_INT + encodedMsg.length;
       
       return bodyLength;
    }
@@ -54,7 +56,7 @@ public class ProducerSendMessageCodec extends AbstractPacketCodec<ProducerSendMe
    @Override
    protected void encodeBody(final ProducerSendMessage message, final RemotingBuffer out) throws Exception
    {
-      out.putNullableString(message.getAddress());
+      out.putNullableSimpleString(message.getAddress());
       out.putInt(encodedMsg.length);
       out.put(encodedMsg);
       encodedMsg = null;
@@ -64,7 +66,7 @@ public class ProducerSendMessageCodec extends AbstractPacketCodec<ProducerSendMe
    protected ProducerSendMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      String address = in.getNullableString();
+      SimpleString address = in.getNullableSimpleString();
       int msgLength = in.getInt();
       byte[] encodedMsg = new byte[msgLength];
       in.get(encodedMsg);

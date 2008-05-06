@@ -8,6 +8,8 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEBROWSER;
 
+import org.jboss.messaging.util.SimpleString;
+
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -21,15 +23,15 @@ public class SessionCreateBrowserMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private final String queueName;
+   private final SimpleString queueName;
    
-   private final String filterString;
+   private final SimpleString filterString;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateBrowserMessage(final String queueName, final String filterString)
+   public SessionCreateBrowserMessage(final SimpleString queueName, final SimpleString filterString)
    {
       super(SESS_CREATEBROWSER);
 
@@ -41,12 +43,12 @@ public class SessionCreateBrowserMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
-   public String getQueueName()
+   public SimpleString getQueueName()
    {
       return queueName;
    }
 
-   public String getFilterString()
+   public SimpleString getFilterString()
    {
       return filterString;
    }

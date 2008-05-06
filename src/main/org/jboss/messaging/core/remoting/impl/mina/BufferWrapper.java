@@ -6,15 +6,14 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import static org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec.FALSE;
-import static org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec.TRUE;
-
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharsetEncoder;
+import static org.jboss.messaging.util.DataConstants.FALSE;
+import static org.jboss.messaging.util.DataConstants.NOT_NULL;
+import static org.jboss.messaging.util.DataConstants.NULL;
+import static org.jboss.messaging.util.DataConstants.TRUE;
 
 import org.apache.mina.common.IoBuffer;
 import org.jboss.messaging.core.remoting.impl.codec.RemotingBuffer;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -28,19 +27,6 @@ public class BufferWrapper implements RemotingBuffer
 {
    // Constants -----------------------------------------------------
 	
-   // used to terminate encoded Strings
-   public static final byte NULL_BYTE = (byte) 0;
-
-   public static final byte NULL_STRING = (byte) 0;
-
-   public static final byte NOT_NULL_STRING = (byte) 1;
-
-   public static final CharsetEncoder UTF_8_ENCODER = Charset.forName("UTF-8")
-         .newEncoder();
-
-   public static final CharsetDecoder UTF_8_DECODER = Charset.forName("UTF-8")
-         .newDecoder();
-
    // Attributes ----------------------------------------------------
 
    protected final IoBuffer buffer;
@@ -125,7 +111,8 @@ public class BufferWrapper implements RemotingBuffer
       if (b)
       {
          buffer.put(TRUE);
-      } else
+      }
+      else
       {
          buffer.put(FALSE);
       }
@@ -137,32 +124,82 @@ public class BufferWrapper implements RemotingBuffer
       return (b == TRUE);
    }
 
+   
+  
+   
+   
    public void putNullableString(final String nullableString)
    {
       if (nullableString == null)
       {
-         buffer.put(NULL_STRING);
+         buffer.put(NULL);
       }
       else
       {
-         buffer.put(NOT_NULL_STRING);
+         buffer.put(NOT_NULL);
+         
          putString(nullableString);
       }
    }
-
+   
    public String getNullableString()
    {
       byte check = buffer.get();
-      if (check == NULL_STRING)
+      
+      if (check == NULL)
       {
          return null;
       }
       else
       {
-         return getString();
+      	return getString();
       }
    }
    
+   public void putSimpleString(final SimpleString string)
+   {
+   	byte[] data = string.getData();
+   	
+   	buffer.putInt(data.length);
+   	buffer.put(data);
+   }
+   
+   public SimpleString getSimpleString()
+   {
+   	int len = buffer.getInt();
+   	
+   	byte[] data = new byte[len];
+   	buffer.get(data);
+   	
+   	return new SimpleString(data);
+   }
+      
+   public void putNullableSimpleString(final SimpleString string)
+   {
+   	if (string == null)
+   	{
+   		buffer.put(NULL);
+   	}
+   	else
+   	{
+   		buffer.put(NOT_NULL);
+   		putSimpleString(string);
+   	}
+   }
+         
+   public SimpleString getNullableSimpleString()
+   {
+   	int b = buffer.get();
+   	if (b == NULL)
+   	{
+   		return null;
+   	}
+   	else
+   	{
+   	   return getSimpleString();
+   	}
+   }
+         
    public void rewind()
    {
    	buffer.rewind();
@@ -179,30 +216,28 @@ public class BufferWrapper implements RemotingBuffer
 
    // Private -------------------------------------------------------
 
-   private void putString(final String string)
+   private void putString(final String nullableString)
    {
-      assert string != null;
+      buffer.putInt(nullableString.length());
       
-      int len = string.length();
-      buffer.putInt(len);
-      for (int i = 0; i < len; i++)
-      {   
-         buffer.putChar(string.charAt(i));
-      }
+      for (int i = 0; i < nullableString.length(); i++)
+      {
+         buffer.putChar(nullableString.charAt(i));
+      }      
    }
-
+   
    private String getString()
    {
       int len = buffer.getInt();
+         
       char[] chars = new char[len];
+      
       for (int i = 0; i < len; i++)
       {
          chars[i] = buffer.getChar();
       }
-                     
-      String string =  new String(chars);
       
-      return string;
+      return new String(chars);               
    }
    
    // Inner classes -------------------------------------------------

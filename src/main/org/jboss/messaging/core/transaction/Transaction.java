@@ -21,14 +21,15 @@
  */
 package org.jboss.messaging.core.transaction;
 
+import java.util.List;
+
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
-
-import java.util.List;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -45,7 +46,7 @@ public interface Transaction
    
    void rollback(HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
    
-   void addMessage(String address, Message message) throws Exception;
+   void addMessage(SimpleString address, Message message) throws Exception;
 
    List<MessageReference> getAcknowledgements();
 

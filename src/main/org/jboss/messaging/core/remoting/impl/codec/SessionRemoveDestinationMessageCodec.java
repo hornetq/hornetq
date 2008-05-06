@@ -7,8 +7,11 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_REMOVE_DESTINATION;
+import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
+import org.jboss.messaging.util.DataConstants;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -38,17 +41,17 @@ public class SessionRemoveDestinationMessageCodec extends AbstractPacketCodec<Se
 
    public int getBodyLength(final SessionRemoveDestinationMessage packet) throws Exception
    {   	
-   	String address = packet.getAddress();      
-      int bodyLength = sizeof(address) + BOOLEAN_LENGTH;
+   	SimpleString address = packet.getAddress();      
+      int bodyLength = SimpleString.sizeofString(address) + SIZE_BOOLEAN;
    	return bodyLength;
    }
    
    @Override
    protected void encodeBody(final SessionRemoveDestinationMessage message, final RemotingBuffer out) throws Exception
    {
-      String address = message.getAddress();
+      SimpleString address = message.getAddress();
      
-      out.putNullableString(address);
+      out.putSimpleString(address);
       out.putBoolean(message.isTemporary());
    }
 
@@ -56,7 +59,7 @@ public class SessionRemoveDestinationMessageCodec extends AbstractPacketCodec<Se
    protected SessionRemoveDestinationMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      String address = in.getNullableString();
+      SimpleString address = in.getSimpleString();
     
       return new SessionRemoveDestinationMessage(address, in.getBoolean());
    }

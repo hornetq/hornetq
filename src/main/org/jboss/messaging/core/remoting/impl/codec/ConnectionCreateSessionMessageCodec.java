@@ -7,8 +7,10 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_CREATESESSION;
+import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
+import org.jboss.messaging.util.DataConstants;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -36,7 +38,7 @@ public class ConnectionCreateSessionMessageCodec extends
 
    public int getBodyLength(final ConnectionCreateSessionMessage packet)
    {
-   	return 3 * BOOLEAN_LENGTH;
+   	return 3 * SIZE_BOOLEAN;
    }
    
    @Override

@@ -6,6 +6,8 @@
  */
 package org.jboss.messaging.core.remoting.impl.codec;
 
+import org.jboss.messaging.util.SimpleString;
+
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -45,6 +47,14 @@ public interface RemotingBuffer
    void putNullableString(String nullableString);
 
    String getNullableString();
+         
+   void putSimpleString(SimpleString simpleString);
+   
+   SimpleString getSimpleString();
+   
+   void putNullableSimpleString(SimpleString simpleString);
+   
+   SimpleString getNullableSimpleString();
    
    void rewind();
 

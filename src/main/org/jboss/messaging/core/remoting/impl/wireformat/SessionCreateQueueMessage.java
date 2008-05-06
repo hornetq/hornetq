@@ -8,6 +8,8 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEQUEUE;
 
+import org.jboss.messaging.util.SimpleString;
+
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -20,9 +22,9 @@ public class SessionCreateQueueMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private final String address;
-   private final String queueName;
-   private final String filterString;
+   private final SimpleString address;
+   private final SimpleString queueName;
+   private final SimpleString filterString;
    private final boolean durable;
    private final boolean temporary;
    
@@ -30,8 +32,8 @@ public class SessionCreateQueueMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateQueueMessage(final String address, final String queueName,
-   		final String filterString, final boolean durable, final boolean temporary)
+   public SessionCreateQueueMessage(final SimpleString address, final SimpleString queueName,
+   		final SimpleString filterString, final boolean durable, final boolean temporary)
    {
       super(SESS_CREATEQUEUE);
 
@@ -57,17 +59,17 @@ public class SessionCreateQueueMessage extends PacketImpl
       return buff.toString();
    }
    
-   public String getAddress()
+   public SimpleString getAddress()
    {
       return address;
    }
 
-   public String getQueueName()
+   public SimpleString getQueueName()
    {
       return queueName;
    }
 
-   public String getFilterString()
+   public SimpleString getFilterString()
    {
       return filterString;
    }

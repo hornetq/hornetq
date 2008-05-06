@@ -32,6 +32,7 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeQueueFactory;
 import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.StreamUtils;
 
 /**
@@ -284,8 +285,12 @@ public class MessageTest extends UnitTestCase
    {
       Message message = new MessageImpl();
       
-      Queue queue1 = queueFactory.createQueue(1, "queue1", null, false, true);
-      Queue queue2 = queueFactory.createQueue(2, "queue2", null, false, true);
+      SimpleString squeue1 = new SimpleString("queue1");
+      SimpleString squeue2 = new SimpleString("queue2");
+      SimpleString squeue3 = new SimpleString("queue3");
+      
+      Queue queue1 = queueFactory.createQueue(1, squeue1, null, false, true);
+      Queue queue2 = queueFactory.createQueue(2, squeue2, null, false, true);
    
       MessageReference ref1 = message.createReference(queue1);
       MessageReference ref2 = message.createReference(queue2);
@@ -305,7 +310,7 @@ public class MessageTest extends UnitTestCase
       ref1.setScheduledDeliveryTime(scheduledDeliveryTime);
       assertEquals(scheduledDeliveryTime, ref1.getScheduledDeliveryTime());
       
-      Queue queue3 = queueFactory.createQueue(3, "queue3", null, false, true);
+      Queue queue3 = queueFactory.createQueue(3, squeue3, null, false, true);
       MessageReference ref5 = ref1.copy(queue3);
       
       assertEquals(deliveryCount, ref5.getDeliveryCount());
@@ -321,12 +326,15 @@ public class MessageTest extends UnitTestCase
       
       Message messageNonDurable = new MessageImpl();
       messageNonDurable.setDurable(false);
+      
+      SimpleString squeue1 = new SimpleString("queue1");
+      SimpleString squeue2 = new SimpleString("queue2");
         
       //Durable queue
-      Queue queue1 = queueFactory.createQueue(1, "queue1", null, true, false);
+      Queue queue1 = queueFactory.createQueue(1, squeue1, null, true, false);
       
       //Non durable queue
-      Queue queue2 = queueFactory.createQueue(2, "queue2", null, false, false);
+      Queue queue2 = queueFactory.createQueue(2, squeue2, null, false, false);
       
       assertEquals(0, messageDurable.getDurableRefCount());
       

@@ -7,8 +7,11 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATECONSUMER;
+import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -36,8 +39,8 @@ public class SessionCreateConsumerMessageCodec extends
 
    public int getBodyLength(final SessionCreateConsumerMessage packet) throws Exception
    {   	
-   	int bodyLength = sizeof(packet.getQueueName()) +
-   	   sizeof(packet.getFilterString()) + 2 * BOOLEAN_LENGTH + 2 * INT_LENGTH;
+   	int bodyLength = SimpleString.sizeofString(packet.getQueueName()) +
+   	SimpleString.sizeofNullableString(packet.getFilterString()) + 2 * SIZE_BOOLEAN + 2 * SIZE_INT;
    	
    	return bodyLength;
    }
@@ -45,15 +48,15 @@ public class SessionCreateConsumerMessageCodec extends
    @Override
    protected void encodeBody(final SessionCreateConsumerMessage request, final RemotingBuffer out) throws Exception
    {
-      String queueName = request.getQueueName();
-      String filterString = request.getFilterString();
+      SimpleString queueName = request.getQueueName();
+      SimpleString filterString = request.getFilterString();
       boolean noLocal = request.isNoLocal();
       boolean autoDelete = request.isAutoDeleteQueue();
       int windowSize = request.getWindowSize();
       int maxRate = request.getMaxRate();
 
-      out.putNullableString(queueName);
-      out.putNullableString(filterString);
+      out.putSimpleString(queueName);
+      out.putNullableSimpleString(filterString);
       out.putBoolean(noLocal);
       out.putBoolean(autoDelete);
       out.putInt(windowSize);
@@ -64,8 +67,8 @@ public class SessionCreateConsumerMessageCodec extends
    protected SessionCreateConsumerMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      String queueName = in.getNullableString();
-      String filterString = in.getNullableString();
+      SimpleString queueName = in.getSimpleString();
+      SimpleString filterString = in.getNullableSimpleString();
       boolean noLocal = in.getBoolean();
       boolean autoDelete = in.getBoolean();
       int windowSize = in.getInt();

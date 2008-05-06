@@ -7,6 +7,7 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_NEXTMESSAGE_RESP;
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
@@ -43,7 +44,7 @@ public class SessionBrowserNextMessageResponseMessageCodec extends AbstractPacke
    {   	
    	encodedMsg = StreamUtils.toBytes(packet.getMessage());
 
-      int bodyLength = INT_LENGTH + encodedMsg.length;
+      int bodyLength = SIZE_INT + encodedMsg.length;
       
       return bodyLength;
    }

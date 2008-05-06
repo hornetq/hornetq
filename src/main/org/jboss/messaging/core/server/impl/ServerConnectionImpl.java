@@ -42,6 +42,7 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.ConcurrentHashSet;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * Concrete implementation of ConnectionEndpoint.
@@ -98,7 +99,7 @@ public class ServerConnectionImpl implements ServerConnection
 
    private final Set<Queue> temporaryQueues = new ConcurrentHashSet<Queue>();
    
-   private final Set<String> temporaryDestinations = new ConcurrentHashSet<String>();
+   private final Set<SimpleString> temporaryDestinations = new ConcurrentHashSet<SimpleString>();
       
    private volatile boolean started;
 
@@ -193,7 +194,7 @@ public class ServerConnectionImpl implements ServerConnection
 
       sessions.clear();
       
-      Set<String> addresses = new HashSet<String>();
+      Set<SimpleString> addresses = new HashSet<SimpleString>();
 
       for (Queue tempQueue: temporaryQueues)
       {                        
@@ -204,12 +205,12 @@ public class ServerConnectionImpl implements ServerConnection
          postOffice.removeBinding(tempQueue.getName());         
       }
       
-      for (String address: addresses)
+      for (SimpleString address: addresses)
       {
          postOffice.removeDestination(address, true);
       }
       
-      for (String address: temporaryDestinations)
+      for (SimpleString address: temporaryDestinations)
       {
       	postOffice.removeDestination(address, true);
       }
@@ -258,12 +259,12 @@ public class ServerConnectionImpl implements ServerConnection
       temporaryQueues.remove(queue);      
    }
    
-   public void addTemporaryDestination(final String address)
+   public void addTemporaryDestination(final SimpleString address)
    {
       temporaryDestinations.add(address);     
    }
    
-   public void removeTemporaryDestination(final String address)
+   public void removeTemporaryDestination(final SimpleString address)
    {
       temporaryDestinations.remove(address);
    }

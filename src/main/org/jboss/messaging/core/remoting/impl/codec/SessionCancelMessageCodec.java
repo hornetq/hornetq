@@ -6,8 +6,12 @@
  */
 package org.jboss.messaging.core.remoting.impl.codec;
 
+import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
+import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
+
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCancelMessage;
+import org.jboss.messaging.util.DataConstants;
 
 /**
  * 
@@ -37,7 +41,7 @@ public class SessionCancelMessageCodec extends AbstractPacketCodec<SessionCancel
 
    public int getBodyLength(final SessionCancelMessage packet) throws Exception
    {   	
-      return LONG_LENGTH + 1;
+      return SIZE_LONG + SIZE_BOOLEAN;
    }
    
    @Override

@@ -34,6 +34,7 @@ import org.jboss.messaging.core.postoffice.impl.BindingImpl;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -79,7 +80,7 @@ public class JournalStorageManager implements StorageManager
 	
 	private final Journal bindingsJournal;
 	
-	private final ConcurrentMap<String, Long> destinationIDMap = new ConcurrentHashMap<String, Long>();
+	private final ConcurrentMap<SimpleString, Long> destinationIDMap = new ConcurrentHashMap<SimpleString, Long>();
    
 	private volatile boolean started;
 	
@@ -155,7 +156,7 @@ public class JournalStorageManager implements StorageManager
 	
 	// Non transactional operations
 	
-	public void storeMessage(final String address, final Message message) throws Exception
+	public void storeMessage(final SimpleString address, final Message message) throws Exception
 	{
 		byte[] bytes = messageBytes(address, message);
       
@@ -176,7 +177,7 @@ public class JournalStorageManager implements StorageManager
 	
 	// Transactional operations
 	
-   public void storeMessageTransactional(long txID, String address, Message message) throws Exception
+   public void storeMessageTransactional(long txID, SimpleString address, Message message) throws Exception
    {
    	byte[] bytes = messageBytes(address, message);
       
@@ -259,7 +260,7 @@ public class JournalStorageManager implements StorageManager
 					
 					bb.get(addressBytes);
 					
-					String address = new String(addressBytes, "UTF-8");
+					SimpleString address = new SimpleString(addressBytes);
 					
 					maxMessageID = Math.max(maxMessageID, record.id);
 
@@ -387,9 +388,17 @@ public class JournalStorageManager implements StorageManager
 
 		 daos.writeByte(BINDING_RECORD);
 		 
-		 daos.writeUTF(queue.getName());
+		 byte[] nameBytes = queue.getName().getData();
+		 
+		 daos.writeInt(nameBytes.length);
+		 
+		 daos.write(nameBytes);
+		 
+		 byte[] addressBytes = binding.getAddress().getData();
 
-		 daos.writeUTF(binding.getAddress());
+		 daos.writeInt(addressBytes.length);
+		 
+		 daos.write(addressBytes);
 
 		 Filter filter = queue.getFilter();
 
@@ -397,7 +406,11 @@ public class JournalStorageManager implements StorageManager
 
 		 if (filter != null)
 		 {
-			 daos.writeUTF(filter.getFilterString());
+			 byte[] filterBytes = queue.getFilter().getFilterString().getData();
+
+			 daos.writeInt(filterBytes.length);
+			 
+			 daos.write(filterBytes);
 		 }
 
 		 daos.flush();
@@ -419,7 +432,7 @@ public class JournalStorageManager implements StorageManager
 		bindingsJournal.appendDeleteRecord(id);
 	}
 	
-	public boolean addDestination(final String destination) throws Exception
+	public boolean addDestination(final SimpleString destination) throws Exception
 	{
 		long destinationID = bindingIDSequence.getAndIncrement();
 		
@@ -436,7 +449,11 @@ public class JournalStorageManager implements StorageManager
 			
 			daos.writeByte(DESTINATION_RECORD);
 			
-			daos.writeUTF(destination);
+			byte[] destBytes = destination.getData();
+			
+			daos.writeInt(destBytes.length);
+			
+			daos.write(destBytes);
 			
 			daos.flush();
 			
@@ -448,7 +465,7 @@ public class JournalStorageManager implements StorageManager
 		}		
 	}
 	
-	public boolean deleteDestination(final String destination) throws Exception
+	public boolean deleteDestination(final SimpleString destination) throws Exception
 	{
 		Long destinationID = destinationIDMap.remove(destination);
 		
@@ -465,7 +482,7 @@ public class JournalStorageManager implements StorageManager
 	}
 	
 	public void loadBindings(final QueueFactory queueFactory,
-			                   final List<Binding> bindings, final List<String> destinations) throws Exception
+			                   final List<Binding> bindings, final List<SimpleString> destinations) throws Exception
 	{
 		log.info("*** loading bindings");
 		
@@ -491,15 +508,26 @@ public class JournalStorageManager implements StorageManager
 			
 			if (rec == BINDING_RECORD)
 			{
-				String queueName = dais.readUTF();
+				int len = dais.readInt();
+				byte[] queueNameBytes = new byte[len];
+				dais.read(queueNameBytes);
+				SimpleString queueName = new SimpleString(queueNameBytes);
 
-				String address = dais.readUTF();
+				len = dais.readInt();
+				byte[] addressBytes = new byte[len];
+				dais.read(addressBytes);
+				SimpleString address = new SimpleString(addressBytes);
 
 				Filter filter = null;
 
 				if (dais.readBoolean())
 				{
-					filter = new FilterImpl(dais.readUTF());
+					len = dais.readInt();
+					byte[] filterBytes = new byte[len];
+					dais.read(filterBytes);
+					SimpleString filterString = new SimpleString(filterBytes);
+										
+					filter = new FilterImpl(filterString);
 				}
 
 				Queue queue = queueFactory.createQueue(id, queueName, filter, true, false);
@@ -511,7 +539,13 @@ public class JournalStorageManager implements StorageManager
 			}
 			else if (rec == DESTINATION_RECORD)
 			{
-				String destinationName = dais.readUTF();
+				int len = dais.readInt();
+				
+				byte[] destData = new byte[len];
+				
+				dais.read(destData);
+				
+				SimpleString destinationName = new SimpleString(destData);
 				
 				destinationIDMap.put(destinationName, id);
 				
@@ -564,11 +598,11 @@ public class JournalStorageManager implements StorageManager
 	
 	// Private ----------------------------------------------------------------------------------
 	
-	private byte[] messageBytes(final String address, final Message message) throws Exception
+	private byte[] messageBytes(final SimpleString address, final Message message) throws Exception
 	{
 		//TODO optimise this
 		
-		byte[] addressBytes = address.getBytes("UTF-8");
+		byte[] addressBytes = address.getData();
 		
 		byte[] headers = message.getHeaderBytes();
       

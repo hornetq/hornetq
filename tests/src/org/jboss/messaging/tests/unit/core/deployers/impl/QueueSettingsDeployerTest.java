@@ -31,6 +31,7 @@ import org.jboss.messaging.core.postoffice.impl.BindingImpl;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.XMLUtil;
 
 /**
@@ -40,7 +41,7 @@ public class QueueSettingsDeployerTest extends TestCase
 {
    private String conf = "<queue-settings match=\"queues.*\">\n" +
            "      <clustered>false</clustered>\n" +
-           "      <dlq>DLQtest</dlq>\n" +
+           "      <dlq>DLQTest</dlq>\n" +
            "      <expiry-queue>ExpiryQueueTest</expiry-queue>\n" +
            "      <redelivery-delay>100</redelivery-delay>\n" +
            "      <max-size>-100</max-size>\n" +
@@ -72,12 +73,14 @@ public class QueueSettingsDeployerTest extends TestCase
       queueSettings.setMessageCounterHistoryDayLimit(1000);
       Queue mockDLQ = EasyMock.createMock(Queue.class);
       queueSettings.setDLQ(mockDLQ);
-      EasyMock.expect(postOffice.getBinding("DLQtest")).andReturn(new BindingImpl("DLQtest", mockDLQ));
-      EasyMock.expect(postOffice.getBinding("DLQtest")).andReturn(new BindingImpl("DLQtest", mockDLQ));
+      SimpleString dlqTest = new SimpleString("DLQTest");
+      EasyMock.expect(postOffice.getBinding(dlqTest)).andReturn(new BindingImpl(dlqTest, mockDLQ));
+      EasyMock.expect(postOffice.getBinding(dlqTest)).andReturn(new BindingImpl(dlqTest, mockDLQ));
       Queue mockQ = EasyMock.createMock(Queue.class);
       queueSettings.setExpiryQueue(mockQ);
-      EasyMock.expect(postOffice.getBinding("ExpiryQueueTest")).andReturn(new BindingImpl("ExpiryQueueTest", mockQ));
-      EasyMock.expect(postOffice.getBinding("ExpiryQueueTest")).andReturn(new BindingImpl("ExpiryQueueTest", mockQ));
+      SimpleString expiryQueueTest = new SimpleString("ExpiryQueueTest");
+      EasyMock.expect(postOffice.getBinding(expiryQueueTest)).andReturn(new BindingImpl(expiryQueueTest, mockQ));
+      EasyMock.expect(postOffice.getBinding(expiryQueueTest)).andReturn(new BindingImpl(expiryQueueTest, mockQ));
 
       EasyMock.replay(postOffice);
 
