@@ -64,7 +64,7 @@ public class RealJournalImplAIOTest extends JournalImplTestUnit
    
    public void testSpeedNonTransactional() throws Exception
    {
-      for (int i=0;i<20;i++)
+      for (int i=0;i<1;i++)
       {
          this.setUp();
          System.gc(); Thread.sleep(500);
