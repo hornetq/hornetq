@@ -59,8 +59,7 @@ import org.jboss.messaging.util.Pair;
 public class JournalImpl implements TestableJournal
 {
 	private static final Logger log = Logger.getLogger(JournalImpl.class);
-	//private static final boolean trace = log.isTraceEnabled();
-	private static final boolean trace = true;
+	private static final boolean trace = log.isTraceEnabled();
 	
 	private static final int STATE_STOPPED = 0;
 	
@@ -557,7 +556,7 @@ public class JournalImpl implements TestableJournal
 			
 			if (trace) 
 			{
-				trace("Loading file " + file.getFile().getFileName());
+				log.trace("Loading file " + file.getFile().getFileName());
 			}
 			
 			ByteBuffer bb = file.getFile().newBuffer(fileSize);
@@ -1337,12 +1336,6 @@ public class JournalImpl implements TestableJournal
 		
 		return tx;
 	}
-	
-	private void trace(String message)
-	{
-		log.info(message);
-	}
-	
 	
 	// Inner classes ---------------------------------------------------------------------------
 	
