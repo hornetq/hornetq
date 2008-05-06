@@ -31,8 +31,6 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageBlockMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageBlockResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageResponseMessage;
 
 /**
@@ -123,15 +121,6 @@ public class ClientBrowserImpl implements ClientBrowser
          (SessionBrowserNextMessageResponseMessage)remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), new PacketImpl(SESS_BROWSER_NEXTMESSAGE));
       
       return response.getMessage();
-   }
-
-   public Message[] nextMessageBlock(final int maxMessages) throws MessagingException
-   {
-      checkClosed();
-      
-      SessionBrowserNextMessageBlockResponseMessage response =
-         (SessionBrowserNextMessageBlockResponseMessage)remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), new SessionBrowserNextMessageBlockMessage(maxMessages));
-      return response.getMessages();
    }
 
    // Public ---------------------------------------------------------------------------------------

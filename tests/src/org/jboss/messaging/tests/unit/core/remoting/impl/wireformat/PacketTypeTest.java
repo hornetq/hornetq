@@ -27,8 +27,6 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_HASNEXTMESSAGE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_HASNEXTMESSAGE_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_NEXTMESSAGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_NEXTMESSAGEBLOCK;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_NEXTMESSAGEBLOCK_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_NEXTMESSAGE_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_RESET;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CANCEL;
@@ -105,8 +103,6 @@ import org.jboss.messaging.core.remoting.impl.codec.SessionAddDestinationMessage
 import org.jboss.messaging.core.remoting.impl.codec.SessionBindingQueryMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionBindingQueryResponseMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionBrowserHasNextMessageResponseMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionBrowserNextMessageBlockMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionBrowserNextMessageBlockResponseMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionBrowserNextMessageResponseMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionCancelMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionCreateBrowserMessageCodec;
@@ -154,8 +150,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMe
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageBlockMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageBlockResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCancelMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserMessage;
@@ -872,42 +866,6 @@ public class PacketTypeTest extends UnitTestCase
       assertEquals(SESS_BROWSER_NEXTMESSAGE_RESP, decodedResponse.getType());
       assertEquals(response.getMessage().getMessageID(), decodedResponse
             .getMessage().getMessageID());
-   }
-
-   public void testSessionBrowserNextMessageBlockMessage() throws Exception
-   {
-      SessionBrowserNextMessageBlockMessage request = new SessionBrowserNextMessageBlockMessage(
-            randomLong());
-      AbstractPacketCodec codec = new SessionBrowserNextMessageBlockMessageCodec();
-
-      Packet decodedPacket = encodeAndCheckBytesAndDecode(request, codec,
-            request.getMaxMessages());
-
-      assertTrue(decodedPacket instanceof SessionBrowserNextMessageBlockMessage);
-      SessionBrowserNextMessageBlockMessage decodedRequest = (SessionBrowserNextMessageBlockMessage) decodedPacket;
-      assertEquals(SESS_BROWSER_NEXTMESSAGEBLOCK, decodedPacket.getType());
-      assertEquals(request.getMaxMessages(), decodedRequest.getMaxMessages());
-   }
-
-   public void testSessionBrowserNextMessageBlockResponseMessage()
-         throws Exception
-   {
-      Message[] messages = new Message[] { new MessageImpl(), new MessageImpl() };
-      SessionBrowserNextMessageBlockResponseMessage response = new SessionBrowserNextMessageBlockResponseMessage(
-            messages);
-      AbstractPacketCodec codec = new SessionBrowserNextMessageBlockResponseMessageCodec();
-
-      Packet decodedPacket = encodeAndCheckBytesAndDecode(response, codec,
-            SessionBrowserNextMessageBlockResponseMessageCodec.encode(messages));
-
-      assertTrue(decodedPacket instanceof SessionBrowserNextMessageBlockResponseMessage);
-      SessionBrowserNextMessageBlockResponseMessage decodedResponse = (SessionBrowserNextMessageBlockResponseMessage) decodedPacket;
-      assertEquals(SESS_BROWSER_NEXTMESSAGEBLOCK_RESP, decodedResponse
-            .getType());
-      assertEquals(response.getMessages()[0].getMessageID(), decodedResponse
-            .getMessages()[0].getMessageID());
-      assertEquals(response.getMessages()[1].getMessageID(), decodedResponse
-            .getMessages()[1].getMessageID());
    }
 
    public void testSessionXACommitMessage() throws Exception

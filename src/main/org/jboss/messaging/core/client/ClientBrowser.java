@@ -23,8 +23,6 @@ public interface ClientBrowser
    
    boolean hasNextMessage() throws MessagingException;
       
-   Message[] nextMessageBlock(int maxMessages) throws MessagingException;
-   
    void close() throws MessagingException;
    
    boolean isClosed();

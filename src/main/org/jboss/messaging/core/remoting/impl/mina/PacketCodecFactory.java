@@ -29,8 +29,6 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_HASNEXTMESSAGE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_HASNEXTMESSAGE_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_NEXTMESSAGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_NEXTMESSAGEBLOCK;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_NEXTMESSAGEBLOCK_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_NEXTMESSAGE_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_RESET;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CANCEL;
@@ -91,8 +89,6 @@ import org.jboss.messaging.core.remoting.impl.codec.SessionAddDestinationMessage
 import org.jboss.messaging.core.remoting.impl.codec.SessionBindingQueryMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionBindingQueryResponseMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionBrowserHasNextMessageResponseMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionBrowserNextMessageBlockMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionBrowserNextMessageBlockResponseMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionBrowserNextMessageResponseMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionCancelMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionCreateBrowserMessageCodec;
@@ -207,10 +203,6 @@ public class PacketCodecFactory implements ProtocolCodecFactory
       addCodecForEmptyPacket(SESS_BROWSER_NEXTMESSAGE);
 
       addCodec(SESS_BROWSER_NEXTMESSAGE_RESP, new SessionBrowserNextMessageResponseMessageCodec());
-
-      addCodec(SESS_BROWSER_NEXTMESSAGEBLOCK, new SessionBrowserNextMessageBlockMessageCodec());
-
-      addCodec(SESS_BROWSER_NEXTMESSAGEBLOCK_RESP, new SessionBrowserNextMessageBlockResponseMessageCodec());
 
       addCodec(SESS_XA_COMMIT, new SessionXACommitMessageCodec());
 
