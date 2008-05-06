@@ -101,20 +101,22 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
          return connector;
       }
 
+      //TODO INVM optimisation is disabled for now
+      
       // check if the server is in the same vm than the client
-      if (localDispatchers.containsKey(key))
-      {
-         PacketDispatcher localDispatcher = localDispatchers.get(key);
-         NIOConnector connector = new INVMConnector(idCounter.getAndIncrement(), dispatcher, localDispatcher);
-
-         if (log.isDebugEnabled())
-            log.debug("Created " + connector + " to connect to "
-                  + key);
-
-         NIOConnectorHolder holder = new NIOConnectorHolder(connector);
-         connectors.put(key, holder);
-         return connector;
-      }
+//      if (localDispatchers.containsKey(key))
+//      {
+//         PacketDispatcher localDispatcher = localDispatchers.get(key);
+//         NIOConnector connector = new INVMConnector(idCounter.getAndIncrement(), dispatcher, localDispatcher);
+//
+//         if (log.isDebugEnabled())
+//            log.debug("Created " + connector + " to connect to "
+//                  + key);
+//
+//         NIOConnectorHolder holder = new NIOConnectorHolder(connector);
+//         connectors.put(key, holder);
+//         return connector;
+//      }
 
       NIOConnector connector = null;
 

@@ -39,12 +39,9 @@ public class ConsumerDeliverMessageCodec extends AbstractPacketCodec<ConsumerDel
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   //TODO - remove this when in next stage of refactoring
-   private byte[] encodedMsg;
-   
    public int getBodyLength(final ConsumerDeliverMessage packet) throws Exception
    {
-   	encodedMsg = StreamUtils.toBytes(packet.getMessage());
+      byte[] encodedMsg = StreamUtils.toBytes(packet.getMessage());
    	
    	return SIZE_INT + encodedMsg.length + SIZE_LONG; 
    }
@@ -52,6 +49,7 @@ public class ConsumerDeliverMessageCodec extends AbstractPacketCodec<ConsumerDel
    @Override
    protected void encodeBody(final ConsumerDeliverMessage message, final RemotingBuffer out) throws Exception
    {
+      byte[] encodedMsg = StreamUtils.toBytes(message.getMessage());
       out.putInt(encodedMsg.length);
       out.put(encodedMsg);
       out.putLong(message.getDeliveryID());

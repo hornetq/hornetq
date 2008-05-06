@@ -41,12 +41,9 @@ public class ProducerSendMessageCodec extends AbstractPacketCodec<ProducerSendMe
 
    // AbstractPacketCodec overrides ---------------------------------
    
-   //TOD remove this in next stage of refactoring
-   private byte[] encodedMsg;
-   
    public int getBodyLength(final ProducerSendMessage packet) throws Exception
    {
-   	encodedMsg = StreamUtils.toBytes(packet.getMessage());   
+   	byte[] encodedMsg = StreamUtils.toBytes(packet.getMessage());   
 
       int bodyLength = SimpleString.sizeofNullableString(packet.getAddress()) + SIZE_INT + encodedMsg.length;
       
@@ -56,6 +53,7 @@ public class ProducerSendMessageCodec extends AbstractPacketCodec<ProducerSendMe
    @Override
    protected void encodeBody(final ProducerSendMessage message, final RemotingBuffer out) throws Exception
    {
+      byte[] encodedMsg = StreamUtils.toBytes(message.getMessage());  
       out.putNullableSimpleString(message.getAddress());
       out.putInt(encodedMsg.length);
       out.put(encodedMsg);

@@ -44,7 +44,7 @@ public class SessionCreateProducerMessageCodec extends
    {   	
    	SimpleString address = packet.getAddress();
       
-      int bodyLength = SimpleString.sizeofString(address) + 2 * SIZE_INT;
+      int bodyLength = SimpleString.sizeofNullableString(address) + 2 * SIZE_INT;
       
       return bodyLength;
    }
@@ -54,7 +54,7 @@ public class SessionCreateProducerMessageCodec extends
    {
       SimpleString address = request.getAddress();
      
-      out.putSimpleString(address);
+      out.putNullableSimpleString(address);
       out.putInt(request.getWindowSize());
       out.putInt(request.getMaxRate());
    }
@@ -63,7 +63,7 @@ public class SessionCreateProducerMessageCodec extends
    protected SessionCreateProducerMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
-      SimpleString address = in.getSimpleString();
+      SimpleString address = in.getNullableSimpleString();
       
       int windowSize = in.getInt();
       
