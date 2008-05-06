@@ -65,7 +65,7 @@ public abstract class AbstractPacketCodec<P extends Packet>
 
    public void encode(final P packet, final ProtocolEncoderOutput out) throws Exception
    {
-      long correlationID = packet.getCorrelationID();
+      long responseTargetID = packet.getResponseTargetID();
       long targetID = packet.getTargetID();
       long executorID = packet.getExecutorID();
       
@@ -79,7 +79,7 @@ public abstract class AbstractPacketCodec<P extends Packet>
       //The standard header fields
       buf.putInt(messageLength);
       buf.put(packet.getType().byteValue());
-      buf.putLong(correlationID);
+      buf.putLong(responseTargetID);
       buf.putLong(targetID);
       buf.putLong(executorID);
 
@@ -105,7 +105,7 @@ public abstract class AbstractPacketCodec<P extends Packet>
       
       Packet packet = decodeBody(buffer);
 
-      packet.setCorrelationID(correlationID);
+      packet.setResponseTargetID(correlationID);
       packet.setTargetID(targetID);
       packet.setExecutorID(executorID);
 

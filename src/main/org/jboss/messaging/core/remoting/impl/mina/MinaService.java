@@ -11,8 +11,6 @@ import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addKeepAliveFilter;
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addLoggingFilter;
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addMDCFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addSSLFilter;
 
 import java.net.InetSocketAddress;
@@ -38,7 +36,6 @@ import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
-import org.jboss.messaging.core.server.ConnectionManager;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -171,10 +168,12 @@ public class MinaService implements RemotingService, CleanUpNotifier
          acceptor.addListener(acceptorListener);
       }
       
-      boolean disableInvm = config.isInvmDisabled();
-      if (log.isDebugEnabled())
-         log.debug("invm optimization for remoting is " + (disableInvm ? "disabled" : "enabled"));
-      if (!disableInvm)
+//      boolean disableInvm = config.isInvmDisabled();
+//      if (log.isDebugEnabled())
+//         log.debug("invm optimization for remoting is " + (disableInvm ? "disabled" : "enabled"));
+     // if (!disableInvm)
+      
+      log.info("Registering:" + config.getLocation());
          REGISTRY.register(config.getLocation(), dispatcher);
 
       started = true;

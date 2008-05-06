@@ -6,6 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl;
 
+import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 
 import java.util.Collection;
@@ -88,8 +89,10 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
       assert location != null;
       String key = location.getLocation();
       
+      log.info("*** Getting connector for " + location);
+      
       if (connectors.containsKey(key))
-      {
+      {         
          NIOConnectorHolder holder = connectors.get(key);
          holder.increment();
          NIOConnector connector = holder.getConnector();
@@ -125,6 +128,11 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
       if (transport == TCP)
       {
          connector = new MinaConnector(location, connectionParams, dispatcher);
+      }
+      else if (transport == INVM)
+      {
+         PacketDispatcher localDispatcher = localDispatchers.get(key);
+         connector = new INVMConnector(idCounter.getAndIncrement(), dispatcher, localDispatcher);
       }
 
       if (connector == null)

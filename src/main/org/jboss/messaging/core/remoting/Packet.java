@@ -9,16 +9,23 @@ package org.jboss.messaging.core.remoting;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 
-
+/**
+ * 
+ * A Packet
+ * 
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ *
+ */
 public interface Packet
 {
    // Public --------------------------------------------------------
 
    public static final long NO_ID_SET = -1L;
 
-   void setCorrelationID(long correlationID);
+   void setResponseTargetID(long responseTargetID);
 
-   long getCorrelationID();
+   long getResponseTargetID();
 
    PacketType getType();
 

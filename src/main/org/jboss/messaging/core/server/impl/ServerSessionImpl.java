@@ -58,7 +58,6 @@ import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.server.Delivery;
 import org.jboss.messaging.core.server.HandleStatus;
-import org.jboss.messaging.core.server.ObjectIDGenerator;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.server.ServerConsumer;
@@ -123,8 +122,6 @@ public class ServerSessionImpl implements ServerSession
 
    private final SecurityStore securityStore;
 
-   private final ObjectIDGenerator objectIDGenerator;
-
    private final Set<ServerConsumer> consumers = new ConcurrentHashSet<ServerConsumer>();
 
    private final Set<ServerBrowserImpl> browsers = new ConcurrentHashSet<ServerBrowserImpl>();
@@ -144,16 +141,15 @@ public class ServerSessionImpl implements ServerSession
    // Constructors
    // ---------------------------------------------------------------------------------
 
-   public ServerSessionImpl(final boolean autoCommitSends,
+   public ServerSessionImpl(final long id, final boolean autoCommitSends,
                             final boolean autoCommitAcks,
                             final boolean xa, final ServerConnection connection,
                             final ResourceManager resourceManager, final PacketSender sender,
                             final PacketDispatcher dispatcher, final StorageManager persistenceManager,
                             final HierarchicalRepository<QueueSettings> queueSettingsRepository,
-                            final PostOffice postOffice, final SecurityStore securityStore,
-                            final ObjectIDGenerator objectIDGenerator) throws Exception
+                            final PostOffice postOffice, final SecurityStore securityStore) throws Exception
    {
-   	this.id = objectIDGenerator.generateID();
+   	this.id = id;
 
       this.autoCommitSends = autoCommitSends;
 
@@ -179,8 +175,6 @@ public class ServerSessionImpl implements ServerSession
       this.postOffice = postOffice;
 
       this.securityStore = securityStore;
-
-      this.objectIDGenerator = objectIDGenerator;
 
       if (log.isTraceEnabled())
       {
@@ -238,7 +232,7 @@ public class ServerSessionImpl implements ServerSession
       {
          return HandleStatus.BUSY;
       }
-      Delivery delivery = new DeliveryImpl(ref, id, consumer.getID(), deliveryIDSequence++, sender);
+      Delivery delivery = new DeliveryImpl(ref, id, consumer.getClientTargetID(), deliveryIDSequence++, sender);
 
       deliveries.add(delivery);
 
@@ -918,7 +912,7 @@ public class ServerSessionImpl implements ServerSession
       }
    }
 
-   public SessionCreateConsumerResponseMessage createConsumer(final SimpleString queueName, final SimpleString filterString,
+   public SessionCreateConsumerResponseMessage createConsumer(final long clientTargetID, final SimpleString queueName, final SimpleString filterString,
                                                               final boolean noLocal, final boolean autoDeleteQueue,
                                                               int windowSize, int maxRate) throws Exception
    {
@@ -948,8 +942,10 @@ public class ServerSessionImpl implements ServerSession
 
       maxRate = queueMaxRate != null ? queueMaxRate : maxRate;
 
+      long id = dispatcher.generateID();
+      
       ServerConsumer consumer =
-      	new ServerConsumerImpl(objectIDGenerator.generateID(), binding.getQueue(), noLocal, filter, autoDeleteQueue, windowSize != -1, maxRate, connection.getID(),
+      	new ServerConsumerImpl(id, clientTargetID, binding.getQueue(), noLocal, filter, autoDeleteQueue, windowSize != -1, maxRate, connection.getID(),
                                 this, persistenceManager, queueSettingsRepository, postOffice, connection.isStarted());
 
       dispatcher.register(new ServerConsumerPacketHandler(consumer));
@@ -1029,8 +1025,9 @@ public class ServerSessionImpl implements ServerSession
 
       securityStore.check(binding.getAddress().toString(), CheckType.READ, connection);
 
-      ServerBrowserImpl browser = new ServerBrowserImpl(objectIDGenerator.generateID(),
-            this, binding.getQueue(), filterString == null ? null : filterString.toString());
+      long id = dispatcher.generateID();
+      
+      ServerBrowserImpl browser = new ServerBrowserImpl(id, this, binding.getQueue(), filterString == null ? null : filterString.toString());
 
       browsers.add(browser);
 
@@ -1048,7 +1045,7 @@ public class ServerSessionImpl implements ServerSession
     * is set and there are not sufficient empty spaces in the queue, or it is overridden by any producer-window_size
     * specified on the queue
     */
-   public SessionCreateProducerResponseMessage createProducer(final SimpleString address, final int windowSize,
+   public SessionCreateProducerResponseMessage createProducer(final long clientTargetID, final SimpleString address, final int windowSize,
    		                                                     final int maxRate) throws Exception
    {
    	FlowController flowController = null;
@@ -1059,8 +1056,10 @@ public class ServerSessionImpl implements ServerSession
    	{
    		flowController = windowSize == -1 ? null : postOffice.getFlowController(address);
    	}
+   	
+   	long id = dispatcher.generateID();
 
-   	ServerProducerImpl producer = new ServerProducerImpl(objectIDGenerator.generateID(), this, address, sender, flowController);
+   	ServerProducerImpl producer = new ServerProducerImpl(id, clientTargetID, this, address, sender, flowController);
 
    	producers.add(producer);
 

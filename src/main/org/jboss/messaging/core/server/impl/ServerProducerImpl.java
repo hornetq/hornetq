@@ -44,6 +44,8 @@ public class ServerProducerImpl implements ServerProducer
 	
 	private final long id;
 	
+	private final long clientTargetID;
+	
 	private final ServerSession session;
 	
 	private final SimpleString address;
@@ -56,11 +58,13 @@ public class ServerProducerImpl implements ServerProducer
 	
 	// Constructors ----------------------------------------------------------------
 	
-	public ServerProducerImpl(final long id, final ServerSession session, final SimpleString address, 
+	public ServerProducerImpl(final long id, final long clientTargetID, final ServerSession session, final SimpleString address, 
 			                    final PacketSender sender,
 			                    final FlowController flowController) throws Exception
 	{
 		this.id = id;
+		
+		this.clientTargetID = clientTargetID;
       
 		this.session = session;
 		
@@ -106,7 +110,7 @@ public class ServerProducerImpl implements ServerProducer
 	{
 		Packet packet = new ProducerReceiveTokensMessage(1);
 		
-		packet.setTargetID(id);
+		packet.setTargetID(clientTargetID);
 		packet.setExecutorID(session.getID());
 		sender.send(packet);		
 	}

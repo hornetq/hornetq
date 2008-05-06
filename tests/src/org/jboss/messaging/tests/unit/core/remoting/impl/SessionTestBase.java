@@ -109,37 +109,6 @@ public abstract class SessionTestBase extends TestCase
       }
    }
 
-   
-   public void testWriteAndBlock() throws Exception
-   {
-      TextPacket request = new TextPacket("testSendBlocking");
-      request.setTargetID(serverPacketHandler.getID());
-
-      PacketImpl receivedPacket = (PacketImpl) session.writeAndBlock(request, REQRES_TIMEOUT, SECONDS);
-
-      assertNotNull(receivedPacket);
-      assertTrue(receivedPacket instanceof TextPacket);
-      TextPacket response = (TextPacket) receivedPacket;
-      assertEquals(reverse(request.getText()), response.getText());
-   }
-   
-   public void testCorrelationCounter() throws Exception
-   {
-      TextPacket request = new TextPacket("testSendBlocking");
-      request.setTargetID(serverPacketHandler.getID());
-
-      PacketImpl receivedPacket = (PacketImpl) session.writeAndBlock(request, REQRES_TIMEOUT, SECONDS);
-      long correlationID = request.getCorrelationID();
-      
-      assertNotNull(receivedPacket);      
-      assertEquals(request.getCorrelationID(), receivedPacket.getCorrelationID());
-      
-      receivedPacket = (PacketImpl) session.writeAndBlock(request, REQRES_TIMEOUT, SECONDS);
-      assertEquals(correlationID + 1, request.getCorrelationID());
-      assertEquals(correlationID + 1, receivedPacket.getCorrelationID());      
-   }
-
-   
    public void testClientHandlePacketSentByServer() throws Exception
    {
       TestPacketHandler clientHandler = new TestPacketHandler(generateID());

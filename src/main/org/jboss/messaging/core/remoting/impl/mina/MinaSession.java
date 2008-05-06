@@ -6,12 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.apache.mina.common.IoSession;
-import org.apache.mina.filter.reqres.Request;
-import org.apache.mina.filter.reqres.Response;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.Packet;
 
@@ -29,7 +24,7 @@ public class MinaSession implements NIOSession
 
    private final IoSession session;
 
-   private AtomicLong correlationCounter;
+   //private AtomicLong correlationCounter;
    
    // Static --------------------------------------------------------
 
@@ -40,7 +35,7 @@ public class MinaSession implements NIOSession
       assert session != null;
 
       this.session = session;
-      correlationCounter = new AtomicLong(0);
+     // correlationCounter = new AtomicLong(0);
    }
 
    // Public --------------------------------------------------------
@@ -50,18 +45,9 @@ public class MinaSession implements NIOSession
       return session.getId();
    }
 
-   public void write(Object object)
+   public void write(Packet packet)
    {
-      session.write(object);
-   }
-
-   public Object writeAndBlock(Packet packet, long timeout, TimeUnit timeUnit) throws Exception
-   {
-      packet.setCorrelationID(correlationCounter.incrementAndGet());
-      Request req = new Request(packet.getCorrelationID(), packet, timeout, timeUnit);
-      session.write(req);
-      Response response = req.awaitResponse();
-      return response.getMessage();
+      session.write(packet);
    }
 
    public boolean isConnected()

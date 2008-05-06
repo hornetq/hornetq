@@ -66,7 +66,7 @@ public abstract class ServerPacketHandlerSupport implements PacketHandler
       }
       
       // reply if necessary
-      if (response != null && packet.getCorrelationID() != Packet.NO_ID_SET)
+      if (response != null && packet.getResponseTargetID() != Packet.NO_ID_SET)
       {
          response.normalize(packet);
          

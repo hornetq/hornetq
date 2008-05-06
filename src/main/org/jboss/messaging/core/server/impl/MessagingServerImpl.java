@@ -33,6 +33,7 @@ import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.FileDeploymentManager;
 import org.jboss.messaging.core.deployers.impl.QueueSettingsDeployer;
 import org.jboss.messaging.core.deployers.impl.SecurityDeployer;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.memory.impl.SimpleMemoryManager;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -51,7 +52,6 @@ import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.ObjectIDGenerator;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
@@ -60,7 +60,6 @@ import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.impl.ResourceManagerImpl;
 import org.jboss.messaging.core.version.Version;
-import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.util.VersionLoader;
 
 /**
@@ -99,7 +98,6 @@ public class MessagingServerImpl implements MessagingServer
    private Deployer queueSettingsDeployer;
    private JBMSecurityManager securityManager = new JBMSecurityManagerImpl(true);
    private DeploymentManager deploymentManager = new FileDeploymentManager();
-   private ObjectIDGenerator objectIDGenerator = new ObjectIDGeneratorImpl();
 
    // plugins
 
@@ -336,23 +334,19 @@ public class MessagingServerImpl implements MessagingServer
       // security my be screwed up, on account of thread local security stack being corrupted.
 
       securityStore.authenticate(username, password);
+      
+      long id = remotingService.getDispatcher().generateID();
 
       final ServerConnection connection =
-         new ServerConnectionImpl(username, password,
+         new ServerConnectionImpl(id, username, password,
                           remotingClientSessionID, clientAddress,
                           remotingService.getDispatcher(), resourceManager, storageManager,
                           queueSettingsRepository,
-                          postOffice, securityStore, connectionManager,
-                          objectIDGenerator);
+                          postOffice, securityStore, connectionManager);
 
       remotingService.getDispatcher().register(new ServerConnectionPacketHandler(connection));
 
       return new CreateConnectionResponse(connection.getID(), version);
-   }
-   
-   public ObjectIDGenerator getObjectIDGenerator()
-   {
-   	return this.objectIDGenerator;
    }
    
    // Public ---------------------------------------------------------------------------------------

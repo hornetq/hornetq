@@ -21,15 +21,9 @@ public interface RemotingConnection
    
    public long getSessionID();
  
-   /**
-    * Use this method if the packet is to be executed in the context of the targetID (i.e. for
-    * sessions, connections & connections factories)
-    */
-   Packet send(long targetID, Packet packet) throws MessagingException;
-
-   Packet send(long targetID, long executorID, Packet packet) throws MessagingException;
+   Packet sendBlocking(long targetID, long executorID, Packet packet) throws MessagingException;
    
-   Packet send(long targetID, long executorID, Packet packet, boolean oneWay) throws MessagingException;
+   void sendOneWay(long targetID, long executorID, Packet packet) throws MessagingException;
    
    void setRemotingSessionListener(RemotingSessionListener newListener);
    

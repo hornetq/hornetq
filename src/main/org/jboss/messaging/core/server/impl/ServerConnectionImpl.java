@@ -34,7 +34,6 @@ import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.server.ConnectionManager;
-import org.jboss.messaging.core.server.ObjectIDGenerator;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.server.ServerSession;
@@ -90,8 +89,6 @@ public class ServerConnectionImpl implements ServerConnection
    private final SecurityStore securityStore;
    
    private final ConnectionManager connectionManager;
-   
-   private final ObjectIDGenerator objectIDGenerator;
 
    private final long createdTime;
          
@@ -106,7 +103,7 @@ public class ServerConnectionImpl implements ServerConnection
 
    // Constructors ---------------------------------------------------------------------------------
       
-   public ServerConnectionImpl(final String username, final String password,
+   public ServerConnectionImpl(final long id, final String username, final String password,
    		                      final long remotingClientSessionID,
    		                      final String clientAddress,
    		                      final PacketDispatcher dispatcher,
@@ -114,10 +111,9 @@ public class ServerConnectionImpl implements ServerConnection
    		                      final StorageManager persistenceManager,
    		                      final HierarchicalRepository<QueueSettings> queueSettingsRepository,
    		                      final PostOffice postOffice, final SecurityStore securityStore,
-   		                      final ConnectionManager connectionManager,
-   		                      final ObjectIDGenerator objectIDGenerator)
+   		                      final ConnectionManager connectionManager)
    {
-   	this.id = objectIDGenerator.generateID();
+   	this.id = id;
       
    	this.username = username;
       
@@ -141,8 +137,6 @@ public class ServerConnectionImpl implements ServerConnection
       
       this.connectionManager = connectionManager;
       
-      this.objectIDGenerator = objectIDGenerator;
-      
       started = false;
       
       createdTime = System.currentTimeMillis();
@@ -161,10 +155,10 @@ public class ServerConnectionImpl implements ServerConnection
    		                                                      final boolean autoCommitAcks,
                                                                final PacketSender sender) throws Exception
    {           
+      long id = dispatcher.generateID();
       ServerSession session =
-         new ServerSessionImpl(autoCommitSends, autoCommitAcks, xa, this, resourceManager,
-         		sender, dispatcher, persistenceManager, queueSettingsRepository, postOffice, securityStore,
-         		objectIDGenerator);
+         new ServerSessionImpl(id, autoCommitSends, autoCommitAcks, xa, this, resourceManager,
+         		sender, dispatcher, persistenceManager, queueSettingsRepository, postOffice, securityStore);
 
       sessions.add(session);
       

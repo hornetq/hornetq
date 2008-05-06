@@ -230,7 +230,7 @@ public class ServerBrowserImpl
          }
 
          // reply if necessary
-         if (response == null && packet.getCorrelationID() != Packet.NO_ID_SET)
+         if (response == null && packet.getResponseTargetID() != Packet.NO_ID_SET)
          {
             response = new PacketImpl(NULL);               
          }            

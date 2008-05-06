@@ -9,8 +9,10 @@ package org.jboss.messaging.core.remoting.impl.codec;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATECONSUMER;
 import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
 import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
+import org.jboss.messaging.util.DataConstants;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -39,7 +41,7 @@ public class SessionCreateConsumerMessageCodec extends
 
    public int getBodyLength(final SessionCreateConsumerMessage packet) throws Exception
    {   	
-   	int bodyLength = SimpleString.sizeofString(packet.getQueueName()) +
+   	int bodyLength = SIZE_LONG + SimpleString.sizeofString(packet.getQueueName()) +
    	SimpleString.sizeofNullableString(packet.getFilterString()) + 2 * SIZE_BOOLEAN + 2 * SIZE_INT;
    	
    	return bodyLength;
@@ -55,6 +57,7 @@ public class SessionCreateConsumerMessageCodec extends
       int windowSize = request.getWindowSize();
       int maxRate = request.getMaxRate();
 
+      out.putLong(request.getClientTargetID());
       out.putSimpleString(queueName);
       out.putNullableSimpleString(filterString);
       out.putBoolean(noLocal);
@@ -67,6 +70,7 @@ public class SessionCreateConsumerMessageCodec extends
    protected SessionCreateConsumerMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
+      long clientTargetID = in.getLong();
       SimpleString queueName = in.getSimpleString();
       SimpleString filterString = in.getNullableSimpleString();
       boolean noLocal = in.getBoolean();
@@ -74,7 +78,7 @@ public class SessionCreateConsumerMessageCodec extends
       int windowSize = in.getInt();
       int maxRate = in.getInt();
  
-      return new SessionCreateConsumerMessage(queueName, filterString, noLocal, autoDelete, windowSize, maxRate);
+      return new SessionCreateConsumerMessage(clientTargetID, queueName, filterString, noLocal, autoDelete, windowSize, maxRate);
    }
 
    // Package protected ---------------------------------------------

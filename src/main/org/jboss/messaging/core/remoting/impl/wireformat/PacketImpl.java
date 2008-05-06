@@ -17,7 +17,7 @@ public class PacketImpl implements Packet
 {
 	// Constants -----------------------------------------------------
 
-	private long correlationID = NO_ID_SET;
+	private long responseTargetID = NO_ID_SET;
 
 	private long targetID = NO_ID_SET;
 
@@ -43,14 +43,14 @@ public class PacketImpl implements Packet
 		return type;
 	}
 
-	public void setCorrelationID(long correlationID)
+	public void setResponseTargetID(long responseTargetID)
 	{
-		this.correlationID = correlationID;
+		this.responseTargetID = responseTargetID;
 	}
 
-	public long getCorrelationID()
+	public long getResponseTargetID()
 	{
-		return correlationID;
+		return responseTargetID;
 	}
 
 	public long getTargetID()
@@ -77,7 +77,7 @@ public class PacketImpl implements Packet
 	{
 		assert other != null;
 
-		setCorrelationID(other.getCorrelationID());
+		setTargetID(other.getResponseTargetID());
 	}
 
 	/**
@@ -85,7 +85,7 @@ public class PacketImpl implements Packet
 	 */
 	 public boolean isRequest()
 	 {
-		 return targetID != NO_ID_SET && correlationID != NO_ID_SET;
+		 return targetID != NO_ID_SET && responseTargetID != NO_ID_SET;
 	 }
 
 	 @Override
@@ -99,7 +99,7 @@ public class PacketImpl implements Packet
 	 protected String getParentString()
 	 {
 		 return "PACKET[type=" + type
-		 + ", correlationID=" + correlationID + ", targetID=" + targetID
+		 + ", responseTargetID=" + responseTargetID + ", targetID=" + targetID
 		 + ", executorID=" + executorID;
 	 }
 

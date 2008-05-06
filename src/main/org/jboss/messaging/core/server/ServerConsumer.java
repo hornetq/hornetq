@@ -33,6 +33,8 @@ public interface ServerConsumer extends Consumer
 {
 	long getID();
 	
+	long getClientTargetID();
+	
 	void close() throws Exception;
 	
 	void setStarted(boolean started) throws Exception;

@@ -6,11 +6,8 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addBlockingRequestResponseFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addKeepAliveFilter;
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addLoggingFilter;
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addMDCFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addSSLFilter;
 
 import java.io.IOException;
@@ -19,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.mina.common.CloseFuture;
 import org.apache.mina.common.ConnectFuture;
@@ -31,8 +27,8 @@ import org.apache.mina.common.IoSession;
 import org.apache.mina.filter.ssl.SslFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -64,8 +60,6 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
    private transient NioSocketConnector connector;
 
    private PacketDispatcher dispatcher;
-
-   private ScheduledExecutorService blockingScheduler;
 
    private ExecutorService threadPool;
    
@@ -125,7 +119,6 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
       }
       addCodecFilter(filterChain);
       // addLoggingFilter(filterChain);
-      blockingScheduler = addBlockingRequestResponseFilter(filterChain);
       addKeepAliveFilter(filterChain, keepAliveFactory, connectionParams.getKeepAliveInterval(),
             connectionParams.getKeepAliveTimeout(), this);
       connector.getSessionConfig().setTcpNoDelay(connectionParams.isTcpNoDelay());
@@ -182,7 +175,6 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
       CloseFuture closeFuture = session.close().awaitUninterruptibly();
       boolean closed = closeFuture.isClosed();
       
-      blockingScheduler.shutdown();
       connector.removeListener(ioListener);
       connector.dispose();
       threadPool.shutdown();
@@ -204,7 +196,6 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
       }
       
       connector = null;
-      blockingScheduler = null;
       session = null;
 
       return closed;

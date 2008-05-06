@@ -66,6 +66,8 @@ public class ServerConsumerImpl implements ServerConsumer
    private final boolean trace = log.isTraceEnabled();
 
    private final long id;
+   
+   private final long clientTargetID;
 
    private final Queue messageQueue;
    
@@ -95,7 +97,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    // Constructors ---------------------------------------------------------------------------------
  
-   ServerConsumerImpl(final long id, final Queue messageQueue, final boolean noLocal, final Filter filter,
+   ServerConsumerImpl(final long id, final long clientTargetID, final Queue messageQueue, final boolean noLocal, final Filter filter,
    		             final boolean autoDeleteQueue, final boolean enableFlowControl, final int maxRate,
    		             final long connectionID, final ServerSession sessionEndpoint,
 					       final StorageManager persistenceManager,
@@ -104,6 +106,8 @@ public class ServerConsumerImpl implements ServerConsumer
 					       final boolean started)
    {
    	this.id = id;
+   	
+   	this.clientTargetID = clientTargetID;
       
       this.messageQueue = messageQueue;
       
@@ -151,6 +155,11 @@ public class ServerConsumerImpl implements ServerConsumer
    public long getID()
    {
    	return id;
+   }
+   
+   public long getClientTargetID()
+   {
+      return clientTargetID;
    }
    
    public HandleStatus handle(MessageReference ref) throws Exception

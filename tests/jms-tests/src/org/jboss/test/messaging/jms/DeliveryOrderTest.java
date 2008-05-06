@@ -81,12 +81,14 @@ public class DeliveryOrderTest extends JMSTestCase
             
             prod.send(tm);
             
+            log.info("sent message");
+            
             if (i % 10 == 0)
             {
                sess.commit();
             }
          }
-
+         
          // need extra commit for cases in which the last message index is not a multiple of 10
          sess.commit();
 

@@ -246,6 +246,7 @@ public class MiscellaneousTest extends JMSTestCase
             // close the connection on the same thread that processed the message
             try
             {
+               log.info("** closing");
                conn.close();
                result.setSuccess();
             }

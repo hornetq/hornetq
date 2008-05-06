@@ -8,9 +8,9 @@ package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEPRODUCER;
 import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
-import org.jboss.messaging.util.DataConstants;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -44,7 +44,7 @@ public class SessionCreateProducerMessageCodec extends
    {   	
    	SimpleString address = packet.getAddress();
       
-      int bodyLength = SimpleString.sizeofNullableString(address) + 2 * SIZE_INT;
+      int bodyLength = SIZE_LONG + SimpleString.sizeofNullableString(address) + 2 * SIZE_INT;
       
       return bodyLength;
    }
@@ -54,6 +54,7 @@ public class SessionCreateProducerMessageCodec extends
    {
       SimpleString address = request.getAddress();
      
+      out.putLong(request.getClientTargetID());
       out.putNullableSimpleString(address);
       out.putInt(request.getWindowSize());
       out.putInt(request.getMaxRate());
@@ -63,13 +64,15 @@ public class SessionCreateProducerMessageCodec extends
    protected SessionCreateProducerMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
+      long clientTargetID = in.getLong();
+      
       SimpleString address = in.getNullableSimpleString();
       
       int windowSize = in.getInt();
       
       int maxRate = in.getInt();
 
-      return new SessionCreateProducerMessage(address, windowSize, maxRate);
+      return new SessionCreateProducerMessage(clientTargetID, address, windowSize, maxRate);
    }
 
    // Package protected ---------------------------------------------

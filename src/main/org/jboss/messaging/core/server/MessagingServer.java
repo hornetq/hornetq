@@ -94,6 +94,4 @@ public interface MessagingServer extends MessagingComponent
                                              int incrementVersion) throws Exception;
 
    DeploymentManager getDeploymentManager();
-   
-   ObjectIDGenerator getObjectIDGenerator();
 }

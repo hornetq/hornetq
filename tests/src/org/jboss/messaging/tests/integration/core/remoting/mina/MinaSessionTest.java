@@ -40,23 +40,7 @@ public class MinaSessionTest extends SessionTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-
-   public void testWriteAndBlockWithTimeout() throws Exception
-   {
-      serverPacketHandler.setSleepTime(1000, MILLISECONDS);
-
-      PacketImpl packet = new TextPacket("testSendBlockingWithTimeout");
-      packet.setTargetID(serverPacketHandler.getID());
-      
-      try
-      {
-         session.writeAndBlock(packet, 500, MILLISECONDS);
-         fail("a Throwable should be thrown");
-      } catch (Throwable t)
-      {
-      }
-   }
-   
+ 
    // ClientTestBase overrides --------------------------------------
    
    @Override

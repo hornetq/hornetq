@@ -65,6 +65,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       
    private final long targetID;
    
+   private final long clientTargetID;
+   
    private final ExecutorService sessionExecutor;
    
    private final RemotingConnection remotingConnection;
@@ -100,11 +102,14 @@ public class ClientConsumerImpl implements ClientConsumerInternal
     * (and its PacketDispatcher) to a single server.
     */
    public ClientConsumerImpl(final ClientSessionInternal session, final long targetID,
+                             final long clientTargetID,
                              final ExecutorService sessionExecutor,
                              final RemotingConnection remotingConnection,
                              final boolean direct, final int tokenBatchSize)
    {
       this.targetID = targetID;
+      
+      this.clientTargetID = clientTargetID;
       
       this.session = session;
       
@@ -256,9 +261,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          
          receiverThread = null;
 
-         remotingConnection.send(targetID, session.getServerTargetID(), new PacketImpl(CLOSE));
+         remotingConnection.sendBlocking(targetID, session.getServerTargetID(), new PacketImpl(CLOSE));
 
-         remotingConnection.getPacketDispatcher().unregister(targetID);
+         remotingConnection.getPacketDispatcher().unregister(clientTargetID);
       }
       finally
       {
@@ -380,7 +385,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          {
             tokensToSend = 0;
             
-            remotingConnection.send(targetID, session.getServerTargetID(), new ConsumerFlowTokenMessage(tokenBatchSize), true);                  
+            remotingConnection.sendOneWay(targetID, session.getServerTargetID(), new ConsumerFlowTokenMessage(tokenBatchSize));                  
          }
       }
    }

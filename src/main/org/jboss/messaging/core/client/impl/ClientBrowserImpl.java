@@ -83,7 +83,7 @@ public class ClientBrowserImpl implements ClientBrowser
       
       try
       {
-         remotingConnection.send(serverTargetID, session.getServerTargetID(), new PacketImpl(CLOSE));
+         remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), new PacketImpl(CLOSE));
       }
       finally
       {
@@ -102,7 +102,7 @@ public class ClientBrowserImpl implements ClientBrowser
    {
       checkClosed();
       
-      remotingConnection.send(serverTargetID, session.getServerTargetID(), new PacketImpl(SESS_BROWSER_RESET));
+      remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), new PacketImpl(SESS_BROWSER_RESET));
    }
 
    public boolean hasNextMessage() throws MessagingException
@@ -110,7 +110,7 @@ public class ClientBrowserImpl implements ClientBrowser
       checkClosed();
       
       SessionBrowserHasNextMessageResponseMessage response =
-         (SessionBrowserHasNextMessageResponseMessage)remotingConnection.send(serverTargetID, session.getServerTargetID(), new PacketImpl(SESS_BROWSER_HASNEXTMESSAGE));
+         (SessionBrowserHasNextMessageResponseMessage)remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), new PacketImpl(SESS_BROWSER_HASNEXTMESSAGE));
       
       return response.hasNext();
    }
@@ -120,7 +120,7 @@ public class ClientBrowserImpl implements ClientBrowser
       checkClosed();
       
       SessionBrowserNextMessageResponseMessage response =
-         (SessionBrowserNextMessageResponseMessage)remotingConnection.send(serverTargetID, session.getServerTargetID(), new PacketImpl(SESS_BROWSER_NEXTMESSAGE));
+         (SessionBrowserNextMessageResponseMessage)remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), new PacketImpl(SESS_BROWSER_NEXTMESSAGE));
       
       return response.getMessage();
    }
@@ -130,7 +130,7 @@ public class ClientBrowserImpl implements ClientBrowser
       checkClosed();
       
       SessionBrowserNextMessageBlockResponseMessage response =
-         (SessionBrowserNextMessageBlockResponseMessage)remotingConnection.send(serverTargetID, session.getServerTargetID(), new SessionBrowserNextMessageBlockMessage(maxMessages));
+         (SessionBrowserNextMessageBlockResponseMessage)remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), new SessionBrowserNextMessageBlockMessage(maxMessages));
       return response.getMessages();
    }
 

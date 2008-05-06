@@ -124,19 +124,5 @@ public class FilterChainSupport
       filterChain.addLast("logger", filter);
    }
 
-   static ScheduledExecutorService addBlockingRequestResponseFilter(
-         final DefaultIoFilterChainBuilder filterChain)
-   {
-      assert filterChain != null;
-
-      ScheduledExecutorService executorService = Executors
-            .newScheduledThreadPool(1);
-      RequestResponseFilter filter = new RequestResponseFilter(
-            new MinaInspector(), executorService);
-      filterChain.addLast("reqres", filter);
-
-      return executorService;
-   }
-
    // Inner classes -------------------------------------------------
 }

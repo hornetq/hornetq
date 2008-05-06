@@ -20,6 +20,8 @@ public class SessionCreateConsumerMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
+   private final long clientTargetID;
+   
    private final SimpleString queueName;
    
    private final SimpleString filterString;
@@ -36,12 +38,13 @@ public class SessionCreateConsumerMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateConsumerMessage(final SimpleString queueName, final SimpleString filterString,
+   public SessionCreateConsumerMessage(final long clientTargetID, final SimpleString queueName, final SimpleString filterString,
    		                              final boolean noLocal, final boolean autoDeleteQueue,
    		                              final int windowSize, final int maxRate)
    {
       super(PacketType.SESS_CREATECONSUMER);
 
+      this.clientTargetID = clientTargetID;
       this.queueName = queueName;
       this.filterString = filterString;
       this.noLocal = noLocal;
@@ -66,6 +69,11 @@ public class SessionCreateConsumerMessage extends PacketImpl
       return buff.toString();
    }
 
+   public long getClientTargetID()
+   {
+      return clientTargetID;
+   }
+   
    public SimpleString getQueueName()
    {
       return queueName;

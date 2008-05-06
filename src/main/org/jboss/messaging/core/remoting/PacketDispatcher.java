@@ -26,5 +26,7 @@ public interface PacketDispatcher
 
    /** Call filters on a package */
    void callFilters(Packet packet) throws Exception;
+   
+   long generateID();
 
 }

@@ -21,18 +21,19 @@
   */
 package org.jboss.messaging.core.client.impl;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGISTRY;
 
-import org.jboss.messaging.core.client.RemotingSessionListener;
-import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.ConnectionParams;
+import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.PacketHandler;
+import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 
 /**
@@ -64,7 +65,7 @@ public class RemotingConnectionImpl implements RemotingConnection
    private RemotingSessionListener listener;
 
    private transient PacketDispatcher dispatcher;
-
+   
    // Constructors ---------------------------------------------------------------------------------
 
    public RemotingConnectionImpl(final Location location, ConnectionParams connectionParams, final PacketDispatcher dispatcher) throws Exception
@@ -131,31 +132,70 @@ public class RemotingConnectionImpl implements RemotingConnection
       return session.getID();
    }
     
-   public Packet send(final long targetID, final Packet packet) throws MessagingException
-   {
-      return send(targetID, targetID, packet);
-   }
-
    /**
     * send the packet and block until a response is received (<code>oneWay</code> is set to <code>false</code>)
     */
-   public Packet send(final long targetID, final long executorID, final Packet packet) throws MessagingException
+   public Packet sendBlocking(final long targetID, final long executorID, final Packet packet) throws MessagingException
    {
-      return send(targetID, executorID, packet, false);
+      checkConnected();
+      
+      long handlerID = dispatcher.generateID();
+      
+      ResponseHandler handler = new ResponseHandler(handlerID);
+      
+      dispatcher.register(handler);
+      
+      try
+      {  
+         packet.setTargetID(targetID);
+         packet.setExecutorID(executorID);
+         packet.setResponseTargetID(handlerID);
+            
+         try
+         {
+            session.write(packet);
+         }
+         catch (Exception e)
+         {
+            log.error("Caught unexpected exception", e);
+            
+            throw new MessagingException(MessagingException.INTERNAL_ERROR);
+         }
+         
+         Packet response = handler.waitForResponse(1000 * connectionParams.getTimeout());
+         
+         if (response == null)
+         {
+            throw new IllegalStateException("No response received for " + packet);
+         }
+         
+         if (response instanceof MessagingExceptionMessage)
+         {
+            MessagingExceptionMessage message = (MessagingExceptionMessage) response;
+            
+            throw message.getException();
+         }
+         else
+         {
+            return response;
+         } 
+      }
+      finally
+      {
+         dispatcher.unregister(handlerID);
+      }           
    }
    
-   public Packet send(final long targetID, final long executorID, final Packet packet, final boolean oneWay) throws MessagingException
+   public void sendOneWay(final long targetID, final long executorID, final Packet packet) throws MessagingException
    {
       assert packet != null;
 
       packet.setTargetID(targetID);
       packet.setExecutorID(executorID);
       
-      Packet response;
-      
       try
-      {      
-         response = (Packet) send(packet, oneWay);
+      {
+         session.write(packet);
       }
       catch (Exception e)
       {
@@ -163,22 +203,6 @@ public class RemotingConnectionImpl implements RemotingConnection
          
          throw new MessagingException(MessagingException.INTERNAL_ERROR);
       }
-      
-      if (oneWay == false && response == null)
-      {
-         throw new IllegalStateException("No response received for " + packet);
-      }
-      
-      if (response instanceof MessagingExceptionMessage)
-      {
-         MessagingExceptionMessage message = (MessagingExceptionMessage) response;
-         
-         throw message.getException();
-      }
-      else
-      {
-         return response;
-      } 
    }
    
    public synchronized void setRemotingSessionListener(final RemotingSessionListener newListener)
@@ -214,22 +238,55 @@ public class RemotingConnectionImpl implements RemotingConnection
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
-
-   private Packet send(final Packet packet, final boolean oneWay) throws Exception
+      
+   private static class ResponseHandler implements PacketHandler
    {
-      assert packet != null;
-      checkConnected();
-
-      if (oneWay)
+      private long id;
+      
+      private Packet response;
+      
+      ResponseHandler(final long id)
       {
-         session.write(packet);
-         return null;
-      } else 
-      {
-         Packet response = (Packet) session.writeAndBlock(packet, 
-               connectionParams.getTimeout(), SECONDS);
-         return response;
+         this.id = id;
       }
+
+      public long getID()
+      {
+         return id;
+      }
+
+      public synchronized void handle(final Packet packet, final PacketSender sender)
+      {
+         this.response = packet;
+         
+         notify();
+      }
+      
+      public synchronized Packet waitForResponse(final long timeout)
+      {
+         long toWait = timeout;
+         long start = System.currentTimeMillis();
+
+         while (response == null && toWait > 0)
+         {
+            try
+            {
+               wait(toWait);
+            }
+            catch (InterruptedException e)
+            {
+            }
+            
+            long now = System.currentTimeMillis();
+            
+            toWait -= now - start;
+            
+            start = now;
+         }
+         
+         return response;         
+      }
+      
    }
 
    private void checkConnected() throws MessagingException

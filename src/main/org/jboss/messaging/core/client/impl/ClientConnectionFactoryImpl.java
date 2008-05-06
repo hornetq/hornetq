@@ -144,7 +144,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
             new CreateConnectionRequest(clientVersion.getIncrementingVersion(), sessionID, username, password);
          
          CreateConnectionResponse response =
-            (CreateConnectionResponse)remotingConnection.send(0, request);
+            (CreateConnectionResponse)remotingConnection.sendBlocking(0, 0, request);
 
          return new ClientConnectionImpl(response.getConnectionTargetID(), strictTck, remotingConnection,
                defaultConsumerWindowSize, defaultConsumerMaxRate,

@@ -94,7 +94,7 @@ public class ServerSessionPacketHandler extends ServerPacketHandlerSupport
       {
          SessionCreateConsumerMessage request = (SessionCreateConsumerMessage) packet;
          
-         response = session.createConsumer(request.getQueueName(), request.getFilterString(),
+         response = session.createConsumer(request.getClientTargetID(), request.getQueueName(), request.getFilterString(),
          		                            request.isNoLocal(), request.isAutoDeleteQueue(),
          		                            request.getWindowSize(), request.getMaxRate());
          break;
@@ -135,7 +135,7 @@ public class ServerSessionPacketHandler extends ServerPacketHandlerSupport
       case SESS_CREATEPRODUCER:
       {
          SessionCreateProducerMessage request = (SessionCreateProducerMessage) packet;
-         response = session.createProducer(request.getAddress(), request.getWindowSize(), request.getMaxRate());
+         response = session.createProducer(request.getClientTargetID(), request.getAddress(), request.getWindowSize(), request.getMaxRate());
          break;
       }
       case CLOSE:
@@ -241,7 +241,7 @@ public class ServerSessionPacketHandler extends ServerPacketHandlerSupport
       }
       
       // reply if necessary
-      if (response == null && packet.getCorrelationID() != Packet.NO_ID_SET)
+      if (response == null && packet.getResponseTargetID() != Packet.NO_ID_SET)
       {
          response = new PacketImpl(NULL);               
       }

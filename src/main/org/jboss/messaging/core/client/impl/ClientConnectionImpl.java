@@ -121,7 +121,8 @@ public class ClientConnectionImpl implements ClientConnectionInternal
 
       ConnectionCreateSessionMessage request = new ConnectionCreateSessionMessage(xa, autoCommitSends, autoCommitAcks);
 
-      ConnectionCreateSessionResponseMessage response = (ConnectionCreateSessionResponseMessage)remotingConnection.send(serverTargetID, request);   
+      ConnectionCreateSessionResponseMessage response =
+         (ConnectionCreateSessionResponseMessage)remotingConnection.sendBlocking(serverTargetID, serverTargetID, request);   
 
       ClientSession session =
       	new ClientSessionImpl(this, response.getSessionID(), ackBatchSize, cacheProducers,
@@ -137,14 +138,14 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    {
       checkClosed();
        
-      remotingConnection.send(serverTargetID, serverTargetID, new PacketImpl(CONN_START), true);
+      remotingConnection.sendOneWay(serverTargetID, serverTargetID, new PacketImpl(CONN_START));
    }
    
    public void stop() throws MessagingException
    {
       checkClosed();
       
-      remotingConnection.send(serverTargetID, new PacketImpl(CONN_STOP));
+      remotingConnection.sendBlocking(serverTargetID, serverTargetID, new PacketImpl(CONN_STOP));
    }
 
    public void setRemotingSessionListener(final RemotingSessionListener listener) throws MessagingException
@@ -165,7 +166,7 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       {
          closeChildren();
          
-         remotingConnection.send(serverTargetID, new PacketImpl(CLOSE));
+         remotingConnection.sendBlocking(serverTargetID, serverTargetID, new PacketImpl(CLOSE));
       }
       finally
       {

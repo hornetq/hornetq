@@ -69,11 +69,11 @@ public class INVMSession implements NIOSession
       return connected;
    }
 
-   public void write(final Object object) throws Exception
+   public void write(final Packet packet) throws Exception
    {
-      assert object instanceof Packet;
+     // assert packet instanceof Packet;
 
-      serverDispatcher.dispatch((Packet) object,
+      serverDispatcher.dispatch((Packet) packet,
             new PacketSender()
             {
                public void send(Packet response) throws Exception
@@ -94,54 +94,54 @@ public class INVMSession implements NIOSession
             });
    }
 
-   public Object writeAndBlock(final Packet request, long timeout, TimeUnit timeUnit) throws Exception
-   {
-      request.setCorrelationID(correlationCounter++);
-      final Packet[] responses = new Packet[1];
-
-      serverDispatcher.dispatch(request,
-            new PacketSender()
-            {
-               public void send(Packet response)
-               {
-                  try
-                  {
-                     serverDispatcher.callFilters(response);
-                     // 1st response is used to reply to the blocking request
-                     if (responses[0] == null)
-                     {
-                        responses[0] = response;
-                     } else 
-                     // other later responses are dispatched directly to the client
-                     {
-                        clientDispatcher.dispatch(response, null);
-                     }
-                  }
-                  catch (Exception e)
-                  {
-                     log.warn("An interceptor throwed an exception what caused the packet " + response + " to be ignored", e);
-                     responses[0] = null;
-                  }
-               }
-
-               public long getSessionID()
-               {
-                  return getID();
-               }
-               
-               public String getRemoteAddress()
-               {
-                  return "invm";
-               }
-            });
-
-      if (responses[0] == null)
-      {
-         throw new IllegalStateException("No response received for request " + request);
-      }
-
-      return responses[0];
-   }
+//   public Object writeAndBlock(final Packet request, long timeout, TimeUnit timeUnit) throws Exception
+//   {
+//      request.setCorrelationID(correlationCounter++);
+//      final Packet[] responses = new Packet[1];
+//
+//      serverDispatcher.dispatch(request,
+//            new PacketSender()
+//            {
+//               public void send(Packet response)
+//               {
+//                  try
+//                  {
+//                     serverDispatcher.callFilters(response);
+//                     // 1st response is used to reply to the blocking request
+//                     if (responses[0] == null)
+//                     {
+//                        responses[0] = response;
+//                     } else 
+//                     // other later responses are dispatched directly to the client
+//                     {
+//                        clientDispatcher.dispatch(response, null);
+//                     }
+//                  }
+//                  catch (Exception e)
+//                  {
+//                     log.warn("An interceptor throwed an exception what caused the packet " + response + " to be ignored", e);
+//                     responses[0] = null;
+//                  }
+//               }
+//
+//               public long getSessionID()
+//               {
+//                  return getID();
+//               }
+//               
+//               public String getRemoteAddress()
+//               {
+//                  return "invm";
+//               }
+//            });
+//
+//      if (responses[0] == null)
+//      {
+//         throw new IllegalStateException("No response received for request " + request);
+//      }
+//
+//      return responses[0];
+//   }
 
    // Package protected ---------------------------------------------
 

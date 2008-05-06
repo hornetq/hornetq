@@ -6,11 +6,10 @@
  */
 package org.jboss.messaging.core.remoting;
 
-import java.util.concurrent.TimeUnit;
-
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  * @version <tt>$Revision$</tt>
  * 
@@ -19,9 +18,7 @@ public interface NIOSession
 {
    long getID();
 
-   void write(Object object) throws Exception;
-
-   Object writeAndBlock(Packet packet, long timeout, TimeUnit timeUnit) throws Exception;
+   void write(Packet packet) throws Exception;
 
    boolean isConnected();
 }

@@ -202,6 +202,8 @@ public class BrowserTest extends JMSTestCase
 
 			final int numMessages = 100;
 
+			log.info("****** sending messages");
+			
 			for (int i = 0; i < numMessages; i++)
 			{
 				Message m = session.createMessage();
@@ -209,7 +211,7 @@ public class BrowserTest extends JMSTestCase
 				producer.send(m);
 			}
 
-			log.trace("Sent messages");
+			log.info(" ****** Sent messages");
 
 			QueueBrowser browser = session.createBrowser(queue1, "test_counter > 30");
 

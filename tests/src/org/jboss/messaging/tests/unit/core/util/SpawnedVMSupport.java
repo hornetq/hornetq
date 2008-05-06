@@ -68,11 +68,11 @@ public class SpawnedVMSupport
 
       String commandLine = sb.toString();
 
-      log.info("command line: " + commandLine);
+      log.trace("command line: " + commandLine);
 
       Process process = Runtime.getRuntime().exec(commandLine);
 
-      log.info("process: " + process);
+      log.trace("process: " + process);
 
       ProcessLogger outputLogger = new ProcessLogger(process.getInputStream(),
             className);

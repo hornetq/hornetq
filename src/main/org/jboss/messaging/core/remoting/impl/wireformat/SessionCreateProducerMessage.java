@@ -20,6 +20,8 @@ public class SessionCreateProducerMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
+   private final long clientTargetID;
+   
    private final SimpleString address;
    
    private final int windowSize;
@@ -30,10 +32,12 @@ public class SessionCreateProducerMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateProducerMessage(final SimpleString address, final int windowSize, final int maxRate)
+   public SessionCreateProducerMessage(final long clientTargetID, final SimpleString address, final int windowSize, final int maxRate)
    {
       super(PacketType.SESS_CREATEPRODUCER);
 
+      this.clientTargetID = clientTargetID;
+      
       this.address = address;
       
       this.windowSize = windowSize;
@@ -52,6 +56,11 @@ public class SessionCreateProducerMessage extends PacketImpl
       buff.append(", maxrate=" + maxRate);
       buff.append("]");
       return buff.toString();
+   }
+   
+   public long getClientTargetID()
+   {
+      return clientTargetID;
    }
 
    public SimpleString getAddress()

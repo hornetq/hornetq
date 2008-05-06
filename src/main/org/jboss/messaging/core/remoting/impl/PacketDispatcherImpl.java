@@ -6,13 +6,14 @@
  */
 package org.jboss.messaging.core.remoting.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NO_ID_SET;
+import static org.jboss.messaging.core.remoting.Packet.NO_ID_SET;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Interceptor;
@@ -23,7 +24,8 @@ import org.jboss.messaging.core.remoting.PacketHandlerRegistrationListener;
 import org.jboss.messaging.core.remoting.PacketSender;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>.
  * 
  * @version <tt>$Revision$</tt>
  */
@@ -41,6 +43,8 @@ public class PacketDispatcherImpl implements PacketDispatcher
    private final Map<Long, PacketHandler> handlers;
    public final List<Interceptor> filters;
    private transient PacketHandlerRegistrationListener listener;
+   
+   private final AtomicLong idSequence = new AtomicLong(0);
 
    // Static --------------------------------------------------------
 
@@ -54,6 +58,19 @@ public class PacketDispatcherImpl implements PacketDispatcher
 
    // Public --------------------------------------------------------
 
+   public long generateID()
+   {
+      long id = idSequence.getAndIncrement();
+      
+      if (id == 0)
+      {
+         //ID 0 is reserved for the connection factory handler
+         id = generateID();
+      }
+      
+      return id;
+   }
+   
    public void register(final PacketHandler handler)
    { 
       handlers.put(handler.getID(), handler);

@@ -53,6 +53,8 @@ public class ClientProducerImpl implements ClientProducerInternal
    
    private final long serverTargetID;
    
+   private final long clientTargetID;
+   
    private final ClientSessionInternal session;
    
    private final RemotingConnection remotingConnection;
@@ -72,6 +74,7 @@ public class ClientProducerImpl implements ClientProducerInternal
    // Constructors ---------------------------------------------------------------------------------
       
    public ClientProducerImpl(final ClientSessionInternal session, final long serverTargetID,
+                             final long clientTargetID,
    		                    final SimpleString address,
    		                    final RemotingConnection remotingConnection, final int windowSize,
    		                    final int maxRate)
@@ -79,6 +82,8 @@ public class ClientProducerImpl implements ClientProducerInternal
       this.session = session;
       
       this.serverTargetID = serverTargetID;
+      
+      this.clientTargetID = clientTargetID;
       
       this.address = address;
       
@@ -141,7 +146,14 @@ public class ClientProducerImpl implements ClientProducerInternal
    		windowSize--;
    	}
    	
-   	remotingConnection.send(serverTargetID, session.getServerTargetID(), message, !msg.isDurable());
+   	if (msg.isDurable())
+   	{
+   	   remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), message);
+   	}
+   	else
+   	{
+   	   remotingConnection.sendOneWay(serverTargetID, session.getServerTargetID(), message);
+   	}
    	 	   	
    	if (rateLimiter != null)
    	{
@@ -170,7 +182,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       
       session.removeProducer(this);
       
-      remotingConnection.getPacketDispatcher().unregister(serverTargetID);
+      remotingConnection.getPacketDispatcher().unregister(clientTargetID);
       
       closed = true;
    }

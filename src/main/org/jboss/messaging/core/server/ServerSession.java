@@ -105,10 +105,10 @@ public interface ServerSession
 
    void deleteQueue(SimpleString queueName) throws Exception;
 
-   SessionCreateConsumerResponseMessage createConsumer(SimpleString queueName, SimpleString filterString, boolean noLocal,
+   SessionCreateConsumerResponseMessage createConsumer(long clientTargetID, SimpleString queueName, SimpleString filterString, boolean noLocal,
    		                                              boolean autoDeleteQueue, int windowSize, int maxRate) throws Exception;
    
-   SessionCreateProducerResponseMessage createProducer(SimpleString address, int windowSize, int maxRate) throws Exception;   
+   SessionCreateProducerResponseMessage createProducer(long clientTargetID, SimpleString address, int windowSize, int maxRate) throws Exception;   
 
    SessionQueueQueryResponseMessage executeQueueQuery(SessionQueueQueryMessage request) throws Exception;
 

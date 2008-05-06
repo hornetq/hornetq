@@ -281,11 +281,11 @@ public class PacketTypeTest extends UnitTestCase
 
       assertEquals(buffer.get(), packet.getType().byteValue());
 
-      long correlationID = buffer.getLong();
+      long responseTargetID = buffer.getLong();
       long targetID = buffer.getLong();
       long executorID = buffer.getLong();
 
-      assertEquals(packet.getCorrelationID(), correlationID);
+      assertEquals(packet.getResponseTargetID(), responseTargetID);
       assertEquals(packet.getTargetID(), targetID);
       assertEquals(packet.getExecutorID(), executorID);
    }
@@ -366,7 +366,7 @@ public class PacketTypeTest extends UnitTestCase
    {
       Packet packet = new PacketImpl(NULL);
       long cid = randomLong();
-      packet.setCorrelationID(cid);
+      packet.setResponseTargetID(cid);
       packet.setTargetID(randomLong());
       packet.setExecutorID(randomLong());
       AbstractPacketCodec codec = PacketCodecFactory
@@ -376,7 +376,7 @@ public class PacketTypeTest extends UnitTestCase
       assertTrue(decodedPacket instanceof PacketImpl);
 
       assertEquals(NULL, decodedPacket.getType());
-      assertEquals(packet.getCorrelationID(), decodedPacket.getCorrelationID());
+      assertEquals(packet.getResponseTargetID(), decodedPacket.getResponseTargetID());
       assertEquals(packet.getTargetID(), decodedPacket.getTargetID());
       assertEquals(packet.getExecutorID(), decodedPacket.getExecutorID());
    }
@@ -393,7 +393,7 @@ public class PacketTypeTest extends UnitTestCase
       assertTrue(decodedPacket instanceof Ping);
       Ping decodedPing = (Ping) decodedPacket;
       assertEquals(PING, decodedPing.getType());
-      assertEquals(ping.getCorrelationID(), decodedPacket.getCorrelationID());
+      assertEquals(ping.getResponseTargetID(), decodedPacket.getResponseTargetID());
       assertEquals(ping.getTargetID(), decodedPacket.getTargetID());
       assertEquals(ping.getExecutorID(), decodedPacket.getExecutorID());
    }
@@ -547,12 +547,12 @@ public class PacketTypeTest extends UnitTestCase
    public void testSessionCreateConsumerMessage() throws Exception
    {
       SimpleString destination = new SimpleString("queue.SessionCreateConsumerMessage");
-      SessionCreateConsumerMessage request = new SessionCreateConsumerMessage(
+      SessionCreateConsumerMessage request = new SessionCreateConsumerMessage(randomLong(),
             destination, new SimpleString("color = 'red'"), false, false, randomInt(),
             randomInt());
       AbstractPacketCodec codec = new SessionCreateConsumerMessageCodec();
 
-      Packet decodedPacket = encodeAndCheckBytesAndDecode(request, codec,
+      Packet decodedPacket = encodeAndCheckBytesAndDecode(request, codec, request.getClientTargetID(),
             request.getQueueName(), new NullableStringHolder(request.getFilterString()), request
                   .isNoLocal(), request.isAutoDeleteQueue(), request
                   .getWindowSize(), request.getMaxRate());
@@ -560,6 +560,7 @@ public class PacketTypeTest extends UnitTestCase
       assertTrue(decodedPacket instanceof SessionCreateConsumerMessage);
       SessionCreateConsumerMessage decodedRequest = (SessionCreateConsumerMessage) decodedPacket;
       assertEquals(PacketType.SESS_CREATECONSUMER, decodedRequest.getType());
+      assertEquals(request.getClientTargetID(), decodedRequest.getClientTargetID());
       assertEquals(request.getQueueName(), decodedRequest.getQueueName());
       assertEquals(request.getFilterString(), decodedRequest.getFilterString());
       assertEquals(request.isNoLocal(), decodedRequest.isNoLocal());
@@ -594,16 +595,17 @@ public class PacketTypeTest extends UnitTestCase
       SimpleString destination = new SimpleString("queue.testSessionCreateProducerMessage");
       int windowSize = randomInt();
       int maxRate = randomInt();
-      SessionCreateProducerMessage request = new SessionCreateProducerMessage(
+      SessionCreateProducerMessage request = new SessionCreateProducerMessage(randomLong(),
             destination, windowSize, maxRate);
       AbstractPacketCodec codec = new SessionCreateProducerMessageCodec();
 
-      Packet decodedPacket = encodeAndCheckBytesAndDecode(request, codec,
-            request.getAddress(), request.getWindowSize(), request.getMaxRate());
+      Packet decodedPacket = encodeAndCheckBytesAndDecode(request, codec, request.getClientTargetID(),
+            new NullableStringHolder(request.getAddress()), request.getWindowSize(), request.getMaxRate());
 
       assertTrue(decodedPacket instanceof SessionCreateProducerMessage);
       SessionCreateProducerMessage decodedRequest = (SessionCreateProducerMessage) decodedPacket;
       assertEquals(SESS_CREATEPRODUCER, decodedRequest.getType());
+      assertEquals(request.getClientTargetID(), decodedRequest.getClientTargetID());
       assertEquals(request.getAddress(), decodedRequest.getAddress());
       assertEquals(request.getWindowSize(), decodedRequest.getWindowSize());
       assertEquals(request.getMaxRate(), decodedRequest.getMaxRate());
