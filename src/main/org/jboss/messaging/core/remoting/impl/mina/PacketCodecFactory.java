@@ -12,7 +12,6 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_CREATESESSION_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_START;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_STOP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONS_DELIVER;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONS_FLOWTOKEN;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CREATECONNECTION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CREATECONNECTION_RESP;
@@ -22,6 +21,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PING;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PONG;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PROD_RECEIVETOKENS;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PROD_SEND;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.RECEIVE_MSG;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_ACKNOWLEDGE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_ADD_DESTINATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BINDINGQUERY;
@@ -29,7 +29,6 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_HASNEXTMESSAGE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_HASNEXTMESSAGE_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_NEXTMESSAGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_NEXTMESSAGE_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_RESET;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CANCEL;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_COMMIT;
@@ -74,7 +73,6 @@ import org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec;
 import org.jboss.messaging.core.remoting.impl.codec.BytesPacketCodec;
 import org.jboss.messaging.core.remoting.impl.codec.ConnectionCreateSessionMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.ConnectionCreateSessionResponseMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.ConsumerDeliverMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.ConsumerFlowTokenMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.CreateConnectionMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.CreateConnectionResponseMessageCodec;
@@ -84,12 +82,12 @@ import org.jboss.messaging.core.remoting.impl.codec.PingCodec;
 import org.jboss.messaging.core.remoting.impl.codec.PongCodec;
 import org.jboss.messaging.core.remoting.impl.codec.ProducerReceiveTokensMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.ProducerSendMessageCodec;
+import org.jboss.messaging.core.remoting.impl.codec.ReceiveMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionAcknowledgeMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionAddDestinationMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionBindingQueryMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionBindingQueryResponseMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionBrowserHasNextMessageResponseMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionBrowserNextMessageResponseMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionCancelMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionCreateBrowserMessageCodec;
 import org.jboss.messaging.core.remoting.impl.codec.SessionCreateBrowserResponseMessageCodec;
@@ -145,7 +143,7 @@ public class PacketCodecFactory implements ProtocolCodecFactory
       
       addCodec(PROD_SEND, new ProducerSendMessageCodec());
       
-      addCodec(CONS_DELIVER, new ConsumerDeliverMessageCodec());
+      addCodec(RECEIVE_MSG, new ReceiveMessageCodec());
 
       // TextPacket are for testing purpose only!
       addCodec(TEXT, new TextPacketCodec());
@@ -201,8 +199,6 @@ public class PacketCodecFactory implements ProtocolCodecFactory
       addCodec(SESS_BROWSER_HASNEXTMESSAGE_RESP, new SessionBrowserHasNextMessageResponseMessageCodec());
 
       addCodecForEmptyPacket(SESS_BROWSER_NEXTMESSAGE);
-
-      addCodec(SESS_BROWSER_NEXTMESSAGE_RESP, new SessionBrowserNextMessageResponseMessageCodec());
 
       addCodec(SESS_XA_COMMIT, new SessionXACommitMessageCodec());
 

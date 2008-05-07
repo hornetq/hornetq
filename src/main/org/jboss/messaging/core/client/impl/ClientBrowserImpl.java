@@ -30,8 +30,8 @@ import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageResponseMessage;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -117,8 +117,8 @@ public class ClientBrowserImpl implements ClientBrowser
    {
       checkClosed();
       
-      SessionBrowserNextMessageResponseMessage response =
-         (SessionBrowserNextMessageResponseMessage)remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), new PacketImpl(SESS_BROWSER_NEXTMESSAGE));
+      ReceiveMessage response =
+         (ReceiveMessage)remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), new PacketImpl(SESS_BROWSER_NEXTMESSAGE));
       
       return response.getMessage();
    }

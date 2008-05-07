@@ -6,15 +6,18 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.RECEIVE_MSG;
+
 import org.jboss.messaging.core.message.Message;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionBrowserNextMessageResponseMessage extends PacketImpl
+public class ReceiveMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
@@ -26,9 +29,9 @@ public class SessionBrowserNextMessageResponseMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public SessionBrowserNextMessageResponseMessage(final Message message)
+   public ReceiveMessage(final Message message)
    {
-      super(PacketType.SESS_BROWSER_NEXTMESSAGE_RESP);
+      super(RECEIVE_MSG);
 
       assert message != null;
 
@@ -45,7 +48,10 @@ public class SessionBrowserNextMessageResponseMessage extends PacketImpl
    @Override
    public String toString()
    {
-      return getParentString() + ", message=" + message + "]";
+      StringBuffer buf = new StringBuffer(getParentString());
+      buf.append(", message=" + message);
+      buf.append("]");
+      return buf.toString();
    }
 
    // Package protected ---------------------------------------------

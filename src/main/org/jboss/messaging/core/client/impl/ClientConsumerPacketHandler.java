@@ -1,12 +1,12 @@
 package org.jboss.messaging.core.client.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONS_DELIVER;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.RECEIVE_MSG;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerDeliverMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 
 /**
@@ -41,9 +41,9 @@ public class ClientConsumerPacketHandler implements PacketHandler
       {
          PacketType type = packet.getType();
          
-         if (type == CONS_DELIVER)
+         if (type == RECEIVE_MSG)
          {
-            ConsumerDeliverMessage message = (ConsumerDeliverMessage) packet;
+            ReceiveMessage message = (ReceiveMessage) packet;
             
             clientConsumer.handleMessage(message.getMessage());
          }

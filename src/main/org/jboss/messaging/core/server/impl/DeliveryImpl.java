@@ -25,7 +25,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerDeliverMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.core.server.Delivery;
 
 /**
@@ -85,7 +85,7 @@ public class DeliveryImpl implements Delivery
       
       copy.setDeliveryID(deliveryID);
       
-      ConsumerDeliverMessage message = new ConsumerDeliverMessage(copy);
+      ReceiveMessage message = new ReceiveMessage(copy);
       
       message.setTargetID(consumerID);
       message.setExecutorID(sessionID);

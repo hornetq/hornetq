@@ -6,19 +6,19 @@
  */
 package org.jboss.messaging.core.remoting.impl.codec;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_NEXTMESSAGE_RESP;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.RECEIVE_MSG;
 import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.util.StreamUtils;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class SessionBrowserNextMessageResponseMessageCodec extends AbstractPacketCodec<SessionBrowserNextMessageResponseMessage>
+public class ReceiveMessageCodec extends AbstractPacketCodec<ReceiveMessage>
 {
    // Constants -----------------------------------------------------
 
@@ -28,37 +28,33 @@ public class SessionBrowserNextMessageResponseMessageCodec extends AbstractPacke
 
    // Constructors --------------------------------------------------
 
-   public SessionBrowserNextMessageResponseMessageCodec()
+   public ReceiveMessageCodec()
    {
-      super(SESS_BROWSER_NEXTMESSAGE_RESP);
+      super(RECEIVE_MSG);
    }
 
    // Public --------------------------------------------------------
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   //TODO remove this in next refactoring
-   private byte[] encodedMsg;
-   
-   public int getBodyLength(final SessionBrowserNextMessageResponseMessage packet) throws Exception
-   {   	
-   	encodedMsg = StreamUtils.toBytes(packet.getMessage());
-
-      int bodyLength = SIZE_INT + encodedMsg.length;
-      
-      return bodyLength;
+   public int getBodyLength(final ReceiveMessage packet) throws Exception
+   {
+      byte[] encodedMsg = StreamUtils.toBytes(packet.getMessage());
+   	
+   	return SIZE_INT + encodedMsg.length;
    }
    
    @Override
-   protected void encodeBody(final SessionBrowserNextMessageResponseMessage response, final RemotingBuffer out) throws Exception
-   {         
+   protected void encodeBody(final ReceiveMessage message, final RemotingBuffer out) throws Exception
+   {
+      byte[] encodedMsg = StreamUtils.toBytes(message.getMessage());
       out.putInt(encodedMsg.length);
       out.put(encodedMsg);
       encodedMsg = null;
    }
 
    @Override
-   protected SessionBrowserNextMessageResponseMessage decodeBody(final RemotingBuffer in)
+   protected ReceiveMessage decodeBody(final RemotingBuffer in)
          throws Exception
    {
       int msgLength = in.getInt();
@@ -67,7 +63,7 @@ public class SessionBrowserNextMessageResponseMessageCodec extends AbstractPacke
       Message message = new MessageImpl();
       StreamUtils.fromBytes(message, encodedMsg);
 
-      return new SessionBrowserNextMessageResponseMessage(message);
+      return new ReceiveMessage(message);
    }
 
    // Package protected ---------------------------------------------

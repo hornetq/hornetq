@@ -13,7 +13,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerDeliverMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 
 public class DummyInterceptor implements Interceptor
 {
@@ -43,9 +43,9 @@ public class DummyInterceptor implements Interceptor
       }
       if (changeMessage)
       {
-         if (packet instanceof ConsumerDeliverMessage)
+         if (packet instanceof ReceiveMessage)
          {
-            ConsumerDeliverMessage deliver = (ConsumerDeliverMessage)packet;
+            ReceiveMessage deliver = (ReceiveMessage)packet;
             log.info("msg = " + deliver.getMessage().getClass().getName());
             deliver.getMessage().getHeaders().put("DummyInterceptor", "was here");
          }

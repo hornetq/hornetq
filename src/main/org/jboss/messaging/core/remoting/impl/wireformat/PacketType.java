@@ -82,12 +82,13 @@ public enum PacketType
    SESS_XA_GET_TIMEOUT_RESP            ((byte)81),
        
    // Consumer 
-   CONS_FLOWTOKEN                      ((byte)90),
-   CONS_DELIVER                        ((byte)91),
+   CONS_FLOWTOKEN                      ((byte)90),   
    
    //Producer
    PROD_SEND                           ((byte)100),
-   PROD_RECEIVETOKENS                  ((byte)101);
+   PROD_RECEIVETOKENS                  ((byte)101),
+   
+   RECEIVE_MSG                        ((byte)111);
    
    // the ALL_TYPES map is used to find the PacketType corresponding to a given byte
    // by using the static method from(byte)

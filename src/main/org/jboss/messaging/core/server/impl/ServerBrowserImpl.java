@@ -38,8 +38,8 @@ import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
+import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageResponseMessage;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.util.SimpleString;
@@ -216,7 +216,7 @@ public class ServerBrowserImpl
             break;
          case SESS_BROWSER_NEXTMESSAGE:
             Message message = nextMessage();               
-            response = new SessionBrowserNextMessageResponseMessage(message);
+            response = new ReceiveMessage(message);
             break;
          case SESS_BROWSER_RESET:            
             reset();
