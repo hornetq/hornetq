@@ -75,6 +75,11 @@ public class SecurityManagerDeployer extends XmlDeployer
       return "jbm-security.xml";
    }
 
+   public int getWeight()
+   {
+      return 1;
+   }
+
    public void setJbmSecurityManager(JBMUpdateableSecurityManager jbmSecurityManager)
    {
       this.jbmSecurityManager = jbmSecurityManager;

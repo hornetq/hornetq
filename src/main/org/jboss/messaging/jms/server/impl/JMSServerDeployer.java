@@ -260,4 +260,9 @@ public class JMSServerDeployer extends XmlDeployer
       return "jbm-jndi.xml";
    }
 
+   public int getWeight()
+   {
+      return 2;
+   }
+
 }

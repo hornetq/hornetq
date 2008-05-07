@@ -49,13 +49,9 @@ public class QueueSettingsDeployer extends XmlDeployer
    private static final String MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME = "message-counter-history-day-limit";
 
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
-
-   private final PostOffice postOffice;
    
-   public QueueSettingsDeployer(final PostOffice postOffice, final HierarchicalRepository<QueueSettings> queueSettingsRepository)
+   public QueueSettingsDeployer(final HierarchicalRepository<QueueSettings> queueSettingsRepository)
    {
-   	this.postOffice = postOffice;
-   	
    	this.queueSettingsRepository = queueSettingsRepository;
    }
    
@@ -92,24 +88,12 @@ public class QueueSettingsDeployer extends XmlDeployer
          else if (DLQ_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             SimpleString queueName = new SimpleString(child.getTextContent());
-            
-            if (postOffice.getBinding(queueName) == null)
-            {
-               postOffice.addBinding(queueName, queueName, null, true, false);
-            }
-            
-            queueSettings.setDLQ(postOffice.getBinding(queueName).getQueue());
+            queueSettings.setDLQ(queueName);
          }
          else if (EXPIRY_QUEUE_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
          	SimpleString queueName = new SimpleString(child.getTextContent());
-            
-            if (postOffice.getBinding(queueName) == null)
-            {
-               postOffice.addBinding(queueName, queueName, null, true, false);
-            }
-            
-            queueSettings.setExpiryQueue(postOffice.getBinding(queueName).getQueue());
+            queueSettings.setExpiryQueue(queueName);
          }
          else if (REDELIVERY_DELAY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
@@ -140,6 +124,11 @@ public class QueueSettingsDeployer extends XmlDeployer
    public String getConfigFileName()
    {
       return "queues.xml";
+   }
+
+   public int getWeight()
+   {
+      return 1;
    }
 
    /**

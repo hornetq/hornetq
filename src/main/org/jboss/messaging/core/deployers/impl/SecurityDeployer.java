@@ -142,4 +142,9 @@ public class SecurityDeployer extends XmlDeployer
    {
       return QUEUES_XML;
    }
+
+   public int getWeight()
+   {
+      return 1;
+   }
 }

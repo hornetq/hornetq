@@ -31,8 +31,8 @@ import org.jboss.messaging.core.postoffice.impl.BindingImpl;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
-import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.XMLUtil;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -41,7 +41,7 @@ public class QueueSettingsDeployerTest extends TestCase
 {
    private String conf = "<queue-settings match=\"queues.*\">\n" +
            "      <clustered>false</clustered>\n" +
-           "      <dlq>DLQTest</dlq>\n" +
+           "      <dlq>DLQtest</dlq>\n" +
            "      <expiry-queue>ExpiryQueueTest</expiry-queue>\n" +
            "      <redelivery-delay>100</redelivery-delay>\n" +
            "      <max-size>-100</max-size>\n" +
@@ -52,15 +52,12 @@ public class QueueSettingsDeployerTest extends TestCase
    private QueueSettingsDeployer queueSettingsDeployer;
 
    private HierarchicalRepository<QueueSettings> repository;
-   private PostOffice postOffice;
 
    protected void setUp() throws Exception
    {
-      postOffice = EasyMock.createMock(PostOffice.class);
-
       repository = EasyMock.createStrictMock(HierarchicalRepository.class);
 
-      queueSettingsDeployer = new QueueSettingsDeployer(postOffice, repository);
+      queueSettingsDeployer = new QueueSettingsDeployer(repository);
    }
 
    public void testDeploy() throws Exception
@@ -71,18 +68,8 @@ public class QueueSettingsDeployerTest extends TestCase
       queueSettings.setMaxSize(-100);
       queueSettings.setDistributionPolicyClass("org.jboss.messaging.core.impl.RoundRobinDistributionPolicy");
       queueSettings.setMessageCounterHistoryDayLimit(1000);
-      Queue mockDLQ = EasyMock.createMock(Queue.class);
-      queueSettings.setDLQ(mockDLQ);
-      SimpleString dlqTest = new SimpleString("DLQTest");
-      EasyMock.expect(postOffice.getBinding(dlqTest)).andReturn(new BindingImpl(dlqTest, mockDLQ));
-      EasyMock.expect(postOffice.getBinding(dlqTest)).andReturn(new BindingImpl(dlqTest, mockDLQ));
-      Queue mockQ = EasyMock.createMock(Queue.class);
-      queueSettings.setExpiryQueue(mockQ);
-      SimpleString expiryQueueTest = new SimpleString("ExpiryQueueTest");
-      EasyMock.expect(postOffice.getBinding(expiryQueueTest)).andReturn(new BindingImpl(expiryQueueTest, mockQ));
-      EasyMock.expect(postOffice.getBinding(expiryQueueTest)).andReturn(new BindingImpl(expiryQueueTest, mockQ));
-
-      EasyMock.replay(postOffice);
+      queueSettings.setDLQ(new SimpleString("DLQtest"));
+      queueSettings.setExpiryQueue(new SimpleString("ExpiryQueueTest"));
 
       repository.addMatch(EasyMock.eq("queues.*"), settings(queueSettings));
 

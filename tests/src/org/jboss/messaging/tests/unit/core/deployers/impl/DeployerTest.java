@@ -240,5 +240,10 @@ public class DeployerTest  extends TestCase
       {
          return element;
       }
+
+      public int getWeight()
+      {
+         return 0;
+      }
    }
 }

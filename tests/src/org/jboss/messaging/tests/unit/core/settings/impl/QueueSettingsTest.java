@@ -22,9 +22,9 @@
 package org.jboss.messaging.tests.unit.core.settings.impl;
 
 import junit.framework.TestCase;
-
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.impl.QueueImpl;
+import org.jboss.messaging.core.server.impl.RoundRobinDistributionPolicy;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.SimpleString;
 
@@ -53,8 +53,8 @@ public class QueueSettingsTest extends TestCase
       QueueSettings queueSettings = new QueueSettings();
       QueueSettings queueSettingsToMerge = new QueueSettings();
       queueSettingsToMerge.setClustered(true);
-      Queue DLQ = new QueueImpl(0,new SimpleString("testDLQ"), null, false, false, false, 0, null);
-      Queue exp = new QueueImpl(0,new SimpleString("testExpiryQueue"), null, false, false, false, 0, null);
+      SimpleString DLQ = new SimpleString("testDLQ");
+      SimpleString exp = new SimpleString("testExpiryQueue");
       queueSettingsToMerge.setDLQ(DLQ);
       queueSettingsToMerge.setExpiryQueue(exp);
       queueSettingsToMerge.setMaxDeliveryAttempts(1000);
@@ -78,19 +78,18 @@ public class QueueSettingsTest extends TestCase
       QueueSettings queueSettings = new  QueueSettings();
       QueueSettings queueSettingsToMerge = new QueueSettings();
       queueSettingsToMerge.setClustered(true);
-       Queue DLQ = new QueueImpl(0,new SimpleString("testDLQ"), null, false, false, false, 0, null);
-      Queue exp = new QueueImpl(0,new SimpleString("testExpiryQueue"), null, false, false, false, 0, null);
+      SimpleString DLQ = new SimpleString("testDLQ");
+      SimpleString exp = new SimpleString("testExpiryQueue");
       queueSettingsToMerge.setDLQ(DLQ);
       queueSettingsToMerge.setExpiryQueue(exp);
       queueSettingsToMerge.setMaxDeliveryAttempts(1000);
       queueSettingsToMerge.setMaxSize(1001);
       queueSettingsToMerge.setMessageCounterHistoryDayLimit(1002);
-      queueSettingsToMerge.setRedeliveryDelay((long)1003);
       queueSettings.merge(queueSettingsToMerge);
 
       QueueSettings queueSettingsToMerge2 = new QueueSettings();
       queueSettingsToMerge2.setClustered(true);
-      Queue exp2 = new QueueImpl(0,new SimpleString("testExpiryQueue2"), null, false, false, false, 0, null);
+      SimpleString exp2 = new SimpleString("testExpiryQueue2");
       queueSettingsToMerge2.setExpiryQueue(exp2);
       queueSettingsToMerge2.setMaxSize(2001);
       queueSettingsToMerge2.setRedeliveryDelay((long)2003);
@@ -100,9 +99,9 @@ public class QueueSettingsTest extends TestCase
       assertEquals(queueSettings.getDistributionPolicyClass(), null);
       assertEquals(queueSettings.isClustered(), Boolean.valueOf(true));
       assertEquals(queueSettings.getDLQ(), DLQ);
-      assertEquals(queueSettings.getExpiryQueue(), exp2);
+      assertEquals(queueSettings.getExpiryQueue(), exp);
       assertEquals(queueSettings.getMaxDeliveryAttempts(), Integer.valueOf(1000));
-      assertEquals(queueSettings.getMaxSize(), Integer.valueOf(2001));
+      assertEquals(queueSettings.getMaxSize(), Integer.valueOf(1001));
       assertEquals(queueSettings.getMessageCounterHistoryDayLimit(), Integer.valueOf(1002));
       assertEquals(queueSettings.getRedeliveryDelay(), Long.valueOf(2003));
    }
@@ -112,20 +111,18 @@ public class QueueSettingsTest extends TestCase
       QueueSettings queueSettings = new  QueueSettings();
       QueueSettings queueSettingsToMerge = new QueueSettings();
       queueSettingsToMerge.setClustered(true);
-       Queue DLQ = new QueueImpl(0,new SimpleString("testDLQ"), null, false, false, false, 0, null);
-      Queue exp = new QueueImpl(0,new SimpleString("testExpiryQueue"), null, false, false, false, 0, null);
+      SimpleString DLQ = new SimpleString("testDLQ");
+      SimpleString exp = new SimpleString("testExpiryQueue");
       queueSettingsToMerge.setDLQ(DLQ);
       queueSettingsToMerge.setExpiryQueue(exp);
-      queueSettingsToMerge.setMaxDeliveryAttempts(1000);
       queueSettingsToMerge.setMaxSize(1001);
-      queueSettingsToMerge.setMessageCounterHistoryDayLimit(1002);
       queueSettingsToMerge.setRedeliveryDelay((long)1003);
       queueSettings.merge(queueSettingsToMerge);
 
       QueueSettings queueSettingsToMerge2 = new QueueSettings();
       queueSettingsToMerge2.setClustered(false);
-      Queue exp2 = new QueueImpl(0,new SimpleString("testExpiryQueue2"), null, false, false, false, 0, null);
-      Queue DLQ2 = new QueueImpl(0,new SimpleString("testDlq2"), null, false, false, false, 0, null);
+      SimpleString exp2 = new SimpleString("testExpiryQueue2");
+      SimpleString DLQ2 = new SimpleString("testDlq2");
       queueSettingsToMerge2.setExpiryQueue(exp2);
       queueSettingsToMerge2.setDLQ(DLQ2);
       queueSettingsToMerge2.setMaxDeliveryAttempts(2000);
@@ -137,11 +134,11 @@ public class QueueSettingsTest extends TestCase
       assertEquals(queueSettings.getDistributionPolicy().getClass(), QueueSettings.DEFAULT_DISTRIBUTION_POLICY.getClass());
       assertEquals(queueSettings.getDistributionPolicyClass(), null);
       assertEquals(queueSettings.isClustered(), Boolean.valueOf(true));
-      assertEquals(queueSettings.getDLQ(), DLQ2);
-      assertEquals(queueSettings.getExpiryQueue(), exp2);
+      assertEquals(queueSettings.getDLQ(), DLQ);
+      assertEquals(queueSettings.getExpiryQueue(), exp);
       assertEquals(queueSettings.getMaxDeliveryAttempts(), Integer.valueOf(2000));
-      assertEquals(queueSettings.getMaxSize(), Integer.valueOf(2001));
+      assertEquals(queueSettings.getMaxSize(), Integer.valueOf(1001));
       assertEquals(queueSettings.getMessageCounterHistoryDayLimit(), Integer.valueOf(2002));
-      assertEquals(queueSettings.getRedeliveryDelay(), Long.valueOf(2003));
+      assertEquals(queueSettings.getRedeliveryDelay(), Long.valueOf(1003));
    }
 }

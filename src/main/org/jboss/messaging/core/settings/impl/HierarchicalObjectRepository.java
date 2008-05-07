@@ -121,6 +121,8 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
          if (actualMatch == null || !Mergeable.class.isAssignableFrom(actualMatch.getClass()))
          {
             actualMatch = match.getValue();
+            if(!Mergeable.class.isAssignableFrom(actualMatch.getClass()))
+               break;
          }
          else
          {
@@ -223,23 +225,23 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
       {
          if (o1.contains(Match.WILDCARD) && !o2.contains(Match.WILDCARD))
          {
-            return -1;
+            return +1;
          }
          else if (!o1.contains(Match.WILDCARD) && o2.contains(Match.WILDCARD))
          {
-            return +1;
+            return -1;
          }
          else if (o1.contains(Match.WILDCARD) && o2.contains(Match.WILDCARD))
          {
-            return o1.length() - o2.length();
+            return o2.length() - o1.length();
          }
          else if (o1.contains(Match.WORD_WILDCARD) && !o2.contains(Match.WORD_WILDCARD))
          {
-            return -1;
+            return +1;
          }
          else if (!o1.contains(Match.WORD_WILDCARD) && o2.contains(Match.WORD_WILDCARD))
          {
-            return +1;
+            return -1;
          }
          else if (o1.contains(Match.WORD_WILDCARD) && o2.contains(Match.WORD_WILDCARD))
          {
@@ -252,11 +254,11 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
                {
                   if (rightSplits.length < i || !rightSplits[i].equals(Match.WORD_WILDCARD))
                   {
-                     return +1;
+                     return -1;
                   }
                   else
                   {
-                     return -1;
+                     return +1;
                   }
                }
             }

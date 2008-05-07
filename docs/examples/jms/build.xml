@@ -40,6 +40,10 @@
    <property name="etc.dir" value="etc"/>
    <property name="build.dir" value="build"/>
 
+   <!--perf props-->
+   <property name="message.count" value="10000"/>
+   <property name="delivery.mode" value="NON_PERSISTENT"/>
+
    <path id="compile.classpath">
       <fileset dir="${lib.dir}">
          <include name="**/*.jar"/>
@@ -84,6 +88,22 @@
    <target name="DurSubExample" depends="compile">
       <java classname="org.jboss.jms.example.DurableSubscriberExample" fork="true">
          <classpath refid="runtime.classpath"/>
+      </java>
+   </target>
+
+   <target name="perfListener" depends="compile">
+      <java classname="org.jboss.jms.example.PerfExample" fork="true">
+         <classpath refid="runtime.classpath"/>
+         <arg value="-l"/>
+      </java>
+   </target>
+
+   <target name="perfSender" depends="compile">
+      <java classname="org.jboss.jms.example.PerfExample" fork="true">
+         <classpath refid="runtime.classpath"/>
+         <arg value="-s"/>
+         <arg value="${message.count}"/>
+         <arg value="${delivery.mode}"/>
       </java>
    </target>
 </project>

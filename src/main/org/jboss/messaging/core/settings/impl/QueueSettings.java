@@ -26,6 +26,7 @@ import org.jboss.messaging.core.server.DistributionPolicy;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.impl.RoundRobinDistributionPolicy;
 import org.jboss.messaging.core.settings.Mergeable;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * The Queue Settings that will be used to configure a queue
@@ -46,14 +47,14 @@ public class QueueSettings implements Mergeable<QueueSettings>
    public static final Long DEFAULT_REDELIVER_DELAY = (long) 500;
    
 
-   private Boolean clustered = false;
+   private Boolean clustered = null;
    private Integer maxSize = null;
    private String distributionPolicyClass = null;
    private Integer maxDeliveryAttempts = null;
    private Integer messageCounterHistoryDayLimit = null;
    private Long redeliveryDelay = null;
-   private Queue DLQ = null;
-   private Queue ExpiryQueue = null;
+   private SimpleString DLQ = null;
+   private SimpleString ExpiryQueue = null;
    private Integer consumerWindowSize = null;
    private Integer consumerMaxRate = null;
    private Integer producerWindowSize = null;
@@ -120,22 +121,22 @@ public class QueueSettings implements Mergeable<QueueSettings>
       this.distributionPolicyClass = distributionPolicyClass;
    }
 
-   public Queue getDLQ()
+   public SimpleString getDLQ()
    {
       return DLQ;
    }
 
-   public void setDLQ(Queue DLQ)
+   public void setDLQ(SimpleString DLQ)
    {
       this.DLQ = DLQ;
    }
 
-   public Queue getExpiryQueue()
+   public SimpleString getExpiryQueue()
    {
       return ExpiryQueue;
    }
 
-   public void setExpiryQueue(Queue expiryQueue)
+   public void setExpiryQueue(SimpleString expiryQueue)
    {
       ExpiryQueue = expiryQueue;
    }
@@ -203,51 +204,51 @@ public class QueueSettings implements Mergeable<QueueSettings>
     */
    public void merge(QueueSettings merged)
    {
-      if(!DEFAULT_CLUSTERED.equals(merged.clustered))
+      if(clustered == null)
       {
          clustered = merged.clustered;
       }
-      if(!DEFAULT_MAX_DELIVERY_ATTEMPTS.equals(merged.maxDeliveryAttempts) && merged.maxDeliveryAttempts != null)
+      if(maxDeliveryAttempts == null)
       {
          maxDeliveryAttempts = merged.maxDeliveryAttempts;
       }
-      if(!DEFAULT_MAX_SIZE.equals(merged.maxSize) && merged.maxSize != null)
+      if(maxSize == null)
       {
          maxSize = merged.maxSize;
       }
-      if(!DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT.equals(merged.messageCounterHistoryDayLimit) && merged.messageCounterHistoryDayLimit != null)
+      if(messageCounterHistoryDayLimit == null)
       {
          messageCounterHistoryDayLimit = merged.messageCounterHistoryDayLimit;
       }
-      if(!DEFAULT_REDELIVER_DELAY.equals(merged.redeliveryDelay) && merged.redeliveryDelay != null && merged.redeliveryDelay != null)
+      if(redeliveryDelay == null)
       {
          redeliveryDelay = merged.redeliveryDelay;
       }
-      if(merged.distributionPolicyClass != null)
+      if(distributionPolicyClass == null)
       {
          distributionPolicyClass = merged.distributionPolicyClass;
       }
-      if(merged.DLQ != null)
+      if(DLQ == null)
       {
          DLQ = merged.DLQ;
       }
-      if(merged.ExpiryQueue != null)
+      if(ExpiryQueue == null)
       {
          ExpiryQueue = merged.ExpiryQueue;
       }
-      if (merged.consumerWindowSize != null)
+      if (consumerWindowSize == null)
       {
       	consumerWindowSize = merged.consumerWindowSize;
       }
-      if (merged.consumerMaxRate != null)
+      if (consumerMaxRate == null)
       {
       	consumerMaxRate = merged.consumerMaxRate;
       }
-      if (merged.producerWindowSize != null)
+      if (producerWindowSize == null)
       {
       	producerWindowSize = merged.producerWindowSize;
       }
-      if (merged.producerMaxRate != null)
+      if (producerMaxRate == null)
       {
       	producerMaxRate = merged.producerMaxRate;
       }

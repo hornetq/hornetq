@@ -164,7 +164,7 @@ public class MessagingServerImpl implements MessagingServer
       connectionManager = new ConnectionManagerImpl();
       memoryManager = new SimpleMemoryManager();
       postOffice = new PostOfficeImpl(storageManager, queueFactory, configuration.isRequireDestinations());
-      queueSettingsDeployer = new QueueSettingsDeployer(postOffice, queueSettingsRepository);
+      queueSettingsDeployer = new QueueSettingsDeployer(queueSettingsRepository);
 
       if (createTransport)
       {
@@ -174,11 +174,12 @@ public class MessagingServerImpl implements MessagingServer
       securityDeployer.start();
       remotingService.addRemotingSessionListener(connectionManager);
       memoryManager.start();
-      postOffice.start();
-      
-      deploymentManager.start();
+      deploymentManager.start(1);
       deploymentManager.registerDeployer(securityDeployer);
       deploymentManager.registerDeployer(queueSettingsDeployer);
+      postOffice.start();
+      deploymentManager.start(2);
+
       MessagingServerPacketHandler serverPacketHandler = new MessagingServerPacketHandler(this);
       getRemotingService().getDispatcher().register(serverPacketHandler);
 

@@ -32,6 +32,7 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * Implementation of a MessageReference
@@ -136,18 +137,18 @@ public class MessageReferenceImpl implements MessageReference
       int maxDeliveries = queueSettingsRepository.getMatch(queue.getName().toString()).getMaxDeliveryAttempts();
       
       if (maxDeliveries > 0 && deliveryCount >= maxDeliveries)
-      {      	      	
-         Queue DLQ = queueSettingsRepository.getMatch(queue.getName().toString()).getDLQ();
+      {
+         SimpleString DLQ = queueSettingsRepository.getMatch(queue.getName().toString()).getDLQ();
          
          Transaction tx = new TransactionImpl(persistenceManager, postOffice);
                   
          if (DLQ != null)
          {
-         	Binding binding = postOffice.getBinding(DLQ.getName());
+         	Binding binding = postOffice.getBinding(DLQ);
          	
          	if (binding == null)
          	{
-         		throw new IllegalStateException("Cannot find binding for DLQ: " + DLQ.getName());
+         		binding = postOffice.addBinding(DLQ, DLQ, null, true, false);
          	}
          	
             Message copyMessage = makeCopyForDLQOrExpiry(false, persistenceManager);
@@ -176,17 +177,17 @@ public class MessageReferenceImpl implements MessageReference
    public void expire(final StorageManager persistenceManager, final PostOffice postOffice,
    		final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
-      Queue expiryQueue = queueSettingsRepository.getMatch(queue.getName().toString()).getExpiryQueue();
+      SimpleString expiryQueue = queueSettingsRepository.getMatch(queue.getName().toString()).getExpiryQueue();
       
       Transaction tx = new TransactionImpl(persistenceManager, postOffice);
       
       if (expiryQueue != null)
       {
-      	Binding binding = postOffice.getBinding(expiryQueue.getName());
+      	Binding binding = postOffice.getBinding(expiryQueue);
       	
       	if (binding == null)
       	{
-      		throw new IllegalStateException("Cannot find binding for expiry queue: " + expiryQueue.getName());
+      		binding = postOffice.addBinding(expiryQueue, expiryQueue, null, true, false);
       	}
       	
          Message copyMessage = makeCopyForDLQOrExpiry(false, persistenceManager);

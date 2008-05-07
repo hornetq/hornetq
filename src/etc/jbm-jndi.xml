@@ -66,6 +66,9 @@
    <queue name="testQueue">
       <entry name="/queue/testQueue"/>
    </queue>
+   <queue name="testPerfQueue">
+      <entry name="/queue/testPerfQueue"/>
+   </queue>
    <queue name="A">
       <entry name="/queue/A"/>
    </queue>

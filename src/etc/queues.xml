@@ -89,6 +89,10 @@
       <clustered>true</clustered>
    </queue-settings>
 
+   <queue-settings match="queuejms.testPerfQueue">
+      <clustered>false</clustered>
+   </queue-settings>
+
    <!--default for catch all-->
    <queue-settings match="*">
       <clustered>false</clustered>

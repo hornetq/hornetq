@@ -19,34 +19,53 @@
    * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
    * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
    */
-package org.jboss.messaging.core.deployers;
+package org.jboss.jms.util;
 
-import org.jboss.messaging.core.server.MessagingComponent;
+import javax.jms.DeliveryMode;
+import java.io.Serializable;
 
 /**
- * This class manages any configuration files available. It will notify any deployers registered with it on changes.
- *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
- */
-public interface DeploymentManager
+*/
+public class PerfParams implements Serializable
 {
-   /**
-    * registers a deployable object which will handle the deployment of URL's
-    *
-    * @param deployer The deployable object
-    * @throws Exception .
-    */
-   void registerDeployer(Deployer deployer) throws Exception;
+   int noOfMessagesToSend = 1000;
+   long samplePeriod = 1000;
+   int deliveryMode  = DeliveryMode.NON_PERSISTENT;
 
-   /**
-    * unregisters a deployable object which will handle the deployment of URL's
-    *
-    * @param deployer The deployable object
-    * @throws Exception .
-    */
-   void unregisterDeployer(Deployer deployer);
+   public int getNoOfMessagesToSend()
+   {
+      return noOfMessagesToSend;
+   }
 
-   void start(int weight) throws Exception;
+   public void setNoOfMessagesToSend(int noOfMessagesToSend)
+   {
+      this.noOfMessagesToSend = noOfMessagesToSend;
+   }
 
-   void stop();
+   public long getSamplePeriod()
+   {
+      return samplePeriod;
+   }
+
+   public void setSamplePeriod(long samplePeriod)
+   {
+      this.samplePeriod = samplePeriod;
+   }
+
+   public int getDeliveryMode()
+   {
+      return deliveryMode;
+   }
+
+   public void setDeliveryMode(int deliveryMode)
+   {
+      this.deliveryMode = deliveryMode;
+   }
+
+   public String toString()
+   {
+      return "message to send = " + noOfMessagesToSend + " samplePeriod = " + samplePeriod + "ms" + " DeliveryMode = " +
+              (deliveryMode == DeliveryMode.PERSISTENT?"PERSISTENT":"NON_PERSISTENT");
+   }
 }
