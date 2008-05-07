@@ -54,8 +54,8 @@ public interface ConnectorRegistry
     * If there is only one reference, remove it from the connectors Map and
     * returns it. Otherwise return null.
     * 
-    * @param config
-    *           a Configuration
+    * @param location
+    *           a Location
     * @return the NIOConnector if there is no longer any references to it or
     *         <code>null</code>
     * @throws IllegalStateException

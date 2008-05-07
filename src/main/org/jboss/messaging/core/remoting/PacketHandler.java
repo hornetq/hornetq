@@ -15,7 +15,7 @@ package org.jboss.messaging.core.remoting;
  * registered into the same RemoteDispatcher).
  * 
  * @see PacketDispatcher#register(PacketHandler)
- * @see PacketDispatcher#unregister(String)
+ * @see PacketDispatcher#unregister(long)
  * 
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
  * 

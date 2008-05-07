@@ -73,7 +73,7 @@ public interface Deployer extends MessagingComponent
 
    /**
     * the weight of the deployer, used for ordering the order that deployers are deployed.
-    * @return
+    * @return the weight
     */
    int getWeight();
 }
