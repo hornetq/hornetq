@@ -29,13 +29,13 @@ public class BufferWrapper implements RemotingBuffer
 	
    // Attributes ----------------------------------------------------
 
-   protected final IoBuffer buffer;
+   private final IoBuffer buffer;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public BufferWrapper(IoBuffer buffer)
+   public BufferWrapper(final IoBuffer buffer)
    {
       assert buffer != null;
 
@@ -86,7 +86,7 @@ public class BufferWrapper implements RemotingBuffer
       return buffer.get();
    }
 
-   public void get(byte[] b)
+   public void get(final byte[] b)
    {
       buffer.get(b);
    }
@@ -124,10 +124,6 @@ public class BufferWrapper implements RemotingBuffer
       return (b == TRUE);
    }
 
-   
-  
-   
-   
    public void putNullableString(final String nullableString)
    {
       if (nullableString == null)

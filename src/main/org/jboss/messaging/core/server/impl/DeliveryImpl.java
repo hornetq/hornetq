@@ -24,7 +24,6 @@ package org.jboss.messaging.core.server.impl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerDeliverMessage;
 import org.jboss.messaging.core.server.Delivery;
@@ -84,7 +83,9 @@ public class DeliveryImpl implements Delivery
       
       copy.setDeliveryCount(reference.getDeliveryCount() + 1);
       
-      ConsumerDeliverMessage message = new ConsumerDeliverMessage(copy, deliveryID);
+      copy.setDeliveryID(deliveryID);
+      
+      ConsumerDeliverMessage message = new ConsumerDeliverMessage(copy);
       
       message.setTargetID(consumerID);
       message.setExecutorID(sessionID);

@@ -43,7 +43,7 @@ public class ConsumerDeliverMessageCodec extends AbstractPacketCodec<ConsumerDel
    {
       byte[] encodedMsg = StreamUtils.toBytes(packet.getMessage());
    	
-   	return SIZE_INT + encodedMsg.length + SIZE_LONG; 
+   	return SIZE_INT + encodedMsg.length;
    }
    
    @Override
@@ -52,7 +52,6 @@ public class ConsumerDeliverMessageCodec extends AbstractPacketCodec<ConsumerDel
       byte[] encodedMsg = StreamUtils.toBytes(message.getMessage());
       out.putInt(encodedMsg.length);
       out.put(encodedMsg);
-      out.putLong(message.getDeliveryID());
       encodedMsg = null;
    }
 
@@ -65,9 +64,8 @@ public class ConsumerDeliverMessageCodec extends AbstractPacketCodec<ConsumerDel
       in.get(encodedMsg);
       Message message = new MessageImpl();
       StreamUtils.fromBytes(message, encodedMsg);
-      long deliveryID = in.getLong();
 
-      return new ConsumerDeliverMessage(message, deliveryID);
+      return new ConsumerDeliverMessage(message);
    }
 
    // Package protected ---------------------------------------------

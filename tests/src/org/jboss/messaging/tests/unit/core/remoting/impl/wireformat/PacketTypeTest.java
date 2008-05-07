@@ -679,19 +679,17 @@ public class PacketTypeTest extends UnitTestCase
    public void testConsumerDeliverMessage() throws Exception
    {
       Message msg = new MessageImpl();
-      ConsumerDeliverMessage message = new ConsumerDeliverMessage(msg,
-            randomLong());
+      ConsumerDeliverMessage message = new ConsumerDeliverMessage(msg);
       AbstractPacketCodec codec = new ConsumerDeliverMessageCodec();
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(message, codec,
-            StreamUtils.toBytes(msg), message.getDeliveryID());
+            StreamUtils.toBytes(msg));
 
       assertTrue(decodedPacket instanceof ConsumerDeliverMessage);
       ConsumerDeliverMessage decodedMessage = (ConsumerDeliverMessage) decodedPacket;
       assertEquals(CONS_DELIVER, decodedMessage.getType());
       assertEquals(message.getMessage().getMessageID(), decodedMessage
             .getMessage().getMessageID());
-      assertEquals(message.getDeliveryID(), decodedMessage.getDeliveryID());
    }
 
    public void testSessionAcknowledgeMessage() throws Exception

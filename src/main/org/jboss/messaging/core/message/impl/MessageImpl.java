@@ -80,6 +80,8 @@ public class MessageImpl implements Message
    
    private int deliveryCount;
    
+   private long deliveryID;
+   
    // Constructors --------------------------------------------------
 
    /*
@@ -278,6 +280,16 @@ public class MessageImpl implements Message
    {
       return this.deliveryCount;
    }
+   
+   public void setDeliveryID(final long deliveryID)
+   {
+      this.deliveryID = deliveryID;
+   }
+   
+   public long getDeliveryID()
+   {
+      return this.deliveryID;
+   }
 
    public boolean isExpired()
    {
@@ -371,6 +383,8 @@ public class MessageImpl implements Message
       out.writeByte(priority);
       
       out.writeInt(deliveryCount);
+      
+      out.writeLong(deliveryID);
 
       if (payload != null)
       {
@@ -401,6 +415,8 @@ public class MessageImpl implements Message
       priority = in.readByte();
 
       deliveryCount = in.readInt();
+      
+      deliveryID = in.readLong();
       
       int length = in.readInt();
 

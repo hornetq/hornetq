@@ -45,7 +45,7 @@ public class ClientConsumerPacketHandler implements PacketHandler
          {
             ConsumerDeliverMessage message = (ConsumerDeliverMessage) packet;
             
-            clientConsumer.handleMessage(message);
+            clientConsumer.handleMessage(message.getMessage());
          }
          else
          {

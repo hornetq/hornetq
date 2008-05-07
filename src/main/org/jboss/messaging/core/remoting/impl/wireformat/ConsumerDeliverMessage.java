@@ -25,20 +25,17 @@ public class ConsumerDeliverMessage extends PacketImpl
 
    private final Message message;
 
-   private final long deliveryID;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ConsumerDeliverMessage(final Message message, final long deliveryID)
+   public ConsumerDeliverMessage(final Message message)
    {
       super(CONS_DELIVER);
 
       assert message != null;
 
       this.message = message;
-      this.deliveryID = deliveryID;
    }
 
    // Public --------------------------------------------------------
@@ -48,17 +45,11 @@ public class ConsumerDeliverMessage extends PacketImpl
       return message;
    }
 
-   public long getDeliveryID()
-   {
-      return deliveryID;
-   }
-
    @Override
    public String toString()
    {
       StringBuffer buf = new StringBuffer(getParentString());
       buf.append(", message=" + message);
-      buf.append(", deliveryID=" + deliveryID);   
       buf.append("]");
       return buf.toString();
    }

@@ -33,7 +33,6 @@ import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerDeliverMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 
@@ -75,7 +74,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    
    private final int tokenBatchSize;
    
-   private final PriorityLinkedList<ConsumerDeliverMessage> buffer = new PriorityLinkedListImpl<ConsumerDeliverMessage>(10);
+   private final PriorityLinkedList<Message> buffer = new PriorityLinkedListImpl<Message>(10);
    
    private volatile Thread receiverThread;
    
@@ -169,9 +168,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                     
             if (!closed && !buffer.isEmpty())
             {                              
-               ConsumerDeliverMessage m = buffer.removeFirst();
+               Message m = buffer.removeFirst();
                
-               boolean expired = m.getMessage().isExpired();
+               boolean expired = m.isExpired();
                
                session.delivered(m.getDeliveryID(), expired);
                
@@ -189,7 +188,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                   }
                }
                                  
-               return m.getMessage();
+               return m;
             }
             else
             {
@@ -284,7 +283,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       return targetID;
    }
 
-   public void handleMessage(final ConsumerDeliverMessage message) throws Exception
+   public void handleMessage(final Message message) throws Exception
    {
       if (closed)
       {
@@ -320,7 +319,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          {
             //Dispatch it directly on remoting thread
             
-            boolean expired = message.getMessage().isExpired();
+            boolean expired = message.isExpired();
 
             session.delivered(message.getDeliveryID(), expired);
             
@@ -328,7 +327,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
             if (!expired)
             {
-               handler.onMessage(message.getMessage());
+               handler.onMessage(message);
             }
          }
          else
@@ -337,7 +336,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          	
          	synchronized (this)
          	{
-         		buffer.addLast(message, message.getMessage().getPriority());
+         		buffer.addLast(message, message.getPriority());
          	}
          	            	
          	sessionExecutor.execute(new Runnable() { public void run() { callOnMessage(); } } );
@@ -349,7 +348,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       	
       	synchronized (this)
       	{
-      		buffer.addLast(message, message.getMessage().getPriority());
+      		buffer.addLast(message, message.getPriority());
          	      		
       		notify();
       	}
@@ -443,7 +442,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    		//ordering. If we just added a Runnable with the message to the executor immediately as we get it
    		//we could not do that
    		
-   		ConsumerDeliverMessage message;
+   		Message message;
    		
    		synchronized (this)
    		{
@@ -452,7 +451,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    		
    		if (message != null)
    		{      		
-      		boolean expired = message.getMessage().isExpired();
+      		boolean expired = message.isExpired();
    
             session.delivered(message.getDeliveryID(), expired);
             
@@ -462,7 +461,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             {
          		onMessageThread = Thread.currentThread();
          		
-               handler.onMessage(message.getMessage());
+               handler.onMessage(message);
             }
    		}
 		}

@@ -21,7 +21,6 @@
   */
 package org.jboss.messaging.core.message;
 
-import java.util.List;
 import java.util.Map;
 
 import org.jboss.messaging.core.server.Queue;
@@ -107,6 +106,14 @@ public interface Message extends Streamable
     * @param priority
     */
    void setPriority(byte priority);
+   
+   int getDeliveryCount();
+   
+   void setDeliveryCount(int deliveryCount);
+   
+   long getDeliveryID();
+   
+   void setDeliveryID(long deliveryID);
 
    /**
     * Binds a header. If the header map previously contained a mapping for this name, the old value
@@ -171,18 +178,6 @@ public interface Message extends Streamable
     * @return the type of the message
     */
    int getType();   
-   
-   /**
-    * 
-    * @return The delivery count of the message - only available on the client side
-    */
-   int getDeliveryCount();
-   
-   /**
-    * Set the delivery count of the message
-    * @param count
-    */
-   void setDeliveryCount(int count);
    
    /**
     * Get the connection id
