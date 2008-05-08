@@ -22,15 +22,11 @@
 package org.jboss.messaging.jms.client;
 
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.util.SafeUTF;
 
 /**
  * This class implements javax.jms.TextMessage ported from SpyTextMessage in JBossMQ.
@@ -55,8 +51,9 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
 
    // Attributes ----------------------------------------------------
    
+   //We cache it locally
    private String text;
-
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -69,15 +66,15 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
       super(JBossTextMessage.TYPE);
    }
    
-   public JBossTextMessage(org.jboss.messaging.core.message.Message message, ClientSession session)
-   {
+   public JBossTextMessage(final org.jboss.messaging.core.message.Message message, ClientSession session)
+   {     
       super(message, session);
    }
    
    /**
     * A copy constructor for non-JBoss Messaging JMS TextMessages.
     */
-   public JBossTextMessage(TextMessage foreign) throws JMSException
+   public JBossTextMessage(final TextMessage foreign) throws JMSException
    {
       super(foreign, JBossTextMessage.TYPE);
       
@@ -90,20 +87,10 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
    {
       return JBossTextMessage.TYPE;
    }
-   
-   public void doBeforeSend() throws Exception
-   {
-      beforeSend();
-   }
-   
-   public void doBeforeReceive() throws Exception
-   {
-      beforeReceive();
-   }
-          
+       
    // TextMessage implementation ------------------------------------
 
-   public void setText(String text) throws JMSException
+   public void setText(final String text) throws JMSException
    {
       checkWrite();
       
@@ -112,6 +99,7 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
 
    public String getText() throws JMSException
    {
+      //TODO lazily get the text
       return text;
    }
    
@@ -124,40 +112,23 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
 
    // JBossMessage override -----------------------------------------
    
+   public void doBeforeSend() throws Exception
+   {
+      body.putNullableString(text);      
+      
+      super.doBeforeSend();
+   }
+   
+   public void doBeforeReceive() throws Exception
+   {
+      super.doBeforeReceive();
+      
+      text = body.getNullableString();                        
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
-   protected void writePayload(DataOutputStream daos) throws Exception
-   {
-      //TODO - if send strings in plain format as opposed to UTF-8 then we can calculate the size
-      //in advance more easily - so we can allocate a byte buffer - as opposed to using a stream
-      
-      if (text == null)
-      {
-         daos.writeByte(NULL);
-      }
-      else
-      {      
-         daos.writeByte(NOT_NULL);
-         
-         SafeUTF.safeWriteUTF(daos, text);
-      }
-   }
-   
-   protected void readPayload(DataInputStream dais) throws Exception
-   {
-      byte b = dais.readByte();
-      
-      if (b == NULL)
-      {
-         text = null;
-      }
-      else
-      {
-         text = SafeUTF.safeReadUTF(dais);
-      } 
-   }
 
    // Private -------------------------------------------------------
 

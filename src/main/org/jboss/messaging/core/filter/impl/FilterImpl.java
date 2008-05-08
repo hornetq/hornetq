@@ -116,7 +116,14 @@ public class FilterImpl implements Filter
            {
               //First look it up in the headers
               
-              val = message.getHeader(id.getName());                            
+              //TODO - speed this up to avoid conversion
+              //Filter should be refactored to deal with SimpleString natively
+              val = message.getProperty(new SimpleString(id.getName()));             
+              
+              if (val instanceof SimpleString)
+              {
+                 val = ((SimpleString)val).toString();
+              }
            }
            
            if (val != null)

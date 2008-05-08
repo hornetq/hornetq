@@ -1,6 +1,5 @@
 package org.jboss.messaging.tests.integration;
 
-import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.ClientConnection;
@@ -8,11 +7,13 @@ import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
@@ -25,7 +26,7 @@ public class CoreClientTest extends TestCase
    // Attributes ----------------------------------------------------
 
    private ConfigurationImpl conf;
-   private MessagingServerImpl invmServer;
+   private MessagingServerImpl server;
 
    // Static --------------------------------------------------------
 
@@ -39,24 +40,26 @@ public class CoreClientTest extends TestCase
       super.setUp();
 
       conf = new ConfigurationImpl();
-      conf.setInvmDisabled(false);
-      conf.setTransport(INVM);
-      invmServer = new MessagingServerImpl(conf);
-      invmServer.start();
+      conf.setTransport(TransportType.TCP);
+      conf.setHost("localhost");      
+      server = new MessagingServerImpl(conf);
+      server.start();
    }
    
    @Override
    protected void tearDown() throws Exception
    {
-      invmServer.stop();
+      server.stop();
       
       super.tearDown();
    }
    
    
-   public void testINVMCoreClient() throws Exception
+   public void testCoreClient() throws Exception
    {
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(new LocationImpl(0));
+      Location location = new LocationImpl(TransportType.TCP, "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
+            
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location);
       ClientConnection conn = cf.createConnection();
       
       ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
@@ -66,14 +69,15 @@ public class CoreClientTest extends TestCase
 
       Message message = new MessageImpl(JBossTextMessage.TYPE, false, 0,
             System.currentTimeMillis(), (byte) 1);
-      message.setPayload("testINVMCoreClient".getBytes());
+      message.getBody().putString("testINVMCoreClient");
       producer.send(message);
 
       ClientConsumer consumer = session.createConsumer(QUEUE, null, false, false, true);
       conn.start();
       
       message = consumer.receive(1000);
-      assertEquals("testINVMCoreClient", new String(message.getPayload()));
+      
+      assertEquals("testINVMCoreClient", message.getBody().getString());
       
       conn.close();
    }

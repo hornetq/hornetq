@@ -6,12 +6,9 @@
  */
 package org.jboss.messaging.core.remoting.impl.codec;
 
-import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
-import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
-
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCancelMessage;
-import org.jboss.messaging.util.DataConstants;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * 
@@ -38,21 +35,16 @@ public class SessionCancelMessageCodec extends AbstractPacketCodec<SessionCancel
    // Public --------------------------------------------------------
 
    // AbstractPacketCodec overrides ---------------------------------
-
-   public int getBodyLength(final SessionCancelMessage packet) throws Exception
-   {   	
-      return SIZE_LONG + SIZE_BOOLEAN;
-   }
-   
+ 
    @Override
-   protected void encodeBody(final SessionCancelMessage message, final RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionCancelMessage message, final MessagingBuffer out) throws Exception
    {
       out.putLong(message.getDeliveryID());
       out.putBoolean(message.isExpired());
    }
 
    @Override
-   protected SessionCancelMessage decodeBody(final RemotingBuffer in)
+   protected SessionCancelMessage decodeBody(final MessagingBuffer in)
          throws Exception
    {
       long deliveryID = in.getLong();

@@ -108,12 +108,11 @@ public class NullStorageManager implements StorageManager
 	{
 	}
 
-	public void storeMessage(SimpleString address, Message message) throws Exception
+	public void storeMessage(Message message) throws Exception
 	{
 	}
 
-	public void storeMessageTransactional(long txID, SimpleString address,
-			Message message) throws Exception
+	public void storeMessageTransactional(long txID, Message message) throws Exception
 	{
 	}
 

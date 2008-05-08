@@ -7,10 +7,9 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PROD_RECEIVETOKENS;
-import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerReceiveTokensMessage;
-import org.jboss.messaging.util.DataConstants;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * 
@@ -38,19 +37,14 @@ public class ProducerReceiveTokensMessageCodec extends AbstractPacketCodec<Produ
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   public int getBodyLength(final ProducerReceiveTokensMessage packet) throws Exception
-   {
-   	return SIZE_INT;
-   }
-   
    @Override
-   protected void encodeBody(final ProducerReceiveTokensMessage message, final RemotingBuffer out) throws Exception
+   protected void encodeBody(final ProducerReceiveTokensMessage message, final MessagingBuffer out) throws Exception
    {
       out.putInt(message.getTokens());
    }
 
    @Override
-   protected ProducerReceiveTokensMessage decodeBody(final RemotingBuffer in)
+   protected ProducerReceiveTokensMessage decodeBody(final MessagingBuffer in)
          throws Exception
    {
       return new ProducerReceiveTokensMessage(in.getInt());

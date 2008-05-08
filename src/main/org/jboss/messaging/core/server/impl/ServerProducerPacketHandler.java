@@ -61,7 +61,7 @@ public class ServerProducerPacketHandler extends ServerPacketHandlerSupport
       {
       case PROD_SEND:
          ProducerSendMessage message = (ProducerSendMessage) packet;
-         producer.send(message.getAddress(), message.getMessage());
+         producer.send(message.getMessage());
          break;
       case CLOSE:
          producer.close();

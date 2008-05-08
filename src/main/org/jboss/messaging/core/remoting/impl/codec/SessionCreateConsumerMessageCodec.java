@@ -7,12 +7,9 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATECONSUMER;
-import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
-import static org.jboss.messaging.util.DataConstants.SIZE_INT;
-import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
-import org.jboss.messaging.util.DataConstants;
+import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -39,16 +36,8 @@ public class SessionCreateConsumerMessageCodec extends
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   public int getBodyLength(final SessionCreateConsumerMessage packet) throws Exception
-   {   	
-   	int bodyLength = SIZE_LONG + SimpleString.sizeofString(packet.getQueueName()) +
-   	SimpleString.sizeofNullableString(packet.getFilterString()) + 2 * SIZE_BOOLEAN + 2 * SIZE_INT;
-   	
-   	return bodyLength;
-   }
-   
    @Override
-   protected void encodeBody(final SessionCreateConsumerMessage request, final RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionCreateConsumerMessage request, final MessagingBuffer out) throws Exception
    {
       SimpleString queueName = request.getQueueName();
       SimpleString filterString = request.getFilterString();
@@ -67,7 +56,7 @@ public class SessionCreateConsumerMessageCodec extends
    }
 
    @Override
-   protected SessionCreateConsumerMessage decodeBody(final RemotingBuffer in)
+   protected SessionCreateConsumerMessage decodeBody(final MessagingBuffer in)
          throws Exception
    {
       long clientTargetID = in.getLong();

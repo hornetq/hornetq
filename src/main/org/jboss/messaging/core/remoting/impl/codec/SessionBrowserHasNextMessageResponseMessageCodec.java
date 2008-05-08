@@ -7,10 +7,9 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_HASNEXTMESSAGE_RESP;
-import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
-import org.jboss.messaging.util.DataConstants;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -35,21 +34,16 @@ public class SessionBrowserHasNextMessageResponseMessageCodec extends
    // Public --------------------------------------------------------
 
    // AbstractPacketCodec overrides ---------------------------------
-
-   public int getBodyLength(final SessionBrowserHasNextMessageResponseMessage packet) throws Exception
-   {   	
-      return SIZE_BOOLEAN;
-   }
-   
+ 
    @Override
    protected void encodeBody(final SessionBrowserHasNextMessageResponseMessage response,
-         final RemotingBuffer out) throws Exception
+         final MessagingBuffer out) throws Exception
    {
       out.putBoolean(response.hasNext());
    }
 
    @Override
-   protected SessionBrowserHasNextMessageResponseMessage decodeBody(final RemotingBuffer in) throws Exception
+   protected SessionBrowserHasNextMessageResponseMessage decodeBody(final MessagingBuffer in) throws Exception
    {
       boolean hasNext = in.getBoolean();
 

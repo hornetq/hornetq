@@ -378,116 +378,116 @@ public class TransactionTest extends UnitTestCase
       }         
    }
    
-   public void testSendCommit() throws Exception
-   {
-      //Durable queue
-      Queue queue1 = new QueueImpl(12, new SimpleString("queue1"), null, false, true, false, -1, scheduledExecutor);
-      
-      //Durable queue
-      Queue queue2 = new QueueImpl(34, new SimpleString("queue2"), null, false, true, false, -1, scheduledExecutor);
-      
-      //Non durable queue
-      Queue queue3 = new QueueImpl(65, new SimpleString("queue3"), null, false, false, false, -1, scheduledExecutor);
-      
-      //Durable message to send
-      
-      Message message1 = this.generateMessage(1);
-      
-      // Non durable message to send
-      
-      Message message2 = this.generateMessage(2);
-      
-      message2.setDurable(false);
-      
-      
-      StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
-      
-      PostOffice po= EasyMock.createStrictMock(PostOffice.class);
-      
-      final long txID = 123;
-      
-      EasyMock.expect(sm.generateTransactionID()).andReturn(txID);
-      
-      EasyMock.replay(sm);
-            
-      Transaction tx = new TransactionImpl(sm, po);
-      
-      assertTrue(tx.isEmpty());
-      assertFalse(tx.isContainsPersistent());
-
-      EasyMock.verify(sm);
-      
-      EasyMock.reset(sm);
-      
-      final SimpleString address1 = new SimpleString("topic1");
-      
-      //Expect:
-      
-      MessageReference ref5 = message1.createReference(queue1);
-      MessageReference ref6 = message1.createReference(queue2);
-      List<MessageReference> message1Refs = new ArrayList<MessageReference>();
-      message1Refs.add(ref5);
-      message1Refs.add(ref6);
-      
-      EasyMock.expect(po.route(address1, message1)).andReturn(message1Refs);
-      
-      sm.storeMessageTransactional(txID, address1, message1);
-      
-      EasyMock.replay(po);
-      
-      EasyMock.replay(sm);
-      
-      tx.addMessage(address1, message1);
-      
-      assertFalse(tx.isEmpty());
-      assertTrue(tx.isContainsPersistent());
-      
-         
-      EasyMock.verify(po);
-      
-      EasyMock.verify(sm);
-      
-      EasyMock.reset(po);
-      
-      EasyMock.reset(sm);
-      
-                       
-      //Expect:
-      
-      final SimpleString address2 = new SimpleString("queue3");
-      
-      MessageReference ref7 = message2.createReference(queue3);
-      List<MessageReference> message2Refs = new ArrayList<MessageReference>();
-      message2Refs.add(ref7);
-
-      EasyMock.expect(po.route(address2, message2)).andReturn(message1Refs);
-      
-      EasyMock.replay(po);
-      
-      EasyMock.replay(sm);
-      
-      tx.addMessage(address2, message2);
-      
-      EasyMock.verify(po);
-      
-      EasyMock.verify(sm);
-      
-      EasyMock.reset(po);
-      
-      EasyMock.reset(sm);
-      
-      //Expect :
-      
-      sm.commit(txID);
-      
-      EasyMock.replay(sm);
-      
-      tx.commit();
-      
-      EasyMock.verify(sm);
-      
-      //TODO test messages are routed and refs count reduced
-   }
+//   public void testSendCommit() throws Exception
+//   {
+//      //Durable queue
+//      Queue queue1 = new QueueImpl(12, new SimpleString("queue1"), null, false, true, false, -1, scheduledExecutor);
+//      
+//      //Durable queue
+//      Queue queue2 = new QueueImpl(34, new SimpleString("queue2"), null, false, true, false, -1, scheduledExecutor);
+//      
+//      //Non durable queue
+//      Queue queue3 = new QueueImpl(65, new SimpleString("queue3"), null, false, false, false, -1, scheduledExecutor);
+//      
+//      //Durable message to send
+//      
+//      Message message1 = this.generateMessage(1);
+//      
+//      // Non durable message to send
+//      
+//      Message message2 = this.generateMessage(2);
+//      
+//      message2.setDurable(false);
+//      
+//      
+//      StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
+//      
+//      PostOffice po= EasyMock.createStrictMock(PostOffice.class);
+//      
+//      final long txID = 123;
+//      
+//      EasyMock.expect(sm.generateTransactionID()).andReturn(txID);
+//      
+//      EasyMock.replay(sm);
+//            
+//      Transaction tx = new TransactionImpl(sm, po);
+//      
+//      assertTrue(tx.isEmpty());
+//      assertFalse(tx.isContainsPersistent());
+//
+//      EasyMock.verify(sm);
+//      
+//      EasyMock.reset(sm);
+//      
+//      final SimpleString address1 = new SimpleString("topic1");
+//      
+//      //Expect:
+//      
+//      MessageReference ref5 = message1.createReference(queue1);
+//      MessageReference ref6 = message1.createReference(queue2);
+//      List<MessageReference> message1Refs = new ArrayList<MessageReference>();
+//      message1Refs.add(ref5);
+//      message1Refs.add(ref6);
+//      
+//      EasyMock.expect(po.route(address1, message1)).andReturn(message1Refs);
+//      
+//      sm.storeMessageTransactional(txID, address1, message1);
+//      
+//      EasyMock.replay(po);
+//      
+//      EasyMock.replay(sm);
+//      
+//      tx.addMessage(address1, message1);
+//      
+//      assertFalse(tx.isEmpty());
+//      assertTrue(tx.isContainsPersistent());
+//      
+//         
+//      EasyMock.verify(po);
+//      
+//      EasyMock.verify(sm);
+//      
+//      EasyMock.reset(po);
+//      
+//      EasyMock.reset(sm);
+//      
+//                       
+//      //Expect:
+//      
+//      final SimpleString address2 = new SimpleString("queue3");
+//      
+//      MessageReference ref7 = message2.createReference(queue3);
+//      List<MessageReference> message2Refs = new ArrayList<MessageReference>();
+//      message2Refs.add(ref7);
+//
+//      EasyMock.expect(po.route(address2, message2)).andReturn(message1Refs);
+//      
+//      EasyMock.replay(po);
+//      
+//      EasyMock.replay(sm);
+//      
+//      tx.addMessage(address2, message2);
+//      
+//      EasyMock.verify(po);
+//      
+//      EasyMock.verify(sm);
+//      
+//      EasyMock.reset(po);
+//      
+//      EasyMock.reset(sm);
+//      
+//      //Expect :
+//      
+//      sm.commit(txID);
+//      
+//      EasyMock.replay(sm);
+//      
+//      tx.commit();
+//      
+//      EasyMock.verify(sm);
+//      
+//      //TODO test messages are routed and refs count reduced
+//   }
    
    
    

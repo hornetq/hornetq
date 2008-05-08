@@ -78,7 +78,7 @@ public class CoreClientOverSSL
 
          MessageImpl message = new MessageImpl(JBossTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);
-         message.setPayload(CoreClientOverSSLTest.MESSAGE_TEXT_FROM_CLIENT.getBytes());
+         message.getBody().putString(CoreClientOverSSLTest.MESSAGE_TEXT_FROM_CLIENT);
          producer.send(message);
 
          conn.close();

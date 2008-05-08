@@ -7,13 +7,12 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PROD_SEND;
-import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.StreamUtils;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * 
@@ -26,6 +25,9 @@ public class ProducerSendMessageCodec extends AbstractPacketCodec<ProducerSendMe
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(ProducerSendMessageCodec.class);
+   
+   
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
@@ -41,37 +43,33 @@ public class ProducerSendMessageCodec extends AbstractPacketCodec<ProducerSendMe
 
    // AbstractPacketCodec overrides ---------------------------------
    
-   public int getBodyLength(final ProducerSendMessage packet) throws Exception
+   @Override
+   protected void encodeBody(final ProducerSendMessage message, final MessagingBuffer out) throws Exception
    {
-   	byte[] encodedMsg = StreamUtils.toBytes(packet.getMessage());   
-
-      int bodyLength = SimpleString.sizeofNullableString(packet.getAddress()) + SIZE_INT + encodedMsg.length;
+      MessagingBuffer buffer = message.getMessage().encode();
       
-      return bodyLength;
+      buffer.flip();
+      
+      //TODO - can be optimised
+      
+      byte[] data = buffer.array();
+      
+      out.putBytes(data, 0, buffer.limit());
    }
 
    @Override
-   protected void encodeBody(final ProducerSendMessage message, final RemotingBuffer out) throws Exception
-   {
-      byte[] encodedMsg = StreamUtils.toBytes(message.getMessage());  
-      out.putNullableSimpleString(message.getAddress());
-      out.putInt(encodedMsg.length);
-      out.put(encodedMsg);
-      encodedMsg = null;
-   }
-
-   @Override
-   protected ProducerSendMessage decodeBody(final RemotingBuffer in)
+   protected ProducerSendMessage decodeBody(final MessagingBuffer in)
          throws Exception
    {
-      SimpleString address = in.getNullableSimpleString();
-      int msgLength = in.getInt();
-      byte[] encodedMsg = new byte[msgLength];
-      in.get(encodedMsg);
+      //TODO can be optimised
+      
       Message message = new MessageImpl();
-      StreamUtils.fromBytes(message, encodedMsg);
+      
+      message.decode(in);
+      
+      message.getBody().flip();
 
-      return new ProducerSendMessage(address, message);
+      return new ProducerSendMessage(message);
    }
 
    // Package protected ---------------------------------------------

@@ -7,11 +7,9 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PONG;
-import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
-import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
-import org.jboss.messaging.util.DataConstants;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -37,13 +35,8 @@ public class PongCodec extends AbstractPacketCodec<Pong>
 
    // AbstractPacketCodec overrides ---------------------------------
    
-   public int getBodyLength(final Pong packet) throws Exception
-   {
-   	return SIZE_LONG + SIZE_BOOLEAN;
-   }
-
    @Override
-   protected void encodeBody(final Pong packet, final RemotingBuffer out) throws Exception
+   protected void encodeBody(final Pong packet, final MessagingBuffer out) throws Exception
    {
       long sessionID = packet.getSessionID();
       boolean sessionFailed = packet.isSessionFailed();
@@ -53,7 +46,7 @@ public class PongCodec extends AbstractPacketCodec<Pong>
    }
 
    @Override
-   protected Pong decodeBody(final RemotingBuffer in) throws Exception
+   protected Pong decodeBody(final MessagingBuffer in) throws Exception
    {
       long sessionID = in.getLong();
       boolean sessionFailed = in.getBoolean();

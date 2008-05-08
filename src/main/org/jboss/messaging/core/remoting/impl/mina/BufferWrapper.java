@@ -11,8 +11,11 @@ import static org.jboss.messaging.util.DataConstants.NOT_NULL;
 import static org.jboss.messaging.util.DataConstants.NULL;
 import static org.jboss.messaging.util.DataConstants.TRUE;
 
+import java.nio.charset.Charset;
+
 import org.apache.mina.common.IoBuffer;
-import org.jboss.messaging.core.remoting.impl.codec.RemotingBuffer;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -23,10 +26,14 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class BufferWrapper implements RemotingBuffer
+public class BufferWrapper implements MessagingBuffer
 {
    // Constants -----------------------------------------------------
-	
+
+   private static final Charset utf8 = Charset.forName("UTF-8");
+   
+   private static final Logger log = Logger.getLogger(BufferWrapper.class);
+   
    // Attributes ----------------------------------------------------
 
    private final IoBuffer buffer;
@@ -35,35 +42,85 @@ public class BufferWrapper implements RemotingBuffer
 
    // Constructors --------------------------------------------------
 
+   public BufferWrapper(final int size)
+   {
+      buffer = IoBuffer.allocate(size);
+      
+      buffer.setAutoExpand(true);
+   }
+         
    public BufferWrapper(final IoBuffer buffer)
    {
-      assert buffer != null;
-
       this.buffer = buffer;
    }
    
    // Public --------------------------------------------------------
 
-   // RemotingBuffer implementation ----------------------------------------------
+   // MessagingBuffer implementation ----------------------------------------------
 
    public byte[] array()
    {
       return buffer.array();
    }
-
+      
+   public int position()
+   {
+      return buffer.position();
+   }
+   
+   public void position(final int position)
+   {
+      buffer.position(position);
+   }
+   
+   public int limit()
+   {
+      return buffer.limit();
+   }
+   
+   public void limit(final int limit)
+   {
+      buffer.limit(limit);
+   }
+   
+   public int capacity()
+   {
+      return buffer.capacity();
+   }
+   
+   public void flip()
+   {
+      buffer.flip();
+   }
+   
+   public MessagingBuffer slice()
+   {
+      return new BufferWrapper(buffer.slice());
+   }
+   
    public int remaining()
    {
       return buffer.remaining();
    }
+   
+   public void rewind()
+   {
+      buffer.rewind();
+   }
 
-   public void put(final byte byteValue)
+   public void putByte(byte byteValue)
    {
       buffer.put(byteValue);
    }
 
-   public void put(final byte[] byteArray)
+   public void putBytes(final byte[] byteArray)
    {
       buffer.put(byteArray);
+   }
+   
+   public void putBytes(final byte[] bytes, int offset, int length)
+   {
+      buffer.put(bytes, offset, length);
    }
 
    public void putInt(final int intValue)
@@ -80,20 +137,50 @@ public class BufferWrapper implements RemotingBuffer
    {
       buffer.putFloat(floatValue);
    }
-
-   public byte get()
+   
+   public void putDouble(final double d)
    {
+      buffer.putDouble(d);
+   }
+   
+   public void putShort(final short s)
+   {
+      buffer.putShort(s);
+   }
+   
+   public void putChar(final char chr)
+   {
+      buffer.putChar(chr);
+   }   
+   
+   public byte getByte()
+   {      
       return buffer.get();
    }
+   
+   public short getUnsignedByte()
+   {
+      return buffer.getUnsigned();
+   }
 
-   public void get(final byte[] b)
+   public void getBytes(final byte[] b)
    {
       buffer.get(b);
+   }
+   
+   public void getBytes(final byte[] b, final int offset, final int length)
+   {
+      buffer.get(b, offset, length);
    }
 
    public int getInt()
    {
       return buffer.getInt();
+   }
+   
+   public long getUnsignedInt()
+   {
+      return buffer.getUnsignedInt();
    }
 
    public long getLong()
@@ -105,14 +192,33 @@ public class BufferWrapper implements RemotingBuffer
    {
       return buffer.getFloat();
    }
+   
+   public short getShort()
+   {
+      return buffer.getShort();
+   }
+   
+   public int getUnsignedShort()
+   {
+      return buffer.getUnsignedShort();
+   }
+   
+   public double getDouble()
+   {
+      return buffer.getDouble();
+   }
+   
+   public char getChar()
+   {
+      return buffer.getChar();
+   }
 
    public void putBoolean(final boolean b)
    {
       if (b)
       {
          buffer.put(TRUE);
-      }
-      else
+      } else
       {
          buffer.put(FALSE);
       }
@@ -124,6 +230,16 @@ public class BufferWrapper implements RemotingBuffer
       return (b == TRUE);
    }
 
+   public void putString(final String nullableString)
+   {
+      buffer.putInt(nullableString.length());
+      
+      for (int i = 0; i < nullableString.length(); i++)
+      {
+         buffer.putChar(nullableString.charAt(i));
+      }      
+   }
+   
    public void putNullableString(final String nullableString)
    {
       if (nullableString == null)
@@ -137,92 +253,8 @@ public class BufferWrapper implements RemotingBuffer
          putString(nullableString);
       }
    }
-   
-   public String getNullableString()
-   {
-      byte check = buffer.get();
-      
-      if (check == NULL)
-      {
-         return null;
-      }
-      else
-      {
-      	return getString();
-      }
-   }
-   
-   public void putSimpleString(final SimpleString string)
-   {
-   	byte[] data = string.getData();
-   	
-   	buffer.putInt(data.length);
-   	buffer.put(data);
-   }
-   
-   public SimpleString getSimpleString()
-   {
-   	int len = buffer.getInt();
-   	
-   	byte[] data = new byte[len];
-   	buffer.get(data);
-   	
-   	return new SimpleString(data);
-   }
-      
-   public void putNullableSimpleString(final SimpleString string)
-   {
-   	if (string == null)
-   	{
-   		buffer.put(NULL);
-   	}
-   	else
-   	{
-   		buffer.put(NOT_NULL);
-   		putSimpleString(string);
-   	}
-   }
-         
-   public SimpleString getNullableSimpleString()
-   {
-   	int b = buffer.get();
-   	if (b == NULL)
-   	{
-   		return null;
-   	}
-   	else
-   	{
-   	   return getSimpleString();
-   	}
-   }
-         
-   public void rewind()
-   {
-   	buffer.rewind();
-   }
 
-   public void flip()
-   {
-      buffer.flip();
-   }
-   
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   private void putString(final String nullableString)
-   {
-      buffer.putInt(nullableString.length());
-      
-      for (int i = 0; i < nullableString.length(); i++)
-      {
-         buffer.putChar(nullableString.charAt(i));
-      }      
-   }
-   
-   private String getString()
+   public String getString()
    {
       int len = buffer.getInt();
          
@@ -236,5 +268,84 @@ public class BufferWrapper implements RemotingBuffer
       return new String(chars);               
    }
    
+   public String getNullableString()
+   {
+      byte check = buffer.get();
+      
+      if (check == NULL)
+      {
+         return null;
+      }
+      else
+      {
+         return getString();
+      }
+   }
+         
+   public void putUTF(final String str) throws Exception
+   {
+      buffer.putPrefixedString(str, utf8.newEncoder());
+   }
+      
+   public void putNullableSimpleString(final SimpleString string)
+   {
+      if (string == null)
+      {
+         buffer.put(NULL);
+      }
+      else
+      {
+         buffer.put(NOT_NULL);
+         putSimpleString(string);
+      }
+   }
+   
+   public void putSimpleString(final SimpleString string)
+   {
+      byte[] data = string.getData();
+      
+      buffer.putInt(data.length);
+      buffer.put(data);
+   }
+   
+   public SimpleString getSimpleString()
+   {
+      int len = buffer.getInt();
+      
+      byte[] data = new byte[len];
+      buffer.get(data);
+      
+      return new SimpleString(data);
+   }
+   
+   public SimpleString getNullableSimpleString()
+   {
+      int b = buffer.get();
+      if (b == NULL)
+      {
+         return null;
+      }
+      else
+      {
+         return getSimpleString();
+      }
+   }
+   
+   public String getUTF() throws Exception
+   {
+      return buffer.getPrefixedString(utf8.newDecoder());
+   }
+   
+   public Object getUnderlyingBuffer()
+   {
+      return buffer;
+   }
+      
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
    // Inner classes -------------------------------------------------
 }

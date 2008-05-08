@@ -10,7 +10,6 @@ import static java.util.UUID.randomUUID;
 import junit.framework.TestCase;
 
 import org.apache.mina.common.IoBuffer;
-import org.jboss.messaging.core.remoting.impl.codec.RemotingBuffer;
 import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
 
 /**
@@ -18,7 +17,7 @@ import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class MinaRemotingBufferTest extends TestCase
+public class BufferWrapperTest extends TestCase
 {
    // Constants -----------------------------------------------------
 
@@ -30,7 +29,7 @@ public class MinaRemotingBufferTest extends TestCase
 
    // Public --------------------------------------------------------
 
-   private RemotingBuffer wrapper;
+   private BufferWrapper wrapper;
    private IoBuffer buffer;
 
    @Override

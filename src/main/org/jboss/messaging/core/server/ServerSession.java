@@ -63,7 +63,7 @@ public interface ServerSession
 	
 	void promptDelivery(Queue queue);
 	
-	void send(SimpleString address, Message msg) throws Exception;
+	void send(Message msg) throws Exception;
 
    void acknowledge(long deliveryID, boolean allUpTo) throws Exception;
 

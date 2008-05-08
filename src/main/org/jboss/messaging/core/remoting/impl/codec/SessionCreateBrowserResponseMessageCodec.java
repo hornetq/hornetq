@@ -7,10 +7,9 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEBROWSER_RESP;
-import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserResponseMessage;
-import org.jboss.messaging.util.DataConstants;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -36,14 +35,9 @@ public class SessionCreateBrowserResponseMessageCodec extends
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   public int getBodyLength(final SessionCreateBrowserResponseMessage packet) throws Exception
-   {   	
-      return SIZE_LONG;
-   }
-   
    @Override
    protected void encodeBody(final SessionCreateBrowserResponseMessage response,
-         final RemotingBuffer out) throws Exception
+         final MessagingBuffer out) throws Exception
    {
       long browserID = response.getBrowserTargetID();
 
@@ -51,7 +45,7 @@ public class SessionCreateBrowserResponseMessageCodec extends
    }
 
    @Override
-   protected SessionCreateBrowserResponseMessage decodeBody(final RemotingBuffer in)
+   protected SessionCreateBrowserResponseMessage decodeBody(final MessagingBuffer in)
          throws Exception
    {
       long browserID = in.getLong();

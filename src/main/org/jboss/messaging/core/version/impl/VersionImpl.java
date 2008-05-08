@@ -6,20 +6,17 @@
  */
 package org.jboss.messaging.core.version.impl;
 
-import java.io.*;
-import java.util.Properties;
-import java.net.URL;
+import java.io.Serializable;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.version.Version;
-import org.jboss.messaging.util.Streamable;
 
 /**
  * A VersionImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class VersionImpl implements Version, Streamable, Serializable
+public class VersionImpl implements Version, Serializable
 {
    // Constants -----------------------------------------------------
 
@@ -105,36 +102,6 @@ public class VersionImpl implements Version, Streamable, Serializable
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-
-   public void read(DataInputStream in) throws Exception
-   {
-      versionName = in.readUTF();
-
-      majorVersion = in.readInt();
-
-      minorVersion = in.readInt();
-
-      microVersion = in.readInt();
-
-      versionSuffix = in.readUTF();
-
-      incrementingVersion = in.readInt();
-   }
-
-   public void write(DataOutputStream out) throws Exception
-   {
-      out.writeUTF(versionName);
-
-      out.writeInt(majorVersion);
-
-      out.writeInt(minorVersion);
-
-      out.writeInt(microVersion);
-
-      out.writeUTF(versionSuffix);
-
-      out.writeInt(incrementingVersion);
-   }
 
    // Inner classes -------------------------------------------------
 }

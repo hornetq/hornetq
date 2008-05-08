@@ -1,24 +1,24 @@
 /*
-  * JBoss, Home of Professional Open Source
-  * Copyright 2005, JBoss Inc., and individual contributors as indicated
-  * by the @authors tag. See the copyright.txt in the distribution for a
-  * full listing of individual contributors.
-  *
-  * This is free software; you can redistribute it and/or modify it
-  * under the terms of the GNU Lesser General Public License as
-  * published by the Free Software Foundation; either version 2.1 of
-  * the License, or (at your option) any later version.
-  *
-  * This software is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  * Lesser General Public License for more details.
-  *
-  * You should have received a copy of the GNU Lesser General Public
-  * License along with this software; if not, write to the Free
-  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-  */
+ * JBoss, Home of Professional Open Source
+ * Copyright 2005, JBoss Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.test.messaging.jms.message;
 
 import javax.jms.Connection;
@@ -32,12 +32,11 @@ import org.jboss.test.messaging.JBMServerTestCase;
 
 /**
  * 
- * Testing of message property conversion. 
- * See javax.jms.Message for details
+ * Testing of message property conversion. See javax.jms.Message for details
  * 
  * @author <a href="mailto:afu@novell.com">Alex Fu</a>
  * @version <tt>$Revision$</tt>
- *
+ * 
  * $Id$
  */
 public class MessagePropertyConversionTest extends JBMServerTestCase
@@ -48,7 +47,7 @@ public class MessagePropertyConversionTest extends JBMServerTestCase
    private Session queueProducerSession, queueConsumerSession;
    private MessageProducer queueProducer;
    private MessageConsumer queueConsumer;
-   
+
    // Constructors --------------------------------------------------
 
    public MessagePropertyConversionTest(String name)
@@ -65,8 +64,10 @@ public class MessagePropertyConversionTest extends JBMServerTestCase
       producerConnection = getConnectionFactory().createConnection();
       consumerConnection = getConnectionFactory().createConnection();
 
-      queueProducerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      queueConsumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      queueProducerSession = producerConnection.createSession(false,
+            Session.AUTO_ACKNOWLEDGE);
+      queueConsumerSession = consumerConnection.createSession(false,
+            Session.AUTO_ACKNOWLEDGE);
 
       queueProducer = queueProducerSession.createProducer(queue1);
       queueConsumer = queueConsumerSession.createConsumer(queue1);
@@ -75,13 +76,13 @@ public class MessagePropertyConversionTest extends JBMServerTestCase
    }
 
    public void tearDown() throws Exception
-   {      
+   {
       producerConnection.close();
       consumerConnection.close();
-      
+
       super.tearDown();
    }
-   
+
    public void testBooleanConversion() throws Exception
    {
       Message m1 = queueProducerSession.createMessage();
@@ -91,8 +92,9 @@ public class MessagePropertyConversionTest extends JBMServerTestCase
 
       queueProducer.send(queue1, m1);
       Message m2 = queueConsumer.receive(2000);
-      
-      // Boolean property can be read as boolean and String but not anything else
+
+      // Boolean property can be read as boolean and String but not anything
+      // else
 
       assertEquals(myBool, m2.getBooleanProperty("myBool"));
       assertEquals(String.valueOf(myBool), m2.getStringProperty("myBool"));
@@ -101,39 +103,57 @@ public class MessagePropertyConversionTest extends JBMServerTestCase
       {
          m2.getByteProperty("myBool");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getShortProperty("myBool");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getIntProperty("myBool");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getLongProperty("myBool");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getFloatProperty("myBool");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getDoubleProperty("myBool");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
    }
-   
+
    public void testByteConversion() throws Exception
    {
       Message m1 = queueProducerSession.createMessage();
@@ -143,34 +163,43 @@ public class MessagePropertyConversionTest extends JBMServerTestCase
 
       queueProducer.send(queue1, m1);
       Message m2 = queueConsumer.receive(2000);
-      
+
       // Byte property can be read as byte, short, int, long or String
 
       assertEquals(myByte, m2.getByteProperty("myByte"));
-      assertEquals((short)myByte, m2.getShortProperty("myByte"));
-      assertEquals((int)myByte, m2.getIntProperty("myByte"));
-      assertEquals((long)myByte, m2.getLongProperty("myByte"));
+      assertEquals((short) myByte, m2.getShortProperty("myByte"));
+      assertEquals((int) myByte, m2.getIntProperty("myByte"));
+      assertEquals((long) myByte, m2.getLongProperty("myByte"));
       assertEquals(String.valueOf(myByte), m2.getStringProperty("myByte"));
 
       try
       {
          m2.getBooleanProperty("myByte");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getFloatProperty("myByte");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getDoubleProperty("myByte");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
    }
-   
+
    public void testShortConversion() throws Exception
    {
       Message m1 = queueProducerSession.createMessage();
@@ -180,39 +209,51 @@ public class MessagePropertyConversionTest extends JBMServerTestCase
 
       queueProducer.send(queue1, m1);
       Message m2 = queueConsumer.receive(2000);
- 
+
       // Short property can be read as short, int, long or String
 
       assertEquals(myShort, m2.getShortProperty("myShort"));
-      assertEquals((int)myShort, m2.getIntProperty("myShort"));
-      assertEquals((long)myShort, m2.getLongProperty("myShort"));
+      assertEquals((int) myShort, m2.getIntProperty("myShort"));
+      assertEquals((long) myShort, m2.getLongProperty("myShort"));
       assertEquals(String.valueOf(myShort), m2.getStringProperty("myShort"));
 
       try
       {
          m2.getByteProperty("myShort");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getBooleanProperty("myShort");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getFloatProperty("myShort");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getDoubleProperty("myShort");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
    }
-   
+
    public void testIntConversion() throws Exception
    {
       Message m1 = queueProducerSession.createMessage();
@@ -226,40 +267,55 @@ public class MessagePropertyConversionTest extends JBMServerTestCase
       // Int property can be read as int, long or String
 
       assertEquals(myInt, m2.getIntProperty("myInt"));
-      assertEquals((long)myInt, m2.getLongProperty("myInt"));
+      assertEquals((long) myInt, m2.getLongProperty("myInt"));
       assertEquals(String.valueOf(myInt), m2.getStringProperty("myInt"));
 
       try
       {
          m2.getShortProperty("myInt");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getByteProperty("myInt");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getBooleanProperty("myInt");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getFloatProperty("myInt");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getDoubleProperty("myInt");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
    }
-   
+
    public void testLongConversion() throws Exception
    {
       Message m1 = queueProducerSession.createMessage();
@@ -279,39 +335,57 @@ public class MessagePropertyConversionTest extends JBMServerTestCase
       {
          m2.getIntProperty("myLong");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getShortProperty("myLong");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getByteProperty("myLong");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getBooleanProperty("myLong");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getFloatProperty("myLong");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getDoubleProperty("myLong");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
    }
-   
+
    public void testFloatConversion() throws Exception
    {
       Message m1 = queueProducerSession.createMessage();
@@ -321,44 +395,59 @@ public class MessagePropertyConversionTest extends JBMServerTestCase
 
       queueProducer.send(queue1, m1);
       Message m2 = queueConsumer.receive(2000);
-   
+
       // Float property can be read as float, double or String
 
       assertEquals(myFloat, m2.getFloatProperty("myFloat"), 0);
       assertEquals(String.valueOf(myFloat), m2.getStringProperty("myFloat"));
-      assertEquals((double)myFloat, m2.getDoubleProperty("myFloat"), 0);
+      assertEquals((double) myFloat, m2.getDoubleProperty("myFloat"), 0);
 
       try
       {
          m2.getIntProperty("myFloat");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getShortProperty("myFloat");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getLongProperty("myFloat");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getByteProperty("myFloat");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getBooleanProperty("myFloat");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
    }
-   
+
    public void testDoubleConversion() throws Exception
    {
       Message m1 = queueProducerSession.createMessage();
@@ -378,37 +467,55 @@ public class MessagePropertyConversionTest extends JBMServerTestCase
       {
          m2.getFloatProperty("myDouble");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getIntProperty("myDouble");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getShortProperty("myDouble");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getByteProperty("myDouble");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getBooleanProperty("myDouble");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
 
       try
       {
          m2.getFloatProperty("myDouble");
          fail();
-      } catch (MessageFormatException e) {}
+      }
+      catch (MessageFormatException e)
+      {
+      }
    }
 
    public void testStringConversion() throws Exception
@@ -423,7 +530,7 @@ public class MessagePropertyConversionTest extends JBMServerTestCase
       float myFloat = Float.MAX_VALUE - 23465;
       double myDouble = Double.MAX_VALUE - 72387633;
       String myString = "abcdef&^*&!^ghijkl";
-      
+
       m1.setStringProperty("myString", myString);
 
       queueProducer.send(queue1, m1);
@@ -432,10 +539,10 @@ public class MessagePropertyConversionTest extends JBMServerTestCase
       assertEquals(myString, m2.getStringProperty("myString"));
 
       // Test String -> Numeric and bool conversions.
-    
-      // String property can be read as boolean, byte, short, 
+
+      // String property can be read as boolean, byte, short,
       // int, long, float, double and String, with the possibility to
-      // throw a runtime exception if the primitive's valueOf method does not 
+      // throw a runtime exception if the primitive's valueOf method does not
       // accept the String as a valid representation of the primitive
 
       Message m3 = queueProducerSession.createMessage();
@@ -468,39 +575,51 @@ public class MessagePropertyConversionTest extends JBMServerTestCase
          m4.getByteProperty("myIllegal");
          fail();
       }
-      catch (NumberFormatException e) {}
+      catch (NumberFormatException e)
+      {
+      }
       try
       {
          m4.getShortProperty("myIllegal");
          fail();
       }
-      catch (NumberFormatException e) {}
+      catch (NumberFormatException e)
+      {
+      }
       try
       {
          m4.getIntProperty("myIllegal");
          fail();
       }
-      catch (NumberFormatException e) {}
+      catch (NumberFormatException e)
+      {
+      }
       try
       {
          m4.getLongProperty("myIllegal");
          fail();
       }
-      catch (NumberFormatException e) {}
+      catch (NumberFormatException e)
+      {
+      }
       try
       {
          m4.getFloatProperty("myIllegal");
          fail();
       }
-      catch (NumberFormatException e) {}
+      catch (NumberFormatException e)
+      {
+      }
       try
       {
          m4.getDoubleProperty("myIllegal");
          fail();
       }
-      catch (NumberFormatException e) {}
-   }   
-   
+      catch (NumberFormatException e)
+      {
+      }
+   }
+
    public void testJMSXDeliveryCountConversion() throws Exception
    {
       Message m1 = queueProducerSession.createMessage();
@@ -509,7 +628,8 @@ public class MessagePropertyConversionTest extends JBMServerTestCase
       Message m2 = queueConsumer.receive(2000);
 
       int count = m2.getIntProperty("JMSXDeliveryCount");
-      assertEquals(String.valueOf(count), m2.getStringProperty("JMSXDeliveryCount"));
-      assertEquals((long)count, m2.getLongProperty("JMSXDeliveryCount"));
+      assertEquals(String.valueOf(count), m2
+            .getStringProperty("JMSXDeliveryCount"));
+      assertEquals((long) count, m2.getLongProperty("JMSXDeliveryCount"));
    }
 }

@@ -7,11 +7,10 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CREATECONNECTION;
-import static org.jboss.messaging.util.DataConstants.SIZE_INT;
-import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
-import org.jboss.messaging.util.DataConstants;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -21,6 +20,9 @@ public class CreateConnectionMessageCodec extends  AbstractPacketCodec<CreateCon
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(CreateConnectionMessageCodec.class);
+   
+   
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
@@ -36,17 +38,8 @@ public class CreateConnectionMessageCodec extends  AbstractPacketCodec<CreateCon
 
    // AbstractPackedCodec overrides----------------------------------
 
-   public int getBodyLength(final CreateConnectionRequest packet) throws Exception
-   {
-      int bodyLength = SIZE_INT // version
-            + SIZE_LONG +
-            + sizeof(packet.getUsername()) 
-            + sizeof(packet.getPassword());
-      return bodyLength;
-   }
-   
    @Override
-   protected void encodeBody(final CreateConnectionRequest request, final RemotingBuffer out)
+   protected void encodeBody(final CreateConnectionRequest request, final MessagingBuffer out)
          throws Exception
    {
       int version = request.getVersion();
@@ -61,7 +54,7 @@ public class CreateConnectionMessageCodec extends  AbstractPacketCodec<CreateCon
    }
 
    @Override
-   protected CreateConnectionRequest decodeBody(final RemotingBuffer in) throws Exception
+   protected CreateConnectionRequest decodeBody(final MessagingBuffer in) throws Exception
    {
       int version = in.getInt();
       long remotingSessionID = in.getLong();

@@ -124,7 +124,16 @@ public class ClientProducerImpl implements ClientProducerInternal
    
    private void doSend(final SimpleString address, final Message msg) throws MessagingException
    {
-   	ProducerSendMessage message = new ProducerSendMessage(address, msg.copy());
+      if (address != null)
+      {
+         msg.setDestination(address);
+      }
+      else
+      {
+         msg.setDestination(this.address);
+      }
+      
+   	ProducerSendMessage message = new ProducerSendMessage(msg.copy());
    	
    	//TODO flow control disabled for now
    	

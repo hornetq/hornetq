@@ -9,6 +9,7 @@ package org.jboss.messaging.core.remoting.impl.codec;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -33,18 +34,13 @@ public class EmptyPacketCodec extends AbstractPacketCodec<PacketImpl>
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   public int getBodyLength(final PacketImpl packet)
-   {
-   	return 0;
-   }
-   
    @Override
-   protected void encodeBody(final PacketImpl packet, final RemotingBuffer out) throws Exception
+   protected void encodeBody(final PacketImpl packet, final MessagingBuffer out) throws Exception
    {      
    }
 
    @Override
-   protected Packet decodeBody(final RemotingBuffer in) throws Exception
+   protected Packet decodeBody(final MessagingBuffer in) throws Exception
    {
       return new PacketImpl(type);
    }
@@ -68,14 +64,14 @@ public class EmptyPacketCodec extends AbstractPacketCodec<PacketImpl>
 //}
 //
 //@Override
-//protected void encodeBody(P packet, RemotingBuffer out) throws Exception
+//protected void encodeBody(P packet, MessagingBuffer out) throws Exception
 //{
 //// no body
 //out.putInt(0);
 //}
 //
 //@Override
-//protected Packet decodeBody(RemotingBuffer in) throws Exception
+//protected Packet decodeBody(MessagingBuffer in) throws Exception
 //{
 //in.getInt(); // skip body length
 //return new PacketImpl(type);

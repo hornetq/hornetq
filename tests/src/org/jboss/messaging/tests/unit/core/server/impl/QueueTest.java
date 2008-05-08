@@ -1011,7 +1011,7 @@ public class QueueTest extends UnitTestCase
          
          if (i % 2 == 0)
          {
-            ref.getMessage().putHeader("god", "dog");
+            ref.getMessage().putStringProperty(new SimpleString("god"), new SimpleString("dog"));
          }
          
          queue.addLast(ref);
@@ -1077,13 +1077,13 @@ public class QueueTest extends UnitTestCase
       
       MessageReference ref1 = generateReference(queue, 1);
       
-      ref1.getMessage().putHeader("fruit", "banana");
+      ref1.getMessage().putStringProperty(new SimpleString("fruit"), new SimpleString("banana"));
       
       assertEquals(HandleStatus.HANDLED, queue.addLast(ref1));
       
       MessageReference ref2 = generateReference(queue, 2);
       
-      ref2.getMessage().putHeader("fruit", "orange");
+      ref2.getMessage().putStringProperty(new SimpleString("fruit"), new SimpleString("orange"));
       
       assertEquals(HandleStatus.HANDLED, queue.addLast(ref2));     
       
@@ -1113,13 +1113,13 @@ public class QueueTest extends UnitTestCase
       
       MessageReference ref3 = generateReference(queue, 3);
       
-      ref3.getMessage().putHeader("fruit", "banana");
+      ref3.getMessage().putStringProperty(new SimpleString("fruit"), new SimpleString("banana"));
       
       assertEquals(HandleStatus.HANDLED, queue.addLast(ref3));
       
       MessageReference ref4 = generateReference(queue, 4);
       
-      ref4.getMessage().putHeader("fruit", "orange");
+      ref4.getMessage().putStringProperty(new SimpleString("fruit"), new SimpleString("orange"));
       
       assertEquals(HandleStatus.HANDLED, queue.addLast(ref4)); 
        
@@ -1153,25 +1153,25 @@ public class QueueTest extends UnitTestCase
       
       MessageReference ref1 = generateReference(queue, 1);
       
-      ref1.getMessage().putHeader("fruit", "banana");
+      ref1.getMessage().putStringProperty(new SimpleString("fruit"), new SimpleString("banana"));
       
       assertEquals(HandleStatus.HANDLED, queue.addLast(ref1));
       
       MessageReference ref2 = generateReference(queue, 2);
       
-      ref2.getMessage().putHeader("cheese", "stilton");
+      ref2.getMessage().putStringProperty(new SimpleString("cheese"), new SimpleString("stilton"));
       
       assertEquals(HandleStatus.HANDLED, queue.addLast(ref2));      
       
       MessageReference ref3 = generateReference(queue, 3);
       
-      ref3.getMessage().putHeader("cake", "sponge");
+      ref3.getMessage().putStringProperty(new SimpleString("cake"), new SimpleString("sponge"));
       
       assertEquals(HandleStatus.HANDLED, queue.addLast(ref3));
             
       MessageReference ref4 = generateReference(queue, 4);
       
-      ref4.getMessage().putHeader("fruit", "orange");
+      ref4.getMessage().putStringProperty(new SimpleString("fruit"), new SimpleString("orange"));
       
       refs.add(ref4);
       
@@ -1179,13 +1179,13 @@ public class QueueTest extends UnitTestCase
       
       MessageReference ref5 = generateReference(queue, 5);
       
-      ref5.getMessage().putHeader("fruit", "apple");
+      ref5.getMessage().putStringProperty(new SimpleString("fruit"), new SimpleString("apple"));
       
       assertEquals(HandleStatus.HANDLED, queue.addLast(ref5));
             
       MessageReference ref6 = generateReference(queue, 6);
       
-      ref6.getMessage().putHeader("fruit", "orange");
+      ref6.getMessage().putStringProperty(new SimpleString("fruit"), new SimpleString("orange"));
       
       refs.add(ref6);
       

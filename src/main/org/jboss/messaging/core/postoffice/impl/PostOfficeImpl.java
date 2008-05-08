@@ -190,8 +190,10 @@ public class PostOfficeImpl implements PostOffice
       return nameMap.get(queueName);
    }
          
-   public List<MessageReference> route(final SimpleString address, final Message message) throws Exception
+   public List<MessageReference> route(final Message message) throws Exception
    {
+      SimpleString address = message.getDestination();
+      
       if (checkAllowable)
       {
          if (!destinations.contains(address))

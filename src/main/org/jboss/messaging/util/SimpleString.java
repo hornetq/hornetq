@@ -190,11 +190,6 @@ public class SimpleString implements CharSequence, Serializable
 		return hash;
 	}
 	
-	public static int sizeofNullableString(final SimpleString str)
-	{
-		return str == null ? SIZE_BYTE : SIZE_BYTE + SIZE_INT + str.data.length;
-	}
-	
 	public static int sizeofString(final SimpleString str)
 	{
 		return SIZE_INT + str.data.length;

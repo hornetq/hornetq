@@ -127,6 +127,8 @@ public class LocalTestServer implements Server, Runnable
          return;
       }
 
+      log.info("** deleting database?" + clearDatabase);
+      
       if (clearDatabase)
       {
          //Delete the BDB environment

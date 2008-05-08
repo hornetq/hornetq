@@ -21,10 +21,6 @@
  */
 package org.jboss.messaging.tests.unit.core.message.impl;
 
-import static org.jboss.messaging.tests.util.RandomUtil.randomByte;
-import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
-import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
-
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.message.impl.MessageImpl;
@@ -33,7 +29,6 @@ import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeQueueFactory;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.StreamUtils;
 
 /**
  * 
@@ -48,7 +43,7 @@ public class MessageTest extends UnitTestCase
 {
 	private QueueFactory queueFactory = new FakeQueueFactory();
    
-   public void testCreateMessage()
+   public void testCreateMessageBeforeSending()
    {
       long id = 56465;
       int type = 655;
@@ -81,26 +76,10 @@ public class MessageTest extends UnitTestCase
    public void testCreateMessageFromStorage() throws Exception
    {
       long id = 56465;
-      int type = 655;
-      boolean reliable = true;
-      long expiration = 6712671;
-      long timestamp = 82798172;
-      byte priority = 32;
-      
-      byte[] bytes = "blah blah blah".getBytes();
- 
-      Message message = new MessageImpl(id, type, reliable, expiration, timestamp, priority,
-            null, bytes);
+
+      Message message = new MessageImpl(id);
       
       assertEquals(id, message.getMessageID());
-      assertEquals(type, message.getType());
-      assertEquals(reliable, message.isDurable());
-      assertEquals(timestamp, message.getTimestamp());
-      assertEquals(priority, message.getPriority());     
-      
-      assertByteArraysEquivalent(bytes, message.getPayload());   
-      
-      //TODO - headers - they should really be combined into single blob
    }
    
    public void testCopy()
@@ -192,59 +171,7 @@ public class MessageTest extends UnitTestCase
       assertEquals(connectionID, message.getConnectionID());      
    }
    
-   public void testSetAndGetPayload()
-   {
-      Message message = new MessageImpl();
-      
-      assertNull(message.getPayload());
-      
-      byte[] bytes = "blah blah blah".getBytes();
-      message.setPayload(bytes);
-      
-      assertByteArraysEquivalent(bytes, message.getPayload());            
-   }
-   
-   public void testHeaders()
-   {
-      Message message = new MessageImpl();
-      
-      assertNotNull(message.getHeaders());
-      assertTrue(message.getHeaders().isEmpty());
-      
-      String key1 = "key1";
-      String val1 = "wibble";
-      String key2 = "key2";
-      Object val2 = new Object();
-      String key3 = "key3";
-      Double val3 = new Double(123.456);
-      Long val4 = new Long(77777);
-      message.putHeader(key1, val1);
-      assertEquals(val1, message.getHeaders().get(key1));
-      assertEquals(1, message.getHeaders().size());
-      assertTrue(message.containsHeader(key1));
-      assertFalse(message.containsHeader("does not exist"));
-      message.putHeader(key2, val2);
-      assertEquals(val2, message.getHeaders().get(key2));
-      assertEquals(2, message.getHeaders().size());
-      assertTrue(message.containsHeader(key2));
-      message.putHeader(key3, val3);
-      assertEquals(val3, message.getHeaders().get(key3));
-      assertEquals(3, message.getHeaders().size());
-      assertTrue(message.containsHeader(key3));
-      message.putHeader(key3, val4);
-      assertEquals(val4, message.getHeaders().get(key3));
-      assertEquals(3, message.getHeaders().size());
-      assertEquals(val2, message.removeHeader(key2));
-      assertEquals(2, message.getHeaders().size());
-      assertFalse(message.containsHeader(key2));
-      assertNull(message.removeHeader("does not exist"));
-      assertEquals(val1, message.removeHeader(key1));
-      assertFalse(message.containsHeader(key2));
-      assertEquals(1, message.getHeaders().size());
-      assertEquals(val4, message.removeHeader(key3));
-      assertFalse(message.containsHeader(key3));
-      assertTrue(message.getHeaders().isEmpty());
-   }
+
    
    public void testEquals()
    {
@@ -374,23 +301,5 @@ public class MessageTest extends UnitTestCase
    }
    
 
-   public void testMarshalling() throws Exception
-   {
-      Message msg = new MessageImpl(randomLong(), randomInt(), true, randomLong(), randomLong(), randomByte(),null, null);
-      msg.setDeliveryCount(randomInt());
-      
-      byte[] bytes = StreamUtils.toBytes(msg);
-      Message unmarshalledMsg = new MessageImpl();
-      StreamUtils.fromBytes(unmarshalledMsg, bytes);
-      
-      assertEquals(msg, unmarshalledMsg);
-      assertEquals("messageID", msg.getMessageID(), unmarshalledMsg.getMessageID());
-      assertEquals("type", msg.getType(), unmarshalledMsg.getType());
-      assertEquals("durable", msg.isDurable(), unmarshalledMsg.isDurable());
-      assertEquals("expiration", msg.getExpiration(), unmarshalledMsg.getExpiration());
-      assertEquals("timestamp", msg.getTimestamp(), unmarshalledMsg.getTimestamp());
-      assertEquals("priority", msg.getPriority(), unmarshalledMsg.getPriority());
-      assertEquals("deliveryCount", msg.getDeliveryCount(), unmarshalledMsg.getDeliveryCount()); 
-   }
    
 }

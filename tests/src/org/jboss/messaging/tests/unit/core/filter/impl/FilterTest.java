@@ -151,10 +151,10 @@ public class FilterTest  extends TestCase
    
    private void testBoolean(String name, boolean flag) throws Exception
    {
-      message.putHeader(name, flag);
+      message.putBooleanProperty(new SimpleString(name), flag);
       assertTrue(filter.match(message));
       
-      message.putHeader(name, !flag);
+      message.putBooleanProperty(new SimpleString(name), !flag);
       assertTrue(!filter.match(message));
    }
    
@@ -593,7 +593,7 @@ public class FilterTest  extends TestCase
    
    private void doPutStringProperty(String key, String value)
    {
-   	message.putHeader(key, value);
+   	message.putStringProperty(new SimpleString(key), new SimpleString(value));
    }
    
    

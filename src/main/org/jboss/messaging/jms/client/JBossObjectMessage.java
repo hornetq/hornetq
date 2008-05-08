@@ -22,18 +22,22 @@
 package org.jboss.messaging.jms.client;
 
 import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
 import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.util.StreamUtils;
 
 /**
  * This class implements javax.jms.ObjectMessage
+ * 
+ * Don't used ObjectMessage if you want good performance!
+ * 
+ * Serialization is slooooow!
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -64,7 +68,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
       super(JBossObjectMessage.TYPE);
    }
    
-   public JBossObjectMessage(org.jboss.messaging.core.message.Message message, ClientSession session)
+   public JBossObjectMessage(final org.jboss.messaging.core.message.Message message, ClientSession session)
    {
       super(message, session);
    }
@@ -72,7 +76,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    /**
     * A copy constructor for foreign JMS ObjectMessages.
     */
-   public JBossObjectMessage(ObjectMessage foreign) throws JMSException
+   public JBossObjectMessage(final ObjectMessage foreign) throws JMSException
    {
       super(foreign, JBossObjectMessage.TYPE);
 
@@ -88,14 +92,26 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    
    public void doBeforeSend() throws Exception
    {
-      beforeSend();
+      if (object != null)
+      {
+         ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+         
+         ObjectOutputStream oos = new ObjectOutputStream(baos);
+         
+         oos.writeObject(object);
+         
+         oos.flush();
+         
+         byte[] data = baos.toByteArray();
+         
+         body.putInt(data.length);
+         body.putBytes(data);
+      }
+      
+      super.doBeforeSend();
    }
    
-   public void doBeforeReceive() throws Exception
-   {
-   }
-   
-   
+      
    // ObjectMessage implementation ----------------------------------
 
    public void setObject(Serializable object) throws JMSException
@@ -108,27 +124,25 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    // lazy deserialize the Object the first time the client requests it
    public Serializable getObject() throws JMSException
    {
-      if (object != null)
+      if (object == null)
       {
-         return object;
-      }
-      else if (message.getPayload() != null)
-      {
-         DataInputStream dais = new DataInputStream(new ByteArrayInputStream(message.getPayload()));
          try
          {
-            readPayload(dais);
+            int len = body.getInt();
+            byte[] data = new byte[len];
+            body.getBytes(data);
+            ByteArrayInputStream bais = new ByteArrayInputStream(data);
+            ObjectInputStream ois = new ObjectInputStream(bais);
+            object = (Serializable)ois.readObject();
          }
          catch (Exception e)
          {
-            RuntimeException e2 = new RuntimeException(e.getMessage());
-            e2.setStackTrace(e.getStackTrace());
-            throw e2;
-         }         
-         return object;
-      } else {
-         return null;
+            JMSException je = new JMSException("Failed to deserialize object");
+            je.setLinkedException(e);
+         }
       }
+      
+      return object;
    }
 
    public void clearBody() throws JMSException
@@ -137,21 +151,13 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
       
       object = null;
    }
+   
+   
 
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
    
-   protected void writePayload(DataOutputStream daos) throws Exception
-   {
-      StreamUtils.writeObject(daos, object, false, true);
-   }
-   
-   protected void readPayload(DataInputStream dais) throws Exception
-   {
-      object = (Serializable)StreamUtils.readObject(dais, true);
-   }
-
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

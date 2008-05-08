@@ -7,10 +7,9 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_REMOVE_DESTINATION;
-import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
-import org.jboss.messaging.util.DataConstants;
+import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -39,15 +38,8 @@ public class SessionRemoveDestinationMessageCodec extends AbstractPacketCodec<Se
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   public int getBodyLength(final SessionRemoveDestinationMessage packet) throws Exception
-   {   	
-   	SimpleString address = packet.getAddress();      
-      int bodyLength = SimpleString.sizeofString(address) + SIZE_BOOLEAN;
-   	return bodyLength;
-   }
-   
    @Override
-   protected void encodeBody(final SessionRemoveDestinationMessage message, final RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionRemoveDestinationMessage message, final MessagingBuffer out) throws Exception
    {
       SimpleString address = message.getAddress();
      
@@ -56,7 +48,7 @@ public class SessionRemoveDestinationMessageCodec extends AbstractPacketCodec<Se
    }
 
    @Override
-   protected SessionRemoveDestinationMessage decodeBody(final RemotingBuffer in)
+   protected SessionRemoveDestinationMessage decodeBody(final MessagingBuffer in)
          throws Exception
    {
       SimpleString address = in.getSimpleString();

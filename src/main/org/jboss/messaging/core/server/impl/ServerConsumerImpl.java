@@ -175,7 +175,7 @@ public class ServerConsumerImpl implements ServerConsumer
          
          return HandleStatus.HANDLED;
       }
-      
+
       synchronized (startStopLock)
       {
          // If the consumer is stopped then we don't accept the message, it should go back into the

@@ -21,17 +21,15 @@
   */
 package org.jboss.messaging.jms.client;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
+import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageFormatException;
@@ -42,6 +40,10 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
+import org.jboss.messaging.jms.JBossDestination;
+import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -65,34 +67,24 @@ public class JBossMessage implements javax.jms.Message
 {
    // Constants -----------------------------------------------------
 
-   //FIXME - this will disappear
-   private static final String DESTINATION_HEADER_NAME = "JMSDestination2";
+   private static final SimpleString REPLYTO_HEADER_NAME = new SimpleString("JMSReplyTo");
    
-   private static final String REPLYTO_HEADER_NAME = "JMSReplyTo";
-   
-   private static final String CORRELATIONID_HEADER_NAME = "JMSCorrelationID";
+   private static final SimpleString CORRELATIONID_HEADER_NAME = new SimpleString("JMSCorrelationID");
 
-   private static final String JBM_MESSAGE_ID = "JMSMessageID";
+   private static final SimpleString JBM_MESSAGE_ID = new SimpleString("JMSMessageID");
    
-   private static final String TYPE_HEADER_NAME = "JMSType";
+   private static final SimpleString TYPE_HEADER_NAME = new SimpleString("JMSType");
    
-   public static final String JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME = "JMS_JBOSS_SCHEDULED_DELIVERY";
+   private static final SimpleString JMS = new SimpleString("JMS");
    
-   //Used when sending a message to the DLQ
-   public static final String JBOSS_MESSAGING_ORIG_DESTINATION = "JBM_ORIG_DESTINATION";
-
-   //Used when sending a message to the DLQ
-   public static final String JBOSS_MESSAGING_ORIG_MESSAGE_ID = "JBM_ORIG_MESSAGE_ID";
+   private static final SimpleString JMSX = new SimpleString("JMSX");
    
-   //Used when sending a mesage to the DLQ
-   public static final String JBOSS_MESSAGING_ACTUAL_EXPIRY_TIME = "JBM_ACTUAL_EXPIRY";
+   private static final SimpleString JMS_ = new SimpleString("JMS_");
+   
+   private static final String JMSXDELIVERYCOUNT = "JMSXDeliveryCount";
    
    //Used when bridging a message
    public static final String JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST = "JBM_BRIDGE_MSG_ID_LIST";
-   
-   protected static final byte NULL = 0;
-   
-   protected static final byte NOT_NULL = 1;
    
    private static final int TYPE = 0;
    
@@ -115,9 +107,8 @@ public class JBossMessage implements javax.jms.Message
    }
       
    private static final Logger log = Logger.getLogger(JBossMessage.class);
-
-   
-   public static JBossMessage createMessage(org.jboss.messaging.core.message.Message message, ClientSession session)
+  
+   public static JBossMessage createMessage(final org.jboss.messaging.core.message.Message message, final ClientSession session)
    {
       int type = message.getType();
       
@@ -147,8 +138,6 @@ public class JBossMessage implements javax.jms.Message
             throw new IllegalArgumentException("Invalid message type " + type);
       }
       
-      message.putHeader("JMSXDeliveryCount", message.getDeliveryCount());
-      
       return msg;      
    }
    
@@ -157,16 +146,39 @@ public class JBossMessage implements javax.jms.Message
    //The underlying message
    protected org.jboss.messaging.core.message.Message message;
    
+   protected MessagingBuffer body;
+   
    private ClientSession session;
    
    //Read-only?
    protected boolean readOnly;
-      
+   
+   //Cache it
+   private Destination dest;
+   
+   //Cache it
+   private String msgID;
+
+   //Cache it
+   private Destination replyTo;
+
+   //Cache it
+   private String jmsCorrelationID;
+   
+   //Cache it
+   private String jmsType;
+              
    // Constructors --------------------------------------------------
      
-   protected JBossMessage(int type)
+   /*
+    * Create a new message prior to sending
+    */
+   protected JBossMessage(final int type)
    {
       message = new MessageImpl(type, true, 0, System.currentTimeMillis(), (byte)4);
+      
+      //TODO - can we lazily create this?
+      body = message.getBody();
    }
    
    public JBossMessage()
@@ -177,24 +189,26 @@ public class JBossMessage implements javax.jms.Message
    /**
     * Constructor for when receiving a message from the server
     */
-   public JBossMessage(org.jboss.messaging.core.message.Message message, ClientSession session)
+   public JBossMessage(final org.jboss.messaging.core.message.Message message, ClientSession session)
    {
       this.message = message;
       
       this.readOnly = true;
       
       this.session = session;
+      
+      this.body = message.getBody();
    }
 
    /*
     * A constructor that takes a foreign message
     */  
-   public JBossMessage(Message foreign) throws JMSException
+   public JBossMessage(final Message foreign) throws JMSException
    {
       this(foreign, JBossMessage.TYPE);
    }
       
-   protected JBossMessage(Message foreign, int type) throws JMSException
+   protected JBossMessage(final Message foreign, final int type) throws JMSException
    {
       this(type);
 
@@ -219,7 +233,7 @@ public class JBossMessage implements javax.jms.Message
       setJMSDestination(foreign.getJMSDestination());
       setJMSDeliveryMode(foreign.getJMSDeliveryMode());
       setJMSExpiration(foreign.getJMSExpiration());
-      setJMSPriority(foreign.getJMSPriority());
+      setJMSPriority(foreign.getJMSPriority());      
       setJMSType(foreign.getJMSType());
       
       //We can't avoid a cast warning here since getPropertyNames() is on the JMS API
@@ -237,10 +251,16 @@ public class JBossMessage implements javax.jms.Message
    
    public String getJMSMessageID()
    {
-      return (String)message.getHeader(JBM_MESSAGE_ID);     
+      if (msgID == null)
+      {
+         SimpleString id = (SimpleString)message.getProperty(JBM_MESSAGE_ID);
+      
+         msgID = id == null ? null : id.toString();    
+      }
+      return msgID;
    }
-
-   public void setJMSMessageID(String jmsMessageID) throws JMSException
+   
+   public void setJMSMessageID(final String jmsMessageID) throws JMSException
    {
       if (jmsMessageID != null && !jmsMessageID.startsWith("ID:"))
       {
@@ -248,12 +268,13 @@ public class JBossMessage implements javax.jms.Message
       }
       if (jmsMessageID == null)
       {
-         message.removeHeader(JBM_MESSAGE_ID);
+         message.removeProperty(JBM_MESSAGE_ID);
       }
       else
       {
-         message.putHeader(JBM_MESSAGE_ID, jmsMessageID);
+         message.putStringProperty(JBM_MESSAGE_ID, new SimpleString(jmsMessageID));
       }
+      msgID = jmsMessageID;
    }
 
    public long getJMSTimestamp() throws JMSException
@@ -261,14 +282,14 @@ public class JBossMessage implements javax.jms.Message
       return message.getTimestamp();
    }
 
-   public void setJMSTimestamp(long timestamp) throws JMSException
+   public void setJMSTimestamp(final long timestamp) throws JMSException
    {
       message.setTimestamp(timestamp);
    }
 
    public byte[] getJMSCorrelationIDAsBytes() throws JMSException
    {
-      Object obj = message.getHeader(CORRELATIONID_HEADER_NAME);
+      Object obj = message.getProperty(CORRELATIONID_HEADER_NAME);
       
       if (obj instanceof byte[])
       {
@@ -280,52 +301,98 @@ public class JBossMessage implements javax.jms.Message
       }      
    }
 
-   public void setJMSCorrelationIDAsBytes(byte[] correlationID) throws JMSException
+   public void setJMSCorrelationIDAsBytes(final byte[] correlationID) throws JMSException
    {
       if (correlationID == null || correlationID.length == 0)
       {
          throw new JMSException("Please specify a non-zero length byte[]");
       }
-      message.putHeader(CORRELATIONID_HEADER_NAME, correlationID);
+      message.putBytesProperty(CORRELATIONID_HEADER_NAME, correlationID);
    }
 
-   public void setJMSCorrelationID(String correlationID) throws JMSException
+   public void setJMSCorrelationID(final String correlationID) throws JMSException
    {
-      message.putHeader(CORRELATIONID_HEADER_NAME, correlationID);
-   }
-
-   public String getJMSCorrelationID() throws JMSException
-   {
-      Object obj = message.getHeader(CORRELATIONID_HEADER_NAME);
-      
-      if (obj instanceof String)
+      if (correlationID == null)
       {
-         return (String)obj;
+         message.removeProperty(CORRELATIONID_HEADER_NAME);
+         
+         jmsCorrelationID = null;
       }
       else
       {
-         return null;
-      }   
+         message.putStringProperty(CORRELATIONID_HEADER_NAME, new SimpleString(correlationID));
+         
+         jmsCorrelationID = correlationID;
+      }
    }
-
+   
+   public String getJMSCorrelationID() throws JMSException
+   {
+      if (jmsCorrelationID == null)
+      {
+         Object obj = message.getProperty(CORRELATIONID_HEADER_NAME);
+         
+         if (obj != null)
+         {
+            jmsCorrelationID = ((SimpleString)obj).toString();
+         }  
+      }
+      
+      return jmsCorrelationID;         
+   }
+   
    public Destination getJMSReplyTo() throws JMSException
    {
-      return (Destination)message.getHeader(REPLYTO_HEADER_NAME);
+      if (replyTo == null)
+      {
+         SimpleString repl = (SimpleString)message.getProperty(REPLYTO_HEADER_NAME);
+         
+         if (repl != null)
+         {
+            replyTo = JBossDestination.fromAddress(repl.toString());
+         }
+      }
+      return replyTo;
    }
 
-   public void setJMSReplyTo(Destination replyTo) throws JMSException
+   public void setJMSReplyTo(final Destination dest) throws JMSException
    {
-      message.putHeader(REPLYTO_HEADER_NAME, replyTo);
+      if (dest == null)
+      {
+         message.removeProperty(REPLYTO_HEADER_NAME);
+         
+         replyTo = null;
+      }
+      else
+      {
+         if (dest instanceof JBossDestination == false)
+         {
+            throw new InvalidDestinationException("Not a JBoss destination " + dest);
+         }
+         
+         JBossDestination jbd = (JBossDestination)dest;
+         
+         message.putStringProperty(REPLYTO_HEADER_NAME, jbd.getSimpleAddress());
+         
+         replyTo = jbd;
+      }
    }
-
+   
    public Destination getJMSDestination() throws JMSException
    {
-      return (Destination)message.getHeader(DESTINATION_HEADER_NAME);      
+      if (dest == null)
+      {
+         SimpleString sdest = message.getDestination();
+         
+         dest = sdest == null ? null : JBossDestination.fromAddress(sdest.toString());
+      }
+
+      return dest;         
    }
 
-   public void setJMSDestination(Destination destination) throws JMSException
+   public void setJMSDestination(final Destination destination) throws JMSException
    {
-      message.putHeader(DESTINATION_HEADER_NAME, destination);
+      this.dest = destination;
    }
    
    public int getJMSDeliveryMode() throws JMSException
@@ -333,7 +400,7 @@ public class JBossMessage implements javax.jms.Message
       return message.isDurable() ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT;
    }
 
-   public void setJMSDeliveryMode(int deliveryMode) throws JMSException
+   public void setJMSDeliveryMode(final int deliveryMode) throws JMSException
    {
       if (deliveryMode == DeliveryMode.PERSISTENT)
       {
@@ -355,7 +422,7 @@ public class JBossMessage implements javax.jms.Message
       return message.getDeliveryCount() > 1;
    }
 
-   public void setJMSRedelivered(boolean redelivered) throws JMSException
+   public void setJMSRedelivered(final boolean redelivered) throws JMSException
    {      
       if (message.getDeliveryCount() > 1)
       {
@@ -366,24 +433,29 @@ public class JBossMessage implements javax.jms.Message
          message.setDeliveryCount(2);
       }
    }
-
-   /**    
-    * @return The JMSType header
-    * @throws JMSException
-    */
-   public String getJMSType() throws JMSException
+  
+   public void setJMSType(final String type) throws JMSException
    {
-      return (String)message.getHeader(TYPE_HEADER_NAME);
+      if (type != null)
+      {
+         message.putStringProperty(TYPE_HEADER_NAME, new SimpleString(type));
+         
+         jmsType = type;
+      }
    }
 
-   /**
-    * 
-    * @param type
-    * @throws JMSException
-    */
-   public void setJMSType(String type) throws JMSException
+   public String getJMSType() throws JMSException
    {
-      message.putHeader(TYPE_HEADER_NAME, type);
+      if (jmsType == null)
+      {
+         SimpleString ss = (SimpleString)message.getProperty(TYPE_HEADER_NAME);
+         
+         if (ss != null)
+         {
+            jmsType = ss.toString();
+         }
+      }
+      return jmsType;
    }
 
    public long getJMSExpiration() throws JMSException
@@ -391,7 +463,7 @@ public class JBossMessage implements javax.jms.Message
       return message.getExpiration();
    }
 
-   public void setJMSExpiration(long expiration) throws JMSException
+   public void setJMSExpiration(final long expiration) throws JMSException
    {
       message.setExpiration(expiration);
    }
@@ -401,36 +473,26 @@ public class JBossMessage implements javax.jms.Message
       return message.getPriority();
    }
 
-   public void setJMSPriority(int priority) throws JMSException
+   public void setJMSPriority(final int priority) throws JMSException
    {
       message.setPriority((byte)priority);
    }
-
-   public void clearProperties() throws JMSException
-   {
-      Iterator<String> iter = message.getHeaders().keySet().iterator();
       
-      while (iter.hasNext())
+   public void clearProperties() throws JMSException
+   {     
+      List<SimpleString> toRemove = new ArrayList<SimpleString>();
+      
+      for (SimpleString propName: message.getPropertyNames())
       {
-         String propName = iter.next();
-         
-         boolean remove = false;
-         if (!propName.startsWith("JMS"))
+         if (!propName.startsWith(JMS) || propName.startsWith(JMSX) || propName.startsWith(JMS_))
          {
-            remove = true;
+            toRemove.add(propName);            
          }
-         else
-         {
-            if (propName.startsWith("JMSX") || propName.startsWith("JMS_"))
-            {
-               remove = true;
-            }
-         }
-         
-         if (remove)
-         {
-            iter.remove();
-         }
+      }     
+      
+      for (SimpleString propName: toRemove)
+      {
+         message.removeProperty(propName);
       }
    }
 
@@ -439,43 +501,43 @@ public class JBossMessage implements javax.jms.Message
       readOnly = false;
    }
 
-   public boolean propertyExists(String name) throws JMSException
+   public boolean propertyExists(final String name) throws JMSException
    {
-      return message.containsHeader(name)
-             || name.equals("JMSXDeliveryCount");
+      return message.containsProperty(new SimpleString(name))
+             || name.equals(JMSXDELIVERYCOUNT);
    }
 
-   public boolean getBooleanProperty(String name) throws JMSException
+   public boolean getBooleanProperty(final String name) throws JMSException
    {
-      Object value = message.getHeader(name);
+      Object value = message.getProperty(new SimpleString(name));
       if (value == null)
          return Boolean.valueOf(null).booleanValue();
 
       if (value instanceof Boolean)
          return ((Boolean) value).booleanValue();
-      else if (value instanceof String)
-         return Boolean.valueOf((String) value).booleanValue();
+      else if (value instanceof SimpleString)
+         return Boolean.valueOf(((SimpleString) value).toString()).booleanValue();
       else
          throw new MessageFormatException("Invalid conversion");
    }
 
-   public byte getByteProperty(String name) throws JMSException
+   public byte getByteProperty(final String name) throws JMSException
    {
-      Object value = message.getHeader(name);
+      Object value = message.getProperty(new SimpleString(name));
       if (value == null)
          throw new NumberFormatException("Message property '" + name + "' not set.");
 
       if (value instanceof Byte)
          return ((Byte) value).byteValue();
-      else if (value instanceof String)
-         return Byte.parseByte((String) value);
+      else if (value instanceof SimpleString)
+         return Byte.parseByte(((SimpleString) value).toString());
       else
          throw new MessageFormatException("Invalid conversion");
    }
 
-   public short getShortProperty(String name) throws JMSException
+   public short getShortProperty(final String name) throws JMSException
    {
-      Object value = message.getHeader(name);
+      Object value = message.getProperty(new SimpleString(name));
       if (value == null)
          throw new NumberFormatException("Message property '" + name + "' not set.");
 
@@ -483,15 +545,20 @@ public class JBossMessage implements javax.jms.Message
          return ((Byte) value).shortValue();
       else if (value instanceof Short)
          return ((Short) value).shortValue();
-      else if (value instanceof String)
-         return Short.parseShort((String) value);
+      else if (value instanceof SimpleString)
+         return Short.parseShort(((SimpleString) value).toString());
       else
          throw new MessageFormatException("Invalid conversion");
    }
 
-   public int getIntProperty(String name) throws JMSException
+   public int getIntProperty(final String name) throws JMSException
    {       
-      Object value = message.getHeader(name);
+      if (JMSXDELIVERYCOUNT.equals(name))
+      {
+         return message.getDeliveryCount();
+      }
+      
+      Object value = message.getProperty(new SimpleString(name));
 
       if (value == null)
       {
@@ -510,9 +577,9 @@ public class JBossMessage implements javax.jms.Message
       {
          return ((Integer) value).intValue();
       }
-      else if (value instanceof String)
+      else if (value instanceof SimpleString)
       {
-         return Integer.parseInt((String) value);
+         return Integer.parseInt(((SimpleString) value).toString());
       }
       else
       {
@@ -520,9 +587,14 @@ public class JBossMessage implements javax.jms.Message
       }
    }
 
-   public long getLongProperty(String name) throws JMSException
+   public long getLongProperty(final String name) throws JMSException
    {
-      Object value = message.getHeader(name);
+      if (JMSXDELIVERYCOUNT.equals(name))
+      {
+         return message.getDeliveryCount();
+      }
+      
+      Object value = message.getProperty(new SimpleString(name));
 
       if (value == null)
       {
@@ -545,9 +617,9 @@ public class JBossMessage implements javax.jms.Message
       {
          return ((Long) value).longValue();
       }
-      else if (value instanceof String)
+      else if (value instanceof SimpleString)
       {
-         return Long.parseLong((String) value);
+         return Long.parseLong(((SimpleString) value).toString());
       }
       else
       {
@@ -555,23 +627,23 @@ public class JBossMessage implements javax.jms.Message
       }
    }
 
-   public float getFloatProperty(String name) throws JMSException
+   public float getFloatProperty(final String name) throws JMSException
    {
-      Object value = message.getHeader(name);
+      Object value = message.getProperty(new SimpleString(name));
       if (value == null)
          return Float.valueOf(null).floatValue();
 
       if (value instanceof Float)
          return ((Float) value).floatValue();
-      else if (value instanceof String)
-         return Float.parseFloat((String) value);
+      else if (value instanceof SimpleString)
+         return Float.parseFloat(((SimpleString) value).toString());
       else
          throw new MessageFormatException("Invalid conversion");
    }
 
-   public double getDoubleProperty(String name) throws JMSException
+   public double getDoubleProperty(final String name) throws JMSException
    {
-      Object value = message.getHeader(name);
+      Object value = message.getProperty(new SimpleString(name));
       if (value == null)
          return Double.valueOf(null).doubleValue();
 
@@ -579,19 +651,27 @@ public class JBossMessage implements javax.jms.Message
          return ((Float) value).doubleValue();
       else if (value instanceof Double)
          return ((Double) value).doubleValue();
-      else if (value instanceof String)
-         return Double.parseDouble((String) value);
+      else if (value instanceof SimpleString)
+         return Double.parseDouble(((SimpleString) value).toString());
       else
          throw new MessageFormatException("Invalid conversion");
    }
 
-   public String getStringProperty(String name) throws JMSException
+   public String getStringProperty(final String name) throws JMSException
    {
-      Object value = message.getHeader(name);
+      if (JMSXDELIVERYCOUNT.equals(name))
+      {
+         return String.valueOf(message.getDeliveryCount());
+      }
+      Object value = message.getProperty(new SimpleString(name));
       if (value == null)
          return null;
 
-      if (value instanceof Boolean)
+      if (value instanceof SimpleString)
+      {
+         return ((SimpleString) value).toString();
+      }
+      else if (value instanceof Boolean)
       {
          return value.toString();
       }
@@ -619,123 +699,139 @@ public class JBossMessage implements javax.jms.Message
       {
          return value.toString();
       }
-      else if (value instanceof String)
-      {
-         return (String) value;
-      }
       else
       {
          throw new MessageFormatException("Invalid conversion");
       }
    }
 
-   public Object getObjectProperty(String name) throws JMSException                                                              
+   public Object getObjectProperty(final String name) throws JMSException                                                              
    {
-      return message.getHeader(name);
+      if (JMSXDELIVERYCOUNT.equals(name))
+      {
+         return String.valueOf(message.getDeliveryCount());
+      }
+      Object val = message.getProperty(new SimpleString(name));
+      if (val instanceof SimpleString)
+      {
+         val = ((SimpleString)val).toString();
+      }
+      return val;
    }
 
    public Enumeration getPropertyNames() throws JMSException
    {
       HashSet<String> set = new HashSet<String>();
       
-      for (String propName: message.getHeaders().keySet())
+      for (SimpleString propName: message.getPropertyNames())
       {
-         boolean add = false;
-         if (!propName.startsWith("JMS"))
+         if (!propName.startsWith(JMS) || propName.startsWith(JMSX) || propName.startsWith(JMS_))
          {
-            add = true;
-         }
-         else
-         {
-            if (propName.startsWith("JMSX") || propName.startsWith("JMS_"))
-            {
-               add = true;
-            }
-         }
-            
-         if (add)
-         {            
-            set.add(propName);
+            set.add(propName.toString());
          }
       }
+      
+      set.add(JMSXDELIVERYCOUNT);
       
       return Collections.enumeration(set);
    }
 
-   public void setBooleanProperty(String name, boolean value) throws JMSException
+   public void setBooleanProperty(final String name, final boolean value) throws JMSException
    {
       Boolean b = Boolean.valueOf(value);
       checkProperty(name, b);
-      message.putHeader(name, b);
+      message.putBooleanProperty(new SimpleString(name), b);
    }
 
-   public void setByteProperty(String name, byte value) throws JMSException
+   public void setByteProperty(final String name, final byte value) throws JMSException
    {
       Byte b = new Byte(value);
       checkProperty(name, b);
-      message.putHeader(name, b);
+      message.putByteProperty(new SimpleString(name), value);
    }
 
-   public void setShortProperty(String name, short value) throws JMSException
+   public void setShortProperty(final String name, final short value) throws JMSException
    {
       Short s = new Short(value);
       checkProperty(name, s);
-      message.putHeader(name, s);
+      message.putShortProperty(new SimpleString(name), value);
    }
 
-   public void setIntProperty(String name, int value) throws JMSException
+   public void setIntProperty(final String name, final int value) throws JMSException
    {
       Integer i = new Integer(value);
       checkProperty(name, i);
-      message.putHeader(name, i);
+      message.putIntProperty(new SimpleString(name), value);
    }
 
-   public void setLongProperty(String name, long value) throws JMSException
+   public void setLongProperty(final String name, final long value) throws JMSException
    {     
       Long l = new Long(value);
       checkProperty(name, l);
-      message.putHeader(name, l);                
+      message.putLongProperty(new SimpleString(name), value);               
    }
 
-   public void setFloatProperty(String name, float value) throws JMSException
+   public void setFloatProperty(final String name, final float value) throws JMSException
    {
       Float f = new Float(value);
       checkProperty(name, f);
-      message.putHeader(name, f);
+      message.putFloatProperty(new SimpleString(name), f);
    }
 
-   public void setDoubleProperty(String name, double value) throws JMSException
+   public void setDoubleProperty(final String name, final double value) throws JMSException
    {
       Double d = new Double(value);
       checkProperty(name, d);
-      message.putHeader(name, d);
+      message.putDoubleProperty(new SimpleString(name), d);
    }
 
-   public void setStringProperty(String name, String value) throws JMSException
+   public void setStringProperty(final String name, final String value) throws JMSException
    {
       checkProperty(name, value);
-      message.putHeader(name, value);
+      message.putStringProperty(new SimpleString(name), new SimpleString(value));
    }
 
-   public void setObjectProperty(String name, Object value) throws JMSException
+   public void setObjectProperty(final String name, final Object value) throws JMSException
    {
       checkProperty(name, value);
+      
+      SimpleString key = new SimpleString(name);
 
-      if ((value instanceof Boolean)
-         || (value instanceof Byte)
-         || (value instanceof Short)
-         || (value instanceof Integer)
-         || (value instanceof Long)
-         || (value instanceof Float)
-         || (value instanceof Double)
-         || (value instanceof String)
-         || (value == null))
+      if (value instanceof Boolean)
       {
-         message.putHeader(name, value);
+         message.putBooleanProperty(key, (Boolean)value);
+      }
+      else if (value instanceof Byte)
+      {
+         message.putByteProperty(key, (Byte)value);
+      }
+      else if (value instanceof Short)
+      {
+         message.putShortProperty(key, (Short)value);
+      }
+      else if (value instanceof Integer)
+      {
+         message.putIntProperty(key, (Integer)value);
+      }
+      else if (value instanceof Long)
+      {
+         message.putLongProperty(key, (Long)value);
+      }
+      else if (value instanceof Float)
+      {
+         message.putFloatProperty(key, (Float)value);
+      }
+      else if (value instanceof Double)
+      {
+         message.putDoubleProperty(key, (Double)value);
+      }
+      else if (value instanceof String)
+      {
+         message.putStringProperty(key, new SimpleString((String)value));
       }
       else
       {
-         throw new MessageFormatException("Invalid object type");
+         throw new MessageFormatException("Invalid property type");
       }
    }
    
@@ -764,42 +860,16 @@ public class JBossMessage implements javax.jms.Message
    
    public void doBeforeSend() throws Exception
    {
-      //NOOP
+      body.flip();
+      
+      message.setBody(body);
    }
    
    public void doBeforeReceive() throws Exception
    {
-      //NOOP
+      body = message.getBody();
    }
    
-   protected void beforeSend() throws Exception
-   {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
-      
-      DataOutputStream daos = new DataOutputStream(baos);
-            
-      writePayload(daos);
-      
-      daos.close();
-                  
-      message.setPayload(baos.toByteArray());   
-   }
-   
-   protected void beforeReceive() throws Exception
-   {
-      DataInputStream dais = new DataInputStream(new ByteArrayInputStream(message.getPayload()));
-      
-      readPayload(dais);
-   }
-   
-   protected void writePayload(DataOutputStream daos) throws Exception
-   {      
-   }
-   
-   protected void readPayload(DataInputStream dais) throws Exception
-   {      
-   }
-
    public byte getType()
    {
       return JBossMessage.TYPE;
@@ -810,11 +880,6 @@ public class JBossMessage implements javax.jms.Message
       return session;
    }
 
-   public void copyMessage()
-   {
-      message = message.copy();
-   }
-   
    public String toString()
    {
       StringBuffer sb = new StringBuffer("JBossMessage[");
@@ -847,7 +912,7 @@ public class JBossMessage implements javax.jms.Message
    
    // Private ------------------------------------------------------------
    
-   private void checkProperty(String name, Object value) throws JMSException
+   private void checkProperty(final String name, final Object value) throws JMSException
    {
       checkWrite();
       
@@ -894,7 +959,7 @@ public class JBossMessage implements javax.jms.Message
       }
    }
    
-   public boolean isValidJavaIdentifier(String s)
+   private boolean isValidJavaIdentifier(final String s)
    {
       if (s == null || s.length() == 0)
       {

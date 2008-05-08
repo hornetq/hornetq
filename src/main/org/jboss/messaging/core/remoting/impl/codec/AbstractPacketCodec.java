@@ -6,10 +6,6 @@
  */
 package org.jboss.messaging.core.remoting.impl.codec;
 
-import static org.jboss.messaging.util.DataConstants.SIZE_BYTE;
-import static org.jboss.messaging.util.DataConstants.SIZE_CHAR;
-import static org.jboss.messaging.util.DataConstants.SIZE_INT;
-
 import javax.transaction.xa.Xid;
 
 import org.apache.mina.common.IoBuffer;
@@ -21,6 +17,7 @@ import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.util.DataConstants;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -39,18 +36,6 @@ public abstract class AbstractPacketCodec<P extends Packet>
    protected final PacketType type;
 
    // Static --------------------------------------------------------
-   
-   public static int sizeof(final String nullableString)
-   {
-      if (nullableString == null)
-      {
-         return SIZE_BYTE; // NULL_STRING byte
-      }
-      else
-      {
-         return SIZE_BYTE + SIZE_INT + SIZE_CHAR * nullableString.length();
-      }
-   }
    
    // Constructors --------------------------------------------------
    
@@ -72,43 +57,37 @@ public abstract class AbstractPacketCodec<P extends Packet>
       IoBuffer iobuf = IoBuffer.allocate(1024, false);
       iobuf.setAutoExpand(true);
       
-      RemotingBuffer buf = new BufferWrapper(iobuf);
-      
-      int messageLength = getBodyLength(packet) + HEADER_LENGTH;
-      
+      MessagingBuffer buf = new BufferWrapper(iobuf);
+                  
       //The standard header fields
-      buf.putInt(messageLength);
-      buf.put(packet.getType().byteValue());
-      buf.putLong(responseTargetID);
-      buf.putLong(targetID);
-      buf.putLong(executorID);
+      iobuf.putInt(0); //The length gets filled in at the end
+      iobuf.put(packet.getType().byteValue());
+      iobuf.putLong(responseTargetID);
+      iobuf.putLong(targetID);
+      iobuf.putLong(executorID);
 
       encodeBody(packet, buf);
       
-      //for now
+      //The length doesn't include the actual length byte
+      int len = buf.position() - DataConstants.SIZE_INT;
+      
+      iobuf.putInt(0, len);
+      
       iobuf.flip();
       out.write(iobuf);
    }
    
-   public static int getXidLength(final Xid xid)
-   {
-      return SIZE_INT + SIZE_INT + xid.getBranchQualifier().length + SIZE_INT + xid.getGlobalTransactionId().length;
-   }
-
-   public void decode(final RemotingBuffer buffer, final ProtocolDecoderOutput out) throws Exception
+   public void decode(final MessagingBuffer buffer, final ProtocolDecoderOutput out) throws Exception
    {        	   	
       long correlationID = buffer.getLong();
       long targetID = buffer.getLong();
       long executorID = buffer.getLong();
-      if (executorID == -1)
-         executorID = targetID;
       
       Packet packet = decodeBody(buffer);
 
       packet.setResponseTargetID(correlationID);
       packet.setTargetID(targetID);
       packet.setExecutorID(executorID);
-
       
       out.write(packet);
    }   
@@ -118,30 +97,28 @@ public abstract class AbstractPacketCodec<P extends Packet>
    	return type;
    }
 
-   public abstract int getBodyLength(P packet) throws Exception;
-
    // Protected -----------------------------------------------------
    
-   protected abstract void encodeBody(P packet, RemotingBuffer buf) throws Exception;
+   protected abstract void encodeBody(P packet, MessagingBuffer buf) throws Exception;
 
-   protected abstract Packet decodeBody(RemotingBuffer buffer) throws Exception;
+   protected abstract Packet decodeBody(MessagingBuffer buffer) throws Exception;
 
-   public static void encodeXid(final Xid xid, final RemotingBuffer out)
+   public static void encodeXid(final Xid xid, final MessagingBuffer out)
    {
       out.putInt(xid.getFormatId());
       out.putInt(xid.getBranchQualifier().length);
-      out.put(xid.getBranchQualifier());
+      out.putBytes(xid.getBranchQualifier());
       out.putInt(xid.getGlobalTransactionId().length);
-      out.put(xid.getGlobalTransactionId());
+      out.putBytes(xid.getGlobalTransactionId());
    }
    
-   protected static Xid decodeXid(final RemotingBuffer in)
+   protected static Xid decodeXid(final MessagingBuffer in)
    {
       int formatID = in.getInt();
       byte[] bq = new byte[in.getInt()];
-      in.get(bq);
+      in.getBytes(bq);
       byte[] gtxid = new byte[in.getInt()];
-      in.get(gtxid);      
+      in.getBytes(gtxid);      
       Xid xid = new XidImpl(bq, formatID, gtxid);      
       return xid;
    }

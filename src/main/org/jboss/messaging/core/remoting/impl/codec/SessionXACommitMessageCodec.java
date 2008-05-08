@@ -6,13 +6,11 @@
  */
 package org.jboss.messaging.core.remoting.impl.codec;
 
-import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
-
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
-import org.jboss.messaging.util.DataConstants;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * 
@@ -39,22 +37,16 @@ public class SessionXACommitMessageCodec extends AbstractPacketCodec<SessionXACo
    // Public --------------------------------------------------------
 
    // AbstractPacketCodec overrides ---------------------------------
-
-   public int getBodyLength(final SessionXACommitMessage packet) throws Exception
-   {   	
-   	int bodyLength = getXidLength(packet.getXid()) + SIZE_BOOLEAN;
-   	return bodyLength;
-   }
-   
+ 
    @Override
-   protected void encodeBody(final SessionXACommitMessage message, final RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionXACommitMessage message, final MessagingBuffer out) throws Exception
    {      
       encodeXid(message.getXid(), out);      
       out.putBoolean(message.isOnePhase());      
    }
 
    @Override
-   protected SessionXACommitMessage decodeBody(final RemotingBuffer in)
+   protected SessionXACommitMessage decodeBody(final MessagingBuffer in)
          throws Exception
    {
       Xid xid = decodeXid(in);

@@ -24,7 +24,12 @@ package org.jboss.messaging.tests.integration.core.remoting.impl;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import static org.jboss.messaging.tests.integration.core.remoting.impl.ClientExitTest.QUEUE;
 
-import org.jboss.messaging.core.client.*;
+import org.jboss.messaging.core.client.ClientConnection;
+import org.jboss.messaging.core.client.ClientConnectionFactory;
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -64,7 +69,7 @@ public class GracefulClient
 
          MessageImpl message = new MessageImpl(JBossTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);
-         message.setPayload(ClientExitTest.MESSAGE_TEXT.getBytes());
+         message.getBody().putString(ClientExitTest.MESSAGE_TEXT);
          producer.send(message);
 
          conn.start();

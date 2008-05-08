@@ -82,7 +82,7 @@ public class PersistenceTest extends JMSTestCase
 	      stop();
 
 	      startNoDelete();
-
+	      
 	      // Messaging server restart implies new ConnectionFactory lookup
 	      deployAndLookupAdministeredObjects();
 
@@ -131,12 +131,16 @@ public class PersistenceTest extends JMSTestCase
 	         TextMessage tm = sess.createTextMessage("message" + i);
 	         prod.send(tm);
 	      }
+	      
+	      log.info("Sent messages");
 
 	      Session sess2 = conn.createSession(true, Session.SESSION_TRANSACTED);
 
 	      MessageConsumer cons = sess2.createConsumer(queue1);
 
 	      conn.start();
+	      
+	      log.info("Started connection");
 
 	      for (int i = 0; i < 10; i++)
 	      {
@@ -150,6 +154,8 @@ public class PersistenceTest extends JMSTestCase
 
 	         assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
 	      }
+	      
+	      log.info("** got messages");
 
 	      //rollback
 	      sess2.rollback();
@@ -203,383 +209,383 @@ public class PersistenceTest extends JMSTestCase
       	}
       }
    }
-
-
-   /**
-    * First test that message order survives a restart
-    */
-   public void testMessageOrderPersistence_1() throws Exception
-   {
-      Connection conn = null;
-
-      try
-      {
-	      conn = cf.createConnection();
-	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      MessageProducer prod = sessSend.createProducer(queue1);
-
-	      TextMessage m0 = sessSend.createTextMessage("a");
-	      TextMessage m1 = sessSend.createTextMessage("b");
-	      TextMessage m2 = sessSend.createTextMessage("c");
-	      TextMessage m3 = sessSend.createTextMessage("d");
-	      TextMessage m4 = sessSend.createTextMessage("e");
-	      TextMessage m5 = sessSend.createTextMessage("f");
-	      TextMessage m6 = sessSend.createTextMessage("g");
-	      TextMessage m7 = sessSend.createTextMessage("h");
-	      TextMessage m8 = sessSend.createTextMessage("i");
-	      TextMessage m9 = sessSend.createTextMessage("j");
-
-	      prod.send(m0, DeliveryMode.PERSISTENT, 0, 0);
-	      prod.send(m1, DeliveryMode.PERSISTENT, 1, 0);
-	      prod.send(m2, DeliveryMode.PERSISTENT, 2, 0);
-	      prod.send(m3, DeliveryMode.PERSISTENT, 3, 0);
-	      prod.send(m4, DeliveryMode.PERSISTENT, 4, 0);
-	      prod.send(m5, DeliveryMode.PERSISTENT, 5, 0);
-	      prod.send(m6, DeliveryMode.PERSISTENT, 6, 0);
-	      prod.send(m7, DeliveryMode.PERSISTENT, 7, 0);
-	      prod.send(m8, DeliveryMode.PERSISTENT, 8, 0);
-	      prod.send(m9, DeliveryMode.PERSISTENT, 9, 0);
-
-	      conn.close();
-
-	      stop();
-
-	      startNoDelete();
-
-	      // Messaging server restart implies new ConnectionFactory lookup
-	      deployAndLookupAdministeredObjects();
-
-	      conn = cf.createConnection();
-	      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      conn.start();
-	      MessageConsumer cons = sessReceive.createConsumer(queue1);
-
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("j", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("i", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("h", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("g", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("f", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("e", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("d", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("c", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("b", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("a", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(500);
-	         assertNull(t);
-	      }
-      }
-      finally
-      {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
-      }
-   }
-
-
-   /**
-    * Second test that message order survives a restart
-    */
-   public void testMessageOrderPersistence_2() throws Exception
-   {
-      Connection conn = null;
-
-      try
-      {
-	      conn = cf.createConnection();
-	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      MessageProducer prod = sessSend.createProducer(queue1);
-
-	      TextMessage m0 = sessSend.createTextMessage("a");
-	      TextMessage m1 = sessSend.createTextMessage("b");
-	      TextMessage m2 = sessSend.createTextMessage("c");
-	      TextMessage m3 = sessSend.createTextMessage("d");
-	      TextMessage m4 = sessSend.createTextMessage("e");
-	      TextMessage m5 = sessSend.createTextMessage("f");
-	      TextMessage m6 = sessSend.createTextMessage("g");
-	      TextMessage m7 = sessSend.createTextMessage("h");
-	      TextMessage m8 = sessSend.createTextMessage("i");
-	      TextMessage m9 = sessSend.createTextMessage("j");
-
-
-	      prod.send(m0, DeliveryMode.PERSISTENT, 0, 0);
-	      prod.send(m1, DeliveryMode.PERSISTENT, 0, 0);
-	      prod.send(m2, DeliveryMode.PERSISTENT, 0, 0);
-	      prod.send(m3, DeliveryMode.PERSISTENT, 3, 0);
-	      prod.send(m4, DeliveryMode.PERSISTENT, 3, 0);
-	      prod.send(m5, DeliveryMode.PERSISTENT, 4, 0);
-	      prod.send(m6, DeliveryMode.PERSISTENT, 4, 0);
-	      prod.send(m7, DeliveryMode.PERSISTENT, 5, 0);
-	      prod.send(m8, DeliveryMode.PERSISTENT, 5, 0);
-	      prod.send(m9, DeliveryMode.PERSISTENT, 6, 0);
-
-	      conn.close();
-
-	      stop();
-
-	      startNoDelete();
-
-	      deployAndLookupAdministeredObjects();
-
-	      conn = cf.createConnection();
-	      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      conn.start();
-	      MessageConsumer cons = sessReceive.createConsumer(queue1);
-
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("j", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("h", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("i", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("f", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("g", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("d", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("e", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("a", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("b", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receive(1000);
-	         assertNotNull(t);
-	         assertEquals("c", t.getText());
-	      }
-	      {
-	         TextMessage t = (TextMessage)cons.receiveNoWait();
-	         assertNull(t);
-	      }
-      }
-      finally
-      {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
-      }
-   }
-
-   /*
-    * Test durable subscription state survives a server crash
-    */
-   public void testDurableSubscriptionPersistence_1() throws Exception
-   {
-      Connection conn = null;
-
-      try
-      {
-	      conn = cf.createConnection();
-	      conn.setClientID("five");
-
-	      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-	      MessageConsumer ds = s.createDurableSubscriber(topic1, "sub", null, false);
-
-	      MessageProducer p = s.createProducer(topic1);
-	      p.setDeliveryMode(DeliveryMode.PERSISTENT);
-	      TextMessage tm = s.createTextMessage("thebody");
-
-	      p.send(tm);
-	      log.debug("message sent");
-
-	      conn.close();
-
-	      stop();
-
-	      startNoDelete();
-
-	      deployAndLookupAdministeredObjects();
-
-	      conn = cf.createConnection();
-	      conn.setClientID("five");
-
-	      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      conn.start();
-
-	      ds = s.createDurableSubscriber(topic1, "sub", null, false);
-
-	      TextMessage rm = (TextMessage)ds.receive(3000);
-	      assertNotNull(rm);
-	      assertEquals("thebody", rm.getText());
-
-	      ds.close();
-
-	      log.info("************* UNSUBSCRIBE CALLED");
-	      s.unsubscribe("sub");
-      }
-      finally
-      {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
-      }
-   }
-
-   /*
-    * Test durable subscription state survives a restart
-    */
-   public void testDurableSubscriptionPersistence_2() throws Exception
-   {
-      Connection conn = null;
-
-      try
-      {
-	      conn = cf.createConnection();
-	      conn.setClientID("Sausages");
-
-	      Session sessConsume = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-	      MessageConsumer sub1 = sessConsume.createDurableSubscriber(topic1, "sub1", null, false);
-	      MessageConsumer sub2 = sessConsume.createDurableSubscriber(topic1, "sub2", null, false);
-	      MessageConsumer sub3 = sessConsume.createDurableSubscriber(topic1, "sub3", null, false);
-
-
-	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      MessageProducer prod = sessSend.createProducer(topic1);
-	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-
-	      for (int i = 0; i < 10; i++)
-	      {
-	         TextMessage tm = sessSend.createTextMessage("message" + i);
-	         prod.send(tm);
-	      }
-
-	      conn.close();
-
-	      stop();
-
-	      startNoDelete();
-
-         // Messaging server restart implies new ConnectionFactory lookup
-	      deployAndLookupAdministeredObjects();
-
-	      conn = cf.createConnection();
-	      conn.setClientID("Sausages");
-
-	      sessConsume = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      conn.start();
-
-	      sub1 = sessConsume.createDurableSubscriber(topic1, "sub1", null, false);
-	      sub2 = sessConsume.createDurableSubscriber(topic1, "sub2", null, false);
-	      sub3 = sessConsume.createDurableSubscriber(topic1, "sub3", null, false);
-
-	      for (int i = 0; i < 10; i++)
-	      {
-	         TextMessage tm1 = (TextMessage)sub1.receive(3000);
-	         assertNotNull(tm1);
-	         if (tm1 == null)
-	         {
-	            break;
-	         }
-	         assertEquals("message" + i, tm1.getText());
-
-	         TextMessage tm2 = (TextMessage)sub2.receive(3000);
-	         assertNotNull(tm2);
-	         if (tm2 == null)
-	         {
-	            break;
-	         }
-	         assertEquals("message" + i, tm2.getText());
-
-	         TextMessage tm3 = (TextMessage)sub3.receive(3000);
-	         assertNotNull(tm3);
-	         if (tm3 == null)
-	         {
-	            break;
-	         }
-	         assertEquals("message" + i, tm3.getText());
-	      }
-
-	      sub1.close();
-	      sub2.close();
-	      sub3.close();
-
-	      sessConsume.unsubscribe("sub1");
-	      sessConsume.unsubscribe("sub2");
-	      sessConsume.unsubscribe("sub3");
-      }
-      finally
-      {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
-      }
-   }
+//
+//
+//   /**
+//    * First test that message order survives a restart
+//    */
+//   public void testMessageOrderPersistence_1() throws Exception
+//   {
+//      Connection conn = null;
+//
+//      try
+//      {
+//	      conn = cf.createConnection();
+//	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//	      MessageProducer prod = sessSend.createProducer(queue1);
+//
+//	      TextMessage m0 = sessSend.createTextMessage("a");
+//	      TextMessage m1 = sessSend.createTextMessage("b");
+//	      TextMessage m2 = sessSend.createTextMessage("c");
+//	      TextMessage m3 = sessSend.createTextMessage("d");
+//	      TextMessage m4 = sessSend.createTextMessage("e");
+//	      TextMessage m5 = sessSend.createTextMessage("f");
+//	      TextMessage m6 = sessSend.createTextMessage("g");
+//	      TextMessage m7 = sessSend.createTextMessage("h");
+//	      TextMessage m8 = sessSend.createTextMessage("i");
+//	      TextMessage m9 = sessSend.createTextMessage("j");
+//
+//	      prod.send(m0, DeliveryMode.PERSISTENT, 0, 0);
+//	      prod.send(m1, DeliveryMode.PERSISTENT, 1, 0);
+//	      prod.send(m2, DeliveryMode.PERSISTENT, 2, 0);
+//	      prod.send(m3, DeliveryMode.PERSISTENT, 3, 0);
+//	      prod.send(m4, DeliveryMode.PERSISTENT, 4, 0);
+//	      prod.send(m5, DeliveryMode.PERSISTENT, 5, 0);
+//	      prod.send(m6, DeliveryMode.PERSISTENT, 6, 0);
+//	      prod.send(m7, DeliveryMode.PERSISTENT, 7, 0);
+//	      prod.send(m8, DeliveryMode.PERSISTENT, 8, 0);
+//	      prod.send(m9, DeliveryMode.PERSISTENT, 9, 0);
+//
+//	      conn.close();
+//
+//	      stop();
+//
+//	      startNoDelete();
+//
+//	      // Messaging server restart implies new ConnectionFactory lookup
+//	      deployAndLookupAdministeredObjects();
+//
+//	      conn = cf.createConnection();
+//	      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//	      conn.start();
+//	      MessageConsumer cons = sessReceive.createConsumer(queue1);
+//
+//	      {
+//	         TextMessage t = (TextMessage)cons.receive(1000);
+//	         assertNotNull(t);
+//	         assertEquals("j", t.getText());
+//	      }
+//	      {
+//	         TextMessage t = (TextMessage)cons.receive(1000);
+//	         assertNotNull(t);
+//	         assertEquals("i", t.getText());
+//	      }
+//	      {
+//	         TextMessage t = (TextMessage)cons.receive(1000);
+//	         assertNotNull(t);
+//	         assertEquals("h", t.getText());
+//	      }
+//	      {
+//	         TextMessage t = (TextMessage)cons.receive(1000);
+//	         assertNotNull(t);
+//	         assertEquals("g", t.getText());
+//	      }
+//	      {
+//	         TextMessage t = (TextMessage)cons.receive(1000);
+//	         assertNotNull(t);
+//	         assertEquals("f", t.getText());
+//	      }
+//	      {
+//	         TextMessage t = (TextMessage)cons.receive(1000);
+//	         assertNotNull(t);
+//	         assertEquals("e", t.getText());
+//	      }
+//	      {
+//	         TextMessage t = (TextMessage)cons.receive(1000);
+//	         assertNotNull(t);
+//	         assertEquals("d", t.getText());
+//	      }
+//	      {
+//	         TextMessage t = (TextMessage)cons.receive(1000);
+//	         assertNotNull(t);
+//	         assertEquals("c", t.getText());
+//	      }
+//	      {
+//	         TextMessage t = (TextMessage)cons.receive(1000);
+//	         assertNotNull(t);
+//	         assertEquals("b", t.getText());
+//	      }
+//	      {
+//	         TextMessage t = (TextMessage)cons.receive(1000);
+//	         assertNotNull(t);
+//	         assertEquals("a", t.getText());
+//	      }
+//	      {
+//	         TextMessage t = (TextMessage)cons.receive(500);
+//	         assertNull(t);
+//	      }
+//      }
+//      finally
+//      {
+//      	if (conn != null)
+//      	{
+//      		conn.close();
+//      	}
+//      }
+//   }
+//
+//
+//   /**
+//    * Second test that message order survives a restart
+//    */
+//   public void testMessageOrderPersistence_2() throws Exception
+//   {
+//      Connection conn = null;
+//
+//      try
+//      {
+//	      conn = cf.createConnection();
+//	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//	      MessageProducer prod = sessSend.createProducer(queue1);
+//
+//	      TextMessage m0 = sessSend.createTextMessage("a");
+//	      TextMessage m1 = sessSend.createTextMessage("b");
+//	      TextMessage m2 = sessSend.createTextMessage("c");
+//	      TextMessage m3 = sessSend.createTextMessage("d");
+//	      TextMessage m4 = sessSend.createTextMessage("e");
+//	      TextMessage m5 = sessSend.createTextMessage("f");
+//	      TextMessage m6 = sessSend.createTextMessage("g");
+//	      TextMessage m7 = sessSend.createTextMessage("h");
+//	      TextMessage m8 = sessSend.createTextMessage("i");
+//	      TextMessage m9 = sessSend.createTextMessage("j");
+//
+//
+//	      prod.send(m0, DeliveryMode.PERSISTENT, 0, 0);
+//	      prod.send(m1, DeliveryMode.PERSISTENT, 0, 0);
+//	      prod.send(m2, DeliveryMode.PERSISTENT, 0, 0);
+//	      prod.send(m3, DeliveryMode.PERSISTENT, 3, 0);
+//	      prod.send(m4, DeliveryMode.PERSISTENT, 3, 0);
+//	      prod.send(m5, DeliveryMode.PERSISTENT, 4, 0);
+//	      prod.send(m6, DeliveryMode.PERSISTENT, 4, 0);
+//	      prod.send(m7, DeliveryMode.PERSISTENT, 5, 0);
+//	      prod.send(m8, DeliveryMode.PERSISTENT, 5, 0);
+//	      prod.send(m9, DeliveryMode.PERSISTENT, 6, 0);
+//
+//	      conn.close();
+//
+//	      stop();
+//
+//	      startNoDelete();
+//
+//	      deployAndLookupAdministeredObjects();
+//
+//	      conn = cf.createConnection();
+//	      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//	      conn.start();
+//	      MessageConsumer cons = sessReceive.createConsumer(queue1);
+//
+//	      {
+//	         TextMessage t = (TextMessage)cons.receive(1000);
+//	         assertNotNull(t);
+//	         assertEquals("j", t.getText());
+//	      }
+//	      {
+//	         TextMessage t = (TextMessage)cons.receive(1000);
+//	         assertNotNull(t);
+//	         assertEquals("h", t.getText());
+//	      }
+//	      {
+//	         TextMessage t = (TextMessage)cons.receive(1000);
+//	         assertNotNull(t);
+//	         assertEquals("i", t.getText());
+//	      }
+//	      {
+//	         TextMessage t = (TextMessage)cons.receive(1000);
+//	         assertNotNull(t);
+//	         assertEquals("f", t.getText());
+//	      }
+//	      {
+//	         TextMessage t = (TextMessage)cons.receive(1000);
+//	         assertNotNull(t);
+//	         assertEquals("g", t.getText());
+//	      }
+//	      {
+//	         TextMessage t = (TextMessage)cons.receive(1000);
+//	         assertNotNull(t);
+//	         assertEquals("d", t.getText());
+//	      }
+//	      {
+//	         TextMessage t = (TextMessage)cons.receive(1000);
+//	         assertNotNull(t);
+//	         assertEquals("e", t.getText());
+//	      }
+//	      {
+//	         TextMessage t = (TextMessage)cons.receive(1000);
+//	         assertNotNull(t);
+//	         assertEquals("a", t.getText());
+//	      }
+//	      {
+//	         TextMessage t = (TextMessage)cons.receive(1000);
+//	         assertNotNull(t);
+//	         assertEquals("b", t.getText());
+//	      }
+//	      {
+//	         TextMessage t = (TextMessage)cons.receive(1000);
+//	         assertNotNull(t);
+//	         assertEquals("c", t.getText());
+//	      }
+//	      {
+//	         TextMessage t = (TextMessage)cons.receiveNoWait();
+//	         assertNull(t);
+//	      }
+//      }
+//      finally
+//      {
+//      	if (conn != null)
+//      	{
+//      		conn.close();
+//      	}
+//      }
+//   }
+//
+//   /*
+//    * Test durable subscription state survives a server crash
+//    */
+//   public void testDurableSubscriptionPersistence_1() throws Exception
+//   {
+//      Connection conn = null;
+//
+//      try
+//      {
+//	      conn = cf.createConnection();
+//	      conn.setClientID("five");
+//
+//	      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//
+//	      MessageConsumer ds = s.createDurableSubscriber(topic1, "sub", null, false);
+//
+//	      MessageProducer p = s.createProducer(topic1);
+//	      p.setDeliveryMode(DeliveryMode.PERSISTENT);
+//	      TextMessage tm = s.createTextMessage("thebody");
+//
+//	      p.send(tm);
+//	      log.debug("message sent");
+//
+//	      conn.close();
+//
+//	      stop();
+//
+//	      startNoDelete();
+//
+//	      deployAndLookupAdministeredObjects();
+//
+//	      conn = cf.createConnection();
+//	      conn.setClientID("five");
+//
+//	      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//	      conn.start();
+//
+//	      ds = s.createDurableSubscriber(topic1, "sub", null, false);
+//
+//	      TextMessage rm = (TextMessage)ds.receive(3000);
+//	      assertNotNull(rm);
+//	      assertEquals("thebody", rm.getText());
+//
+//	      ds.close();
+//
+//	      log.info("************* UNSUBSCRIBE CALLED");
+//	      s.unsubscribe("sub");
+//      }
+//      finally
+//      {
+//      	if (conn != null)
+//      	{
+//      		conn.close();
+//      	}
+//      }
+//   }
+//
+//   /*
+//    * Test durable subscription state survives a restart
+//    */
+//   public void testDurableSubscriptionPersistence_2() throws Exception
+//   {
+//      Connection conn = null;
+//
+//      try
+//      {
+//	      conn = cf.createConnection();
+//	      conn.setClientID("Sausages");
+//
+//	      Session sessConsume = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//
+//	      MessageConsumer sub1 = sessConsume.createDurableSubscriber(topic1, "sub1", null, false);
+//	      MessageConsumer sub2 = sessConsume.createDurableSubscriber(topic1, "sub2", null, false);
+//	      MessageConsumer sub3 = sessConsume.createDurableSubscriber(topic1, "sub3", null, false);
+//
+//
+//	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//	      MessageProducer prod = sessSend.createProducer(topic1);
+//	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+//
+//	      for (int i = 0; i < 10; i++)
+//	      {
+//	         TextMessage tm = sessSend.createTextMessage("message" + i);
+//	         prod.send(tm);
+//	      }
+//
+//	      conn.close();
+//
+//	      stop();
+//
+//	      startNoDelete();
+//
+//         // Messaging server restart implies new ConnectionFactory lookup
+//	      deployAndLookupAdministeredObjects();
+//
+//	      conn = cf.createConnection();
+//	      conn.setClientID("Sausages");
+//
+//	      sessConsume = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//	      conn.start();
+//
+//	      sub1 = sessConsume.createDurableSubscriber(topic1, "sub1", null, false);
+//	      sub2 = sessConsume.createDurableSubscriber(topic1, "sub2", null, false);
+//	      sub3 = sessConsume.createDurableSubscriber(topic1, "sub3", null, false);
+//
+//	      for (int i = 0; i < 10; i++)
+//	      {
+//	         TextMessage tm1 = (TextMessage)sub1.receive(3000);
+//	         assertNotNull(tm1);
+//	         if (tm1 == null)
+//	         {
+//	            break;
+//	         }
+//	         assertEquals("message" + i, tm1.getText());
+//
+//	         TextMessage tm2 = (TextMessage)sub2.receive(3000);
+//	         assertNotNull(tm2);
+//	         if (tm2 == null)
+//	         {
+//	            break;
+//	         }
+//	         assertEquals("message" + i, tm2.getText());
+//
+//	         TextMessage tm3 = (TextMessage)sub3.receive(3000);
+//	         assertNotNull(tm3);
+//	         if (tm3 == null)
+//	         {
+//	            break;
+//	         }
+//	         assertEquals("message" + i, tm3.getText());
+//	      }
+//
+//	      sub1.close();
+//	      sub2.close();
+//	      sub3.close();
+//
+//	      sessConsume.unsubscribe("sub1");
+//	      sessConsume.unsubscribe("sub2");
+//	      sessConsume.unsubscribe("sub3");
+//      }
+//      finally
+//      {
+//      	if (conn != null)
+//      	{
+//      		conn.close();
+//      	}
+//      }
+//   }
 
 
    // Package protected ---------------------------------------------

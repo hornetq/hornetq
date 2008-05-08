@@ -300,10 +300,10 @@ public class ServerSessionImpl implements ServerSession
       });
    }
 
-   public void send(final SimpleString address, final Message msg) throws Exception
+   public void send(final Message msg) throws Exception
    {
       //check the user has write access to this address
-      securityStore.check(address.toString(), CheckType.WRITE, connection);
+      securityStore.check(msg.getDestination().toString(), CheckType.WRITE, connection);
 
       msg.setMessageID(persistenceManager.generateMessageID());
 
@@ -314,11 +314,11 @@ public class ServerSessionImpl implements ServerSession
 
       if (autoCommitSends)
       {
-      	List<MessageReference> refs = postOffice.route(address, msg);
+      	List<MessageReference> refs = postOffice.route(msg);
 
    		if (msg.getDurableRefCount() != 0)
    		{
-   			persistenceManager.storeMessage(address, msg);
+   			persistenceManager.storeMessage(msg);
    		}
 
    		for (MessageReference ref: refs)
@@ -328,7 +328,7 @@ public class ServerSessionImpl implements ServerSession
       }
       else
       {
-      	tx.addMessage(address, msg);
+      	tx.addMessage(msg);
       }
    }
 

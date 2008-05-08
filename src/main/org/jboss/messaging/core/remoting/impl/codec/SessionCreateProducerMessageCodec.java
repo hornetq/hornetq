@@ -7,10 +7,9 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEPRODUCER;
-import static org.jboss.messaging.util.DataConstants.SIZE_INT;
-import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
+import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -40,17 +39,8 @@ public class SessionCreateProducerMessageCodec extends
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   public int getBodyLength(final SessionCreateProducerMessage packet) throws Exception
-   {   	
-   	SimpleString address = packet.getAddress();
-      
-      int bodyLength = SIZE_LONG + SimpleString.sizeofNullableString(address) + 2 * SIZE_INT;
-      
-      return bodyLength;
-   }
-   
    @Override
-   protected void encodeBody(final SessionCreateProducerMessage request, final RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionCreateProducerMessage request, final MessagingBuffer out) throws Exception
    {
       SimpleString address = request.getAddress();
      
@@ -61,7 +51,7 @@ public class SessionCreateProducerMessageCodec extends
    }
 
    @Override
-   protected SessionCreateProducerMessage decodeBody(final RemotingBuffer in)
+   protected SessionCreateProducerMessage decodeBody(final MessagingBuffer in)
          throws Exception
    {
       long clientTargetID = in.getLong();

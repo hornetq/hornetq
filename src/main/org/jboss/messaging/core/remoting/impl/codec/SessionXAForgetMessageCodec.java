@@ -10,6 +10,7 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAForgetMessage;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * 
@@ -36,15 +37,9 @@ public class SessionXAForgetMessageCodec extends AbstractPacketCodec<SessionXAFo
    // Public --------------------------------------------------------
 
    // AbstractPacketCodec overrides ---------------------------------
-
-   public int getBodyLength(final SessionXAForgetMessage packet) throws Exception
-   {   	
-   	int bodyLength = getXidLength(packet.getXid());
-   	return bodyLength;
-   }
-   
+ 
    @Override
-   protected void encodeBody(final SessionXAForgetMessage message, final RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionXAForgetMessage message, final MessagingBuffer out) throws Exception
    {      
       Xid xid = message.getXid();
       
@@ -52,7 +47,7 @@ public class SessionXAForgetMessageCodec extends AbstractPacketCodec<SessionXAFo
    }
 
    @Override
-   protected SessionXAForgetMessage decodeBody(final RemotingBuffer in)
+   protected SessionXAForgetMessage decodeBody(final MessagingBuffer in)
          throws Exception
    {
       Xid xid = decodeXid(in);

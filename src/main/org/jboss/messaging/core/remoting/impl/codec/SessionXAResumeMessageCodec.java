@@ -10,6 +10,7 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResumeMessage;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * 
@@ -37,17 +38,8 @@ public class SessionXAResumeMessageCodec extends AbstractPacketCodec<SessionXARe
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   public int getBodyLength(final SessionXAResumeMessage packet) throws Exception
-   {   	
-   	Xid xid = packet.getXid();
-      
-      int bodyLength = getXidLength(xid);
-      
-      return bodyLength;
-   }
-   
    @Override
-   protected void encodeBody(final SessionXAResumeMessage message, final RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionXAResumeMessage message, final MessagingBuffer out) throws Exception
    {      
       Xid xid = message.getXid();
       
@@ -55,7 +47,7 @@ public class SessionXAResumeMessageCodec extends AbstractPacketCodec<SessionXARe
    }
 
    @Override
-   protected SessionXAResumeMessage decodeBody(final RemotingBuffer in)
+   protected SessionXAResumeMessage decodeBody(final MessagingBuffer in)
          throws Exception
    {           
       Xid xid = decodeXid(in);

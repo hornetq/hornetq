@@ -31,6 +31,7 @@ import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import junit.framework.TestCase;
 
@@ -210,7 +211,9 @@ public class UnitTestCase extends TestCase
          bytes[i] = (byte)i;
       }
       
-      message.setPayload(bytes);
+      //message.setPayload(bytes);
+      
+      message.getBody().putString(UUID.randomUUID().toString());
       
       return message;
    }
@@ -241,17 +244,8 @@ public class UnitTestCase extends TestCase
       
       assertEquals(msg1.getType(), msg2.getType());         
       
-      if (msg1.getPayload() == null)
-      {
-         assertNull(msg2.getPayload());
-      }
-      else
-      {
-         assertByteArraysEquivalent(msg1.getPayload(), msg2.getPayload());
-      }     
-      
-      assertMapsEquivalent(msg1.getHeaders(), msg2.getHeaders());
-      
+      assertByteArraysEquivalent(msg1.getBody().array(), msg2.getBody().array());      
+       
       assertEquals(msg1.getDurableRefCount(), msg2.getDurableRefCount());           
    }
    

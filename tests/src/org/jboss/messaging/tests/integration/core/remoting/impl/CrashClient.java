@@ -90,7 +90,7 @@ public class CrashClient
          
          MessageImpl message = new MessageImpl(JBossTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);
-         message.setPayload(ClientCrashTest.MESSAGE_TEXT_FROM_CLIENT.getBytes());
+         message.getBody().putString(ClientCrashTest.MESSAGE_TEXT_FROM_CLIENT);
 
          producer.send(message);
 

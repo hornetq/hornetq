@@ -82,7 +82,7 @@ public class CoreClientOverSSLTest extends TestCase
 
       Message m = consumer.receive(10000);
       assertNotNull(m);
-      assertEquals(MESSAGE_TEXT_FROM_CLIENT, new String(m.getPayload()));
+      assertEquals(MESSAGE_TEXT_FROM_CLIENT, m.getBody().getString());
 
       log.info("waiting for the client VM to exit ...");
       SpawnedVMSupport.assertProcessExits(true, 0, p);

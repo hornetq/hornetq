@@ -21,20 +21,18 @@
   */
 package org.jboss.messaging.jms.client;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.Set;
 
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.MessageFormatException;
 
 import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.util.StreamUtils;
+import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.TypedProperties;
 
 /**
  * This class implements javax.jms.MapMessage
@@ -56,7 +54,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
 
    // Attributes ----------------------------------------------------
    
-   private Map<String, Object> map = new HashMap<String, Object>(); 
+   private TypedProperties map = new TypedProperties();
 
    // Static --------------------------------------------------------
 
@@ -68,9 +66,11 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public JBossMapMessage()
    {
       super(JBossMapMessage.TYPE);
+      
+      map = new TypedProperties();
    }
    
-   public JBossMapMessage(org.jboss.messaging.core.message.Message message, ClientSession session)
+   public JBossMapMessage(final org.jboss.messaging.core.message.Message message, final ClientSession session)
    {
       super(message, session);
    }
@@ -81,7 +81,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
     * @param foreign
     * @throws JMSException
     */
-   public JBossMapMessage(MapMessage foreign) throws JMSException
+   public JBossMapMessage(final MapMessage foreign) throws JMSException
    {
       super(foreign, JBossMapMessage.TYPE);     
       Enumeration names = foreign.getMapNames();
@@ -102,67 +102,67 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
       
    // MapMessage implementation -------------------------------------
 
-   public void setBoolean(String name, boolean value) throws JMSException
+   public void setBoolean(final String name, final boolean value) throws JMSException
    {
       checkName(name);
-      map.put(name, Boolean.valueOf(value));
+      map.putBooleanProperty(new SimpleString(name), value);
    }
 
-   public void setByte(String name, byte value) throws JMSException
+   public void setByte(final String name, final byte value) throws JMSException
    {
       checkName(name);
-      map.put(name, Byte.valueOf(value));
+      map.putByteProperty(new SimpleString(name), value);
    }
 
-   public void setShort(String name, short value) throws JMSException
+   public void setShort(final String name, final short value) throws JMSException
    {
       checkName(name);
-      map.put(name, Short.valueOf(value));
+      map.putShortProperty(new SimpleString(name), value);
    }
 
-   public void setChar(String name, char value) throws JMSException
+   public void setChar(final String name, final char value) throws JMSException
    {
       checkName(name);
-      map.put(name, Character.valueOf(value));
+      map.putCharProperty(new SimpleString(name), value);
    }
 
-   public void setInt(String name, int value) throws JMSException
+   public void setInt(final String name, final int value) throws JMSException
    {
       checkName(name);
-      map.put(name, Integer.valueOf(value));
+      map.putIntProperty(new SimpleString(name), value);
    }
 
-   public void setLong(String name, long value) throws JMSException
+   public void setLong(final String name, final long value) throws JMSException
    {
       checkName(name);
-      map.put(name, Long.valueOf(value));
+      map.putLongProperty(new SimpleString(name), value);
    }
 
-   public void setFloat(String name, float value) throws JMSException
+   public void setFloat(final String name, final float value) throws JMSException
    {
       checkName(name);
-      map.put(name, Float.valueOf(value));
+      map.putFloatProperty(new SimpleString(name), value);
    }
 
-   public void setDouble(String name, double value) throws JMSException
+   public void setDouble(final String name, final double value) throws JMSException
    {
       checkName(name);
-      map.put(name, Double.valueOf(value));
+      map.putDoubleProperty(new SimpleString(name), value);
    }
 
-   public void setString(String name, String value) throws JMSException
+   public void setString(final String name, final String value) throws JMSException
    {
       checkName(name);
-      map.put(name, value);
+      map.putStringProperty(new SimpleString(name), value == null ? null : new SimpleString(value));
    }
 
-   public void setBytes(String name, byte[] value) throws JMSException
+   public void setBytes(final String name, final byte[] value) throws JMSException
    {
       checkName(name);
-      map.put(name, value.clone());
+      map.putBytesProperty(new SimpleString(name), value);
    }
 
-   public void setBytes(String name, byte[] value, int offset, int length) throws JMSException
+   public void setBytes(final String name, final byte[] value, final int offset, final int length) throws JMSException
    {
       checkName(name);
       if (offset + length > value.length)
@@ -171,69 +171,70 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
       }
       byte[] newBytes = new byte[length];
       System.arraycopy(value, offset, newBytes, 0, length);
-      map.put(name, newBytes);
+      map.putBytesProperty(new SimpleString(name), newBytes);
    }
 
-   public void setObject(String name, Object value) throws JMSException
+   public void setObject(final String name, final Object value) throws JMSException
    {
       checkName(name);
+      SimpleString key = new SimpleString(name);
       if (value instanceof Boolean)
-         map.put(name, value);
+         map.putBooleanProperty(key, (Boolean)value);
       else if (value instanceof Byte)
-         map.put(name, value);
+         map.putByteProperty(key, (Byte)value);
       else if (value instanceof Short)
-         map.put(name, value);
+         map.putShortProperty(key, (Short)value);
       else if (value instanceof Character)
-         map.put(name, value);
+         map.putCharProperty(key, (Character)value);
       else if (value instanceof Integer)
-         map.put(name, value);
+         map.putIntProperty(key, (Integer)value);
       else if (value instanceof Long)
-         map.put(name, value);
+         map.putLongProperty(key, (Long)value);
       else if (value instanceof Float)
-         map.put(name, value);
+         map.putFloatProperty(key, (Float)value);
       else if (value instanceof Double)
-         map.put(name, value);
+         map.putDoubleProperty(key, (Double)value);
       else if (value instanceof String)
-         map.put(name, value);
+         map.putStringProperty(key, new SimpleString((String)value));
       else if (value instanceof byte[])
-         map.put(name, ((byte[]) value).clone());
+         map.putBytesProperty(key, (byte[]) value);
       else
          throw new MessageFormatException("Invalid object type.");
    }
 
-   public boolean getBoolean(String name) throws JMSException
+   public boolean getBoolean(final String name) throws JMSException
    {
-      Object value = map.get(name);
+      Object value = map.getProperty(new SimpleString(name));
 
       if (value == null)
          return Boolean.valueOf(null).booleanValue();
 
       if (value instanceof Boolean)
          return ((Boolean) value).booleanValue();
-      else if (value instanceof String)
-         return Boolean.valueOf((String) value).booleanValue();
+      else if (value instanceof SimpleString)
+         return Boolean.valueOf(((SimpleString) value).toString()).booleanValue();
       else
          throw new MessageFormatException("Invalid conversion");
    }
 
-   public byte getByte(String name) throws JMSException
+   public byte getByte(final String name) throws JMSException
    {
-      Object value = map.get(name);
+      Object value = map.getProperty(new SimpleString(name));
 
       if (value == null)
          return Byte.parseByte(null);
 
       if (value instanceof Byte)
          return ((Byte) value).byteValue();
-      else if (value instanceof String)
-         return Byte.parseByte((String) value);
+      else if (value instanceof SimpleString)
+         return Byte.parseByte(((SimpleString) value).toString());
       else
          throw new MessageFormatException("Invalid conversion");
    }
 
-   public short getShort(String name) throws JMSException
+   public short getShort(final String name) throws JMSException
    {
-      Object value = map.get(name);
+      Object value = map.getProperty(new SimpleString(name));
 
       if (value == null)
          return Short.parseShort(null);
@@ -242,15 +243,15 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
          return ((Byte) value).shortValue();
       else if (value instanceof Short)
          return ((Short) value).shortValue();
-      else if (value instanceof String)
-         return Short.parseShort((String) value);
+      else if (value instanceof SimpleString)
+         return Short.parseShort(((SimpleString) value).toString());
       else
          throw new MessageFormatException("Invalid conversion");
    }
 
-   public char getChar(String name) throws JMSException
+   public char getChar(final String name) throws JMSException
    {
-      Object value = map.get(name);
+      Object value = map.getProperty(new SimpleString(name));
 
       if (value == null)
          throw new NullPointerException("Invalid conversion");
@@ -261,9 +262,9 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
          throw new MessageFormatException("Invalid conversion");
    }
 
-   public int getInt(String name) throws JMSException
+   public int getInt(final String name) throws JMSException
    {
-      Object value = map.get(name);
+      Object value = map.getProperty(new SimpleString(name));
 
       if (value == null)
          return Integer.parseInt(null);
@@ -274,15 +275,15 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
          return ((Short) value).intValue();
       else if (value instanceof Integer)
          return ((Integer) value).intValue();
-      else if (value instanceof String)
-         return Integer.parseInt((String) value);
+      else if (value instanceof SimpleString)
+         return Integer.parseInt(((SimpleString) value).toString());
       else
          throw new MessageFormatException("Invalid conversion");
    }
 
-   public long getLong(String name) throws JMSException
+   public long getLong(final String name) throws JMSException
    {
-      Object value = map.get(name);
+      Object value = map.getProperty(new SimpleString(name));
 
       if (value == null)
          return Long.parseLong(null);
@@ -295,30 +296,30 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
          return ((Integer) value).longValue();
       else if (value instanceof Long)
          return ((Long) value).longValue();
-      else if (value instanceof String)
-         return Long.parseLong((String) value);
+      else if (value instanceof SimpleString)
+         return Long.parseLong(((SimpleString) value).toString());
       else
          throw new MessageFormatException("Invalid conversion");
    }
 
-   public float getFloat(String name) throws JMSException
+   public float getFloat(final String name) throws JMSException
    {
-      Object value = map.get(name);
+      Object value = map.getProperty(new SimpleString(name));
 
       if (value == null)
          return Float.parseFloat(null);
 
       if (value instanceof Float)
          return ((Float) value).floatValue();
-      else if (value instanceof String)
-         return Float.parseFloat((String) value);
+      else if (value instanceof SimpleString)
+         return Float.parseFloat(((SimpleString) value).toString());
       else
          throw new MessageFormatException("Invalid conversion");
    }
 
-   public double getDouble(String name) throws JMSException
+   public double getDouble(final String name) throws JMSException
    {
-      Object value = map.get(name);
+      Object value = map.getProperty(new SimpleString(name));
 
       if (value == null)
          return Double.parseDouble(null);
@@ -327,20 +328,24 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
          return ((Float) value).doubleValue();
       else if (value instanceof Double)
          return ((Double) value).doubleValue();
-      else if (value instanceof String)
-         return Double.parseDouble((String) value);
+      else if (value instanceof SimpleString)
+         return Double.parseDouble(((SimpleString) value).toString());
       else
          throw new MessageFormatException("Invalid conversion");
    }
 
-   public String getString(String name) throws JMSException
+   public String getString(final String name) throws JMSException
    {
-      Object value = map.get(name);
+      Object value = map.getProperty(new SimpleString(name));
 
       if (value == null)
          return null;
 
-      if (value instanceof Boolean)
+      if (value instanceof SimpleString)
+      {
+         return ((SimpleString) value).toString();
+      }      
+      else if (value instanceof Boolean)
       {
          return  value.toString();
       }
@@ -372,19 +377,15 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
       {
          return value.toString();
       }
-      else if (value instanceof String)
-      {
-         return (String) value;
-      }
       else
       {
          throw new MessageFormatException("Invalid conversion");
       }
    }
 
-   public byte[] getBytes(String name) throws JMSException
+   public byte[] getBytes(final String name) throws JMSException
    {
-      Object value = map.get(name);
+      Object value = map.getProperty(new SimpleString(name));
 
       if (value == null)
          return null;
@@ -394,19 +395,33 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
          throw new MessageFormatException("Invalid conversion");
    }
 
-   public Object getObject(String name) throws JMSException
+   public Object getObject(final String name) throws JMSException
    {
-      return map.get(name);
+      Object val = map.getProperty(new SimpleString(name));
+      
+      if (val instanceof SimpleString)
+      {
+         val = ((SimpleString)val).toString();
+      }
+      
+      return val;
    }
 
    public Enumeration getMapNames() throws JMSException
    {
-      return Collections.enumeration(new HashSet<String>(map.keySet()));
+      Set propNames = new HashSet<String>();
+      
+      for (SimpleString str: map.getPropertyNames())
+      {
+         propNames.add(str.toString());
+      }
+      
+      return Collections.enumeration(propNames);
    }
 
-   public boolean itemExists(String name) throws JMSException
+   public boolean itemExists(final String name) throws JMSException
    {
-      return map.containsKey(name);
+      return map.containsProperty(new SimpleString(name));
    }
 
    // JBossMessage overrides ----------------------------------------
@@ -420,29 +435,22 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    
    public void doBeforeSend() throws Exception
    {
-      beforeSend();
+      map.encode(body);
+      
+      super.doBeforeSend();
    }
    
    public void doBeforeReceive() throws Exception
-   {
-      beforeReceive();
+   {        
+      super.doBeforeReceive();
+      
+      map.decode(body);
    }
- 
    
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
      
-   protected void writePayload(DataOutputStream daos) throws Exception
-   {
-      StreamUtils.writeMap(daos, map, false);
-   }
-   
-   protected void readPayload(DataInputStream dais) throws Exception
-   {
-      map = StreamUtils.readMap(dais, false);
-   }
-
    // Private -------------------------------------------------------
    
    /**
@@ -452,7 +460,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
     */
    private void checkName(String name) throws JMSException
    {
-      checkWrite();
+      checkWrite();            
       
       if (name == null)
       {

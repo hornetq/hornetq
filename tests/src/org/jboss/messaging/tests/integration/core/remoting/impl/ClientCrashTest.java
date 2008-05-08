@@ -115,8 +115,7 @@ public class ClientCrashTest extends TestCase
          // send the message to the queue
          Message messageFromClient = consumer.receive(5000);
          assertNotNull("no message received", messageFromClient);
-         assertEquals(MESSAGE_TEXT_FROM_CLIENT, new String(messageFromClient
-               .getPayload()));
+         assertEquals(MESSAGE_TEXT_FROM_CLIENT, messageFromClient.getBody().getString());
 
          // 1 local connection to the server
          // + 1 per connection to the client
@@ -124,8 +123,7 @@ public class ClientCrashTest extends TestCase
 
          MessageImpl message = new MessageImpl(JBossTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);
-         message
-               .setPayload(ClientCrashTest.MESSAGE_TEXT_FROM_SERVER.getBytes());
+         message.getBody().putString(ClientCrashTest.MESSAGE_TEXT_FROM_SERVER);
          producer.send(message);
 
          log.info("waiting for the client VM to crash ...");

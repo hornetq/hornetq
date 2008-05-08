@@ -86,24 +86,21 @@ public class ServerProducerImpl implements ServerProducer
 	{
 		session.removeProducer(this);
 	}
-	
-	
-	public void send(final SimpleString address, final Message message) throws Exception
+		
+	public void send(final Message message) throws Exception
 	{		
-		if (address != null)
-		{
-			//Anonymous producer - no flow control
-			session.send(address, message);
+		if (this.address != null)
+		{			
+		   //Only do flow control with non anonymous producers
+		   
+		   //TODO - flow control currently disabled
+//			if (flowController != null)
+//		   {
+//				flowController.messageReceived(this, 1);			
+//			}
 		}
-		else
-		{						
-			session.send(this.address, message);
-			
-			if (flowController != null)
-		   {
-				flowController.messageReceived(this, 1);			
-			}
-		}
+		
+		session.send(message);      
 	}
 
 	public void sendCredits() throws Exception

@@ -50,7 +50,7 @@ public class JMSTypeHeaderTest extends MessageHeaderTestBase
       String originalType =  "TYPE1";
       m.setJMSType(originalType);
       queueProducer.send(m);
-      String gotType = queueConsumer.receive().getJMSType();
+      String gotType = queueConsumer.receive(1000).getJMSType();
       assertEquals(originalType, gotType);
    }
 
@@ -58,7 +58,7 @@ public class JMSTypeHeaderTest extends MessageHeaderTestBase
    {
       Message m = queueProducerSession.createMessage();
       queueProducer.send(m);
-      assertEquals(null, queueConsumer.receive().getJMSType());
+      assertEquals(null, queueConsumer.receive(1000).getJMSType());
    }
 
 

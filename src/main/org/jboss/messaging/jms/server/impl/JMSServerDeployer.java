@@ -183,7 +183,7 @@ public class JMSServerDeployer extends XmlDeployer
             if (ENTRY_NODE_NAME.equalsIgnoreCase(children.item(i).getNodeName()))
             {
             	
-            	log.info("CReating cf ** with ws:" + producerWindowSize);
+            	log.info("Creating cf ** with ws:" + producerWindowSize);
             	
                String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
                String name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();

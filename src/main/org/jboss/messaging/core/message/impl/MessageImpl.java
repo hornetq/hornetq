@@ -21,19 +21,17 @@
  */
 package org.jboss.messaging.core.message.impl;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.util.StreamUtils;
+import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.TypedProperties;
 
 /**
  * A concrete implementation of a message
@@ -56,6 +54,8 @@ public class MessageImpl implements Message
 
    // Attributes ----------------------------------------------------
 
+   private SimpleString destination;
+   
    private long messageID;
    
    private int type;
@@ -67,13 +67,10 @@ public class MessageImpl implements Message
 
    private long timestamp;
 
-   private Map<String, Object> headers;
+   private TypedProperties properties;
    
    private byte priority;
 
-   //The payload of MessageImpl instances is opaque
-   private byte[] payload;
-   
    private long connectionID;
    
    private final AtomicInteger durableRefCount = new AtomicInteger(0);
@@ -82,14 +79,16 @@ public class MessageImpl implements Message
    
    private long deliveryID;
    
+   private MessagingBuffer body;
+   
    // Constructors --------------------------------------------------
 
    /*
-    * Construct a message for deserialization or streaming
+    * Construct when reading from network
     */
    public MessageImpl()
    {
-      this.headers = new HashMap<String, Object>();
+      this.properties = new TypedProperties();
    }
 
    /*
@@ -104,59 +103,95 @@ public class MessageImpl implements Message
       this.expiration = expiration;
       this.timestamp = timestamp;
       this.priority = priority;            
+      this.body = new BufferWrapper(1024);
    }
 
    /*
     * Construct a MessageImpl from storage
     */
-   public MessageImpl(final long messageID, final int type, final boolean durable, final long expiration,
-                      final long timestamp, final byte priority, final byte[] headers, final byte[] payload)
-      throws Exception
+   public MessageImpl(final long messageID)
    {
-      this.messageID = messageID;
-      this.type = type;
-      this.durable = durable;
-      this.expiration = expiration;
-      this.timestamp = timestamp;
-      this.priority = priority;
-      
-      if (headers == null)
-      {
-         this.headers = new HashMap<String, Object>();
-      }
-      else
-      {
-         //TODO keep headers opaque on server
-         ByteArrayInputStream bis = new ByteArrayInputStream(headers);
-
-         DataInputStream dais = new DataInputStream(bis);
-
-         this.headers = StreamUtils.readMap(dais, true);
-
-         dais.close();
-      }
-      this.payload = payload;
+      this();
+      this.messageID = messageID;      
    }
    
-   /**
+   /*
     * Copy constructor
-    * 
-    * @param other
     */
    public MessageImpl(final MessageImpl other)
    {
+      this.destination = other.destination;
       this.messageID = other.messageID;
       this.type = other.type;
       this.durable = other.durable;
       this.expiration = other.expiration;
       this.timestamp = other.timestamp;
       this.priority = other.priority;
-      this.headers = new HashMap<String, Object>(other.headers);
-      this.payload = other.payload;
+      this.properties = new TypedProperties(other.properties);
+      this.body = other.body;
+      
+      this.deliveryCount = other.deliveryCount;
+      this.deliveryID = other.deliveryID;
    }
    
    // Message implementation ----------------------------------------
 
+   public MessagingBuffer encode()
+   {
+      MessagingBuffer buff = new BufferWrapper(1024);
+      
+      buff.putSimpleString(destination);
+      buff.putInt(type);
+      buff.putBoolean(durable);
+      buff.putLong(expiration);
+      buff.putLong(timestamp);
+      buff.putByte(priority);
+      
+      buff.putInt(deliveryCount);
+      buff.putLong(deliveryID);
+      
+      properties.encode(buff);
+                       
+      buff.putInt(body.limit());
+      
+      //TODO this can be optimisied
+      buff.putBytes(body.array(), 0, body.limit());
+      
+      return buff;
+   }
+   
+   public void decode(final MessagingBuffer buffer)
+   {
+      destination = buffer.getSimpleString();
+      type = buffer.getInt();
+      durable = buffer.getBoolean();
+      expiration = buffer.getLong();
+      timestamp = buffer.getLong();
+      priority = buffer.getByte();
+      
+      deliveryCount = buffer.getInt();
+      deliveryID = buffer.getLong();
+      
+      properties.decode(buffer);
+      int len = buffer.getInt();
+      
+      //TODO - this can be optimised
+      byte[] bytes = new byte[len];
+      buffer.getBytes(bytes);
+      body = new BufferWrapper(1024);
+      body.putBytes(bytes);      
+   }
+   
+   public SimpleString getDestination()
+   {
+      return destination;
+   }
+   
+   public void setDestination(SimpleString destination)
+   {
+      this.destination = destination;
+   }
+   
    public long getMessageID()
    {
       return messageID;
@@ -202,31 +237,7 @@ public class MessageImpl implements Message
       this.timestamp = timestamp;
    }
 
-   public Object putHeader(final String name, final Object value)
-   {
-      return headers.put(name, value);
-   }
-
-   public Object getHeader(final String name)
-   {
-      return headers.get(name);
-   }
-
-   public Object removeHeader(final String name)
-   {
-      return headers.remove(name);
-   }
-
-   public boolean containsHeader(final String name)
-   {
-      return headers.containsKey(name);
-   }
-
-   public Map<String, Object> getHeaders()
-   {
-      return headers;
-   }
-
+ 
    public byte getPriority()
    {
       return priority;
@@ -236,31 +247,7 @@ public class MessageImpl implements Message
    {
       this.priority = priority;
    }
-
-   // TODO - combine with getPayloadAsByteArray to get one big blob
-   public byte[] getHeaderBytes() throws Exception
-   {
-      ByteArrayOutputStream bos = new ByteArrayOutputStream(1024);
-
-      DataOutputStream oos = new DataOutputStream(bos);
-
-      StreamUtils.writeMap(oos, headers, true);
-
-      oos.close();
-
-      return bos.toByteArray();
-   }
-         
-   public byte[] getPayload()
-   {     
-      return payload;
-   }
-   
-   public void setPayload(final byte[] payload)
-   {
-      this.payload = payload;
-   }
-   
+     
    public long getConnectionID()
    {
       return connectionID;
@@ -301,6 +288,96 @@ public class MessageImpl implements Message
       return System.currentTimeMillis() - expiration >= 0;
    }
    
+   public Message copy()
+   {
+      return new MessageImpl(this);
+   }
+   
+   // Properties 
+   // ---------------------------------------------------------------------------------------
+   
+   public void putBooleanProperty(final SimpleString key, final boolean value)
+   {
+      properties.putBooleanProperty(key, value);
+   }
+            
+   public void putByteProperty(final SimpleString key, final byte value)
+   {
+      properties.putByteProperty(key, value);
+   }
+   
+   public void putBytesProperty(final SimpleString key, final byte[] value)
+   {
+      properties.putBytesProperty(key, value);
+   }
+   
+   public void putShortProperty(final SimpleString key, final short value)
+   {
+      properties.putShortProperty(key, value);
+   }
+   
+   public void putIntProperty(final SimpleString key, final int value)
+   {
+      properties.putIntProperty(key, value);
+   }
+   
+   public void putLongProperty(final SimpleString key, final long value)
+   {
+      properties.putLongProperty(key, value);
+   }
+   
+   public void putFloatProperty(final SimpleString key, final float value)
+   {
+      properties.putFloatProperty(key, value);
+   }
+   
+   public void putDoubleProperty(final SimpleString key, final double value)
+   {
+      properties.putDoubleProperty(key, value);
+   }
+   
+   public void putStringProperty(final SimpleString key, final SimpleString value)
+   {
+      properties.putStringProperty(key, value);
+   }
+   
+   public Object getProperty(final SimpleString key)
+   {
+      return properties.getProperty(key);
+   }  
+   
+   public Object removeProperty(final SimpleString key)
+   {
+      return properties.removeProperty(key);
+   }
+   
+   public boolean containsProperty(final SimpleString key)
+   {
+      return properties.containsProperty(key);
+   }
+   
+   public Set<SimpleString> getPropertyNames()
+   {
+      return properties.getPropertyNames();
+   }
+   
+   // Body
+   // -------------------------------------------------------------------------------------
+   
+   public MessagingBuffer getBody()
+   {
+      return body;
+   }
+   
+   public void setBody(final MessagingBuffer body)
+   {
+      this.body = body;
+   }
+   
+   
+   // TODO Other stuff that should be moved to ServerMessage:
+   // -------------------------------------------------------
+   
    public MessageReference createReference(final Queue queue)
    {
       MessageReference ref = new MessageReferenceImpl(this, queue);
@@ -329,12 +406,7 @@ public class MessageImpl implements Message
    {
    	durableRefCount.incrementAndGet();
    }
-   
-   public Message copy()
-   {
-      return new MessageImpl(this);
-   }
-
+     
    // Public --------------------------------------------------------
 
    public boolean equals(Object o)
@@ -362,75 +434,6 @@ public class MessageImpl implements Message
    public String toString()
    {
       return "M[" + messageID + "]@" + System.identityHashCode(this);
-   }
-
-   // Streamable implementation ---------------------------------
-
-   public void write(final DataOutputStream out) throws Exception
-   {
-      out.writeLong(messageID);
-      
-      out.writeInt(type);
-
-      out.writeBoolean(durable);
-
-      out.writeLong(expiration);
-
-      out.writeLong(timestamp);
-
-      StreamUtils.writeMap(out, headers, true);
-
-      out.writeByte(priority);
-      
-      out.writeInt(deliveryCount);
-      
-      out.writeLong(deliveryID);
-
-      if (payload != null)
-      {
-         out.writeInt(payload.length);
-
-         out.write(payload);
-      }
-      else
-      {
-         out.writeInt(0);
-      }
-   }
-
-   public void read(final DataInputStream in) throws Exception
-   {
-      messageID = in.readLong();
-      
-      type = in.readInt();
-
-      durable = in.readBoolean();
-
-      expiration = in.readLong();
-
-      timestamp = in.readLong();
-
-      headers = StreamUtils.readMap(in, true);
-
-      priority = in.readByte();
-
-      deliveryCount = in.readInt();
-      
-      deliveryID = in.readLong();
-      
-      int length = in.readInt();
-
-      if (length == 0)
-      {
-         // no payload
-         payload = null;
-      }
-      else
-      {
-         payload = new byte[length];
-
-         in.readFully(payload);
-      }
    }
 
    // Package protected ---------------------------------------------

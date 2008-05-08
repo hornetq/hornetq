@@ -20,8 +20,8 @@ import org.jboss.messaging.core.journal.Journal;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
-import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
+import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
@@ -31,9 +31,12 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.BindingImpl;
+import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
+import org.jboss.messaging.util.ByteBufferWrapper;
+import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -156,11 +159,17 @@ public class JournalStorageManager implements StorageManager
 	
 	// Non transactional operations
 	
-	public void storeMessage(final SimpleString address, final Message message) throws Exception
-	{
-		byte[] bytes = messageBytes(address, message);
-      
-      messageJournal.appendAddRecord(message.getMessageID(), bytes);      
+	public void storeMessage(final Message message) throws Exception
+	{		
+		//TODO too much copying is occurring here
+	   
+		MessagingBuffer buffer = new BufferWrapper(1024);
+		
+		buffer.putByte(ADD_MESSAGE);
+		
+		buffer.putBytes(message.encode().array());
+		
+      messageJournal.appendAddRecord(message.getMessageID(), buffer.array());      
 	}
 
 	public void storeAcknowledge(final long queueID, final long messageID) throws Exception
@@ -177,11 +186,17 @@ public class JournalStorageManager implements StorageManager
 	
 	// Transactional operations
 	
-   public void storeMessageTransactional(long txID, SimpleString address, Message message) throws Exception
+   public void storeMessageTransactional(long txID, Message message) throws Exception
    {
-   	byte[] bytes = messageBytes(address, message);
+      //TODO too much copying is occurring here
       
-      messageJournal.appendAddRecordTransactional(txID, message.getMessageID(), bytes);
+      MessagingBuffer buffer = new BufferWrapper(1024);
+      
+      buffer.putByte(ADD_MESSAGE);
+      
+      buffer.putBytes(message.encode().array());
+      
+      messageJournal.appendAddRecordTransactional(txID, message.getMessageID(), buffer.array());
    }
    
    public void storeAcknowledgeTransactional(long txID, long queueID, long messageID) throws Exception
@@ -232,16 +247,14 @@ public class JournalStorageManager implements StorageManager
 
 	public void loadMessages(final PostOffice postOffice, final Map<Long, Queue> queues) throws Exception
 	{
-		log.info("*** loading message data");
-		
 		List<RecordInfo> records = new ArrayList<RecordInfo>();
 		
 		List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
 		
-		messageJournal.load(records, preparedTransactions);
+		long maxMessageID = messageJournal.load(records, preparedTransactions);
 		
-		long maxMessageID = -1;
-		
+		messageIDSequence.set(maxMessageID + 1);
+      
 		for (RecordInfo record: records)
 		{
 			byte[] data = record.data;
@@ -254,40 +267,13 @@ public class JournalStorageManager implements StorageManager
 			{
 				case ADD_MESSAGE:
 				{
-					int addressLength = bb.getInt();
+					MessagingBuffer buff = new ByteBufferWrapper(bb);
+
+					Message message = new MessageImpl(record.id);
 					
-					byte[] addressBytes = new byte[addressLength];
+					message.decode(buff);
 					
-					bb.get(addressBytes);
-					
-					SimpleString address = new SimpleString(addressBytes);
-					
-					maxMessageID = Math.max(maxMessageID, record.id);
-
-					int type = bb.getInt();
-
-					long expiration = bb.getLong();
-
-					long timestamp = bb.getLong();
-
-					byte priority = bb.get();
-
-					int headerSize = bb.getInt();
-
-					byte[] headers = new byte[headerSize];
-
-					bb.get(headers);
-
-					int payloadSize = bb.getInt();
-
-					byte[] payload = new byte[payloadSize];
-
-					bb.get(payload);
-
-					Message message = new MessageImpl(record.id, type, true, expiration, timestamp, priority,
-							headers, payload);
-					
-					List<MessageReference> refs = postOffice.route(address, message);
+					List<MessageReference> refs = postOffice.route(message);
 					
 					for (MessageReference ref: refs)
 					{
@@ -355,10 +341,6 @@ public class JournalStorageManager implements StorageManager
 				}				
 			}
 		}
-		
-		messageIDSequence.set(maxMessageID + 1);
-		
-		log.info("****** Loaded message data");
 	}
 	
 	//Bindings operations
@@ -484,8 +466,6 @@ public class JournalStorageManager implements StorageManager
 	public void loadBindings(final QueueFactory queueFactory,
 			                   final List<Binding> bindings, final List<SimpleString> destinations) throws Exception
 	{
-		log.info("*** loading bindings");
-		
 		List<RecordInfo> records = new ArrayList<RecordInfo>();
 		
 		bindingsJournal.load(records, null);
@@ -558,8 +538,6 @@ public class JournalStorageManager implements StorageManager
 		}
 		
 		bindingIDSequence.set(maxID + 1);
-		
-		log.info("Loaded bindings");
 	}
 	
 	// MessagingComponent implementation ------------------------------------------------------
@@ -597,62 +575,21 @@ public class JournalStorageManager implements StorageManager
 	}
 	
 	// Private ----------------------------------------------------------------------------------
-	
-	private byte[] messageBytes(final SimpleString address, final Message message) throws Exception
-	{
-		//TODO optimise this
-		
-		byte[] addressBytes = address.getData();
-		
-		byte[] headers = message.getHeaderBytes();
-      
-      int headersLength = headers.length;
-      
-      byte[] payload = message.getPayload();
-      
-      int payloadLength = payload == null ? 0 : payload.length;
-      
-      byte[] bytes = new byte[SIZE_BYTE + SIZE_INT + addressBytes.length + SIZE_FIELDS + 2 * SIZE_INT + headersLength + payloadLength];
-               
-      ByteBuffer buffer = ByteBuffer.wrap(bytes);
-      
-      buffer.put(ADD_MESSAGE);
-      
-      buffer.putInt(addressBytes.length);
-      buffer.put(addressBytes);
-      
-      //Put the fields
-      buffer.putInt(message.getType());
-      buffer.putLong(message.getExpiration());
-      buffer.putLong(message.getTimestamp());
-      buffer.put(message.getPriority());  
-      
-      buffer.putInt(headersLength);
-      buffer.put(headers);    
-      
-      buffer.putInt(payloadLength);
-      if (payload != null)
-      {
-         buffer.put(payload);
-      }
-      
-      return bytes;
-	}
-	
+			
 	private byte[] ackBytes(final long queueID, final long messageID)
-	{
-		byte[] record = new byte[SIZE_BYTE + SIZE_LONG + SIZE_LONG];
-		
-		ByteBuffer bb = ByteBuffer.wrap(record);
-		
-		bb.put(ACKNOWLEDGE_REF);
-		
-		bb.putLong(queueID);
-		
-		bb.putLong(messageID);
-		
-		return record;
-	}
+   {
+      byte[] record = new byte[SIZE_BYTE + SIZE_LONG + SIZE_LONG];
+      
+      ByteBuffer bb = ByteBuffer.wrap(record);
+      
+      bb.put(ACKNOWLEDGE_REF);
+      
+      bb.putLong(queueID);
+      
+      bb.putLong(messageID);
+      
+      return record;
+   }
 	
 	private void checkAndCreateDir(String dir, boolean create)
 	{

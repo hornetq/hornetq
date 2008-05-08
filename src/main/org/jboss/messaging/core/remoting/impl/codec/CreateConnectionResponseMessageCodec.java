@@ -9,9 +9,9 @@ package org.jboss.messaging.core.remoting.impl.codec;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CREATECONNECTION_RESP;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
-import org.jboss.messaging.core.version.impl.VersionImpl;
 import org.jboss.messaging.core.version.Version;
-import org.jboss.messaging.util.DataConstants;
+import org.jboss.messaging.core.version.impl.VersionImpl;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -36,16 +36,8 @@ public class CreateConnectionResponseMessageCodec extends AbstractPacketCodec<Cr
 
    // AbstractPackedCodec overrides----------------------------------
 
-   public int getBodyLength(final CreateConnectionResponse packet) throws Exception
-   {
-      return DataConstants.SIZE_LONG +
-              sizeof(packet.getServerVersion().getVersionName()) +
-              4 * DataConstants.SIZE_INT +
-              sizeof(packet.getServerVersion().getVersionSuffix());
-   }
-
    @Override
-   protected void encodeBody(final CreateConnectionResponse response, final RemotingBuffer out)
+   protected void encodeBody(final CreateConnectionResponse response, final MessagingBuffer out)
            throws Exception
    {
       out.putLong(response.getConnectionTargetID());
@@ -58,7 +50,7 @@ public class CreateConnectionResponseMessageCodec extends AbstractPacketCodec<Cr
    }
 
    @Override
-   protected CreateConnectionResponse decodeBody(final RemotingBuffer in) throws Exception
+   protected CreateConnectionResponse decodeBody(final MessagingBuffer in) throws Exception
    {
       long connectionTargetID = in.getLong();
       String versionName = in.getNullableString();

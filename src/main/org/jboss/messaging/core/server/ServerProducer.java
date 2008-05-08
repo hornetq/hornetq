@@ -1,7 +1,6 @@
 package org.jboss.messaging.core.server;
 
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -16,7 +15,7 @@ public interface ServerProducer
 	
 	void close() throws Exception;
 	
-	void send(SimpleString address, Message msg) throws Exception;
+	void send(Message msg) throws Exception;
 	
 	void sendCredits() throws Exception;
 	

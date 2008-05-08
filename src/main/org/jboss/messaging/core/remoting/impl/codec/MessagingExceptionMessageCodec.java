@@ -7,11 +7,10 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.EXCEPTION;
-import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
-import org.jboss.messaging.util.DataConstants;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -35,21 +34,16 @@ public class MessagingExceptionMessageCodec extends AbstractPacketCodec<Messagin
    // Public --------------------------------------------------------
 
    // AbstractPacketCodec overrides ---------------------------------
-
-   public int getBodyLength(final MessagingExceptionMessage packet) throws Exception
-   {
-   	return SIZE_INT + sizeof(packet.getException().getMessage());
-   }
-   
+  
    @Override
-   protected void encodeBody(final MessagingExceptionMessage message, final RemotingBuffer out) throws Exception
+   protected void encodeBody(final MessagingExceptionMessage message, final MessagingBuffer out) throws Exception
    {
       out.putInt(message.getException().getCode());
       out.putNullableString(message.getException().getMessage());
    }
 
    @Override
-   protected MessagingExceptionMessage decodeBody(final RemotingBuffer in) throws Exception
+   protected MessagingExceptionMessage decodeBody(final MessagingBuffer in) throws Exception
    {
       int code = in.getInt();
       String msg = in.getNullableString();

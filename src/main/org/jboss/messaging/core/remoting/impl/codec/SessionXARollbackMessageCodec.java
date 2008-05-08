@@ -10,6 +10,7 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessage;
+import org.jboss.messaging.util.MessagingBuffer;
 
 public class SessionXARollbackMessageCodec extends AbstractPacketCodec<SessionXARollbackMessage>
 {
@@ -30,17 +31,8 @@ public class SessionXARollbackMessageCodec extends AbstractPacketCodec<SessionXA
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   public int getBodyLength(final SessionXARollbackMessage packet) throws Exception
-   {   	
-   	Xid xid = packet.getXid();
-      
-      int bodyLength = getXidLength(xid);
-      
-      return bodyLength;
-   }
-   
    @Override
-   protected void encodeBody(final SessionXARollbackMessage message, final RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionXARollbackMessage message, final MessagingBuffer out) throws Exception
    {      
       Xid xid = message.getXid();
       
@@ -48,7 +40,7 @@ public class SessionXARollbackMessageCodec extends AbstractPacketCodec<SessionXA
    }
 
    @Override
-   protected SessionXARollbackMessage decodeBody(final RemotingBuffer in)
+   protected SessionXARollbackMessage decodeBody(final MessagingBuffer in)
          throws Exception
    {
       Xid xid = decodeXid(in);

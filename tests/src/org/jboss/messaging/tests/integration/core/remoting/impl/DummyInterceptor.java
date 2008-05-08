@@ -14,6 +14,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
+import org.jboss.messaging.util.SimpleString;
 
 public class DummyInterceptor implements Interceptor
 {
@@ -47,7 +48,7 @@ public class DummyInterceptor implements Interceptor
          {
             ReceiveMessage deliver = (ReceiveMessage)packet;
             log.info("msg = " + deliver.getMessage().getClass().getName());
-            deliver.getMessage().getHeaders().put("DummyInterceptor", "was here");
+            deliver.getMessage().putStringProperty(new SimpleString("DummyInterceptor"), new SimpleString("was here"));
          }
       }
    }

@@ -7,10 +7,9 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_ADD_DESTINATION;
-import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
-import org.jboss.messaging.util.DataConstants;
+import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -39,20 +38,15 @@ public class SessionAddDestinationMessageCodec extends AbstractPacketCodec<Sessi
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   public int getBodyLength(final SessionAddDestinationMessage packet) throws Exception
-   {
-      return SimpleString.sizeofString(packet.getAddress()) + SIZE_BOOLEAN;
-   }
-   
    @Override
-   protected void encodeBody(final SessionAddDestinationMessage message, final RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionAddDestinationMessage message, final MessagingBuffer out) throws Exception
    {
       out.putSimpleString(message.getAddress());
       out.putBoolean(message.isTemporary());
    }
 
    @Override
-   protected SessionAddDestinationMessage decodeBody(final RemotingBuffer in)
+   protected SessionAddDestinationMessage decodeBody(final MessagingBuffer in)
          throws Exception
    {
       SimpleString address = in.getSimpleString();

@@ -21,10 +21,7 @@
   */
 package org.jboss.messaging.jms.client;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.BufferUnderflowException;
 
 import javax.jms.JMSException;
 import javax.jms.MessageEOFException;
@@ -32,10 +29,16 @@ import javax.jms.MessageFormatException;
 import javax.jms.StreamMessage;
 
 import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.util.StreamUtils;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
+import org.jboss.messaging.util.DataConstants;
 
 /**
  * This class implements javax.jms.StreamMessage.
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * Some parts based on JBM 1.x class by:
  * 
  * @author Norbert Lataille (Norbert.Lataille@m4x.org)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
@@ -50,18 +53,13 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(JBossStreamMessage.class);
+   
+   
    public static final byte TYPE = 6;
 
    // Attributes ----------------------------------------------------
-
-   private int position;
-
-   private int offset;
-
-   //private int size;
-   
-   private List<Object> list = new ArrayList<Object>();
-   
+ 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -74,12 +72,12 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       super(JBossStreamMessage.TYPE);
    }
    
-   public JBossStreamMessage(org.jboss.messaging.core.message.Message message, ClientSession session)
+   public JBossStreamMessage(final org.jboss.messaging.core.message.Message message, final ClientSession session)
    {
       super(message, session);
    }
    
-   public JBossStreamMessage(StreamMessage foreign) throws JMSException
+   public JBossStreamMessage(final StreamMessage foreign) throws JMSException
    {
       super(foreign, JBossStreamMessage.TYPE);
       
@@ -113,38 +111,23 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       checkRead();
       try
       {
-         Object value = list.get(position);
+         byte type = body.getByte();
          
-         offset = 0;
-         
-         boolean result;
-
-         if (value == null)
+         switch (type)
          {
-            throw new NullPointerException("Value is null");
+            case DataConstants.BOOLEAN:
+               return body.getBoolean();
+            case DataConstants.STRING:
+               String s = body.getNullableString();
+               return Boolean.valueOf(s);
+            default:
+               throw new MessageFormatException("Invalid conversion");           
          }
-         else if (value instanceof Boolean)
-         {            
-            result = ((Boolean)value).booleanValue();
-         }
-         else if (value instanceof String)
-         {
-            result = Boolean.valueOf((String) value).booleanValue();
-         }
-         else
-         {
-            throw new MessageFormatException("Invalid conversion");
-         }
-         
-         position++;
-         
-         return result;
       }
-      catch (IndexOutOfBoundsException e)
+      catch (BufferUnderflowException e)
       {
          throw new MessageEOFException("");
       }
-
    }
 
    public byte readByte() throws JMSException
@@ -152,34 +135,19 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       checkRead();
       try
       {
-         Object value = list.get(position);
-         
-         offset = 0;
-         
-         byte result;
-         
-         if (value == null)
+         byte type = body.getByte();
+         switch (type)
          {
-            throw new NullPointerException("Value is null");
+            case DataConstants.BYTE:
+               return body.getByte();
+            case DataConstants.STRING:
+               String s = body.getNullableString();
+               return Byte.parseByte(s);
+            default:
+               throw new MessageFormatException("Invalid conversion");           
          }
-         else if (value instanceof Byte)
-         {
-            result =  ((Byte) value).byteValue();
-         }
-         else if (value instanceof String)
-         {
-            result = Byte.parseByte((String) value);
-         }
-         else
-         {
-            throw new MessageFormatException("Invalid conversion");
-         }
-         
-         position++;
-         
-         return result;
       }
-      catch (IndexOutOfBoundsException e)
+      catch (BufferUnderflowException e)
       {
          throw new MessageEOFException("");
       }
@@ -190,38 +158,21 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       checkRead();
       try
       {
-         Object value = list.get(position);
-         
-         short result;
-         
-         offset = 0;
-
-         if (value == null)
+         byte type = body.getByte();
+         switch (type)
          {
-            throw new NullPointerException("Value is null");
+            case DataConstants.BYTE:
+               return body.getByte();
+            case DataConstants.SHORT:
+               return body.getShort();
+            case DataConstants.STRING:
+               String s = body.getNullableString();
+               return Short.parseShort(s);
+            default:
+               throw new MessageFormatException("Invalid conversion");           
          }
-         else if (value instanceof Byte)
-         {
-            result = ((Byte) value).shortValue();
-         }
-         else if (value instanceof Short)
-         {
-            result = ((Short) value).shortValue();
-         }
-         else if (value instanceof String)
-         {
-            result = Short.parseShort((String) value);
-         }
-         else
-         {
-            throw new MessageFormatException("Invalid conversion");
-         }
-         
-         position++;
-         
-         return result;         
       }
-      catch (IndexOutOfBoundsException e)
+      catch (BufferUnderflowException e)
       {
          throw new MessageEOFException("");
       }
@@ -232,30 +183,16 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       checkRead();
       try
       {
-         Object value = list.get(position);
-         
-         char result;
-         
-         offset = 0;
-
-         if (value == null)
+         byte type = body.getByte();
+         switch (type)
          {
-            throw new NullPointerException("Value is null");
+            case DataConstants.CHAR:
+               return body.getChar();
+            default:
+               throw new MessageFormatException("Invalid conversion");           
          }
-         else if (value instanceof Character)
-         {
-            result = ((Character) value).charValue();
-         }
-         else
-         {
-            throw new MessageFormatException("Invalid conversion");
-         }
-         
-         position++;
-         
-         return result;
       }
-      catch (IndexOutOfBoundsException e)
+      catch (BufferUnderflowException e)
       {
          throw new MessageEOFException("");
       }
@@ -266,42 +203,23 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       checkRead();
       try
       {
-         Object value = list.get(position);
-         
-         int result;
-         
-         offset = 0;
-
-         if (value == null)
+         byte type = body.getByte();
+         switch (type)
          {
-            throw new NullPointerException("Value is null");
+            case DataConstants.BYTE:
+               return body.getByte();
+            case DataConstants.SHORT:
+               return body.getShort();
+            case DataConstants.INT:
+               return body.getInt();
+            case DataConstants.STRING:
+               String s = body.getNullableString();
+               return Integer.parseInt(s);
+            default:
+               throw new MessageFormatException("Invalid conversion");           
          }
-         else if (value instanceof Byte)
-         {
-            result = ((Byte) value).intValue();
-         }
-         else if (value instanceof Short)
-         {
-            result = ((Short) value).intValue();
-         }
-         else if (value instanceof Integer)
-         {
-            result = ((Integer) value).intValue();
-         }
-         else if (value instanceof String)
-         {
-            result = Integer.parseInt((String) value);
-         }
-         else
-         {
-            throw new MessageFormatException("Invalid conversion");
-         }
-         
-         position++;
-         
-         return result;
       }
-      catch (IndexOutOfBoundsException e)
+      catch (BufferUnderflowException e)
       {
          throw new MessageEOFException("");
       }
@@ -312,46 +230,25 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       checkRead();
       try
       {
-         Object value = list.get(position);
-         
-         long result;
-         
-         offset = 0;
-
-         if (value == null)
+         byte type = body.getByte();
+         switch (type)
          {
-            throw new NullPointerException("Value is null");
+            case DataConstants.BYTE:
+               return body.getByte();
+            case DataConstants.SHORT:
+               return body.getShort();
+            case DataConstants.INT:
+               return body.getInt();
+            case DataConstants.LONG:
+               return body.getLong();
+            case DataConstants.STRING:
+               String s = body.getNullableString();
+               return Long.parseLong(s);
+            default:
+               throw new MessageFormatException("Invalid conversion");           
          }
-         else if (value instanceof Byte)
-         {
-            result = ((Byte) value).longValue();
-         }
-         else if (value instanceof Short)
-         {
-            result = ((Short) value).longValue();
-         }
-         else if (value instanceof Integer)
-         {
-            result = ((Integer) value).longValue();
-         }
-         else if (value instanceof Long)
-         {
-            result = ((Long) value).longValue();
-         }
-         else if (value instanceof String)
-         {
-            result = Long.parseLong((String) value);
-         }
-         else
-         {
-            throw new MessageFormatException("Invalid conversion");
-         }
-         
-         position++;
-         
-         return result;
       }
-      catch (IndexOutOfBoundsException e)
+      catch (BufferUnderflowException e)
       {
          throw new MessageEOFException("");
       }
@@ -362,34 +259,19 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       checkRead();
       try
       {
-         Object value = list.get(position);
-         
-         float result;
-         
-         offset = 0;
-
-         if (value == null)
+         byte type = body.getByte();
+         switch (type)
          {
-            throw new NullPointerException("Value is null");
+            case DataConstants.FLOAT:
+               return body.getFloat();
+            case DataConstants.STRING:
+               String s = body.getNullableString();
+               return Float.parseFloat(s);
+            default:
+               throw new MessageFormatException("Invalid conversion");           
          }
-         else if (value instanceof Float)
-         {
-            result = ((Float) value).floatValue();
-         }
-         else if (value instanceof String)
-         {
-            result = Float.parseFloat((String) value);
-         }
-         else
-         {
-            throw new MessageFormatException("Invalid conversion");
-         }
-         
-         position++;
-         
-         return result;
       }
-      catch (IndexOutOfBoundsException e)
+      catch (BufferUnderflowException e)
       {
          throw new MessageEOFException("");
       }
@@ -400,339 +282,297 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       checkRead();
       try
       {
-         Object value = list.get(position);
-         
-         offset = 0;
-         
-         double result;
-
-         if (value == null)
+         byte type = body.getByte();
+         switch (type)
          {
-            throw new NullPointerException("Value is null");
+            case DataConstants.FLOAT:
+               return body.getFloat();
+            case DataConstants.DOUBLE:
+               return body.getDouble();
+            case DataConstants.STRING:
+               String s = body.getNullableString();
+               return Double.parseDouble(s);
+            default:
+               throw new MessageFormatException("Invalid conversion: " + type);           
          }
-         else if (value instanceof Float)
-         {
-            result = ((Float) value).doubleValue();
-         }
-         else if (value instanceof Double)
-         {
-            result = ((Double) value).doubleValue();
-         }
-         else if (value instanceof String)
-         {
-            result = Double.parseDouble((String) value);
-         }
-         else
-         {
-            throw new MessageFormatException("Invalid conversion");
-         }
-         
-         position++;
-         
-         return result;
       }
-      catch (IndexOutOfBoundsException e)
+      catch (BufferUnderflowException e)
       {
          throw new MessageEOFException("");
       }
    }
-
+   
    public String readString() throws JMSException
    {
       checkRead();
       try
       {
-         Object value = list.get(position);
-         
-         String result;
-         
-         offset = 0;
-
-         if (value == null)
+         byte type = body.getByte();
+         switch (type)
          {
-            result = null;
+            case DataConstants.BOOLEAN:
+               return String.valueOf(body.getBoolean());
+            case DataConstants.BYTE:
+               return String.valueOf(body.getByte());
+            case DataConstants.SHORT:
+               return String.valueOf(body.getShort());
+            case DataConstants.CHAR:
+               return String.valueOf(body.getChar());
+            case DataConstants.INT:
+               return String.valueOf(body.getInt());
+            case DataConstants.LONG:
+               return String.valueOf(body.getLong());
+            case DataConstants.FLOAT:
+               return String.valueOf(body.getFloat());
+            case DataConstants.DOUBLE:
+               return String.valueOf(body.getDouble());
+            case DataConstants.STRING:
+               return body.getNullableString();
+            default:
+               throw new MessageFormatException("Invalid conversion");           
          }
-         else if (value instanceof Boolean)
-         {
-            result = ((Boolean) value).toString();
-         }
-         else if (value instanceof Byte)
-         {
-            result = ((Byte) value).toString();
-         }
-         else if (value instanceof Short)
-         {
-            result = ((Short) value).toString();
-         }
-         else if (value instanceof Character)
-         {
-            result = ((Character) value).toString();
-         }
-         else if (value instanceof Integer)
-         {
-            result = ((Integer) value).toString();
-         }
-         else if (value instanceof Long)
-         {
-            result = ((Long) value).toString();
-         }
-         else if (value instanceof Float)
-         {
-            result = ((Float) value).toString();
-         }
-         else if (value instanceof Double)
-         {
-            result = ((Double) value).toString();
-         }
-         else if (value instanceof String)
-         {
-            result =  (String) value;
-         }
-         else
-         {
-            throw new MessageFormatException("Invalid conversion");
-         }
-         
-         position++;
-         
-         return result;
       }
-      catch (IndexOutOfBoundsException e)
+      catch (BufferUnderflowException e)
       {
          throw new MessageEOFException("");
       }
    }
 
-   public int readBytes(byte[] value) throws JMSException
+   private int len;
+   
+   public int readBytes(final byte[] value) throws JMSException
    {
       checkRead();
       try
       {
-         Object myObj = list.get(position);
-         
-         if (myObj == null)
+         if (len == -1)
          {
-            throw new NullPointerException("Value is null");
-         }
-         
-         if (!(myObj instanceof byte[]))
-         {
-            throw new MessageFormatException("Invalid conversion");
-         }
-         
-         byte[] obj = (byte[]) myObj;
-
-         if (obj.length == 0)
-         {
-            position++;
-            offset = 0;
-            return 0;
-         }
-
-         if (offset >= obj.length)
-         {
-            position++;
-            offset = 0;
+            len = 0;
             return -1;
          }
-
-         if (obj.length - offset < value.length)
+         else if (len == 0)
          {
-            for (int i = 0; i < obj.length; i++)
-               value[i] = obj[i + offset];
-
-            position++;
-            offset = 0;
-
-            return obj.length - offset;
-         }
-         else
+            byte type = body.getByte();
+            if (type != DataConstants.BYTES)
+            {
+               throw new MessageFormatException("Invalid conversion"); 
+            }
+            len = body.getInt();       
+         }     
+         int read = Math.min(value.length, len);
+         body.getBytes(value, 0, read);
+         len -= read;
+         if (len == 0)
          {
-            for (int i = 0; i < value.length; i++)
-               value[i] = obj[i + offset];
-            offset += value.length;
-
-            return value.length;
+            len = -1;
          }
-
+         return read;      
       }
-      catch (IndexOutOfBoundsException e)
+      catch (BufferUnderflowException e)
       {
          throw new MessageEOFException("");
       }
    }
-
+   
    public Object readObject() throws JMSException
    {
       checkRead();
-      try
+      byte type = body.getByte();
+      switch (type)
       {
-         Object value = list.get(position);
-         position++;
-         offset = 0;
-
-         return value;
-      }
-      catch (IndexOutOfBoundsException e)
-      {
-         throw new MessageEOFException("");
-      }
-   }
-
-   public void writeBoolean(boolean value) throws JMSException
-   {
-      checkWrite();
-      list.add(Boolean.valueOf(value));
-   }
-
-   public void writeByte(byte value) throws JMSException
-   {
-      checkWrite();
-      list.add(Byte.valueOf(value));
-   }
-
-   public void writeShort(short value) throws JMSException
-   {      
-      checkWrite();
-      list.add(Short.valueOf(value));
-   }
-
-   public void writeChar(char value) throws JMSException
-   {
-      checkWrite();
-      list.add(Character.valueOf(value));
-   }
-
-   public void writeInt(int value) throws JMSException
-   {
-      checkWrite();
-      list.add(Integer.valueOf(value));
-   }
-
-   public void writeLong(long value) throws JMSException
-   {
-      checkWrite();
-      list.add(Long.valueOf(value));
-   }
-
-   public void writeFloat(float value) throws JMSException
-   {
-      checkWrite();
-      list.add(Float.valueOf(value));
-   }
-
-   public void writeDouble(double value) throws JMSException
-   {
-      checkWrite();
-      list.add(Double.valueOf(value));
-   }
-
-   public void writeString(String value) throws JMSException
-   {
-      checkWrite();
-      if (value == null)
-      {
-         list.add(null);
-      }
-      else
-      {
-         list.add(value);
+         case DataConstants.BOOLEAN:
+            return body.getBoolean();
+         case DataConstants.BYTE:
+            return body.getByte();
+         case DataConstants.SHORT:
+            return body.getShort();
+         case DataConstants.CHAR:
+            return body.getChar();
+         case DataConstants.INT:
+            return body.getInt();
+         case DataConstants.LONG:
+            return body.getLong();
+         case DataConstants.FLOAT:
+            return body.getFloat();
+         case DataConstants.DOUBLE:
+            return body.getDouble();
+         case DataConstants.STRING:
+            return body.getNullableString();         
+         case DataConstants.BYTES:
+            int len = body.getInt();
+            byte[] bytes = new byte[len];
+            body.getBytes(bytes);
+            return bytes;
+         default:
+            throw new MessageFormatException("Invalid conversion");           
       }
    }
 
-   public void writeBytes(byte[] value) throws JMSException
+   public void writeBoolean(final boolean value) throws JMSException
    {
       checkWrite();
-      list.add(value.clone());
+      body.putByte(DataConstants.BOOLEAN);
+      body.putBoolean(value);
    }
 
-   public void writeBytes(byte[] value, int offset, int length) throws JMSException
+   public void writeByte(final byte value) throws JMSException
    {
       checkWrite();
-      if (offset + length > value.length)
+      body.putByte(DataConstants.BYTE);
+      body.putByte(value);
+   }
+
+   public void writeShort(final short value) throws JMSException
+   {
+      checkWrite();
+      body.putByte(DataConstants.SHORT);
+      body.putShort(value);
+   }
+
+   public void writeChar(final char value) throws JMSException
+   {
+      checkWrite();
+      body.putByte(DataConstants.CHAR);
+      body.putChar(value);
+   }
+
+   public void writeInt(final int value) throws JMSException
+   {
+      checkWrite();
+      body.putByte(DataConstants.INT);
+      body.putInt(value);
+   }
+
+   public void writeLong(final long value) throws JMSException
+   {
+      checkWrite();
+      body.putByte(DataConstants.LONG);
+      body.putLong(value);
+   }
+
+   public void writeFloat(final float value) throws JMSException
+   {
+      checkWrite();
+      body.putByte(DataConstants.FLOAT);
+      body.putFloat(value);
+   }
+
+   public void writeDouble(final double value) throws JMSException
+   {
+      checkWrite();
+      body.putByte(DataConstants.DOUBLE);
+      body.putDouble(value);
+   }
+   
+   public void writeString(final String value) throws JMSException
+   {
+      checkWrite();
+      body.putByte(DataConstants.STRING);
+      body.putNullableString(value);
+   }
+
+   public void writeBytes(final byte[] value) throws JMSException
+   {
+      checkWrite();
+      body.putByte(DataConstants.BYTES);
+      body.putInt(value.length);
+      body.putBytes(value);
+   }
+
+   public void writeBytes(final byte[] value, final int offset, final int length)
+         throws JMSException
+   {
+      checkWrite();
+      body.putByte(DataConstants.BYTES);
+      body.putInt(length);
+      body.putBytes(value, offset, length);
+   }
+
+   public void writeObject(final Object value) throws JMSException
+   {
+      if (value == null) 
       {
-         throw new JMSException("Invalid offset/length");
+         throw new NullPointerException("Attempt to write a null value");
       }
-      
-      byte[] newBytes = new byte[length];
-      
-      System.arraycopy(value, offset, newBytes, 0, length);
-
-      list.add(newBytes);
-   }
-
-   public void writeObject(Object value) throws JMSException
-   {
-      checkWrite();
-      if (value == null)
-         list.add(null);
+      if (value instanceof String)
+      {
+         writeString((String)value);
+      }
       else if (value instanceof Boolean)
-         list.add(value);
+      {
+         writeBoolean((Boolean)value);
+      }
       else if (value instanceof Byte)
-         list.add(value);
+      {
+         writeByte((Byte)value);
+      }
       else if (value instanceof Short)
-         list.add(value);
-      else if (value instanceof Character)
-         list.add(value);
+      {
+         writeShort((Short)value);
+      }
       else if (value instanceof Integer)
-         list.add(value);
+      {
+         writeInt((Integer)value);
+      }
       else if (value instanceof Long)
-         list.add(value);
+      {
+         writeLong((Long)value);
+      }
       else if (value instanceof Float)
-         list.add(value);
+      {
+         writeFloat((Float)value);
+      }
       else if (value instanceof Double)
-         list.add(value);
-      else if (value instanceof String)
-         list.add(value);
+      {
+         writeDouble((Double)value);
+      }
       else if (value instanceof byte[])
-         list.add(((byte[]) value).clone());
+      {
+         writeBytes((byte[])value);
+      }
+      else if (value instanceof Character)
+      {
+         this.writeChar((Character)value);
+      }
       else
-         throw new MessageFormatException("Invalid object type");
+      {
+         throw new MessageFormatException("Invalid object type: " + value.getClass());
+      }
    }
 
    public void reset() throws JMSException
-   {      
-      position = 0;
-      offset = 0;
-      readOnly = true;
+   {
+      if (!readOnly)
+      {
+         readOnly = true;
+         
+         body.flip();
+      }
+      else
+      {
+         body.rewind();
+      }
    }
 
    // JBossMessage overrides ----------------------------------------
-
+  
    public void clearBody() throws JMSException
    {
       super.clearBody();
       
-      list.clear();
-      position = 0;
-      offset = 0;
+      body = new BufferWrapper(1024);
    }
    
    public void doBeforeSend() throws Exception
    {
       reset();
-
-      beforeSend();
+      
+      message.setBody(body);
    }
-
-   public void doBeforeReceive() throws Exception
-   {
-      beforeReceive();
-   }
-     
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
-   protected void writePayload(DataOutputStream daos) throws Exception
-   {
-      StreamUtils.writeList(daos, list);
-   }
-
-   protected void readPayload(DataInputStream dais) throws Exception
-   {
-      list = StreamUtils.readList(dais);
-   }
 
    // Private -------------------------------------------------------
    

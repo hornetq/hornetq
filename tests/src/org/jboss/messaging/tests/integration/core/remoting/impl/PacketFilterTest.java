@@ -7,8 +7,6 @@
 
 package org.jboss.messaging.tests.integration.core.remoting.impl;
 
-import static org.jboss.messaging.core.remoting.TransportType.INVM;
-
 import java.util.UUID;
 
 import junit.framework.TestCase;
@@ -18,12 +16,14 @@ import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
@@ -45,7 +45,8 @@ public class PacketFilterTest  extends TestCase
    protected void setUp() throws Exception
    {
       ConfigurationImpl config = new ConfigurationImpl();
-      config.setTransport(INVM);
+      config.setTransport(TransportType.TCP);
+      config.setHost("localhost");      
       server = new MessagingServerImpl(config);
       server.start();
    }
@@ -64,7 +65,9 @@ public class PacketFilterTest  extends TestCase
       DummyInterceptor interceptorA = null;
       DummyInterceptorB interceptorB = null;
 
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(new LocationImpl(0));
+      Location location = new LocationImpl(TransportType.TCP, "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
+      
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location);
       ClientConnection conn = null;
       try
       {
@@ -170,8 +173,9 @@ public class PacketFilterTest  extends TestCase
          
          interceptor.sendException=false;
 
-
-         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(new LocationImpl(0));
+         Location location = new LocationImpl(TransportType.TCP, "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
+         
+         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location);
          conn = cf.createConnection();
          conn.start();
          ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
@@ -180,17 +184,17 @@ public class PacketFilterTest  extends TestCase
          
          interceptor.changeMessage = true;
          MessageImpl message = new MessageImpl(JBossTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte) 1);
-         message.setPayload(msg.getBytes());
+         message.getBody().putString(msg);
          producer.send(message);
          
          ClientConsumer consumer = session.createConsumer(QUEUE1, null, false, false, true);
-         Message jmsMsg = consumer.receive(100000);
-         assertEquals(jmsMsg.getHeader("DummyInterceptor"), "was here");
+         Message m = consumer.receive(100000);
+         assertEquals(m.getProperty(new SimpleString("DummyInterceptor")), new SimpleString("was here"));
          
          
-         assertNotNull(jmsMsg);
+         assertNotNull(m);
          
-         assertEquals(msg, new String(jmsMsg.getPayload()));
+         assertEquals(msg, m.getBody().getString());
       }
       finally
       {

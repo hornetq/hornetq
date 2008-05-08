@@ -21,12 +21,7 @@
  */
 package org.jboss.messaging.jms.client;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.EOFException;
-import java.io.IOException;
+import java.nio.BufferUnderflowException;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
@@ -34,6 +29,8 @@ import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 
 import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
 
 /**
  * This class implements javax.jms.BytesMessage.
@@ -51,20 +48,11 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
 {
    // Static -------------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(JBossBytesMessage.class);
+
    public static final byte TYPE = 4;
 
    // Attributes ----------------------------------------------------
-
-   // TODO - use abstraction of MINA byte buffer to write directly and avoid
-   // unnecessary copying
-
-   private ByteArrayOutputStream baos;
-   private DataOutputStream dos;
-
-   private ByteArrayInputStream bais;
-   private DataInputStream dis;
-
-   private byte[] data;
 
    // Constructor ---------------------------------------------------
 
@@ -76,19 +64,24 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       super(JBossBytesMessage.TYPE);
    }
 
-   public JBossBytesMessage(org.jboss.messaging.core.message.Message message, ClientSession session)
+   /*
+    * Constructor on receipt at client side
+    */
+   public JBossBytesMessage(
+         final org.jboss.messaging.core.message.Message message,
+         final ClientSession session)
    {
       super(message, session);
    }
 
-   public JBossBytesMessage(BytesMessage foreign) throws JMSException
+   /*
+    * Foreign message constructor
+    */
+   public JBossBytesMessage(final BytesMessage foreign) throws JMSException
    {
       super(foreign, JBossBytesMessage.TYPE);
 
       foreign.reset();
-
-      baos = new ByteArrayOutputStream();
-      dos = new DataOutputStream(baos);
 
       byte[] buffer = new byte[1024];
       int n = foreign.readBytes(buffer);
@@ -106,17 +99,11 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       checkRead();
       try
       {
-         return dis.readBoolean();
+         return body.getBoolean();
       }
-      catch (EOFException e)
+      catch (BufferUnderflowException e)
       {
          throw new MessageEOFException("");
-      }
-      catch (IOException e)
-      {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
-         throw je;
       }
    }
 
@@ -125,17 +112,11 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       checkRead();
       try
       {
-         return dis.readByte();
+         return body.getByte();
       }
-      catch (EOFException e)
+      catch (BufferUnderflowException e)
       {
          throw new MessageEOFException("");
-      }
-      catch (IOException e)
-      {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
-         throw je;
       }
    }
 
@@ -144,17 +125,11 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       checkRead();
       try
       {
-         return dis.readUnsignedByte();
+         return body.getUnsignedByte();
       }
-      catch (EOFException e)
+      catch (BufferUnderflowException e)
       {
          throw new MessageEOFException("");
-      }
-      catch (IOException e)
-      {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
-         throw je;
       }
    }
 
@@ -163,17 +138,11 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       checkRead();
       try
       {
-         return dis.readShort();
+         return body.getShort();
       }
-      catch (EOFException e)
+      catch (BufferUnderflowException e)
       {
          throw new MessageEOFException("");
-      }
-      catch (IOException e)
-      {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
-         throw je;
       }
    }
 
@@ -182,17 +151,11 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       checkRead();
       try
       {
-         return dis.readUnsignedShort();
+         return body.getUnsignedShort();
       }
-      catch (EOFException e)
+      catch (BufferUnderflowException e)
       {
          throw new MessageEOFException("");
-      }
-      catch (IOException e)
-      {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
-         throw je;
       }
    }
 
@@ -201,17 +164,11 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       checkRead();
       try
       {
-         return dis.readChar();
+         return body.getChar();
       }
-      catch (EOFException e)
+      catch (BufferUnderflowException e)
       {
          throw new MessageEOFException("");
-      }
-      catch (IOException e)
-      {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
-         throw je;
       }
    }
 
@@ -220,17 +177,11 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       checkRead();
       try
       {
-         return dis.readInt();
+         return body.getInt();
       }
-      catch (EOFException e)
+      catch (BufferUnderflowException e)
       {
          throw new MessageEOFException("");
-      }
-      catch (IOException e)
-      {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
-         throw je;
       }
    }
 
@@ -239,17 +190,11 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       checkRead();
       try
       {
-         return dis.readLong();
+         return body.getLong();
       }
-      catch (EOFException e)
+      catch (BufferUnderflowException e)
       {
          throw new MessageEOFException("");
-      }
-      catch (IOException e)
-      {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
-         throw je;
       }
    }
 
@@ -258,17 +203,11 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       checkRead();
       try
       {
-         return dis.readFloat();
+         return body.getFloat();
       }
-      catch (EOFException e)
+      catch (BufferUnderflowException e)
       {
          throw new MessageEOFException("");
-      }
-      catch (IOException e)
-      {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
-         throw je;
       }
    }
 
@@ -277,17 +216,11 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       checkRead();
       try
       {
-         return dis.readDouble();
+         return body.getDouble();
       }
-      catch (EOFException e)
+      catch (BufferUnderflowException e)
       {
          throw new MessageEOFException("");
-      }
-      catch (IOException e)
-      {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
-         throw je;
       }
    }
 
@@ -296,346 +229,200 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       checkRead();
       try
       {
-         return dis.readUTF();
+         return body.getUTF();
       }
-      catch (EOFException e)
+      catch (BufferUnderflowException e)
       {
          throw new MessageEOFException("");
       }
-      catch (IOException e)
+      catch (Exception e)
       {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
+         JMSException je = new JMSException("Failed to get UTF");
+         je.setLinkedException(e);
          throw je;
       }
    }
 
-   public int readBytes(byte[] value) throws JMSException
+   public int readBytes(final byte[] value) throws JMSException
+   {
+      return readBytes(value, value.length);
+   }
+
+   public int readBytes(final byte[] value, final int length)
+         throws JMSException
    {
       checkRead();
-      try
+
+      if (body.remaining() == 0) { return -1; }
+
+      int read = Math.min(length, body.remaining());
+
+      if (read != 0)
       {
-         return dis.read(value);
+         body.getBytes(value, 0, read);
       }
-      catch (IOException e)
-      {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
-         throw je;
-      }
+
+      return read;
    }
 
-   public int readBytes(byte[] value, int length) throws JMSException
+   public void writeBoolean(final boolean value) throws JMSException
    {
-      checkRead();
-      try
-      {
-         return dis.read(value, 0, length);
-      }
-      catch (IOException e)
-      {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
-         throw je;
-      }
+      checkWrite();
+      body.putBoolean(value);
    }
 
-   public void writeBoolean(boolean value) throws JMSException
+   public void writeByte(final byte value) throws JMSException
+   {
+      checkWrite();
+      body.putByte(value);
+   }
+
+   public void writeShort(final short value) throws JMSException
+   {
+      checkWrite();
+      body.putShort(value);
+   }
+
+   public void writeChar(final char value) throws JMSException
+   {
+      checkWrite();
+      body.putChar(value);
+   }
+
+   public void writeInt(final int value) throws JMSException
+   {
+      checkWrite();
+      body.putInt(value);
+   }
+
+   public void writeLong(final long value) throws JMSException
+   {
+      checkWrite();
+      body.putLong(value);
+   }
+
+   public void writeFloat(final float value) throws JMSException
+   {
+      checkWrite();
+      body.putFloat(value);
+   }
+
+   public void writeDouble(final double value) throws JMSException
+   {
+      checkWrite();
+      body.putDouble(value);
+   }
+
+   public void writeUTF(final String value) throws JMSException
    {
       checkWrite();
       try
       {
-         dos.writeBoolean(value);
+         body.putUTF(value);
       }
-      catch (IOException e)
+      catch (Exception e)
       {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
+         JMSException je = new JMSException("Failed to write UTF");
+         je.setLinkedException(e);
          throw je;
       }
    }
 
-   public void writeByte(byte value) throws JMSException
+   public void writeBytes(final byte[] value) throws JMSException
    {
       checkWrite();
-      try
-      {
-         dos.writeByte(value);
-      }
-      catch (IOException e)
-      {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
-         throw je;
-      }
+      body.putBytes(value);
    }
 
-   public void writeShort(short value) throws JMSException
-   {
-      checkWrite();
-      try
-      {
-         dos.writeShort(value);
-      }
-      catch (IOException e)
-      {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
-         throw je;
-      }
-   }
-
-   public void writeChar(char value) throws JMSException
-   {
-      checkWrite();
-      try
-      {
-         dos.writeChar(value);
-      }
-      catch (IOException e)
-      {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
-         throw je;
-      }
-   }
-
-   public void writeInt(int value) throws JMSException
-   {
-      checkWrite();
-      try
-      {
-         dos.writeInt(value);
-      }
-      catch (IOException e)
-      {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
-         throw je;
-      }
-   }
-
-   public void writeLong(long value) throws JMSException
-   {
-      checkWrite();
-      try
-      {
-         dos.writeLong(value);
-      }
-      catch (IOException e)
-      {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
-         throw je;
-      }
-   }
-
-   public void writeFloat(float value) throws JMSException
-   {
-      checkWrite();
-      try
-      {
-         dos.writeFloat(value);
-      }
-      catch (IOException e)
-      {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
-         throw je;
-      }
-   }
-
-   public void writeDouble(double value) throws JMSException
-   {
-      checkWrite();
-      try
-      {
-         dos.writeDouble(value);
-      }
-      catch (IOException e)
-      {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
-         throw je;
-      }
-   }
-
-   public void writeUTF(String value) throws JMSException
-   {
-      checkWrite();
-      try
-      {
-         dos.writeUTF((String) value);
-      }
-      catch (IOException e)
-      {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
-         throw je;
-      }
-   }
-
-   public void writeBytes(byte[] value) throws JMSException
-   {
-      checkWrite();
-      try
-      {
-         dos.write(value, 0, value.length);
-      }
-      catch (IOException e)
-      {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
-         throw je;
-      }
-   }
-
-   public void writeBytes(byte[] value, int offset, int length)
+   public void writeBytes(final byte[] value, final int offset, final int length)
          throws JMSException
    {
       checkWrite();
-      try
-      {
-         dos.write(value, offset, length);
-      }
-      catch (IOException e)
-      {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
-         throw je;
-      }
+      body.putBytes(value, offset, length);
    }
 
-   public void writeObject(Object value) throws JMSException
+   public void writeObject(final Object value) throws JMSException
    {
-      checkWrite();
-      try
+      if (value == null) { throw new NullPointerException(
+            "Attempt to write a null value"); }
+      if (value instanceof String)
       {
-         if (value == null) { throw new NullPointerException(
-               "Attempt to write a new value"); }
-         if (value instanceof String)
-         {
-            dos.writeUTF((String) value);
-         }
-         else if (value instanceof Boolean)
-         {
-            dos.writeBoolean(((Boolean) value).booleanValue());
-         }
-         else if (value instanceof Byte)
-         {
-            dos.writeByte(((Byte) value).byteValue());
-         }
-         else if (value instanceof Short)
-         {
-            dos.writeShort(((Short) value).shortValue());
-         }
-         else if (value instanceof Integer)
-         {
-            dos.writeInt(((Integer) value).intValue());
-         }
-         else if (value instanceof Long)
-         {
-            dos.writeLong(((Long) value).longValue());
-         }
-         else if (value instanceof Float)
-         {
-            dos.writeFloat(((Float) value).floatValue());
-         }
-         else if (value instanceof Double)
-         {
-            dos.writeDouble(((Double) value).doubleValue());
-         }
-         else if (value instanceof byte[])
-         {
-            dos.write((byte[]) value, 0, ((byte[]) value).length);
-         }
-         else
-         {
-            throw new MessageFormatException("Invalid object for properties");
-         }
+         writeUTF((String) value);
       }
-      catch (IOException e)
+      else if (value instanceof Boolean)
       {
-         JMSException je = new JMSException("IOException");
-         je.initCause(e);
-         throw je;
+         writeBoolean((Boolean) value);
+      }
+      else if (value instanceof Byte)
+      {
+         writeByte((Byte) value);
+      }
+      else if (value instanceof Short)
+      {
+         writeShort((Short) value);
+      }
+      else if (value instanceof Integer)
+      {
+         writeInt((Integer) value);
+      }
+      else if (value instanceof Long)
+      {
+         writeLong((Long) value);
+      }
+      else if (value instanceof Float)
+      {
+         writeFloat((Float) value);
+      }
+      else if (value instanceof Double)
+      {
+         writeDouble((Double) value);
+      }
+      else if (value instanceof byte[])
+      {
+         writeBytes((byte[]) value);
+      }
+      else
+      {
+         throw new MessageFormatException("Invalid object for properties");
       }
    }
 
    public void reset() throws JMSException
    {
-      try
+      if (!readOnly)
       {
-         if (baos != null)
-         {
-            dos.flush();
+         readOnly = true;
 
-            data = baos.toByteArray();
-
-            baos.close();
-         }
-         baos = null;
-         bais = null;
-         dis = null;
-         dos = null;
+         body.flip();
       }
-      catch (Exception e)
+      else
       {
-         JMSException e2 = new JMSException(e.getMessage());
-         e2.setStackTrace(e.getStackTrace());
-         throw e2;
+         body.rewind();
       }
-      
-      readOnly = true;
    }
 
    // JBossMessage overrides ----------------------------------------
-  
+
    public void clearBody() throws JMSException
    {
       super.clearBody();
-      
-      try
-      {
-         if (baos != null)
-         {
-            baos.close();
-         }
-         else
-         {
-            if (bais != null)
-            {
-               bais.close();
-            }
-         }
-      }
-      catch (IOException e)
-      {
-         // don't throw an exception
-      }
 
-      baos = new ByteArrayOutputStream();
-      dos = new DataOutputStream(baos);
-      data = null;
-      bais = null;
-      dis = null;
+      body = new BufferWrapper(1024);
    }
 
    public long getBodyLength() throws JMSException
    {
       checkRead();
 
-      if (data != null)
-      {
-         return data.length;
-      }
-      else
-      {
-         return 0;
-      }
+      return body.limit();
    }
-   
-   
+
+   public void doBeforeSend() throws Exception
+   {
+      reset();
+
+      message.setBody(body);
+   }
 
    // Public --------------------------------------------------------
 
@@ -643,68 +430,10 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
    {
       return JBossBytesMessage.TYPE;
    }
-   
-   public void doBeforeSend() throws Exception
-   {
-      reset();
-
-      beforeSend();
-   }
-
-   public void doBeforeReceive() throws Exception
-   {
-      beforeReceive();
-   }
-
 
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
-   protected void checkRead() throws JMSException
-   {
-      super.checkRead();
-      
-      if (bais == null)
-      {
-         bais = new ByteArrayInputStream(data);
-         dis = new DataInputStream(bais);
-      }
-   }
-   
-   protected void checkWrite() throws JMSException
-   {
-      super.checkWrite();
-      
-      if (baos == null)
-      {
-         baos = new ByteArrayOutputStream();
-         dos = new DataOutputStream(baos);
-      }
-   }
-   
-   protected void writePayload(DataOutputStream daos) throws Exception
-   {
-      if (data == null)
-      {
-         daos.writeInt(0);
-      }
-      else
-      {
-         daos.writeInt(data.length);
-
-         daos.write(data);
-      }
-   }
-
-   protected void readPayload(DataInputStream dais) throws Exception
-   {
-      int length = dais.readInt();
-
-      data = new byte[length];
-
-      dais.read(data);
-   }
 
    // Private -------------------------------------------------------
 

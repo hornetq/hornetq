@@ -6,11 +6,9 @@
  */
 package org.jboss.messaging.core.remoting.impl.codec;
 
-import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
-
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
-import org.jboss.messaging.util.DataConstants;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -36,19 +34,14 @@ public class ConnectionCreateSessionResponseMessageCodec extends
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   public int getBodyLength(final ConnectionCreateSessionResponseMessage packet)
-   {
-   	return SIZE_LONG;
-   }
-   
    @Override
-   protected void encodeBody(final ConnectionCreateSessionResponseMessage response, final RemotingBuffer out) throws Exception
+   protected void encodeBody(final ConnectionCreateSessionResponseMessage response, final MessagingBuffer out) throws Exception
    {
       out.putLong(response.getSessionID());
    }
 
    @Override
-   protected ConnectionCreateSessionResponseMessage decodeBody(final RemotingBuffer in)
+   protected ConnectionCreateSessionResponseMessage decodeBody(final MessagingBuffer in)
          throws Exception
    {
       return new ConnectionCreateSessionResponseMessage(in.getLong());

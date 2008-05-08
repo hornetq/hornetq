@@ -7,9 +7,9 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEQUEUE;
-import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
+import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -37,19 +37,9 @@ public class SessionCreateQueueMessageCodec extends AbstractPacketCodec<SessionC
    // Public --------------------------------------------------------
 
    // AbstractPacketCodec overrides ---------------------------------
-
-   public int getBodyLength(final SessionCreateQueueMessage packet) throws Exception
-   {   	
-   	SimpleString address = packet.getAddress();
-      SimpleString queueName = packet.getQueueName();
-      SimpleString filterString = packet.getFilterString();
-   	int bodyLength = SimpleString.sizeofString(address) + SimpleString.sizeofString(queueName) +
-   	SimpleString.sizeofNullableString(filterString) + 2 * SIZE_BOOLEAN;
-   	return bodyLength;
-   }
-   
+ 
    @Override
-   protected void encodeBody(final SessionCreateQueueMessage message, final RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionCreateQueueMessage message, final MessagingBuffer out) throws Exception
    {
       SimpleString address = message.getAddress();
       SimpleString queueName = message.getQueueName();
@@ -65,7 +55,7 @@ public class SessionCreateQueueMessageCodec extends AbstractPacketCodec<SessionC
    }
 
    @Override
-   protected SessionCreateQueueMessage decodeBody(final RemotingBuffer in)
+   protected SessionCreateQueueMessage decodeBody(final MessagingBuffer in)
          throws Exception
    {
       SimpleString address = in.getSimpleString();

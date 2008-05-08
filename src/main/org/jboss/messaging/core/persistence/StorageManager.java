@@ -50,14 +50,14 @@ public interface StorageManager extends MessagingComponent
    long generateTransactionID();
    
       
-   void storeMessage(SimpleString address, Message message) throws Exception;
+   void storeMessage(Message message) throws Exception;
    
    void storeAcknowledge(long queueID, long messageID) throws Exception;
    
    void storeDelete(long messageID) throws Exception;
     
    
-   void storeMessageTransactional(long txID, SimpleString address, Message message) throws Exception;
+   void storeMessageTransactional(long txID, Message message) throws Exception;
    
    void storeAcknowledgeTransactional(long txID, long queueID, long messageiD) throws Exception;
    

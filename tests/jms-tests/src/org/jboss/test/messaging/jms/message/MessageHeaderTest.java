@@ -565,9 +565,14 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          fail();
       } catch (MessageFormatException e) {}
 
+      log.info("** clearing props");
       m2.clearProperties();
 
+      log.info("** getting prop names");
       Enumeration en2 = m2.getPropertyNames();
+      log.info("** got prop names");
+      assertTrue(en2.hasMoreElements());
+      en2.nextElement();
       assertFalse(en2.hasMoreElements());
 
 
@@ -765,33 +770,34 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       ensureEquivalent(receivedMessage, (JBossMessage)message);
    }
    
-   public void testForeignJMSReplyTo() throws JMSException
-   {
-   	Message msg = queueProducerSession.createTextMessage();
-   	
-      JBossMessage jbossMessage = (JBossMessage)msg;
-      
-      Destination foreignDestination = new ForeignDestination();
-      
-      jbossMessage.setJMSReplyTo(foreignDestination);
-      
-      queueProducer.send(msg);
-      
-      Message receivedMessage = queueConsumer.receive(2000);
-
-      ensureEquivalent(receivedMessage, jbossMessage);
-   }
-   
-   public void testCopyForeignDestinationAndReplyTo() throws JMSException
-   {
-      Message foreignMessage = new SimpleJMSMessage();
-      foreignMessage.setJMSDestination(new ForeignDestination());
-      foreignMessage.setJMSReplyTo(new ForeignDestination());
-
-      JBossMessage copy = new JBossMessage(foreignMessage);
-
-      ensureEquivalent(foreignMessage, copy);
-   }
+// Invalid!!
+//   public void testForeignJMSReplyTo() throws JMSException
+//   {
+//   	Message msg = queueProducerSession.createTextMessage();
+//   	
+//      JBossMessage jbossMessage = (JBossMessage)msg;
+//      
+//      Destination foreignDestination = new ForeignDestination();
+//      
+//      jbossMessage.setJMSReplyTo(foreignDestination);
+//      
+//      queueProducer.send(msg);
+//      
+//      Message receivedMessage = queueConsumer.receive(2000);
+//
+//      ensureEquivalent(receivedMessage, jbossMessage);
+//   }
+//   
+//   public void testCopyForeignDestinationAndReplyTo() throws JMSException
+//   {
+//      Message foreignMessage = new SimpleJMSMessage();
+//      foreignMessage.setJMSDestination(new ForeignDestination());
+//      foreignMessage.setJMSReplyTo(new ForeignDestination());
+//
+//      JBossMessage copy = new JBossMessage(foreignMessage);
+//
+//      ensureEquivalent(foreignMessage, copy);
+//   }
 
    // Package protected ---------------------------------------------
 

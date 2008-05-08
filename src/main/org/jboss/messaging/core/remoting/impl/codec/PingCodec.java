@@ -7,10 +7,9 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PING;
-import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
-import org.jboss.messaging.util.DataConstants;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -36,13 +35,8 @@ public class PingCodec extends AbstractPacketCodec<Ping>
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   public int getBodyLength(final Ping packet) throws Exception
-   {
-   	return SIZE_LONG;
-   }
-   
    @Override
-   protected void encodeBody(final Ping packet, final RemotingBuffer out) throws Exception
+   protected void encodeBody(final Ping packet, final MessagingBuffer out) throws Exception
    {
       long clientSessionID = packet.getSessionID();
 
@@ -50,7 +44,7 @@ public class PingCodec extends AbstractPacketCodec<Ping>
    }
 
    @Override
-   protected Ping decodeBody(final RemotingBuffer in) throws Exception
+   protected Ping decodeBody(final MessagingBuffer in) throws Exception
    {
       long clientSessionID = in.getLong();
 

@@ -6,12 +6,9 @@
  */
 package org.jboss.messaging.core.remoting.impl.codec;
 
-import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
-import static org.jboss.messaging.util.DataConstants.SIZE_INT;
-
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
-import org.jboss.messaging.util.DataConstants;
+import org.jboss.messaging.util.MessagingBuffer;
 
 
 /**
@@ -40,15 +37,8 @@ public class SessionXAResponseMessageCodec extends AbstractPacketCodec<SessionXA
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   public int getBodyLength(final SessionXAResponseMessage packet) throws Exception
-   {   	
-   	int bodyLength = SIZE_BOOLEAN + SIZE_INT + sizeof(packet.getMessage());
-   	
-   	return bodyLength;
-   }
-   
    @Override
-   protected void encodeBody(final SessionXAResponseMessage message, final RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionXAResponseMessage message, final MessagingBuffer out) throws Exception
    {      
       out.putBoolean(message.isError());
       
@@ -58,7 +48,7 @@ public class SessionXAResponseMessageCodec extends AbstractPacketCodec<SessionXA
    }
 
    @Override
-   protected SessionXAResponseMessage decodeBody(final RemotingBuffer in)
+   protected SessionXAResponseMessage decodeBody(final MessagingBuffer in)
          throws Exception
    {
       boolean isError = in.getBoolean();

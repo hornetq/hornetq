@@ -23,6 +23,7 @@ package org.jboss.test.messaging.jms;
 
 import java.io.Serializable;
 
+import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
@@ -117,6 +118,8 @@ public class MessageProducerTest extends JMSTestCase
       {
          pconn = cf.createConnection();
          cconn = cf.createConnection();
+         
+         log.info("** created connections");
 
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -127,6 +130,8 @@ public class MessageProducerTest extends JMSTestCase
 
          TextMessage m = ps.createTextMessage("test");
          p.send(m);
+         
+         log.info("** sent message");
 
          TextMessage r = (TextMessage)c.receive(3000);
 
@@ -135,8 +140,14 @@ public class MessageProducerTest extends JMSTestCase
       }
       finally
       {
-         pconn.close();
-         cconn.close();
+         if (pconn != null)
+         {
+            pconn.close();
+         }
+         if (cconn != null)
+         {
+            cconn.close();
+         }
       }
    }
 
@@ -148,22 +159,37 @@ public class MessageProducerTest extends JMSTestCase
       {
          pconn = cf.createConnection();
 
-         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session ps = pconn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
 
          MessageProducer p = ps.createProducer(queue1);
          
+       //  MessageConsumer cons = ps.createConsumer(queue1);
+         
+       //  pconn.start();
+         
          p.setDeliveryMode(DeliveryMode.PERSISTENT);
+         
+         p.setDisableMessageID(true);
+         p.setDisableMessageTimestamp(true);
 
-         final int numMessages = 10000;
+         final int numMessages = 20000;
 
          long start = System.currentTimeMillis();
 
+         BytesMessage msg = ps.createBytesMessage();
+         
+         msg.writeBytes(new byte[1000]);
+
+         
          for (int i = 0; i < numMessages; i++)
          {
-            Message msg = ps.createMessage();
-
             p.send(msg);
          }
+         
+//         for (int i = 0; i < numMessages; i++)
+//         {
+//            cons.receive(1000);
+//         }
 
          long end = System.currentTimeMillis();
 

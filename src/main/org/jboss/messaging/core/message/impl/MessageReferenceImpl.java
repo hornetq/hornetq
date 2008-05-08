@@ -153,7 +153,7 @@ public class MessageReferenceImpl implements MessageReference
          	
             Message copyMessage = makeCopyForDLQOrExpiry(false, persistenceManager);
             
-            tx.addMessage(binding.getAddress(), copyMessage);
+            tx.addMessage(copyMessage);
             
             tx.addAcknowledgement(this);      
          }
@@ -181,10 +181,12 @@ public class MessageReferenceImpl implements MessageReference
       
       Transaction tx = new TransactionImpl(persistenceManager, postOffice);
       
+      log.info("expiring message");
+      
       if (expiryQueue != null)
       {
       	Binding binding = postOffice.getBinding(expiryQueue);
-      	
+
       	if (binding == null)
       	{
       		binding = postOffice.addBinding(expiryQueue, expiryQueue, null, true, false);
@@ -192,7 +194,9 @@ public class MessageReferenceImpl implements MessageReference
       	
          Message copyMessage = makeCopyForDLQOrExpiry(false, persistenceManager);
          
-         tx.addMessage(binding.getAddress(), copyMessage);
+         copyMessage.setDestination(binding.getAddress());
+         
+         tx.addMessage(copyMessage);
          
          tx.addAcknowledgement(this);                 
       }
@@ -243,7 +247,7 @@ public class MessageReferenceImpl implements MessageReference
       {
          long actualExpiryTime = System.currentTimeMillis();
       
-         copy.putHeader(Message.HDR_ACTUAL_EXPIRY_TIME, actualExpiryTime);
+         copy.putLongProperty(Message.HDR_ACTUAL_EXPIRY_TIME, actualExpiryTime);
       }
       
       return copy;

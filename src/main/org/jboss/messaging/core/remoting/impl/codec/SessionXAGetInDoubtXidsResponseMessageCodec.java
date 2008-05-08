@@ -6,8 +6,6 @@
  */
 package org.jboss.messaging.core.remoting.impl.codec;
 
-import static org.jboss.messaging.util.DataConstants.SIZE_INT;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +13,7 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetInDoubtXidsResponseMessage;
-import org.jboss.messaging.util.DataConstants;
+import org.jboss.messaging.util.MessagingBuffer;
 
 
 /**
@@ -44,19 +42,8 @@ public class SessionXAGetInDoubtXidsResponseMessageCodec extends AbstractPacketC
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   public int getBodyLength(final SessionXAGetInDoubtXidsResponseMessage packet) throws Exception
-   {   	
-      int bodyLength = SIZE_INT;
-      
-      for (Xid xid: packet.getXids())
-      {
-         bodyLength += getXidLength(xid);
-      }
-   	return bodyLength;
-   }
-   
    @Override
-   protected void encodeBody(final SessionXAGetInDoubtXidsResponseMessage message, final RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionXAGetInDoubtXidsResponseMessage message, final MessagingBuffer out) throws Exception
    {      
       out.putInt(message.getXids().size());
       
@@ -67,7 +54,7 @@ public class SessionXAGetInDoubtXidsResponseMessageCodec extends AbstractPacketC
    }
 
    @Override
-   protected SessionXAGetInDoubtXidsResponseMessage decodeBody(final RemotingBuffer in)
+   protected SessionXAGetInDoubtXidsResponseMessage decodeBody(final MessagingBuffer in)
          throws Exception
    {
       int size = in.getInt();

@@ -7,10 +7,9 @@
 package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_QUEUEQUERY_RESP;
-import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
-import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -39,17 +38,8 @@ public class SessionQueueQueryResponseMessageCodec extends AbstractPacketCodec<S
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   public int getBodyLength(final SessionQueueQueryResponseMessage packet) throws Exception
-   {   	
-   	SimpleString filterString  = packet.getFilterString();
-      SimpleString address = packet.getAddress();
-   	int bodyLength = 3 * SIZE_BOOLEAN + 3 * SIZE_INT + SimpleString.sizeofNullableString(filterString) +
-   	SimpleString.sizeofNullableString(address);
-   	return bodyLength;
-   }
-   
    @Override
-   protected void encodeBody(final SessionQueueQueryResponseMessage message, final RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionQueueQueryResponseMessage message, final MessagingBuffer out) throws Exception
    {
       boolean exists = message.isExists();
       boolean durable = message.isDurable();
@@ -71,7 +61,7 @@ public class SessionQueueQueryResponseMessageCodec extends AbstractPacketCodec<S
    }
 
    @Override
-   protected SessionQueueQueryResponseMessage decodeBody(final RemotingBuffer in)
+   protected SessionQueueQueryResponseMessage decodeBody(final MessagingBuffer in)
          throws Exception
    {
       boolean exists = in.getBoolean();

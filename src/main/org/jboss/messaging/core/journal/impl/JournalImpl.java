@@ -493,9 +493,9 @@ public class JournalImpl implements TestableJournal
 		tx.rollback(currentFile);
 	}
 	
-	public synchronized void load(final List<RecordInfo> committedRecords,
+	public synchronized long load(final List<RecordInfo> committedRecords,
 			final List<PreparedTransactionInfo> preparedTransactions) throws Exception
-			{
+	{
 		if (state != STATE_STARTED)
 		{
 			throw new IllegalStateException("Journal must be in started state");
@@ -520,9 +520,6 @@ public class JournalImpl implements TestableJournal
 			ByteBuffer bb = file.newBuffer(SIZE_LONG);
 			
 			file.read(bb);
-			
-			//bb.flip();
-			//bb.rewind();
 			
 			long orderingID = bb.getLong();
 			
@@ -550,15 +547,12 @@ public class JournalImpl implements TestableJournal
 		
 		long maxTransactionID = -1;
 		
+		long maxMessageID = -1;
+		
 		for (JournalFile file: orderedFiles)
 		{  
 			file.getFile().open();
-			
-			if (trace) 
-			{
-				log.trace("Loading file " + file.getFile().getFileName());
-			}
-			
+				
 			ByteBuffer bb = file.getFile().newBuffer(fileSize);
 			
 			int bytesRead = file.getFile().read(bb);
@@ -571,9 +565,6 @@ public class JournalImpl implements TestableJournal
 						" expected " + fileSize + " : " + file.getFile().getFileName());
 			}
 			
-//			bb.flip();
-//			bb.rewind();
-			
 			//First long is the ordering timestamp, we just jump its position
 			bb.position(file.getFile().calculateBlockStart(SIZE_LONG));
 			
@@ -584,15 +575,14 @@ public class JournalImpl implements TestableJournal
 				int pos = bb.position();
 				
 				byte recordType = bb.get();
-				
-				
+								
 				switch(recordType)
 				{
 					case ADD_RECORD:
 					{                          
-						long id = bb.getLong();          
+						long id = bb.getLong();  
 						
-						if (trace) log.trace("ADD Record ID = " + id);
+						maxMessageID = Math.max(maxMessageID, id);
 						
 						int size = bb.getInt();                
 						byte[] record = new byte[size];                 
@@ -616,7 +606,8 @@ public class JournalImpl implements TestableJournal
 					case UPDATE_RECORD:                 
 					{
 						long id = bb.getLong();    
-						if (trace) log.trace("Update Record ID = " + id);
+
+						maxMessageID = Math.max(maxMessageID, id);
 						
 						int size = bb.getInt();                
 						byte[] record = new byte[size];                 
@@ -649,9 +640,10 @@ public class JournalImpl implements TestableJournal
 					case DELETE_RECORD:                 
 					{
 						long id = bb.getLong(); 
-						byte end = bb.get();
 						
-						if (trace) log.trace("DeleteRecord id=" + id);
+						maxMessageID = Math.max(maxMessageID, id);
+						
+						byte end = bb.get();
 						
 						if (end != DONE)
 						{
@@ -677,9 +669,7 @@ public class JournalImpl implements TestableJournal
 						long txID = bb.getLong();                    
 						maxTransactionID = Math.max(maxTransactionID, txID);                 
 						long id = bb.getLong();          
-						
-						if (trace) log.trace("AddRecordTX txID = " + txID + " , id=" + id);
-						
+						maxMessageID = Math.max(maxMessageID, id);
 						
 						int size = bb.getInt();                
 						byte[] record = new byte[size];                 
@@ -723,8 +713,7 @@ public class JournalImpl implements TestableJournal
 						long txID = bb.getLong();  
 						maxTransactionID = Math.max(maxTransactionID, txID);                 
 						long id = bb.getLong();
-						
-						if (trace) log.trace("UpdateRecordTX txID = " + txID + " , id=" + id);
+						maxMessageID = Math.max(maxMessageID, id);
 						
 						int size = bb.getInt();                
 						byte[] record = new byte[size];                 
@@ -767,10 +756,9 @@ public class JournalImpl implements TestableJournal
 					{              
 						long txID = bb.getLong();  
 						maxTransactionID = Math.max(maxTransactionID, txID);                 
-						long id = bb.getLong();       
-						
-						if (trace) log.trace("DeleteRecordTX txID = " + txID + " , id=" + id);
-						
+						long id = bb.getLong(); 
+						maxMessageID = Math.max(maxMessageID, id);
+
 						byte end = bb.get();
 						
 						if (end != DONE)
@@ -808,9 +796,7 @@ public class JournalImpl implements TestableJournal
 					case PREPARE_RECORD:
 					{
 						long txID = bb.getLong();           
-						
-						if (trace) log.trace("Prepare txID=" + txID);
-						
+
 						maxTransactionID = Math.max(maxTransactionID, txID);                 
 						byte end = bb.get();
 						
@@ -847,8 +833,6 @@ public class JournalImpl implements TestableJournal
 					{
 						long txID = bb.getLong();  
 						
-						if (trace) log.trace("Commit txID=" + txID);
-						
 						maxTransactionID = Math.max(maxTransactionID, txID);
 						byte end = bb.get();
 						
@@ -883,9 +867,7 @@ public class JournalImpl implements TestableJournal
 					case ROLLBACK_RECORD:
 					{
 						long txID = bb.getLong();     
-						
-						if (trace) log.trace("RollbacktxID=" + txID);
-						
+	
 						maxTransactionID = Math.max(maxTransactionID, txID);                 
 						byte end = bb.get();
 						
@@ -956,7 +938,7 @@ public class JournalImpl implements TestableJournal
 				//Empty dataFiles with no data
 				freeFiles.add(file);
 				
-//				//Position it ready for writing
+				//Position it ready for writing
 				file.getFile().position(file.getFile().calculateBlockStart(SIZE_LONG));
 			}                       
 		}        
@@ -1038,7 +1020,9 @@ public class JournalImpl implements TestableJournal
 		}
 		
 		state = STATE_LOADED;
-			}
+		
+		return maxMessageID;
+	}
 	
 	public int getAlignment() throws Exception
 	{

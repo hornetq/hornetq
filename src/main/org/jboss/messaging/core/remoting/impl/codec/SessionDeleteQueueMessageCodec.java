@@ -9,6 +9,7 @@ package org.jboss.messaging.core.remoting.impl.codec;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_DELETE_QUEUE;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
+import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -37,22 +38,15 @@ public class SessionDeleteQueueMessageCodec extends AbstractPacketCodec<SessionD
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   public int getBodyLength(final SessionDeleteQueueMessage packet) throws Exception
-   {   	
-   	SimpleString queueName = packet.getQueueName();      
-      int bodyLength = SimpleString.sizeofString(queueName);
-   	return bodyLength;
-   }
-   
    @Override
-   protected void encodeBody(final SessionDeleteQueueMessage message, final RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionDeleteQueueMessage message, final MessagingBuffer out) throws Exception
    {
       SimpleString queueName = message.getQueueName();   
       out.putSimpleString(queueName);
    }
 
    @Override
-   protected SessionDeleteQueueMessage decodeBody(final RemotingBuffer in)
+   protected SessionDeleteQueueMessage decodeBody(final MessagingBuffer in)
          throws Exception
    {
       SimpleString queueName = in.getSimpleString();

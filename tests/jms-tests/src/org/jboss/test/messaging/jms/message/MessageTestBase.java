@@ -108,9 +108,6 @@ public class MessageTestBase extends JBMServerTestCase
 
       queueProd.setDeliveryMode(DeliveryMode.PERSISTENT);
 
-      // make sure the message is serialized to and from the database
-      //SoftMessageReference.keepSoftReference = false;
-
       queueProd.send(message);
 
       Message r = queueCons.receive();
@@ -166,7 +163,7 @@ public class MessageTestBase extends JBMServerTestCase
       m.setIntProperty("intProperty", 6);
       m.setLongProperty("longProperty", 7);
       m.setShortProperty("shortProperty", (short)8);
-      m.setStringProperty("stringProperty", "this is a String property");
+      m.setStringProperty("stringProperty", "this is a String property");      
 
       m.setJMSCorrelationID("this is the correlation ID");
       m.setJMSReplyTo(topic1);

@@ -9,6 +9,7 @@ package org.jboss.messaging.core.remoting.impl.codec;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEBROWSER;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserMessage;
+import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -35,18 +36,8 @@ public class SessionCreateBrowserMessageCodec extends
 
    // AbstractPacketCodec overrides ---------------------------------
 
-   public int getBodyLength(final SessionCreateBrowserMessage packet) throws Exception
-   {   	
-   	SimpleString queueName = packet.getQueueName();
-      SimpleString filterString = packet.getFilterString();
-
-      int bodyLength = SimpleString.sizeofString(queueName) + SimpleString.sizeofNullableString(filterString);
-      
-      return bodyLength;
-   }
-   
    @Override
-   protected void encodeBody(final SessionCreateBrowserMessage request, final RemotingBuffer out) throws Exception
+   protected void encodeBody(final SessionCreateBrowserMessage request, final MessagingBuffer out) throws Exception
    {
       SimpleString queueName = request.getQueueName();
       SimpleString filterString = request.getFilterString();
@@ -56,7 +47,7 @@ public class SessionCreateBrowserMessageCodec extends
    }
 
    @Override
-   protected SessionCreateBrowserMessage decodeBody(final RemotingBuffer in)
+   protected SessionCreateBrowserMessage decodeBody(final MessagingBuffer in)
          throws Exception
    {
       SimpleString queueName = in.getSimpleString();

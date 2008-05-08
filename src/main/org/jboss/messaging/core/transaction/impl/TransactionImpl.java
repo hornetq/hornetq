@@ -38,7 +38,6 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -99,7 +98,7 @@ public class TransactionImpl implements Transaction
 		return id;
 	}
 
-	public void addMessage(final SimpleString address, final Message message)
+	public void addMessage(final Message message)
 			throws Exception
 	{
 		if (state != State.ACTIVE)
@@ -107,13 +106,13 @@ public class TransactionImpl implements Transaction
 			throw new IllegalStateException("Transaction is in invalid state " + state);
 		}
 
-		List<MessageReference> refs = postOffice.route(address, message);
+		List<MessageReference> refs = postOffice.route(message);
 
 		refsToAdd.addAll(refs);
 
 		if (message.getDurableRefCount() != 0)
 		{
-			storageManager.storeMessageTransactional(id, address, message);
+			storageManager.storeMessageTransactional(id, message);
 
 			containsPersistent = true;
 		}
