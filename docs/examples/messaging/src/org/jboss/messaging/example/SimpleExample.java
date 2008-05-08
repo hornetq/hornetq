@@ -47,10 +47,10 @@ import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
 
 /**
- * A simple embedded server is started with an INVM transport, a message is sentr and received.
+ * A simple server is started with TCP transport, a message is sent and received.
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class EmbeddedExample
+public class SimpleExample
 {
    public static void main(String[] args) throws Exception
    {
@@ -61,8 +61,8 @@ public class EmbeddedExample
       {
          //create a new server with an invm transport, we could use TCP if needed
          ConfigurationImpl configuration = new ConfigurationImpl();
-         configuration.setTransport(TransportType.INVM);
-         configuration.setServerID(0);
+         configuration.setTransport(TransportType.TCP);
+         configuration.setHost("localhost");
          messagingServer = new MessagingServerImpl(configuration);
          //lets use our own security manager, we could use the default if needed but we would need to make sure that
          // jbm-security.xml and queues.xml are in the classpath
@@ -87,7 +87,7 @@ public class EmbeddedExample
          messagingServer.getPostOffice().addBinding(atestq, atestq, null, false, false);
 
          //then we create a client as normal
-         Location location = new LocationImpl(0);
+         Location location = new LocationImpl(TransportType.TCP, "localhost", 5400);
          ConnectionParams connectionParams = new ConnectionParamsImpl();
          ClientConnectionFactory connectionFactory = new ClientConnectionFactoryImpl(location, connectionParams);
 
@@ -96,12 +96,12 @@ public class EmbeddedExample
          ClientProducer clientProducer = clientSession.createProducer(atestq);
          Message message = new MessageImpl(JBossTextMessage.TYPE, false, 0,
                  System.currentTimeMillis(), (byte) 1);
-         message.setPayload("Hello!".getBytes());
+         message.getBody().putString("Hello!");
          clientProducer.send(message);
          ClientConsumer clientConsumer = clientSession.createConsumer(atestq, null, false, false, false);
          clientConnection.start();
          Message msg = clientConsumer.receive(5000);
-         System.out.println("msg.getPayload() = " + new String(msg.getPayload()));
+         System.out.println("msg.getPayload() = " + msg.getBody().getString());
       }
       catch (Exception e)
       {

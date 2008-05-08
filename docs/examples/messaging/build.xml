@@ -82,7 +82,7 @@
    </target>
 
    <target name="EmbeddedExample" depends="compile">
-      <java classname="org.jboss.messaging.example.EmbeddedExample" fork="true">
+      <java classname="org.jboss.messaging.example.SimpleExample" fork="true">
          <classpath refid="runtime.classpath"/>
       </java>
    </target>

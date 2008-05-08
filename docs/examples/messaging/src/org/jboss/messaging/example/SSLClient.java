@@ -71,12 +71,12 @@ public class SSLClient
          ClientProducer clientProducer = clientSession.createProducer(queue);
          Message message = new MessageImpl(JBossTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);
-         message.setPayload("Hello!".getBytes());
+         message.getBody().putString("Hello!");
          clientProducer.send(message);
          ClientConsumer clientConsumer = clientSession.createConsumer(queue, null, false, false, false);
          clientConnection.start();
          Message msg = clientConsumer.receive(5000);
-         System.out.println("msg.getPayload() = " + new String(msg.getPayload()));
+         System.out.println("msg.getPayload() = " + msg.getBody().getString());
       }
       catch(Exception e)
       {
