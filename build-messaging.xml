@@ -71,6 +71,7 @@
    <property name="doc.examples.dir" value="${doc.dir}/examples"/>
    <property name="doc.build.dir" value="${doc.dir}/userguide/build"/>
    <property name="build.api.dir" value="${build.dir}/api"/>
+   <property name="native.bin.dir" value="native/bin"/>
 
    <property name="build.distro.dir"
              value="${build.dir}/${module.name}-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}"/>
@@ -484,6 +485,12 @@
       <copy todir="${build.distro.bin.dir}">
          <fileset dir="${src.bin.dir}">
             <include name="run.sh"/>
+         </fileset>
+      </copy>
+
+      <copy todir="${build.distro.bin.dir}">
+         <fileset dir="${native.bin.dir}">
+            <include name="*.so"/>
          </fileset>
       </copy>
 
