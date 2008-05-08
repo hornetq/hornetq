@@ -31,6 +31,7 @@ import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
 import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.message.ClientMessage;
 
 /**
  * This class implements javax.jms.ObjectMessage
@@ -68,7 +69,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
       super(JBossObjectMessage.TYPE);
    }
    
-   public JBossObjectMessage(final org.jboss.messaging.core.message.Message message, ClientSession session)
+   public JBossObjectMessage(final ClientMessage message, ClientSession session)
    {
       super(message, session);
    }

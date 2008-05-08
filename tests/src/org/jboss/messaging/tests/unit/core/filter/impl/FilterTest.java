@@ -26,8 +26,9 @@ import junit.framework.TestCase;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
-import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.ServerMessage;
 import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.message.impl.ServerMessageImpl;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -41,7 +42,7 @@ public class FilterTest  extends TestCase
 {
    private Filter filter;
    
-   private Message message;
+   private ServerMessage message;
    
    public FilterTest(String name)
    {
@@ -52,7 +53,7 @@ public class FilterTest  extends TestCase
    {
       super.setUp();
       
-      message = new MessageImpl();
+      message = new ServerMessageImpl();
    }
      
    public void testInvalidString() throws Exception
@@ -80,7 +81,7 @@ public class FilterTest  extends TestCase
       
       filter = new FilterImpl(new SimpleString("JBMDurable='NON_DURABLE'"));
       
-      message = new MessageImpl();
+      message = new ServerMessageImpl();
       message.setDurable(true);
       
       assertFalse(filter.match(message));

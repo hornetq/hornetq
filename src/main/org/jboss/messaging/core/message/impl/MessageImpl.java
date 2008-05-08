@@ -22,13 +22,10 @@
 package org.jboss.messaging.core.message.impl;
 
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
-import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TypedProperties;
@@ -46,7 +43,7 @@ import org.jboss.messaging.util.TypedProperties;
  * 
  * $Id: MessageSupport.java 2740 2007-05-30 11:36:28Z timfox $
  */
-public class MessageImpl implements Message
+public abstract class MessageImpl implements Message
 {
    // Constants -----------------------------------------------------
    
@@ -56,11 +53,9 @@ public class MessageImpl implements Message
 
    private SimpleString destination;
    
-   private long messageID;
-   
    private int type;
    
-   private boolean durable;
+   protected boolean durable;
 
    /** GMT milliseconds at which this message expires. 0 means never expires * */
    private long expiration;
@@ -71,30 +66,17 @@ public class MessageImpl implements Message
    
    private byte priority;
 
-   private long connectionID;
-   
-   private final AtomicInteger durableRefCount = new AtomicInteger(0);
-   
-   private int deliveryCount;
-   
-   private long deliveryID;
-   
+
    private MessagingBuffer body;
    
    // Constructors --------------------------------------------------
 
-   /*
-    * Construct when reading from network
-    */
-   public MessageImpl()
+   protected MessageImpl()
    {
       this.properties = new TypedProperties();
    }
-
-   /*
-    * Construct a message before sending
-    */
-   public MessageImpl(final int type, final boolean durable, final long expiration,
+   
+   protected MessageImpl(final int type, final boolean durable, final long expiration,
                       final long timestamp, final byte priority)
    {
       this();
@@ -105,23 +87,13 @@ public class MessageImpl implements Message
       this.priority = priority;            
       this.body = new BufferWrapper(1024);
    }
-
-   /*
-    * Construct a MessageImpl from storage
-    */
-   public MessageImpl(final long messageID)
-   {
-      this();
-      this.messageID = messageID;      
-   }
    
    /*
     * Copy constructor
     */
-   public MessageImpl(final MessageImpl other)
+   protected MessageImpl(final MessageImpl other)
    {
       this.destination = other.destination;
-      this.messageID = other.messageID;
       this.type = other.type;
       this.durable = other.durable;
       this.expiration = other.expiration;
@@ -129,9 +101,6 @@ public class MessageImpl implements Message
       this.priority = other.priority;
       this.properties = new TypedProperties(other.properties);
       this.body = other.body;
-      
-      this.deliveryCount = other.deliveryCount;
-      this.deliveryID = other.deliveryID;
    }
    
    // Message implementation ----------------------------------------
@@ -146,9 +115,6 @@ public class MessageImpl implements Message
       buff.putLong(expiration);
       buff.putLong(timestamp);
       buff.putByte(priority);
-      
-      buff.putInt(deliveryCount);
-      buff.putLong(deliveryID);
       
       properties.encode(buff);
                        
@@ -169,9 +135,6 @@ public class MessageImpl implements Message
       timestamp = buffer.getLong();
       priority = buffer.getByte();
       
-      deliveryCount = buffer.getInt();
-      deliveryID = buffer.getLong();
-      
       properties.decode(buffer);
       int len = buffer.getInt();
       
@@ -190,16 +153,6 @@ public class MessageImpl implements Message
    public void setDestination(SimpleString destination)
    {
       this.destination = destination;
-   }
-   
-   public long getMessageID()
-   {
-      return messageID;
-   }
-   
-   public void setMessageID(final long id)
-   {
-      this.messageID = id;
    }
    
    public int getType()
@@ -248,35 +201,6 @@ public class MessageImpl implements Message
       this.priority = priority;
    }
      
-   public long getConnectionID()
-   {
-      return connectionID;
-   }
-   
-   public void setConnectionID(final long connectionID)
-   {
-      this.connectionID = connectionID;
-   }
-   
-   public void setDeliveryCount(final int deliveryCount)
-   {
-      this.deliveryCount = deliveryCount;
-   }
-   
-   public int getDeliveryCount()
-   {
-      return this.deliveryCount;
-   }
-   
-   public void setDeliveryID(final long deliveryID)
-   {
-      this.deliveryID = deliveryID;
-   }
-   
-   public long getDeliveryID()
-   {
-      return this.deliveryID;
-   }
 
    public boolean isExpired()
    {
@@ -286,11 +210,6 @@ public class MessageImpl implements Message
       }
       
       return System.currentTimeMillis() - expiration >= 0;
-   }
-   
-   public Message copy()
-   {
-      return new MessageImpl(this);
    }
    
    // Properties 
@@ -373,68 +292,8 @@ public class MessageImpl implements Message
    {
       this.body = body;
    }
-   
-   
-   // TODO Other stuff that should be moved to ServerMessage:
-   // -------------------------------------------------------
-   
-   public MessageReference createReference(final Queue queue)
-   {
-      MessageReference ref = new MessageReferenceImpl(this, queue);
       
-      //references.add(ref);
-      
-      if (durable && queue.isDurable())
-      {
-         durableRefCount.incrementAndGet();
-      }
-      
-      return ref;
-   }
-   
-   public int getDurableRefCount()
-   {
-   	return durableRefCount.get();
-   }
-   
-   public void decrementDurableRefCount()
-   {
-   	durableRefCount.decrementAndGet();
-   }
-   
-   public void incrementDurableRefCount()
-   {
-   	durableRefCount.incrementAndGet();
-   }
-     
    // Public --------------------------------------------------------
-
-   public boolean equals(Object o)
-   {
-      if (this == o)
-      {
-         return true;
-      }
-      
-      if (!(o instanceof MessageImpl))
-      {
-         return false;
-      }
-      
-      MessageImpl that = (MessageImpl) o;
-      
-      return that.messageID == this.messageID;
-   }
-
-   public int hashCode()
-   {
-      return (int) ((this.messageID >>> 32) ^ this.messageID);
-   }
-
-   public String toString()
-   {
-      return "M[" + messageID + "]@" + System.identityHashCode(this);
-   }
 
    // Package protected ---------------------------------------------
 

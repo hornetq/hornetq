@@ -9,8 +9,8 @@ package org.jboss.messaging.core.remoting.impl.codec;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.RECEIVE_MSG;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.message.ClientMessage;
+import org.jboss.messaging.core.message.impl.ClientMessageImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.util.MessagingBuffer;
 
@@ -41,15 +41,17 @@ public class ReceiveMessageCodec extends AbstractPacketCodec<ReceiveMessage>
 
    @Override
    protected void encodeBody(final ReceiveMessage message, final MessagingBuffer out) throws Exception
-   {
- 
-      MessagingBuffer buffer = message.getMessage().encode();
+   { 
+      MessagingBuffer buffer = message.getServerMessage().encode();
       
       buffer.flip();
       
       //TODO - can be optimised
       
       byte[] data = buffer.array();
+      
+      out.putInt(message.getDeliveryCount());
+      out.putLong(message.getDeliveryID());
       
       out.putBytes(data, 0, buffer.limit());
    }
@@ -60,7 +62,10 @@ public class ReceiveMessageCodec extends AbstractPacketCodec<ReceiveMessage>
    {
       //TODO can be optimised
       
-      Message message = new MessageImpl();
+      int deliveryCount = in.getInt();
+      long deliveryID = in.getLong();
+      
+      ClientMessage message = new ClientMessageImpl(deliveryCount, deliveryID);
       
       message.decode(in);
       

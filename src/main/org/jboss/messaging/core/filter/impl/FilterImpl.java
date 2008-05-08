@@ -27,7 +27,7 @@ import java.util.Map;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.ServerMessage;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -95,7 +95,7 @@ public class FilterImpl implements Filter
      return sfilterString;
   }
   
-  public boolean match(final Message message)
+  public boolean match(final ServerMessage message)
   {
      try
      {                 
@@ -148,7 +148,7 @@ public class FilterImpl implements Filter
   
   // Private --------------------------------------------------------------------------
  
-  private Object getHeaderFieldValue(final Message msg, final String fieldName)
+  private Object getHeaderFieldValue(final ServerMessage msg, final String fieldName)
   {
      if ("JBMMessageID".equals(fieldName))
      {

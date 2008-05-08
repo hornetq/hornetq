@@ -27,6 +27,7 @@ import javax.jms.TextMessage;
 
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.ClientMessage;
 
 /**
  * This class implements javax.jms.TextMessage ported from SpyTextMessage in JBossMQ.
@@ -66,7 +67,7 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
       super(JBossTextMessage.TYPE);
    }
    
-   public JBossTextMessage(final org.jboss.messaging.core.message.Message message, ClientSession session)
+   public JBossTextMessage(final ClientMessage message, ClientSession session)
    {     
       super(message, session);
    }

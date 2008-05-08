@@ -1,6 +1,6 @@
 package org.jboss.messaging.core.server;
 
-import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.ServerMessage;
 
 /**
  * 
@@ -15,7 +15,7 @@ public interface ServerProducer
 	
 	void close() throws Exception;
 	
-	void send(Message msg) throws Exception;
+	void send(ServerMessage msg) throws Exception;
 	
 	void sendCredits() throws Exception;
 	

@@ -36,6 +36,7 @@ import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.ClientMessage;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -200,7 +201,7 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
    {
       try
       {
-         org.jboss.messaging.core.message.Message message =  consumer.receive(timeout);
+         ClientMessage message =  consumer.receive(timeout);
                
          JBossMessage jbm = null;
          

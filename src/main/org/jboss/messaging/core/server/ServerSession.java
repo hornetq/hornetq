@@ -25,8 +25,8 @@ import java.util.List;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.message.ServerMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserResponseMessage;
@@ -63,7 +63,7 @@ public interface ServerSession
 	
 	void promptDelivery(Queue queue);
 	
-	void send(Message msg) throws Exception;
+	void send(ServerMessage msg) throws Exception;
 
    void acknowledge(long deliveryID, boolean allUpTo) throws Exception;
 

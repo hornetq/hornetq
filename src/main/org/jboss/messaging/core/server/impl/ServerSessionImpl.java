@@ -38,8 +38,8 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.message.ServerMessage;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.FlowController;
@@ -300,7 +300,7 @@ public class ServerSessionImpl implements ServerSession
       });
    }
 
-   public void send(final Message msg) throws Exception
+   public void send(final ServerMessage msg) throws Exception
    {
       //check the user has write access to this address
       securityStore.check(msg.getDestination().toString(), CheckType.WRITE, connection);
@@ -1083,7 +1083,7 @@ public class ServerSessionImpl implements ServerSession
 
    private void doAck(final MessageReference ref) throws Exception
    {
-   	Message message = ref.getMessage();
+   	ServerMessage message = ref.getMessage();
 
    	Queue queue = ref.getQueue();
 

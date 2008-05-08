@@ -8,7 +8,8 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.RECEIVE_MSG;
 
-import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.ClientMessage;
+import org.jboss.messaging.core.message.ServerMessage;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -23,35 +24,64 @@ public class ReceiveMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private final Message message;
+   private final ClientMessage clientMessage;
+   
+   private final ServerMessage serverMessage;
+   
+   private final int deliveryCount;
+   
+   private final long deliveryID;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ReceiveMessage(final Message message)
+   public ReceiveMessage(final ClientMessage message)
    {
       super(RECEIVE_MSG);
 
-      assert message != null;
+      this.clientMessage = message;
+      
+      this.serverMessage = null;
+      
+      this.deliveryCount = -1;
+      
+      this.deliveryID = -1;
+   }
+   
+   public ReceiveMessage(final ServerMessage message, final int deliveryCount, final long deliveryID)
+   {
+      super(RECEIVE_MSG);
 
-      this.message = message;
+      this.serverMessage = message;
+      
+      this.clientMessage = null;
+      
+      this.deliveryCount = deliveryCount;
+      
+      this.deliveryID = deliveryID;
    }
 
    // Public --------------------------------------------------------
 
-   public Message getMessage()
+   public ClientMessage getClientMessage()
    {
-      return message;
+      return clientMessage;
+   }
+   
+   public ServerMessage getServerMessage()
+   {
+      return serverMessage;
    }
 
-   @Override
-   public String toString()
+   public int getDeliveryCount()
    {
-      StringBuffer buf = new StringBuffer(getParentString());
-      buf.append(", message=" + message);
-      buf.append("]");
-      return buf.toString();
+      return deliveryCount;
+   }
+   
+   public long getDeliveryID()
+   {
+      return deliveryID;
    }
 
    // Package protected ---------------------------------------------

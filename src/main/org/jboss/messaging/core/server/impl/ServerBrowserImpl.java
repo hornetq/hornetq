@@ -33,6 +33,7 @@ import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.message.ServerMessage;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
@@ -69,7 +70,7 @@ public class ServerBrowserImpl
    private final ServerSession session;
    private final Queue destination;
    private final Filter filter;
-   private Iterator iterator;
+   private Iterator<ServerMessage> iterator;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -115,14 +116,14 @@ public class ServerBrowserImpl
       return has;
    }
    
-   public Message nextMessage() throws Exception
+   public ServerMessage nextMessage() throws Exception
    {
       if (iterator == null)
       {
          iterator = createIterator();
       }
 
-      Message r = (Message)iterator.next();
+      ServerMessage r = iterator.next();
 
       return r;
    }
@@ -139,13 +140,13 @@ public class ServerBrowserImpl
          iterator = createIterator();
       }
 
-      ArrayList messages = new ArrayList(maxMessages);
+      List<ServerMessage> messages = new ArrayList<ServerMessage>(maxMessages);
       int i = 0;
       while (i < maxMessages)
       {
          if (iterator.hasNext())
          {
-            Message m = (Message)iterator.next();
+            ServerMessage m = iterator.next();
             messages.add(m);
             i++;
          }
@@ -176,11 +177,11 @@ public class ServerBrowserImpl
 
    // Private --------------------------------------------------------------------------------------
 
-   private Iterator createIterator()
+   private Iterator<ServerMessage> createIterator()
    {
       List<MessageReference> refs = destination.list(filter);
       
-      List<Message> msgs = new ArrayList<Message>();
+      List<ServerMessage> msgs = new ArrayList<ServerMessage>();
       
       for (MessageReference ref: refs)
       {
@@ -215,8 +216,8 @@ public class ServerBrowserImpl
             response = new SessionBrowserHasNextMessageResponseMessage(hasNextMessage());            
             break;
          case SESS_BROWSER_NEXTMESSAGE:
-            Message message = nextMessage();               
-            response = new ReceiveMessage(message);
+            ServerMessage message = nextMessage();               
+            response = new ReceiveMessage(message, 0, 0);
             break;
          case SESS_BROWSER_RESET:            
             reset();

@@ -22,7 +22,7 @@
 package org.jboss.messaging.tests.unit.core.server.impl.fakes;
 
 import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.ServerMessage;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -49,7 +49,7 @@ public class FakeFilter implements Filter
    {         
    }
    
-   public boolean match(Message message)
+   public boolean match(ServerMessage message)
    {
       if (headerName != null)
       {

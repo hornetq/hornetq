@@ -31,6 +31,7 @@ import javax.jms.MapMessage;
 import javax.jms.MessageFormatException;
 
 import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.message.ClientMessage;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TypedProperties;
 
@@ -70,7 +71,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
       map = new TypedProperties();
    }
    
-   public JBossMapMessage(final org.jboss.messaging.core.message.Message message, final ClientSession session)
+   public JBossMapMessage(final ClientMessage message, final ClientSession session)
    {
       super(message, session);
    }

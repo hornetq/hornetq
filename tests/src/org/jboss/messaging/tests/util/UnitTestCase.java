@@ -35,11 +35,10 @@ import java.util.UUID;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.message.ServerMessage;
+import org.jboss.messaging.core.message.impl.ServerMessageImpl;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.transaction.impl.XidImpl;
 
 /**
  * 
@@ -198,9 +197,9 @@ public class UnitTestCase extends TestCase
       }                   
    }
          
-   protected Message generateMessage(long id)
+   protected ServerMessage generateMessage(long id)
    {
-      Message message = new MessageImpl(0, true, 0, System.currentTimeMillis(), (byte)4);
+      ServerMessage message = new ServerMessageImpl(0, true, 0, System.currentTimeMillis(), (byte)4);
       
       message.setMessageID(id);
       
@@ -220,17 +219,17 @@ public class UnitTestCase extends TestCase
    
    protected MessageReference generateReference(Queue queue, long id)
    {
-      Message message = generateMessage(id);
+      ServerMessage message = generateMessage(id);
       
       return message.createReference(queue);
    }
    
-   protected void assertEquivalent(Message msg1, Message msg2)
+   protected void assertEquivalent(ServerMessage msg1, ServerMessage msg2)
    {
       assertEquivalent(msg1, msg2, true);
    }
    
-   protected void assertEquivalent(Message msg1, Message msg2, boolean exactQueue)
+   protected void assertEquivalent(ServerMessage msg1, ServerMessage msg2, boolean exactQueue)
    {
       assertEquals(msg1.getMessageID(), msg2.getMessageID());
       

@@ -23,7 +23,6 @@ package org.jboss.messaging.core.message;
 
 import java.util.Set;
 
-import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
@@ -48,10 +47,6 @@ public interface Message
    
    int getType();   
       
-   long getMessageID();
-   
-   void setMessageID(long id);
-
    boolean isDurable();
    
    void setDurable(boolean durable);
@@ -70,20 +65,11 @@ public interface Message
    
    void setPriority(byte priority);
    
-   int getDeliveryCount();
-   
-   void setDeliveryCount(int deliveryCount);
-   
-   long getDeliveryID();
-   
-   void setDeliveryID(long deliveryID);
-   
+      
    MessagingBuffer encode();
    
    void decode(MessagingBuffer buffer);
    
-   Message copy(); 
-
    // Properties
    // ------------------------------------------------------------------
    
@@ -123,43 +109,4 @@ public interface Message
    
    void setBody(MessagingBuffer body);
    
-   // Other stuff that should be moved to ServerMessage
-   // -------------------------------------------------------------------------------------
-   
-   /**
-    * Get the connection id
-    * @return the connection id
-    */
-   long getConnectionID();
-   
-   /**
-    * Set the connection id
-    * @param connectionID
-    */
-   void setConnectionID(long connectionID);
-   
-   
-   /**
-    * @return a reference for this message
-    */
-   MessageReference createReference(Queue queue);   
-   
-   /**
-    * Decrement the durable ref count
-    */
-   void decrementDurableRefCount();
-   
-   /**
-    * Increment the durable ref count
-    */
-   void incrementDurableRefCount();
-   
-   /**
-    * Get the current durable reference count
-    * @return the durable ref count
-    */
-   int getDurableRefCount();
-   
-     
-    
 }

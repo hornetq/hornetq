@@ -28,7 +28,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
 
 import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.ClientMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
@@ -113,14 +113,14 @@ public class ClientBrowserImpl implements ClientBrowser
       return response.hasNext();
    }
 
-   public Message nextMessage() throws MessagingException
+   public ClientMessage nextMessage() throws MessagingException
    {
       checkClosed();
       
       ReceiveMessage response =
          (ReceiveMessage)remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), new PacketImpl(SESS_BROWSER_NEXTMESSAGE));
       
-      return response.getMessage();
+      return response.getClientMessage();
    }
 
    // Public ---------------------------------------------------------------------------------------

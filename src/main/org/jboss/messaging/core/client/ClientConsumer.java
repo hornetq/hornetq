@@ -8,7 +8,7 @@
 package org.jboss.messaging.core.client;
 
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.ClientMessage;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -16,11 +16,11 @@ import org.jboss.messaging.core.message.Message;
  */
 public interface ClientConsumer
 {      
-	Message receive() throws MessagingException;
+	ClientMessage receive() throws MessagingException;
 	
-   Message receive(long timeout) throws MessagingException;
+   ClientMessage receive(long timeout) throws MessagingException;
    
-   Message receiveImmediate() throws MessagingException;
+   ClientMessage receiveImmediate() throws MessagingException;
    
    MessageHandler getMessageHandler() throws MessagingException;
 

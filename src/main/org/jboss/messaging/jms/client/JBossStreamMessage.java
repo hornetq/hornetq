@@ -30,6 +30,7 @@ import javax.jms.StreamMessage;
 
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.ClientMessage;
 import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
 import org.jboss.messaging.util.DataConstants;
 
@@ -72,7 +73,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       super(JBossStreamMessage.TYPE);
    }
    
-   public JBossStreamMessage(final org.jboss.messaging.core.message.Message message, final ClientSession session)
+   public JBossStreamMessage(final ClientMessage message, final ClientSession session)
    {
       super(message, session);
    }

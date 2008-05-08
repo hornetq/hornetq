@@ -26,7 +26,7 @@ import java.util.Map;
 
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.ServerMessage;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -245,9 +245,6 @@ public class PostOfficeTest extends UnitTestCase
       assertEquals(0, mappings.size());      
    }
 
-   
-   
-   
    class FakeFilter implements Filter
    {
 		public SimpleString getFilterString()
@@ -255,7 +252,7 @@ public class PostOfficeTest extends UnitTestCase
 			return new SimpleString("aardvark");
 		}
 
-		public boolean match(Message message)
+		public boolean match(ServerMessage message)
 		{
 			return true;
 		}

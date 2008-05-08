@@ -30,8 +30,8 @@ import java.util.Map;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.message.ServerMessage;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
@@ -98,8 +98,7 @@ public class TransactionImpl implements Transaction
 		return id;
 	}
 
-	public void addMessage(final Message message)
-			throws Exception
+	public void addMessage(final ServerMessage message) throws Exception
 	{
 		if (state != State.ACTIVE)
 		{
@@ -132,7 +131,7 @@ public class TransactionImpl implements Transaction
 		}
 		acknowledgements.add(acknowledgement);
 
-		Message message = acknowledgement.getMessage();
+		ServerMessage message = acknowledgement.getMessage();
 
 		if (message.isDurable())
 		{
@@ -258,7 +257,7 @@ public class TransactionImpl implements Transaction
 		{
 			Queue queue = ref.getQueue();
 
-			Message message = ref.getMessage();
+			ServerMessage message = ref.getMessage();
 
 			if (message.isDurable() && queue.isDurable())
 			{

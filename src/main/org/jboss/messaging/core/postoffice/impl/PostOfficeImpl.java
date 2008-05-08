@@ -35,8 +35,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.message.ServerMessage;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.FlowController;
@@ -190,7 +190,7 @@ public class PostOfficeImpl implements PostOffice
       return nameMap.get(queueName);
    }
          
-   public List<MessageReference> route(final Message message) throws Exception
+   public List<MessageReference> route(final ServerMessage message) throws Exception
    {
       SimpleString address = message.getDestination();
       

@@ -33,8 +33,9 @@ import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.ClientMessage;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.message.impl.ClientMessageImpl;
 import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
@@ -121,7 +122,7 @@ public class ClientCrashTest extends TestCase
          // + 1 per connection to the client
          assertActiveConnections(1 + numberOfConnectionsOnTheClient);
 
-         MessageImpl message = new MessageImpl(JBossTextMessage.TYPE, false, 0,
+         ClientMessage message = new ClientMessageImpl(JBossTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);
          message.getBody().putString(ClientCrashTest.MESSAGE_TEXT_FROM_SERVER);
          producer.send(message);

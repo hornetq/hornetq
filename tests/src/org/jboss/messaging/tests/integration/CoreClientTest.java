@@ -11,8 +11,8 @@ import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.message.ClientMessage;
+import org.jboss.messaging.core.message.impl.ClientMessageImpl;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
@@ -67,7 +67,7 @@ public class CoreClientTest extends TestCase
       
       ClientProducer producer = session.createProducer(QUEUE);
 
-      Message message = new MessageImpl(JBossTextMessage.TYPE, false, 0,
+      ClientMessage message = new ClientMessageImpl(JBossTextMessage.TYPE, false, 0,
             System.currentTimeMillis(), (byte) 1);
       message.getBody().putString("testINVMCoreClient");
       producer.send(message);

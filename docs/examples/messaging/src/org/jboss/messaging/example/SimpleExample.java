@@ -35,8 +35,9 @@ import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.message.ClientMessage;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.message.impl.ClientMessageImpl;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.JBMSecurityManager;
@@ -94,7 +95,7 @@ public class SimpleExample
          clientConnection = connectionFactory.createConnection();
          ClientSession clientSession = clientConnection.createClientSession(false, true, true, 100, true, false);
          ClientProducer clientProducer = clientSession.createProducer(atestq);
-         Message message = new MessageImpl(JBossTextMessage.TYPE, false, 0,
+         ClientMessage message = new ClientMessageImpl(JBossTextMessage.TYPE, false, 0,
                  System.currentTimeMillis(), (byte) 1);
          message.getBody().putString("Hello!");
          clientProducer.send(message);

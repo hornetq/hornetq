@@ -24,6 +24,7 @@ package org.jboss.messaging.core.message.impl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.message.ServerMessage;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -54,7 +55,7 @@ public class MessageReferenceImpl implements MessageReference
    
    private long scheduledDeliveryTime;
    
-   private Message message;
+   private ServerMessage message;
    
    private Queue queue;
    
@@ -75,7 +76,7 @@ public class MessageReferenceImpl implements MessageReference
       this.queue = queue;
    }
    
-   protected MessageReferenceImpl(final Message message, final Queue queue)
+   protected MessageReferenceImpl(final ServerMessage message, final Queue queue)
    {
    	this.message = message;
    	
@@ -114,7 +115,7 @@ public class MessageReferenceImpl implements MessageReference
       this.scheduledDeliveryTime = scheduledDeliveryTime;
    }
       
-   public Message getMessage()
+   public ServerMessage getMessage()
    {
       return message;
    }         
@@ -151,7 +152,7 @@ public class MessageReferenceImpl implements MessageReference
          		binding = postOffice.addBinding(DLQ, DLQ, null, true, false);
          	}
          	
-            Message copyMessage = makeCopyForDLQOrExpiry(false, persistenceManager);
+            ServerMessage copyMessage = makeCopyForDLQOrExpiry(false, persistenceManager);
             
             tx.addMessage(copyMessage);
             
@@ -192,7 +193,7 @@ public class MessageReferenceImpl implements MessageReference
       		binding = postOffice.addBinding(expiryQueue, expiryQueue, null, true, false);
       	}
       	
-         Message copyMessage = makeCopyForDLQOrExpiry(false, persistenceManager);
+         ServerMessage copyMessage = makeCopyForDLQOrExpiry(false, persistenceManager);
          
          copyMessage.setDestination(binding.getAddress());
          
@@ -223,7 +224,7 @@ public class MessageReferenceImpl implements MessageReference
    
    // Private -------------------------------------------------------
    
-   private Message makeCopyForDLQOrExpiry(final boolean expiry, final StorageManager pm) throws Exception
+   private ServerMessage makeCopyForDLQOrExpiry(final boolean expiry, final StorageManager pm) throws Exception
    {
       /*
        We copy the message and send that to the dlq/expiry queue - this is
@@ -234,7 +235,7 @@ public class MessageReferenceImpl implements MessageReference
        and original message id
       */
 
-      Message copy = message.copy();
+      ServerMessage copy = message.copy();
       
       long newMessageId = pm.generateMessageID();
       

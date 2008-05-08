@@ -21,9 +21,13 @@
  */
 package org.jboss.messaging.tests.unit.core.message.impl;
 
+import org.jboss.messaging.core.message.ClientMessage;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.message.ServerMessage;
+import org.jboss.messaging.core.message.impl.ClientMessageImpl;
 import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.message.impl.ServerMessageImpl;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeQueueFactory;
@@ -52,10 +56,8 @@ public class MessageTest extends UnitTestCase
       long timestamp = 82798172;
       byte priority = 32;
       
-      Message message = new MessageImpl(type, reliable, expiration, timestamp, priority);
-      message.setMessageID(id);
-      
-      assertEquals(id, message.getMessageID());
+      ClientMessage message = new ClientMessageImpl(type, reliable, expiration, timestamp, priority);
+  
       assertEquals(type, message.getType());
       assertEquals(reliable, message.isDurable());
       assertEquals(timestamp, message.getTimestamp());
@@ -63,10 +65,8 @@ public class MessageTest extends UnitTestCase
       
       reliable = false;
       
-      message = new MessageImpl(type, reliable, expiration, timestamp, priority);
-      message.setMessageID(id);
-      
-      assertEquals(id, message.getMessageID());
+      message = new ClientMessageImpl(type, reliable, expiration, timestamp, priority);
+
       assertEquals(type, message.getType());
       assertEquals(reliable, message.isDurable());
       assertEquals(timestamp, message.getTimestamp());
@@ -77,37 +77,20 @@ public class MessageTest extends UnitTestCase
    {
       long id = 56465;
 
-      Message message = new MessageImpl(id);
+      ServerMessage message = new ServerMessageImpl(id);
       
       assertEquals(id, message.getMessageID());
    }
    
-   public void testCopy()
-   {
-      long id = 56465;
-      int type = 655;
-      boolean reliable = true;
-      long expiration = 6712671;
-      long timestamp = 82798172;
-      byte priority = 32;
-      
-      Message message = new MessageImpl(type, reliable, expiration, timestamp, priority);
-      message.setMessageID(id);
-      
-      Message message2 = message.copy();
-      
-      assertEquivalent(message, message2);
-   }
-   
    public void testSetAndGetMessageID()
    {
-      Message message = new MessageImpl();
+      ServerMessage message = new ServerMessageImpl();
       
       assertEquals(0, message.getMessageID());
       
-      message = new MessageImpl(655, true, 767676, 989898, (byte)32);
+      message = new ServerMessageImpl(23);
       
-      assertEquals(0, message.getMessageID());
+      assertEquals(23, message.getMessageID());
       
       long id = 765432;
       message.setMessageID(id);
@@ -116,7 +99,7 @@ public class MessageTest extends UnitTestCase
    
    public void testSetAndGetReliable()
    {
-      Message message = new MessageImpl();
+      ServerMessage message = new ServerMessageImpl();
       
       boolean reliable = true;
       message.setDurable(reliable);
@@ -129,7 +112,7 @@ public class MessageTest extends UnitTestCase
     
    public void testSetAndGetExpiration()
    {
-      Message message = new MessageImpl();
+      ServerMessage message = new ServerMessageImpl();
       
       long expiration = System.currentTimeMillis() + 10000;
       message.setExpiration(expiration);
@@ -146,7 +129,7 @@ public class MessageTest extends UnitTestCase
       
    public void testSetAndGetTimestamp()
    {
-      Message message = new MessageImpl();
+      ServerMessage message = new ServerMessageImpl();
       
       long timestamp = System.currentTimeMillis();
       message.setTimestamp(timestamp);
@@ -155,7 +138,7 @@ public class MessageTest extends UnitTestCase
    
    public void testSetAndGetPriority()
    {
-      Message message = new MessageImpl();
+      ServerMessage message = new ServerMessageImpl();
       byte priority = 7;
       message.setPriority(priority);
       assertEquals(priority, message.getPriority());
@@ -163,54 +146,17 @@ public class MessageTest extends UnitTestCase
    
    public void testSetAndGetConnectionID()
    {
-      Message message = new MessageImpl();
+      ServerMessage message = new ServerMessageImpl();
       
       assertEquals(0, message.getConnectionID());
       long connectionID = 781628;
       message.setConnectionID(connectionID);
       assertEquals(connectionID, message.getConnectionID());      
    }
-   
 
-   
-   public void testEquals()
-   {
-      Message message1 = new MessageImpl();
-      message1.setMessageID(1);
-      
-      Message message2 = new MessageImpl();
-      message2.setMessageID(2);
-      
-      Message message3 = new MessageImpl();
-      message3.setMessageID(1);
-      
-      assertTrue(message1.equals(message1));
-      assertTrue(message2.equals(message2));
-      assertTrue(message3.equals(message3));
-      
-      assertFalse(message1.equals(message2));
-      assertFalse(message2.equals(message1));
-      
-      assertFalse(message2.equals(message3));
-      assertFalse(message3.equals(message2));
-      
-      assertTrue(message1.equals(message3));
-      assertTrue(message3.equals(message1));
-      
-   }
-   
-   public void testHashcode()
-   {
-      long id1 = 6567575;
-      Message message1 = new MessageImpl();
-      message1.setMessageID(id1);
-      
-      assertEquals((int) ((id1 >>> 32) ^ id1), message1.hashCode());
-   }
-   
    public void testMessageReference()
    {
-      Message message = new MessageImpl();
+      ServerMessage message = new ServerMessageImpl();
       
       SimpleString squeue1 = new SimpleString("queue1");
       SimpleString squeue2 = new SimpleString("queue2");
@@ -248,10 +194,10 @@ public class MessageTest extends UnitTestCase
 
    public void testDurableReferences()
    {
-      Message messageDurable = new MessageImpl();
+      ServerMessage messageDurable = new ServerMessageImpl();
       messageDurable.setDurable(true);
       
-      Message messageNonDurable = new MessageImpl();
+      ServerMessage messageNonDurable = new ServerMessageImpl();
       messageNonDurable.setDurable(false);
       
       SimpleString squeue1 = new SimpleString("queue1");

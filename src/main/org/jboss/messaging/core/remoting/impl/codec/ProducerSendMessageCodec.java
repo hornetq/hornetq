@@ -9,8 +9,8 @@ package org.jboss.messaging.core.remoting.impl.codec;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PROD_SEND;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.message.ServerMessage;
+import org.jboss.messaging.core.message.impl.ServerMessageImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
 import org.jboss.messaging.util.MessagingBuffer;
 
@@ -46,7 +46,7 @@ public class ProducerSendMessageCodec extends AbstractPacketCodec<ProducerSendMe
    @Override
    protected void encodeBody(final ProducerSendMessage message, final MessagingBuffer out) throws Exception
    {
-      MessagingBuffer buffer = message.getMessage().encode();
+      MessagingBuffer buffer = message.getClientMessage().encode();
       
       buffer.flip();
       
@@ -63,7 +63,7 @@ public class ProducerSendMessageCodec extends AbstractPacketCodec<ProducerSendMe
    {
       //TODO can be optimised
       
-      Message message = new MessageImpl();
+      ServerMessage message = new ServerMessageImpl();
       
       message.decode(in);
       

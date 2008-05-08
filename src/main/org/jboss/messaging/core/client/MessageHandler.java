@@ -21,7 +21,7 @@
    */
 package org.jboss.messaging.core.client;
 
-import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.ClientMessage;
 
 /**
  * 
@@ -32,5 +32,5 @@ import org.jboss.messaging.core.message.Message;
  */
 public interface MessageHandler
 {
-   void onMessage(Message message);
+   void onMessage(ClientMessage message);
 }

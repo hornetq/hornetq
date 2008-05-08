@@ -32,7 +32,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.ClientMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 
@@ -74,7 +74,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    
    private final int tokenBatchSize;
    
-   private final PriorityLinkedList<Message> buffer = new PriorityLinkedListImpl<Message>(10);
+   private final PriorityLinkedList<ClientMessage> buffer = new PriorityLinkedListImpl<ClientMessage>(10);
    
    private volatile Thread receiverThread;
    
@@ -124,7 +124,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // ClientConsumer implementation
    // -----------------------------------------------------------------
 
-   public synchronized Message receive(long timeout) throws MessagingException
+   public synchronized ClientMessage receive(long timeout) throws MessagingException
    {
       checkClosed();
 
@@ -168,7 +168,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                     
             if (!closed && !buffer.isEmpty())
             {                              
-               Message m = buffer.removeFirst();
+               ClientMessage m = buffer.removeFirst();
                
                boolean expired = m.isExpired();
                
@@ -202,12 +202,12 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }      
    }
 
-   public Message receive() throws MessagingException
+   public ClientMessage receive() throws MessagingException
    {
    	return receive(0);
    }
    
-   public Message receiveImmediate() throws MessagingException
+   public ClientMessage receiveImmediate() throws MessagingException
    {
       return receive(-1);
    }
@@ -283,7 +283,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       return targetID;
    }
 
-   public void handleMessage(final Message message) throws Exception
+   public void handleMessage(final ClientMessage message) throws Exception
    {
       if (closed)
       {
@@ -442,7 +442,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    		//ordering. If we just added a Runnable with the message to the executor immediately as we get it
    		//we could not do that
    		
-   		Message message;
+   		ClientMessage message;
    		
    		synchronized (this)
    		{

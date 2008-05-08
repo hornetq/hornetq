@@ -8,7 +8,7 @@ package org.jboss.messaging.core.client.impl;
 
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.ClientMessage;
 
 /**
  * 
@@ -21,7 +21,7 @@ public interface ClientConsumerInternal extends ClientConsumer
 {   
    long getClientTargetID();
    
-   void handleMessage(Message message) throws Exception;
+   void handleMessage(ClientMessage message) throws Exception;
    
    void recover(long lastDeliveryID) throws MessagingException;
 }

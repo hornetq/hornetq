@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.message.ServerMessage;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -108,11 +108,11 @@ public class NullStorageManager implements StorageManager
 	{
 	}
 
-	public void storeMessage(Message message) throws Exception
+	public void storeMessage(ServerMessage message) throws Exception
 	{
 	}
 
-	public void storeMessageTransactional(long txID, Message message) throws Exception
+	public void storeMessageTransactional(long txID, ServerMessage message) throws Exception
 	{
 	}
 

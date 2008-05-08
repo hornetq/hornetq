@@ -21,13 +21,12 @@
  */
 package org.jboss.messaging.core.server.impl;
 
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.message.ServerMessage;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.HandleStatus;
@@ -185,7 +184,7 @@ public class ServerConsumerImpl implements ServerConsumer
             return HandleStatus.BUSY;
          }
          
-         Message message = ref.getMessage();
+         ServerMessage message = ref.getMessage();
          
          if (filter != null && !filter.match(message))
          {

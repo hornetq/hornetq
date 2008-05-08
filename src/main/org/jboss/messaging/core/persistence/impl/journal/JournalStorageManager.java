@@ -24,9 +24,9 @@ import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.message.ServerMessage;
+import org.jboss.messaging.core.message.impl.ServerMessageImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -159,7 +159,7 @@ public class JournalStorageManager implements StorageManager
 	
 	// Non transactional operations
 	
-	public void storeMessage(final Message message) throws Exception
+	public void storeMessage(final ServerMessage message) throws Exception
 	{		
 		//TODO too much copying is occurring here
 	   
@@ -186,7 +186,7 @@ public class JournalStorageManager implements StorageManager
 	
 	// Transactional operations
 	
-   public void storeMessageTransactional(long txID, Message message) throws Exception
+   public void storeMessageTransactional(long txID, ServerMessage message) throws Exception
    {
       //TODO too much copying is occurring here
       
@@ -269,7 +269,7 @@ public class JournalStorageManager implements StorageManager
 				{
 					MessagingBuffer buff = new ByteBufferWrapper(bb);
 
-					Message message = new MessageImpl(record.id);
+					ServerMessage message = new ServerMessageImpl(record.id);
 					
 					message.decode(buff);
 					

@@ -8,7 +8,7 @@
 package org.jboss.messaging.core.client;
 
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.ClientMessage;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -18,9 +18,9 @@ public interface ClientProducer
 {        
 	SimpleString getAddress();
 	
-	void send(Message message) throws MessagingException;
+	void send(ClientMessage message) throws MessagingException;
 	
-   void send(SimpleString address, Message message) throws MessagingException;
+   void send(SimpleString address, ClientMessage message) throws MessagingException;
    
    void registerAcknowledgementHandler(AcknowledgementHandler handler);
    

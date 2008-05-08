@@ -72,20 +72,7 @@ public class DeliveryImpl implements Delivery
    
    public void deliver() throws Exception
    {
-      /*
-      Note we copy the message before sending.
-      This is because delivery count may be different for the same message sent to different topic subscribers
-      And invm the same message instance would otherwise be passed to all consumers
-      For the non INVM case this copy is unncessary and can be optimised away TODO - although the overhead of
-      copying is actually quite small
-      */
-      Message copy = reference.getMessage().copy();
-      
-      copy.setDeliveryCount(reference.getDeliveryCount() + 1);
-      
-      copy.setDeliveryID(deliveryID);
-      
-      ReceiveMessage message = new ReceiveMessage(copy);
+      ReceiveMessage message = new ReceiveMessage(reference.getMessage(), reference.getDeliveryCount() + 1, deliveryID);
       
       message.setTargetID(consumerID);
       message.setExecutorID(sessionID);

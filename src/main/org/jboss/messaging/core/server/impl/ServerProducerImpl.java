@@ -22,7 +22,7 @@
 package org.jboss.messaging.core.server.impl;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.ServerMessage;
 import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketSender;
@@ -87,7 +87,7 @@ public class ServerProducerImpl implements ServerProducer
 		session.removeProducer(this);
 	}
 		
-	public void send(final Message message) throws Exception
+	public void send(final ServerMessage message) throws Exception
 	{		
 		if (this.address != null)
 		{			

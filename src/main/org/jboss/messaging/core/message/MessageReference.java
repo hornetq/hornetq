@@ -40,7 +40,7 @@ import org.jboss.messaging.core.settings.impl.QueueSettings;
  */
 public interface MessageReference
 {      
-   Message getMessage();
+   ServerMessage getMessage();
    
    MessageReference copy(Queue queue);
    

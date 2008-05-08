@@ -8,7 +8,8 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PROD_SEND;
 
-import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.ClientMessage;
+import org.jboss.messaging.core.message.ServerMessage;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -22,33 +23,45 @@ public class ProducerSendMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private final Message message;
+   private final ClientMessage clientMessage;
+   
+   private final ServerMessage serverMessage;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ProducerSendMessage(final Message message)
+   public ProducerSendMessage(final ClientMessage message)
    {
       super(PROD_SEND);
 
-      this.message = message;
+      this.clientMessage = message;
+      
+      this.serverMessage = null;
+   }
+   
+   public ProducerSendMessage(final ServerMessage message)
+   {
+      super(PROD_SEND);
+
+      this.serverMessage = message;
+      
+      this.clientMessage = null;
    }
 
    // Public --------------------------------------------------------
 
-   public Message getMessage()
+   public ClientMessage getClientMessage()
    {
-      return message;
+      return clientMessage;
    }
    
-   @Override
-   public String toString()
+   public ServerMessage getServerMessage()
    {
-      return getParentString() + ", message=" + message
-            + "]";
+      return serverMessage;
    }
-   
+
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

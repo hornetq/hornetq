@@ -2,8 +2,6 @@ package org.jboss.messaging.tests.unit.core.transaction.impl;
 
 import static org.jboss.messaging.tests.util.RandomUtil.randomXid;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -12,6 +10,7 @@ import javax.transaction.xa.Xid;
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.message.ServerMessage;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
@@ -504,7 +503,7 @@ public class TransactionTest extends UnitTestCase
       
       //Some refs to ack
       
-      Message message1 = this.generateMessage(12);
+      ServerMessage message1 = this.generateMessage(12);
       
       MessageReference ref1 = message1.createReference(queue1);
       
@@ -514,7 +513,7 @@ public class TransactionTest extends UnitTestCase
       
       
       //Non durable message to ack
-      Message message2 = this.generateMessage(23);
+      ServerMessage message2 = this.generateMessage(23);
       
       message2.setDurable(false);
             

@@ -24,8 +24,8 @@ package org.jboss.messaging.tests.unit.core.server.impl.concurrent;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.message.ServerMessage;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
@@ -131,7 +131,7 @@ public class QueueTest extends UnitTestCase
          
          while (System.currentTimeMillis() - start < testTime)
          {
-            Message message = generateMessage(i);
+            ServerMessage message = generateMessage(i);
             
             MessageReference ref = message.createReference(queue);
             

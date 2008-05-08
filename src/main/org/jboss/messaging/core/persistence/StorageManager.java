@@ -24,7 +24,7 @@ package org.jboss.messaging.core.persistence;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.ServerMessage;
 import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -50,14 +50,14 @@ public interface StorageManager extends MessagingComponent
    long generateTransactionID();
    
       
-   void storeMessage(Message message) throws Exception;
+   void storeMessage(ServerMessage message) throws Exception;
    
    void storeAcknowledge(long queueID, long messageID) throws Exception;
    
    void storeDelete(long messageID) throws Exception;
     
    
-   void storeMessageTransactional(long txID, Message message) throws Exception;
+   void storeMessageTransactional(long txID, ServerMessage message) throws Exception;
    
    void storeAcknowledgeTransactional(long txID, long queueID, long messageiD) throws Exception;
    

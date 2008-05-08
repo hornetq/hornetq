@@ -39,8 +39,8 @@ import javax.jms.MessageNotWriteableException;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
+import org.jboss.messaging.core.message.ClientMessage;
+import org.jboss.messaging.core.message.impl.ClientMessageImpl;
 import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
@@ -108,7 +108,7 @@ public class JBossMessage implements javax.jms.Message
       
    private static final Logger log = Logger.getLogger(JBossMessage.class);
   
-   public static JBossMessage createMessage(final org.jboss.messaging.core.message.Message message, final ClientSession session)
+   public static JBossMessage createMessage(final ClientMessage message, final ClientSession session)
    {
       int type = message.getType();
       
@@ -144,7 +144,7 @@ public class JBossMessage implements javax.jms.Message
    // Attributes ----------------------------------------------------
 
    //The underlying message
-   protected org.jboss.messaging.core.message.Message message;
+   protected ClientMessage message;
    
    protected MessagingBuffer body;
    
@@ -175,7 +175,7 @@ public class JBossMessage implements javax.jms.Message
     */
    protected JBossMessage(final int type)
    {
-      message = new MessageImpl(type, true, 0, System.currentTimeMillis(), (byte)4);
+      message = new ClientMessageImpl(type, true, 0, System.currentTimeMillis(), (byte)4);
       
       //TODO - can we lazily create this?
       body = message.getBody();
@@ -189,7 +189,7 @@ public class JBossMessage implements javax.jms.Message
    /**
     * Constructor for when receiving a message from the server
     */
-   public JBossMessage(final org.jboss.messaging.core.message.Message message, ClientSession session)
+   public JBossMessage(final ClientMessage message, ClientSession session)
    {
       this.message = message;
       
@@ -853,7 +853,7 @@ public class JBossMessage implements javax.jms.Message
     
    // Public --------------------------------------------------------
    
-   public org.jboss.messaging.core.message.Message getCoreMessage()
+   public ClientMessage getCoreMessage()
    {
       return message;
    }

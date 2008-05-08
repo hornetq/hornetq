@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.message.ServerMessage;
 import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.util.SimpleString;
 
@@ -69,7 +69,7 @@ public interface PostOffice extends MessagingComponent
    
    Binding getBinding(SimpleString queueName) throws Exception;
       
-   List<MessageReference> route(Message message) throws Exception;
+   List<MessageReference> route(ServerMessage message) throws Exception;
    
    //Flow control
    

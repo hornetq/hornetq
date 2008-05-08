@@ -24,7 +24,7 @@ package org.jboss.messaging.core.client.impl;
 import org.jboss.messaging.core.client.AcknowledgementHandler;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.ClientMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TokenBucketLimiter;
@@ -108,21 +108,21 @@ public class ClientProducerImpl implements ClientProducerInternal
    	return address;
    }
    
-   public void send(final Message msg) throws MessagingException
+   public void send(final ClientMessage msg) throws MessagingException
    {
       checkClosed();
       
       doSend(null, msg);
    }
    
-   public void send(final SimpleString address, final Message msg) throws MessagingException
+   public void send(final SimpleString address, final ClientMessage msg) throws MessagingException
    {
       checkClosed();
       
       doSend(address, msg);
    }
    
-   private void doSend(final SimpleString address, final Message msg) throws MessagingException
+   private void doSend(final SimpleString address, final ClientMessage msg) throws MessagingException
    {
       if (address != null)
       {
@@ -133,7 +133,7 @@ public class ClientProducerImpl implements ClientProducerInternal
          msg.setDestination(this.address);
       }
       
-   	ProducerSendMessage message = new ProducerSendMessage(msg.copy());
+   	ProducerSendMessage message = new ProducerSendMessage(msg);
    	
    	//TODO flow control disabled for now
    	

@@ -27,7 +27,7 @@ import javax.jms.Session;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.ClientMessage;
 
 /**
  * 
@@ -59,7 +59,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
     * In this method we apply the JMS acknowledgement and redelivery semantics
     * as per JMS spec
     */
-   public void onMessage(final Message message)
+   public void onMessage(final ClientMessage message)
    {
       JBossMessage jbm = JBossMessage.createMessage(message, session.getCoreSession());
       

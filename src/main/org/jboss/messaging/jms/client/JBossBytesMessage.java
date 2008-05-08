@@ -30,6 +30,7 @@ import javax.jms.MessageFormatException;
 
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.ClientMessage;
 import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
 
 /**
@@ -67,9 +68,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
    /*
     * Constructor on receipt at client side
     */
-   public JBossBytesMessage(
-         final org.jboss.messaging.core.message.Message message,
-         final ClientSession session)
+   public JBossBytesMessage(final ClientMessage message, final ClientSession session)
    {
       super(message, session);
    }
