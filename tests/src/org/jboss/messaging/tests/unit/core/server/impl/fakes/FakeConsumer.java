@@ -25,9 +25,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.HandleStatus;
+import org.jboss.messaging.core.server.MessageReference;
 
 /**
  * 

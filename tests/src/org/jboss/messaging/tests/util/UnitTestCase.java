@@ -35,10 +35,10 @@ import java.util.UUID;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.message.ServerMessage;
-import org.jboss.messaging.core.message.impl.ServerMessageImpl;
+import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 
 /**
  * 

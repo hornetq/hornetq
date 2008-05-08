@@ -19,23 +19,35 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.message;
+package org.jboss.messaging.core.server;
+
+import org.jboss.messaging.core.message.Message;
 
 /**
  * 
- * A ClientMessage
+ * A ServerMessage
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface ClientMessage extends Message
+public interface ServerMessage extends Message
 {
-   int getDeliveryCount();
+   long getMessageID();
    
-   void setDeliveryCount(int deliveryCount);
+   void setMessageID(long id);
+
+   long getConnectionID();
    
-   long getDeliveryID();
+   void setConnectionID(long connectionID);
    
-   void setDeliveryID(long deliveryID);
+   MessageReference createReference(Queue queue);   
+
+   void decrementDurableRefCount();
    
+   void incrementDurableRefCount();
+   
+   int getDurableRefCount();
+   
+   ServerMessage copy();
 }
+

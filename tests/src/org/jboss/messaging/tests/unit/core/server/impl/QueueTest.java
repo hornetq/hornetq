@@ -29,11 +29,11 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.DistributionPolicy;
 import org.jboss.messaging.core.server.HandleStatus;
+import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.impl.QueueImpl;
 import org.jboss.messaging.core.server.impl.RoundRobinDistributionPolicy;

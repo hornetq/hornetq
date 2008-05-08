@@ -19,9 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.message.impl;
+package org.jboss.messaging.core.client.impl;
 
-import org.jboss.messaging.core.message.ClientMessage;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 
 /**
  * 

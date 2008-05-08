@@ -8,8 +8,8 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.RECEIVE_MSG;
 
-import org.jboss.messaging.core.message.ClientMessage;
-import org.jboss.messaging.core.message.ServerMessage;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.server.ServerMessage;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

@@ -30,8 +30,8 @@ import java.io.Serializable;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
+import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.message.ClientMessage;
 
 /**
  * This class implements javax.jms.ObjectMessage

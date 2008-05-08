@@ -28,8 +28,8 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.impl.QueueImpl;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeConsumer;

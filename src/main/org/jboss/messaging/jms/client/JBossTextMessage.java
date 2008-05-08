@@ -25,9 +25,9 @@ package org.jboss.messaging.jms.client;
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
+import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.ClientMessage;
 
 /**
  * This class implements javax.jms.TextMessage ported from SpyTextMessage in JBossMQ.

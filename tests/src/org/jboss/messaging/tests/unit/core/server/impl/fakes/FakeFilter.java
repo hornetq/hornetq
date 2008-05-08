@@ -22,7 +22,7 @@
 package org.jboss.messaging.tests.unit.core.server.impl.fakes;
 
 import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.message.ServerMessage;
+import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.util.SimpleString;
 
 /**

@@ -8,9 +8,9 @@ package org.jboss.messaging.core.remoting.impl.codec;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.RECEIVE_MSG;
 
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.ClientMessage;
-import org.jboss.messaging.core.message.impl.ClientMessageImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.util.MessagingBuffer;
 

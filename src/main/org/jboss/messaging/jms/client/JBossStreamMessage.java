@@ -28,9 +28,9 @@ import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 import javax.jms.StreamMessage;
 
+import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.ClientMessage;
 import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
 import org.jboss.messaging.util.DataConstants;
 

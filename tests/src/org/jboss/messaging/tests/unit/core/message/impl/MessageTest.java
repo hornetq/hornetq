@@ -21,15 +21,15 @@
  */
 package org.jboss.messaging.tests.unit.core.message.impl;
 
-import org.jboss.messaging.core.message.ClientMessage;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.message.ServerMessage;
-import org.jboss.messaging.core.message.impl.ClientMessageImpl;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.message.impl.ServerMessageImpl;
+import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
+import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeQueueFactory;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;

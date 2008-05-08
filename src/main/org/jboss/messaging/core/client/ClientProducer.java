@@ -8,7 +8,6 @@
 package org.jboss.messaging.core.client;
 
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.message.ClientMessage;
 import org.jboss.messaging.util.SimpleString;
 
 /**

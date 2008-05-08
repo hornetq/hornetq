@@ -27,8 +27,8 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_RESET;
 
 import org.jboss.messaging.core.client.ClientBrowser;
+import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.message.ClientMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;

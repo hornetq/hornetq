@@ -22,11 +22,11 @@
 package org.jboss.messaging.core.server.impl;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.ServerMessage;
 import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerReceiveTokensMessage;
+import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerProducer;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.util.SimpleString;

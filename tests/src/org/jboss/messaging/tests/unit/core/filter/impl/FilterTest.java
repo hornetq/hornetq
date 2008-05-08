@@ -26,9 +26,9 @@ import junit.framework.TestCase;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
-import org.jboss.messaging.core.message.ServerMessage;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.message.impl.ServerMessageImpl;
+import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.util.SimpleString;
 
 /**

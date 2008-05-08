@@ -9,9 +9,9 @@ package org.jboss.messaging.core.remoting.impl.codec;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PROD_SEND;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.ServerMessage;
-import org.jboss.messaging.core.message.impl.ServerMessageImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
+import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.util.MessagingBuffer;
 
 /**

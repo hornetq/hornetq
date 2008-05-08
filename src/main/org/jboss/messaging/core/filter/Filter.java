@@ -21,7 +21,7 @@
  */
 package org.jboss.messaging.core.filter;
 
-import org.jboss.messaging.core.message.ServerMessage;
+import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.util.SimpleString;
 
 /**
