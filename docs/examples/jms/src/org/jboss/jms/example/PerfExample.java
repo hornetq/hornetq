@@ -55,7 +55,8 @@ public class PerfExample
       {
          int noOfMessages = Integer.parseInt(args[1]);
          int deliveryMode = args[2].equalsIgnoreCase("persistent")? DeliveryMode.PERSISTENT: DeliveryMode.NON_PERSISTENT;
-         perfExample.runSender(noOfMessages, deliveryMode);
+         long samplePeriod = Long.parseLong(args[3]);
+         perfExample.runSender(noOfMessages, deliveryMode, samplePeriod);
       }
 
    }
@@ -70,7 +71,7 @@ public class PerfExample
       session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
    }
    
-   public void runSender(int noOfMessage, int deliveryMode)
+   public void runSender(int noOfMessage, int deliveryMode, long samplePeriod)
    {
       try
       {
@@ -81,9 +82,10 @@ public class PerfExample
          PerfParams perfParams = new PerfParams();
          perfParams.setNoOfMessagesToSend(noOfMessage);
          perfParams.setDeliveryMode(deliveryMode);
+         perfParams.setSamplePeriod(samplePeriod);
          m.setObject(perfParams);
          producer.send(m);
-         scheduler.scheduleAtFixedRate(command, perfParams.getSamplePeriod(), perfParams.getSamplePeriod(), TimeUnit.MILLISECONDS);
+         scheduler.scheduleAtFixedRate(command, perfParams.getSamplePeriod(), perfParams.getSamplePeriod(), TimeUnit.SECONDS);
          for (int i = 1; i <= noOfMessage; i++)
          {
             TextMessage textMessage = session.createTextMessage("" + i);
@@ -184,7 +186,7 @@ public class PerfExample
                params = new PerfParams();
             }
             log.info("params = " + params);
-            scheduler.scheduleAtFixedRate(command, params.getSamplePeriod(), params.getSamplePeriod(), TimeUnit.MILLISECONDS);
+            scheduler.scheduleAtFixedRate(command, params.getSamplePeriod(), params.getSamplePeriod(), TimeUnit.SECONDS);
          }
          else
          {

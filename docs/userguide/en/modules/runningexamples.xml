@@ -1,120 +1,134 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="examples">
-  <title>Running the Examples</title>
+   <title>Running the Examples</title>
 
-  <para>In the directory <literal>docs/examples</literal>, you will find a set
-  of examples demonstrating JBoss Messaging working in various examples, they
-  include: <itemizedlist>
-      <listitem>
-        <para>docs/example/queue</para>
+   <para>In the directory <literal>docs/examples</literal>, you will find 2 sets of examples. A set of pure JMS examples
+      and also a set of non JMS examples that demonstrate how to use the Jboss Messaging core API
+   </para>
+   <para>It is highly recommended that you familiarise yourself with the
+      examples.
+   </para>
+   <para>Make sure you start JBoss Messaging before running the
+      examples!
+   </para>
+   <section id="examples.jms">
+      <title>The JMS examples</title>
+      <para>The following JMS examples are provided. To run these you will first need to start the server as shown
+         in the installation chapter.
+      </para>
 
-        <para>This example shows a simple send and receive to a remote queue
-        using a JMS client</para>
-      </listitem>
+      <para>For each example, you can always override the default ports it will
+         try to connect to by editing jndi.properties in the particular example
+         directory
+      </para>
+      <para>to run a specific example open up a shell or command prompt and navigate into the
+         <literal>docs/examples/jms</literal>
+         directory and run the command ant followed by the example name, as follows
+      </para>
+      <programlisting>
+         ant queueExample
+      </programlisting>
+      <para>The output should be similar top the following</para>
+      <programlisting>
+         Buildfile: build.xml
 
-      <listitem>
-        <para>docs/example/topic</para>
+         init:
+         [mkdir] Created dir: /home/andy/projects/jBossMessaging/docs/examples/jms/build
 
-        <para>This example shows a simple send and receive to a remote topic
-        using a JMS client</para>
-      </listitem>
+         compile:
+         [javac] Compiling 5 source files to /home/andy/projects/jBossMessaging/docs/examples/jms/build
 
-      <listitem>
-        <para>docs/example/mdb</para>
+         queueExample:
+         [java] 10:59:02,124 INFO @main [QueueExample] sending message to queue
+         [java] 10:59:02,187 INFO @main [QueueExample] message received from queue
+         [java] 10:59:02,187 INFO @main [QueueExample] message = This is a text message!
 
-        <para>This example demonstrates usage of an EJB2.1 MDB with JBoss
-        Messaging</para>
-      </listitem>
+         BUILD SUCCESSFUL
+         Total time: 3 seconds
+      </programlisting>
+      <para>The following examples are available</para>
+      <itemizedlist>
+         <listitem>
+            <para>queueExample</para>
+            <para>This example shows a simple send and receive to a remote queue
+               using a JMS client
+            </para>
+         </listitem>
+         <listitem>
+            <para>topicExample</para>
+            <para>This example shows a simple send and receive to a remote topic
+               using a JMS client
+            </para>
+         </listitem>
+         <listitem>
+            <para>DurSubExample</para>
+            <para>This example shows the use of a Durable Subscriber.
+            </para>
+         </listitem>
+         <listitem>
+            <para>perfListener</para>
+            <para>This example will run a basic performance test. This needs to be used in conjunction with the
+               perfSender example.
+            </para>
+         </listitem>
+         <listitem>
+            <para>perfSender</para>
+            <para>This example will run a basic performance test. before running start the example and wait for it to
+               start, you will see <literal>READY!!!</literal> when the listener has started. The number of messages,
+               delivery mode can be configured as follows:
+               <programlisting>
+      ant -Dmessage.count=20000 -Ddelivery.mode=PERSISTENT -Dsample.period=1 perfSender
+               </programlisting>
+               <itemizedlist>
+                  <listitem>
+                     <para>message.count</para>
+                     <para>The number of messages to send.</para>
+                  </listitem>
+                  <listitem>
+                     <para>delivery.mode</para>
+                     <para>The delivery mode to use, PERSISTENT or NON_PERSISTENT.</para>
+                  </listitem>
+                  <listitem>
+                     <para>message.count</para>
+                     <para>The sample period, in seconds</para>
+                  </listitem>
+               </itemizedlist>
+            </para>
+         </listitem>
+      </itemizedlist>
+   </section>
 
-      <listitem>
-        <para>docs/example/ejb3mdb</para>
+   <section id="examples.messaging">
+      <title>The Messaging examples</title>
+      <para>The messaging examples demonstrate the use of the messaging core API and also how to create and run an embedded
+      instance of JBM. The following examples are available:</para>
+      <para>to run a specific example open up a shell or command prompt and navigate into the
+         <literal>docs/examples/messaging</literal>
+         directory and run the command ant followed by the example name, as follows
+      </para>
+      <programlisting>
+         ant simpleClient
+      </programlisting>
+      <itemizedlist>
+         <listitem>
+            <para>SimpleClient</para>
+            <para>This example shows a simple send and receive to a remote queue
+               using a core messaging client. The server will need to be running for this example.
+            </para>
+         </listitem>
+         <listitem>
+            <para>SSLClient</para>
+            <para>This example shows a simple send and receive to a remote queue using SS. The server will need to be
+               running and configyred to use SSL for this example. Refer to the configuration chapter for details on how to do this
+            </para>
+         </listitem>
+         <listitem>
+            <para>simpleExample</para>
+            <para>This example shows how to create an embedded JBM server using the core API.
+            </para>
+         </listitem>
+      </itemizedlist>
+   </section>
 
-        <para>This example demonstrates usage of an EJB3 MDB with JBoss
-        Messaging</para>
-      </listitem>
 
-      <listitem>
-        <para>docs/example/stateless</para>
-
-        <para>This example demonstrates an EJB2.1 stateless session bean
-        interacting with JBoss Messaging</para>
-      </listitem>
-
-      <listitem>
-        <para>docs/example/mdb-failure</para>
-
-        <para>This example demonstrates rollback and redelivery occuring with
-        an EJB2.1 MDB</para>
-      </listitem>
-
-      <listitem>
-        <para>docs/example/secure-socket</para>
-
-        <para>This example demonstrates a JMS client interacting with a JBoss
-        Messaging server using SSL encrypted transport</para>
-      </listitem>
-
-      <listitem>
-        <para>docs/example/http</para>
-
-        <para>This example demonstrates a JMS client interacting with a JBoss
-        Messaging server tunneling traffic over the HTTP protocol</para>
-      </listitem>
-
-      <listitem>
-        <para>docs/example/web-service</para>
-
-        <para>This example demonstrates JBoss web-service interacting with
-        JBoss Messaging</para>
-      </listitem>
-
-      <listitem>
-        <para>docs/example/distributed-queue</para>
-
-        <para>This example demonstrates a JMS client interacting with a JBoss
-        Messaging distributed queue - it requires two JBoss AS instances to be
-        running</para>
-      </listitem>
-
-      <listitem>
-        <para>docs/example/distributed-topic</para>
-
-        <para>This example demonstrates a JMS client interacting with a JBoss
-        Messaging distributed topic - it requires two JBoss AS instances to be
-        running</para>
-      </listitem>
-
-      <listitem>
-        <para>docs/example/stateless-clustered</para>
-
-        <para>This example demonstrates a JMS client interacting with
-        clustered EJB2.1 stateless session bean, which in turn interactes with
-        JBoss Messaging. The example uses HAJNDI to lookup the connection
-        factory</para>
-      </listitem>
-
-      <listitem>
-        <para>docs/example/bridge</para>
-
-        <para>This example demonstrates using a message bridge. It deploys a
-        message bridge in JBoss AS which then proceeds to move messages from a
-        source to a target queue</para>
-      </listitem>
-    </itemizedlist></para>
-
-  <para>It is highly recommended that you familiarise yourself with the
-  examples.</para>
-
-  <para>Make sure you start the JBoss server(s) before running the
-  examples!</para>
-
-  <para>The non clustered examples expect a JBoss AS instance to be running
-  with all the default settings</para>
-
-  <para>The clustered examples expect two JBoss AS instances to running with
-  ports settings as per ports-01 and ports-02.</para>
-
-  <para>For each example, you can always override the default ports it will
-  try to connect to by editing jndi.properties in the particular example
-  directory</para>
 </chapter>

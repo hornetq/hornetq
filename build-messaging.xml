@@ -78,7 +78,7 @@
    <property name="build.distro.lib.dir" value="${build.distro.dir}/lib"/>
    <property name="build.distro.config.dir" value="${build.distro.dir}/config"/>
    <property name="build.distro.bin.dir" value="${build.distro.dir}/bin"/>
-   <property name="build.distro.api.dir" value="${build.distro.dir}/api"/>
+   <property name="build.distro.api.dir" value="${build.distro.dir}/docs/api"/>
    <property name="build.distro.examples.dir" value="${build.distro.dir}/docs/examples"/>
    <!-- ======================================================================================== -->
    <!-- Thirdparty Dependency Definitions                                                        -->

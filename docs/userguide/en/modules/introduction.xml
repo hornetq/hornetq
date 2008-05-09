@@ -10,31 +10,20 @@
    enterprise service buses (ESBs) and other integration needs ranging from
    the simplest to the highest demand networks.</para>
 
-   <para>It will allow you to smoothly distribute your application load across
+   <!--<para>It will allow you to smoothly distribute your application load across
    your cluster, intelligently balancing and utilizing each nodes CPU cycles,
    with no single point of failure, providing a highly scalable and performant
    clustering implementation.</para>
-
+-->
    <para>JBoss Messaging includes a JMS front-end to deliver messaging in a
    standards-based format as well as being designed to be able to support
    other messaging protocols in the future.</para>
 
-   <para>JBoss Messaging is destined to become an integral part of the JBoss
-   Enterprise Application Platform, and the new Service Integration
-   Platform.</para>
 
-   <para>Currently it is available for embedded use within the JBoss
-   Application Server 4.2.0.GA or later (JBossAS). Work to integrate JBoss
-   Messaging with the new JBoss Microcontainer is under way.</para>
+   <para>Currently JBM 2.0 is only available standalone or embedded, The current JBoss AS 5 release contains JBM 1.4.2.</para>
 
-   <para>JBoss Messaging is also an integral part of Red Hat's strategy for
-   messaging. JBoss Messaging is committed to AMQP ( <ulink
-   url="http://www.amqp.org">AMQP</ulink>)- the new messaging standard from
-   Red Hat and others. Later versions of JBoss Messaging will support AMQP,
-   and JBoss Messaging will be focussed on becoming the premier AMQP Java
-   broker.</para>
 
-   <section id="support">
+  <!-- <section id="support">
       <title>JBoss Messaging support cover from Red Hat</title>
 
       <para>JBoss Messaging is destined to become part of both Application
@@ -48,10 +37,30 @@
 
       <para>Currently developer support is generally available for JBoss
       Messaging when installed in JBoss 4.2.x</para>
-   </section>
+   </section>-->
 
    <section id="features">
       <title>JBoss Messaging Features</title>
+
+      <para>New features added since JBM 1.4</para>
+
+      <itemizedlist>
+         <listitem>
+            <para>Journal based persistence. todo</para>
+         </listitem>
+
+         <listitem>
+            <para>Mina based transport. todo</para>
+         </listitem>
+
+         <listitem>
+            <para>Native io. todo</para>
+         </listitem>
+
+         <listitem>
+            <para>Standalone and embedded versions. todo</para>
+         </listitem>
+      </itemizedlist>
 
       <para>JBoss Messaging provides:</para>
 
@@ -138,7 +147,7 @@
          </listitem>
       </itemizedlist>
 
-      <para>Clustering features:</para>
+     <!-- <para>Clustering features:</para>
 
       <itemizedlist>
          <listitem>
@@ -200,27 +209,7 @@
             geographically separate clusters, forming huge globally
             distributed logical queues and topics.</para>
          </listitem>
-      </itemizedlist>
+      </itemizedlist>-->
    </section>
 
-   <section id="compatibility">
-      <title>Compatibility with JBossMQ</title>
-
-      <para>JBoss MQ is the JMS implementation currently shipped within JBoss
-      AS. Since JBoss Messaging is JMS 1.1 and JMS 1.0.2b compatible, the JMS
-      code written against JBossMQ will run with JBoss Messaging without any
-      changes.</para>
-
-      <para>JBoss Messaging does not have wire format compatibility with JBoss
-      MQ so it would be necessary to upgrade JBoss MQ clients with JBoss
-      Messaging client jars</para>
-
-      <para><important>
-             Even if JBoss Messaging deployment descriptors are very similar to JBoss MQ deployment descriptors, they are 
-
-            <emphasis>not</emphasis>
-
-             identical, so they will require some simple adjustments to get them to work with JBoss Messaging. Also, the database data model is completely different, so don't attempt to use JBoss Messaging with a JBoss MQ data schema and vice-versa. 
-         </important></para>
-   </section>
 </chapter>

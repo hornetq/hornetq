@@ -60,7 +60,7 @@ public class SimpleExample
 
       try
       {
-         //create a new server with an invm transport, we could use TCP if needed
+         //create a new server with an TCP transport
          ConfigurationImpl configuration = new ConfigurationImpl();
          configuration.setTransport(TransportType.TCP);
          configuration.setHost("localhost");

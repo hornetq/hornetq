@@ -1,28 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="about">
-   <title>About JBoss Messaging 1.4.0.</title>
-   <para>JBoss Messaging is the new enterprise messaging system from JBoss. It
-   is a complete rewrite of JBossMQ, the legacy JBoss JMS provider.</para>
-   <para>JBoss Messaging will be the default JMS provider in later versions of
+   <title>About JBoss Messaging 2.0.0</title>
+   <para>JBoss Messaging is the enterprise messaging system from JBoss.</para>
+   <para>JBoss Messaging is the default JMS provider in the
    JBoss Enterprise Application Platform, and JBoss Service Integration
    Platform. It will also be the default JMS provider in JBoss Application
    Server 5, and is the default JMS provider for JBoss ESB.</para>
    <para>JBoss Messaging is an integral part of Red Hat's strategy for
    messaging.</para>
-   <para>Compared with JBossMQ, JBoss Messaging offers improved performance in
-   both single node and clustered environments.</para>
-   <para>JBoss Messaging also features a much better modular architecture that
-   will allow us to add more features in the future.</para>
-   <para>JBoss Messaging can be easily installed in JBoss Application Server
-   4.2 using a few simple steps to remove JBoss MQ and replace with JBoss
-   Messaging.</para>
-   <para>Once JBoss Messaging becomes the default JMS provider in JBoss
-   Application Server, there will be no need to do any manual
-   installation.</para>
-   <para>From release 1.4.0. onwards JBoss Messaging is designed for JBoss
-   4.2 only and is Java 5.</para>
-   <para>The procedure of installing JBoss Messaging into JBoss Application
-   Server is detailed in this guide.</para>
+   <para>The procedure of installing and configuring JBoss Messaging is detailed in this guide, along with a set of
+      runnable examples.</para>
    <para>Please send your suggestions or comments to the <ulink
    url="http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=238">JBoss
    Messaging user forum</ulink>.</para>

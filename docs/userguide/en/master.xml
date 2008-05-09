@@ -1,43 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3CR3//EN"
-"../../../lib/docbook-support/support/docbook-dtd/docbookx.dtd" [
-<!ENTITY about SYSTEM "modules/about.xml">
-<!ENTITY introduction SYSTEM "modules/introduction.xml">
-<!ENTITY gettingstarted SYSTEM "modules/gettingstarted.xml">
-<!ENTITY nc_installation SYSTEM "modules/installation.xml">
-<!ENTITY runningexamples SYSTEM "modules/runningexamples.xml">
-<!ENTITY configuration SYSTEM "modules/configuration.xml">
-<!ENTITY c_configuration SYSTEM "modules/c_configuration.xml">
-<!ENTITY recovery_config SYSTEM "modules/recovery_config.xml">
-<!ENTITY bridge SYSTEM "modules/bridge.xml">
-]>
+        "../../../lib/docbook-support/support/docbook-dtd/docbookx.dtd" [
+        <!ENTITY about SYSTEM "modules/about.xml">
+        <!ENTITY introduction SYSTEM "modules/introduction.xml">
+        <!ENTITY gettingstarted SYSTEM "modules/gettingstarted.xml">
+        <!ENTITY nc_installation SYSTEM "modules/installation.xml">
+        <!ENTITY runningexamples SYSTEM "modules/runningexamples.xml">
+        <!ENTITY configuration SYSTEM "modules/configuration.xml">
+        <!ENTITY journal SYSTEM "modules/journal.xml">
+        <!ENTITY troubleshooting SYSTEM "modules/troubleshooting.xml">
+        ]>
 <book lang="en">
-  <bookinfo>
-    <title>JBoss Messaging 2.0 User's Guide</title>
+   <bookinfo>
+      <title>JBoss Messaging 2.0 User's Guide</title>
 
-    <subtitle>Enterprise Messaging from JBoss</subtitle>
+      <subtitle>Enterprise Messaging from JBoss</subtitle>
 
-  </bookinfo>
+   </bookinfo>
 
-  <toc></toc>
+   <toc></toc>
 
-  &about;
+   &about;
 
-  &introduction;
+   &introduction;
 
-  &gettingstarted;
+   &gettingstarted;
 
-  &nc_installation;
+   &nc_installation;
 
-  &runningexamples;
+   &runningexamples;
 
-  &configuration;
+   &configuration;
 
-  &c_configuration;
-  
-  &recovery_config;
-  
-  &bridge;
+   &journal;
+
+   &troubleshooting;
 
 
 </book>

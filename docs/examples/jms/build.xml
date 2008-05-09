@@ -43,6 +43,7 @@
    <!--perf props-->
    <property name="message.count" value="10000"/>
    <property name="delivery.mode" value="NON_PERSISTENT"/>
+   <property name="sample.period" value="1"/>
 
    <path id="compile.classpath">
       <fileset dir="${lib.dir}">
@@ -104,6 +105,7 @@
          <arg value="-s"/>
          <arg value="${message.count}"/>
          <arg value="${delivery.mode}"/>
+         <arg value="${sample.period}"/>
       </java>
    </target>
 </project>

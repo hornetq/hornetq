@@ -21,6 +21,8 @@
    */
 package org.jboss.jms.example;
 
+import org.jboss.messaging.core.logging.Logger;
+
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.jms.*;
@@ -34,6 +36,7 @@ import java.util.Properties;
  */
 public class QueueExample
 {
+   final static Logger log = Logger.getLogger(QueueExample.class);
    public static void main(String[] args)
    {
       Connection connection = null;
@@ -47,11 +50,13 @@ public class QueueExample
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer producer = session.createProducer(queue);
          Message message = session.createTextMessage("This is a text message!");
+         log.info("sending message to queue");
          producer.send(message);
          MessageConsumer messageConsumer = session.createConsumer(queue);
          connection.start();
          TextMessage message2 = (TextMessage) messageConsumer.receive(5000);
-         System.out.println("message = " + message2.getText());
+         log.info("message received from queue");
+         log.info("message = " + message2.getText());
       }
       catch (NamingException e)
       {

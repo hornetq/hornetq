@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter id="journal">
+   <title>The journal based persistence approach</title>
+   <section id="journal.asyncio">
+      <title>ASYNCIO</title>
+      <para>todo</para>
+   </section>
+   <section id="journal.nio">
+      <title>NIO</title>
+      <para>todo</para>
+   </section>
+   <section id="journal.jdbc">
+      <title>JDBC</title>
+      <para>todo</para>
+   </section>
+</chapter>
