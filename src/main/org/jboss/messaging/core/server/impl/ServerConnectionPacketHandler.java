@@ -23,7 +23,7 @@ package org.jboss.messaging.core.server.impl;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 import org.jboss.messaging.core.server.ServerConnection;
@@ -50,7 +50,7 @@ public class ServerConnectionPacketHandler extends ServerPacketHandlerSupport
       return connection.getID();
    }
 
-   public Packet doHandle(final Packet packet, final PacketSender sender) throws Exception
+   public Packet doHandle(final Packet packet, final PacketReturner sender) throws Exception
    {
       Packet response = null;
 

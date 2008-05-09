@@ -16,7 +16,7 @@ import junit.framework.TestCase;
 
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketHandlerRegistrationListener;
-import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
 
@@ -89,7 +89,7 @@ public class PacketDispatcherTest extends TestCase
    public void testDispatchPacketWithRegisteredHandler() throws Exception
    {
       PacketHandler handler = createMock(PacketHandler.class);
-      PacketSender sender = createMock(PacketSender.class);
+      PacketReturner sender = createMock(PacketReturner.class);
       
       TextPacket packet = new TextPacket("testDispatch");
       

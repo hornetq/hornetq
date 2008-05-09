@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
-import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
 
 public class TestPacketHandler implements PacketHandler
@@ -45,7 +45,7 @@ public class TestPacketHandler implements PacketHandler
       this.latch = new CountDownLatch(count);
    }
 
-   public void handle(Packet packet, PacketSender sender)
+   public void handle(Packet packet, PacketReturner sender)
    {
       packets.add((TextPacket) packet);
       
@@ -55,7 +55,7 @@ public class TestPacketHandler implements PacketHandler
          latch.countDown();
    }
    
-   protected void doHandle(Packet packet, PacketSender sender)
+   protected void doHandle(Packet packet, PacketReturner sender)
    {
    }
 

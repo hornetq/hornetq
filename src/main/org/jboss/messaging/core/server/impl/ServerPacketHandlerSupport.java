@@ -25,7 +25,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
-import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 
 /**
@@ -39,13 +39,13 @@ public abstract class ServerPacketHandlerSupport implements PacketHandler
 {
    private static final Logger log = Logger.getLogger(ServerPacketHandlerSupport.class);
       
-   public void handle(final Packet packet, final PacketSender sender)
+   public void handle(final Packet packet, final PacketReturner returner)
    {
       Packet response;
       
       try
       {      
-         response = doHandle(packet, sender);
+         response = doHandle(packet, returner);
       }
       catch (Exception e)
       {
@@ -72,7 +72,7 @@ public abstract class ServerPacketHandlerSupport implements PacketHandler
          
          try
          {
-            sender.send(response);
+            returner.send(response);
          }
          catch (Exception e)
          {
@@ -81,7 +81,7 @@ public abstract class ServerPacketHandlerSupport implements PacketHandler
       }
    }
    
-   protected abstract Packet doHandle(final Packet packet, final PacketSender sender) throws Exception;
+   protected abstract Packet doHandle(final Packet packet, final PacketReturner sender) throws Exception;
 
    @Override
    public String toString()

@@ -23,7 +23,7 @@ package org.jboss.messaging.core.server;
 
 import java.util.Collection;
 
-import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.util.SimpleString;
@@ -41,7 +41,7 @@ public interface ServerConnection
 	long getID();
 	
 	ConnectionCreateSessionResponseMessage createSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks,
-                                                        PacketSender sender) throws Exception;
+                                                        PacketReturner sender) throws Exception;
 	
 	void start() throws Exception;
 	

@@ -73,6 +73,8 @@
       
       <journal-task-period>5000</journal-task-period>
       
+      <security-enabled>true</security-enabled>
+      
    </configuration>
 
 </deployment>

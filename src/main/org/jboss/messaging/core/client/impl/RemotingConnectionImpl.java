@@ -33,7 +33,7 @@ import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
-import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 
 /**
@@ -255,7 +255,7 @@ public class RemotingConnectionImpl implements RemotingConnection
          return id;
       }
 
-      public synchronized void handle(final Packet packet, final PacketSender sender)
+      public synchronized void handle(final Packet packet, final PacketReturner sender)
       {
          this.response = packet;
          

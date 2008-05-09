@@ -25,5 +25,5 @@ public interface PacketHandler
 {
    long getID();
 
-   void handle(Packet packet, PacketSender sender);
+   void handle(Packet packet, PacketReturner sender);
 }

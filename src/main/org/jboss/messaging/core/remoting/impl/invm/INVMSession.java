@@ -13,7 +13,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.PacketReturner;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -85,7 +85,7 @@ public class INVMSession implements NIOSession
             try
             {
                serverDispatcher.dispatch((Packet) packet,
-                     new PacketSender()
+                     new PacketReturner()
                      {
                         public void send(Packet response) throws Exception
                         {                  
@@ -120,7 +120,7 @@ public class INVMSession implements NIOSession
 //      final Packet[] responses = new Packet[1];
 //
 //      serverDispatcher.dispatch(request,
-//            new PacketSender()
+//            new PacketReturner()
 //            {
 //               public void send(Packet response)
 //               {

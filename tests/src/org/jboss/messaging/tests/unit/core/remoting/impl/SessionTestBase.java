@@ -19,7 +19,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
 import org.jboss.messaging.tests.integration.core.remoting.mina.ReversePacketHandler;
@@ -123,7 +123,7 @@ public abstract class SessionTestBase extends TestCase
       assertTrue(serverPacketHandler.await(2, SECONDS));
 
       assertNotNull(serverPacketHandler.getLastSender());
-      PacketSender sender = serverPacketHandler.getLastSender();
+      PacketReturner sender = serverPacketHandler.getLastSender();
       TextPacket packetFromServer = new TextPacket(
             "testClientHandlePacketSentByServer from server");
       packetFromServer.setTargetID(clientHandler.getID());

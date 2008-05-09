@@ -17,7 +17,7 @@ import junit.framework.TestCase;
 
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaHandler;
 import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
@@ -107,7 +107,7 @@ public class MinaHandlerOrderingTest extends TestCase
       clientDispatcher.register(handler_1);
       handler_2 = new TestPacketHandler(24) {
         @Override
-         public void handle(Packet packet, PacketSender sender)
+         public void handle(Packet packet, PacketReturner sender)
          {
            // slow down the 2nd handler
            try

@@ -153,7 +153,7 @@ public class MessagingServerImpl implements MessagingServer
 
       // Create the wired components
 
-      securityStore = new SecurityStoreImpl(configuration.getSecurityInvalidationInterval());
+      securityStore = new SecurityStoreImpl(configuration.getSecurityInvalidationInterval(), configuration.isSecurityEnabled());
       securityRepository.setDefault(new HashSet<Role>());
       securityStore.setSecurityRepository(securityRepository);
       securityStore.setSecurityManager(securityManager);

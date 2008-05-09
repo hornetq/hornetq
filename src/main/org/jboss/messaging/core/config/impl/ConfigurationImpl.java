@@ -83,6 +83,8 @@ public class ConfigurationImpl implements Configuration, Serializable
    protected int journalMinFiles;
    
    protected long journalTaskPeriod;
+   
+   protected boolean securityEnabled = true;
 
    // remoting config
    
@@ -384,6 +386,11 @@ public class ConfigurationImpl implements Configuration, Serializable
 		return requireDestinations;
 	}
 
+	public boolean isSecurityEnabled()
+	{
+	   return securityEnabled;
+	}
+
    public ConnectionParams getConnectionParams()
    {
       ConnectionParams connectionParams = new ConnectionParamsImpl();
@@ -399,5 +406,7 @@ public class ConfigurationImpl implements Configuration, Serializable
       connectionParams.setTimeout(timeout);
       return connectionParams;
    }
+
+  
 }
  

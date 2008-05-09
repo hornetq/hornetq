@@ -23,7 +23,7 @@ package org.jboss.messaging.core.server.impl;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.core.server.Delivery;
 import org.jboss.messaging.core.server.MessageReference;
@@ -47,11 +47,11 @@ public class DeliveryImpl implements Delivery
    
    private final long deliveryID;
    
-   private final PacketSender sender;
+   private final PacketReturner sender;
 
    public DeliveryImpl(final MessageReference reference, 
                        final long sessionID, final long consumerID,
-                       final long deliveryID, final PacketSender sender)
+                       final long deliveryID, final PacketReturner sender)
    {      
       this.reference = reference;
       this.sessionID = sessionID;

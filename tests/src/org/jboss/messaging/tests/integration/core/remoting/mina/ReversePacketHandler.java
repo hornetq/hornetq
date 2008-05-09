@@ -15,7 +15,7 @@ import junit.framework.Assert;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
 import org.jboss.messaging.tests.unit.core.remoting.TestPacketHandler;
@@ -37,7 +37,7 @@ public class ReversePacketHandler extends TestPacketHandler
 
    private int sleepTime;
    private TimeUnit timeUnit;
-   private PacketSender lastSender;
+   private PacketReturner lastSender;
  
    // Static --------------------------------------------------------
 
@@ -56,7 +56,7 @@ public class ReversePacketHandler extends TestPacketHandler
       this.timeUnit = timeUnit;
    }
    
-   public PacketSender getLastSender()
+   public PacketReturner getLastSender()
    {
       return lastSender;
    }
@@ -69,7 +69,7 @@ public class ReversePacketHandler extends TestPacketHandler
    }
    
    @Override
-   protected void doHandle(Packet packet, PacketSender sender)
+   protected void doHandle(Packet packet, PacketReturner sender)
    {
       Assert.assertTrue(packet instanceof TextPacket);
 

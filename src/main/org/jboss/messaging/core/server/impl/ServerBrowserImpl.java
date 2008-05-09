@@ -38,7 +38,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
-import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
@@ -208,7 +208,7 @@ public class ServerBrowserImpl
          return ServerBrowserImpl.this.id;
       }
       
-      public Packet doHandle(Packet packet, PacketSender sender) throws Exception
+      public Packet doHandle(Packet packet, PacketReturner sender) throws Exception
       {
          Packet response = null;
 

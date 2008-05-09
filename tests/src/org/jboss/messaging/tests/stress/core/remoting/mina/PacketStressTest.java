@@ -19,7 +19,7 @@ import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
-import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
@@ -151,7 +151,7 @@ public class PacketStressTest extends TestCase
          return handlerID;
       }
 
-      public void handle(Packet packet, PacketSender sender)
+      public void handle(Packet packet, PacketReturner sender)
       {
          messagesReceived++;
          if (messagesReceived % spinner == 0)

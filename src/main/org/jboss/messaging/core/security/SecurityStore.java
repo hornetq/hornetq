@@ -23,10 +23,9 @@ package org.jboss.messaging.core.security;
 
 import java.util.HashSet;
 
-import javax.security.auth.Subject;
-
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.util.SimpleString;
 
 
 /**
@@ -39,7 +38,7 @@ public interface SecurityStore
 {
    void authenticate(String user, String password) throws Exception;
    
-   void check(String address, CheckType checkType, ServerConnection conn) throws Exception;
+   void check(SimpleString address, CheckType checkType, ServerConnection conn) throws Exception;
 
    void setSecurityRepository(HierarchicalRepository<HashSet<Role>> securityRepository);
 }

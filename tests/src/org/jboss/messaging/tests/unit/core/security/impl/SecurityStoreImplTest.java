@@ -21,18 +21,18 @@
    */
 package org.jboss.messaging.tests.unit.core.security.impl;
 
+import java.util.HashSet;
+
 import junit.framework.TestCase;
-import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
+
+import org.easymock.EasyMock;
+import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.core.security.CheckType;
-import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.server.ServerConnection;
-import org.jboss.messaging.core.server.impl.ServerConnectionImpl;
-import org.easymock.EasyMock;
-
-import java.util.HashSet;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * tests SecurityStoreImpl
@@ -44,7 +44,7 @@ public class SecurityStoreImplTest extends TestCase
 
    protected void setUp() throws Exception
    {
-      securityStore  = new SecurityStoreImpl(1000000000);
+      securityStore  = new SecurityStoreImpl(1000000000, true);
    }
 
    protected void tearDown() throws Exception
@@ -85,11 +85,11 @@ public class SecurityStoreImplTest extends TestCase
       //noinspection unchecked
       HierarchicalRepository<HashSet<Role>> repository = EasyMock.createStrictMock(HierarchicalRepository.class);
 
-      String address = "anaddress";
+      SimpleString address = new SimpleString("anaddress");
       HashSet<Role> roles = new HashSet<Role>();
       roles.add(new Role("user", false, false, true));
       repository.registerListener(securityStore);
-      EasyMock.expect(repository.getMatch(address)).andReturn(roles);
+      EasyMock.expect(repository.getMatch(address.toString())).andReturn(roles);
       ServerConnection serverConnection = EasyMock.createNiceMock(ServerConnection.class);
       EasyMock.expect(serverConnection.getUsername()).andReturn("user");
       EasyMock.expect(serverConnection.getPassword()).andReturn("password");
@@ -116,11 +116,11 @@ public class SecurityStoreImplTest extends TestCase
       //noinspection unchecked
       HierarchicalRepository<HashSet<Role>> repository = EasyMock.createStrictMock(HierarchicalRepository.class);
 
-      String address = "anaddress";
+      SimpleString address = new SimpleString("anaddress");
       HashSet<Role> roles = new HashSet<Role>();
       roles.add(new Role("user", false, false, true));
       repository.registerListener(securityStore);
-      EasyMock.expect(repository.getMatch(address)).andReturn(roles);
+      EasyMock.expect(repository.getMatch(address.toString())).andReturn(roles);
       ServerConnection serverConnection = EasyMock.createNiceMock(ServerConnection.class);
       EasyMock.expect(serverConnection.getUsername()).andReturn("user");
       EasyMock.expect(serverConnection.getPassword()).andReturn("password");
@@ -147,16 +147,16 @@ public class SecurityStoreImplTest extends TestCase
       //noinspection unchecked
       HierarchicalRepository<HashSet<Role>> repository = EasyMock.createStrictMock(HierarchicalRepository.class);
 
-      String address = "anaddress";
+      SimpleString address = new SimpleString("anaddress");
       HashSet<Role> roles = new HashSet<Role>();
       roles.add(new Role("user", false, false, true));
       repository.registerListener(securityStore);
-      EasyMock.expect(repository.getMatch(address)).andReturn(roles);
+      EasyMock.expect(repository.getMatch(address.toString())).andReturn(roles);
       ServerConnection serverConnection = EasyMock.createNiceMock(ServerConnection.class);
       EasyMock.expect(serverConnection.getUsername()).andReturn("user");
       EasyMock.expect(serverConnection.getPassword()).andReturn("password");
       EasyMock.expect(securityManager.validateUserAndRole("user", "password", roles, CheckType.CREATE)).andReturn(true);
-      EasyMock.expect(repository.getMatch(address)).andReturn(roles);
+      EasyMock.expect(repository.getMatch(address.toString())).andReturn(roles);
       EasyMock.expect(serverConnection.getUsername()).andReturn("user");
       EasyMock.expect(serverConnection.getPassword()).andReturn("password");
       EasyMock.expect(securityManager.validateUserAndRole("user", "password", roles, CheckType.CREATE)).andReturn(true);
@@ -171,22 +171,22 @@ public class SecurityStoreImplTest extends TestCase
    }
    public void testSuccessfulCheckTimeoutCache() throws Exception
    {
-      securityStore = new SecurityStoreImpl(2000);
+      securityStore = new SecurityStoreImpl(2000, true);
       JBMSecurityManager securityManager = EasyMock.createStrictMock(JBMSecurityManager.class);
       securityStore.setSecurityManager(securityManager);
       //noinspection unchecked
       HierarchicalRepository<HashSet<Role>> repository = EasyMock.createStrictMock(HierarchicalRepository.class);
 
-      String address = "anaddress";
+      SimpleString address = new SimpleString("anaddress");
       HashSet<Role> roles = new HashSet<Role>();
       roles.add(new Role("user", false, false, true));
       repository.registerListener(securityStore);
-      EasyMock.expect(repository.getMatch(address)).andReturn(roles);
+      EasyMock.expect(repository.getMatch(address.toString())).andReturn(roles);
       ServerConnection serverConnection = EasyMock.createNiceMock(ServerConnection.class);
       EasyMock.expect(serverConnection.getUsername()).andReturn("user");
       EasyMock.expect(serverConnection.getPassword()).andReturn("password");
       EasyMock.expect(securityManager.validateUserAndRole("user", "password", roles, CheckType.CREATE)).andReturn(true);
-      EasyMock.expect(repository.getMatch(address)).andReturn(roles);
+      EasyMock.expect(repository.getMatch(address.toString())).andReturn(roles);
       EasyMock.expect(serverConnection.getUsername()).andReturn("user");
       EasyMock.expect(serverConnection.getPassword()).andReturn("password");
       EasyMock.expect(securityManager.validateUserAndRole("user", "password", roles, CheckType.CREATE)).andReturn(true);

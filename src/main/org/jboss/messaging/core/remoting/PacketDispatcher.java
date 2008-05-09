@@ -22,7 +22,7 @@ public interface PacketDispatcher
    
    void setListener(PacketHandlerRegistrationListener listener);
    
-   void dispatch(Packet packet, PacketSender sender) throws Exception;
+   void dispatch(Packet packet, PacketReturner sender) throws Exception;
 
    /** Call filters on a package */
    void callFilters(Packet packet) throws Exception;

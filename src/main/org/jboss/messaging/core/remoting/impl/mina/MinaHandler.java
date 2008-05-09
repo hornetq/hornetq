@@ -19,7 +19,8 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandlerRegistrationListener;
-import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 
@@ -106,15 +107,6 @@ public class MinaHandler extends IoHandlerAdapter implements PacketHandlerRegist
    public void messageReceived(final IoSession session, final Object message)
          throws Exception
    {
-      if (message instanceof Response)
-      {
-         if (log.isTraceEnabled())
-            log.trace("received response " + message);
-         // response is handled by the reqres filter.
-         // do nothing
-         return;
-      }
-      
       if (message instanceof Ping)
       {
          if (log.isTraceEnabled())
@@ -171,29 +163,38 @@ public class MinaHandler extends IoHandlerAdapter implements PacketHandlerRegist
    private void messageReceivedInternal(final IoSession session, Packet packet)
          throws Exception
    {
-      PacketSender sender = new PacketSender()
+      PacketReturner returner;
+      
+      if (packet.getResponseTargetID() != EmptyPacket.NO_ID_SET)
+      {      
+         returner = new PacketReturner()
+         {
+            public void send(Packet p) throws Exception
+            {
+               dispatcher.callFilters(p);
+               session.write(p);            
+            }
+            
+            public long getSessionID()
+            {
+               return session.getId();
+            }
+            
+            public String getRemoteAddress()
+            {
+               return session.getRemoteAddress().toString();
+            }
+         };
+      }
+      else
       {
-         public void send(Packet p) throws Exception
-         {
-            dispatcher.callFilters(p);
-            session.write(p);            
-         }
-         
-         public long getSessionID()
-         {
-            return session.getId();
-         }
-         
-         public String getRemoteAddress()
-         {
-            return session.getRemoteAddress().toString();
-         }
-      };
+         returner = null;
+      }
 
       if (log.isTraceEnabled())
          log.trace("received packet " + packet);
 
-      dispatcher.dispatch(packet, sender);
+      dispatcher.dispatch(packet, returner);
    }
    
    // Inner classes -------------------------------------------------

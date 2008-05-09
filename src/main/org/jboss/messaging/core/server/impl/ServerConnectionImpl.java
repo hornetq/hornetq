@@ -30,7 +30,7 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.server.ConnectionManager;
@@ -153,7 +153,7 @@ public class ServerConnectionImpl implements ServerConnection
    
    public ConnectionCreateSessionResponseMessage createSession(final boolean xa, final boolean autoCommitSends,
    		                                                      final boolean autoCommitAcks,
-                                                               final PacketSender sender) throws Exception
+                                                               final PacketReturner sender) throws Exception
    {           
       long id = dispatcher.generateID();
       ServerSession session =

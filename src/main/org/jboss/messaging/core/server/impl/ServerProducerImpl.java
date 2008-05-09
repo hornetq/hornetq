@@ -24,7 +24,7 @@ package org.jboss.messaging.core.server.impl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerReceiveTokensMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerProducer;
@@ -52,14 +52,14 @@ public class ServerProducerImpl implements ServerProducer
 	
 	private final FlowController flowController;
 	
-	private final PacketSender sender;
+	private final PacketReturner sender;
 	
 	private volatile boolean waiting;
 	
 	// Constructors ----------------------------------------------------------------
 	
 	public ServerProducerImpl(final long id, final long clientTargetID, final ServerSession session, final SimpleString address, 
-			                    final PacketSender sender,
+			                    final PacketReturner sender,
 			                    final FlowController flowController) throws Exception
 	{
 		this.id = id;

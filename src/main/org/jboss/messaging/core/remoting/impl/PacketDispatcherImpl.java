@@ -21,7 +21,7 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketHandlerRegistrationListener;
-import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.PacketReturner;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -116,7 +116,7 @@ public class PacketDispatcherImpl implements PacketDispatcher
       return handlers.get(handlerID);
    }
    
-   public void dispatch(final Packet packet, final PacketSender sender) throws Exception
+   public void dispatch(final Packet packet, final PacketReturner sender) throws Exception
    {
       long targetID = packet.getTargetID();
       if (NO_ID_SET == targetID)

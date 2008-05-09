@@ -43,7 +43,7 @@ import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserResponseMessage;
@@ -110,7 +110,7 @@ public class ServerSessionImpl implements ServerSession
 
    private final ResourceManager resourceManager;
 
-   private final PacketSender sender;
+   private final PacketReturner sender;
 
    private final PacketDispatcher dispatcher;
 
@@ -144,7 +144,7 @@ public class ServerSessionImpl implements ServerSession
    public ServerSessionImpl(final long id, final boolean autoCommitSends,
                             final boolean autoCommitAcks,
                             final boolean xa, final ServerConnection connection,
-                            final ResourceManager resourceManager, final PacketSender sender,
+                            final ResourceManager resourceManager, final PacketReturner sender,
                             final PacketDispatcher dispatcher, final StorageManager persistenceManager,
                             final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                             final PostOffice postOffice, final SecurityStore securityStore) throws Exception
@@ -303,7 +303,7 @@ public class ServerSessionImpl implements ServerSession
    public void send(final ServerMessage msg) throws Exception
    {
       //check the user has write access to this address
-      securityStore.check(msg.getDestination().toString(), CheckType.WRITE, connection);
+      securityStore.check(msg.getDestination(), CheckType.WRITE, connection);
 
       msg.setMessageID(persistenceManager.generateMessageID());
 
@@ -808,7 +808,7 @@ public class ServerSessionImpl implements ServerSession
 
    public void addDestination(final SimpleString address, final boolean temporary) throws Exception
    {
-      securityStore.check(address.toString(), CheckType.CREATE, connection);
+      securityStore.check(address, CheckType.CREATE, connection);
 
       if (!postOffice.addDestination(address, temporary))
       {
@@ -825,7 +825,7 @@ public class ServerSessionImpl implements ServerSession
 
    public void removeDestination(final SimpleString address, final boolean temporary) throws Exception
    {
-   	securityStore.check(address.toString(), CheckType.CREATE, connection);
+   	securityStore.check(address, CheckType.CREATE, connection);
 
       if (!postOffice.removeDestination(address, temporary))
       {
@@ -848,7 +848,7 @@ public class ServerSessionImpl implements ServerSession
       {
          try
          {
-         	securityStore.check(address.toString(), CheckType.CREATE, connection);
+         	securityStore.check(address, CheckType.CREATE, connection);
          }
          catch (MessagingException e)
          {
@@ -923,7 +923,7 @@ public class ServerSessionImpl implements ServerSession
          throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
       }
 
-      securityStore.check(binding.getAddress().toString(), CheckType.READ, connection);
+      securityStore.check(binding.getAddress(), CheckType.READ, connection);
 
       Filter filter = null;
 
@@ -1023,7 +1023,7 @@ public class ServerSessionImpl implements ServerSession
          throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
       }
 
-      securityStore.check(binding.getAddress().toString(), CheckType.READ, connection);
+      securityStore.check(binding.getAddress(), CheckType.READ, connection);
 
       long id = dispatcher.generateID();
       

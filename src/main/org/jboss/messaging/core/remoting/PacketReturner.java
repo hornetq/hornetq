@@ -13,7 +13,7 @@ package org.jboss.messaging.core.remoting;
  * @version <tt>$Revision$</tt>
  *
  */
-public interface PacketSender
+public interface PacketReturner
 {
    void send(Packet packet) throws Exception;
 

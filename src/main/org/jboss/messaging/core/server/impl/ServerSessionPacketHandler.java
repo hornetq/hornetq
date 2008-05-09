@@ -28,7 +28,7 @@ import javax.transaction.xa.Xid;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
@@ -79,7 +79,7 @@ public class ServerSessionPacketHandler extends ServerPacketHandlerSupport
       return session.getID();
    }
 
-   public Packet doHandle(final Packet packet, final PacketSender sender) throws Exception
+   public Packet doHandle(final Packet packet, final PacketReturner sender) throws Exception
    {
       Packet response = null;
 

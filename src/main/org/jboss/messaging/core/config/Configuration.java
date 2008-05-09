@@ -72,6 +72,8 @@ public interface Configuration
    int getKeepAliveTimeout();
 
    int getTimeout();
+   
+   boolean isSecurityEnabled();
 
    String getKeyStorePath();
 

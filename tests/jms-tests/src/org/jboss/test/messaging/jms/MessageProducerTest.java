@@ -22,6 +22,7 @@
 package org.jboss.test.messaging.jms;
 
 import java.io.Serializable;
+import java.util.concurrent.CountDownLatch;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -29,6 +30,7 @@ import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
@@ -163,34 +165,49 @@ public class MessageProducerTest extends JMSTestCase
 
          MessageProducer p = ps.createProducer(queue1);
          
-       //  MessageConsumer cons = ps.createConsumer(queue1);
+         MessageConsumer cons = ps.createConsumer(queue1);
          
-       //  pconn.start();
+         pconn.start();
          
          p.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          
          p.setDisableMessageID(true);
          p.setDisableMessageTimestamp(true);
 
-         final int numMessages = 20000;
+         final int numMessages = 10000;
 
          long start = System.currentTimeMillis();
 
          BytesMessage msg = ps.createBytesMessage();
          
          msg.writeBytes(new byte[1000]);
+         
+         final CountDownLatch latch = new CountDownLatch(1);
+         
+         class MyListener implements MessageListener
+         {
+            int count;
 
+            public void onMessage(Message msg)
+            {
+               count++;
+               
+               if (count == numMessages)
+               {
+                  latch.countDown();
+               }
+            }            
+         }
+         
+         cons.setMessageListener(new MyListener());
          
          for (int i = 0; i < numMessages; i++)
          {
             p.send(msg);
          }
          
-//         for (int i = 0; i < numMessages; i++)
-//         {
-//            cons.receive(1000);
-//         }
-
+         latch.await();
+         
          long end = System.currentTimeMillis();
 
          double actualRate = 1000 * (double)numMessages / ( end - start);
@@ -200,7 +217,7 @@ public class MessageProducerTest extends JMSTestCase
       }
       finally
       {
-
+         pconn.close();
       }
    }
    

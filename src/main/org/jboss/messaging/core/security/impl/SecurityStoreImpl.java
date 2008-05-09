@@ -27,13 +27,14 @@ import java.util.Set;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.security.CheckType;
+import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.SecurityStore;
-import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.HierarchicalRepositoryChangeListener;
 import org.jboss.messaging.util.ConcurrentHashSet;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * The JBM SecurityStore implementation
@@ -76,61 +77,70 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
    private final long invalidationInterval;
 
    private volatile long lastCheck;
-
+   
+   private final boolean securityEnabled;
+   
    // Constructors --------------------------------------------------
 
-   public SecurityStoreImpl(long invalidationInterval)
+   public SecurityStoreImpl(final long invalidationInterval, final boolean securityEnabled)
    {
    	this.invalidationInterval = invalidationInterval;
+   	
+   	this.securityEnabled = securityEnabled;
    }
 
    // SecurityManager implementation --------------------------------
 
-   public void authenticate(String user, String password) throws Exception
+   public void authenticate(final String user, final String password) throws Exception
    {
-      if(!securityManager.validateUser(user, password))
+      if (securityEnabled && !securityManager.validateUser(user, password))
       {
          throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "Unable to validate user: " + user);  
       }
    }
 
-   public void check(String address, CheckType checkType, ServerConnection conn) throws Exception
+   public void check(final SimpleString address, final CheckType checkType, final ServerConnection conn) throws Exception
    {
-      if (trace) { log.trace("checking access permissions to " + address); }
-
-      if (checkCached(address, checkType))
+      if (securityEnabled)
       {
-         // OK
-         return;
-      }
-
-      HashSet<Role> roles = securityRepository.getMatch(address);
-      if(!securityManager.validateUserAndRole(conn.getUsername(), conn.getPassword(), roles, checkType))
-      {
-          throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "Unable to validate user: " + conn.getUsername());
-      }
-      // if we get here we're granted, add to the cache
-
-      switch (checkType.type)
-      {
-         case CheckType.TYPE_READ:
+         if (trace) { log.trace("checking access permissions to " + address); }
+   
+         if (checkCached(address, checkType))
          {
-            readCache.add(address);
-            break;
+            // OK
+            return;
          }
-         case CheckType.TYPE_WRITE:
+   
+         String saddress = address.toString();
+         
+         HashSet<Role> roles = securityRepository.getMatch(saddress);
+         if(!securityManager.validateUserAndRole(conn.getUsername(), conn.getPassword(), roles, checkType))
          {
-            writeCache.add(address);
-            break;
+             throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "Unable to validate user: " + conn.getUsername());
          }
-         case CheckType.TYPE_CREATE:
+         // if we get here we're granted, add to the cache
+   
+         switch (checkType.type)
          {
-            createCache.add(address);
-            break;
-         }
-         default:
-         {
-            throw new IllegalArgumentException("Invalid checkType:" + checkType);
+            case CheckType.TYPE_READ:
+            {
+               readCache.add(saddress);
+               break;
+            }
+            case CheckType.TYPE_WRITE:
+            {
+               writeCache.add(saddress);
+               break;
+            }
+            case CheckType.TYPE_CREATE:
+            {
+               createCache.add(saddress);
+               break;
+            }
+            default:
+            {
+               throw new IllegalArgumentException("Invalid checkType:" + checkType);
+            }
          }
       }
    }
@@ -139,7 +149,6 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
    {
       invalidateCache();
    }
-
 
 
    // Public --------------------------------------------------------
@@ -170,7 +179,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
       createCache.clear();
    }
 
-   private boolean checkCached(String dest, CheckType checkType)
+   private boolean checkCached(final SimpleString dest, final CheckType checkType)
    {
       long now = System.currentTimeMillis();
 
