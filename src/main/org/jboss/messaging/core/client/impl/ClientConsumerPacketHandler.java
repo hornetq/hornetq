@@ -1,13 +1,11 @@
 package org.jboss.messaging.core.client.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.RECEIVE_MSG;
-
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -39,9 +37,9 @@ public class ClientConsumerPacketHandler implements PacketHandler
    {
       try
       {
-         PacketType type = packet.getType();
+         byte type = packet.getType();
          
-         if (type == RECEIVE_MSG)
+         if (type == EmptyPacket.RECEIVE_MSG)
          {
             ReceiveMessage message = (ReceiveMessage) packet;
             

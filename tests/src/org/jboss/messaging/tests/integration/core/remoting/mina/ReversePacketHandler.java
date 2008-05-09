@@ -16,6 +16,7 @@ import junit.framework.Assert;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
 import org.jboss.messaging.tests.unit.core.remoting.TestPacketHandler;
 
@@ -62,6 +63,11 @@ public class ReversePacketHandler extends TestPacketHandler
    
    // TestPacketHandler overrides -----------------------------------
    
+   protected boolean isRequest(final Packet packet)
+   {
+      return packet.getTargetID() != EmptyPacket.NO_ID_SET && packet.getResponseTargetID() != EmptyPacket.NO_ID_SET;
+   }
+   
    @Override
    protected void doHandle(Packet packet, PacketSender sender)
    {
@@ -79,9 +85,9 @@ public class ReversePacketHandler extends TestPacketHandler
             fail();
          }
       }
-      
+                  
       TextPacket message = (TextPacket) packet;
-      if (message.isRequest())
+      if (isRequest(message))
       {
          TextPacket response = new TextPacket(TestSupport.reverse(message.getText()));
          response.normalize(message);

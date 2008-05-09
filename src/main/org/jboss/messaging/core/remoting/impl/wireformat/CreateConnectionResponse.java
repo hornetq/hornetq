@@ -6,8 +6,9 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CREATECONNECTION_RESP;
 import org.jboss.messaging.core.version.Version;
+import org.jboss.messaging.core.version.impl.VersionImpl;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -15,15 +16,15 @@ import org.jboss.messaging.core.version.Version;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class CreateConnectionResponse extends PacketImpl
+public class CreateConnectionResponse extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final long connectionTargetID;
+   private long connectionTargetID;
 
-   private final Version serverVersion;
+   private Version serverVersion;
    
    // Static --------------------------------------------------------
 
@@ -36,6 +37,11 @@ public class CreateConnectionResponse extends PacketImpl
       this.connectionTargetID = connectionTargetID;
       this.serverVersion = serverVersion;
    }
+   
+   public CreateConnectionResponse()
+   {
+      super(CREATECONNECTION_RESP);
+   }
 
    // Public --------------------------------------------------------
 
@@ -47,6 +53,29 @@ public class CreateConnectionResponse extends PacketImpl
    public Version getServerVersion()
    {
       return serverVersion;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putLong(connectionTargetID);
+      buffer.putNullableString(serverVersion.getVersionName());
+      buffer.putInt(serverVersion.getMajorVersion());
+      buffer.putInt(serverVersion.getMinorVersion());
+      buffer.putInt(serverVersion.getMicroVersion());
+      buffer.putInt(serverVersion.getIncrementingVersion());
+      buffer.putNullableString(serverVersion.getVersionSuffix());
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      connectionTargetID = buffer.getLong();
+      String versionName = buffer.getNullableString();
+      int majorVersion = buffer.getInt();
+      int minorVersion = buffer.getInt();
+      int microVersion = buffer.getInt();
+      int incrementingVersion = buffer.getInt();
+      String versionSuffix = buffer.getNullableString();
+      serverVersion =  new VersionImpl(versionName, majorVersion, minorVersion, microVersion, incrementingVersion, versionSuffix);
    }
 
    @Override

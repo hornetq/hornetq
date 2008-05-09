@@ -8,19 +8,21 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import javax.transaction.xa.Xid;
 
+import org.jboss.messaging.util.MessagingBuffer;
+
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionXARollbackMessage extends PacketImpl
+public class SessionXARollbackMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
    
-   private final Xid xid;
+   private Xid xid;
    
    // Static --------------------------------------------------------
 
@@ -28,9 +30,14 @@ public class SessionXARollbackMessage extends PacketImpl
 
    public SessionXARollbackMessage(final Xid xid)
    {
-      super(PacketType.SESS_XA_ROLLBACK);
+      super(SESS_XA_ROLLBACK);
       
       this.xid = xid;
+   }
+   
+   public SessionXARollbackMessage()
+   {
+      super(SESS_XA_ROLLBACK);
    }
 
    // Public --------------------------------------------------------
@@ -38,6 +45,16 @@ public class SessionXARollbackMessage extends PacketImpl
    public Xid getXid()
    {
       return xid;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      encodeXid(xid, buffer);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      xid = decodeXid(buffer);
    }
    
    // Package protected ---------------------------------------------

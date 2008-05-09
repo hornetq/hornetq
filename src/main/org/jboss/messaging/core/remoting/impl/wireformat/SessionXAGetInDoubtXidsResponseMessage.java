@@ -6,9 +6,12 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.transaction.xa.Xid;
+
+import org.jboss.messaging.util.MessagingBuffer;
 
 
 /**
@@ -16,13 +19,13 @@ import javax.transaction.xa.Xid;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionXAGetInDoubtXidsResponseMessage extends PacketImpl
+public class SessionXAGetInDoubtXidsResponseMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
    
-   private final List<Xid> xids;
+   private List<Xid> xids;
    
    // Static --------------------------------------------------------
 
@@ -30,9 +33,14 @@ public class SessionXAGetInDoubtXidsResponseMessage extends PacketImpl
 
    public SessionXAGetInDoubtXidsResponseMessage(final List<Xid> xids)
    {
-      super(PacketType.SESS_XA_INDOUBT_XIDS_RESP);
+      super(SESS_XA_INDOUBT_XIDS_RESP);
       
       this.xids = xids;
+   }
+   
+   public SessionXAGetInDoubtXidsResponseMessage()
+   {
+      super(SESS_XA_INDOUBT_XIDS_RESP);
    }
 
    // Public --------------------------------------------------------
@@ -40,6 +48,28 @@ public class SessionXAGetInDoubtXidsResponseMessage extends PacketImpl
    public List<Xid> getXids()
    {
       return xids;
+   }
+
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putInt(xids.size());
+
+      for (Xid xid: xids)
+      {
+         encodeXid(xid, buffer);
+      }    
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      int len = buffer.getInt();
+      xids = new ArrayList<Xid>(len);      
+      for (int i = 0; i < len; i++)
+      {
+         Xid xid = decodeXid(buffer);
+         
+         xids.add(xid);
+      }      
    }
    
    // Package protected ---------------------------------------------

@@ -1,7 +1,6 @@
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_QUEUEQUERY_RESP;
-
+import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -11,23 +10,23 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SessionQueueQueryResponseMessage extends PacketImpl
+public class SessionQueueQueryResponseMessage extends EmptyPacket
 {
-   private final boolean exists;
+   private boolean exists;
    
-   private final boolean durable;
+   private boolean durable;
    
-   private final boolean temporary;
+   private boolean temporary;
    
-   private final int maxSize;
+   private int maxSize;
    
-   private final int consumerCount;
+   private int consumerCount;
    
-   private final int messageCount;
+   private int messageCount;
    
-   private final SimpleString filterString;
+   private SimpleString filterString;
    
-   private final SimpleString address;
+   private SimpleString address;
    
    public SessionQueueQueryResponseMessage(final boolean durable, final boolean temporary, final int maxSize, 
    		final int consumerCount, final int messageCount, final SimpleString filterString, final SimpleString address)
@@ -101,6 +100,30 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
    public SimpleString getAddress()
    {
       return address;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putBoolean(exists);
+      buffer.putBoolean(durable);
+      buffer.putBoolean(temporary);
+      buffer.putInt(maxSize);
+      buffer.putInt(consumerCount);
+      buffer.putInt(messageCount);
+      buffer.putNullableSimpleString(filterString);
+      buffer.putNullableSimpleString(address);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      exists = buffer.getBoolean();
+      durable = buffer.getBoolean();
+      temporary = buffer.getBoolean();
+      maxSize = buffer.getInt();
+      consumerCount = buffer.getInt();
+      messageCount = buffer.getInt();
+      filterString  = buffer.getNullableSimpleString();
+      address = buffer.getNullableSimpleString();
    }
    
 }

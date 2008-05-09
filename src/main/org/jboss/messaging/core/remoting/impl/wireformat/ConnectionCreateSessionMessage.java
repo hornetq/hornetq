@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_CREATESESSION;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -14,17 +14,17 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_
  * 
  * @version <tt>$Revision$</tt>
  */
-public class ConnectionCreateSessionMessage extends PacketImpl
+public class ConnectionCreateSessionMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
    
-   private final boolean xa;
+   private boolean xa;
    
-   private final boolean autoCommitSends;
+   private boolean autoCommitSends;
    
-   private final boolean autoCommitAcks;
+   private boolean autoCommitAcks;
 
    // Static --------------------------------------------------------
 
@@ -39,6 +39,11 @@ public class ConnectionCreateSessionMessage extends PacketImpl
       this.autoCommitSends = autoCommitSends;
       
       this.autoCommitAcks = autoCommitAcks;
+   }
+   
+   public ConnectionCreateSessionMessage()
+   {
+      super(CONN_CREATESESSION);
    }
 
    // Public --------------------------------------------------------
@@ -56,6 +61,20 @@ public class ConnectionCreateSessionMessage extends PacketImpl
    public boolean isAutoCommitAcks()
    {
       return this.autoCommitAcks;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putBoolean(xa);
+      buffer.putBoolean(autoCommitSends);
+      buffer.putBoolean(autoCommitAcks);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      xa = buffer.getBoolean();
+      autoCommitSends = buffer.getBoolean();
+      autoCommitAcks = buffer.getBoolean();
    }
 
    // Package protected ---------------------------------------------

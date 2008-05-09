@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_HASNEXTMESSAGE_RESP;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -15,13 +15,13 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
  * @version <tt>$Revision$</tt>
  * 
  */
-public class SessionBrowserHasNextMessageResponseMessage extends PacketImpl
+public class SessionBrowserHasNextMessageResponseMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final boolean hasNext;
+   private boolean hasNext;
 
    // Static --------------------------------------------------------
 
@@ -33,12 +33,27 @@ public class SessionBrowserHasNextMessageResponseMessage extends PacketImpl
 
       this.hasNext = hasNext;
    }
+   
+   public SessionBrowserHasNextMessageResponseMessage()
+   {
+      super(SESS_BROWSER_HASNEXTMESSAGE_RESP);
+   }
 
    // Public --------------------------------------------------------
 
    public boolean hasNext()
    {
       return hasNext;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putBoolean(hasNext);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      hasNext = buffer.getBoolean();       
    }
 
    @Override

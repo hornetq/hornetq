@@ -8,8 +8,6 @@ package org.jboss.messaging.tests.unit.core.remoting.impl;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.messaging.tests.integration.core.remoting.mina.TestSupport.MANY_MESSAGES;
-import static org.jboss.messaging.tests.integration.core.remoting.mina.TestSupport.REQRES_TIMEOUT;
-import static org.jboss.messaging.tests.integration.core.remoting.mina.TestSupport.reverse;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -22,12 +20,10 @@ import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
 import org.jboss.messaging.tests.integration.core.remoting.mina.ReversePacketHandler;
 import org.jboss.messaging.tests.unit.core.remoting.TestPacketHandler;
-import org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
-import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.

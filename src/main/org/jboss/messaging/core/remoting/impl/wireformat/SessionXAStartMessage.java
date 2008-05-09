@@ -8,19 +8,21 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import javax.transaction.xa.Xid;
 
+import org.jboss.messaging.util.MessagingBuffer;
+
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionXAStartMessage extends PacketImpl
+public class SessionXAStartMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
    
-   private final Xid xid;
+   private Xid xid;
    
    // Static --------------------------------------------------------
 
@@ -28,9 +30,14 @@ public class SessionXAStartMessage extends PacketImpl
 
    public SessionXAStartMessage(final Xid xid)
    {
-      super(PacketType.SESS_XA_START);
+      super(SESS_XA_START);
       
       this.xid = xid;
+   }
+   
+   public SessionXAStartMessage()
+   {
+      super(SESS_XA_START);
    }
 
    // Public --------------------------------------------------------
@@ -39,6 +46,17 @@ public class SessionXAStartMessage extends PacketImpl
    {
       return xid;
    }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      encodeXid(xid, buffer);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      xid = decodeXid(buffer);
+   }
+   
 
    // Package protected ---------------------------------------------
 

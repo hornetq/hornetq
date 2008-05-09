@@ -8,21 +8,23 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import javax.transaction.xa.Xid;
 
+import org.jboss.messaging.util.MessagingBuffer;
+
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionXAEndMessage extends PacketImpl
+public class SessionXAEndMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
    
-   private final Xid xid;
+   private Xid xid;
    
-   private final boolean failed;
+   private boolean failed;
    
    // Static --------------------------------------------------------
 
@@ -30,11 +32,16 @@ public class SessionXAEndMessage extends PacketImpl
 
    public SessionXAEndMessage(final Xid xid, final boolean failed)
    {
-      super(PacketType.SESS_XA_END);
+      super(SESS_XA_END);
       
       this.xid = xid;
       
       this.failed = failed;
+   }
+   
+   public SessionXAEndMessage()
+   {
+      super(SESS_XA_END);
    }
 
    // Public --------------------------------------------------------
@@ -47,6 +54,18 @@ public class SessionXAEndMessage extends PacketImpl
    public Xid getXid()
    {
       return xid;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putBoolean(failed);
+      encodeXid(xid, buffer);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      failed = buffer.getBoolean();
+      xid = decodeXid(buffer);
    }
 
    // Package protected ---------------------------------------------

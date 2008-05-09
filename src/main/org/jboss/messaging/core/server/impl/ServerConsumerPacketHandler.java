@@ -21,14 +21,11 @@
   */
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.NULL;
-
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
+import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 import org.jboss.messaging.core.server.ServerConsumer;
 
 /**
@@ -57,14 +54,14 @@ public class ServerConsumerPacketHandler extends ServerPacketHandlerSupport
    {
       Packet response = null;
 
-      PacketType type = packet.getType();
+      byte type = packet.getType();
       switch (type)
       {
-      case CONS_FLOWTOKEN:
+      case EmptyPacket.CONS_FLOWTOKEN:
          ConsumerFlowTokenMessage message = (ConsumerFlowTokenMessage) packet;
          consumer.receiveTokens(message.getTokens());
          break;
-      case CLOSE:
+      case EmptyPacket.CLOSE:
          consumer.close();
          break;
       default:
@@ -75,7 +72,7 @@ public class ServerConsumerPacketHandler extends ServerPacketHandlerSupport
       // reply if necessary
       if (response == null && packet.getResponseTargetID() != Packet.NO_ID_SET)
       {
-         response = new PacketImpl(NULL);               
+         response = new EmptyPacket(EmptyPacket.NULL);               
       }
       
       return response;

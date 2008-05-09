@@ -1,12 +1,10 @@
 package org.jboss.messaging.core.client.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PROD_RECEIVETOKENS;
-
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
+import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerReceiveTokensMessage;
 
 /**
@@ -40,9 +38,9 @@ public class ClientProducerPacketHandler implements PacketHandler
    {
       try
       {
-         PacketType type = packet.getType();
+         byte type = packet.getType();
          
-         if (type == PROD_RECEIVETOKENS)
+         if (type == EmptyPacket.PROD_RECEIVETOKENS)
          {
             ProducerReceiveTokensMessage message = (ProducerReceiveTokensMessage) packet;
             

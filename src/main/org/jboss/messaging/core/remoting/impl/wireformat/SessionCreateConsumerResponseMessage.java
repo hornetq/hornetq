@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATECONSUMER_RESP;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -14,15 +14,15 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionCreateConsumerResponseMessage extends PacketImpl
+public class SessionCreateConsumerResponseMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final long consumerTargetID;
+   private long consumerTargetID;
    
-   private final int windowSize;
+   private int windowSize;
    
    // Static --------------------------------------------------------
 
@@ -36,6 +36,11 @@ public class SessionCreateConsumerResponseMessage extends PacketImpl
       
       this.windowSize = windowSize;
    }
+   
+   public SessionCreateConsumerResponseMessage()
+   {
+      super(SESS_CREATECONSUMER_RESP);
+   }
 
    // Public --------------------------------------------------------
 
@@ -47,6 +52,18 @@ public class SessionCreateConsumerResponseMessage extends PacketImpl
    public int getWindowSize()
    {
    	return windowSize;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putLong(consumerTargetID);
+      buffer.putInt(windowSize);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      consumerTargetID = buffer.getLong();
+      windowSize = buffer.getInt();
    }
 
    @Override

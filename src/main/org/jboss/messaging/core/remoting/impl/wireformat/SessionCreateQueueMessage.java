@@ -6,8 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEQUEUE;
-
+import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 
@@ -16,17 +15,17 @@ import org.jboss.messaging.util.SimpleString;
 
  * @version <tt>$Revision$</tt>
  */
-public class SessionCreateQueueMessage extends PacketImpl
+public class SessionCreateQueueMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final SimpleString address;
-   private final SimpleString queueName;
-   private final SimpleString filterString;
-   private final boolean durable;
-   private final boolean temporary;
+   private SimpleString address;
+   private SimpleString queueName;
+   private SimpleString filterString;
+   private boolean durable;
+   private boolean temporary;
    
    // Static --------------------------------------------------------
 
@@ -42,6 +41,11 @@ public class SessionCreateQueueMessage extends PacketImpl
       this.filterString = filterString;
       this.durable = durable;
       this.temporary = temporary;
+   }
+   
+   public SessionCreateQueueMessage()
+   {
+      super(SESS_CREATEQUEUE);
    }
 
    // Public --------------------------------------------------------
@@ -82,6 +86,24 @@ public class SessionCreateQueueMessage extends PacketImpl
    public boolean isTemporary()
    {
       return temporary;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putSimpleString(address);
+      buffer.putSimpleString(queueName);
+      buffer.putNullableSimpleString(filterString);
+      buffer.putBoolean(durable);
+      buffer.putBoolean(temporary);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      address = buffer.getSimpleString();
+      queueName = buffer.getSimpleString();
+      filterString = buffer.getNullableSimpleString();
+      durable = buffer.getBoolean();
+      temporary = buffer.getBoolean();
    }
 
    // Package protected ---------------------------------------------

@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEBROWSER_RESP;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -15,13 +15,13 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
  * @version <tt>$Revision$</tt>
  * 
  */
-public class SessionCreateBrowserResponseMessage extends PacketImpl
+public class SessionCreateBrowserResponseMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final long browserTargetID;
+   private long browserTargetID;
 
    // Static --------------------------------------------------------
 
@@ -33,12 +33,27 @@ public class SessionCreateBrowserResponseMessage extends PacketImpl
 
       this.browserTargetID = browserTargetID;
    }
+   
+   public SessionCreateBrowserResponseMessage()
+   {
+      super(SESS_CREATEBROWSER_RESP);
+   }
 
    // Public --------------------------------------------------------
 
    public long getBrowserTargetID()
    {
       return browserTargetID;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putLong(browserTargetID);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      browserTargetID = buffer.getLong();
    }
 
    @Override

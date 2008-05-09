@@ -1,9 +1,9 @@
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BINDINGQUERY_RESP;
-
+import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -13,11 +13,11 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SessionBindingQueryResponseMessage extends PacketImpl
+public class SessionBindingQueryResponseMessage extends EmptyPacket
 {
-   private final boolean exists;
+   private boolean exists;
    
-   private final List<SimpleString> queueNames;
+   private List<SimpleString> queueNames;
    
    public SessionBindingQueryResponseMessage(final boolean exists, final List<SimpleString> queueNames)
    {
@@ -26,6 +26,11 @@ public class SessionBindingQueryResponseMessage extends PacketImpl
       this.exists = exists;
 
       this.queueNames = queueNames;
+   }
+   
+   public SessionBindingQueryResponseMessage()
+   {
+      super(SESS_BINDINGQUERY_RESP);
    }
 
    public boolean isExists()
@@ -36,6 +41,27 @@ public class SessionBindingQueryResponseMessage extends PacketImpl
    public List<SimpleString> getQueueNames()
    {
       return this.queueNames;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putBoolean(exists);
+      buffer.putInt(queueNames.size());      
+      for (SimpleString queueName: queueNames)
+      {
+         buffer.putSimpleString(queueName);
+      }      
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      exists = buffer.getBoolean();      
+      int numQueues = buffer.getInt();      
+      queueNames = new ArrayList<SimpleString>(numQueues);      
+      for (int i = 0; i < numQueues; i++)
+      {
+         queueNames.add(buffer.getSimpleString());
+      }          
    }
 
 }

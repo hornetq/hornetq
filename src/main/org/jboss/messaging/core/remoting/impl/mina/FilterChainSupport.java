@@ -8,20 +8,12 @@ package org.jboss.messaging.core.remoting.impl.mina;
 
 import static org.apache.mina.common.IdleStatus.BOTH_IDLE;
 import static org.apache.mina.filter.keepalive.KeepAliveRequestTimeoutHandler.EXCEPTION;
-import static org.apache.mina.filter.logging.LogLevel.TRACE;
-import static org.apache.mina.filter.logging.LogLevel.WARN;
-
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 import javax.net.ssl.SSLContext;
 
 import org.apache.mina.common.DefaultIoFilterChainBuilder;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.keepalive.KeepAliveFilter;
-import org.apache.mina.filter.logging.LoggingFilter;
-import org.apache.mina.filter.logging.MdcInjectionFilter;
-import org.apache.mina.filter.reqres.RequestResponseFilter;
 import org.apache.mina.filter.ssl.SslFilter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
@@ -52,7 +44,7 @@ public class FilterChainSupport
    {
       assert filterChain != null;
 
-      filterChain.addLast("codec", new ProtocolCodecFilter(new PacketCodecFactory()));
+      filterChain.addLast("codec", new ProtocolCodecFilter(new MessagingCodec()));
    }
    
    public static void addKeepAliveFilter(final DefaultIoFilterChainBuilder filterChain,

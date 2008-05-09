@@ -23,6 +23,8 @@ public interface MessagingBuffer
 	
 	void putInt(int val);
 	
+	void putInt(int pos, int val);
+	
 	void putLong(long val);
 	
 	void putShort(short val);

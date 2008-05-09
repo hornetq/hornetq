@@ -6,6 +6,8 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+import org.jboss.messaging.util.MessagingBuffer;
+
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -13,13 +15,13 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class ConnectionCreateSessionResponseMessage extends PacketImpl
+public class ConnectionCreateSessionResponseMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final long sessionTargetID;
+   private long sessionTargetID;
 
    // Static --------------------------------------------------------
 
@@ -27,9 +29,14 @@ public class ConnectionCreateSessionResponseMessage extends PacketImpl
 
    public ConnectionCreateSessionResponseMessage(final long sessionTargetID)
    {
-      super(PacketType.CONN_CREATESESSION_RESP);
+      super(CONN_CREATESESSION_RESP);
 
       this.sessionTargetID = sessionTargetID;
+   }
+   
+   public ConnectionCreateSessionResponseMessage()
+   {
+      super(CONN_CREATESESSION_RESP);
    }
 
    // Public --------------------------------------------------------
@@ -38,7 +45,16 @@ public class ConnectionCreateSessionResponseMessage extends PacketImpl
    {
       return sessionTargetID;
    }
-
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putLong(sessionTargetID);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      sessionTargetID = buffer.getLong();
+   }
 
    @Override
    public String toString()

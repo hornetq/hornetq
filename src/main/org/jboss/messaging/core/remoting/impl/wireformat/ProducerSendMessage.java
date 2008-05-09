@@ -6,10 +6,10 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PROD_SEND;
-
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.impl.ServerMessageImpl;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -17,15 +17,15 @@ import org.jboss.messaging.core.server.ServerMessage;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class ProducerSendMessage extends PacketImpl
+public class ProducerSendMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final ClientMessage clientMessage;
+   private ClientMessage clientMessage;
    
-   private final ServerMessage serverMessage;
+   private ServerMessage serverMessage;
 
    // Static --------------------------------------------------------
 
@@ -36,8 +36,6 @@ public class ProducerSendMessage extends PacketImpl
       super(PROD_SEND);
 
       this.clientMessage = message;
-      
-      this.serverMessage = null;
    }
    
    public ProducerSendMessage(final ServerMessage message)
@@ -45,8 +43,11 @@ public class ProducerSendMessage extends PacketImpl
       super(PROD_SEND);
 
       this.serverMessage = message;
-      
-      this.clientMessage = null;
+   }
+   
+   public ProducerSendMessage()
+   {
+      super(PROD_SEND);
    }
 
    // Public --------------------------------------------------------
@@ -59,6 +60,30 @@ public class ProducerSendMessage extends PacketImpl
    public ServerMessage getServerMessage()
    {
       return serverMessage;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      MessagingBuffer buf = clientMessage.encode();
+      
+      buf.flip();
+      
+      //TODO - can be optimised
+      
+      byte[] data = buf.array();
+       
+      buffer.putBytes(data, 0, buf.limit());
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      //TODO can be optimised
+      
+      serverMessage = new ServerMessageImpl();
+      
+      serverMessage.decode(buffer);
+      
+      serverMessage.getBody().flip();
    }
 
 

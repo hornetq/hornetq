@@ -21,13 +21,6 @@
   */
 package org.jboss.messaging.core.client.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CLOSE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_COMMIT;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_ROLLBACK;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_GET_TIMEOUT;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_INDOUBT_XIDS;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_SUSPEND;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -47,7 +40,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
@@ -368,7 +361,7 @@ public class ClientSessionImpl implements ClientSessionInternal
         
       acknowledgeInternal(false);
       
-      remotingConnection.sendBlocking(serverTargetID, serverTargetID, new PacketImpl(SESS_COMMIT));
+      remotingConnection.sendBlocking(serverTargetID, serverTargetID, new EmptyPacket(EmptyPacket.SESS_COMMIT));
       
       lastCommittedID = lastID;
    }
@@ -396,7 +389,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       toAckCount = 0;
 
-      remotingConnection.sendBlocking(serverTargetID, serverTargetID, new PacketImpl(SESS_ROLLBACK));   
+      remotingConnection.sendBlocking(serverTargetID, serverTargetID, new EmptyPacket(EmptyPacket.SESS_ROLLBACK));   
    }
    
    public void acknowledge() throws MessagingException
@@ -457,7 +450,7 @@ public class ClientSessionImpl implements ClientSessionInternal
          
          acknowledgeInternal(false);      
          
-         remotingConnection.sendBlocking(serverTargetID, serverTargetID, new PacketImpl(CLOSE));            
+         remotingConnection.sendBlocking(serverTargetID, serverTargetID, new EmptyPacket(EmptyPacket.CLOSE));            
       }
       finally
       {
@@ -569,7 +562,7 @@ public class ClientSessionImpl implements ClientSessionInternal
          
          if (flags == XAResource.TMSUSPEND)
          {
-            packet = new PacketImpl(SESS_XA_SUSPEND);                  
+            packet = new EmptyPacket(EmptyPacket.SESS_XA_SUSPEND);                  
          }
          else if (flags == XAResource.TMSUCCESS)
          {
@@ -628,7 +621,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       try
       {                              
          SessionXAGetTimeoutResponseMessage response =
-            (SessionXAGetTimeoutResponseMessage)remotingConnection.sendBlocking(serverTargetID, serverTargetID, new PacketImpl(SESS_XA_GET_TIMEOUT));
+            (SessionXAGetTimeoutResponseMessage)remotingConnection.sendBlocking(serverTargetID, serverTargetID, new EmptyPacket(EmptyPacket.SESS_XA_GET_TIMEOUT));
          
          return response.getTimeoutSeconds();
       }
@@ -686,7 +679,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    {
       try
       {
-         SessionXAGetInDoubtXidsResponseMessage response = (SessionXAGetInDoubtXidsResponseMessage)remotingConnection.sendBlocking(serverTargetID, serverTargetID, new PacketImpl(SESS_XA_INDOUBT_XIDS));
+         SessionXAGetInDoubtXidsResponseMessage response = (SessionXAGetInDoubtXidsResponseMessage)remotingConnection.sendBlocking(serverTargetID, serverTargetID, new EmptyPacket(EmptyPacket.SESS_XA_INDOUBT_XIDS));
          
          List<Xid> xids = response.getXids();
          

@@ -6,174 +6,11 @@
  */
 package org.jboss.messaging.tests.unit.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec.HEADER_LENGTH;
-import static org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec.encodeXid;
-import static org.jboss.messaging.core.remoting.impl.mina.PacketCodecFactory.createCodecForEmptyPacket;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.BYTES;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CLOSE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_START;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONN_STOP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONS_FLOWTOKEN;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CREATECONNECTION;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.NULL;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PING;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PONG;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PROD_RECEIVETOKENS;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.RECEIVE_MSG;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_ACKNOWLEDGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_ADD_DESTINATION;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BINDINGQUERY;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BINDINGQUERY_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_HASNEXTMESSAGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_HASNEXTMESSAGE_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_NEXTMESSAGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_BROWSER_RESET;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CANCEL;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_COMMIT;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEBROWSER;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEBROWSER_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATECONSUMER_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEPRODUCER;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEPRODUCER_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEQUEUE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_DELETE_QUEUE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_QUEUEQUERY;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_QUEUEQUERY_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_RECOVER;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_REMOVE_DESTINATION;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_ROLLBACK;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_COMMIT;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_END;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_FORGET;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_GET_TIMEOUT;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_GET_TIMEOUT_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_INDOUBT_XIDS;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_INDOUBT_XIDS_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_JOIN;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_PREPARE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_RESUME;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_ROLLBACK;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_SET_TIMEOUT;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_SET_TIMEOUT_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_START;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_XA_SUSPEND;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.TEXT;
-import static org.jboss.messaging.tests.unit.core.remoting.impl.wireformat.CodecAssert.assertEqualsByteArrays;
-import static org.jboss.messaging.tests.unit.core.remoting.impl.wireformat.CodecAssert.assertSameXids;
-import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
-import static org.jboss.messaging.tests.util.RandomUtil.randomBytes;
-import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
-import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-import static org.jboss.messaging.tests.util.RandomUtil.randomXid;
-import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.transaction.xa.Xid;
-
-import org.apache.mina.common.IoBuffer;
 import org.apache.mina.common.WriteFuture;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.impl.codec.AbstractPacketCodec;
-import org.jboss.messaging.core.remoting.impl.codec.BytesPacketCodec;
-import org.jboss.messaging.core.remoting.impl.codec.ConnectionCreateSessionMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.ConnectionCreateSessionResponseMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.ConsumerFlowTokenMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.CreateConnectionMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.CreateConnectionResponseMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.PingCodec;
-import org.jboss.messaging.core.remoting.impl.codec.PongCodec;
-import org.jboss.messaging.core.remoting.impl.codec.ProducerReceiveTokensMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.ProducerSendMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.ReceiveMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionAcknowledgeMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionAddDestinationMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionBindingQueryMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionBindingQueryResponseMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionBrowserHasNextMessageResponseMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionCancelMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionCreateBrowserMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionCreateBrowserResponseMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionCreateConsumerMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionCreateConsumerResponseMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionCreateProducerMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionCreateProducerResponseMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionCreateQueueMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionDeleteQueueMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionQueueQueryMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionQueueQueryResponseMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionRemoveDestinationMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionXACommitMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionXAEndMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionXAForgetMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionXAGetInDoubtXidsResponseMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionXAGetTimeoutResponseMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionXAJoinMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionXAPrepareMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionXAResponseMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionXAResumeMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionXARollbackMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionXASetTimeoutMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionXASetTimeoutResponseMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.SessionXAStartMessageCodec;
-import org.jboss.messaging.core.remoting.impl.codec.TextPacketCodec;
-import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
-import org.jboss.messaging.core.remoting.impl.mina.PacketCodecFactory;
-import org.jboss.messaging.core.remoting.impl.wireformat.BytesPacket;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
-import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
-import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
-import org.jboss.messaging.core.remoting.impl.wireformat.ProducerReceiveTokensMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCancelMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAForgetMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetInDoubtXidsResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetTimeoutResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAJoinMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAPrepareMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResumeMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
-import org.jboss.messaging.core.version.impl.VersionImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -195,156 +32,156 @@ public class PacketTypeTest extends UnitTestCase
 
    // Static --------------------------------------------------------
 
-   private static MessagingBuffer encode(int length, Object... args)
-         throws Exception
-   {
-      BufferWrapper buffer = new BufferWrapper(IoBuffer.allocate(length));
-      for (Object arg : args)
-      {
-         if (arg instanceof Byte)
-            buffer.putByte(((Byte) arg).byteValue());
-         else if (arg instanceof Boolean)
-         {
-            Boolean bool = (Boolean) arg;
-            buffer.putBoolean(bool);
-         } else if (arg instanceof Integer)
-            buffer.putInt(((Integer) arg).intValue());
-         else if (arg instanceof Long)
-            buffer.putLong(((Long) arg).longValue());
-         else if (arg instanceof Float)
-            buffer.putFloat(((Float) arg).floatValue());
-         else if (arg instanceof String)
-            buffer.putNullableString((String) arg);
-         else if (arg instanceof SimpleString)
-            buffer.putSimpleString((SimpleString)arg);
-         else if (arg instanceof NullableStringHolder)
-            buffer.putNullableSimpleString(((NullableStringHolder)arg).str);
-         else if (arg == null)
-            buffer.putNullableString(null);
-         else if (arg instanceof byte[])
-         {
-            byte[] b = (byte[]) arg;
-            buffer.putInt(b.length);
-            buffer.putBytes(b);
-         } else if (arg instanceof long[])
-         {
-            long[] longs = (long[]) arg;
-            for (long l : longs)
-            {
-               buffer.putLong(l);
-            }
-         } else if (arg instanceof List)
-         {
-            List argsInList = (List) arg;
-            buffer.putInt(argsInList.size());
-            for (Object argInList : argsInList)
-            {
-               if (argInList instanceof SimpleString)
-                  buffer.putSimpleString((SimpleString) argInList);
-               else if (argInList instanceof Xid)
-                  encodeXid((Xid)argInList, buffer);
-               else
-                  fail ("no encoding defined for " + arg + " in List");
-            }
-         } else if (arg instanceof Xid)
-         {
-            Xid xid = (Xid) arg;
-            encodeXid(xid, buffer);
-         } else
-         {
-            fail("no encoding defined for " + arg);
-         }
-      }
-      buffer.flip();
-      return buffer;
-   }
-
-   private static void checkHeader(final MessagingBuffer buffer,
-         final Packet packet, final int bodyLength) throws Exception
-   {
-      buffer.rewind();
-      int messageLength = buffer.getInt();
-      assertEquals(AbstractPacketCodec.HEADER_LENGTH + bodyLength,
-            messageLength);
-
-      assertEquals(buffer.getByte(), packet.getType().byteValue());
-
-      long responseTargetID = buffer.getLong();
-      long targetID = buffer.getLong();
-      long executorID = buffer.getLong();
-
-      assertEquals(packet.getResponseTargetID(), responseTargetID);
-      assertEquals(packet.getTargetID(), targetID);
-      assertEquals(packet.getExecutorID(), executorID);
-   }
-
-   private static void checkBody(MessagingBuffer buffer, int bodyLength,
-         Object... bodyObjects) throws Exception
-   {
-      byte[] actualBody = new byte[bodyLength];
-      buffer.getBytes(actualBody);
-      MessagingBuffer expectedBody = encode(actualBody.length, bodyObjects);
-      assertEqualsByteArrays(expectedBody.array(), actualBody);
-      // check the buffer has been wholly read
-      assertEquals(0, buffer.remaining());
-   }
-
-   private static Packet encodeAndCheckBytesAndDecode(Packet packet,
-         AbstractPacketCodec codec, Object... bodyObjects) throws Exception
-   {
-      MessagingBuffer buffer = encode(packet, codec);
-      int bodyLength = buffer.position();
-      checkHeader(buffer, packet, bodyLength);
-      checkBody(buffer, bodyLength, bodyObjects);
-      buffer.rewind();
-
-      Packet decodedPacket = decode(buffer, codec, bodyLength);
-      
-      return decodedPacket;
-   }
-
-   private static MessagingBuffer encode(final Packet packet,
-         final AbstractPacketCodec<Packet> codec) throws Exception
-   {
-      SimpleProtocolEncoderOutput out = new SimpleProtocolEncoderOutput();
-
-      codec.encode(packet, out);
-
-      Object encodedMessage = out.getEncodedMessage();
-
-      assertNotNull(encodedMessage);
-
-      assertTrue(encodedMessage instanceof IoBuffer);
-
-      MessagingBuffer buff = new BufferWrapper((IoBuffer) encodedMessage);
-
-      return buff;
-   }
-
-   private static Packet decode(final MessagingBuffer buffer,
-         final AbstractPacketCodec<Packet> codec, final int len)
-         throws Exception
-   {
-      SimpleProtocolDencoderOutput out = new SimpleProtocolDencoderOutput();
-
-      int length = buffer.getInt();
-
-      assertEquals(len + HEADER_LENGTH, length);
-
-      byte type = buffer.getByte();
-
-      assertEquals(codec.getType().byteValue(), type);
-
-      codec.decode(buffer, out);
-
-      Object message = out.getMessage();
-
-      assertNotNull(message);
-
-      assertTrue(message instanceof Packet);
-
-      return (Packet) message;
-   }
+//   private static MessagingBuffer encode(int length, Object... args)
+//         throws Exception
+//   {
+//      BufferWrapper buffer = new BufferWrapper(IoBuffer.allocate(length));
+//      for (Object arg : args)
+//      {
+//         if (arg instanceof Byte)
+//            buffer.putByte(((Byte) arg).byteValue());
+//         else if (arg instanceof Boolean)
+//         {
+//            Boolean bool = (Boolean) arg;
+//            buffer.putBoolean(bool);
+//         } else if (arg instanceof Integer)
+//            buffer.putInt(((Integer) arg).intValue());
+//         else if (arg instanceof Long)
+//            buffer.putLong(((Long) arg).longValue());
+//         else if (arg instanceof Float)
+//            buffer.putFloat(((Float) arg).floatValue());
+//         else if (arg instanceof String)
+//            buffer.putNullableString((String) arg);
+//         else if (arg instanceof SimpleString)
+//            buffer.putSimpleString((SimpleString)arg);
+//         else if (arg instanceof NullableStringHolder)
+//            buffer.putNullableSimpleString(((NullableStringHolder)arg).str);
+//         else if (arg == null)
+//            buffer.putNullableString(null);
+//         else if (arg instanceof byte[])
+//         {
+//            byte[] b = (byte[]) arg;
+//            buffer.putInt(b.length);
+//            buffer.putBytes(b);
+//         } else if (arg instanceof long[])
+//         {
+//            long[] longs = (long[]) arg;
+//            for (long l : longs)
+//            {
+//               buffer.putLong(l);
+//            }
+//         } else if (arg instanceof List)
+//         {
+//            List argsInList = (List) arg;
+//            buffer.putInt(argsInList.size());
+//            for (Object argInList : argsInList)
+//            {
+//               if (argInList instanceof SimpleString)
+//                  buffer.putSimpleString((SimpleString) argInList);
+//               else if (argInList instanceof Xid)
+//                  encodeXid((Xid)argInList, buffer);
+//               else
+//                  fail ("no encoding defined for " + arg + " in List");
+//            }
+//         } else if (arg instanceof Xid)
+//         {
+//            Xid xid = (Xid) arg;
+//            encodeXid(xid, buffer);
+//         } else
+//         {
+//            fail("no encoding defined for " + arg);
+//         }
+//      }
+//      buffer.flip();
+//      return buffer;
+//   }
+//
+//   private static void checkHeader(final MessagingBuffer buffer,
+//         final Packet packet, final int bodyLength) throws Exception
+//   {
+//      buffer.rewind();
+//      int messageLength = buffer.getInt();
+//      assertEquals(AbstractPacketCodec.HEADER_LENGTH + bodyLength,
+//            messageLength);
+//
+//      assertEquals(buffer.getByte(), packet.getType().byteValue());
+//
+//      long responseTargetID = buffer.getLong();
+//      long targetID = buffer.getLong();
+//      long executorID = buffer.getLong();
+//
+//      assertEquals(packet.getResponseTargetID(), responseTargetID);
+//      assertEquals(packet.getTargetID(), targetID);
+//      assertEquals(packet.getExecutorID(), executorID);
+//   }
+//
+//   private static void checkBody(MessagingBuffer buffer, int bodyLength,
+//         Object... bodyObjects) throws Exception
+//   {
+//      byte[] actualBody = new byte[bodyLength];
+//      buffer.getBytes(actualBody);
+//      MessagingBuffer expectedBody = encode(actualBody.length, bodyObjects);
+//      assertEqualsByteArrays(expectedBody.array(), actualBody);
+//      // check the buffer has been wholly read
+//      assertEquals(0, buffer.remaining());
+//   }
+//
+//   private static Packet encodeAndCheckBytesAndDecode(Packet packet,
+//         AbstractPacketCodec codec, Object... bodyObjects) throws Exception
+//   {
+//      MessagingBuffer buffer = encode(packet, codec);
+//      int bodyLength = buffer.position();
+//      checkHeader(buffer, packet, bodyLength);
+//      checkBody(buffer, bodyLength, bodyObjects);
+//      buffer.rewind();
+//
+//      Packet decodedPacket = decode(buffer, codec, bodyLength);
+//      
+//      return decodedPacket;
+//   }
+//
+//   private static MessagingBuffer encode(final Packet packet,
+//         final AbstractPacketCodec<Packet> codec) throws Exception
+//   {
+//      SimpleProtocolEncoderOutput out = new SimpleProtocolEncoderOutput();
+//
+//      codec.encode(packet, out);
+//
+//      Object encodedMessage = out.getEncodedMessage();
+//
+//      assertNotNull(encodedMessage);
+//
+//      assertTrue(encodedMessage instanceof IoBuffer);
+//
+//      MessagingBuffer buff = new BufferWrapper((IoBuffer) encodedMessage);
+//
+//      return buff;
+//   }
+//
+//   private static Packet decode(final MessagingBuffer buffer,
+//         final AbstractPacketCodec<Packet> codec, final int len)
+//         throws Exception
+//   {
+//      SimpleProtocolDencoderOutput out = new SimpleProtocolDencoderOutput();
+//
+//      int length = buffer.getInt();
+//
+//      assertEquals(len + HEADER_LENGTH, length);
+//
+//      byte type = buffer.getByte();
+//
+//      assertEquals(codec.getType().byteValue(), type);
+//
+//      codec.decode(buffer, out);
+//
+//      Object message = out.getMessage();
+//
+//      assertNotNull(message);
+//
+//      assertTrue(message instanceof Packet);
+//
+//      return (Packet) message;
+//   }
 
    // Constructors --------------------------------------------------
 
@@ -352,7 +189,7 @@ public class PacketTypeTest extends UnitTestCase
 //
 //   public void testNullPacket() throws Exception
 //   {
-//      Packet packet = new PacketImpl(NULL);
+//      Packet packet = new EmptyPacket(NULL);
 //      long cid = randomLong();
 //      packet.setResponseTargetID(cid);
 //      packet.setTargetID(randomLong());
@@ -361,7 +198,7 @@ public class PacketTypeTest extends UnitTestCase
 //            .createCodecForEmptyPacket(NULL);
 //
 //      Packet decodedPacket = encodeAndCheckBytesAndDecode(packet, codec);
-//      assertTrue(decodedPacket instanceof PacketImpl);
+//      assertTrue(decodedPacket instanceof EmptyPacket);
 //
 //      assertEquals(NULL, decodedPacket.getType());
 //      assertEquals(packet.getResponseTargetID(), decodedPacket.getResponseTargetID());
@@ -626,7 +463,7 @@ public class PacketTypeTest extends UnitTestCase
 //
 //   public void testStartConnectionMessage() throws Exception
 //   {
-//      Packet packet = new PacketImpl(CONN_START);
+//      Packet packet = new EmptyPacket(CONN_START);
 //      AbstractPacketCodec codec = PacketCodecFactory
 //            .createCodecForEmptyPacket(CONN_START);
 //
@@ -637,7 +474,7 @@ public class PacketTypeTest extends UnitTestCase
 //
 //   public void testStopConnectionMessage() throws Exception
 //   {
-//      Packet packet = new PacketImpl(CONN_STOP);
+//      Packet packet = new EmptyPacket(CONN_STOP);
 //      AbstractPacketCodec codec = PacketCodecFactory
 //            .createCodecForEmptyPacket(CONN_STOP);
 //
@@ -727,7 +564,7 @@ public class PacketTypeTest extends UnitTestCase
 //
 //   public void testSessionCommitMessage() throws Exception
 //   {
-//      Packet message = new PacketImpl(SESS_COMMIT);
+//      Packet message = new EmptyPacket(SESS_COMMIT);
 //      AbstractPacketCodec codec = PacketCodecFactory
 //            .createCodecForEmptyPacket(SESS_COMMIT);
 //
@@ -738,7 +575,7 @@ public class PacketTypeTest extends UnitTestCase
 //
 //   public void testSessionRollbackMessage() throws Exception
 //   {
-//      Packet message = new PacketImpl(SESS_ROLLBACK);
+//      Packet message = new EmptyPacket(SESS_ROLLBACK);
 //      AbstractPacketCodec codec = PacketCodecFactory
 //            .createCodecForEmptyPacket(SESS_ROLLBACK);
 //
@@ -749,7 +586,7 @@ public class PacketTypeTest extends UnitTestCase
 //
 //   public void testSessionRecoverMessage() throws Exception
 //   {
-//      Packet message = new PacketImpl(SESS_RECOVER);
+//      Packet message = new EmptyPacket(SESS_RECOVER);
 //      AbstractPacketCodec codec = PacketCodecFactory
 //            .createCodecForEmptyPacket(SESS_RECOVER);
 //
@@ -760,7 +597,7 @@ public class PacketTypeTest extends UnitTestCase
 //
 //   public void testCloseMessage() throws Exception
 //   {
-//      Packet message = new PacketImpl(CLOSE);
+//      Packet message = new EmptyPacket(CLOSE);
 //      AbstractPacketCodec codec = PacketCodecFactory
 //            .createCodecForEmptyPacket(CLOSE);
 //
@@ -804,7 +641,7 @@ public class PacketTypeTest extends UnitTestCase
 //
 //   public void testBrowserResetMessage() throws Exception
 //   {
-//      Packet message = new PacketImpl(SESS_BROWSER_RESET);
+//      Packet message = new EmptyPacket(SESS_BROWSER_RESET);
 //      AbstractPacketCodec codec = PacketCodecFactory
 //            .createCodecForEmptyPacket(SESS_BROWSER_RESET);
 //
@@ -815,7 +652,7 @@ public class PacketTypeTest extends UnitTestCase
 //
 //   public void testBrowserHasNextMessageRequest() throws Exception
 //   {
-//      Packet request = new PacketImpl(SESS_BROWSER_HASNEXTMESSAGE);
+//      Packet request = new EmptyPacket(SESS_BROWSER_HASNEXTMESSAGE);
 //      AbstractPacketCodec codec = PacketCodecFactory
 //            .createCodecForEmptyPacket(SESS_BROWSER_HASNEXTMESSAGE);
 //
@@ -842,7 +679,7 @@ public class PacketTypeTest extends UnitTestCase
 //
 //   public void testBrowserNextMessageRequest() throws Exception
 //   {
-//      Packet request = new PacketImpl(SESS_BROWSER_NEXTMESSAGE);
+//      Packet request = new EmptyPacket(SESS_BROWSER_NEXTMESSAGE);
 //      AbstractPacketCodec codec = PacketCodecFactory
 //            .createCodecForEmptyPacket(SESS_BROWSER_NEXTMESSAGE);
 //
@@ -899,7 +736,7 @@ public class PacketTypeTest extends UnitTestCase
 //
 //   public void testSessionXAGetInDoubtXidsMessage() throws Exception
 //   {
-//      Packet request = new PacketImpl(SESS_XA_INDOUBT_XIDS);
+//      Packet request = new EmptyPacket(SESS_XA_INDOUBT_XIDS);
 //      AbstractPacketCodec codec = createCodecForEmptyPacket(SESS_XA_INDOUBT_XIDS);
 //
 //      Packet decodedPacket = encodeAndCheckBytesAndDecode(request, codec);
@@ -930,7 +767,7 @@ public class PacketTypeTest extends UnitTestCase
 //
 //   public void testSessionXAGetTimeoutMessage() throws Exception
 //   {
-//      Packet message = new PacketImpl(SESS_XA_GET_TIMEOUT);
+//      Packet message = new EmptyPacket(SESS_XA_GET_TIMEOUT);
 //      AbstractPacketCodec codec = createCodecForEmptyPacket(PacketType.SESS_XA_GET_TIMEOUT);
 //
 //      Packet decodedPacket = encodeAndCheckBytesAndDecode(message, codec);
@@ -1075,7 +912,7 @@ public class PacketTypeTest extends UnitTestCase
 //
 //   public void testSessionXASuspendMessage() throws Exception
 //   {
-//      Packet message = new PacketImpl(SESS_XA_SUSPEND);
+//      Packet message = new EmptyPacket(SESS_XA_SUSPEND);
 //      AbstractPacketCodec codec = PacketCodecFactory
 //            .createCodecForEmptyPacket(PacketType.SESS_XA_SUSPEND);
 //

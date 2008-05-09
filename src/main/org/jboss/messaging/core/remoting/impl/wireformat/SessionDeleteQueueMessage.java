@@ -6,8 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_DELETE_QUEUE;
-
+import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 
@@ -16,13 +15,13 @@ import org.jboss.messaging.util.SimpleString;
 
  * @version <tt>$Revision$</tt>
  */
-public class SessionDeleteQueueMessage extends PacketImpl
+public class SessionDeleteQueueMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final SimpleString queueName;
+   private SimpleString queueName;
 
    // Static --------------------------------------------------------
 
@@ -33,6 +32,11 @@ public class SessionDeleteQueueMessage extends PacketImpl
       super(SESS_DELETE_QUEUE);
 
       this.queueName = queueName;
+   }
+   
+   public SessionDeleteQueueMessage()
+   {
+      super(SESS_DELETE_QUEUE);
    }
 
    // Public --------------------------------------------------------
@@ -49,6 +53,16 @@ public class SessionDeleteQueueMessage extends PacketImpl
    public SimpleString getQueueName()
    {
       return queueName;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putSimpleString(queueName);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      queueName = buffer.getSimpleString();
    }
 
    // Package protected ---------------------------------------------

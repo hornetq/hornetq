@@ -7,7 +7,7 @@
 
 package org.jboss.messaging.core.remoting;
 
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * 
@@ -27,7 +27,7 @@ public interface Packet
 
    long getResponseTargetID();
 
-   PacketType getType();
+   byte getType();
 
    long getTargetID();
 
@@ -39,8 +39,7 @@ public interface Packet
    
    void normalize(Packet other);
 
-   /**
-    * An AbstractPacket is a request if it has a target ID and a correlation ID
-    */
-   public boolean isRequest();
+   void encode(MessagingBuffer buffer) throws Exception;
+      
+   void decode(MessagingBuffer buffer) throws Exception;
 }

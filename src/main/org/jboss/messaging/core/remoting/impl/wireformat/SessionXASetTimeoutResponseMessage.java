@@ -6,19 +6,21 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+import org.jboss.messaging.util.MessagingBuffer;
+
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionXASetTimeoutResponseMessage extends PacketImpl
+public class SessionXASetTimeoutResponseMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
    
-   private final boolean ok;
+   private boolean ok;
    
    // Static --------------------------------------------------------
 
@@ -26,9 +28,14 @@ public class SessionXASetTimeoutResponseMessage extends PacketImpl
 
    public SessionXASetTimeoutResponseMessage(final boolean ok)
    {
-      super(PacketType.SESS_XA_SET_TIMEOUT_RESP);
+      super(SESS_XA_SET_TIMEOUT_RESP);
       
       this.ok = ok;
+   }
+   
+   public SessionXASetTimeoutResponseMessage()
+   {
+      super(SESS_XA_SET_TIMEOUT_RESP);
    }
    
    // Public --------------------------------------------------------
@@ -36,6 +43,16 @@ public class SessionXASetTimeoutResponseMessage extends PacketImpl
    public boolean isOK()
    {
       return ok;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putBoolean(ok);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      ok = buffer.getBoolean();
    }
    
    // Package protected ---------------------------------------------

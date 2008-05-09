@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CREATECONNECTION;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -15,16 +15,16 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CREAT
  * 
  * @version <tt>$Revision$</tt>
  */
-public class CreateConnectionRequest extends PacketImpl
+public class CreateConnectionRequest extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final int version;
-   private final long remotingSessionID;
-   private final String username;
-   private final String password;
+   private int version;
+   private long remotingSessionID;
+   private String username;
+   private String password;
 
    // Static --------------------------------------------------------
 
@@ -39,6 +39,11 @@ public class CreateConnectionRequest extends PacketImpl
       this.remotingSessionID = remotingSessionID;
       this.username = username;
       this.password = password;
+   }
+   
+   public CreateConnectionRequest()
+   {
+      super(CREATECONNECTION);
    }
 
    // Public --------------------------------------------------------
@@ -63,6 +68,22 @@ public class CreateConnectionRequest extends PacketImpl
       return password;
    }
 
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putInt(version);
+      buffer.putLong(remotingSessionID);
+      buffer.putNullableString(username);
+      buffer.putNullableString(password);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      version = buffer.getInt();
+      remotingSessionID = buffer.getLong();
+      username = buffer.getNullableString();
+      password = buffer.getNullableString();
+   }
+   
    @Override
    public String toString()
    {

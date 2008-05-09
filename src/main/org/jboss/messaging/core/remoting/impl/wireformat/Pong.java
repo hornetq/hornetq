@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PONG;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -14,15 +14,15 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.PONG;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class Pong extends PacketImpl
+public class Pong extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final long sessionID;
+   private long sessionID;
 
-   private final boolean sessionFailed;
+   private boolean sessionFailed;
 
    // Static --------------------------------------------------------
 
@@ -35,6 +35,11 @@ public class Pong extends PacketImpl
       this.sessionID = sessionID;
       this.sessionFailed = sessionFailed;
    }
+   
+   public Pong()
+   {
+      super(PONG);
+   }
 
    // Public --------------------------------------------------------
 
@@ -46,6 +51,18 @@ public class Pong extends PacketImpl
    public boolean isSessionFailed()
    {
       return sessionFailed;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putLong(sessionID);
+      buffer.putBoolean(sessionFailed);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      sessionID = buffer.getLong();
+      sessionFailed = buffer.getBoolean();
    }
 
    @Override

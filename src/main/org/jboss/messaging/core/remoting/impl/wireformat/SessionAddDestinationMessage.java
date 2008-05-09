@@ -6,8 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_ADD_DESTINATION;
-
+import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 
@@ -18,15 +17,15 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SessionAddDestinationMessage extends PacketImpl
+public class SessionAddDestinationMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
    
-   private final SimpleString address;
+   private SimpleString address;
    
-   private final boolean temporary;
+   private boolean temporary;
    
    // Static --------------------------------------------------------
 
@@ -40,6 +39,11 @@ public class SessionAddDestinationMessage extends PacketImpl
       
       this.temporary = temp;
    }
+   
+   public SessionAddDestinationMessage()
+   {
+      super(SESS_ADD_DESTINATION);
+   }
 
    // Public --------------------------------------------------------
    
@@ -51,6 +55,18 @@ public class SessionAddDestinationMessage extends PacketImpl
    public boolean isTemporary()
    {
    	return temporary;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putSimpleString(address);
+      buffer.putBoolean(temporary);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      address = buffer.getSimpleString();
+      temporary = buffer.getBoolean();
    }
    
    @Override

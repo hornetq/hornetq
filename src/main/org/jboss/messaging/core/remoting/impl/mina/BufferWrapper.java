@@ -127,6 +127,11 @@ public class BufferWrapper implements MessagingBuffer
    {
       buffer.putInt(intValue);
    }
+   
+   public void putInt(final int pos, final int intValue)
+   {
+      buffer.putInt(pos, intValue);
+   }
 
    public void putLong(final long longValue)
    {

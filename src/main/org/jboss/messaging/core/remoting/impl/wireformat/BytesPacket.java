@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.BYTES;
+import org.jboss.messaging.util.MessagingBuffer;
 
 
 /**
@@ -14,25 +14,28 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.BYTES
  * 
  * @version <tt>$Revision$</tt>
  */
-public class BytesPacket extends PacketImpl
+public class BytesPacket extends EmptyPacket
 {
    // Constants -----------------------------------------------------
-
+   
    // Attributes ----------------------------------------------------
 
-   private final byte[] bytes;
+   private byte[] bytes;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public BytesPacket(byte[] bytes)
+   public BytesPacket(final byte[] bytes)
    {
       super(BYTES);
 
-      assert bytes != null;
-
       this.bytes = bytes;
+   }
+   
+   public BytesPacket()
+   {
+      super(BYTES);
    }
    
    // Public --------------------------------------------------------
@@ -47,7 +50,21 @@ public class BytesPacket extends PacketImpl
    {
       return getParentString() + ", bytes.length=" + bytes.length + "]";
    }
-
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putInt(bytes.length);
+      
+      buffer.putBytes(bytes);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      bytes = new byte[buffer.getInt()];
+      
+      buffer.getBytes(bytes);
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

@@ -21,8 +21,6 @@
  */
 package org.jboss.messaging.core.client.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CLOSE;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -34,7 +32,7 @@ import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -260,7 +258,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          
          receiverThread = null;
 
-         remotingConnection.sendBlocking(targetID, session.getServerTargetID(), new PacketImpl(CLOSE));
+         remotingConnection.sendBlocking(targetID, session.getServerTargetID(), new EmptyPacket(EmptyPacket.CLOSE));
 
          remotingConnection.getPacketDispatcher().unregister(clientTargetID);
       }

@@ -6,21 +6,23 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+import org.jboss.messaging.util.MessagingBuffer;
+
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionAcknowledgeMessage extends PacketImpl
+public class SessionAcknowledgeMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
    
-   private final long deliveryID;
+   private long deliveryID;
    
-   private final boolean allUpTo;
+   private boolean allUpTo;
 
    // Static --------------------------------------------------------
 
@@ -28,11 +30,16 @@ public class SessionAcknowledgeMessage extends PacketImpl
 
    public SessionAcknowledgeMessage(final long deliveryID, final boolean allUpTo)
    {
-      super(PacketType.SESS_ACKNOWLEDGE);
+      super(SESS_ACKNOWLEDGE);
       
       this.deliveryID = deliveryID;
       
       this.allUpTo = allUpTo;
+   }
+   
+   public SessionAcknowledgeMessage()
+   {
+      super(SESS_ACKNOWLEDGE);
    }
 
    // Public --------------------------------------------------------
@@ -45,6 +52,18 @@ public class SessionAcknowledgeMessage extends PacketImpl
    public boolean isAllUpTo()
    {
       return allUpTo;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putLong(deliveryID);
+      buffer.putBoolean(allUpTo);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      deliveryID = buffer.getLong();
+      allUpTo = buffer.getBoolean();
    }
 
    @Override

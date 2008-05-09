@@ -21,14 +21,11 @@
   */
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.NULL;
-
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
+import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 import org.jboss.messaging.core.server.ServerConnection;
 
 /**
@@ -57,21 +54,21 @@ public class ServerConnectionPacketHandler extends ServerPacketHandlerSupport
    {
       Packet response = null;
 
-      PacketType type = packet.getType();
+      byte type = packet.getType();
       
       switch (type)
       {
-      case CONN_CREATESESSION:
+      case EmptyPacket.CONN_CREATESESSION:
          ConnectionCreateSessionMessage request = (ConnectionCreateSessionMessage) packet;   
          response = connection.createSession(request.isXA(), request.isAutoCommitSends(), request.isAutoCommitAcks(), sender);
          break;
-      case CONN_START:
+      case EmptyPacket.CONN_START:
          connection.start();
          break;
-      case CONN_STOP:
+      case EmptyPacket.CONN_STOP:
          connection.stop();
          break;
-      case CLOSE:
+      case EmptyPacket.CLOSE:
          connection.close();
          break;
       default:
@@ -82,7 +79,7 @@ public class ServerConnectionPacketHandler extends ServerPacketHandlerSupport
       // reply if necessary
       if (response == null && packet.getResponseTargetID() != Packet.NO_ID_SET)
       {
-         response = new PacketImpl(NULL);               
+         response = new EmptyPacket(EmptyPacket.NULL);               
       }
       
       return response;

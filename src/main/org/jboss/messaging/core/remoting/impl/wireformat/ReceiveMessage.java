@@ -6,10 +6,10 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.RECEIVE_MSG;
-
 import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -18,19 +18,19 @@ import org.jboss.messaging.core.server.ServerMessage;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class ReceiveMessage extends PacketImpl
+public class ReceiveMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final ClientMessage clientMessage;
+   private ClientMessage clientMessage;
    
-   private final ServerMessage serverMessage;
+   private ServerMessage serverMessage;
    
-   private final int deliveryCount;
+   private int deliveryCount;
    
-   private final long deliveryID;
+   private long deliveryID;
 
    // Static --------------------------------------------------------
 
@@ -61,6 +61,11 @@ public class ReceiveMessage extends PacketImpl
       
       this.deliveryID = deliveryID;
    }
+   
+   public ReceiveMessage()
+   {
+      super(RECEIVE_MSG);
+   }
 
    // Public --------------------------------------------------------
 
@@ -82,6 +87,36 @@ public class ReceiveMessage extends PacketImpl
    public long getDeliveryID()
    {
       return deliveryID;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      MessagingBuffer buf = serverMessage.encode();
+      
+      buf.flip();
+      
+      //TODO - can be optimised
+      
+      byte[] data = buf.array();
+      
+      buffer.putInt(deliveryCount);
+      buffer.putLong(deliveryID);
+      
+      buffer.putBytes(data, 0, buf.limit());
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      //TODO can be optimised
+      
+      deliveryCount = buffer.getInt();
+      deliveryID = buffer.getLong();
+      
+      clientMessage = new ClientMessageImpl(deliveryCount, deliveryID);
+      
+      clientMessage.decode(buffer);
+      
+      clientMessage.getBody().flip();
    }
 
    // Package protected ---------------------------------------------

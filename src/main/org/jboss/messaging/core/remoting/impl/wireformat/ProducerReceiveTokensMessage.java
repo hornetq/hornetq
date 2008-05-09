@@ -6,6 +6,8 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+import org.jboss.messaging.util.MessagingBuffer;
+
 /**
  * 
  * A ProducerReceiveTokensMessage
@@ -13,13 +15,13 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class ProducerReceiveTokensMessage extends PacketImpl
+public class ProducerReceiveTokensMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final int tokens;
+   private int tokens;
 
    // Static --------------------------------------------------------
 
@@ -27,9 +29,14 @@ public class ProducerReceiveTokensMessage extends PacketImpl
 
    public ProducerReceiveTokensMessage(final int tokens)
    {
-      super(PacketType.PROD_RECEIVETOKENS);
+      super(PROD_RECEIVETOKENS);
 
       this.tokens = tokens;
+   }
+   
+   public ProducerReceiveTokensMessage()
+   {
+      super(PROD_RECEIVETOKENS);
    }
 
    // Public --------------------------------------------------------
@@ -37,6 +44,16 @@ public class ProducerReceiveTokensMessage extends PacketImpl
    public int getTokens()
    {
       return tokens;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putInt(tokens);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      tokens = buffer.getInt();
    }
 
    @Override

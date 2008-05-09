@@ -6,6 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 
@@ -16,20 +17,35 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SessionBindingQueryMessage extends PacketImpl
+public class SessionBindingQueryMessage extends EmptyPacket
 {
-   private final SimpleString address;
+   private SimpleString address;
 
    public SessionBindingQueryMessage(final SimpleString address)
    {
-      super(PacketType.SESS_BINDINGQUERY);
+      super(SESS_BINDINGQUERY);
 
       this.address = address;            
+   }
+   
+   public SessionBindingQueryMessage()
+   {
+      super(SESS_BINDINGQUERY);          
    }
 
    public SimpleString getAddress()
    {
       return address;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putSimpleString(address);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      address = buffer.getSimpleString();
    }
    
 }

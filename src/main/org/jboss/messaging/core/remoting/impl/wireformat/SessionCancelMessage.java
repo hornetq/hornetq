@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CANCEL;
+import org.jboss.messaging.util.MessagingBuffer;
 
 
 /**
@@ -14,15 +14,15 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionCancelMessage extends PacketImpl
+public class SessionCancelMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
    
-   private final long deliveryID;
+   private long deliveryID;
    
-   private final boolean expired;
+   private boolean expired;
 
    // Static --------------------------------------------------------
 
@@ -36,6 +36,11 @@ public class SessionCancelMessage extends PacketImpl
       
       this.expired = expired;
    }
+   
+   public SessionCancelMessage()
+   {
+      super(SESS_CANCEL);
+   }
 
    // Public --------------------------------------------------------
    
@@ -47,6 +52,18 @@ public class SessionCancelMessage extends PacketImpl
    public boolean isExpired()
    {
       return expired;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putLong(deliveryID);
+      buffer.putBoolean(expired);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      deliveryID = buffer.getLong();
+      expired = buffer.getBoolean();
    }
 
    @Override

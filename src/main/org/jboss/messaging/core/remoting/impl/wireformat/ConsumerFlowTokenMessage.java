@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONS_FLOWTOKEN;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -14,13 +14,13 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CONS_
  * 
  * @version <tt>$Revision$</tt>
  */
-public class ConsumerFlowTokenMessage extends PacketImpl
+public class ConsumerFlowTokenMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final int tokens;
+   private int tokens;
 
    // Static --------------------------------------------------------
 
@@ -32,12 +32,27 @@ public class ConsumerFlowTokenMessage extends PacketImpl
 
       this.tokens = tokens;
    }
+   
+   public ConsumerFlowTokenMessage()
+   {
+      super(CONS_FLOWTOKEN);
+   }
 
    // Public --------------------------------------------------------
 
    public int getTokens()
    {
       return tokens;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putInt(tokens);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      tokens = buffer.getInt();
    }
 
    @Override

@@ -167,7 +167,7 @@ public class MessageProducerTest extends JMSTestCase
          
        //  pconn.start();
          
-         p.setDeliveryMode(DeliveryMode.PERSISTENT);
+         p.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          
          p.setDisableMessageID(true);
          p.setDisableMessageTimestamp(true);
@@ -191,6 +191,55 @@ public class MessageProducerTest extends JMSTestCase
 //            cons.receive(1000);
 //         }
 
+         long end = System.currentTimeMillis();
+
+         double actualRate = 1000 * (double)numMessages / ( end - start);
+
+         log.info("rate " + actualRate + " msgs /sec");
+
+      }
+      finally
+      {
+
+      }
+   }
+   
+   public void testSpeed2() throws Exception
+   {
+      Connection pconn = null;      
+
+      try
+      {
+         pconn = cf.createConnection();
+
+         Session ps = pconn.createSession(true, Session.SESSION_TRANSACTED);
+
+         MessageProducer p = ps.createProducer(queue1);
+         
+         p.setDeliveryMode(DeliveryMode.PERSISTENT);
+         
+         p.setDisableMessageID(true);
+         p.setDisableMessageTimestamp(true);
+
+         final int numMessages = 20000;
+
+         long start = System.currentTimeMillis();
+
+         BytesMessage msg = ps.createBytesMessage();
+         
+         msg.writeBytes(new byte[1000]);
+
+         
+         for (int i = 0; i < numMessages; i++)
+         {
+            p.send(msg);
+            
+            if ((i+1) % 1000 == 0)
+            {
+               ps.commit();
+            }
+         }
+         
          long end = System.currentTimeMillis();
 
          double actualRate = 1000 * (double)numMessages / ( end - start);

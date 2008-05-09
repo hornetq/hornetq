@@ -6,6 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 
@@ -16,20 +17,35 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SessionQueueQueryMessage extends PacketImpl
+public class SessionQueueQueryMessage extends EmptyPacket
 {
-   private final SimpleString queueName;
+   private SimpleString queueName;
 
    public SessionQueueQueryMessage(final SimpleString queueName)
    {
-      super(PacketType.SESS_QUEUEQUERY);
+      super(SESS_QUEUEQUERY);
 
       this.queueName = queueName;            
+   }
+   
+   public SessionQueueQueryMessage()
+   {
+      super(SESS_QUEUEQUERY);        
    }
 
    public SimpleString getQueueName()
    {
       return queueName;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putSimpleString(queueName);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      queueName = buffer.getSimpleString();
    }
    
 }

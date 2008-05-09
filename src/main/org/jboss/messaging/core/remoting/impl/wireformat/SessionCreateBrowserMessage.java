@@ -6,8 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEBROWSER;
-
+import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -17,15 +16,15 @@ import org.jboss.messaging.util.SimpleString;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class SessionCreateBrowserMessage extends PacketImpl
+public class SessionCreateBrowserMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final SimpleString queueName;
+   private SimpleString queueName;
    
-   private final SimpleString filterString;
+   private SimpleString filterString;
 
    // Static --------------------------------------------------------
 
@@ -35,10 +34,13 @@ public class SessionCreateBrowserMessage extends PacketImpl
    {
       super(SESS_CREATEBROWSER);
 
-      assert queueName != null;
-
       this.queueName = queueName;
       this.filterString = filterString;
+   }
+   
+   public SessionCreateBrowserMessage()
+   {
+      super(SESS_CREATEBROWSER);
    }
 
    // Public --------------------------------------------------------
@@ -51,6 +53,18 @@ public class SessionCreateBrowserMessage extends PacketImpl
    public SimpleString getFilterString()
    {
       return filterString;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putSimpleString(queueName);
+      buffer.putNullableSimpleString(filterString);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      queueName = buffer.getSimpleString();
+      filterString = buffer.getNullableSimpleString();
    }
 
    @Override

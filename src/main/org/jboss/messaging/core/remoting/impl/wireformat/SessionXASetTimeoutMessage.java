@@ -6,6 +6,8 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+import org.jboss.messaging.util.MessagingBuffer;
+
 
 
 /**
@@ -13,13 +15,13 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionXASetTimeoutMessage extends PacketImpl
+public class SessionXASetTimeoutMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
    
-   private final int timeoutSeconds;
+   private int timeoutSeconds;
    
    // Static --------------------------------------------------------
 
@@ -27,9 +29,14 @@ public class SessionXASetTimeoutMessage extends PacketImpl
 
    public SessionXASetTimeoutMessage(final int timeoutSeconds)
    {
-      super(PacketType.SESS_XA_SET_TIMEOUT);
+      super(SESS_XA_SET_TIMEOUT);
       
       this.timeoutSeconds = timeoutSeconds;
+   }
+   
+   public SessionXASetTimeoutMessage()
+   {
+      super(SESS_XA_SET_TIMEOUT);
    }
    
 
@@ -38,6 +45,16 @@ public class SessionXASetTimeoutMessage extends PacketImpl
    public int getTimeoutSeconds()
    {
       return this.timeoutSeconds;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putInt(timeoutSeconds);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      timeoutSeconds = buffer.getInt();
    }
 
    // Package protected ---------------------------------------------

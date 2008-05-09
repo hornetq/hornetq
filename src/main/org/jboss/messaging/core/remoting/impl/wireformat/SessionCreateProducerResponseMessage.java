@@ -6,25 +6,24 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.SESS_CREATEPRODUCER_RESP;
-
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionCreateProducerResponseMessage extends PacketImpl
+public class SessionCreateProducerResponseMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final long producerTargetID;
+   private long producerTargetID;
    
-   private final int windowSize;
+   private int windowSize;
    
-   private final int maxRate;
+   private int maxRate;
 
    // Static --------------------------------------------------------
 
@@ -39,6 +38,11 @@ public class SessionCreateProducerResponseMessage extends PacketImpl
       this.windowSize = windowSize;
       
       this.maxRate = maxRate;
+   }
+   
+   public SessionCreateProducerResponseMessage()
+   {
+      super(SESS_CREATEPRODUCER_RESP);
    }
 
    // Public --------------------------------------------------------
@@ -57,6 +61,21 @@ public class SessionCreateProducerResponseMessage extends PacketImpl
    {
    	return maxRate;
    }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putLong(producerTargetID);
+      buffer.putInt(windowSize);
+      buffer.putInt(maxRate);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      producerTargetID = buffer.getLong();      
+      windowSize = buffer.getInt();
+      maxRate = buffer.getInt();
+   }
+   
 
    @Override
    public String toString()

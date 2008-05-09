@@ -8,21 +8,23 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import javax.transaction.xa.Xid;
 
+import org.jboss.messaging.util.MessagingBuffer;
+
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionXACommitMessage extends PacketImpl
+public class SessionXACommitMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
    
-   private final boolean onePhase;
+   private boolean onePhase;
    
-   private final Xid xid;
+   private Xid xid;
    
    // Static --------------------------------------------------------
 
@@ -30,10 +32,15 @@ public class SessionXACommitMessage extends PacketImpl
 
    public SessionXACommitMessage(final Xid xid, final boolean onePhase)
    {
-      super(PacketType.SESS_XA_COMMIT);
+      super(SESS_XA_COMMIT);
       
       this.xid = xid;
       this.onePhase = onePhase;
+   }
+   
+   public SessionXACommitMessage()
+   {
+      super(SESS_XA_COMMIT);
    }
 
    // Public --------------------------------------------------------
@@ -46,6 +53,18 @@ public class SessionXACommitMessage extends PacketImpl
    public boolean isOnePhase()
    {
       return onePhase;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putBoolean(onePhase);
+      encodeXid(xid, buffer);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      onePhase = buffer.getBoolean();
+      xid = decodeXid(buffer);
    }
 
    @Override

@@ -301,6 +301,11 @@ public class ByteBufferWrapper implements MessagingBuffer
 	{
 		buffer.putInt(val);
 	}
+	
+	public void putInt(int pos, int val)
+   {
+      buffer.putInt(pos, val);
+   }
 
 	public void putLong(long val)
 	{

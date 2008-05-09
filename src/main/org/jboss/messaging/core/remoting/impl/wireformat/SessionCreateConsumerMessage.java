@@ -6,6 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 
@@ -14,23 +15,23 @@ import org.jboss.messaging.util.SimpleString;
  *
  * @version <tt>$Revision$</tt>
  */
-public class SessionCreateConsumerMessage extends PacketImpl
+public class SessionCreateConsumerMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final long clientTargetID;
+   private long clientTargetID;
    
-   private final SimpleString queueName;
+   private SimpleString queueName;
    
-   private final SimpleString filterString;
+   private SimpleString filterString;
    
-   private final boolean noLocal;
+   private boolean noLocal;
    
-   private final boolean autoDeleteQueue;
+   private boolean autoDeleteQueue;
    
-   private final int windowSize;
+   private int windowSize;
    
    private int maxRate;
       
@@ -42,7 +43,7 @@ public class SessionCreateConsumerMessage extends PacketImpl
    		                              final boolean noLocal, final boolean autoDeleteQueue,
    		                              final int windowSize, final int maxRate)
    {
-      super(PacketType.SESS_CREATECONSUMER);
+      super(SESS_CREATECONSUMER);
 
       this.clientTargetID = clientTargetID;
       this.queueName = queueName;
@@ -51,6 +52,11 @@ public class SessionCreateConsumerMessage extends PacketImpl
       this.autoDeleteQueue = autoDeleteQueue;
       this.windowSize = windowSize;
       this.maxRate = maxRate;
+   }
+   
+   public SessionCreateConsumerMessage()
+   {
+      super(SESS_CREATECONSUMER);   
    }
 
    // Public --------------------------------------------------------
@@ -102,6 +108,28 @@ public class SessionCreateConsumerMessage extends PacketImpl
    public int getMaxRate()
    {
    	return maxRate;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putLong(clientTargetID);
+      buffer.putSimpleString(queueName);
+      buffer.putNullableSimpleString(filterString);
+      buffer.putBoolean(noLocal);
+      buffer.putBoolean(autoDeleteQueue);
+      buffer.putInt(windowSize);
+      buffer.putInt(maxRate);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      clientTargetID = buffer.getLong();
+      queueName = buffer.getSimpleString();
+      filterString = buffer.getNullableSimpleString();
+      noLocal = buffer.getBoolean();
+      autoDeleteQueue = buffer.getBoolean();
+      windowSize = buffer.getInt();
+      maxRate = buffer.getInt();
    }
 
    // Package protected ---------------------------------------------

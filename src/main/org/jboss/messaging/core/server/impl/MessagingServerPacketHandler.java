@@ -21,14 +21,14 @@
    */
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketType.CREATECONNECTION;
+import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CREATECONNECTION;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketType;
+import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 import org.jboss.messaging.core.server.MessagingServer;
 
 /**
@@ -67,7 +67,7 @@ public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
    {
       Packet response = null;
      
-      PacketType type = packet.getType();
+      byte type = packet.getType();
       
       if (type == CREATECONNECTION)
       {

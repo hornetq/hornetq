@@ -6,6 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 
@@ -14,19 +15,19 @@ import org.jboss.messaging.util.SimpleString;
  *
  * @version <tt>$Revision$</tt>
  */
-public class SessionCreateProducerMessage extends PacketImpl
+public class SessionCreateProducerMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final long clientTargetID;
+   private long clientTargetID;
    
-   private final SimpleString address;
+   private SimpleString address;
    
-   private final int windowSize;
+   private int windowSize;
    
-   private final int maxRate;
+   private int maxRate;
       
    // Static --------------------------------------------------------
 
@@ -34,7 +35,7 @@ public class SessionCreateProducerMessage extends PacketImpl
 
    public SessionCreateProducerMessage(final long clientTargetID, final SimpleString address, final int windowSize, final int maxRate)
    {
-      super(PacketType.SESS_CREATEPRODUCER);
+      super(SESS_CREATEPRODUCER);
 
       this.clientTargetID = clientTargetID;
       
@@ -43,6 +44,11 @@ public class SessionCreateProducerMessage extends PacketImpl
       this.windowSize = windowSize;
       
       this.maxRate = maxRate;
+   }
+   
+   public SessionCreateProducerMessage()
+   {
+      super(SESS_CREATEPRODUCER);
    }
 
    // Public --------------------------------------------------------
@@ -76,6 +82,22 @@ public class SessionCreateProducerMessage extends PacketImpl
    public int getMaxRate()
    {
    	return maxRate;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putLong(clientTargetID);
+      buffer.putNullableSimpleString(address);
+      buffer.putInt(windowSize);
+      buffer.putInt(maxRate);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      clientTargetID = buffer.getLong();      
+      address = buffer.getNullableSimpleString();      
+      windowSize = buffer.getInt();      
+      maxRate = buffer.getInt();
    }
 
    // Package protected ---------------------------------------------
