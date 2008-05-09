@@ -270,8 +270,10 @@ public class ClientSessionImpl implements ClientSessionInternal
       
       SessionCreateConsumerResponseMessage response = (SessionCreateConsumerResponseMessage)remotingConnection.sendBlocking(serverTargetID, serverTargetID, request);
       
+      int tokenBatchSize = response.getWindowSize() == -1 ? 0 : 1;
+      
       ClientConsumerInternal consumer =
-         new ClientConsumerImpl(this, response.getConsumerTargetID(), clientTargetID, executor, remotingConnection, direct, 1);
+         new ClientConsumerImpl(this, response.getConsumerTargetID(), clientTargetID, executor, remotingConnection, direct, tokenBatchSize);
 
       consumers.put(response.getConsumerTargetID(), consumer);
       

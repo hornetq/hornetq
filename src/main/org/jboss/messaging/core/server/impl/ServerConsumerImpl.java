@@ -214,15 +214,16 @@ public class ServerConsumerImpl implements ServerConsumer
                    
          try
          {
-         	return sessionEndpoint.handleDelivery(ref, this);
+         	sessionEndpoint.handleDelivery(ref, this);
          }
          catch (Exception e)
          {
          	log.error("Failed to handle delivery", e);
          	
          	started = false; // DO NOT return null or the message might get delivered more than once
-            return HandleStatus.BUSY;
          }
+         
+         return HandleStatus.HANDLED;
       }
    }
    

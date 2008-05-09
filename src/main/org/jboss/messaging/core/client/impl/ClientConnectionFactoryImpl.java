@@ -70,13 +70,13 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
  
    private final boolean strictTck;
       
-   private final int defaultConsumerWindowSize;
+   private int defaultConsumerWindowSize;
    
-   private final int defaultConsumerMaxRate;
+   private int defaultConsumerMaxRate;
 
-   private final int defaultProducerWindowSize;
+   private int defaultProducerWindowSize;
    
-   private final int defaultProducerMaxRate;
+   private int defaultProducerMaxRate;
    
    
    // Static ---------------------------------------------------------------------------------------
@@ -180,25 +180,60 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
    
    // ClientConnectionFactory implementation ---------------------------------------------
 
-	public int getConsumerWindowSize()
+	public int getDefaultConsumerWindowSize()
 	{
 		return defaultConsumerWindowSize;
 	}
+	
+	public void setDefaultConsumerWindowSize(final int size)
+   {
+      defaultConsumerWindowSize = size;
+   }
 
-	public int getProducerWindowSize()
+	public int getDefaultProducerWindowSize()
 	{
 		return defaultProducerWindowSize;
 	}
+			
+	public void setDefaultProducerWindowSize(final int size)
+   {
+      defaultProducerWindowSize = size;
+   }
 
 	public boolean isStrictTck()
 	{
 		return strictTck;
 	}
 
-	public int getMaxProducerRate()
+	public int getDefaultProducerMaxRate()
 	{
 		return defaultProducerMaxRate;
 	}
+	
+	public void setDefaultProducerMaxRate(final int rate)
+	{
+	   this.defaultProducerMaxRate = rate;
+	}
+	
+	public int getDefaultConsumerMaxRate()
+   {
+      return defaultConsumerMaxRate;
+   }
+   
+   public void setDefaultConsumerMaxRate(final int rate)
+   {
+      this.defaultConsumerMaxRate = rate;
+   }
+   
+   public ConnectionParams getConnectionParams()
+   {
+      return connectionParams;
+   }
+   
+   public Location getLocation()
+   {
+      return location;
+   }
 		  
    // Public ---------------------------------------------------------------------------------------
       

@@ -136,8 +136,6 @@ public class ServerSessionImpl implements ServerSession
 
    private Transaction tx;
 
-   private ArrayList<Queue> stopped = new ArrayList<Queue>();
-
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -225,19 +223,13 @@ public class ServerSessionImpl implements ServerSession
       dispatcher.unregister(producer.getID());
    }
 
-   public synchronized HandleStatus handleDelivery(final MessageReference ref, final ServerConsumer consumer) throws Exception
+   public synchronized void handleDelivery(final MessageReference ref, final ServerConsumer consumer) throws Exception
    {
-      //if the queue we are delivering to has been stopped then dont deliver!
-      if (stopped.contains(ref.getQueue()))
-      {
-         return HandleStatus.BUSY;
-      }
       Delivery delivery = new DeliveryImpl(ref, id, consumer.getClientTargetID(), deliveryIDSequence++, sender);
 
       deliveries.add(delivery);
 
       delivery.deliver();
-      return HandleStatus.HANDLED;
    }
 
    public void setStarted(final boolean s) throws Exception
@@ -428,8 +420,7 @@ public class ServerSessionImpl implements ServerSession
          tx = new TransactionImpl(persistenceManager, postOffice);
       }
 
-      // Synchronize to prevent any new deliveries arriving during this recovery. also we stop any queues that are having
-      // messages rolled back, if their are any messages in mid delivery then these will not be delivered. 
+      // Synchronize to prevent any new deliveries arriving during this recovery. 
       synchronized (this)
       {
          // Add any unacked deliveries into the tx. Doing this ensures all references are rolled back in the correct
@@ -439,28 +430,14 @@ public class ServerSessionImpl implements ServerSession
          {
             tx.addAcknowledgement(del.getReference());
          }
-         //stop the queue delivering for all the queues where messages are being rolled back
-         List<MessageReference> acks = tx.getAcknowledgements();
-         for (MessageReference ack : acks)
-         {
-            stopped.add(ack.getQueue());
-         }
-         for (Queue queue : stopped)
-         {
-            queue.stopDelivery();
-         }
+        
          deliveries.clear();
+         
          deliveryIDSequence -= tx.getAcknowledgementsCount();
       }
+      
       tx.rollback(queueSettingsRepository);
-      //once we have done the rollbackwe can restart any queues which will flush any awaiting deliveries
-      ArrayList<Queue> toRestart = new ArrayList<Queue>(stopped);
-      stopped.clear();
-      for (Queue queue : toRestart)
-      {
-         queue.startDelivery();
-      }
-
+      
       tx = new TransactionImpl(persistenceManager, postOffice);
    }
 

@@ -117,11 +117,6 @@ public class TransactionImpl implements Transaction
 		}
 	}
 
-   public List<MessageReference> getAcknowledgements()
-   {
-      return new ArrayList<MessageReference>(acknowledgements);
-   }
-
    public void addAcknowledgement(final MessageReference acknowledgement)
 			throws Exception
 	{

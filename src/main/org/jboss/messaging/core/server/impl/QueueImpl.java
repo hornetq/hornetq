@@ -48,14 +48,14 @@ import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.SimpleString;
 
 /**
- *
+ * 
  * Implementation of a Queue
- *
+ * 
  * TODO use Java 5 concurrent queue
- *
+ * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
- *
+ * 
  */
 public class QueueImpl implements Queue
 {
@@ -66,7 +66,7 @@ public class QueueImpl implements Queue
    private volatile long persistenceID = -1;
 
    private final SimpleString name;
-   
+
    private volatile Filter filter;
 
    private final boolean clustered;
@@ -76,12 +76,13 @@ public class QueueImpl implements Queue
    private final boolean temporary;
 
    private volatile int maxSize;
-         
+
    private final ScheduledExecutorService scheduledExecutor;
 
-   private final PriorityLinkedList<MessageReference> messageReferences = new PriorityLinkedListImpl<MessageReference>(NUM_PRIORITIES);
+   private final PriorityLinkedList<MessageReference> messageReferences = new PriorityLinkedListImpl<MessageReference>(
+         NUM_PRIORITIES);
 
-   private final List<Consumer> consumers  = new ArrayList<Consumer>();
+   private final List<Consumer> consumers = new ArrayList<Consumer>();
 
    private final Set<ScheduledDeliveryRunnable> scheduledRunnables = new LinkedHashSet<ScheduledDeliveryRunnable>();
 
@@ -96,16 +97,15 @@ public class QueueImpl implements Queue
    private AtomicInteger messagesAdded = new AtomicInteger(0);
 
    private AtomicInteger deliveringCount = new AtomicInteger(0);
-   
+
    private volatile FlowController flowController;
 
-   private boolean delivering = true; 
-   
-   public QueueImpl(final long persistenceID, final SimpleString name, final Filter filter, final boolean clustered,
-                    final boolean durable, final boolean temporary, final int maxSize,
-                    final ScheduledExecutorService scheduledExecutor)
+   public QueueImpl(final long persistenceID, final SimpleString name,
+         final Filter filter, final boolean clustered, final boolean durable,
+         final boolean temporary, final int maxSize,
+         final ScheduledExecutorService scheduledExecutor)
    {
-   	this.persistenceID = persistenceID;
+      this.persistenceID = persistenceID;
 
       this.name = name;
 
@@ -118,13 +118,14 @@ public class QueueImpl implements Queue
       this.temporary = temporary;
 
       this.maxSize = maxSize;
-      
+
       this.scheduledExecutor = scheduledExecutor;
-   	
-      direct = true;        	
+
+      direct = true;
    }
-   
-   // Queue implementation -------------------------------------------------------------------
+
+   // Queue implementation
+   // -------------------------------------------------------------------
 
    public boolean isClustered()
    {
@@ -172,6 +173,7 @@ public class QueueImpl implements Queue
 
    /*
     * Attempt to deliver all the messages in the queue
+    * 
     * @see org.jboss.messaging.newcore.intf.Queue#deliver()
     */
    public synchronized void deliver()
@@ -202,7 +204,7 @@ public class QueueImpl implements Queue
          {
             if (iterator == null)
             {
-               //We delivered all the messages - go into direct delivery
+               // We delivered all the messages - go into direct delivery
                direct = true;
 
                promptDelivery = false;
@@ -225,12 +227,13 @@ public class QueueImpl implements Queue
          }
          else if (status == HandleStatus.BUSY)
          {
-            //All consumers busy - give up
+            // All consumers busy - give up
             break;
          }
          else if (status == HandleStatus.NO_MATCH && iterator == null)
          {
-            //Consumers not all busy - but filter not accepting - iterate back through the queue
+            // Consumers not all busy - but filter not accepting - iterate back
+            // through the queue
             iterator = messageReferences.iterator();
          }
       }
@@ -273,7 +276,7 @@ public class QueueImpl implements Queue
       {
          ArrayList<MessageReference> list = new ArrayList<MessageReference>();
 
-         for (MessageReference ref: messageReferences.getAll())
+         for (MessageReference ref : messageReferences.getAll())
          {
             if (filter.match(ref.getMessage()))
             {
@@ -287,42 +290,39 @@ public class QueueImpl implements Queue
 
    public synchronized boolean removeReferenceWithID(final long id)
    {
-   	ListIterator<MessageReference> iterator = messageReferences.iterator();
-   	
-   	boolean removed = false;
-   	
-   	while (iterator.hasNext())
-   	{
-   		MessageReference ref = iterator.next();
-   		
-   		if (ref.getMessage().getMessageID() == id)
-   		{
-   			iterator.remove();
-   			
-   			removed = true;
-   			
-   			break;
-   		}
-   	}
-   	
-   	return removed;
+      ListIterator<MessageReference> iterator = messageReferences.iterator();
+
+      boolean removed = false;
+
+      while (iterator.hasNext())
+      {
+         MessageReference ref = iterator.next();
+
+         if (ref.getMessage().getMessageID() == id)
+         {
+            iterator.remove();
+
+            removed = true;
+
+            break;
+         }
+      }
+
+      return removed;
    }
-   
+
    public synchronized MessageReference getReference(final long id)
    {
-   	ListIterator<MessageReference> iterator = messageReferences.iterator();
-   	
-   	while (iterator.hasNext())
-   	{
-   		MessageReference ref = iterator.next();
-   		
-   		if (ref.getMessage().getMessageID() == id)
-   		{
-   			return ref;
-   		}
-   	}
-   	
-   	return null;
+      ListIterator<MessageReference> iterator = messageReferences.iterator();
+
+      while (iterator.hasNext())
+      {
+         MessageReference ref = iterator.next();
+
+         if (ref.getMessage().getMessageID() == id) { return ref; }
+      }
+
+      return null;
    }
 
    public long getPersistenceID()
@@ -347,7 +347,8 @@ public class QueueImpl implements Queue
 
    public synchronized int getMessageCount()
    {
-      return messageReferences.size() + getScheduledCount() + getDeliveringCount();
+      return messageReferences.size() + getScheduledCount()
+            + getDeliveringCount();
    }
 
    public synchronized int getScheduledCount()
@@ -363,13 +364,13 @@ public class QueueImpl implements Queue
    public void referenceAcknowledged() throws Exception
    {
       deliveringCount.decrementAndGet();
-      
+
       if (flowController != null)
       {
-      	flowController.messageAcknowledged();
+         flowController.messageAcknowledged();
       }
    }
-   
+
    public void referenceCancelled()
    {
       deliveringCount.decrementAndGet();
@@ -384,11 +385,10 @@ public class QueueImpl implements Queue
    {
       int num = messageReferences.size() + scheduledRunnables.size();
 
-      if (maxSize < num)
-      {
-         throw new IllegalArgumentException("Cannot set maxSize to " + maxSize + " since there are " + num + " refs");
-      }
-      
+      if (maxSize < num) { throw new IllegalArgumentException(
+            "Cannot set maxSize to " + maxSize + " since there are " + num
+                  + " refs"); }
+
       this.maxSize = maxSize;
    }
 
@@ -406,72 +406,61 @@ public class QueueImpl implements Queue
    {
       return messagesAdded.get();
    }
-    
+
    public void setFlowController(final FlowController flowController)
    {
-   	this.flowController = flowController;
+      this.flowController = flowController;
    }
-   
+
    public FlowController getFlowController()
    {
-   	return flowController;
-   }
-   
-   public synchronized void deleteAllReferences(final StorageManager storageManager) throws Exception
-   {
-   	Transaction tx = new TransactionImpl(storageManager, null);
-   	   	   	
-   	ListIterator<MessageReference> iter = messageReferences.iterator();
-   	
-   	while (iter.hasNext())
-   	{
-   		MessageReference ref = iter.next();
-   		
-   		deliveringCount.incrementAndGet();
-   		
-   		tx.addAcknowledgement(ref);
-   		
-   		iter.remove();
-   	}
-   	
-   	synchronized (scheduledRunnables)
-   	{
-   		for (ScheduledDeliveryRunnable runnable: scheduledRunnables)
-   		{
-   			runnable.cancel();
-   			
-   			deliveringCount.incrementAndGet();
-   			
-   			tx.addAcknowledgement(runnable.getReference());
-   		}
-   		
-   		scheduledRunnables.clear();
-   	}
-   		
-   	tx.commit();   	
+      return flowController;
    }
 
-   public void stopDelivery()
+   public synchronized void deleteAllReferences(
+         final StorageManager storageManager) throws Exception
    {
-      delivering = false;
+      Transaction tx = new TransactionImpl(storageManager, null);
+
+      ListIterator<MessageReference> iter = messageReferences.iterator();
+
+      while (iter.hasNext())
+      {
+         MessageReference ref = iter.next();
+
+         deliveringCount.incrementAndGet();
+
+         tx.addAcknowledgement(ref);
+
+         iter.remove();
+      }
+
+      synchronized (scheduledRunnables)
+      {
+         for (ScheduledDeliveryRunnable runnable : scheduledRunnables)
+         {
+            runnable.cancel();
+
+            deliveringCount.incrementAndGet();
+
+            tx.addAcknowledgement(runnable.getReference());
+         }
+
+         scheduledRunnables.clear();
+      }
+
+      tx.commit();
    }
 
-   public void startDelivery()
-   {
-      delivering = true;
-      deliver();
-   }
 
-   // Public -----------------------------------------------------------------------------
+   // Public
+   // -----------------------------------------------------------------------------
 
    public boolean equals(Object other)
    {
-      if (this == other)
-      {
-         return true;
-      }
+      if (this == other) { return true; }
 
-      QueueImpl qother = (QueueImpl)other;
+      QueueImpl qother = (QueueImpl) other;
 
       return name.equals(qother.name);
    }
@@ -481,14 +470,12 @@ public class QueueImpl implements Queue
       return name.hashCode();
    }
 
-   // Private ------------------------------------------------------------------------------
-   
+   // Private
+   // ------------------------------------------------------------------------------
+
    private HandleStatus add(final MessageReference ref, final boolean first)
    {
-      if (!checkFull())
-      {
-         return HandleStatus.BUSY;
-      }
+      if (!checkFull()) { return HandleStatus.BUSY; }
 
       if (!first)
       {
@@ -501,13 +488,13 @@ public class QueueImpl implements Queue
 
          if (direct)
          {
-            //Deliver directly
+            // Deliver directly
 
             HandleStatus status = deliver(ref);
 
             if (status == HandleStatus.HANDLED)
             {
-               //Ok
+               // Ok
             }
             else if (status == HandleStatus.BUSY)
             {
@@ -541,9 +528,12 @@ public class QueueImpl implements Queue
 
             if (!direct && promptDelivery)
             {
-               //We have consumers with filters which don't match, so we need to prompt delivery every time
-               //a new message arrives - this is why you really shouldn't use filters with queues - in most cases
-               //it's an ant-pattern since it would cause a queue scan on each message
+               // We have consumers with filters which don't match, so we need
+               // to prompt delivery every time
+               // a new message arrives - this is why you really shouldn't use
+               // filters with queues - in most cases
+               // it's an ant-pattern since it would cause a queue scan on each
+               // message
                deliver();
             }
          }
@@ -554,11 +544,15 @@ public class QueueImpl implements Queue
 
    private boolean checkAndSchedule(final MessageReference ref)
    {
-   	long now = System.currentTimeMillis();
+      long now = System.currentTimeMillis();
 
       if (scheduledExecutor != null && ref.getScheduledDeliveryTime() > now)
       {
-         if (trace) { log.trace("Scheduling delivery for " + ref + " to occur at " + ref.getScheduledDeliveryTime()); }
+         if (trace)
+         {
+            log.trace("Scheduling delivery for " + ref + " to occur at "
+                  + ref.getScheduledDeliveryTime());
+         }
 
          long delay = ref.getScheduledDeliveryTime() - now;
 
@@ -566,7 +560,8 @@ public class QueueImpl implements Queue
 
          scheduledRunnables.add(runnable);
 
-         Future<?> future = scheduledExecutor.schedule(runnable, delay, TimeUnit.MILLISECONDS);
+         Future<?> future = scheduledExecutor.schedule(runnable, delay,
+               TimeUnit.MILLISECONDS);
 
          runnable.setFuture(future);
 
@@ -579,10 +574,15 @@ public class QueueImpl implements Queue
    }
 
    private boolean checkFull()
-   {   	
-      if (maxSize != -1 && (deliveringCount.get() + messageReferences.size() + scheduledRunnables.size()) >= maxSize)
+   {
+      if (maxSize != -1
+            && (deliveringCount.get() + messageReferences.size() + scheduledRunnables
+                  .size()) >= maxSize)
       {
-         if (trace) { log.trace(this + " queue is full, rejecting message"); }
+         if (trace)
+         {
+            log.trace(this + " queue is full, rejecting message");
+         }
 
          return false;
       }
@@ -594,7 +594,7 @@ public class QueueImpl implements Queue
 
    private HandleStatus deliver(final MessageReference reference)
    {
-      if (consumers.isEmpty() || !delivering)
+      if (consumers.isEmpty())
       {
          return HandleStatus.BUSY;
       }
@@ -617,21 +617,19 @@ public class QueueImpl implements Queue
          }
          catch (Throwable t)
          {
-            //If the consumer throws an exception we remove the consumer
+            // If the consumer throws an exception we remove the consumer
             removeConsumer(consumer);
 
             return HandleStatus.BUSY;
          }
 
-         if (status == null)
-         {
-            throw new IllegalStateException("ClientConsumer.handle() should never return null");
-         }
+         if (status == null) { throw new IllegalStateException(
+               "ClientConsumer.handle() should never return null"); }
 
          if (status == HandleStatus.HANDLED)
          {
             deliveringCount.incrementAndGet();
-            
+
             return HandleStatus.HANDLED;
          }
          else if (status == HandleStatus.NO_MATCH)
@@ -643,21 +641,22 @@ public class QueueImpl implements Queue
 
          if (pos == startPos)
          {
-            //Tried all of them
+            // Tried all of them
             if (filterRejected)
             {
                return HandleStatus.NO_MATCH;
             }
             else
             {
-               //Give up - all consumers busy
+               // Give up - all consumers busy
                return HandleStatus.BUSY;
             }
          }
       }
    }
 
-   // Inner classes --------------------------------------------------------------------------
+   // Inner classes
+   // --------------------------------------------------------------------------
 
    private class ScheduledDeliveryRunnable implements Runnable
    {
@@ -674,34 +673,37 @@ public class QueueImpl implements Queue
 
       public synchronized void setFuture(final Future<?> future)
       {
-      	if (cancelled)
-      	{
-      		future.cancel(false);
-      	}
-      	else
-      	{
-      		this.future = future;
-      	}
+         if (cancelled)
+         {
+            future.cancel(false);
+         }
+         else
+         {
+            this.future = future;
+         }
       }
 
       public synchronized void cancel()
       {
-      	if (future != null)
-      	{
-      		future.cancel(false);
-      	}
+         if (future != null)
+         {
+            future.cancel(false);
+         }
 
-      	cancelled = true;
+         cancelled = true;
       }
-      
+
       public MessageReference getReference()
       {
-      	return ref;
+         return ref;
       }
 
       public void run()
       {
-         if (trace) { log.trace("Scheduled delivery timeout " + ref); }
+         if (trace)
+         {
+            log.trace("Scheduled delivery timeout " + ref);
+         }
 
          synchronized (scheduledRunnables)
          {
@@ -709,9 +711,9 @@ public class QueueImpl implements Queue
 
             if (!removed)
             {
-            	log.warn("Failed to remove timeout " + this);
-            	
-            	return;
+               log.warn("Failed to remove timeout " + this);
+
+               return;
             }
          }
 
@@ -721,13 +723,17 @@ public class QueueImpl implements Queue
 
          if (HandleStatus.HANDLED != status)
          {
-            //Add back to the front of the queue
+            // Add back to the front of the queue
 
             addFirst(ref);
          }
          else
          {
-            if (trace) { log.trace("Delivered scheduled delivery at " + System.currentTimeMillis() + " for " + ref); }
+            if (trace)
+            {
+               log.trace("Delivered scheduled delivery at "
+                     + System.currentTimeMillis() + " for " + ref);
+            }
          }
       }
    }

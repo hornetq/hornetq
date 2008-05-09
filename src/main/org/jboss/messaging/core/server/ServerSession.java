@@ -57,7 +57,7 @@ public interface ServerSession
 	
 	void setStarted(boolean started) throws Exception;
 	
-	HandleStatus handleDelivery(MessageReference reference, ServerConsumer consumer) throws Exception;
+	void handleDelivery(MessageReference reference, ServerConsumer consumer) throws Exception;
 	
 	void promptDelivery(Queue queue);
 	

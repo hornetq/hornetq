@@ -21,8 +21,6 @@
  */
 package org.jboss.messaging.core.transaction;
 
-import java.util.List;
-
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.server.MessageReference;
@@ -46,8 +44,6 @@ public interface Transaction
    void rollback(HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
    
    void addMessage(ServerMessage message) throws Exception;
-
-   List<MessageReference> getAcknowledgements();
 
    void addAcknowledgement(MessageReference acknowledgement) throws Exception;
    

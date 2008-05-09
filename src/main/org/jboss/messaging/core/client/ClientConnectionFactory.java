@@ -35,4 +35,24 @@ public interface ClientConnectionFactory
    ClientConnection createConnection() throws MessagingException;
    
    ClientConnection createConnection(String username, String password) throws MessagingException;   
+   
+   void setDefaultConsumerWindowSize(int size);
+   
+   int getDefaultConsumerWindowSize();
+   
+   void setDefaultProducerWindowSize(int size);     
+   
+   int getDefaultProducerWindowSize();
+   
+   void setDefaultConsumerMaxRate(int rate);
+   
+   int getDefaultConsumerMaxRate();
+   
+   void setDefaultProducerMaxRate(int rate);
+   
+   int getDefaultProducerMaxRate();
+   
+   Location getLocation();
+   
+   ConnectionParams getConnectionParams();
 }
