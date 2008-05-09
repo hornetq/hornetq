@@ -68,11 +68,11 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
 
    JBMSecurityManager securityManager;
 
-   private final Set<String> readCache = new ConcurrentHashSet<String>();
+   private final Set<SimpleString> readCache = new ConcurrentHashSet<SimpleString>();
 
-   private final Set<String> writeCache = new ConcurrentHashSet<String>();
+   private final Set<SimpleString> writeCache = new ConcurrentHashSet<SimpleString>();
 
-   private final Set<String> createCache = new ConcurrentHashSet<String>();
+   private final Set<SimpleString> createCache = new ConcurrentHashSet<SimpleString>();
 
    private final long invalidationInterval;
 
@@ -124,17 +124,17 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
          {
             case CheckType.TYPE_READ:
             {
-               readCache.add(saddress);
+               readCache.add(address);
                break;
             }
             case CheckType.TYPE_WRITE:
             {
-               writeCache.add(saddress);
+               writeCache.add(address);
                break;
             }
             case CheckType.TYPE_CREATE:
             {
-               createCache.add(saddress);
+               createCache.add(address);
                break;
             }
             default:

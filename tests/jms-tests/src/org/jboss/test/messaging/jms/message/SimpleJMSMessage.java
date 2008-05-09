@@ -169,7 +169,6 @@ public class SimpleJMSMessage implements Message
    {
    	if (!this.ignoreSetDestination)
    	{
-   		log.info("*********** setting destination to: " + destination);
    		this.destination = destination;
    	}
    }

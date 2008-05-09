@@ -82,9 +82,7 @@ public class FilterChainSupport
          filter.setUseClientMode(true);
          filter.setWantClientAuth(true);
       }
-      filterChain.addLast("ssl", filter);
-      
-      log.info("added ssl filter");  
+      filterChain.addLast("ssl", filter); 
    }
    
    // Package protected ---------------------------------------------

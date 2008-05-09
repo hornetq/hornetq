@@ -25,8 +25,7 @@ import java.util.concurrent.Executor;
 public final class OrderedExecutorFactory
 {
    private final Executor parent;
-   private final Set<ChildExecutor> runningChildren = Collections
-         .synchronizedSet(new HashSet<ChildExecutor>());
+   private final Set<ChildExecutor> runningChildren = Collections.synchronizedSet(new HashSet<ChildExecutor>());
 
    public OrderedExecutorFactory(final Executor parent)
    {

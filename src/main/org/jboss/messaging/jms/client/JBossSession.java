@@ -80,9 +80,7 @@ import org.jboss.messaging.util.SimpleString;
  * 
  * $Id$
  */
-public class JBossSession implements
-   Session, XASession, QueueSession, XAQueueSession,
-   TopicSession, XATopicSession
+public class JBossSession implements Session, XASession, QueueSession, XAQueueSession, TopicSession, XATopicSession
 {   
    // Constants -----------------------------------------------------
    

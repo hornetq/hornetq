@@ -413,8 +413,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
       else if (broken || toAckCount == lazyAckBatchSize)
       {
-         //Must always ack now
-         acknowledgeInternal(false);
+         acknowledgeInternal(blockOnAcknowledge);
          
          toAckCount = 0;
          

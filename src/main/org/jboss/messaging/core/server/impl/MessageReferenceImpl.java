@@ -182,8 +182,6 @@ public class MessageReferenceImpl implements MessageReference
       
       Transaction tx = new TransactionImpl(persistenceManager, postOffice);
       
-      log.info("expiring message");
-      
       if (expiryQueue != null)
       {
       	Binding binding = postOffice.getBinding(expiryQueue);
