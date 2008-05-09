@@ -177,7 +177,7 @@ fi
 mkdir $reldir/../jms-tests/build/etc
 cp $reldir/../../src/etc/*.xml $reldir/../jms-tests/build/etc 
 
-"$JAVA_HOME/bin/java" -Xmx1024M $JAVA_OPTS -Djgroups.bind_addr=localhost -cp "$CLASSPATH" \
+"$JAVA_HOME/bin/java" -Xmx1024M $JAVA_OPTS -Djava.library.path=$reldir/../../native/bin -Djgroups.bind_addr=localhost -cp "$CLASSPATH" \
 org.jboss.test.messaging.tools.junit.SelectiveTestRunner $TARGET_CLASS $TARGET_TEST
 
 #
