@@ -587,6 +587,7 @@
    <target name="unit-tests" depends="jar, compile-unit-tests">
       <echo message=""/>
       <echo message="Running unit tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message="classpath is:${toString:unit.test.execution.classpath}"/>
       <echo message=""/>
       <mkdir dir="${test.output.dir}"/>
       <mkdir dir="${test.reports.dir}"/>
