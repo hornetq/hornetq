@@ -373,6 +373,7 @@
             <include name="org/jboss/messaging/core/message/**/*.class"/>
             <include name="org/jboss/messaging/core/version/**/*.class"/>
             <include name="org/jboss/messaging/core/server/JournalType.class"/>
+            <include name="org/jboss/messaging/core/server/ServerMessage.class"/>
          </fileset>
       </jar>
 

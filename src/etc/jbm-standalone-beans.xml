@@ -7,9 +7,9 @@
    <bean name="Main" class="org.jnp.server.Main">
       <property name="namingInfo"><inject bean="Naming"/> </property>
       <property name="port">1099</property>
-      <property name="bindAddress">localhost</property>
+      <property name="bindAddress"><inject bean="Configuration" property="host"/></property>
       <property name="rmiPort">1098</property>
-      <property name="rmiBindAddress">localhost</property>
+      <property name="rmiBindAddress"><inject bean="Configuration" property="host"/></property>
    </bean>
 
    <bean name="Configuration" class="org.jboss.messaging.core.config.impl.FileConfiguration"/>

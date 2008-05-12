@@ -65,6 +65,9 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
       
       host = getString(e, "remoting-host", "localhost");
 
+      if (System.getProperty("java.rmi.server.hostname") == null)
+         System.setProperty("java.rmi.server.hostname", host);
+
       port = getInteger(e, "remoting-bind-address", DEFAULT_REMOTING_PORT);
       
       timeout = getInteger(e, "remoting-timeout", 5);
