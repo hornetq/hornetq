@@ -30,15 +30,20 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.journal.IOCallback;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
@@ -46,7 +51,9 @@ import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.TestableJournal;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.util.ByteBufferWrapper;
 import org.jboss.messaging.util.Pair;
+import org.jboss.messaging.util.VariableLatch;
 
 /**
  * 
@@ -83,11 +90,11 @@ public class JournalImpl implements TestableJournal
 	
 	public static final int SIZE_HEADER = 8;
 	
-	public static final int SIZE_ADD_RECORD = SIZE_BYTE + SIZE_LONG + SIZE_INT + SIZE_BYTE;
+	public static final int SIZE_ADD_RECORD = SIZE_BYTE + SIZE_LONG + SIZE_BYTE + SIZE_INT + SIZE_BYTE; // + record.length
 	
 	public static final byte ADD_RECORD = 11;
 	
-	public static final byte SIZE_UPDATE_RECORD = SIZE_BYTE + SIZE_LONG + SIZE_INT + SIZE_BYTE;
+	public static final byte SIZE_UPDATE_RECORD = SIZE_BYTE + SIZE_LONG + SIZE_BYTE + SIZE_INT + SIZE_BYTE; // + record.length;
 	
 	public static final byte UPDATE_RECORD = 12;
 	
@@ -97,10 +104,9 @@ public class JournalImpl implements TestableJournal
 	
 	public static final byte ADD_RECORD_TX = 14;
 	
-	public static final int SIZE_ADD_RECORD_TX = SIZE_BYTE + SIZE_LONG + SIZE_LONG + SIZE_INT + SIZE_BYTE; // Add the size of Bytes on this
+	public static final int SIZE_ADD_RECORD_TX = SIZE_BYTE + SIZE_LONG + SIZE_BYTE + SIZE_LONG + SIZE_INT + SIZE_BYTE; // Add the size of Bytes on this
 	
-	
-	public static final int  SIZE_UPDATE_RECORD_TX = SIZE_BYTE + SIZE_LONG + SIZE_LONG + SIZE_INT + SIZE_BYTE;  // Add the size of Bytes on this
+	public static final int  SIZE_UPDATE_RECORD_TX = SIZE_BYTE + SIZE_LONG + SIZE_BYTE + SIZE_LONG + SIZE_INT + SIZE_BYTE;  // Add the size of Bytes on this
 	
 	public static final byte UPDATE_RECORD_TX = 15;
 	
@@ -126,6 +132,9 @@ public class JournalImpl implements TestableJournal
 	public static final byte FILL_CHARACTER = 74; // Letter 'J' 
 	
 	
+	// used for Asynchronous IO only (ignored on NIO).
+	private final int maxAIO;
+	
 	private final int fileSize;
 	
 	private final int minFiles;
@@ -148,6 +157,11 @@ public class JournalImpl implements TestableJournal
 	private Map<Long, PosFiles> posFilesMap = new ConcurrentHashMap<Long, PosFiles>();
 	
 	private Map<Long, TransactionNegPos> transactionInfos = new ConcurrentHashMap<Long, TransactionNegPos>();
+
+	private final ConcurrentMap<Long, TransactionCallback> transactionCallbacks = new ConcurrentHashMap<Long, TransactionCallback>();
+	
+	private boolean shouldUseCallback = false;
+   
 	
 	
 	/*
@@ -173,7 +187,7 @@ public class JournalImpl implements TestableJournal
 	
 	public JournalImpl(final int fileSize, final int minFiles,
 			final boolean sync, final SequentialFileFactory fileFactory, final long taskPeriod,
-			final String filePrefix, final String fileExtension)
+			final String filePrefix, final String fileExtension, final int maxAIO)
 	{
 		if (fileSize < MIN_FILE_SIZE)
 		{
@@ -199,6 +213,10 @@ public class JournalImpl implements TestableJournal
 		{
 			throw new NullPointerException("fileExtension is null");
 		}
+		if (maxAIO <= 0)
+		{
+		   throw new IllegalStateException("maxAIO should aways be a positive number");
+		}
 		
 		this.fileSize = fileSize;
 		
@@ -213,62 +231,87 @@ public class JournalImpl implements TestableJournal
 		this.filePrefix = filePrefix;
 		
 		this.fileExtension = fileExtension;
+		
+		this.maxAIO = maxAIO;
+		
+		shouldUseCallback = fileFactory.supportsCallbacks() && sync;
 	}
 	
 	// Journal implementation ----------------------------------------------------------------
-	
-	/*public ByteBuffer allocateBuffer(final int size) throws Exception
+
+	public void appendAddRecord(long id, byte recordType, EncodingSupport record) throws Exception
    {
-      return ByteBuffer.allocateDirect(size);
-   }*/
+      if (state != STATE_LOADED)
+      {
+         throw new IllegalStateException("Journal must be loaded first");
+      }
+      
+      int recordLength = record.encodeSize();
+      
+      int size = SIZE_ADD_RECORD + recordLength;
+      
+      ByteBufferWrapper bb = new ByteBufferWrapper(fileFactory.newBuffer(size));
+      
+      bb.putByte(ADD_RECORD);     
+      bb.putLong(id);
+      bb.putByte(recordType);
+      bb.putInt(recordLength);
+      record.encode(bb);
+      bb.putByte(DONE);        
+      bb.rewind();
+      
+      JournalFile usedFile;
+      
+      if (shouldUseCallback)
+      {
+         SimpleCallback callback = new SimpleCallback();
+         usedFile = appendRecord(bb.getBuffer(), true, callback);
+         callback.waitCompletion();
+      }
+      else
+      {
+         usedFile = appendRecord(bb.getBuffer(), true);
+      }
+      
+      posFilesMap.put(id, new PosFiles(usedFile));
+   }
 	
-	public void appendAddRecord(long id, byte[] record, IOCallback callback) throws Exception
+	public void appendAddRecord(long id, byte recordType, byte[] record) throws Exception
 	{
 		if (state != STATE_LOADED)
 		{
 			throw new IllegalStateException("Journal must be loaded first");
 		}
 		
-		int size = SIZE_BYTE + SIZE_LONG + SIZE_INT + record.length + SIZE_BYTE;
+		int size = SIZE_ADD_RECORD + record.length;
 		
-		ByteBuffer bb = currentFile.getFile().newBuffer(size);
+		ByteBuffer bb = fileFactory.newBuffer(size);
 		
 		bb.put(ADD_RECORD);		
-		bb.putLong(id);		
+		bb.putLong(id);
+		bb.put(recordType);
 		bb.putInt(record.length);		
 		bb.put(record);		
 		bb.put(DONE);			
 		bb.rewind();
 		
-		appendRecord(bb, true, callback);
+		JournalFile usedFile;
+      if (shouldUseCallback)
+      {
+         
+         SimpleCallback callback = new SimpleCallback();
+         usedFile = appendRecord(bb, true, callback);
+         callback.waitCompletion();
+      }
+      else
+      {
+         usedFile = appendRecord(bb, true);
+      }
 		
-		posFilesMap.put(id, new PosFiles(currentFile));
+		posFilesMap.put(id, new PosFiles(usedFile));
 	}
 	
-	public void appendAddRecord(final long id, final byte[] record) throws Exception
-	{
-		if (state != STATE_LOADED)
-		{
-			throw new IllegalStateException("Journal must be loaded first");
-		}
-		
-		int size = SIZE_BYTE + SIZE_LONG + SIZE_INT + record.length + SIZE_BYTE;
-		
-		ByteBuffer bb = currentFile.getFile().newBuffer(size); 
-		
-		bb.put(ADD_RECORD);     
-		bb.putLong(id);      
-		bb.putInt(record.length);     
-		bb.put(record);      
-		bb.put(DONE);
-		bb.rewind();
-		
-		appendRecord(bb, true);
-		
-		posFilesMap.put(id, new PosFiles(currentFile));
-	}
-	
-	public void appendUpdateRecord(final long id, final byte[] record) throws Exception
+	public void appendUpdateRecord(final long id, final byte recordType, final byte[] record) throws Exception
 	{
 		if (state != STATE_LOADED)
 		{
@@ -284,18 +327,30 @@ public class JournalImpl implements TestableJournal
 		
 		int size = SIZE_UPDATE_RECORD + record.length;
 		
-		ByteBuffer bb = currentFile.getFile().newBuffer(size); 
+		ByteBuffer bb = fileFactory.newBuffer(size); 
 		
 		bb.put(UPDATE_RECORD);     
 		bb.putLong(id);      
+		bb.put(recordType);
 		bb.putInt(record.length);     
 		bb.put(record);      
 		bb.put(DONE);     
 		bb.rewind();
 		
-		appendRecord(bb, true);    
+      JournalFile usedFile;
+      if (shouldUseCallback)
+      {
+         SimpleCallback callback = new SimpleCallback();
+         usedFile = appendRecord(bb, true, callback);
+         callback.waitCompletion();
+      }
+      else
+      {
+         usedFile = appendRecord(bb, true);
+      }
+      
 		
-		posFiles.addUpdateFile(currentFile);
+		posFiles.addUpdateFile(usedFile);
 	}
 	
 	public void appendDeleteRecord(long id) throws Exception
@@ -316,14 +371,24 @@ public class JournalImpl implements TestableJournal
 		
 		int size = SIZE_DELETE_RECORD;
 		
-		ByteBuffer bb = currentFile.getFile().newBuffer(size); 
+		ByteBuffer bb = fileFactory.newBuffer(size); 
 		
 		bb.put(DELETE_RECORD);     
 		bb.putLong(id);      
 		bb.put(DONE);     
 		bb.rewind();
 		
-		appendRecord(bb, true);                   
+      if (shouldUseCallback)
+      {
+         SimpleCallback callback = new SimpleCallback();
+         appendRecord(bb, true, callback);
+         callback.waitCompletion();
+      }
+      else
+      {
+         appendRecord(bb, true);
+      }
+      
 	}     
 	
 	public long getTransactionID()
@@ -331,59 +396,109 @@ public class JournalImpl implements TestableJournal
 		return transactionIDSequence.getAndIncrement();
 	}
 	
-	public void appendAddRecordTransactional(final long txID, final long id,
-			final byte[] record) throws Exception
-			{
-		if (state != STATE_LOADED)
-		{
-			throw new IllegalStateException("Journal must be loaded first");
-		}
-		
-		int size = SIZE_ADD_RECORD_TX + record.length;
-		
-		ByteBuffer bb = currentFile.getFile().newBuffer(size); 
-		
-		bb.put(ADD_RECORD_TX);
-		bb.putLong(txID);
-		bb.putLong(id);
-		bb.putInt(record.length);
-		bb.put(record);
-		bb.put(DONE);     
-		bb.rewind();
-		
-		appendRecord(bb, false);
-		
-		TransactionNegPos tx = getTransactionInfo(txID);
-		
-		tx.addPos(currentFile, id);
-			}
+   public void appendAddRecordTransactional(final long txID, final byte recordType, final long id,
+         final EncodingSupport record) throws Exception
+   {
+      if (state != STATE_LOADED)
+      {
+         throw new IllegalStateException("Journal must be loaded first");
+      }
+      
+      
+      int recordLength = record.encodeSize();
+      
+      int size = SIZE_ADD_RECORD_TX + recordLength;
+      
+      ByteBufferWrapper bb = new ByteBufferWrapper(fileFactory.newBuffer(size)); 
+      
+      bb.putByte(ADD_RECORD_TX);
+      bb.putLong(txID);
+      bb.putByte(recordType);
+      bb.putLong(id);
+      bb.putInt(recordLength);
+      record.encode(bb);
+      bb.putByte(DONE);     
+      bb.rewind();
+      
+      JournalFile usedFile;
+
+      if (shouldUseCallback)
+      {
+         TransactionCallback callback = getTransactionCallback(txID);
+         callback.countUp();
+         usedFile = appendRecord(bb.getBuffer(), false, callback);
+      }
+      else
+      {
+         usedFile = appendRecord(bb.getBuffer(), false);
+      }
+      
+      TransactionNegPos tx = getTransactionInfo(txID);
+      
+      tx.addPos(usedFile, id);
+   }
+   
+	public void appendAddRecordTransactional(final long txID, final byte recordType, final long id,
+	      final byte[] record) throws Exception
+   {
+	   if (state != STATE_LOADED)
+	   {
+	      throw new IllegalStateException("Journal must be loaded first");
+	   }
+	   
+      TransactionCallback callback = getTransactionCallback(txID);
+      callback.countUp();
+      
+	   int size = SIZE_ADD_RECORD_TX + record.length;
+	   
+	   ByteBuffer bb = fileFactory.newBuffer(size); 
+	   
+	   bb.put(ADD_RECORD_TX);
+	   bb.putLong(txID);
+      bb.put(recordType);
+	   bb.putLong(id);
+	   bb.putInt(record.length);
+	   bb.put(record);
+	   bb.put(DONE);     
+	   bb.rewind();
+	   
+	   JournalFile usedFile = appendRecord(bb, false, callback);
+	   
+	   TransactionNegPos tx = getTransactionInfo(txID);
+	   
+	   tx.addPos(usedFile, id);
+   }
 	
-	public void appendUpdateRecordTransactional(final long txID, final long id,
+	public void appendUpdateRecordTransactional(final long txID, byte recordType, final long id,
 			final byte[] record) throws Exception
-			{
+	{
 		if (state != STATE_LOADED)
 		{
 			throw new IllegalStateException("Journal must be loaded first");
 		}
 		
+      TransactionCallback callback = getTransactionCallback(txID);
+      callback.countUp();
+      
 		int size = SIZE_UPDATE_RECORD_TX + record.length; 
 		
-		ByteBuffer bb = currentFile.getFile().newBuffer(size); 
+		ByteBuffer bb = fileFactory.newBuffer(size); 
 		
 		bb.put(UPDATE_RECORD_TX);     
-		bb.putLong(txID);    
+		bb.putLong(txID);
+		bb.put(recordType);
 		bb.putLong(id);      
 		bb.putInt(record.length);     
 		bb.put(record);
 		bb.put(DONE);     
 		bb.rewind();
 		
-		appendRecord(bb, false);
+		JournalFile usedFile = appendRecord(bb, false, callback);
 		
 		TransactionNegPos tx = getTransactionInfo(txID);
 		
-		tx.addPos(currentFile, id);
-			}
+		tx.addPos(usedFile, id);
+	}
 	
 	public void appendDeleteRecordTransactional(final long txID, final long id) throws Exception
 	{
@@ -392,9 +507,12 @@ public class JournalImpl implements TestableJournal
 			throw new IllegalStateException("Journal must be loaded first");
 		}
 		
+      TransactionCallback callback = getTransactionCallback(txID);
+      callback.countUp();
+      
 		int size = SIZE_DELETE_RECORD_TX;
 		
-		ByteBuffer bb = currentFile.getFile().newBuffer(size); 
+		ByteBuffer bb = fileFactory.newBuffer(size); 
 		
 		bb.put(DELETE_RECORD_TX);     
 		bb.putLong(txID);    
@@ -402,11 +520,11 @@ public class JournalImpl implements TestableJournal
 		bb.put(DONE);        
 		bb.rewind();
 		
-		appendRecord(bb, false);      
+		JournalFile usedFile = appendRecord(bb, false, callback);      
 		
 		TransactionNegPos tx = getTransactionInfo(txID);
 		
-		tx.addNeg(currentFile, id);      
+		tx.addNeg(usedFile, id);      
 	}  
 	
 	public void appendPrepareRecord(final long txID) throws Exception
@@ -416,6 +534,9 @@ public class JournalImpl implements TestableJournal
 			throw new IllegalStateException("Journal must be loaded first");
 		}
 		
+      TransactionCallback callback = getTransactionCallback(txID);
+      callback.countUp();
+      
 		TransactionNegPos tx = transactionInfos.get(txID);
 		
 		if (tx == null)
@@ -425,16 +546,16 @@ public class JournalImpl implements TestableJournal
 		
 		int size = SIZE_PREPARE_RECORD;
 		
-		ByteBuffer bb = currentFile.getFile().newBuffer(size); 
+		ByteBuffer bb = fileFactory.newBuffer(size); 
 		
 		bb.put(PREPARE_RECORD);    
 		bb.putLong(txID);
 		bb.put(DONE);           
 		bb.rewind();
 		
-		appendRecord(bb, true);    
+		JournalFile usedFile = appendRecord(bb, true, callback);    
 		
-		tx.prepare(currentFile);
+		tx.prepare(usedFile);
 	}
 	
 	public void appendCommitRecord(final long txID) throws Exception
@@ -444,6 +565,9 @@ public class JournalImpl implements TestableJournal
 			throw new IllegalStateException("Journal must be loaded first");
 		}
 		
+      TransactionCallback callback = getTransactionCallback(txID);
+      callback.countUp();
+      
 		TransactionNegPos tx = transactionInfos.remove(txID);
 		
 		if (tx == null)
@@ -453,16 +577,20 @@ public class JournalImpl implements TestableJournal
 		
 		int size = SIZE_COMMIT_RECORD;
 		
-		ByteBuffer bb = currentFile.getFile().newBuffer(size); 
+		ByteBuffer bb = fileFactory.newBuffer(size); 
 		
 		bb.put(COMMIT_RECORD);     
 		bb.putLong(txID);    
 		bb.put(DONE);           
 		bb.rewind();
 		
-		appendRecord(bb, true); 
+		JournalFile usedFile = appendRecord(bb, true, callback); 
 		
-		tx.commit(currentFile);          
+		callback.waitCompletion();
+		transactionCallbacks.remove(txID);
+		
+		tx.commit(usedFile);
+		
 	}
 	
 	public void appendRollbackRecord(final long txID) throws Exception
@@ -481,548 +609,562 @@ public class JournalImpl implements TestableJournal
 		
 		int size = SIZE_ROLLBACK_RECORD;
 		
-		ByteBuffer bb = currentFile.getFile().newBuffer(size); 
+		ByteBuffer bb = fileFactory.newBuffer(size); 
 		
 		bb.put(ROLLBACK_RECORD);      
 		bb.putLong(txID);
 		bb.put(DONE);        
 		bb.rewind();
 		
-		appendRecord(bb, true);       
+		SimpleCallback callback = new SimpleCallback();
 		
-		tx.rollback(currentFile);
+		JournalFile usedFile = appendRecord(bb, true, callback);       
+		
+		callback.waitCompletion();
+		
+		tx.rollback(usedFile);
 	}
 	
-	public synchronized long load(final List<RecordInfo> committedRecords,
-			final List<PreparedTransactionInfo> preparedTransactions) throws Exception
-	{
-		if (state != STATE_STARTED)
-		{
-			throw new IllegalStateException("Journal must be in started state");
-		}
-		
-		Set<Long> recordsToDelete = new HashSet<Long>();
-		
-		Map<Long, TransactionHolder> transactions = new LinkedHashMap<Long, TransactionHolder>();
-		
-		List<RecordInfo> records = new ArrayList<RecordInfo>();
-		
-		List<String> fileNames = fileFactory.listFiles(fileExtension);
-		
-		List<JournalFile> orderedFiles = new ArrayList<JournalFile>(fileNames.size());
-		
-		for (String fileName: fileNames)
-		{
-			SequentialFile file = fileFactory.createSequentialFile(fileName, sync);
-			
-			file.open();
-			
-			ByteBuffer bb = file.newBuffer(SIZE_LONG);
-			
-			file.read(bb);
-			
-			long orderingID = bb.getLong();
-			
-			orderedFiles.add(new JournalFileImpl(file, orderingID));
-			
-			file.close();
-		}
-		
-		//Now order them by ordering id - we can't use the file name for ordering since we can re-use dataFiles
-		
-		class JournalFileComparator implements Comparator<JournalFile>
-		{
-			public int compare(JournalFile f1, JournalFile f2)
-			{
-				long id1 = f1.getOrderingID();
-				long id2 = f2.getOrderingID();
-				
-				return (id1 < id2 ? -1 : (id1 == id2 ? 0 : 1));
-			}
-		}
-		
-		Collections.sort(orderedFiles, new JournalFileComparator());
-		
-		int lastDataPos = -1;
-		
-		long maxTransactionID = -1;
-		
-		long maxMessageID = -1;
-		
-		for (JournalFile file: orderedFiles)
-		{  
-			file.getFile().open();
-				
-			ByteBuffer bb = file.getFile().newBuffer(fileSize);
-			
-			int bytesRead = file.getFile().read(bb);
-			
-			if (bytesRead != fileSize)
-			{
-				//deal with this better
-				
-				throw new IllegalStateException("File is wrong size " + bytesRead +
-						" expected " + fileSize + " : " + file.getFile().getFileName());
-			}
-			
-			//First long is the ordering timestamp, we just jump its position
-			bb.position(file.getFile().calculateBlockStart(SIZE_LONG));
-			
-			boolean hasData = false;
-			
-			while (bb.hasRemaining())
-			{
-				int pos = bb.position();
-				
-				byte recordType = bb.get();
-								
-				switch(recordType)
-				{
-					case ADD_RECORD:
-					{                          
-						long id = bb.getLong();  
-						
-						maxMessageID = Math.max(maxMessageID, id);
-						
-						int size = bb.getInt();                
-						byte[] record = new byte[size];                 
-						bb.get(record);
-						byte end = bb.get();
-						
-						if (end != DONE)
-						{
-							repairFrom(pos, file);
-						}
-						else
-						{                                                           
-							records.add(new RecordInfo(id, record, false));
-							hasData = true;                  
-							
-							posFilesMap.put(id, new PosFiles(file));
-						}
-						
-						break;
-					}                             
-					case UPDATE_RECORD:                 
-					{
-						long id = bb.getLong();    
+   public synchronized long load(final List<RecordInfo> committedRecords,
+         final List<PreparedTransactionInfo> preparedTransactions) throws Exception
+   {
+      if (state != STATE_STARTED)
+      {
+         throw new IllegalStateException("Journal must be in started state");
+      }
+      
+      Set<Long> recordsToDelete = new HashSet<Long>();
+      
+      Map<Long, TransactionHolder> transactions = new LinkedHashMap<Long, TransactionHolder>();
+      
+      List<RecordInfo> records = new ArrayList<RecordInfo>();
+      
+      List<String> fileNames = fileFactory.listFiles(fileExtension);
+      
+      List<JournalFile> orderedFiles = new ArrayList<JournalFile>(fileNames.size());
+      
+      for (String fileName: fileNames)
+      {
+         SequentialFile file = fileFactory.createSequentialFile(fileName, sync, maxAIO);
+         
+         file.open();
+         
+         ByteBuffer bb = fileFactory.newBuffer(SIZE_LONG);
+         
+         file.read(bb);
+         
+         long orderingID = bb.getLong();
+         
+         orderedFiles.add(new JournalFileImpl(file, orderingID));
+         
+         file.close();
+      }
+      
+      //Now order them by ordering id - we can't use the file name for ordering since we can re-use dataFiles
+      
+      class JournalFileComparator implements Comparator<JournalFile>
+      {
+         public int compare(JournalFile f1, JournalFile f2)
+         {
+            long id1 = f1.getOrderingID();
+            long id2 = f2.getOrderingID();
+            
+            return (id1 < id2 ? -1 : (id1 == id2 ? 0 : 1));
+         }
+      }
+      
+      Collections.sort(orderedFiles, new JournalFileComparator());
+      
+      int lastDataPos = -1;
+      
+      long maxTransactionID = -1;
+      
+      long maxMessageID = -1;
+      
+      for (JournalFile file: orderedFiles)
+      {  
+         file.getFile().open();
+            
+         ByteBuffer bb = fileFactory.newBuffer(fileSize);
+         
+         int bytesRead = file.getFile().read(bb);
+         
+         if (bytesRead != fileSize)
+         {
+            //deal with this better
+            
+            throw new IllegalStateException("File is wrong size " + bytesRead +
+                  " expected " + fileSize + " : " + file.getFile().getFileName());
+         }
+         
+         //First long is the ordering timestamp, we just jump its position
+         bb.position(file.getFile().calculateBlockStart(SIZE_LONG));
+         
+         boolean hasData = false;
+         
+         while (bb.hasRemaining())
+         {
+            int pos = bb.position();
+            
+            byte recordType = bb.get();
+                        
+            switch(recordType)
+            {
+               case ADD_RECORD:
+               {                          
+                  long id = bb.getLong();  
+                  
+                  maxMessageID = Math.max(maxMessageID, id);
+                  
+                  byte userRecordType = bb.get();
+                  
+                  int size = bb.getInt();                
+                  byte[] record = new byte[size];                 
+                  bb.get(record);
+                  byte end = bb.get();
+                  
+                  if (end != DONE)
+                  {
+                     repairFrom(pos, file);
+                  }
+                  else
+                  {                                                           
+                     records.add(new RecordInfo(id, userRecordType, record, false));
+                     hasData = true;                  
+                     
+                     posFilesMap.put(id, new PosFiles(file));
+                  }
+                  
+                  break;
+               }                             
+               case UPDATE_RECORD:                 
+               {
+                  long id = bb.getLong();    
 
-						maxMessageID = Math.max(maxMessageID, id);
-						
-						int size = bb.getInt();                
-						byte[] record = new byte[size];                 
-						bb.get(record);                  
-						byte end = bb.get();
-						
-						if (end != DONE)
-						{
-							repairFrom(pos, file);
-						}
-						else
-						{              
-							records.add(new RecordInfo(id, record, true));                    
-							hasData = true;      
-							file.incPosCount();
-							
-							PosFiles posFiles = posFilesMap.get(id);
-							
-							if (posFiles != null)
-							{
-								//It's legal for this to be null. The file(s) with the  may have been deleted
-								//just leaving some updates in this file
-								
-								posFiles.addUpdateFile(file);
-							}
-						}
-						
-						break;
-					}              
-					case DELETE_RECORD:                 
-					{
-						long id = bb.getLong(); 
-						
-						maxMessageID = Math.max(maxMessageID, id);
-						
-						byte end = bb.get();
-						
-						if (end != DONE)
-						{
-							repairFrom(pos, file);
-						}
-						else
-						{                 
-							recordsToDelete.add(id);                     
-							hasData = true;
-							
-							PosFiles posFiles = posFilesMap.remove(id);
-							
-							if (posFiles != null)
-							{
-								posFiles.addDelete(file);
-							}                    
-						}
-						
-						break;
-					}              
-					case ADD_RECORD_TX:
-					{              
-						long txID = bb.getLong();                    
-						maxTransactionID = Math.max(maxTransactionID, txID);                 
-						long id = bb.getLong();          
-						maxMessageID = Math.max(maxMessageID, id);
-						
-						int size = bb.getInt();                
-						byte[] record = new byte[size];                 
-						bb.get(record);                  
-						byte end = bb.get();
-						
-						if (end != DONE)
-						{
-							repairFrom(pos, file);
-						}
-						else
-						{                 
-							TransactionHolder tx = transactions.get(txID);
-							
-							if (tx == null)
-							{
-								tx = new TransactionHolder(txID);                        
-								transactions.put(txID, tx);
-							}
-							
-							tx.recordInfos.add(new RecordInfo(id, record, false));                     
-							
-							TransactionNegPos tnp = transactionInfos.get(txID);
-							
-							if (tnp == null)
-							{
-								tnp = new TransactionNegPos();
-								
-								transactionInfos.put(txID, tnp);
-							}
-							
-							tnp.addPos(file, id);
-							
-							hasData = true;                                          
-						}
-						
-						break;
-					}     
-					case UPDATE_RECORD_TX:
-					{              
-						long txID = bb.getLong();  
-						maxTransactionID = Math.max(maxTransactionID, txID);                 
-						long id = bb.getLong();
-						maxMessageID = Math.max(maxMessageID, id);
-						
-						int size = bb.getInt();                
-						byte[] record = new byte[size];                 
-						bb.get(record);                  
-						byte end = bb.get();
-						
-						if (end != DONE)
-						{
-							repairFrom(pos, file);
-						}
-						else
-						{              
-							TransactionHolder tx = transactions.get(txID);
-							
-							if (tx == null)
-							{
-								tx = new TransactionHolder(txID);                        
-								transactions.put(txID, tx);
-							}
-							
-							tx.recordInfos.add(new RecordInfo(id, record, true));
-							
-							TransactionNegPos tnp = transactionInfos.get(txID);
-							
-							if (tnp == null)
-							{
-								tnp = new TransactionNegPos();
-								
-								transactionInfos.put(txID, tnp);
-							}
-							
-							tnp.addPos(file, id);
-							
-							hasData = true;                     
-						}
-						
-						break;
-					}  
-					case DELETE_RECORD_TX:
-					{              
-						long txID = bb.getLong();  
-						maxTransactionID = Math.max(maxTransactionID, txID);                 
-						long id = bb.getLong(); 
-						maxMessageID = Math.max(maxMessageID, id);
+                  maxMessageID = Math.max(maxMessageID, id);
+                  
+                  byte userRecordType = bb.get();
+                 
+                  int size = bb.getInt();                
+                  byte[] record = new byte[size];                 
+                  bb.get(record);                  
+                  byte end = bb.get();
+                  
+                  if (end != DONE)
+                  {
+                     repairFrom(pos, file);
+                  }
+                  else
+                  {              
+                     records.add(new RecordInfo(id, userRecordType, record, true));                    
+                     hasData = true;      
+                     file.incPosCount();
+                     
+                     PosFiles posFiles = posFilesMap.get(id);
+                     
+                     if (posFiles != null)
+                     {
+                        //It's legal for this to be null. The file(s) with the  may have been deleted
+                        //just leaving some updates in this file
+                        
+                        posFiles.addUpdateFile(file);
+                     }
+                  }
+                  
+                  break;
+               }              
+               case DELETE_RECORD:                 
+               {
+                  long id = bb.getLong(); 
+                  
+                  maxMessageID = Math.max(maxMessageID, id);
+                  
+                  byte end = bb.get();
+                  
+                  if (end != DONE)
+                  {
+                     repairFrom(pos, file);
+                  }
+                  else
+                  {                 
+                     recordsToDelete.add(id);                     
+                     hasData = true;
+                     
+                     PosFiles posFiles = posFilesMap.remove(id);
+                     
+                     if (posFiles != null)
+                     {
+                        posFiles.addDelete(file);
+                     }                    
+                  }
+                  
+                  break;
+               }              
+               case ADD_RECORD_TX:
+               {              
+                  long txID = bb.getLong();                    
+                  maxTransactionID = Math.max(maxTransactionID, txID); 
+                  
+                  byte userRecordType = bb.get();
+                  
+                  long id = bb.getLong();          
+                  maxMessageID = Math.max(maxMessageID, id);
+                  
+                  int size = bb.getInt();                
+                  byte[] record = new byte[size];                 
+                  bb.get(record);                  
+                  byte end = bb.get();
+                  
+                  if (end != DONE)
+                  {
+                     repairFrom(pos, file);
+                  }
+                  else
+                  {                 
+                     TransactionHolder tx = transactions.get(txID);
+                     
+                     if (tx == null)
+                     {
+                        tx = new TransactionHolder(txID);                        
+                        transactions.put(txID, tx);
+                     }
+                     
+                     tx.recordInfos.add(new RecordInfo(id, userRecordType, record, false));                     
+                     
+                     TransactionNegPos tnp = transactionInfos.get(txID);
+                     
+                     if (tnp == null)
+                     {
+                        tnp = new TransactionNegPos();
+                        
+                        transactionInfos.put(txID, tnp);
+                     }
+                     
+                     tnp.addPos(file, id);
+                     
+                     hasData = true;                                          
+                  }
+                  
+                  break;
+               }     
+               case UPDATE_RECORD_TX:
+               {              
+                  long txID = bb.getLong();  
+                  maxTransactionID = Math.max(maxTransactionID, txID);
+                  
+                  byte userRecordType = bb.get();
+                  
+                  long id = bb.getLong();
+                  maxMessageID = Math.max(maxMessageID, id);
+                  
+                  int size = bb.getInt();                
+                  byte[] record = new byte[size];                 
+                  bb.get(record);                  
+                  byte end = bb.get();
+                  
+                  if (end != DONE)
+                  {
+                     repairFrom(pos, file);
+                  }
+                  else
+                  {              
+                     TransactionHolder tx = transactions.get(txID);
+                     
+                     if (tx == null)
+                     {
+                        tx = new TransactionHolder(txID);                        
+                        transactions.put(txID, tx);
+                     }
+                     
+                     tx.recordInfos.add(new RecordInfo(id, userRecordType, record, true));
+                     
+                     TransactionNegPos tnp = transactionInfos.get(txID);
+                     
+                     if (tnp == null)
+                     {
+                        tnp = new TransactionNegPos();
+                        
+                        transactionInfos.put(txID, tnp);
+                     }
+                     
+                     tnp.addPos(file, id);
+                     
+                     hasData = true;                     
+                  }
+                  
+                  break;
+               }  
+               case DELETE_RECORD_TX:
+               {              
+                  long txID = bb.getLong();  
+                  maxTransactionID = Math.max(maxTransactionID, txID);                 
+                  long id = bb.getLong(); 
+                  maxMessageID = Math.max(maxMessageID, id);
 
-						byte end = bb.get();
-						
-						if (end != DONE)
-						{
-							repairFrom(pos, file);
-						}
-						else
-						{              
-							TransactionHolder tx = transactions.get(txID);
-							
-							if (tx == null)
-							{
-								tx = new TransactionHolder(txID);                        
-								transactions.put(txID, tx);
-							}
-							
-							tx.recordsToDelete.add(id);                     
-							
-							TransactionNegPos tnp = transactionInfos.get(txID);
-							
-							if (tnp == null)
-							{
-								tnp = new TransactionNegPos();
-								
-								transactionInfos.put(txID, tnp);
-							}
-							
-							tnp.addNeg(file, id);
-							
-							hasData = true;                     
-						}
-						
-						break;
-					}  
-					case PREPARE_RECORD:
-					{
-						long txID = bb.getLong();           
+                  byte end = bb.get();
+                  
+                  if (end != DONE)
+                  {
+                     repairFrom(pos, file);
+                  }
+                  else
+                  {              
+                     TransactionHolder tx = transactions.get(txID);
+                     
+                     if (tx == null)
+                     {
+                        tx = new TransactionHolder(txID);                        
+                        transactions.put(txID, tx);
+                     }
+                     
+                     tx.recordsToDelete.add(id);                     
+                     
+                     TransactionNegPos tnp = transactionInfos.get(txID);
+                     
+                     if (tnp == null)
+                     {
+                        tnp = new TransactionNegPos();
+                        
+                        transactionInfos.put(txID, tnp);
+                     }
+                     
+                     tnp.addNeg(file, id);
+                     
+                     hasData = true;                     
+                  }
+                  
+                  break;
+               }  
+               case PREPARE_RECORD:
+               {
+                  long txID = bb.getLong();           
 
-						maxTransactionID = Math.max(maxTransactionID, txID);                 
-						byte end = bb.get();
-						
-						if (end != DONE)
-						{
-							repairFrom(pos, file);
-						}
-						else
-						{
-							TransactionHolder tx = transactions.get(txID);
-							
-							if (tx == null)
-							{
-								throw new IllegalStateException("Cannot find tx with id " + txID);
-							}
-							
-							tx.prepared = true;
-							
-							TransactionNegPos tnp = transactionInfos.get(txID);
-							
-							if (tnp == null)
-							{
-								throw new IllegalStateException("Cannot find tx " + txID);
-							}
-							
-							tnp.prepare(file);   
-							
-							hasData = true;         
-						}
-						
-						break;
-					}
-					case COMMIT_RECORD:
-					{
-						long txID = bb.getLong();  
-						
-						maxTransactionID = Math.max(maxTransactionID, txID);
-						byte end = bb.get();
-						
-						if (end != DONE)
-						{
-							repairFrom(pos, file);
-						}
-						else
-						{
-							TransactionHolder tx = transactions.remove(txID);
-							
-							if (tx != null)
-							{
-								records.addAll(tx.recordInfos);                    
-								recordsToDelete.addAll(tx.recordsToDelete);  
-								
-								TransactionNegPos tnp = transactionInfos.remove(txID);
-								
-								if (tnp == null)
-								{
-									throw new IllegalStateException("Cannot find tx " + txID);
-								}
-								
-								tnp.commit(file);       
-								
-								hasData = true;         
-							}
-						}
-						
-						break;
-					}
-					case ROLLBACK_RECORD:
-					{
-						long txID = bb.getLong();     
-	
-						maxTransactionID = Math.max(maxTransactionID, txID);                 
-						byte end = bb.get();
-						
-						if (end != DONE)
-						{
-							repairFrom(pos, file);
-						}
-						else
-						{
-							TransactionHolder tx = transactions.remove(txID);
-							
-							if (tx != null)
-							{                       
-								TransactionNegPos tnp = transactionInfos.remove(txID);
-								
-								if (tnp == null)
-								{
-									throw new IllegalStateException("Cannot find tx " + txID);
-								}
-								
-								tnp.rollback(file);  
-								
-								hasData = true;         
-							}
-						}
-						
-						break;
-					}
-					case FILL_CHARACTER:                
-					{  
-						//End of records in file - we check the file only contains fill characters from this point
-						while (bb.hasRemaining())
-						{
-							byte b = bb.get();
-							
-							if (b != FILL_CHARACTER)
-							{
-								throw new IllegalStateException("Corrupt file " + file.getFile().getFileName() +
-										" contains non fill character at position " + pos);
-							}
-						}
-						
-						break;                  
-					}              
-					default:                
-					{
-						throw new IllegalStateException("Journal " + file.getFile().getFileName() +
-								" is corrupt, invalid record type " + recordType);
-					}
-				}
-				
-				bb.position(file.getFile().calculateBlockStart(bb.position()));
-				
-				if (recordType != FILL_CHARACTER)
-				{
-					lastDataPos = bb.position();
-				}
-			}
-			
-			if (hasData)
-			{        
-				dataFiles.add(file);
-				
-				file.getFile().close();          
-			}
-			else
-			{           
-				//Empty dataFiles with no data
-				freeFiles.add(file);
-				
-				//Position it ready for writing
-				file.getFile().position(file.getFile().calculateBlockStart(SIZE_LONG));
-			}                       
-		}        
-		
-		transactionIDSequence.set(maxTransactionID + 1);
-		
-		//Create any more files we need
-		
-		//FIXME - size() involves a scan
-		int filesToCreate = minFiles - (dataFiles.size() + freeFiles.size());
-		
-		for (int i = 0; i < filesToCreate; i++)
-		{
-			// Keeping all files opened can be very costly (mainly on AIO)
-			freeFiles.add(createFile());
-		}
-		
-		//The current file is the last one
-		
-		Iterator<JournalFile> iter = dataFiles.iterator();
-		
-		while (iter.hasNext())
-		{
-			currentFile = iter.next();
-			
-			if (!iter.hasNext())
-			{
-				iter.remove();
-			}
-		}
-		
-		if (currentFile != null)
-		{     
-			currentFile.getFile().open();
-			
-			currentFile.getFile().position(lastDataPos);
-			
-			currentFile.setOffset(lastDataPos);
-		}
-		else
-		{
-			currentFile = freeFiles.remove();
-		}           
-		
-		for (RecordInfo record: records)
-		{
-			if (!recordsToDelete.contains(record.id))
-			{
-				committedRecords.add(record);
-			}
-		}
-		
-		for (TransactionHolder transaction: transactions.values())
-		{
-			if (!transaction.prepared)
-			{
-				log.warn("Uncommitted transaction with id " + transaction.transactionID + " found and discarded");
-				
-				TransactionNegPos transactionInfo = this.transactionInfos.get(transaction.transactionID);
-				
-				if (transactionInfo == null)
-				{
-					throw new IllegalStateException("Cannot find tx " + transaction.transactionID);
-				}
-				
-				//Reverse the refs
-				transactionInfo.forget();
-			}
-			else
-			{
-				PreparedTransactionInfo info = new PreparedTransactionInfo(transaction.transactionID);
-				
-				info.records.addAll(transaction.recordInfos);
-				
-				info.recordsToDelete.addAll(transaction.recordsToDelete);
-				
-				preparedTransactions.add(info);
-			}
-		}
-		
-		state = STATE_LOADED;
-		
-		return maxMessageID;
-	}
+                  maxTransactionID = Math.max(maxTransactionID, txID);                 
+                  byte end = bb.get();
+                  
+                  if (end != DONE)
+                  {
+                     repairFrom(pos, file);
+                  }
+                  else
+                  {
+                     TransactionHolder tx = transactions.get(txID);
+                     
+                     if (tx == null)
+                     {
+                        throw new IllegalStateException("Cannot find tx with id " + txID);
+                     }
+                     
+                     tx.prepared = true;
+                     
+                     TransactionNegPos tnp = transactionInfos.get(txID);
+                     
+                     if (tnp == null)
+                     {
+                        throw new IllegalStateException("Cannot find tx " + txID);
+                     }
+                     
+                     tnp.prepare(file);   
+                     
+                     hasData = true;         
+                  }
+                  
+                  break;
+               }
+               case COMMIT_RECORD:
+               {
+                  long txID = bb.getLong();  
+                  
+                  maxTransactionID = Math.max(maxTransactionID, txID);
+                  byte end = bb.get();
+                  
+                  if (end != DONE)
+                  {
+                     repairFrom(pos, file);
+                  }
+                  else
+                  {
+                     TransactionHolder tx = transactions.remove(txID);
+                     
+                     if (tx != null)
+                     {
+                        records.addAll(tx.recordInfos);                    
+                        recordsToDelete.addAll(tx.recordsToDelete);  
+                        
+                        TransactionNegPos tnp = transactionInfos.remove(txID);
+                        
+                        if (tnp == null)
+                        {
+                           throw new IllegalStateException("Cannot find tx " + txID);
+                        }
+                        
+                        tnp.commit(file);       
+                        
+                        hasData = true;         
+                     }
+                  }
+                  
+                  break;
+               }
+               case ROLLBACK_RECORD:
+               {
+                  long txID = bb.getLong();     
+   
+                  maxTransactionID = Math.max(maxTransactionID, txID);                 
+                  byte end = bb.get();
+                  
+                  if (end != DONE)
+                  {
+                     repairFrom(pos, file);
+                  }
+                  else
+                  {
+                     TransactionHolder tx = transactions.remove(txID);
+                     
+                     if (tx != null)
+                     {                       
+                        TransactionNegPos tnp = transactionInfos.remove(txID);
+                        
+                        if (tnp == null)
+                        {
+                           throw new IllegalStateException("Cannot find tx " + txID);
+                        }
+                        
+                        tnp.rollback(file);  
+                        
+                        hasData = true;         
+                     }
+                  }
+                  
+                  break;
+               }
+               case FILL_CHARACTER:                
+               {  
+                  //End of records in file - we check the file only contains fill characters from this point
+                  while (bb.hasRemaining())
+                  {
+                     byte b = bb.get();
+                     
+                     if (b != FILL_CHARACTER)
+                     {
+                        throw new IllegalStateException("Corrupt file " + file.getFile().getFileName() +
+                              " contains non fill character at position " + pos);
+                     }
+                  }
+                  
+                  break;                  
+               }              
+               default:                
+               {
+                  throw new IllegalStateException("Journal " + file.getFile().getFileName() +
+                        " is corrupt, invalid record type " + recordType);
+               }
+            }
+            
+            bb.position(file.getFile().calculateBlockStart(bb.position()));
+            
+            if (recordType != FILL_CHARACTER)
+            {
+               lastDataPos = bb.position();
+            }
+         }
+         
+         if (hasData)
+         {        
+            dataFiles.add(file);
+            
+            file.getFile().close();          
+         }
+         else
+         {           
+            //Empty dataFiles with no data
+            freeFiles.add(file);
+            
+            //Position it ready for writing
+            file.getFile().position(file.getFile().calculateBlockStart(SIZE_LONG));
+         }                       
+      }        
+      
+      transactionIDSequence.set(maxTransactionID + 1);
+      
+      //Create any more files we need
+      
+      //FIXME - size() involves a scan
+      int filesToCreate = minFiles - (dataFiles.size() + freeFiles.size());
+      
+      for (int i = 0; i < filesToCreate; i++)
+      {
+         // Keeping all files opened can be very costly (mainly on AIO)
+         freeFiles.add(createFile());
+      }
+      
+      //The current file is the last one
+      
+      Iterator<JournalFile> iter = dataFiles.iterator();
+      
+      while (iter.hasNext())
+      {
+         currentFile = iter.next();
+         
+         if (!iter.hasNext())
+         {
+            iter.remove();
+         }
+      }
+      
+      if (currentFile != null)
+      {     
+         currentFile.getFile().open();
+         
+         currentFile.getFile().position(lastDataPos);
+         
+         currentFile.setOffset(lastDataPos);
+      }
+      else
+      {
+         currentFile = freeFiles.remove();
+      }           
+      
+      for (RecordInfo record: records)
+      {
+         if (!recordsToDelete.contains(record.id))
+         {
+            committedRecords.add(record);
+         }
+      }
+      
+      for (TransactionHolder transaction: transactions.values())
+      {
+         if (!transaction.prepared)
+         {
+            log.warn("Uncommitted transaction with id " + transaction.transactionID + " found and discarded");
+            
+            TransactionNegPos transactionInfo = this.transactionInfos.get(transaction.transactionID);
+            
+            if (transactionInfo == null)
+            {
+               throw new IllegalStateException("Cannot find tx " + transaction.transactionID);
+            }
+            
+            //Reverse the refs
+            transactionInfo.forget();
+         }
+         else
+         {
+            PreparedTransactionInfo info = new PreparedTransactionInfo(transaction.transactionID);
+            
+            info.records.addAll(transaction.recordInfos);
+            
+            info.recordsToDelete.addAll(transaction.recordsToDelete);
+            
+            preparedTransactions.add(info);
+         }
+      }
+      
+      state = STATE_LOADED;
+      
+      return maxMessageID;
+   }
 	
 	public int getAlignment() throws Exception
 	{
@@ -1037,7 +1179,30 @@ public class JournalImpl implements TestableJournal
 		
 	}
 	
-	// TestableJournal implementation --------------------------------------------------------------
+   public String debug() throws Exception
+   {
+      this.checkReclaimStatus();
+      
+      StringBuilder builder = new StringBuilder();
+      
+      for (JournalFile file: dataFiles)
+      {
+         builder.append("DataFile:" + file + " posCounter = " + file.getPosCount() + " reclaimStatus = " +  file.isCanReclaim() + "\n");
+         if (file instanceof JournalFileImpl)
+         {
+            builder.append(((JournalFileImpl)file).debug());
+            
+         }
+      }
+      
+      builder.append("CurrentFile:" + currentFile+ " posCounter = " + currentFile.getPosCount() + "\n");
+      builder.append(((JournalFileImpl)currentFile).debug());
+      
+      
+      return builder.toString();
+   }
+
+   // TestableJournal implementation --------------------------------------------------------------
 	
 	public synchronized void checkAndReclaimFiles() throws Exception
 	{
@@ -1064,7 +1229,7 @@ public class JournalImpl implements TestableJournal
 					
 					sf.open();
 					
-					ByteBuffer bb = sf.newBuffer(SIZE_LONG); 
+					ByteBuffer bb = fileFactory.newBuffer(SIZE_LONG); 
 					
 					bb.putLong(newOrderingID);
 					
@@ -1178,7 +1343,7 @@ public class JournalImpl implements TestableJournal
 	
 	// Private -----------------------------------------------------------------------------
 	
-	private void appendRecord(ByteBuffer bb, boolean sync) throws Exception
+	private JournalFile appendRecord(ByteBuffer bb, boolean sync) throws Exception
 	{
 		lock.acquire();
 		
@@ -1189,6 +1354,7 @@ public class JournalImpl implements TestableJournal
 			checkFile(size);
 			currentFile.getFile().write(bb, sync);       
 			currentFile.extendOffset(size);
+			return currentFile;
 		}
 		finally
 		{
@@ -1196,7 +1362,7 @@ public class JournalImpl implements TestableJournal
 		}
 	}
 	
-	private void appendRecord(ByteBuffer bb, boolean sync, IOCallback callback) throws Exception
+	private JournalFile appendRecord(ByteBuffer bb, boolean sync, IOCallback callback) throws Exception
 	{
 		lock.acquire();
 		
@@ -1207,6 +1373,7 @@ public class JournalImpl implements TestableJournal
 			checkFile(size);
 			currentFile.getFile().write(bb, sync, callback);       
 			currentFile.extendOffset(size);
+			return currentFile;
 		}
 		finally
 		{
@@ -1233,13 +1400,13 @@ public class JournalImpl implements TestableJournal
 		
 		if (trace) log.trace("Creating file " + fileName);
 		
-		SequentialFile sequentialFile = fileFactory.createSequentialFile(fileName, sync);
+		SequentialFile sequentialFile = fileFactory.createSequentialFile(fileName, sync, maxAIO);
 		
 		sequentialFile.open();
 		
 		sequentialFile.fill(0, fileSize, FILL_CHARACTER);
 		
-		ByteBuffer bb = sequentialFile.newBuffer(SIZE_LONG); 
+		ByteBuffer bb = fileFactory.newBuffer(SIZE_LONG); 
 		
 		bb.putLong(orderingID);
 		
@@ -1295,15 +1462,15 @@ public class JournalImpl implements TestableJournal
 			
 			dataFiles.add(currentFile);
 			
-			//FIXME - isEmpty() involves a scan!!
-			if (!freeFiles.isEmpty())
+			try
 			{
-				currentFile = freeFiles.remove();
+			   currentFile = freeFiles.remove();
 			}
-			else
+			catch (NoSuchElementException e)
 			{
-				currentFile = createFile();
+            currentFile = createFile();
 			}
+
 		}     
 	}
 	
@@ -1321,7 +1488,99 @@ public class JournalImpl implements TestableJournal
 		return tx;
 	}
 	
+   private TransactionCallback getTransactionCallback(long transactionId)
+   {
+      TransactionCallback callback = this.transactionCallbacks.get(transactionId);
+      
+      if (callback == null)
+      {
+         callback = new TransactionCallback();
+         transactionCallbacks.put(transactionId, callback);
+      }
+      
+      return callback;
+   }
+   
+   private void removeTransactionCallback(long transactionId)
+   {
+      transactionCallbacks.remove(transactionId);
+   }
+   
+	
+	
 	// Inner classes ---------------------------------------------------------------------------
+
+   class SimpleCallback implements IOCallback
+   {
+      
+      String errorMessage;
+      int errorCode;
+      CountDownLatch latch = new CountDownLatch(1);
+
+      public void done()
+      {
+         latch.countDown();
+      }
+
+      public void onError(int errorCode, String errorMessage)
+      {
+         this.errorMessage = errorMessage;
+         this.errorCode = errorCode;
+         latch.countDown();
+         
+      }
+      
+      public void waitCompletion() throws InterruptedException 
+      {
+         // TODO: Variable Timeout?
+         if (!latch.await(30, TimeUnit.SECONDS))
+         {
+            throw new IllegalStateException("Timeout!");
+         }
+         if (errorMessage != null)
+         {
+            throw new IllegalStateException("Error on Transaction: " + errorCode + " - " + errorMessage);
+         }
+     }
+      
+   }
+   
+   class TransactionCallback implements IOCallback
+   {
+      
+      VariableLatch countLatch = new VariableLatch();
+      
+      String errorMessage = null;
+      int errorCode = 0;
+      
+      public void countUp()
+      {
+         countLatch.up();
+      }
+
+      public void done()
+      {
+         countLatch.down();
+      }
+      
+      public void waitCompletion() throws InterruptedException
+      {
+         countLatch.waitCompletion(90);
+         
+         if (errorMessage != null)
+         {
+            throw new IllegalStateException("Error on Transaction: " + errorCode + " - " + errorMessage);
+         }
+      }
+
+      public void onError(int errorCode, String errorMessage)
+      {
+         this.errorMessage = errorMessage;
+         this.errorCode = errorCode;
+         countLatch.down();
+      }
+      
+   }
 	
 	private class ReclaimerTask extends TimerTask
 	{
@@ -1510,28 +1769,5 @@ public class JournalImpl implements TestableJournal
 			}
 		}
 	}
-	
-	public String debug() throws Exception
-	{
-		this.checkReclaimStatus();
-		
-		StringBuilder builder = new StringBuilder();
-		
-		for (JournalFile file: dataFiles)
-		{
-			builder.append("DataFile:" + file + " posCounter = " + file.getPosCount() + " reclaimStatus = " +  file.isCanReclaim() + "\n");
-			if (file instanceof JournalFileImpl)
-			{
-				builder.append(((JournalFileImpl)file).debug());
-				
-			}
-		}
-		
-		builder.append("CurrentFile:" + currentFile+ " posCounter = " + currentFile.getPosCount() + "\n");
-		builder.append(((JournalFileImpl)currentFile).debug());
-		
-		
-		return builder.toString();
-	}
-	
+
 }

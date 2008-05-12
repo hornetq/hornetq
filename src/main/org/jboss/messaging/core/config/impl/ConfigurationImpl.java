@@ -350,6 +350,11 @@ public class ConfigurationImpl implements Configuration, Serializable
 	{
 		return journalType;
 	}
+	
+	public void setJournalType(JournalType type)
+	{
+	   this.journalType = type;
+	}
 
 	public boolean isJournalSync()
 	{

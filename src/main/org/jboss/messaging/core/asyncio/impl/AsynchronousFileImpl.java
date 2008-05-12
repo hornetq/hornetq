@@ -9,6 +9,7 @@ package org.jboss.messaging.core.asyncio.impl;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -16,6 +17,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.jboss.messaging.core.asyncio.AIOCallback;
 import org.jboss.messaging.core.asyncio.AsynchronousFile;
 import org.jboss.messaging.core.logging.Logger;
+
 
 /**
  * 
@@ -31,6 +33,19 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	private Thread poller;
 	private static boolean loaded = false;
 	private int maxIO;
+	
+	private static AtomicInteger totalMaxIO = new AtomicInteger(0);
+	
+	static void addMax(int io)
+	{
+	   totalMaxIO.addAndGet(io);
+	}
+
+	/** For test purposes */
+	public static int getTotalMaxIO()
+	{
+	   return totalMaxIO.get();
+	}
 	
 	Semaphore writeSemaphore;
 	
@@ -108,6 +123,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 			opened = true;
 			this.fileName=fileName;
 			handler = init (fileName, maxIO, log);
+			addMax(maxIO);
 			startPoller();
 		}
 		finally
@@ -148,6 +164,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 		{
 			pollerSemaphore.acquire();
 			closeInternal(handler);
+			addMax(maxIO * -1);
 			opened = false;
 			handler = 0;
 		}

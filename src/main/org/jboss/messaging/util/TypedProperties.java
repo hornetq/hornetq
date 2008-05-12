@@ -46,6 +46,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.logging.Logger;
 
 /**
@@ -57,7 +58,7 @@ import org.jboss.messaging.core.logging.Logger;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class TypedProperties
+public class TypedProperties implements EncodingSupport
 {  
 	private static final Logger log = Logger.getLogger(TypedProperties.class);
 
@@ -269,7 +270,7 @@ public class TypedProperties
       	
       	for (Map.Entry<SimpleString, PropertyValue> entry: properties.entrySet())
    		{
-      		SimpleString s = entry.getKey();;
+      		SimpleString s = entry.getKey();
       		byte[] data = s.getData();
       		buffer.putInt(data.length);
       		buffer.putBytes(data);
@@ -277,6 +278,23 @@ public class TypedProperties
       		entry.getValue().write(buffer);   		
    		}
 		}
+	}
+	
+	public int encodeSize()
+	{
+	   if (properties == null)
+	   {
+	      return SIZE_BYTE;
+	   }
+	   else
+	   {
+	      int size = SIZE_BYTE + SIZE_INT;
+         for (Map.Entry<SimpleString, PropertyValue> entry: properties.entrySet())
+         {
+            size += SimpleString.sizeofString(entry.getKey()) + entry.getValue().encodeSize(); 
+         }
+         return size;
+	   }
 	}
 	
 	public void clear()
@@ -343,6 +361,8 @@ public class TypedProperties
 		
 		void write(MessagingBuffer buffer);
 		
+		int encodeSize();
+		
 		byte getType();
 	}
    
@@ -366,6 +386,12 @@ public class TypedProperties
       {
          return NULL;
       }
+
+      public int encodeSize()
+      {
+         return SIZE_BYTE;
+      }
+      
    }
    
    private static final class BooleanValue implements PropertyValue
@@ -397,6 +423,12 @@ public class TypedProperties
 		{
 			return BOOLEAN;
 		}
+
+      public int encodeSize()
+      {
+         return SIZE_BYTE + SIZE_BOOLEAN;
+      }
+		
 	}
 	
    private static final class ByteValue implements PropertyValue
@@ -427,6 +459,11 @@ public class TypedProperties
 		public byte getType()
 		{
 			return BYTE;
+		}
+		
+		public int encodeSize()
+		{
+		   return SIZE_BYTE + SIZE_BYTE;
 		}
 	}
    
@@ -462,6 +499,12 @@ public class TypedProperties
 		{
 			return BYTES;
 		}
+		
+      public int encodeSize()
+      {
+         return SIZE_BYTE + SIZE_INT + val.length;
+      }
+		
 	}
 	
    private static final class ShortValue implements PropertyValue
@@ -492,6 +535,11 @@ public class TypedProperties
 		public byte getType()
 		{
 			return SHORT;
+		}
+		
+		public int encodeSize()
+		{
+		   return SIZE_BYTE + SIZE_SHORT;
 		}
 	}
 	
@@ -524,6 +572,11 @@ public class TypedProperties
 		{
 			return INT;
 		}
+
+		public int encodeSize()
+      {
+         return SIZE_BYTE + SIZE_INT;
+      }
 	}
 	
    private static final class LongValue implements PropertyValue
@@ -555,6 +608,11 @@ public class TypedProperties
 		{
 			return LONG;
 		}
+
+		public int encodeSize()
+      {
+         return SIZE_BYTE + SIZE_LONG;
+      }
 	}
 	
    private static final class FloatValue implements PropertyValue
@@ -586,6 +644,12 @@ public class TypedProperties
 		{
 			return FLOAT;
 		}
+		
+      public int encodeSize()
+      {
+         return SIZE_BYTE + SIZE_FLOAT;
+      }
+		
 	}
 	
    private static final class DoubleValue implements PropertyValue
@@ -617,6 +681,11 @@ public class TypedProperties
 		{
 			return DOUBLE;
 		}
+
+		public int encodeSize()
+      {
+         return SIZE_BYTE + SIZE_DOUBLE;
+      }
 	}
    
    private static final class CharValue implements PropertyValue
@@ -653,6 +722,11 @@ public class TypedProperties
 		{
 			return SIZE_CHAR;
 		}
+
+		public int encodeSize()
+      {
+         return SIZE_BYTE + SIZE_CHAR;
+      }
 	}
 	
    private static final class StringValue implements PropertyValue
@@ -688,6 +762,11 @@ public class TypedProperties
 		public int size()
 		{
 			return SimpleString.sizeofString(val);
+		}
+		
+		public int encodeSize()
+		{
+		   return SIZE_BYTE + SimpleString.sizeofString(val);
 		}
 	}
 }

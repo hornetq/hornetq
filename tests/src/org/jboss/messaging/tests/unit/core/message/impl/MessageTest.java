@@ -21,10 +21,13 @@
  */
 package org.jboss.messaging.tests.unit.core.message.impl;
 
+import java.nio.ByteBuffer;
+
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
-import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.journal.EncodingSupport;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
@@ -32,7 +35,9 @@ import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeQueueFactory;
 import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.util.ByteBufferWrapper;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.TypedProperties;
 
 /**
  * 
@@ -45,7 +50,9 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class MessageTest extends UnitTestCase
 {
-	private QueueFactory queueFactory = new FakeQueueFactory();
+   private static final Logger log = Logger.getLogger(MessageTest.class);
+
+   private QueueFactory queueFactory = new FakeQueueFactory();
    
    public void testCreateMessageBeforeSending()
    {
@@ -244,6 +251,58 @@ public class MessageTest extends UnitTestCase
       messageDurable.incrementDurableRefCount();
       
       assertEquals(1, messageDurable.getDurableRefCount());                 
+   }
+
+   public void testEncodingMessageProperties()
+   {
+
+      TypedProperties properties = new TypedProperties();
+      properties.putStringProperty(new SimpleString("str"), new SimpleString("Str2"));
+      properties.putStringProperty(new SimpleString("str2"), new SimpleString("Str2"));
+      properties.putBooleanProperty(new SimpleString("str3"), true );
+      properties.putByteProperty(new SimpleString("str4"), (byte)1);
+      properties.putBytesProperty(new SimpleString("str5"), new byte[]{1,2,3,4,5});
+      properties.putShortProperty(new SimpleString("str6"),(short)1);
+      properties.putIntProperty(new SimpleString("str7"), (int)1);
+      properties.putLongProperty(new SimpleString("str8"), (long)1);
+      properties.putFloatProperty(new SimpleString("str9"),(float) 1);
+      properties.putDoubleProperty(new SimpleString("str10"), (double) 1);
+      properties.putCharProperty(new SimpleString("str11"), 'a');
+      
+      checkSizes(properties);
+      
+   }
+
+   public void testEncodingMessage() throws Exception
+   {
+      byte[] bytes = new byte[]{(byte)1, (byte)2, (byte)3};
+      final BufferWrapper bufferBody = new BufferWrapper(bytes.length);
+      bufferBody.putBytes(bytes);
+      
+      
+      SimpleString address = new SimpleString("Simple Destination ");
+      
+      ServerMessageImpl implMsg = new ServerMessageImpl(/* type */ 1, /* durable */ true, /* expiration */ 0,
+            /* timestamp */ 0, /* priority */(byte)0);
+      
+      implMsg.setDestination(address);
+      implMsg.setBody(bufferBody);
+      implMsg.putStringProperty(new SimpleString("Key"), new SimpleString("This String is worthless!"));
+
+      checkSizes(implMsg);
+
+      implMsg.removeProperty(new SimpleString("Key"));
+      
+      checkSizes(implMsg);
+
+   }
+   
+   private void checkSizes(EncodingSupport obj)
+   {
+      ByteBuffer bf = ByteBuffer.allocateDirect(1024);
+      ByteBufferWrapper buffer = new ByteBufferWrapper(bf);
+      obj.encode(buffer);
+      assertEquals (buffer.position(), obj.encodeSize());
    }
    
 

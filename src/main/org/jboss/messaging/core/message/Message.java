@@ -23,6 +23,7 @@ package org.jboss.messaging.core.message;
 
 import java.util.Set;
 
+import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
@@ -37,7 +38,7 @@ import org.jboss.messaging.util.SimpleString;
  *
  * $Id: Message.java 3341 2007-11-19 14:34:57Z timfox $
  */
-public interface Message
+public interface Message extends EncodingSupport
 {
    public static final SimpleString HDR_ACTUAL_EXPIRY_TIME = new SimpleString("JBMActualExpiryTime");
    
@@ -65,8 +66,9 @@ public interface Message
    
    void setPriority(byte priority);
    
-      
-   MessagingBuffer encode();
+   int encodeSize();
+
+   void encode(MessagingBuffer buffer);
    
    void decode(MessagingBuffer buffer);
    

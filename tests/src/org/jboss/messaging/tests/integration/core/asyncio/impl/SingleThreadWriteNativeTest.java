@@ -50,6 +50,12 @@ public class SingleThreadWriteNativeTest extends TestCase
        File file = new File(FILE_NAME);
        file.delete();
    }
+   
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();
+      assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
+   }
 
    private void encodeBufer(ByteBuffer buffer)
    {
@@ -147,7 +153,8 @@ public class SingleThreadWriteNativeTest extends TestCase
        }
        finally
        {
-           try {controller.close();} catch (Exception ignored){}
+          try {controller.close();} catch (Exception ignored){}
+          try {controller2.close();} catch (Exception ignored){}
        }
        
        
@@ -499,48 +506,52 @@ public class SingleThreadWriteNativeTest extends TestCase
    private void validateData(int numberOfLines, int size, int aioLimit) throws Exception
    {
        final AsynchronousFileImpl controller = new AsynchronousFileImpl();
-       controller.open(FILE_NAME, aioLimit);
-       
-       ByteBuffer compareBlock = ByteBuffer.allocateDirect(size);
-       encodeBufer(compareBlock);
-       
-       ByteBuffer readBuffer = controller.newBuffer(size);
-       
-       
-       boolean firstInvalid = false;
-       for (int i=0;i<numberOfLines;i++)
+       try
        {
-          if (i % 1000 == 0)
-          {
-             log.info("line = " + i);
-          }
-          CountDownLatch latch = new CountDownLatch(1);
-          LocalAIO callback = new LocalAIO(latch);
-          controller.read(i * size, size, readBuffer, callback);
-
-          latch.await();
+          controller.open(FILE_NAME, aioLimit);
           
-          if (!compareBuffers(compareBlock, readBuffer))
+          ByteBuffer compareBlock = ByteBuffer.allocateDirect(size);
+          encodeBufer(compareBlock);
+          
+          ByteBuffer readBuffer = controller.newBuffer(size);
+          
+          
+          boolean firstInvalid = false;
+          for (int i=0;i<numberOfLines;i++)
           {
-             //log.info("Invalid line at " + i);
-             firstInvalid=true;
-          }
-          else
-          {
-             if (firstInvalid)
+             if (i % 1000 == 0)
              {
-                for (int line=0;line<10;line++) log.info("*********************************************");
-                log.warn("Valid line after an invalid line!!!");
+                log.info("line = " + i);
              }
+             CountDownLatch latch = new CountDownLatch(1);
+             LocalAIO callback = new LocalAIO(latch);
+             controller.read(i * size, size, readBuffer, callback);
+   
+             latch.await();
+             
+             if (!compareBuffers(compareBlock, readBuffer))
+             {
+                //log.info("Invalid line at " + i);
+                firstInvalid=true;
+             }
+             else
+             {
+                if (firstInvalid)
+                {
+                   for (int line=0;line<10;line++) log.info("*********************************************");
+                   log.warn("Valid line after an invalid line!!!");
+                }
+             }
+             
+             readBuffer.position(100);
+             ByteBuffer buf1 = readBuffer.slice();
+             
+             //System.out.println("buf1=" + buf1);
           }
-          
-          readBuffer.position(100);
-          ByteBuffer buf1 = readBuffer.slice();
-          
-          //System.out.println("buf1=" + buf1);
-          
-          
-          
+       }
+       finally
+       {
+          controller.close();
        }
    }
    

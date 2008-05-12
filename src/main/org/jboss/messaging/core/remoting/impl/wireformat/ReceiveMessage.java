@@ -91,18 +91,9 @@ public class ReceiveMessage extends EmptyPacket
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      MessagingBuffer buf = serverMessage.encode();
-      
-      buf.flip();
-      
-      //TODO - can be optimised
-      
-      byte[] data = buf.array();
-      
       buffer.putInt(deliveryCount);
       buffer.putLong(deliveryID);
-      
-      buffer.putBytes(data, 0, buf.limit());
+      serverMessage.encode(buffer);
    }
    
    public void decodeBody(final MessagingBuffer buffer)

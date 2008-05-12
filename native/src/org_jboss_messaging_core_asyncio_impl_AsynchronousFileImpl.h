@@ -9,6 +9,7 @@ extern "C" {
 #endif
 /* Inaccessible static: log */
 /* Inaccessible static: loaded */
+/* Inaccessible static: totalMaxIO */
 /*
  * Class:     org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl
  * Method:    init

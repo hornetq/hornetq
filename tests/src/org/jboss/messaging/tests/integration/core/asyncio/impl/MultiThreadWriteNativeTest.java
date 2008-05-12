@@ -119,6 +119,13 @@ public class MultiThreadWriteNativeTest extends TestCase
        position.set(0);
    }
    
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();
+      
+      assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
+   }
+   
    public void testMultipleASynchronousWrites() throws Throwable
    {
        executeTest(false);
@@ -134,42 +141,47 @@ public class MultiThreadWriteNativeTest extends TestCase
        log.info(sync?"Sync test:":"Async test");
        AsynchronousFileImpl jlibAIO = new AsynchronousFileImpl();
        jlibAIO.open(FILE_NAME, 21000);
-       log.debug("Preallocating file");
-      
-       jlibAIO.fill(0l, NUMBER_OF_THREADS,  SIZE * NUMBER_OF_LINES, (byte)0);
-       log.debug("Done Preallocating file");
-       
-       CountDownLatch latchStart = new CountDownLatch (NUMBER_OF_THREADS + 1);
-       
-       ArrayList<ThreadProducer> list = new ArrayList<ThreadProducer>(NUMBER_OF_THREADS);
-       for(int i=0;i<NUMBER_OF_THREADS;i++)
+       try
        {
-           ThreadProducer producer = new ThreadProducer("Thread " + i, latchStart, jlibAIO, sync);
-           list.add(producer);
-           producer.start();
+          log.debug("Preallocating file");
+         
+          jlibAIO.fill(0l, NUMBER_OF_THREADS,  SIZE * NUMBER_OF_LINES, (byte)0);
+          log.debug("Done Preallocating file");
+          
+          CountDownLatch latchStart = new CountDownLatch (NUMBER_OF_THREADS + 1);
+          
+          ArrayList<ThreadProducer> list = new ArrayList<ThreadProducer>(NUMBER_OF_THREADS);
+          for(int i=0;i<NUMBER_OF_THREADS;i++)
+          {
+              ThreadProducer producer = new ThreadProducer("Thread " + i, latchStart, jlibAIO, sync);
+              list.add(producer);
+              producer.start();
+          }
+          
+          latchStart.countDown();
+          latchStart.await();
+          
+          
+          long startTime = System.currentTimeMillis();
+          
+   
+          
+          for (ThreadProducer producer: list)
+          {
+              producer.join();
+              if (producer.failed != null)
+              {
+                  throw producer.failed;
+              }
+          }
+          long endTime = System.currentTimeMillis();
+          
+          log.debug((sync?"Sync result:":"Async result:") + " Records/Second = " + (NUMBER_OF_THREADS * NUMBER_OF_LINES * 1000 / (endTime - startTime)) + " total time = " + (endTime - startTime) + " total number of records = " + (NUMBER_OF_THREADS * NUMBER_OF_LINES));
        }
-       
-       latchStart.countDown();
-       latchStart.await();
-       
-       
-       long startTime = System.currentTimeMillis();
-       
-
-       
-       for (ThreadProducer producer: list)
+       finally
        {
-           producer.join();
-           if (producer.failed != null)
-           {
-               throw producer.failed;
-           }
+          jlibAIO.close();
        }
-       long endTime = System.currentTimeMillis();
-       
-       log.debug((sync?"Sync result:":"Async result:") + " Records/Second = " + (NUMBER_OF_THREADS * NUMBER_OF_LINES * 1000 / (endTime - startTime)) + " total time = " + (endTime - startTime) + " total number of records = " + (NUMBER_OF_THREADS * NUMBER_OF_LINES));
-
-       jlibAIO.close();
        
    }
    

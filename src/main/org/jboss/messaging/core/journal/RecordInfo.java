@@ -10,9 +10,11 @@ package org.jboss.messaging.core.journal;
  */
 public class RecordInfo
 {
-	public RecordInfo(final long id, final byte[] data, final boolean isUpdate)
+	public RecordInfo(final long id, byte userRecordType, final byte[] data, final boolean isUpdate)
 	{
 		this.id = id;
+		
+		this.userRecordType = userRecordType;
 		
 		this.data = data;
 		
@@ -21,9 +23,16 @@ public class RecordInfo
 	
 	public final long id;
 	
+	public final byte userRecordType;
+	
 	public final byte[] data;
 	
 	public boolean isUpdate;
+	
+	public byte getUserRecordType()
+	{
+	   return userRecordType;
+	}
 	
 	public int hashCode()
 	{

@@ -21,6 +21,27 @@
  */
 package org.jboss.messaging.core.message.impl;
 
+import static org.jboss.messaging.util.DataConstants.BOOLEAN;
+import static org.jboss.messaging.util.DataConstants.BYTE;
+import static org.jboss.messaging.util.DataConstants.BYTES;
+import static org.jboss.messaging.util.DataConstants.CHAR;
+import static org.jboss.messaging.util.DataConstants.DOUBLE;
+import static org.jboss.messaging.util.DataConstants.FLOAT;
+import static org.jboss.messaging.util.DataConstants.INT;
+import static org.jboss.messaging.util.DataConstants.LONG;
+import static org.jboss.messaging.util.DataConstants.NOT_NULL;
+import static org.jboss.messaging.util.DataConstants.NULL;
+import static org.jboss.messaging.util.DataConstants.SHORT;
+import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
+import static org.jboss.messaging.util.DataConstants.SIZE_BYTE;
+import static org.jboss.messaging.util.DataConstants.SIZE_CHAR;
+import static org.jboss.messaging.util.DataConstants.SIZE_DOUBLE;
+import static org.jboss.messaging.util.DataConstants.SIZE_FLOAT;
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
+import static org.jboss.messaging.util.DataConstants.SIZE_SHORT;
+import static org.jboss.messaging.util.DataConstants.STRING;
+
 import java.util.Set;
 
 import org.jboss.messaging.core.logging.Logger;
@@ -105,25 +126,50 @@ public abstract class MessageImpl implements Message
    
    // Message implementation ----------------------------------------
 
-   public MessagingBuffer encode()
+   public void encode(MessagingBuffer buff)
    {
-      MessagingBuffer buff = new BufferWrapper(1024);
-      
+//      buff.putSimpleString(destination);
+//      buff.putInt(type);
+//      buff.putBoolean(durable);
+//      buff.putLong(expiration);
+//      buff.putLong(timestamp);
+//      buff.putByte(priority);
+//      properties.encode(buff);
+//      buff.putInt(body.limit());
+//      buff.putBytes(body.array(), 0, body.limit());
+
+   
       buff.putSimpleString(destination);
       buff.putInt(type);
       buff.putBoolean(durable);
       buff.putLong(expiration);
       buff.putLong(timestamp);
       buff.putByte(priority);
-      
       properties.encode(buff);
-                       
       buff.putInt(body.limit());
-      
-      //TODO this can be optimisied
       buff.putBytes(body.array(), 0, body.limit());
+   
+   }
+   
+   public int encodeSize()
+   {
+//      return /* Destination */ SimpleString.sizeofString(destination) + 
+//             /* Type */ SIZE_INT + 
+//             /* Durable */ SIZE_BOOLEAN + 
+//             /* Expiration */ SIZE_LONG + 
+//             /* Timestamp */ SIZE_LONG +
+//             /* Priority */  SIZE_BYTE + 
+//             /* PropertySize and Properties */ properties.encodeSize() + 
+//             /* BodySize and Body */ SIZE_INT + body.limit();
+      return /* Destination */ SimpleString.sizeofString(destination) + 
+      /* Type */ SIZE_INT + 
+      /* Durable */ SIZE_BOOLEAN + 
+      /* Expiration */ SIZE_LONG + 
+      /* Timestamp */ SIZE_LONG + 
+      /* Priority */ SIZE_BYTE + 
+      /* PropertySize and Properties */ properties.encodeSize() + 
+      /* BodySize and Body */ SIZE_INT + body.limit();
       
-      return buff;
    }
    
    public void decode(final MessagingBuffer buffer)

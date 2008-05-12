@@ -64,15 +64,7 @@ public class ProducerSendMessage extends EmptyPacket
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      MessagingBuffer buf = clientMessage.encode();
-      
-      buf.flip();
-      
-      //TODO - can be optimised
-      
-      byte[] data = buf.array();
-       
-      buffer.putBytes(data, 0, buf.limit());
+      clientMessage.encode(buffer);
    }
    
    public void decodeBody(final MessagingBuffer buffer)

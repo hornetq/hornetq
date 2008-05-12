@@ -29,12 +29,14 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
+import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.TestableJournal;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeCallback;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
@@ -56,6 +58,8 @@ public abstract class JournalImplTestBase extends UnitTestCase
 	protected int recordLength = 1024;
 	
 	protected Map<Long, TransactionHolder> transactions = new LinkedHashMap<Long, TransactionHolder>();
+	
+	protected int maxAIO;
 	
 	protected int minFiles;
 	
@@ -97,7 +101,9 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		
 		fileFactory = null;
 		
-		journal = null;;
+		journal = null;
+		
+		assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
 	}
 	
 	protected void resetFileFactory() throws Exception
@@ -109,17 +115,26 @@ public abstract class JournalImplTestBase extends UnitTestCase
 	
 	// Private ---------------------------------------------------------------------------------
 	
-	protected void setup(int minFreeFiles, int fileSize, boolean sync)
-	{     
-		this.minFiles = minFreeFiles;
-		this.fileSize = fileSize;
-		this.sync = sync;
-	}
-	
+   protected void setup(int minFreeFiles, int fileSize, boolean sync, int maxAIO)
+   {     
+      this.minFiles = minFreeFiles;
+      this.fileSize = fileSize;
+      this.sync = sync;
+      this.maxAIO = maxAIO;
+   }
+   
+   protected void setup(int minFreeFiles, int fileSize, boolean sync)
+   {     
+      this.minFiles = minFreeFiles;
+      this.fileSize = fileSize;
+      this.sync = sync;
+      this.maxAIO = 1000;
+   }
+   
 	public void createJournal() throws Exception
 	{     
 		journal =
-			new JournalImpl(fileSize, minFiles, sync, fileFactory, 1000, filePrefix, fileExtension);
+			new JournalImpl(fileSize, minFiles, sync, fileFactory, 1000, filePrefix, fileExtension, maxAIO);
 	}
 	
 	protected void startJournal() throws Exception
@@ -190,9 +205,9 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		{     
 			byte[] record = generateRecord(size);
 			
-			journal.appendAddRecord(arguments[i], record);
+			journal.appendAddRecord(arguments[i], (byte)0, record);
 			
-			records.add(new RecordInfo(arguments[i], record, false));         
+			records.add(new RecordInfo(arguments[i], (byte)0, record, false));         
 		}
 	}
 	
@@ -202,9 +217,9 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		{     
 			byte[] updateRecord = generateRecord(recordLength);
 			
-			journal.appendUpdateRecord(arguments[i], updateRecord);
+			journal.appendUpdateRecord(arguments[i], (byte)0, updateRecord);
 			
-			records.add(new RecordInfo(arguments[i], updateRecord, true)); 
+			records.add(new RecordInfo(arguments[i], (byte)0, updateRecord, true)); 
 		}
 	}
 	
@@ -227,9 +242,9 @@ public abstract class JournalImplTestBase extends UnitTestCase
 			// SIZE_BYTE + SIZE_LONG + SIZE_LONG + SIZE_INT + record.length + SIZE_BYTE
 			byte[] record = generateRecord(recordLength - JournalImpl.SIZE_ADD_RECORD_TX );
 			
-			journal.appendAddRecordTransactional(txID, arguments[i], record);
+			journal.appendAddRecordTransactional(txID, (byte)0, arguments[i], record);
 			
-			tx.records.add(new RecordInfo(arguments[i], record, false));
+			tx.records.add(new RecordInfo(arguments[i], (byte)0, record, false));
 			
 		}     
 	}
@@ -242,9 +257,9 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		{     
 			byte[] updateRecord = generateRecord(recordLength - JournalImpl.SIZE_UPDATE_RECORD_TX );
 			
-			journal.appendUpdateRecordTransactional(txID, arguments[i], updateRecord);
+			journal.appendUpdateRecordTransactional(txID, (byte)0, arguments[i], updateRecord);
 			
-			tx.records.add(new RecordInfo(arguments[i], updateRecord, true));
+			tx.records.add(new RecordInfo(arguments[i], (byte)0, updateRecord, true));
 		}     
 	}
 	

@@ -26,9 +26,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeCallback;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
@@ -40,7 +42,7 @@ import org.jboss.messaging.tests.util.UnitTestCase;
  */
 public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 {
-   private static final Logger log = Logger.getLogger(SequentialFileFactoryTestBase.class);
+   protected final Logger log = Logger.getLogger(this.getClass());
    
    
    protected void setUp() throws Exception
@@ -48,6 +50,12 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       super.setUp();
       
       factory = createFactory();
+   }
+   
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();
+      assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
    }
    
    protected abstract SequentialFileFactory createFactory();
@@ -66,19 +74,21 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
          
          expectedFiles.add(fileName);
          
-         SequentialFile sf = factory.createSequentialFile(fileName, false);
+         SequentialFile sf = factory.createSequentialFile(fileName, false, 1);
          
          sf.open();
          
          assertEquals(fileName, sf.getFileName());
+         
+         sf.close();
       }           
       
       //Create a couple with a different extension - they shouldn't be picked up
       
-      SequentialFile sf1 = factory.createSequentialFile("different.file", false);
+      SequentialFile sf1 = factory.createSequentialFile("different.file", false, 1);
       sf1.open();
       
-      SequentialFile sf2 = factory.createSequentialFile("different.cheese", false);
+      SequentialFile sf2 = factory.createSequentialFile("different.cheese", false, 1);
       sf2.open();
                   
       List<String> fileNames = factory.listFiles("jbm");
@@ -101,33 +111,44 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       assertEquals(1, fileNames.size());
       
       assertTrue(fileNames.contains("different.cheese"));   
+      
+      sf1.close();
+      sf2.close();
    }
    
    
    public void testFill() throws Exception
    {
-      SequentialFile sf = factory.createSequentialFile("fill.jbm", true);
+      SequentialFile sf = factory.createSequentialFile("fill.jbm", true, 1);
       
       sf.open();
       
-      checkFill(sf, 0, 2048, (byte)'X');
+      try
+      {
       
-      checkFill(sf, 512, 512, (byte)'Y');
-      
-      checkFill(sf, 0, 1, (byte)'Z');
-      
-      checkFill(sf, 512, 1, (byte)'A');
-      
-      checkFill(sf, 1024, 512*4, (byte)'B');
+         checkFill(sf, 0, 2048, (byte)'X');
+         
+         checkFill(sf, 512, 512, (byte)'Y');
+         
+         checkFill(sf, 0, 1, (byte)'Z');
+         
+         checkFill(sf, 512, 1, (byte)'A');
+         
+         checkFill(sf, 1024, 512*4, (byte)'B');
+      }
+      finally
+      {
+         sf.close();
+      }
    }
    
    public void testDelete() throws Exception
    {
-      SequentialFile sf = factory.createSequentialFile("delete-me.jbm", true);
+      SequentialFile sf = factory.createSequentialFile("delete-me.jbm", true, 1);
       
       sf.open();
       
-      SequentialFile sf2 = factory.createSequentialFile("delete-me2.jbm", true);
+      SequentialFile sf2 = factory.createSequentialFile("delete-me2.jbm", true, 1);
       
       sf2.open();
       
@@ -147,45 +168,55 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       
       assertTrue(fileNames.contains("delete-me2.jbm"));
       
+      sf2.close();
+      
    }
    
    public void testWriteandRead() throws Exception
    {
-      SequentialFile sf = factory.createSequentialFile("write.jbm", true);
+      SequentialFile sf = factory.createSequentialFile("write.jbm", true, 1);
       
       sf.open();
       
       String s1 = "aardvark";
       byte[] bytes1 = s1.getBytes("UTF-8");
-      ByteBuffer bb1 = sf.wrapBuffer(bytes1);
+      ByteBuffer bb1 = factory.wrapBuffer(bytes1);
       
       String s2 = "hippopotamus";
       byte[] bytes2 = s2.getBytes("UTF-8");
-      ByteBuffer bb2 = sf.wrapBuffer(bytes2);
+      ByteBuffer bb2 = factory.wrapBuffer(bytes2);
       
       String s3 = "echidna";
       byte[] bytes3 = s3.getBytes("UTF-8");
-      ByteBuffer bb3 = sf.wrapBuffer(bytes3);
+      ByteBuffer bb3 = factory.wrapBuffer(bytes3);
       
-      int bytesWritten = sf.write(bb1, true);
+      FakeCallback callback = new FakeCallback();
+      int bytesWritten = sf.write(bb1, true, callback);
+      callback.waitComplete();
       
       assertEquals(calculateRecordSize(bytes1.length, sf.getAlignment()), bytesWritten);
       
-      bytesWritten = sf.write(bb2, true);
+      callback = new FakeCallback();
+      bytesWritten = sf.write(bb2, true, callback);
+      callback.waitComplete();
       
       assertEquals(calculateRecordSize(bytes2.length, sf.getAlignment()), bytesWritten);
       
-      bytesWritten = sf.write(bb3, true);
+      callback = new FakeCallback();
+      bytesWritten = sf.write(bb3, true, callback);
+      callback.waitComplete();
       
       assertEquals(calculateRecordSize(bytes3.length, sf.getAlignment()), bytesWritten);
       
       sf.position(0);
       
-      ByteBuffer rb1 = sf.newBuffer(bytes1.length);
-      ByteBuffer rb2 = sf.newBuffer(bytes2.length);
-      ByteBuffer rb3 = sf.newBuffer(bytes3.length);
+      ByteBuffer rb1 = factory.newBuffer(bytes1.length);
+      ByteBuffer rb2 = factory.newBuffer(bytes2.length);
+      ByteBuffer rb3 = factory.newBuffer(bytes3.length);
 
-      int bytesRead = sf.read(rb1);
+      callback = new FakeCallback();
+      int bytesRead = sf.read(rb1, callback);
+      callback.waitComplete();
       assertEquals(calculateRecordSize(bytes1.length, sf.getAlignment()), bytesRead);     
 
       for (int i=0; i<bytes1.length; i++)
@@ -193,7 +224,9 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       	assertEquals(bytes1[i], rb1.get(i));
       }
       
-      bytesRead = sf.read(rb2);
+      callback = new FakeCallback();
+      bytesRead = sf.read(rb2, callback);
+      callback.waitComplete();
       assertEquals(calculateRecordSize(bytes2.length, sf.getAlignment()), bytesRead);     
       for (int i=0; i<bytes2.length; i++)
       {
@@ -201,42 +234,52 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       }
       
       
-      bytesRead = sf.read(rb3);
+      callback = new FakeCallback();
+      bytesRead = sf.read(rb3, callback);
+      callback.waitComplete();
       assertEquals(calculateRecordSize(bytes3.length, sf.getAlignment()), bytesRead);     
       for (int i=0; i<bytes3.length; i++)
       {
       	assertEquals(bytes3[i], rb3.get(i));
       }
       
+      sf.close();
+      
    }
    
    public void testPosition() throws Exception
    {
-      SequentialFile sf = factory.createSequentialFile("position.jbm", true);
+      SequentialFile sf = factory.createSequentialFile("position.jbm", true, 1);
       
       sf.open();
       
       String s1 = "orange";
       byte[] bytes1 = s1.getBytes("UTF-8");
-      ByteBuffer bb1 = sf.wrapBuffer(bytes1); 
+      ByteBuffer bb1 = factory.wrapBuffer(bytes1); 
       
       String s2 = "grapefruit";
-      byte[] bytes2 = s2.getBytes("UTF-8");
-      ByteBuffer bb2 = sf.wrapBuffer(bytes2);
+      byte[] bytes2 = s1.getBytes("UTF-8");
+      ByteBuffer bb2 = factory.wrapBuffer(bytes2);
       
       String s3 = "lemon";
       byte[] bytes3 = s3.getBytes("UTF-8");
-      ByteBuffer bb3 = sf.wrapBuffer(bytes3);
+      ByteBuffer bb3 = factory.wrapBuffer(bytes3);
       
-      int bytesWritten = sf.write(bb1, true);
+      FakeCallback callback = new FakeCallback();
+      int bytesWritten = sf.write(bb1, true, callback);
+      callback.waitComplete();
       
       assertEquals(bb1.limit(), bytesWritten);
       
-      bytesWritten = sf.write(bb2, true);
+      callback = new FakeCallback();
+      bytesWritten = sf.write(bb2, true, callback);
+      callback.waitComplete();
       
       assertEquals(bb2.limit(), bytesWritten);
       
-      bytesWritten = sf.write(bb3, true);
+      callback = new FakeCallback();
+      bytesWritten = sf.write(bb3, true, callback);
+      callback.waitComplete();
       
       assertEquals(bb3.limit(), bytesWritten);
       
@@ -246,9 +289,9 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       
       byte[] rbytes3 = new byte[bytes3.length];
       
-      ByteBuffer rb1 = sf.newBuffer(rbytes1.length);
-      ByteBuffer rb2 = sf.newBuffer(rbytes2.length);
-      ByteBuffer rb3 = sf.newBuffer(rbytes3.length);
+      ByteBuffer rb1 = factory.newBuffer(rbytes1.length);
+      ByteBuffer rb2 = factory.newBuffer(rbytes2.length);
+      ByteBuffer rb3 = factory.newBuffer(rbytes3.length);
       
       sf.position(bb1.limit() + bb2.limit());
       
@@ -271,20 +314,24 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       assertEquals(rb1.limit(), bytesRead);
       rb1.get(rbytes1);
       
-      assertByteArraysEquivalent(bytes1, rbytes1);    
+      assertByteArraysEquivalent(bytes1, rbytes1);
+      
+      sf.close();
    }
     
    public void testOpenClose() throws Exception
    {
-      SequentialFile sf = factory.createSequentialFile("openclose.jbm", true);
+      SequentialFile sf = factory.createSequentialFile("openclose.jbm", true, 1);
       
       sf.open();
       
       String s1 = "cheesecake";
       byte[] bytes1 = s1.getBytes("UTF-8");
-      ByteBuffer bb1 = sf.wrapBuffer(bytes1);
+      ByteBuffer bb1 = factory.wrapBuffer(bytes1);
       
-      int bytesWritten = sf.write(bb1, true);
+      FakeCallback callback = new FakeCallback();
+      int bytesWritten = sf.write(bb1, true, callback);
+      callback.waitComplete();
       
       assertEquals(bb1.limit(), bytesWritten);
       
@@ -304,6 +351,8 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       sf.open();
       
       sf.write(bb1, true);
+      
+      sf.close();
    }
    
    // Private ---------------------------------
@@ -318,7 +367,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       
       file.position(pos);
       
-      ByteBuffer bb = file.newBuffer(size);
+      ByteBuffer bb = factory.newBuffer(size);
       
       int bytesRead = file.read(bb);
       

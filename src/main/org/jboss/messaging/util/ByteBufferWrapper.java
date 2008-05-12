@@ -33,6 +33,11 @@ public class ByteBufferWrapper implements MessagingBuffer
 		this.buffer = buffer;
 	}
 	
+	public ByteBuffer getBuffer()
+	{
+	   return buffer;
+	}
+	
 	public byte[] array()
    {
    	return buffer.array();

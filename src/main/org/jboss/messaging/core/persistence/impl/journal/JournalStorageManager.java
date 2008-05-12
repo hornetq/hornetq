@@ -5,17 +5,20 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
+import org.jboss.messaging.core.journal.IOCallback;
 import org.jboss.messaging.core.journal.Journal;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
@@ -28,7 +31,6 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.BindingImpl;
-import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
@@ -38,6 +40,7 @@ import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.util.ByteBufferWrapper;
 import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.VariableLatch;
 
 /**
  * 
@@ -84,7 +87,7 @@ public class JournalStorageManager implements StorageManager
 	private final Journal bindingsJournal;
 	
 	private final ConcurrentMap<SimpleString, Long> destinationIDMap = new ConcurrentHashMap<SimpleString, Long>();
-   
+	
 	private volatile boolean started;
 	
 	public JournalStorageManager(Configuration config)
@@ -105,7 +108,7 @@ public class JournalStorageManager implements StorageManager
 			
 	   SequentialFileFactory bindingsFF = new NIOSequentialFileFactory(bindingsDir);
       
-	   bindingsJournal = new JournalImpl(1024 * 1024, 2, true, bindingsFF, 10000, "jbm-bindings", "bindings");
+	   bindingsJournal = new JournalImpl(1024 * 1024, 2, true, bindingsFF, 10000, "jbm-bindings", "bindings", 1);
 	      
 	   String journalDir = config.getJournalDirectory();
 	   
@@ -123,11 +126,11 @@ public class JournalStorageManager implements StorageManager
          if (!AIOSequentialFileFactory.isSupported())
          {
             log.warn("AIO wasn't located on this platform, using just standard Java NIO. If you are on Linux, install LibAIO and the required wrapper and you will get a lot of performance benefit");
-            journalFF = new NIOSequentialFileFactory(bindingsDir);
+            journalFF = new NIOSequentialFileFactory(journalDir);
          }
          else
          {
-            journalFF = new AIOSequentialFileFactory(bindingsDir);
+            journalFF = new AIOSequentialFileFactory(journalDir);
             log.info("AIO loaded successfully");
          }
       }
@@ -144,7 +147,7 @@ public class JournalStorageManager implements StorageManager
 	      
 	   messageJournal = new JournalImpl(config.getJournalFileSize(), 
 	   		config.getJournalMinFiles(), config.isJournalSync(), journalFF,
-	   		config.getJournalTaskPeriod(), "jbm-data", "jbm");
+	   		config.getJournalTaskPeriod(), "jbm-data", "jbm", 10000);
 	}
 	
 	public long generateMessageID()
@@ -161,22 +164,14 @@ public class JournalStorageManager implements StorageManager
 	
 	public void storeMessage(final ServerMessage message) throws Exception
 	{		
-		//TODO too much copying is occurring here
-	   
-		MessagingBuffer buffer = new BufferWrapper(1024);
-		
-		buffer.putByte(ADD_MESSAGE);
-		
-		buffer.putBytes(message.encode().array());
-		
-      messageJournal.appendAddRecord(message.getMessageID(), buffer.array());      
+      messageJournal.appendAddRecord(message.getMessageID(), ADD_MESSAGE, message);      
 	}
 
 	public void storeAcknowledge(final long queueID, final long messageID) throws Exception
 	{		
 		byte[] record = ackBytes(queueID, messageID);
 		
-		messageJournal.appendUpdateRecord(messageID, record);					
+		messageJournal.appendUpdateRecord(messageID, ACKNOWLEDGE_REF, record);					
 	}
 	
 	public void storeDelete(final long messageID) throws Exception
@@ -188,22 +183,14 @@ public class JournalStorageManager implements StorageManager
 	
    public void storeMessageTransactional(long txID, ServerMessage message) throws Exception
    {
-      //TODO too much copying is occurring here
-      
-      MessagingBuffer buffer = new BufferWrapper(1024);
-      
-      buffer.putByte(ADD_MESSAGE);
-      
-      buffer.putBytes(message.encode().array());
-      
-      messageJournal.appendAddRecordTransactional(txID, message.getMessageID(), buffer.array());
+      messageJournal.appendAddRecordTransactional(txID, ADD_MESSAGE, message.getMessageID(), message);
    }
    
    public void storeAcknowledgeTransactional(long txID, long queueID, long messageID) throws Exception
    {
    	byte[] record = ackBytes(queueID, messageID);
 		
-		messageJournal.appendUpdateRecordTransactional(txID, messageID, record);	
+		messageJournal.appendUpdateRecordTransactional(txID, ACKNOWLEDGE_REF, messageID, record);	
    }
    
    public void storeDeleteTransactional(long txID, long messageID) throws Exception
@@ -223,7 +210,7 @@ public class JournalStorageManager implements StorageManager
    
    public void rollback(long txID) throws Exception
    {
-   	messageJournal.appendRollbackRecord(txID);
+      messageJournal.appendRollbackRecord(txID);
    }
    
    // Other operations
@@ -234,15 +221,13 @@ public class JournalStorageManager implements StorageManager
 		
 		ByteBuffer bb = ByteBuffer.wrap(bytes);
 		
-		bb.put(UPDATE_DELIVERY_COUNT);
-		
 		bb.putLong(ref.getQueue().getPersistenceID());
 		
 		bb.putLong(ref.getMessage().getMessageID());
 		
 		bb.putInt(ref.getDeliveryCount());
 		
-		messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(), bytes);
+		messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(), UPDATE_DELIVERY_COUNT, bytes);
 	}
 
 	public void loadMessages(final PostOffice postOffice, final Map<Long, Queue> queues) throws Exception
@@ -261,7 +246,7 @@ public class JournalStorageManager implements StorageManager
 			
 			ByteBuffer bb = ByteBuffer.wrap(data);
 			
-			byte recordType = bb.get();
+			byte recordType = record.getUserRecordType();
 			
 			switch (recordType)
 			{
@@ -368,8 +353,6 @@ public class JournalStorageManager implements StorageManager
 
 		 queue.setPersistenceID(queueID);
 
-		 daos.writeByte(BINDING_RECORD);
-		 
 		 byte[] nameBytes = queue.getName().getData();
 		 
 		 daos.writeInt(nameBytes.length);
@@ -399,7 +382,7 @@ public class JournalStorageManager implements StorageManager
 
 		 byte[] data = baos.toByteArray();
 		 
-		 bindingsJournal.appendAddRecord(queueID, data);
+		 bindingsJournal.appendAddRecord(queueID, BINDING_RECORD, data);
 	}
 
 	public void deleteBinding(Binding binding) throws Exception
@@ -429,8 +412,6 @@ public class JournalStorageManager implements StorageManager
 	      
 			DataOutputStream daos = new DataOutputStream(baos);
 			
-			daos.writeByte(DESTINATION_RECORD);
-			
 			byte[] destBytes = destination.getData();
 			
 			daos.writeInt(destBytes.length);
@@ -441,7 +422,7 @@ public class JournalStorageManager implements StorageManager
 			
 			byte[] data = baos.toByteArray();
 			
-			bindingsJournal.appendAddRecord(destinationID, data);
+			bindingsJournal.appendAddRecord(destinationID, DESTINATION_RECORD, data);
 			
 			return true;
 		}		
@@ -484,7 +465,7 @@ public class JournalStorageManager implements StorageManager
 
 			DataInputStream dais = new DataInputStream(bais);
 			
-			byte rec = dais.readByte();
+			byte rec = record.getUserRecordType();
 			
 			if (rec == BINDING_RECORD)
 			{
@@ -575,14 +556,12 @@ public class JournalStorageManager implements StorageManager
 	}
 	
 	// Private ----------------------------------------------------------------------------------
-			
+	
 	private byte[] ackBytes(final long queueID, final long messageID)
    {
-      byte[] record = new byte[SIZE_BYTE + SIZE_LONG + SIZE_LONG];
+      byte[] record = new byte[SIZE_LONG + SIZE_LONG];
       
       ByteBuffer bb = ByteBuffer.wrap(record);
-      
-      bb.put(ACKNOWLEDGE_REF);
       
       bb.putLong(queueID);
       

@@ -22,10 +22,17 @@
 package org.jboss.messaging.tests.unit.core.journal.impl.timing;
 
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.tests.unit.core.journal.impl.JournalImplTestBase;
+import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeCallback;
+import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
+import org.jboss.messaging.core.journal.IOCallback;
+import org.jboss.messaging.core.journal.Journal;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
+import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.logging.Logger;
 
 /**
@@ -39,7 +46,12 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 {
    private static final Logger log = Logger.getLogger(JournalImplTestUnit.class);
    
-   
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();
+      
+      assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
+   }
    
    public void testAddUpdateDeleteManyLargeFileSize() throws Exception
    {
@@ -70,7 +82,8 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
          deletes[i] = i;
       }
       
-      setup(10, 10 * 1024 * 1024, true);
+      // This would take a long time with sync=true, and still validates the file. 
+      setup(10, 10 * 1024 * 1024, false);
       createJournal();
       startJournal();
       load();
@@ -113,14 +126,16 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
          deletes[i] = i;
       }
       
-      setup(10, 10 * 1024, true);
+      setup(10, 10 * 1024, false);
       createJournal();
       startJournal();
       load();
       add(adds);
       update(updates);
       delete(deletes);
-      stopJournal();
+
+      log.info("Debug journal:" + debugJournal());
+      stopJournal(false);
       createJournal();
       startJournal();
       loadAndCheck();
@@ -140,17 +155,19 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       
                   
       byte[] record = generateRecord(recordLength);
+      
+      int NUMBER_OF_RECORDS = 1000;
 
-      for (int count = 0; count < 100000; count++)
+      for (int count = 0; count < NUMBER_OF_RECORDS; count++)
       {
-         journal.appendAddRecord(count, record);
+         journal.appendAddRecord(count, (byte)0, record);
          
-         if (count >= 5000)
+         if (count >= NUMBER_OF_RECORDS / 2)
          {
-            journal.appendDeleteRecord(count - 5000);
+            journal.appendDeleteRecord(count - NUMBER_OF_RECORDS / 2);
          }
          
-         if (count % 10000 == 0)
+         if (count % 100 == 0)
          {
             log.info("Done: " + count);
          }
@@ -158,7 +175,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       
       long end = System.currentTimeMillis();
       
-      double rate = 1000 * ((double)100000) / (end - start);
+      double rate = 1000 * ((double)NUMBER_OF_RECORDS) / (end - start);
       
       log.info("Rate of " + rate + " adds/removes per sec");
       
@@ -169,10 +186,172 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       startJournal();
       journal.load(new ArrayList<RecordInfo>(), new ArrayList<PreparedTransactionInfo>());
       
-      assertEquals(5000, journal.getIDMapSize());
+      assertEquals(NUMBER_OF_RECORDS / 2, journal.getIDMapSize());
       
       stopJournal();
    }
+   
+   public void testSpeedNonTransactional() throws Exception
+   {
+      for (int i=0;i<1;i++)
+      {
+         this.setUp();
+         System.gc(); Thread.sleep(500);
+         internaltestSpeedNonTransactional();
+         this.tearDown();
+      }
+   }
+   
+   public void internaltestSpeedNonTransactional() throws Exception
+   {
+      
+      final long numMessages = 10000;
+      
+      int numFiles =  (int)(((numMessages * 1024 + 512) / (10 * 1024 * 1024)) * 1.3);
+      
+      if (numFiles<2) numFiles = 2;
+      
+      log.info("num Files=" + numFiles);
+
+      Journal journal =
+         new JournalImpl(10 * 1024 * 1024,  numFiles, true, getFileFactory(),
+               5000, "jbm-data", "jbm", 5000);
+      
+      journal.start();
+      
+      journal.load(new ArrayList<RecordInfo>(), null);
+      
+
+      final CountDownLatch latch = new CountDownLatch((int)numMessages);
+      
+      
+      class LocalCallback implements IOCallback
+      {
+
+         int i=0;
+         String message = null;
+         boolean done = false;
+         CountDownLatch latch;
+         
+         public LocalCallback(int i, CountDownLatch latch)
+         {
+            this.i = i;
+            this.latch = latch;
+         }
+         public void done()
+         {
+            synchronized (this)
+            {
+               if (done)
+               {
+                  message = "done received in duplicate";
+               }
+               done = true;
+               this.latch.countDown();
+            }
+         }
+
+         public void onError(int errorCode, String errorMessage)
+         {
+            synchronized (this)
+            {
+               System.out.println("********************** Error = " + (i++));
+               message = errorMessage;
+               latch.countDown();
+            }
+         }
+         
+      }
+      
+      
+      log.info("Adding data");
+      byte[] data = new byte[700];
+      
+      long start = System.currentTimeMillis();
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         journal.appendAddRecord(i, (byte)0, data);
+      }
+      
+      long end = System.currentTimeMillis();
+      
+      double rate = 1000 * (double)numMessages / (end - start);
+      
+      boolean failed = false;
+      
+      // If this fails it is probably because JournalImpl it is closing the files without waiting all the completes to arrive first
+      assertFalse(failed);
+      
+      
+      log.info("Rate " + rate + " records/sec");
+
+      journal.stop();
+      
+      journal =
+         new JournalImpl(10 * 1024 * 1024,  numFiles, true, getFileFactory(),
+               5000, "jbm-data", "jbm", 5000);
+      
+      journal.start();
+      journal.load(new ArrayList<RecordInfo>(), null);
+      journal.stop();
+      
+   }
+   
+   public void testSpeedTransactional() throws Exception
+   {
+      Journal journal =
+         new JournalImpl(10 * 1024 * 1024, 10, true, getFileFactory(),
+               5000, "jbm-data", "jbm", 5000);
+      
+      journal.start();
+      
+      journal.load(new ArrayList<RecordInfo>(), null);
+      
+      try
+      {
+         final int numMessages = 50050;
+         
+         byte[] data = new byte[1024];
+         
+         long start = System.currentTimeMillis();
+         
+         int count = 0;
+         double rates[] = new double[50];
+         for (int i = 0; i < 50; i++)
+         {
+            long startTrans = System.currentTimeMillis();
+            for (int j=0; j<1000; j++)
+            {
+               journal.appendAddRecordTransactional(i, (byte)0, count++, data);
+            }
+            
+            journal.appendCommitRecord(i);
+            
+            long endTrans = System.currentTimeMillis();
+   
+            rates[i] = 1000 * (double)1000 / (endTrans - startTrans);
+         }
+         
+         long end = System.currentTimeMillis();
+         
+         for (double rate: rates)
+         {
+            log.info("Transaction Rate = " + rate + " records/sec");
+            
+         }
+         
+         double rate = 1000 * (double)numMessages / (end - start);
+         
+         log.info("Rate " + rate + " records/sec");
+      }
+      finally
+      {
+         journal.stop();
+      }
+
+   }
+   
    
 }
 

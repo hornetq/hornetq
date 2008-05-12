@@ -21,6 +21,7 @@
   */
 package org.jboss.messaging.core.journal;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 
 /**
@@ -32,7 +33,15 @@ import java.util.List;
  */
 public interface SequentialFileFactory
 {
-	SequentialFile createSequentialFile(String fileName, boolean sync) throws Exception;
+	SequentialFile createSequentialFile(String fileName, boolean sync, int maxIO) throws Exception;
 	
 	List<String> listFiles(String extension) throws Exception;
+	
+	boolean supportsCallbacks();
+	
+   ByteBuffer newBuffer(int size);
+
+   // Avoid using this method in production as it creates an unecessary copy 
+   ByteBuffer wrapBuffer(byte[] bytes);
+
 }

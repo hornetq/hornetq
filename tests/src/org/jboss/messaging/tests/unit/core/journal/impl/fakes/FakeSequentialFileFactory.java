@@ -45,7 +45,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       
    private Map<String, FakeSequentialFile> fileMap = new ConcurrentHashMap<String, FakeSequentialFile>();
    
-   public SequentialFile createSequentialFile(final String fileName, final boolean sync) throws Exception
+   public SequentialFile createSequentialFile(final String fileName, final boolean sync, final int maxAIO) throws Exception
    {
       FakeSequentialFile sf = fileMap.get(fileName);
       
@@ -90,6 +90,21 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       fileMap.clear();
    }
    
+   public boolean supportsCallbacks()
+   {
+      return false;
+   }
+   
+   public ByteBuffer newBuffer(int size)
+   {
+      return ByteBuffer.allocate(size);
+   }
+
+   public ByteBuffer wrapBuffer(byte[] bytes)
+   {
+      return ByteBuffer.wrap(bytes);
+   }
+
    public class FakeSequentialFile implements SequentialFile
    {
       private volatile boolean open;
@@ -257,16 +272,6 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
             
             data.position(oldpos);
          }
-      }
-
-      public ByteBuffer newBuffer(int size)
-      {
-         return ByteBuffer.allocate(size);
-      }
-
-      public ByteBuffer wrapBuffer(byte[] bytes)
-      {
-         return ByteBuffer.wrap(bytes);
       }
 
       public int getAlignment() throws Exception

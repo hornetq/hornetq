@@ -183,13 +183,4 @@ public class NIOSequentialFile implements SequentialFile
 		channel.position(pos);
 	}
 	
-	public ByteBuffer newBuffer(int size)
-	{
-		return ByteBuffer.allocate(size);
-	}
-	
-	public ByteBuffer wrapBuffer(byte[] bytes)
-	{
-		return ByteBuffer.wrap(bytes);
-	}
 }

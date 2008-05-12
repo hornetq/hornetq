@@ -21,6 +21,8 @@
   */
 package org.jboss.messaging.core.journal.impl;
 
+import java.nio.ByteBuffer;
+
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 
@@ -38,9 +40,25 @@ public class NIOSequentialFileFactory extends AbstractSequentialFactory implemen
 		super(journalDir);
 	}	
 	
-	public SequentialFile createSequentialFile(final String fileName, final boolean sync)
+	public SequentialFile createSequentialFile(final String fileName, final boolean sync, int maxIO)
 	{
 		return new NIOSequentialFile(journalDir, fileName, sync);
 	}
 
+   public boolean supportsCallbacks()
+   {
+      return false;
+   }
+   
+   public ByteBuffer newBuffer(int size)
+   {
+      return ByteBuffer.allocate(size);
+   }
+   
+   public ByteBuffer wrapBuffer(byte[] bytes)
+   {
+      return ByteBuffer.wrap(bytes);
+   }
+   
+	
 }
