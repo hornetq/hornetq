@@ -65,8 +65,8 @@
 
          <remoting-host>localhost</remoting-host>
 
-         <!--  timeout in seconds -->
-         <remoting-timeout>5</remoting-timeout>
+         <!--  timeout in milliseconds -->
+         <remoting-timeout>5000</remoting-timeout>
 
          <!-- true to disable invm communication when the client and the server are in the
          same JVM.     -->
@@ -161,7 +161,7 @@
          </listitem>
          <listitem>
             <para>remoting-timeout</para>
-            <para>The timeout setting for both client and server connections</para>
+            <para>The timeout setting, in milliseconds, for both client and server connections</para>
          </listitem>
          <listitem>
             <para>remoting-disable-invm</para>
