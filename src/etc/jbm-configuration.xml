@@ -21,8 +21,8 @@
       
       <remoting-host>localhost</remoting-host>
 
-      <!--  timeout in milliseconds -->
-      <remoting-timeout>5000</remoting-timeout>
+      <!--  timeout in seconds -->
+      <remoting-timeout>5</remoting-timeout>
       
       <!-- true to disable invm communication when the client and the server are in the same JVM.     -->
       <!-- it is not allowed to disable invm communication when the remoting-transport is set to INVM -->
@@ -68,9 +68,9 @@
       <journal-sync>true</journal-sync>
       
       <!-- 10 MB journal file size -->
-      <journal-file-size>104857600</journal-file-size>
+      <journal-file-size>10485760</journal-file-size>
       
-      <journal-min-files>2</journal-min-files>
+      <journal-min-files>10</journal-min-files>
       
       <journal-task-period>5000</journal-task-period>
       
