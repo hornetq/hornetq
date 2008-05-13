@@ -60,6 +60,26 @@ public class VariableLatchTest extends TestCase
       latch.waitCompletion();
    }
 
+   public void testTimeout() throws Exception
+   {
+      VariableLatch latch = new VariableLatch();
+      
+      latch.up();
+
+      long start = System.currentTimeMillis();
+      try
+      {
+         latch.waitCompletion(1);
+         fail ("It was suppsoed to throw an exception");
+      }
+      catch (Exception ignored)
+      {
+      }
+      long end = System.currentTimeMillis();
+      
+      assertTrue ("Timeout didn't work correctly", end - start >= 1000 && end - start < 2000);
+   }
+
    /** 
     * 
     * This test will open numberOfThreads threads, and add numberOfAdds on the VariableLatch
