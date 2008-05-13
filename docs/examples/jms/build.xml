@@ -32,7 +32,7 @@
 <!-- =========================================================================================== -->
 
 
-<project default="compile" name="JBoss Messaging JMS Examples">
+<project default="help" name="JBoss Messaging JMS Examples">
 
    <property file="../build.properties"/>
 
@@ -57,6 +57,16 @@
       <pathelement location="${build.dir}"/>
       <pathelement location="${etc.dir}"/>
    </path>
+
+   <target name="help">
+      <echo>*****************************************************************</echo>
+      <echo>* to run examples execute one of the following                  *</echo>
+      <echo>* ant queueExample                                              *</echo>
+      <echo>* ant topicExample                                              *</echo>
+      <echo>* ant DurSubExample                                             *</echo>
+      <echo>* ant perfListener followed by ant perfSender                   *</echo>
+      <echo>*****************************************************************</echo>
+   </target>
 
    <target name="clean">
       <delete dir="${build.dir}"/>

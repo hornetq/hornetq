@@ -32,7 +32,7 @@
 <!-- =========================================================================================== -->
 
 
-<project default="compile" name="JBoss Messaging Examples">
+<project default="help" name="JBoss Messaging Examples">
 
    <property file="../build.properties"/>
 
@@ -52,6 +52,15 @@
       <pathelement location="${build.dir}"/>
       <pathelement location="${config.dir}"/>
    </path>
+
+   <target name="help">
+      <echo>*****************************************************************</echo>
+      <echo>* to run examples execute one of the following                  *</echo>
+      <echo>* ant SimpleClient                                              *</echo>
+      <echo>* ant SSLClient (configure server for SSL)                      *</echo>
+      <echo>* ant SimpleExample (no server needed)                          *</echo>
+      <echo>*****************************************************************</echo>
+   </target>
 
    <target name="clean">
       <delete dir="${build.dir}"/>
@@ -81,7 +90,7 @@
       </java>
    </target>
 
-   <target name="EmbeddedExample" depends="compile">
+   <target name="SimpleExample" depends="compile">
       <java classname="org.jboss.messaging.example.SimpleExample" fork="true">
          <classpath refid="runtime.classpath"/>
       </java>
