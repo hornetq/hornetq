@@ -61,7 +61,6 @@ import org.jboss.messaging.core.logging.Logger;
 public class TypedProperties implements EncodingSupport
 {  
 	private static final Logger log = Logger.getLogger(TypedProperties.class);
-
 	
 	private Map<SimpleString, PropertyValue> properties;
 	

@@ -22,26 +22,36 @@ import org.jboss.messaging.core.journal.IOCallback;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.logging.Logger;
 
+/**
+ * 
+ * A AIOSequentialFile
+ * 
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ *
+ */
 public class AIOSequentialFile implements SequentialFile
 {
    private static final Logger log = Logger.getLogger(AIOSequentialFile.class);
 
-   String journalDir;
-	String fileName;
-	boolean opened = false;
-	int maxIO;
+   private final String journalDir;
+   
+	private final String fileName;
 	
-	AsynchronousFile aioFile;
+	private boolean opened = false;
 	
-	AtomicLong position = new AtomicLong(0);
+	private final int maxIO;
+	
+	private AsynchronousFile aioFile;
+	
+	private AtomicLong position = new AtomicLong(0);
 
-	// A context switch on AIO would make it to synchronize the disk before switching to the new thread, what would cuase
+	// A context switch on AIO would make it to synchronize the disk before switching to the new thread, what would cause
 	// serious performance problems. Because of that we make all the writes on AIO using a single thread.
-	ExecutorService executor;
+	private ExecutorService executor;
 	
-	public AIOSequentialFile(String journalDir, String fileName, int maxIO) throws Exception
+	public AIOSequentialFile(final String journalDir, final String fileName, final int maxIO) throws Exception
 	{
-		this.journalDir = journalDir;
+		this.journalDir = journalDir;		
 		this.fileName = fileName;
 		this.maxIO = maxIO;
 	}
@@ -49,6 +59,7 @@ public class AIOSequentialFile implements SequentialFile
 	public int getAlignment() throws Exception
 	{
 		checkOpened();
+		
 		return aioFile.getBlockSize();
 	}
 	
@@ -60,9 +71,7 @@ public class AIOSequentialFile implements SequentialFile
 		
 		return pos;
 	}
-	
-	
-	
+			
 	public synchronized void close() throws Exception
 	{
 		checkOpened();
@@ -70,8 +79,7 @@ public class AIOSequentialFile implements SequentialFile
       executor.shutdown();
       executor.awaitTermination(120, TimeUnit.SECONDS);
 		aioFile.close();
-		aioFile = null;
-		
+		aioFile = null;		
 	}
 	
 	public void delete() throws Exception
@@ -86,8 +94,7 @@ public class AIOSequentialFile implements SequentialFile
 		file.delete();
 	}
 	
-	public void fill(int position, int size, byte fillCharacter)
-	throws Exception
+	public void fill(int position, final int size, final byte fillCharacter) throws Exception
 	{
 		checkOpened();
 		
@@ -97,22 +104,21 @@ public class AIOSequentialFile implements SequentialFile
 		{
 			blockSize = 10*1024*1024;
 		}
+		else if (size % (1024*1024) == 0)
+		{
+			blockSize = 1024*1024;
+		}
+		else if (size % (10*1024) == 0)
+		{
+			blockSize = 10*1024;
+		}
 		else
-			if (size % (1024*1024) == 0)
-			{
-				blockSize = 1024*1024;
-			}
-			else
-				if (size % (10*1024) == 0)
-				{
-					blockSize = 10*1024;
-				}
-				else
-				{
-					blockSize = aioFile.getBlockSize();
-				}
+		{
+			blockSize = aioFile.getBlockSize();
+		}
 		
 		int blocks = size / blockSize;
+		
 		if (size % blockSize != 0)
 		{
 			blocks++;
@@ -122,8 +128,8 @@ public class AIOSequentialFile implements SequentialFile
 		{
 			position = ((position / aioFile.getBlockSize()) + 1) * aioFile.getBlockSize();
 		}
-		aioFile.fill((long)position, blocks, blockSize, (byte)fillCharacter);
 		
+		aioFile.fill((long)position, blocks, blockSize, (byte)fillCharacter);		
 	}
 	
 	public String getFileName()
@@ -141,26 +147,28 @@ public class AIOSequentialFile implements SequentialFile
 		
 	}
 	
-	public void position(int pos) throws Exception
+	public void position(final int pos) throws Exception
 	{
-		position.set(pos);
-		
+		position.set(pos);		
 	}
 	
-	public int read(ByteBuffer bytes, IOCallback callback) throws Exception
+	public int read(final ByteBuffer bytes, final IOCallback callback) throws Exception
 	{
 		int bytesToRead = bytes.limit();
+		
 		long positionToRead = position.getAndAdd(bytesToRead);
 		
 		bytes.rewind();
+		
 		aioFile.read(positionToRead, bytesToRead, bytes, callback);
 		
 		return bytesToRead;
 	}
 	
-	public int read(ByteBuffer bytes) throws Exception
+	public int read(final ByteBuffer bytes) throws Exception
 	{
 		WaitCompletion waitCompletion = new WaitCompletion();
+		
 		int bytesRead = read (bytes, waitCompletion);
 		
 		waitCompletion.waitLatch();
@@ -174,10 +182,10 @@ public class AIOSequentialFile implements SequentialFile
 	}
 	
 	
-	public int write(final ByteBuffer bytes, boolean sync, final IOCallback callback)
-	throws Exception
+	public int write(final ByteBuffer bytes, boolean sync, final IOCallback callback) throws Exception
 	{
 		final int bytesToWrite = bytes.limit();
+		
 		final long positionToWrite = position.getAndAdd(bytesToWrite);
 		
 		execWrite(bytes, callback, bytesToWrite, positionToWrite);
@@ -186,7 +194,7 @@ public class AIOSequentialFile implements SequentialFile
 	}
 
    private void execWrite(final ByteBuffer bytes, final IOCallback callback,
-         final int bytesToWrite, final long positionToWrite)
+                          final int bytesToWrite, final long positionToWrite)
    {
       executor.execute(new Runnable()
 		{
@@ -205,11 +213,10 @@ public class AIOSequentialFile implements SequentialFile
 		         }
 		      }
 		   }
-		});
-      
+		});      
    }
 	
-	public int write(ByteBuffer bytes, boolean sync) throws Exception
+	public int write(final ByteBuffer bytes, final boolean sync) throws Exception
 	{
 		return write (bytes, sync, DummyCallback.instance);
 	}
@@ -222,9 +229,8 @@ public class AIOSequentialFile implements SequentialFile
 		}
 	}
 
-	static class DummyCallback implements IOCallback
-	{
-	   
+	private static class DummyCallback implements IOCallback
+	{	   
 	   static DummyCallback instance = new DummyCallback();
 
       public void done()
@@ -233,16 +239,15 @@ public class AIOSequentialFile implements SequentialFile
 
       public void onError(int errorCode, String errorMessage)
       {
-      }
-	   
+      }	   
 	}
 	
-	class WaitCompletion implements IOCallback
-	{
-		
+	private static class WaitCompletion implements IOCallback
+	{		
 		CountDownLatch latch = new CountDownLatch(1);
 		
 		String errorMessage;
+		
 		int errorCode = 0;
 		
 		public void done()
@@ -250,20 +255,18 @@ public class AIOSequentialFile implements SequentialFile
 			latch.countDown();
 		}
 		
-		public void onError(int errorCode, String errorMessage)
+		public void onError(final int errorCode, final String errorMessage)
 		{
 			this.errorCode = errorCode;
+			
 			this.errorMessage = errorMessage;
 			
-			latch.countDown();
-			
+			latch.countDown();			
 		}
 		
 		public void waitLatch() throws Exception
 		{
 			latch.await();
-		}
-		
-	}
-	
+		}		
+	}	
 }

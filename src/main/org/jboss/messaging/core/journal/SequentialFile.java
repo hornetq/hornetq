@@ -27,7 +27,7 @@ import java.nio.ByteBuffer;
  * 
  * A SequentialFile
  * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>Journal
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  */
 public interface SequentialFile
@@ -47,8 +47,7 @@ public interface SequentialFile
    
    void delete() throws Exception;
    
-   int write(ByteBuffer bytes, boolean sync, IOCallback callback)
-         throws Exception;
+   int write(ByteBuffer bytes, boolean sync, IOCallback callback) throws Exception;
    
    int write(ByteBuffer bytes, boolean sync) throws Exception;
    

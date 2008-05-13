@@ -114,9 +114,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       
       this.remotingConnection = remotingConnection;
       
-      //This is always true since the MinaHandler will use an executor based on session id
-      //TODO can remove this
-      this.direct = true;
+      this.direct = direct;
       
       this.tokenBatchSize = tokenBatchSize;
    }

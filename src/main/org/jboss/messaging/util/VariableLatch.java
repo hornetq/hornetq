@@ -25,7 +25,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
 
-/** This class will use the framework provided to by AbstractQueuedSynchronizer.
+/**
+ * 
+ * This class will use the framework provided to by AbstractQueuedSynchronizer.
  * AbstractQueuedSynchronizer is the framework for any sort of concurrent synchronization, such as Semaphores, events, etc, based on AtomicIntegers.
  * 
  * The idea is, instead of providing each user specific Latch/Synchronization, java.util.concurrent provides the framework for reuses, based on an AtomicInteger (getState())
@@ -41,20 +43,18 @@ public class VariableLatch
     * @see AbstractQueuedSynchronizer*/
    @SuppressWarnings("serial")
    private static class CountSync extends AbstractQueuedSynchronizer
-   {
-      
+   {      
       public CountSync ()
       {
          setState(0);
       }
-      
-      
+            
       public int getCount()
       {
          return getState();
       }
       
-      public int tryAcquireShared(int numberOfAqcquires)
+      public int tryAcquireShared(final int numberOfAqcquires)
       {
          return getState()==0 ? 1 : -1;
       }
@@ -71,9 +71,8 @@ public class VariableLatch
             }
          }
       }
-      
-      
-      public boolean tryReleaseShared(int numberOfReleases)
+            
+      public boolean tryReleaseShared(final int numberOfReleases)
       {
          for (;;)
          {
@@ -93,9 +92,8 @@ public class VariableLatch
       }
    }
    
-   CountSync control = new CountSync();
-   
-   
+   private CountSync control = new CountSync();
+      
    public int getCount()
    {
       return control.getCount();
@@ -116,7 +114,7 @@ public class VariableLatch
       control.acquireSharedInterruptibly(1);
    }
    
-   public void waitCompletion(int seconds) throws InterruptedException
+   public void waitCompletion(final int seconds) throws InterruptedException
    {
       if (!control.tryAcquireSharedNanos(1, TimeUnit.SECONDS.toNanos(seconds)))
       {

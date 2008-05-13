@@ -81,8 +81,6 @@ public class DeliveryOrderTest extends JMSTestCase
             
             prod.send(tm);
             
-            log.info("sent message");
-            
             if (i % 10 == 0)
             {
                sess.commit();

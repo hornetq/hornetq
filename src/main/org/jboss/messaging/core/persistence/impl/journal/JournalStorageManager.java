@@ -134,14 +134,13 @@ public class JournalStorageManager implements StorageManager
             log.info("AIO loaded successfully");
          }
       }
-      else 
-      if (config.getJournalType() == JournalType.NIO)
+      else if (config.getJournalType() == JournalType.NIO)
       {
          journalFF = new NIOSequentialFileFactory(bindingsDir);
       }
-      else
-      if (config.getJournalType() == JournalType.JDBC)
-      { // Sanity check only... this is previously tested
+      else if (config.getJournalType() == JournalType.JDBC)
+      {
+         // Sanity check only... this is previously tested
          throw new IllegalArgumentException("JDBC Journal is not supported yet");
       }
 	      

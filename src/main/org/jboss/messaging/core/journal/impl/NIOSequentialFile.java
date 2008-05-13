@@ -67,11 +67,10 @@ public class NIOSequentialFile implements SequentialFile
 		return 1;
 	}
 	
-	public int calculateBlockStart(int position) throws Exception
+	public int calculateBlockStart(final int position) throws Exception
 	{
 		return position;
-	}
-	
+	}	
 	
 	public String getFileName()
 	{
@@ -127,12 +126,12 @@ public class NIOSequentialFile implements SequentialFile
 		close();    
 	}
 	
-	public int read(ByteBuffer bytes) throws Exception
+	public int read(final ByteBuffer bytes) throws Exception
 	{
 		return read(bytes, null);
 	}
 	
-	public int read(ByteBuffer bytes, IOCallback callback) throws Exception
+	public int read(final ByteBuffer bytes, final IOCallback callback) throws Exception
 	{
 		try
 		{
@@ -156,12 +155,12 @@ public class NIOSequentialFile implements SequentialFile
 		
 	}
 	
-	public int write(ByteBuffer bytes, boolean sync) throws Exception
+	public int write(final ByteBuffer bytes, final boolean sync) throws Exception
 	{
 		return write(bytes, sync, null);
 	}
 	
-	public int write(ByteBuffer bytes, boolean sync, IOCallback callback) throws Exception
+	public int write(final ByteBuffer bytes, final boolean sync, final IOCallback callback) throws Exception
 	{
 		int bytesRead = channel.write(bytes);
 		

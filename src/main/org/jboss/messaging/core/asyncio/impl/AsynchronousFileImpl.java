@@ -27,87 +27,93 @@ import org.jboss.messaging.core.logging.Logger;
  */
 public class AsynchronousFileImpl implements AsynchronousFile
 {
-	private static Logger log = Logger.getLogger(AsynchronousFileImpl.class);
+   // Static 
+   // -------------------------------------------------------------------------------
+   
+   private static Logger log = Logger.getLogger(AsynchronousFileImpl.class);
+   
+   private static AtomicInteger totalMaxIO = new AtomicInteger(0);
+   
+   private static boolean loaded = false;
+      
+   static void addMax(int io)
+   {
+      totalMaxIO.addAndGet(io);
+   }
+   
+   /** For test purposes */
+   public static int getTotalMaxIO()
+   {
+      return totalMaxIO.get();
+   }
+   
+   private static boolean loadLibrary(String name) 
+   {
+      try
+      {
+         log.trace(name + " being loaded");
+         System.loadLibrary(name);
+         return isNativeLoaded();
+      }
+      catch (Throwable e)
+      {
+         log.trace(name + " -> error loading it", e);
+         return false;
+      }
+      
+   }
+   
+   static
+   {
+      String libraries[] = new String[] {"JBMLibAIO", "JBMLibAIO32", "JBMLibAIO64"};
+            
+      for (String library: libraries)
+      {
+         if (loadLibrary(library))
+         {
+            loaded = true;
+            break;
+         }
+         else
+         {
+            log.debug("Library " + library + " not found!");
+         }
+      }
+      
+      if (!loaded)
+      {
+         log.debug("Couldn't locate LibAIO Wrapper");
+      }
+   }
+   
+   public static boolean isLoaded()
+   {
+      return loaded;
+   }
+   
+   // Attributes
+   // ---------------------------------------------------------------------------------
+		
 	private boolean opened = false;
 	private String fileName;
-	private Thread poller;
-	private static boolean loaded = false;
-	private int maxIO;
-	
-	private static AtomicInteger totalMaxIO = new AtomicInteger(0);
-	
-	static void addMax(int io)
-	{
-	   totalMaxIO.addAndGet(io);
-	}
-
-	/** For test purposes */
-	public static int getTotalMaxIO()
-	{
-	   return totalMaxIO.get();
-	}
-	
-	Semaphore writeSemaphore;
-	
-	ReadWriteLock lock = new ReentrantReadWriteLock();
-	Lock writeLock = lock.writeLock();
-	
-	Semaphore pollerSemaphore = new Semaphore(1);
+	private Thread poller;	
+	private int maxIO;	
+	private Semaphore writeSemaphore;	
+	private ReadWriteLock lock = new ReentrantReadWriteLock();
+	private Lock writeLock = lock.writeLock();	
+	private Semaphore pollerSemaphore = new Semaphore(1);
 	
 	/**
 	 *  Warning: Beware of the C++ pointer! It will bite you! :-)
 	 */ 
 	private long handler;
 	
-	private static boolean loadLibrary(String name) 
-	{
-		try
-		{
-			log.trace(name + " being loaded");
-			System.loadLibrary(name);
-			return isNativeLoaded();
-		}
-		catch (Throwable e)
-		{
-			log.trace(name + " -> error loading it", e);
-			return false;
-		}
-		
-	}
-	
-	static
-	{
-		String libraries[] = new String[] {"JBMLibAIO", "JBMLibAIO32", "JBMLibAIO64"};
-		
-		
-		for (String library: libraries)
-		{
-			if (loadLibrary(library))
-			{
-				loaded = true;
-				break;
-			}
-			else
-			{
-				log.debug("Library " + library + " not found!");
-			}
-		}
-		
-		if (!loaded)
-		{
-			log.debug("Couldn't locate LibAIO Wrapper");
-		}
-	}
-	
-	public static boolean isLoaded()
-	{
-		return loaded;
-	}
 	
 	
-	
-	
-	public void open(String fileName, int maxIO)
+	// AsynchronousFile implementation
+	// ------------------------------------------------------------------------------------
+			
+	public void open(final String fileName, final int maxIO)
 	{
 		try
 		{
@@ -131,27 +137,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 			writeLock.unlock();
 		}
 	}
-	
-	class PollerThread extends Thread
-	{
-		PollerThread ()
-		{
-			super("NativePoller for " + fileName);
-		}
-		public void run()
-		{
-			// informing caller that this thread already has the lock
-			try
-			{
-				pollEvents();
-			}
-			finally
-			{
-				pollerSemaphore.release();
-			}
-		}
-	}
-	
+			
 	public void close() throws Exception
 	{
 		checkOpened();
@@ -174,9 +160,8 @@ public class AsynchronousFileImpl implements AsynchronousFile
 			pollerSemaphore.release();
 		}
 	}
-	
-	
-	public void write(long position, long size, ByteBuffer directByteBuffer, AIOCallback aioPackage)
+		
+	public void write(final long position, final long size, final ByteBuffer directByteBuffer, final AIOCallback aioPackage)
 	{
 		checkOpened();
 		this.writeSemaphore.acquireUninterruptibly();
@@ -192,7 +177,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 		
 	}
 	
-	public void read(long position, long size, ByteBuffer directByteBuffer, AIOCallback aioPackage)
+	public void read(final long position, final long size, final ByteBuffer directByteBuffer, final AIOCallback aioPackage)
 	{
 		checkOpened();
 		this.writeSemaphore.acquireUninterruptibly();
@@ -204,8 +189,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 		{
 			writeSemaphore.release();
 			throw e;
-		}
-		
+		}		
 	}
 	
 	public long size()
@@ -226,6 +210,8 @@ public class AsynchronousFileImpl implements AsynchronousFile
 		return 512;
 	}
 	
+	// Private
+	// ---------------------------------------------------------------------------------
 	
 	/** The JNI layer will call this method, so we could use it to unlock readWriteLocks held in the java layer */
 	@SuppressWarnings("unused") // Called by the JNI layer.. just ignore the warning
@@ -251,7 +237,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 		internalPollEvents(handler);
 	}
 	
-	private synchronized void  startPoller()
+	private synchronized void startPoller()
 	{
 		checkOpened();
 		
@@ -267,8 +253,6 @@ public class AsynchronousFileImpl implements AsynchronousFile
 		}
 	}
 	
-	
-	
 	private void checkOpened() 
 	{
 		if (!opened)
@@ -276,6 +260,9 @@ public class AsynchronousFileImpl implements AsynchronousFile
 			throw new RuntimeException("File is not opened");
 		}
 	}
+	
+	// Native
+	// ------------------------------------------------------------------------------------------
 	
 	/** 
 	 * I'm sending aioPackageClazz here, as you could have multiple classLoaders with the same class, and I don't want the hassle of doing classLoading in the Native layer
@@ -305,8 +292,27 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	// Should we make this method static?
 	public native ByteBuffer newBuffer(long size);
 	
+		
+	// Inner classes
+	// -----------------------------------------------------------------------------------------
 	
-	
-	
-	
+	private class PollerThread extends Thread
+   {
+      PollerThread ()
+      {
+         super("NativePoller for " + fileName);
+      }
+      public void run()
+      {
+         // informing caller that this thread already has the lock
+         try
+         {
+            pollEvents();
+         }
+         finally
+         {
+            pollerSemaphore.release();
+         }
+      }
+   }	
 }

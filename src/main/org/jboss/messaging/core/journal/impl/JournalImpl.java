@@ -66,6 +66,7 @@ import org.jboss.messaging.util.VariableLatch;
 public class JournalImpl implements TestableJournal
 {
 	private static final Logger log = Logger.getLogger(JournalImpl.class);
+	
 	private static final boolean trace = log.isTraceEnabled();
 	
 	private static final int STATE_STOPPED = 0;
@@ -160,10 +161,9 @@ public class JournalImpl implements TestableJournal
 
 	private final ConcurrentMap<Long, TransactionCallback> transactionCallbacks = new ConcurrentHashMap<Long, TransactionCallback>();
 	
-	private boolean shouldUseCallback = false;
+	private final boolean shouldUseCallback;
    
-	
-	
+		
 	/*
 	 * We use a semaphore rather than synchronized since it performs better when contended
 	 */
@@ -186,8 +186,8 @@ public class JournalImpl implements TestableJournal
 	private Reclaimer reclaimer = new Reclaimer();
 	
 	public JournalImpl(final int fileSize, final int minFiles,
-			final boolean sync, final SequentialFileFactory fileFactory, final long taskPeriod,
-			final String filePrefix, final String fileExtension, final int maxAIO)
+			             final boolean sync, final SequentialFileFactory fileFactory, final long taskPeriod,
+			             final String filePrefix, final String fileExtension, final int maxAIO)
 	{
 		if (fileSize < MIN_FILE_SIZE)
 		{
@@ -239,7 +239,7 @@ public class JournalImpl implements TestableJournal
 	
 	// Journal implementation ----------------------------------------------------------------
 
-	public void appendAddRecord(long id, byte recordType, EncodingSupport record) throws Exception
+	public void appendAddRecord(final long id, final byte recordType, final EncodingSupport record) throws Exception
    {
       if (state != STATE_LOADED)
       {
@@ -276,7 +276,7 @@ public class JournalImpl implements TestableJournal
       posFilesMap.put(id, new PosFiles(usedFile));
    }
 	
-	public void appendAddRecord(long id, byte recordType, byte[] record) throws Exception
+	public void appendAddRecord(final long id, final byte recordType, final byte[] record) throws Exception
 	{
 		if (state != STATE_LOADED)
 		{
@@ -296,9 +296,9 @@ public class JournalImpl implements TestableJournal
 		bb.rewind();
 		
 		JournalFile usedFile;
+		
       if (shouldUseCallback)
-      {
-         
+      {         
          SimpleCallback callback = new SimpleCallback();
          usedFile = appendRecord(bb, true, callback);
          callback.waitCompletion();
@@ -348,8 +348,7 @@ public class JournalImpl implements TestableJournal
       {
          usedFile = appendRecord(bb, true);
       }
-      
-		
+      		
 		posFiles.addUpdateFile(usedFile);
 	}
 	
@@ -1175,8 +1174,7 @@ public class JournalImpl implements TestableJournal
 	{
 		JournalFile[] files = new JournalFile[dataFiles.size()];
 		
-		reclaimer.scan(dataFiles.toArray(files));
-		
+		reclaimer.scan(dataFiles.toArray(files));		
 	}
 	
    public String debug() throws Exception
@@ -1197,8 +1195,7 @@ public class JournalImpl implements TestableJournal
       
       builder.append("CurrentFile:" + currentFile+ " posCounter = " + currentFile.getPosCount() + "\n");
       builder.append(((JournalFileImpl)currentFile).debug());
-      
-      
+            
       return builder.toString();
    }
 
@@ -1343,7 +1340,7 @@ public class JournalImpl implements TestableJournal
 	
 	// Private -----------------------------------------------------------------------------
 	
-	private JournalFile appendRecord(ByteBuffer bb, boolean sync) throws Exception
+	private JournalFile appendRecord(final ByteBuffer bb, final boolean sync) throws Exception
 	{
 		lock.acquire();
 		
@@ -1362,7 +1359,7 @@ public class JournalImpl implements TestableJournal
 		}
 	}
 	
-	private JournalFile appendRecord(ByteBuffer bb, boolean sync, IOCallback callback) throws Exception
+	private JournalFile appendRecord(final ByteBuffer bb, final boolean sync, final IOCallback callback) throws Exception
 	{
 		lock.acquire();
 		
@@ -1381,7 +1378,7 @@ public class JournalImpl implements TestableJournal
 		}
 	}
 	
-	private void repairFrom(int pos, JournalFile file) throws Exception
+	private void repairFrom(final int pos, final JournalFile file) throws Exception
 	{
 		log.warn("Corruption has been detected in file: " + file.getFile().getFileName() +
 				" in the record that starts at position " + pos + ". " + 
@@ -1444,12 +1441,12 @@ public class JournalImpl implements TestableJournal
 	}
 	
 	private void checkFile(final int size) throws Exception
-	{
-		
+	{		
 		if (size % currentFile.getFile().getAlignment() != 0)
 		{
 			throw new IllegalStateException("You can't write blocks in a size different than " + currentFile.getFile().getAlignment());
 		}
+		
 		//We take into account the first timestamp long
 		if (size > fileSize - currentFile.getFile().calculateBlockStart(SIZE_HEADER))
 		{
@@ -1488,7 +1485,7 @@ public class JournalImpl implements TestableJournal
 		return tx;
 	}
 	
-   private TransactionCallback getTransactionCallback(long transactionId)
+   private TransactionCallback getTransactionCallback(final long transactionId)
    {
       TransactionCallback callback = this.transactionCallbacks.get(transactionId);
       
@@ -1501,18 +1498,10 @@ public class JournalImpl implements TestableJournal
       return callback;
    }
    
-   private void removeTransactionCallback(long transactionId)
-   {
-      transactionCallbacks.remove(transactionId);
-   }
-   
-	
-	
 	// Inner classes ---------------------------------------------------------------------------
 
-   class SimpleCallback implements IOCallback
-   {
-      
+   private static class SimpleCallback implements IOCallback
+   {      
       String errorMessage;
       int errorCode;
       CountDownLatch latch = new CountDownLatch(1);
@@ -1522,12 +1511,11 @@ public class JournalImpl implements TestableJournal
          latch.countDown();
       }
 
-      public void onError(int errorCode, String errorMessage)
+      public void onError(final int errorCode, final String errorMessage)
       {
          this.errorMessage = errorMessage;
          this.errorCode = errorCode;
-         latch.countDown();
-         
+         latch.countDown();         
       }
       
       public void waitCompletion() throws InterruptedException 
@@ -1541,13 +1529,11 @@ public class JournalImpl implements TestableJournal
          {
             throw new IllegalStateException("Error on Transaction: " + errorCode + " - " + errorMessage);
          }
-     }
-      
+     }      
    }
    
-   class TransactionCallback implements IOCallback
-   {
-      
+   private static class TransactionCallback implements IOCallback
+   {      
       VariableLatch countLatch = new VariableLatch();
       
       String errorMessage = null;
@@ -1573,7 +1559,7 @@ public class JournalImpl implements TestableJournal
          }
       }
 
-      public void onError(int errorCode, String errorMessage)
+      public void onError(final int errorCode, final String errorMessage)
       {
          this.errorMessage = errorMessage;
          this.errorCode = errorCode;

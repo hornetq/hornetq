@@ -7,6 +7,7 @@
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.util.MessagingBuffer;
@@ -21,6 +22,9 @@ public class ProducerSendMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(ProducerSendMessage.class);
+
+   
    // Attributes ----------------------------------------------------
 
    private ClientMessage clientMessage;

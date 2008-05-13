@@ -258,13 +258,9 @@ public class MessageConsumerTest extends JMSTestCase
          MessageConsumer cons2 = sessConsume2.createConsumer(queue1);
    
          // this should cancel message and cause delivery to other consumer
-   
-         log.info("closing session");
-         
+      
          sessConsume1.close();
          
-         log.info("closed session");
-   
          TextMessage tm3 = (TextMessage)cons2.receive(1000);
    
          assertNotNull(tm3);
@@ -814,16 +810,10 @@ public class MessageConsumerTest extends JMSTestCase
 	      
 	      assertEquals("One", m.getText());
 	
-	      log.info("Closing consumer");
 	      queueConsumer.close();
-	      log.info("Closed consumer");
-	      
-	      log.info("Committing session");
+
 	      consumerSession.commit();
-	      log.info("Committed session");
-	      
-	      
-	
+
 	      // I expect that "Two" is still in the queue
 	
 	      MessageConsumer queueConsumer2 = consumerSession.createConsumer(queue1);
@@ -1463,7 +1453,6 @@ public class MessageConsumerTest extends JMSTestCase
 	                     failed = true;
 	                     break;
 	                  }
-	                  log.info("received message");
 	                  if (!m.getText().equals("testing"))
 	                  {
 	                     failed = true;
@@ -3987,11 +3976,8 @@ public class MessageConsumerTest extends JMSTestCase
          TextMessage tm = (TextMessage)m;
          count++;
 
-         log.info(this + " Got message:" + count);
-         
          try
-         {
-            log.info(this + " message:" + tm.getText());
+         {;
             if (count == 1)
             {
                if (!("a".equals(tm.getText())))
@@ -3999,12 +3985,10 @@ public class MessageConsumerTest extends JMSTestCase
                   failed("Should be a but was " + tm.getText());
                   latch.release();
                }
-               log.info("Throwing exception");
                throw new RuntimeException("Aardvark");
             }
             else if (count == 2)
             {
-               log.info("ack mode:" + sess.getAcknowledgeMode());
                if (sess.getAcknowledgeMode() == Session.AUTO_ACKNOWLEDGE || sess.getAcknowledgeMode() == Session.DUPS_OK_ACKNOWLEDGE)
                {
                   //Message should be immediately redelivered

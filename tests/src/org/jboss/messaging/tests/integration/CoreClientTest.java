@@ -85,6 +85,22 @@ public class CoreClientTest extends TestCase
       conn.close();
    }
    
+   public static void main(String[] args)
+   {
+      try
+      {
+         CoreClientTest test = new CoreClientTest();
+         
+         test.setUp();
+         test.testCoreClientPerf();
+         test.tearDown();
+      }
+      catch (Throwable t)
+      {
+         t.printStackTrace();
+      }
+   }
+   
    public void testCoreClientPerf() throws Exception
    {
       Location location = new LocationImpl(TransportType.TCP, "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
@@ -94,13 +110,20 @@ public class CoreClientTest extends TestCase
       
       ClientConnection conn = cf.createConnection();
       
-      ClientSession session = conn.createClientSession(false, true, false, -1, false, false);
+      final ClientSession session = conn.createClientSession(false, true, true, 1000, false, false);
       session.createQueue(QUEUE, QUEUE, null, false, false);
       
       ClientProducer producer = session.createProducer(QUEUE);
 
       ClientMessage message = new ClientMessageImpl(JBossTextMessage.TYPE, false, 0,
             System.currentTimeMillis(), (byte) 1);
+      
+      //byte[] bytes = new byte[1000];
+      
+      //message.getBody().putBytes(bytes);
+      
+      message.getBody().flip();
+      
       
       ClientConsumer consumer = session.createConsumer(QUEUE, null, false, false, true);
             
@@ -115,25 +138,51 @@ public class CoreClientTest extends TestCase
          public void onMessage(ClientMessage msg)
          {
             count++;
+            
+            try
+            {
+               session.acknowledge();
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
 
             if (count == numMessages)
             {
                latch.countDown();
-            }
+            }                        
          }            
       }
 
       consumer.setMessageHandler(new MyHandler());
+            
+      //System.out.println("Waiting 10 secs");
       
+     // Thread.sleep(10000);
       
+      System.out.println("Starting");
       
-      
-      
-      
+      //conn.start();
+                  
+      long start = System.currentTimeMillis();
+            
       for (int i = 0; i < numMessages; i++)
       {      
          producer.send(message);
       }
+      
+      long end = System.currentTimeMillis();
+      
+      double actualRate = 1000 * (double)numMessages / ( end - start);
+      
+      System.out.println("Rate is " + actualRate);
+      
+      conn.start();
+      
+      start = System.currentTimeMillis();
+      
+      latch.await();
       
 //      long end = System.currentTimeMillis();
 //
@@ -141,19 +190,18 @@ public class CoreClientTest extends TestCase
 //                  
 //      System.out.println("Rate is " + actualRate);
 
-      conn.start();
+      //conn.start();
       
-      long start = System.currentTimeMillis();
-      
+
       //start = System.currentTimeMillis();
 
-      latch.await();
       
-      long end = System.currentTimeMillis();
       
-      double actualRate = 1000 * (double)numMessages / ( end - start);
+      end = System.currentTimeMillis();
       
-      System.out.println("Rate is " + actualRate);
+      actualRate = 1000 * (double)numMessages / ( end - start);
+      
+      System.out.println(" consume Rate is " + actualRate);
       
 //      
 //      message = consumer.receive(1000);

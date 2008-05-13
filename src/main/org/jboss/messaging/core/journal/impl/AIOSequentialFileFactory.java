@@ -12,15 +12,21 @@ import java.nio.ByteBuffer;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 
+/**
+ * 
+ * A AIOSequentialFileFactory
+ * 
+ * @author clebert.suconic@jboss.com
+ *
+ */
 public class AIOSequentialFileFactory extends AbstractSequentialFactory
-{
-	
-	public AIOSequentialFileFactory(String journalDir)
+{	
+	public AIOSequentialFileFactory(final String journalDir)
 	{
 		super(journalDir);
 	}
 	
-	public SequentialFile createSequentialFile(String fileName, boolean sync, int maxIO) throws Exception
+	public SequentialFile createSequentialFile(final String fileName, final boolean sync, final int maxIO) throws Exception
 	{
 		return new AIOSequentialFile(journalDir, fileName, maxIO);
 	}
@@ -45,11 +51,10 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
    }
    
    // For tests only
-   public ByteBuffer wrapBuffer(byte[] bytes)
+   public ByteBuffer wrapBuffer(final byte[] bytes)
    {
       ByteBuffer newbuffer = newBuffer(bytes.length);
       newbuffer.put(bytes);
       return newbuffer;
    };
-   
-}
+   }

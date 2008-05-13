@@ -9,15 +9,13 @@ package org.jboss.messaging.core.asyncio;
 
 import java.nio.ByteBuffer;
 
-
 /**
  * 
  * @author clebert.suconic@jboss.com
  *
  */
 public interface AsynchronousFile
-{
-	
+{	
 	void close() throws Exception;
 	
 	/**
