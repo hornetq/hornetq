@@ -74,7 +74,7 @@ public class SSLClient
                System.currentTimeMillis(), (byte) 1);
          message.getBody().putString("Hello!");
          clientProducer.send(message);
-         ClientConsumer clientConsumer = clientSession.createConsumer(queue, null, false, false, false);
+         ClientConsumer clientConsumer = clientSession.createConsumer(queue, null, false, false);
          clientConnection.start();
          Message msg = clientConsumer.receive(5000);
          System.out.println("msg.getPayload() = " + msg.getBody().getString());
