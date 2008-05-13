@@ -122,6 +122,8 @@
 
          <journal-task-period>5000</journal-task-period>
 
+         <security-enabled>true</security-enabled>
+
       </configuration>
 
    </deployment>
@@ -228,6 +230,10 @@
          <listitem>
             <para>journal-task-period</para>
             <para>How frequently to reclaim unused journal data files, in milliseconds.</para>
+         </listitem>
+         <listitem>
+            <para>security-enabled</para>
+            <para>Whether security is enabled, if false no security checks are made.</para>
          </listitem>
       </itemizedlist>
    </section>
