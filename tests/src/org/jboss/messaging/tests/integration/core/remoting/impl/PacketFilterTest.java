@@ -188,7 +188,7 @@ public class PacketFilterTest  extends TestCase
          message.getBody().putString(msg);
          producer.send(message);
          
-         ClientConsumer consumer = session.createConsumer(QUEUE1, null, false, false, true);
+         ClientConsumer consumer = session.createConsumer(QUEUE1);
          Message m = consumer.receive(100000);
          assertEquals(m.getProperty(new SimpleString("DummyInterceptor")), new SimpleString("was here"));
          

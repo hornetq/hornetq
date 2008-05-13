@@ -109,7 +109,7 @@ public class ClientExitTest extends TestCase
       connection = cf.createConnection(null, null);
       ClientSession session = connection.createClientSession(false, true, true, -1, false, false);
       session.createQueue(QUEUE, QUEUE, null, false, false);
-      consumer = session.createConsumer(QUEUE, null, false, false, true);
+      consumer = session.createConsumer(QUEUE);
       connection.start();
    }
 

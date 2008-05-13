@@ -35,7 +35,9 @@ public interface ClientSession extends XAResource
    SessionBindingQueryResponseMessage bindingQuery(SimpleString address) throws MessagingException;
    
    ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean noLocal,
-                                 boolean autoDeleteQueue, boolean direct) throws MessagingException;
+                                 boolean autoDeleteQueue) throws MessagingException;
+   
+   ClientConsumer createConsumer(SimpleString queueName) throws MessagingException;
    
    ClientBrowser createBrowser(SimpleString queueName, SimpleString filterString) throws MessagingException;
    

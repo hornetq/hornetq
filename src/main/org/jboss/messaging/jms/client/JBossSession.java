@@ -487,7 +487,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
                throw new InvalidDestinationException("Queue " + dest.getName() + " does not exist");
             }
             
-            consumer = session.createConsumer(dest.getSimpleAddress(), coreFilterString, noLocal, false, false);
+            consumer = session.createConsumer(dest.getSimpleAddress(), coreFilterString, noLocal, false);
          }
          else
          {
@@ -508,7 +508,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
                
                session.createQueue(dest.getSimpleAddress(), queueName, coreFilterString, false, false);
                
-               consumer = session.createConsumer(queueName, null, noLocal, true, false);
+               consumer = session.createConsumer(queueName, null, noLocal, true);
             }
             else
             {
@@ -570,7 +570,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
                   }                          
                }
                
-               consumer = session.createConsumer(queueName, null, noLocal, false, false);
+               consumer = session.createConsumer(queueName, null, noLocal, false);
             }         
          }
          

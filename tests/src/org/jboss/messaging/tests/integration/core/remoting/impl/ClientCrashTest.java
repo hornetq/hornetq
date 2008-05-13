@@ -108,7 +108,7 @@ public class ClientCrashTest extends TestCase
          ClientSession session = connection.createClientSession(false, true,
                true, -1, false, false);
          session.createQueue(QUEUE, QUEUE, null, false, false);
-         ClientConsumer consumer = session.createConsumer(QUEUE, null, false, false, true);
+         ClientConsumer consumer = session.createConsumer(QUEUE);
          ClientProducer producer = session.createProducer(QUEUE);
 
          connection.start();

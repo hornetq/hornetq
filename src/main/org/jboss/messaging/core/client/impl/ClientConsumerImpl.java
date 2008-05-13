@@ -67,9 +67,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private final ExecutorService sessionExecutor;
    
    private final RemotingConnection remotingConnection;
-   
-   private final boolean direct;
-   
+
    private final int tokenBatchSize;
    
    private final PriorityLinkedList<ClientMessage> buffer = new PriorityLinkedListImpl<ClientMessage>(10);
@@ -102,7 +100,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                              final long clientTargetID,
                              final ExecutorService sessionExecutor,
                              final RemotingConnection remotingConnection,
-                             final boolean direct, final int tokenBatchSize)
+                             final int tokenBatchSize)
    {
       this.targetID = targetID;
       
@@ -113,8 +111,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       this.sessionExecutor = sessionExecutor;
       
       this.remotingConnection = remotingConnection;
-      
-      this.direct = direct;
       
       this.tokenBatchSize = tokenBatchSize;
    }
@@ -313,7 +309,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       
       if (handler != null)
       {
-         if (direct)
+         //TODO
+         if (true)
          {
             //Dispatch it directly on remoting thread
             

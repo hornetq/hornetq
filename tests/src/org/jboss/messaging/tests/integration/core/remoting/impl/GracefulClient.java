@@ -66,7 +66,7 @@ public class GracefulClient
          ClientConnection conn = cf.createConnection(null, null);
          ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
          ClientProducer producer = session.createProducer(QUEUE);
-         ClientConsumer consumer = session.createConsumer(QUEUE, null, false, false, true);
+         ClientConsumer consumer = session.createConsumer(QUEUE);
 
          ClientMessage message = new ClientMessageImpl(JBossTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);

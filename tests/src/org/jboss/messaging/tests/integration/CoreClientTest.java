@@ -75,7 +75,7 @@ public class CoreClientTest extends TestCase
       message.getBody().putString("testINVMCoreClient");
       producer.send(message);
 
-      ClientConsumer consumer = session.createConsumer(QUEUE, null, false, false, true);
+      ClientConsumer consumer = session.createConsumer(QUEUE);
       conn.start();
       
       message = consumer.receive(1000);
@@ -125,7 +125,7 @@ public class CoreClientTest extends TestCase
       message.getBody().flip();
       
       
-      ClientConsumer consumer = session.createConsumer(QUEUE, null, false, false, true);
+      ClientConsumer consumer = session.createConsumer(QUEUE);
             
       final CountDownLatch latch = new CountDownLatch(1);
       
@@ -163,7 +163,7 @@ public class CoreClientTest extends TestCase
       
       System.out.println("Starting");
       
-      //conn.start();
+      conn.start();
                   
       long start = System.currentTimeMillis();
             
@@ -172,15 +172,15 @@ public class CoreClientTest extends TestCase
          producer.send(message);
       }
       
-      long end = System.currentTimeMillis();
+//      long end = System.currentTimeMillis();
+//      
+//      double actualRate = 1000 * (double)numMessages / ( end - start);
       
-      double actualRate = 1000 * (double)numMessages / ( end - start);
+   //   System.out.println("Rate is " + actualRate);
       
-      System.out.println("Rate is " + actualRate);
+   //   conn.start();
       
-      conn.start();
-      
-      start = System.currentTimeMillis();
+     // start = System.currentTimeMillis();
       
       latch.await();
       
@@ -197,9 +197,9 @@ public class CoreClientTest extends TestCase
 
       
       
-      end = System.currentTimeMillis();
+      long end = System.currentTimeMillis();
       
-      actualRate = 1000 * (double)numMessages / ( end - start);
+      double actualRate = 1000 * (double)numMessages / ( end - start);
       
       System.out.println(" consume Rate is " + actualRate);
       

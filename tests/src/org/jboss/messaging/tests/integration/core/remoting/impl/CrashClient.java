@@ -78,7 +78,7 @@ public class CrashClient
          ClientConnection conn = cf.createConnection();
          ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
          ClientProducer producer = session.createProducer(QUEUE);
-         ClientConsumer consumer = session.createConsumer(QUEUE, null, false, false, true);
+         ClientConsumer consumer = session.createConsumer(QUEUE);
 
          if (numberOfConnections > 1)
          {
