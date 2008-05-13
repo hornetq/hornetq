@@ -20,7 +20,6 @@
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
 
-
 package org.jboss.messaging.tests.unit.core.journal.impl;
 
 import java.io.File;
@@ -28,7 +27,6 @@ import java.io.File;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
-
 
 /**
  * 

@@ -155,9 +155,9 @@ public class JournalImpl implements TestableJournal
 	
 	private final Queue<JournalFile> freeFiles = new ConcurrentLinkedQueue<JournalFile>();
 	
-	private Map<Long, PosFiles> posFilesMap = new ConcurrentHashMap<Long, PosFiles>();
+	private final Map<Long, PosFiles> posFilesMap = new ConcurrentHashMap<Long, PosFiles>();
 	
-	private Map<Long, TransactionNegPos> transactionInfos = new ConcurrentHashMap<Long, TransactionNegPos>();
+	private final Map<Long, TransactionNegPos> transactionInfos = new ConcurrentHashMap<Long, TransactionNegPos>();
 
 	private final ConcurrentMap<Long, TransactionCallback> transactionCallbacks = new ConcurrentHashMap<Long, TransactionCallback>();
 	
