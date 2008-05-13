@@ -131,72 +131,103 @@
       <itemizedlist>
          <listitem>
             <para>strict-tck</para>
+            <para>Whether or not this server should adhere to strick tck</para>
          </listitem>
          <listitem>
             <para>clustered</para>
+            <para>Whether or not this server is clustered, currently disabled</para>
          </listitem>
          <listitem>
             <para>scheduled-executor-max-pool-size</para>
+            <para>The maximum number of threads available for scheduling delivery of scheduled messages</para>
          </listitem>
          <listitem>
             <para>require-destinations</para>
+            <para>Whether or not a destination needs to pre-exist when delivering a message</para>
          </listitem>
          <listitem>
             <para>remoting-transport</para>
+            <para>Type of transport to use, currently there is only TCP</para>
          </listitem>
          <listitem>
             <para>remoting-bind-address</para>
+            <para>The port that JBM will bind to.</para>
          </listitem>
          <listitem>
             <para>remoting-host</para>
+            <para>The name of the host that JBM will bind to</para>
          </listitem>
          <listitem>
             <para>remoting-timeout</para>
+            <para>The timeout setting for both client and server connections</para>
          </listitem>
          <listitem>
             <para>remoting-disable-invm</para>
+            <para>not used at present</para>
          </listitem>
          <listitem>
             <para>remoting-tcp-nodelay</para>
+            <para>Sets the TCP nodelay setting when a TCP transport is used</para>
          </listitem>
          <listitem>
             <para>remoting-tcp-receive-buffer-size</para>
+            <para>sets the TCP receive buffer size, -1 will set it to the value that the OS hints at to use. This is
+               only used when TCP transport is configured</para>
          </listitem>
          <listitem>
             <para>remoting-tcp-send-buffer-size</para>
+            <para>sets the TCP send buffer size, -1 will set it to the value that the OS hints at to use. This is
+               only used when TCP transport is configured</para>
+         </listitem>
+         <listitem>
+            <para>remoting-enable-ssl</para>
+            <para>Whether SSL is enabled for this server. If this is true then next 4 SSL properties need to be set</para>
          </listitem>
          <listitem>
             <para>remoting-ssl-keystore-path>messaging.keystore</para>
+            <para>The location of the SSL keystore</para>
          </listitem>
          <listitem>
             <para>remoting-ssl-keystore-password</para>
+            <para>The password for the SSL keystore</para>
          </listitem>
          <listitem>
             <para>remoting-ssl-truststore-path</para>
+            <para>The location of the SSL truststore</para>
          </listitem>
          <listitem>
             <para>remoting-ssl-truststore-password</para>
+            <para>The password for the truststore</para>
          </listitem>
          <listitem>
             <para>bindings-directory</para>
+            <para>The directory to create the bindings persistence files in.</para>
          </listitem>
          <listitem>
             <para>create-bindings-dir</para>
+            <para>Whether to create the bindings directory if it doesnt exist.</para>
          </listitem>
          <listitem>
             <para>journal-type</para>
+            <para>The type of journal to use, valid configurations are 'asyncio','nio' and 'jdbc'. refere to the
+            'The journal based persistence approach' chapter for more detailed information</para>
          </listitem>
          <listitem>
             <para>journal-sync</para>
+            <para>Whether or not to allow the synch to disk on commit and rollback. false will only write to the OS buffers
+            and lets the OS deal with synching</para>
          </listitem>
          <listitem>
             <para>journal-file-size</para>
+            <para>The size of the data file to create, these files are pre-allocated and filled as needed.</para>
          </listitem>
          <listitem>
             <para>journal-min-files</para>
+            <para>Minimum number of created files to start with</para>
          </listitem>
          <listitem>
             <para>journal-task-period</para>
+            <para>How frequently to reclaim unused journal data files, in milliseconds.</para>
          </listitem>
       </itemizedlist>
    </section>
@@ -611,5 +642,206 @@
             </itemizedlist>
          </listitem>
       </itemizedlist>
+   </section>
+   <section id="configuration.beans">
+      <title>The beans deployment file</title>
+      <para>This beans deployment file, usually <literal>jbm-beans.xml</literal> or <literal>jbm-standalone-beans.xml</literal>,
+         is used by the JBoss Microcontainer to bootstrap all the components needed to run a JBoss Messaging Server. For
+         full documentation on the MicroContainer go to <ulink url="http://www.jboss.org/jbossmc/">http://www.jboss.org/jbossmc/</ulink>.
+         For the purposes of configuring JBM it is sufficient to know that the implementation details of pluggable
+         components are configured here.
+      </para>
+      <para>The following explains each component in more detail</para>
+      <itemizedlist>
+         <listitem>
+            <para>The naming Service</para>
+            <para>This is only found in the standalone version of the beans file. When running within the App Server this
+               is not needed since it is available as its own service. This also where you can change the ports used.</para>
+            <para>It is possible to replace this with any Naming Service however only the Jboss naming provider has been tested.
+            If you do provide your own implementation remember to edit the file jndi.properties</para>
+            <programlisting>
+               <![CDATA[
+   <bean name="Naming" class="org.jnp.server.NamingBeanImpl"/>
+
+   <bean name="Main" class="org.jnp.server.Main">
+      <property name="namingInfo"><inject bean="Naming"/> </property>
+      <property name="port">1099</property>
+      <property name="bindAddress"><inject bean="Configuration" property="host"/></property>
+      <property name="rmiPort">1098</property>
+      <property name="rmiBindAddress"><inject bean="Configuration" property="host"/></property>
+   </bean>
+               ]]>
+            </programlisting>
+         </listitem>
+         <listitem>
+            <para>The Configuration component</para>
+            <programlisting>
+               <![CDATA[
+      <bean name="Configuration"
+         class="org.jboss.messaging.core.config.impl.FileConfiguration"/>
+               ]]>
+            </programlisting>
+            <para>The Configuration component is used to configure the JBM Server and transports. The default implementation,
+            <literal>FileConfiguration</literal> reads in the configuration from the file <literal>jbm-configuration.xml</literal>.
+             To replace this component your class must implement following interface: </para>
+            <programlisting>org.jboss.messaging.core.config.Configuration</programlisting>
+         </listitem>
+         <listitem>
+            <para>The Security Manager</para>
+            <para>There are 2 Security Manager implementations available to use. In standalone the default is the following</para>
+            <programlisting>
+               <![CDATA[
+   <bean name="JBMSecurityManager"
+      class="org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl">
+      <constructor>
+         <parameter>false</parameter>
+      </constructor>
+   </bean>
+               ]]>
+            </programlisting>
+            <para>This uses a simple security manager that also needs the following bean deployed which will read the security
+            configuration from the file <literal>jbm-security.xml</literal></para>
+            <programlisting>
+               <![CDATA[
+   <bean name="SecurityManagerDeployer"
+      class="org.jboss.messaging.core.deployers.impl.SecurityManagerDeployer">
+      <property name="jbmSecurityManager">
+         <inject bean="JBMSecurityManager"/>
+      </property>
+      <property name="messagingServer">
+         <inject bean="MessagingServer"/>
+      </property>
+   </bean>
+               ]]>
+            </programlisting>
+            <para>The second is used when deployed in the Jboss App Server and will make use of JAAS:</para>
+            <programlisting>
+               <![CDATA[
+      <bean name="JBMSecurityManager"
+      class="org.jboss.messaging.core.security.impl.JAASSecurityManager"/>
+               ]]>
+            </programlisting>
+            <para>To replace the Security Manager implement the following interface:</para>
+            <programlisting>org.jboss.messaging.core.security.JBMSecurityManager</programlisting>
+         </listitem>
+         <listitem>
+            <para>Messaging Server Management</para>
+            <para>This exposes Server management operations via JMX. This can be removed if this functionality is not needed</para>
+            <programlisting>
+               <![CDATA[
+   <bean name="MessagingServerManagement"
+   class="org.jboss.messaging.core.management.impl.MessagingServerManagementImpl">
+      <annotation>
+         @org.jboss.aop.microcontainer.aspects.jmx.JMX(
+         name="jboss.messaging:service=MessagingServerManagement",
+         exposedInterface=org.jboss.messaging.core.management.MessagingServerManagement.class
+         )</annotation>
+      <property name="messagingServer">
+         <inject bean="MessagingServer"/>
+      </property>
+   </bean>
+               ]]>
+            </programlisting>
+         </listitem>
+         <listitem>
+            <para>The Messaging Server</para>
+            <para>This must never be changed as it is the core messaging server</para>
+            <programlisting>
+               <![CDATA[
+   <bean name="MessagingServer"
+   class="org.jboss.messaging.core.server.impl.MessagingServerImpl">
+      <property name="storageManager">
+         <inject bean="StorageManager"/>
+      </property>
+      <property name="remotingService">
+         <inject bean="RemotingService"/>
+      </property>
+      <property name="configuration">
+         <inject bean="Configuration"/>
+      </property>
+      <property name="securityManager">
+         <inject bean="JBMSecurityManager"/>
+      </property>
+   </bean>
+               ]]>
+            </programlisting>
+         </listitem>
+         <listitem>
+            <para>The Storage Manager</para>
+            <para>The Storage manager deals with the persistence of messages and bindings. For more information on this
+            refer to the chapter 'The journal based persistence approach'.</para>
+            <programlisting>
+               <![CDATA[
+   <bean name="StorageManager"
+      class="org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager">
+      <constructor>
+         <parameter>
+            <inject bean="Configuration"/>
+         </parameter>
+      </constructor>
+   </bean>
+               ]]>
+            </programlisting>
+            <para>To replace this pluggable component implement the following interface:</para>
+            <programlisting>org.jboss.messaging.core.persistence.StorageManager</programlisting>
+         </listitem>
+         <listitem>
+            <para>The Remoting Service</para>
+            <para>The Remoting Service is the transport used by the JBM server</para>
+            <programlisting>
+               <![CDATA[
+   <bean name="RemotingService"
+      class="org.jboss.messaging.core.remoting.impl.mina.MinaService">
+      <constructor>
+         <parameter>
+            <inject bean="Configuration"/>
+         </parameter>
+      </constructor>
+   </bean>
+               ]]>
+            </programlisting>
+            <para>To replace this pluggable component implement the following interface:</para>
+            <programlisting>org.jboss.messaging.core.remoting.RemotingService</programlisting>
+         </listitem>
+         <listitem>
+            <para>The JMS Server Manager</para>
+            <para>The JMS Server Manager exposes JMS operations via JMX. This can be removed if not needed.</para>
+            <programlisting>
+               <![CDATA[
+   <bean name="JMSServerManager"
+   class="org.jboss.messaging.jms.server.impl.JMSServerManagerImpl">
+      <annotation>
+         @org.jboss.aop.microcontainer.aspects.jmx.JMX(
+            name="jboss.messaging:service=JMSServerManager",
+            exposedInterface=org.jboss.messaging.jms.server.JMSServerManager.class)
+            </annotation>
+      <property name="messagingServerManagement">
+         <inject bean="MessagingServerManagement"/>
+      </property>
+   </bean>
+               ]]>
+            </programlisting>
+         </listitem>
+         <listitem>
+            <para>The JMS Server Deployer</para>
+            <para>The JMS Server Deployer takes care of deploying Destinations and Connection Factories into JNDi via the
+               file <literal>jbm-jndi.xml</literal>. This can be removed if no objects are needed in JNDI or if only core
+               messaging is being used.</para>
+            <programlisting>
+               <![CDATA[
+   <bean name="JMSServerDeployer"
+   class="org.jboss.messaging.jms.server.impl.JMSServerDeployer">
+      <property name="jmsServerManager">
+         <inject bean="JMSServerManager"/>
+      </property>
+      <property name="messagingServer">
+         <inject bean="MessagingServer"/>
+      </property>
+   </bean>
+               ]]>
+            </programlisting>
+         </listitem>
+      </itemizedlist>
+      
    </section>
 </chapter>
