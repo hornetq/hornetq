@@ -56,7 +56,7 @@ public class SessionXAGetInDoubtXidsResponseMessage extends EmptyPacket
 
       for (Xid xid: xids)
       {
-         encodeXid(xid, buffer);
+         XidCodecSupport.encodeXid(xid, buffer);
       }    
    }
    
@@ -66,7 +66,7 @@ public class SessionXAGetInDoubtXidsResponseMessage extends EmptyPacket
       xids = new ArrayList<Xid>(len);      
       for (int i = 0; i < len; i++)
       {
-         Xid xid = decodeXid(buffer);
+         Xid xid = XidCodecSupport.decodeXid(buffer);
          
          xids.add(xid);
       }      

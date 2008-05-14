@@ -6,11 +6,9 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.util.DataConstants;
 import org.jboss.messaging.util.MessagingBuffer;
 
@@ -110,8 +108,6 @@ public class EmptyPacket implements Packet
 
    // Static --------------------------------------------------------
 
-   // Constructors --------------------------------------------------
-
    public EmptyPacket(final byte type)
    {
       this.type = type;
@@ -197,6 +193,12 @@ public class EmptyPacket implements Packet
    {      
    }
 
+   @Override
+   public String toString()
+   {
+      return getParentString() + "]";
+   }
+   
    // Package protected ---------------------------------------------
 
    protected String getParentString()
@@ -204,26 +206,6 @@ public class EmptyPacket implements Packet
       return "PACKET[type=" + type
       + ", responseTargetID=" + responseTargetID + ", targetID=" + targetID
       + ", executorID=" + executorID;
-   }
-   
-   protected void encodeXid(final Xid xid, final MessagingBuffer out)
-   {
-      out.putInt(xid.getFormatId());
-      out.putInt(xid.getBranchQualifier().length);
-      out.putBytes(xid.getBranchQualifier());
-      out.putInt(xid.getGlobalTransactionId().length);
-      out.putBytes(xid.getGlobalTransactionId());
-   }
-   
-   protected Xid decodeXid(final MessagingBuffer in)
-   {
-      int formatID = in.getInt();
-      byte[] bq = new byte[in.getInt()];
-      in.getBytes(bq);
-      byte[] gtxid = new byte[in.getInt()];
-      in.getBytes(gtxid);      
-      Xid xid = new XidImpl(bq, formatID, gtxid);      
-      return xid;
    }
 
    // Protected -----------------------------------------------------

@@ -49,12 +49,12 @@ public class SessionXAStartMessage extends EmptyPacket
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      encodeXid(xid, buffer);
+      XidCodecSupport.encodeXid(xid, buffer);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      xid = decodeXid(buffer);
+      xid = XidCodecSupport.decodeXid(buffer);
    }
    
 

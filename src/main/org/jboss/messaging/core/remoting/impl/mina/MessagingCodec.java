@@ -124,7 +124,7 @@ public class MessagingCodec extends CumulativeProtocolDecoder
    // CumulativeProtocolDecoder overrides
    // -------------------------------------------------------------------------------------
 
-   protected boolean doDecode(final IoSession session, final IoBuffer in, final ProtocolDecoderOutput out) throws Exception
+   public boolean doDecode(final IoSession session, final IoBuffer in, final ProtocolDecoderOutput out) throws Exception
    {
       int start = in.position();
 

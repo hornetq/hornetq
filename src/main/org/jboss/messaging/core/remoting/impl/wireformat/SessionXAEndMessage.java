@@ -58,14 +58,20 @@ public class SessionXAEndMessage extends EmptyPacket
    
    public void encodeBody(final MessagingBuffer buffer)
    {
+      XidCodecSupport.encodeXid(xid, buffer);
       buffer.putBoolean(failed);
-      encodeXid(xid, buffer);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
+      xid = XidCodecSupport.decodeXid(buffer);
       failed = buffer.getBoolean();
-      xid = decodeXid(buffer);
+   }
+
+   @Override
+   public String toString()
+   {
+      return getParentString() + ", xid=" + xid + ", failed=" + failed + "]";
    }
 
    // Package protected ---------------------------------------------

@@ -57,20 +57,20 @@ public class SessionXACommitMessage extends EmptyPacket
    
    public void encodeBody(final MessagingBuffer buffer)
    {
+      XidCodecSupport.encodeXid(xid, buffer);
       buffer.putBoolean(onePhase);
-      encodeXid(xid, buffer);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
+      xid = XidCodecSupport.decodeXid(buffer);
       onePhase = buffer.getBoolean();
-      xid = decodeXid(buffer);
    }
 
    @Override
    public String toString()
    {
-      return getParentString() + ", xid=" + xid + ", onePhae=" + onePhase + "]";
+      return getParentString() + ", xid=" + xid + ", onePhase=" + onePhase + "]";
    }
    
    // Package protected ---------------------------------------------
