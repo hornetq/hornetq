@@ -116,6 +116,7 @@ public abstract class SessionTestBase extends TestCase
       TextPacket packet = new TextPacket(
             "testClientHandlePacketSentByServer from client");
       packet.setTargetID(serverPacketHandler.getID());
+      packet.setResponseTargetID(serverPacketHandler.getID());
       // send a packet to create a sender when the server
       // handles the packet
       session.write(packet);

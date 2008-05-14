@@ -24,11 +24,9 @@ package org.jboss.messaging.tests.integration.core.remoting.ssl;
 import static java.lang.Boolean.FALSE;
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
-import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.*;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
@@ -128,8 +126,13 @@ public class CoreClientOverSSLTest extends TestCase
 
       server = new MessagingServerImpl(config);
       server.start();
-
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(config.getLocation());
+      ConnectionParams connectionParams = new ConnectionParamsImpl();
+      connectionParams.setSSLEnabled(true);
+      connectionParams.setKeyStorePath("messaging.keystore");
+      connectionParams.setKeyStorePassword("secureexample");
+      connectionParams.setTrustStorePath("messaging.truststore");
+      connectionParams.setTrustStorePassword("secureexample");
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(config.getLocation(), connectionParams);
       connection = cf.createConnection(null, null);
       ClientSession session = connection.createClientSession(false, true, true, -1, false, false);
       session.createQueue(QUEUE, QUEUE, null, false, false);
