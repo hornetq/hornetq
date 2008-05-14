@@ -10,7 +10,6 @@ import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGIS
 import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addKeepAliveFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addSSLFilter;
 
 import java.net.InetSocketAddress;
@@ -128,6 +127,9 @@ public class MinaService implements RemotingService, CleanUpNotifier
             && acceptor == null)
       {
          acceptor = new NioSocketAcceptor();
+         
+         acceptor.setSessionDataStructureFactory(new MessagingIOSessionDataStructureFactory());
+         
          DefaultIoFilterChainBuilder filterChain = acceptor.getFilterChain();
 
          // addMDCFilter(filterChain);
@@ -139,9 +141,6 @@ public class MinaService implements RemotingService, CleanUpNotifier
                         .getTrustStorePassword());
          }
          addCodecFilter(filterChain);
-         // addLoggingFilter(filterChain);
-         addKeepAliveFilter(filterChain, factory,
-               config.getKeepAliveInterval(), config.getKeepAliveTimeout(), this);
 
          // Bind
          acceptor.setDefaultLocalAddress(new InetSocketAddress(config.getHost(), config.getPort()));
@@ -258,7 +257,8 @@ public class MinaService implements RemotingService, CleanUpNotifier
 
    // Inner classes -------------------------------------------------
 
-   private final class MinaSessionListener implements IoServiceListener {
+   private final class MinaSessionListener implements IoServiceListener
+   {
 
       public void serviceActivated(IoService service)
       {

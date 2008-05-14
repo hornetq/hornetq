@@ -271,6 +271,11 @@ public class ConfigurationImpl implements Configuration, Serializable
       this.invmDisabledModified = true;
    }
    
+   public void setSecurityEnabled(final boolean enabled)
+   {
+      this.securityEnabled = enabled;
+   }
+   
    public boolean isSSLEnabled()
    {
       if (System.getProperty(REMOTING_ENABLE_SSL_SYSPROP_KEY) != null && !sslEnabledModified)

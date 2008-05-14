@@ -49,7 +49,9 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
 {
    // Constants -----------------------------------------------------
 
-   private final Logger log = Logger.getLogger(MinaConnector.class);
+   private static final Logger log = Logger.getLogger(MinaConnector.class);
+   
+   private static boolean trace = log.isTraceEnabled();
    
    // Attributes ----------------------------------------------------
 
@@ -67,6 +69,8 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
 
    private List<RemotingSessionListener> listeners = new ArrayList<RemotingSessionListener>();
    private IoServiceListenerAdapter ioListener;
+   
+   private MinaHandler handler;
 
    // Static --------------------------------------------------------
 
@@ -103,6 +107,8 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
 
       this.connector = new NioSocketConnector();
       DefaultIoFilterChainBuilder filterChain = connector.getFilterChain();
+      
+      connector.setSessionDataStructureFactory(new MessagingIOSessionDataStructureFactory());
 
       // addMDCFilter(filterChain);
       if (connectionParams.isSSLEnabled())
@@ -118,9 +124,8 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
          }
       }
       addCodecFilter(filterChain);
-      // addLoggingFilter(filterChain);
-      addKeepAliveFilter(filterChain, keepAliveFactory, connectionParams.getKeepAliveInterval(),
-            connectionParams.getKeepAliveTimeout(), this);
+//      addKeepAliveFilter(filterChain, keepAliveFactory, connectionParams.getKeepAliveInterval(),
+//            connectionParams.getKeepAliveTimeout(), this);
       connector.getSessionConfig().setTcpNoDelay(connectionParams.isTcpNoDelay());
       int receiveBufferSize = connectionParams.getTcpReceiveBufferSize();
       if (receiveBufferSize != -1)
@@ -142,27 +147,28 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
    {
       if (session != null && session.isConnected())
       {
-         return new MinaSession(session);
+         return new MinaSession(session, handler);
       }
       
       threadPool = Executors.newCachedThreadPool();
-      connector.setHandler(new MinaHandler(dispatcher, threadPool, this, false));
+      handler = new MinaHandler(dispatcher, threadPool, this, false);
+      connector.setHandler(handler);
       InetSocketAddress address = new InetSocketAddress(location.getHost(), location.getPort());
       ConnectFuture future = connector.connect(address);
       connector.setDefaultRemoteAddress(address);
       ioListener = new IoServiceListenerAdapter();
       connector.addListener(ioListener);
-
+      
       future.awaitUninterruptibly();
       if (!future.isConnected())
       {
          throw new IOException("Cannot connect to " + address.toString());
       }
       this.session = future.getSession();
-      Packet packet = new Ping(session.getId());
-      session.write(packet);
+//      Packet packet = new Ping(session.getId());
+//      session.write(packet);
       
-      return new MinaSession(session);
+      return new MinaSession(session, handler);
    }
 
    public boolean disconnect()
@@ -208,7 +214,7 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
 
       listeners.add(listener);
 
-      if (log.isTraceEnabled())
+      if (trace)
          log.trace("added listener " + listener + " to " + this);
    }
 
@@ -219,7 +225,7 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
 
       listeners.remove(listener);
 
-      if (log.isTraceEnabled())
+      if (trace)
          log.trace("removed listener " + listener + " from " + this);
    }
 
@@ -269,25 +275,25 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
 
       public void serviceActivated(IoService service)
       {
-         if (log.isTraceEnabled())
+         if (trace)
             log.trace("activated " + service);
       }
 
       public void serviceDeactivated(IoService service)
       {
-         if (log.isTraceEnabled())
+         if (trace)
             log.trace("deactivated " + service);
       }
 
       public void serviceIdle(IoService service, IdleStatus idleStatus)
       {
-         if (log.isTraceEnabled())
+         if (trace)
             log.trace("idle " + service + ", status=" + idleStatus);
       }
 
       public void sessionCreated(IoSession session)
       {
-         if (log.isTraceEnabled())
+         if (trace)
             log.trace("created session " + session);
       }
 

@@ -43,6 +43,7 @@ public class CoreClientTest extends TestCase
       super.setUp();
 
       conf = new ConfigurationImpl();
+      conf.setSecurityEnabled(false);
       conf.setTransport(TransportType.TCP);
       conf.setHost("localhost");      
       server = new MessagingServerImpl(conf);
@@ -56,34 +57,34 @@ public class CoreClientTest extends TestCase
       
       super.tearDown();
    }
-   
-   
-   public void testCoreClient() throws Exception
-   {
-      Location location = new LocationImpl(TransportType.TCP, "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
-            
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location);
-      ClientConnection conn = cf.createConnection();
-      
-      ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
-      session.createQueue(QUEUE, QUEUE, null, false, false);
-      
-      ClientProducer producer = session.createProducer(QUEUE);
-
-      ClientMessage message = new ClientMessageImpl(JBossTextMessage.TYPE, false, 0,
-            System.currentTimeMillis(), (byte) 1);
-      message.getBody().putString("testINVMCoreClient");
-      producer.send(message);
-
-      ClientConsumer consumer = session.createConsumer(QUEUE);
-      conn.start();
-      
-      message = consumer.receive(1000);
-      
-      assertEquals("testINVMCoreClient", message.getBody().getString());
-      
-      conn.close();
-   }
+//   
+//   
+//   public void testCoreClient() throws Exception
+//   {
+//      Location location = new LocationImpl(TransportType.TCP, "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
+//            
+//      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location);
+//      ClientConnection conn = cf.createConnection();
+//      
+//      ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
+//      session.createQueue(QUEUE, QUEUE, null, false, false);
+//      
+//      ClientProducer producer = session.createProducer(QUEUE);
+//
+//      ClientMessage message = new ClientMessageImpl(JBossTextMessage.TYPE, false, 0,
+//            System.currentTimeMillis(), (byte) 1);
+//      message.getBody().putString("testINVMCoreClient");
+//      producer.send(message);
+//
+//      ClientConsumer consumer = session.createConsumer(QUEUE);
+//      conn.start();
+//      
+//      message = consumer.receive(1000);
+//      
+//      assertEquals("testINVMCoreClient", message.getBody().getString());
+//      
+//      conn.close();
+//   }
    
    public static void main(String[] args)
    {
@@ -107,6 +108,7 @@ public class CoreClientTest extends TestCase
             
       ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location);
       cf.setDefaultConsumerWindowSize(-1);
+   //   cf.setDefaultProducerMaxRate(30000);
       
       ClientConnection conn = cf.createConnection();
       
@@ -118,9 +120,9 @@ public class CoreClientTest extends TestCase
       ClientMessage message = new ClientMessageImpl(JBossTextMessage.TYPE, false, 0,
             System.currentTimeMillis(), (byte) 1);
       
-      //byte[] bytes = new byte[1000];
+      byte[] bytes = new byte[1000];
       
-      //message.getBody().putBytes(bytes);
+      message.getBody().putBytes(bytes);
       
       message.getBody().flip();
       
@@ -128,8 +130,8 @@ public class CoreClientTest extends TestCase
       ClientConsumer consumer = session.createConsumer(QUEUE);
             
       final CountDownLatch latch = new CountDownLatch(1);
-      
-      final int numMessages = 100000;
+//      
+      final int numMessages = 50000;
       
       class MyHandler implements MessageHandler
       {
@@ -156,21 +158,44 @@ public class CoreClientTest extends TestCase
       }
 
       consumer.setMessageHandler(new MyHandler());
+      
+      
             
       //System.out.println("Waiting 10 secs");
       
      // Thread.sleep(10000);
       
+      
+      
       System.out.println("Starting");
       
-      conn.start();
-                  
+      
+      //Warmup
+      for (int i = 0; i < 50000; i++)
+      {      
+         producer.send(message);
+      }
+//      
+//      System.out.println("Waiting 10 secs");
+//      
+//      Thread.sleep(10000);
+      
+      
       long start = System.currentTimeMillis();
             
       for (int i = 0; i < numMessages; i++)
       {      
          producer.send(message);
       }
+      
+      
+      
+            
+      //long end = System.currentTimeMillis();
+      
+      //double actualRate = 1000 * (double)numMessages / ( end - start);
+      
+      //System.out.println("Send Rate is " + actualRate);
       
 //      long end = System.currentTimeMillis();
 //      
@@ -182,7 +207,7 @@ public class CoreClientTest extends TestCase
       
      // start = System.currentTimeMillis();
       
-      latch.await();
+ //     latch.await();
       
 //      long end = System.currentTimeMillis();
 //
@@ -192,16 +217,37 @@ public class CoreClientTest extends TestCase
 
       //conn.start();
       
-
-      //start = System.currentTimeMillis();
-
+      //System.out.println("Waiting 10 secs");
+      
       
       
       long end = System.currentTimeMillis();
       
       double actualRate = 1000 * (double)numMessages / ( end - start);
       
-      System.out.println(" consume Rate is " + actualRate);
+      System.out.println("Rate is " + actualRate);
+      
+      //Thread.sleep(10000);
+      
+      
+      //      conn.start();
+//      
+//      
+//      start = System.currentTimeMillis();
+//
+      
+//      conn.start();
+////      
+//      start = System.currentTimeMillis();
+////      
+//      latch.await();
+////            
+////      
+//      end = System.currentTimeMillis();
+//      
+//      actualRate = 1000 * (double)numMessages / ( end - start);
+//      
+//      System.out.println("Rate is " + actualRate);
       
 //      
 //      message = consumer.receive(1000);

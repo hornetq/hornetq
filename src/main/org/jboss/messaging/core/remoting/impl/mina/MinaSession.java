@@ -7,6 +7,7 @@
 package org.jboss.messaging.core.remoting.impl.mina;
 
 import org.apache.mina.common.IoSession;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.Packet;
 
@@ -20,22 +21,26 @@ public class MinaSession implements NIOSession
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(MinaConnector.class);
+   
+   
    // Attributes ----------------------------------------------------
 
    private final IoSession session;
 
-   //private AtomicLong correlationCounter;
+   private MinaHandler handler;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public MinaSession(IoSession session)
+   public MinaSession(IoSession session, MinaHandler handler)
    {
       assert session != null;
 
       this.session = session;
-     // correlationCounter = new AtomicLong(0);
+  
+      this.handler = handler;
    }
 
    // Public --------------------------------------------------------
@@ -46,7 +51,16 @@ public class MinaSession implements NIOSession
    }
 
    public void write(Packet packet)
-   {
+   {      
+      try
+      {
+         handler.acquireSemaphore();
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to acquire sem", e);
+      }
+      
       session.write(packet);
    }
 

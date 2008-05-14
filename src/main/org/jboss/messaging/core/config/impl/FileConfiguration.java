@@ -35,7 +35,7 @@ import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-/**
+/**ConfigurationImpl
  * This class allows the Configuration class to be configured via a config file.
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -131,7 +131,7 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
       this.journalTaskPeriod = getLong(e, "journal-task-period", 5000L);
       
       this.securityEnabled = getBoolean(e, "security-enabled", true);
-            
+       
       NodeList defaultInterceptors = e.getElementsByTagName("default-interceptors-config");
 
       ArrayList<String> interceptorList = new ArrayList<String>();

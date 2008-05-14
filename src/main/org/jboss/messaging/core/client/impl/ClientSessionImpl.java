@@ -293,6 +293,11 @@ public class ClientSessionImpl implements ClientSessionInternal
       return consumer;
    }
    
+   public ClientBrowser createBrowser(final SimpleString queueName) throws MessagingException
+   {
+      return createBrowser(queueName, null);
+   }
+   
    public ClientBrowser createBrowser(final SimpleString queueName, final SimpleString filterString) throws MessagingException
    {
       checkClosed();

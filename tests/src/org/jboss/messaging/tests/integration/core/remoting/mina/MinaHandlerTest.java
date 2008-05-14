@@ -43,17 +43,6 @@ public class MinaHandlerTest extends TestCase
 
    // Public --------------------------------------------------------
 
-   public void testReceiveNotAbstractPacket() throws Exception
-   {
-      try
-      {
-         handler.messageReceived(null, new Object());
-         fail();
-      } catch (IllegalArgumentException e)
-      {
-      }
-   }
-
    public void testReceiveUnhandledAbstractPacket() throws Exception
    {
       TextPacket packet = new TextPacket("testReceiveUnhandledAbstractPacket");

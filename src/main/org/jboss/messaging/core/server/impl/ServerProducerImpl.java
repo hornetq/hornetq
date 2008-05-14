@@ -100,7 +100,7 @@ public class ServerProducerImpl implements ServerProducer
 //			}
 		}
 		
-		session.send(message);      
+		session.send(message);  		
 	}
 
 	public void sendCredits() throws Exception

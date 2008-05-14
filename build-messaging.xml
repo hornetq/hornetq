@@ -630,6 +630,7 @@
    <target name="jms-tests" depends="jar, compile-jms-tests">
       <echo message=""/>
       <echo message="Running jms tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message="classpath is:${toString:unit.test.execution.classpath}"/>
       <echo message=""/>
       <mkdir dir="${test.output.dir}"/>
       <mkdir dir="${test.reports.dir}"/>

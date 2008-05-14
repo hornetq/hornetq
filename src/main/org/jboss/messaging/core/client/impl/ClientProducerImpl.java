@@ -166,12 +166,12 @@ public class ClientProducerImpl implements ClientProducerInternal
    	   remotingConnection.sendOneWay(serverTargetID, session.getServerTargetID(), message);
    	}
    	 	   	
-//   	if (rateLimiter != null)
-//   	{
-//   	   // Rate flow control
-//      	   		
-//   		rateLimiter.limit();
-//   	}
+   	if (rateLimiter != null)
+   	{
+   	   // Rate flow control
+      	   		
+   		rateLimiter.limit();
+   	}
    }
             
    public void registerAcknowledgementHandler(final AcknowledgementHandler handler)

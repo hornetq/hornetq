@@ -119,9 +119,8 @@ public abstract class MessageImpl implements Message
       buff.putLong(timestamp);
       buff.putByte(priority);
       properties.encode(buff);
-      buff.putInt(body.limit());
-      buff.putBytes(body.array(), 0, body.limit());
-   
+      buff.putInt(body.limit());     
+      buff.putBytes(body.array(), 0, body.limit());   
    }
    
    public int encodeSize()

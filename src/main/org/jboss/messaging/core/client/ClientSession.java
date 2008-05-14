@@ -41,6 +41,8 @@ public interface ClientSession extends XAResource
    
    ClientBrowser createBrowser(SimpleString queueName, SimpleString filterString) throws MessagingException;
    
+   ClientBrowser createBrowser(SimpleString queueName) throws MessagingException;
+   
    ClientProducer createProducer(SimpleString address) throws MessagingException;
    
    ClientProducer createRateLimitedProducer(SimpleString address, int rate) throws MessagingException;

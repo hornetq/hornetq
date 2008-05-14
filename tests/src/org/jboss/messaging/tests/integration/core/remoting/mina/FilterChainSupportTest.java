@@ -67,29 +67,6 @@ public class FilterChainSupportTest extends TestCase
       trustStorePassword = keystorePassword;
    }
 
-   public void testAddKeepAliveFilterWithIncorrectParameters() throws Exception
-   {
-      int keepAliveInterval = 5; // seconds
-      int keepAliveTimeout = 10; // seconds
-
-      DefaultIoFilterChainBuilder filterChain = new DefaultIoFilterChainBuilder();
-      KeepAliveFactory factory = createMock(KeepAliveFactory.class);
-      CleanUpNotifier notifier = createMock(CleanUpNotifier.class);
-
-      replay(factory, notifier);
-
-      try
-      {
-         FilterChainSupport.addKeepAliveFilter(filterChain, factory,
-               keepAliveInterval, keepAliveTimeout, notifier);
-         fail("the interval must be greater than the timeout");
-      } catch (IllegalArgumentException e)
-      {
-      }
-
-      verify(factory, notifier);
-   }
-
    public void testSSLFilter() throws Exception
    {
       InetSocketAddress address = new InetSocketAddress("localhost", 9091);

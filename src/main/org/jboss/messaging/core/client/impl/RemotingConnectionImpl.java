@@ -23,6 +23,9 @@ package org.jboss.messaging.core.client.impl;
 
 import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGISTRY;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.RemotingSessionListener;
@@ -35,6 +38,7 @@ import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 
 /**
  * 
@@ -97,7 +101,7 @@ public class RemotingConnectionImpl implements RemotingConnection
 
       log.trace(this + " started");
    }
-
+   
    public void stop()
    {
       log.trace(this + " stop");

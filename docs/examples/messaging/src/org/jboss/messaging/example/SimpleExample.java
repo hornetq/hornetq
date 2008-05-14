@@ -99,7 +99,7 @@ public class SimpleExample
                  System.currentTimeMillis(), (byte) 1);
          message.getBody().putString("Hello!");
          clientProducer.send(message);
-         ClientConsumer clientConsumer = clientSession.createConsumer(atestq, null, false, false);
+         ClientConsumer clientConsumer = clientSession.createConsumer(atestq);
          clientConnection.start();
          Message msg = clientConsumer.receive(5000);
          System.out.println("msg.getPayload() = " + msg.getBody().getString());

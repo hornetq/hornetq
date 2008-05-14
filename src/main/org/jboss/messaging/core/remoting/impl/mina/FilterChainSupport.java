@@ -87,32 +87,5 @@ public class FilterChainSupport
    
    // Package protected ---------------------------------------------
 
-//   static void addMDCFilter(final DefaultIoFilterChainBuilder filterChain)
-//   {
-//      assert filterChain != null;
-//
-//      MdcInjectionFilter mdcInjectionFilter = new MdcInjectionFilter();
-//      filterChain.addLast("mdc", mdcInjectionFilter);
-//   }
-//
-//   static void addLoggingFilter(final DefaultIoFilterChainBuilder filterChain)
-//   {
-//      assert filterChain != null;
-//
-//      LoggingFilter filter = new LoggingFilter();
-//
-//      filter.setSessionCreatedLogLevel(TRACE);
-//      filter.setSessionOpenedLogLevel(TRACE);
-//      filter.setSessionIdleLogLevel(TRACE);
-//      filter.setSessionClosedLogLevel(TRACE);
-//
-//      filter.setMessageReceivedLogLevel(TRACE);
-//      filter.setMessageSentLogLevel(TRACE);
-//
-//      filter.setExceptionCaughtLogLevel(WARN);
-//
-//      filterChain.addLast("logger", filter);
-//   }
-
    // Inner classes -------------------------------------------------
 }
