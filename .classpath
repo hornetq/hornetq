@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="src/main"/>
+	<classpathentry kind="src" path="examples/jms/src"/>
+	<classpathentry kind="src" path="examples/messaging/src"/>
 	<classpathentry kind="src" path="build/src"/>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="tests/src"/>
 	<classpathentry excluding="ide/" kind="src" path="tests/etc"/>
 	<classpathentry kind="src" path="src/etc"/>
 	<classpathentry kind="src" path="tests/jms-tests/src"/>
 	<classpathentry kind="src" path="tests/jms-tests/etc"/>
-	<classpathentry kind="src" path="docs/examples/messaging/src"/>
-	<classpathentry kind="src" path="docs/examples/jms/src"/>
 	<classpathentry kind="lib" path="thirdparty/oswego-concurrent/lib/concurrent.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jgroups/lib/jgroups.jar"/>
 	<classpathentry kind="lib" path="thirdparty/apache-log4j/lib/log4j.jar"/>
