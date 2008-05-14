@@ -68,7 +68,7 @@ public class PerfExample
       queue = (Queue) initialContext.lookup("/queue/testPerfQueue");
       ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
       connection = cf.createConnection();
-      session = connection.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+      session = connection.createSession(true, Session.SESSION_TRANSACTED);
    }
    
    public void runSender(int noOfMessage, int deliveryMode, long samplePeriod)
@@ -91,10 +91,24 @@ public class PerfExample
          BytesMessage bytesMessage = session.createBytesMessage();
          byte[] payload = new byte[1024];
          bytesMessage.writeBytes(payload);
+         boolean committed = false;
          for (int i = 1; i <= noOfMessage; i++)
          {
             producer.send(bytesMessage);
             messageCount++;
+            if (messageCount % 10000 == 0)
+            {
+               session.commit();
+               committed = true;
+            }
+            else
+            {
+               committed = false;
+            }
+         }
+         if (!committed)
+         {
+            session.commit();
          }
          scheduler.shutdownNow();
          log.info("average " +  command.getAverage() + " per " + (perfParams.getSamplePeriod()/1000) + " secs" );
@@ -194,13 +208,25 @@ public class PerfExample
          }
          else
          {
-            BytesMessage bm = (BytesMessage) message;
-            messageCount++;               
-            if (messageCount == params.getNoOfMessagesToSend())
+            try
             {
-               countDownLatch.countDown();
-               scheduler.shutdownNow();
-               log.info("average " +  command.getAverage() + " per " + (params.getSamplePeriod()/1000) + " secs" );
+               BytesMessage bm = (BytesMessage) message;
+               messageCount++;      
+               if (messageCount % 10000 == 0)
+               {
+                  session.commit();
+               }
+               if (messageCount == params.getNoOfMessagesToSend())
+               {
+                  session.commit();
+                  countDownLatch.countDown();
+                  scheduler.shutdownNow();
+                  log.info("average " +  command.getAverage() + " per " + (params.getSamplePeriod()/1000) + " secs" );
+               }
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
             }
          }
       }

@@ -42,7 +42,7 @@
 
    <!--perf props-->
    <property name="message.count" value="200000"/>
-   <property name="delivery.mode" value="NON_PERSISTENT"/>
+   <property name="delivery.mode" value="PERSISTENT"/>
    <property name="sample.period" value="1"/>
 
    <path id="compile.classpath">
@@ -105,6 +105,8 @@
    <target name="perfListener" depends="compile">
       <java classname="org.jboss.jms.example.PerfExample" fork="true">
          <classpath refid="runtime.classpath"/>
+      	<jvmarg value="-Xmx512M"/>
+      	<jvmarg value="-XX:+UseParallelGC"/>
          <arg value="-l"/>
       </java>
    </target>
@@ -112,7 +114,6 @@
    <target name="perfSender" depends="compile">
       <java classname="org.jboss.jms.example.PerfExample" fork="true">
          <classpath refid="runtime.classpath"/>
-      	<jvmarg value="-Xms512M"/>
       	<jvmarg value="-Xmx512M"/>
       	<jvmarg value="-XX:+UseParallelGC"/>
          <arg value="-s"/>
@@ -121,4 +122,26 @@
          <arg value="${sample.period}"/>
       </java>
    </target>
+	
+	<target name="perfListenerTransactional" depends="compile">
+      <java classname="org.jboss.jms.example.PerfTransactionExample" fork="true">
+         <classpath refid="runtime.classpath"/>
+      	<jvmarg value="-Xmx512M"/>
+      	<jvmarg value="-XX:+UseParallelGC"/>
+         <arg value="-l"/>
+      </java>
+   </target>
+
+   <target name="perfSenderTransactional" depends="compile">
+      <java classname="org.jboss.jms.example.PerfTransactionExample" fork="true">
+         <classpath refid="runtime.classpath"/>
+      	<jvmarg value="-Xmx512M"/>
+      	<jvmarg value="-XX:+UseParallelGC"/>
+         <arg value="-s"/>
+         <arg value="${message.count}"/>
+         <arg value="${delivery.mode}"/>
+         <arg value="${sample.period}"/>
+      </java>
+   </target>
+	
 </project>
