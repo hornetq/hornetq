@@ -68,6 +68,8 @@ public class ClientProducerImpl implements ClientProducerInternal
    //For rate throttling
      
    private final TokenBucketLimiter rateLimiter;
+   
+   private final boolean transactional;
      
    // Static ---------------------------------------------------------------------------------------
 
@@ -77,7 +79,7 @@ public class ClientProducerImpl implements ClientProducerInternal
                              final long clientTargetID,
    		                    final SimpleString address,
    		                    final RemotingConnection remotingConnection, final int windowSize,
-   		                    final int maxRate)
+   		                    final int maxRate, final boolean transactional)
    {   	
       this.session = session;
       
@@ -99,6 +101,8 @@ public class ClientProducerImpl implements ClientProducerInternal
       {
       	this.rateLimiter = null;
       }
+      
+      this.transactional = transactional;
    }
    
    // ClientProducer implementation ----------------------------------------------------------------
@@ -157,7 +161,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 //   		windowSize--;
 //   	}
    	
-   	if (msg.isDurable())
+   	if (msg.isDurable() && !transactional)
    	{
    	   remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), message);
    	}

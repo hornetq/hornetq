@@ -342,7 +342,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       	
       	producer = new ClientProducerImpl(this, response.getProducerTargetID(), clientTargetID, address,
       			                            remotingConnection, response.getWindowSize(),
-      			                            response.getMaxRate());  
+      			                            response.getMaxRate(), !autoCommitSends);  
       	
       	remotingConnection.getPacketDispatcher().register(new ClientProducerPacketHandler(producer, clientTargetID));
       }
