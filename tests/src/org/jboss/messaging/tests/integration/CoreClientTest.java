@@ -131,7 +131,7 @@ public class CoreClientTest extends TestCase
             
       final CountDownLatch latch = new CountDownLatch(1);
 //      
-      final int numMessages = 50000;
+      final int numMessages = 100000000;
       
       class MyHandler implements MessageHandler
       {

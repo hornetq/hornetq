@@ -43,6 +43,7 @@ import org.jboss.messaging.core.server.DistributionPolicy;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.SimpleString;
@@ -170,7 +171,7 @@ public class QueueImpl implements Queue
 
       deliver();
    }
-
+ 
    /*
     * Attempt to deliver all the messages in the queue
     * 
@@ -530,11 +531,11 @@ public class QueueImpl implements Queue
       {
          if (first)
          {
-       //     messageReferences.addFirst(ref, ref.getMessage().getPriority());
+            messageReferences.addFirst(ref, ref.getMessage().getPriority());
          }
          else
          {
-      //      messageReferences.addLast(ref, ref.getMessage().getPriority());
+            messageReferences.addLast(ref, ref.getMessage().getPriority());
          }
 
          if (!direct && promptDelivery)
