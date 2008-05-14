@@ -68,7 +68,7 @@ public class PerfExample
       queue = (Queue) initialContext.lookup("/queue/testPerfQueue");
       ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
       connection = cf.createConnection();
-      session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      session = connection.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
    }
    
    public void runSender(int noOfMessage, int deliveryMode, long samplePeriod)
@@ -77,6 +77,8 @@ public class PerfExample
       {
          init();
          MessageProducer producer = session.createProducer(queue);
+         producer.setDisableMessageID(true);
+         producer.setDisableMessageTimestamp(true);
          producer.setDeliveryMode(deliveryMode);
          ObjectMessage m = session.createObjectMessage();
          PerfParams perfParams = new PerfParams();
@@ -86,10 +88,12 @@ public class PerfExample
          m.setObject(perfParams);
          producer.send(m);
          scheduler.scheduleAtFixedRate(command, perfParams.getSamplePeriod(), perfParams.getSamplePeriod(), TimeUnit.SECONDS);
+         BytesMessage bytesMessage = session.createBytesMessage();
+         byte[] payload = new byte[1024];
+         bytesMessage.writeBytes(payload);
          for (int i = 1; i <= noOfMessage; i++)
          {
-            TextMessage textMessage = session.createTextMessage("" + i);
-            producer.send(textMessage);
+            producer.send(bytesMessage);
             messageCount++;
          }
          scheduler.shutdownNow();
@@ -190,31 +194,13 @@ public class PerfExample
          }
          else
          {
-            try
+            BytesMessage bm = (BytesMessage) message;
+            messageCount++;               
+            if (messageCount == params.getNoOfMessagesToSend())
             {
-               TextMessage m = (TextMessage) message;
-               messageCount++;
-               int count = Integer.parseInt(m.getText());
-               if (count == params.getNoOfMessagesToSend())
-               {
-                  countDownLatch.countDown();
-                 /* try
-                  {
-                     Thread.sleep(params.getSamplePeriod());
-                  }
-                  catch (InterruptedException e)
-                  {
-                     //ignore
-                  }*/
-                  scheduler.shutdownNow();
-                  log.info("average " +  command.getAverage() + " per " + (params.getSamplePeriod()/1000) + " secs" );
-               }
-            }
-            catch (JMSException e)
-            {
-               log.info(e);
                countDownLatch.countDown();
                scheduler.shutdownNow();
+               log.info("average " +  command.getAverage() + " per " + (params.getSamplePeriod()/1000) + " secs" );
             }
          }
       }

@@ -41,7 +41,7 @@
    <property name="build.dir" value="build"/>
 
    <!--perf props-->
-   <property name="message.count" value="10000"/>
+   <property name="message.count" value="200000"/>
    <property name="delivery.mode" value="NON_PERSISTENT"/>
    <property name="sample.period" value="1"/>
 
