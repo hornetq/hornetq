@@ -125,6 +125,11 @@
       <ant antfile="build-messaging.xml" target="compile-reports"/>
    </target>
 
+   <!--server-->
+
+   <target name="runServer" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="runServer"/>
+   </target>
 
    <!--example targets-->
    <target name="queueExample" depends="createthirdparty">

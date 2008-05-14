@@ -750,6 +750,21 @@
       <echo message="${test.execution.classpath.unix}" file="${test.execution.classpath.file}"/>
    </target>
 
+   <!--server-->
+
+   <target name="runServer" depends="jar">
+      <java classname="org.jboss.messaging.microcontainer.JBMBootstrapServer" fork="true">
+         <jvmarg value="-XX:+UseParallelGC"/>
+         <jvmarg value="-Xms512M"/>
+         <jvmarg value="-Xmx1024M"/>
+         <jvmarg value="-Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.core.logging.JBMLoggerPlugin"/>
+         <jvmarg value="-Djava.library.path=${native.bin.dir}"/>
+         <jvmarg value="-Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory"/>
+         <jvmarg value="-Djava.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces"/>
+         <arg line="jbm-standalone-beans.xml"/>
+         <classpath refid="jms.test.execution.classpath"/>
+      </java>
+   </target>
    <!--examples-->
    <target name="queueExample" depends="client-jar">
       <ant dir="${examples.dir}/jms" antfile="build.xml" target="queueExample"/>
@@ -779,7 +794,7 @@
       <ant dir="${examples.dir}/messaging" antfile="build.xml" target="SSLClient"/>
    </target>
 
-   <target name="SimpleExample" depends="client-jar">
+   <target name="SimpleExample" depends="jar, client-jar">
       <ant dir="${examples.dir}/messaging" antfile="build.xml" target="SimpleExample"/>
    </target>
 </project>
