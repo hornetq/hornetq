@@ -125,4 +125,37 @@
       <ant antfile="build-messaging.xml" target="compile-reports"/>
    </target>
 
+
+   <!--example targets-->
+   <target name="queueExample" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="queueExample"/>
+   </target>
+
+   <target name="topicExample" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="topicExample"/>
+   </target>
+
+   <target name="DurSubExample" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="DurSubExample"/>
+   </target>
+
+   <target name="perfListener" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="perfListener"/>
+   </target>
+
+   <target name="perfSender" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="perfSender"/>
+   </target>
+
+   <target name="SimpleClient" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="SimpleClient"/>
+   </target>
+
+   <target name="SSLClient" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="SSLClient"/>
+   </target>
+
+    <target name="SimpleExample" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="SimpleExample"/>
+   </target>
 </project>
