@@ -42,7 +42,7 @@
 
    <!--perf props-->
    <property name="message.count" value="200000"/>
-   <property name="delivery.mode" value="PERSISTENT"/>
+   <property name="delivery.mode" value="NON_PERSISTENT"/>
    <property name="sample.period" value="1"/>
 
    <path id="compile.classpath">
@@ -139,7 +139,7 @@
       	<jvmarg value="-XX:+UseParallelGC"/>
          <arg value="-s"/>
          <arg value="${message.count}"/>
-         <arg value="${delivery.mode}"/>
+         <arg value="PERSISTENT"/>
          <arg value="${sample.period}"/>
       </java>
    </target>

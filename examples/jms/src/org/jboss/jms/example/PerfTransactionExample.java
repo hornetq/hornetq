@@ -35,7 +35,7 @@ import java.util.concurrent.*;
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
-public class PerfExample
+public class PerfTransactionExample
 {
    private static Logger log = Logger.getLogger(PerfExample.class);
    private Queue queue;
@@ -44,10 +44,12 @@ public class PerfExample
    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
    private Session session;
    private Sampler command = new Sampler();
+   
+   private static final int transactionSize = 5000;
 
    public static void main(String[] args)
    {
-      PerfExample perfExample = new PerfExample();
+      PerfTransactionExample perfExample = new PerfTransactionExample();
       if (args[0].equalsIgnoreCase("-l"))
       {
          perfExample.runListener();
@@ -69,7 +71,7 @@ public class PerfExample
       queue = (Queue) initialContext.lookup("/queue/testPerfQueue");
       ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
       connection = cf.createConnection();
-      session = connection.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+      session = connection.createSession(true, Session.SESSION_TRANSACTED);
    }
    
    public void runSender(int noOfMessage, int deliveryMode, long samplePeriod)
@@ -92,10 +94,24 @@ public class PerfExample
          BytesMessage bytesMessage = session.createBytesMessage();
          byte[] payload = new byte[1024];
          bytesMessage.writeBytes(payload);
+         boolean committed = false;
          for (int i = 1; i <= noOfMessage; i++)
          {
             producer.send(bytesMessage);
-            messageCount++;            
+            messageCount++;
+            if (messageCount % transactionSize == 0)
+            {
+               session.commit();
+               committed = true;
+            }
+            else
+            {
+               committed = false;
+            }
+         }
+         if (!committed)
+         {
+            session.commit();
          }
          scheduler.shutdownNow();
          log.info("average " +  command.getAverage() + " per " + (perfParams.getSamplePeriod()/1000) + " secs" );
@@ -138,7 +154,6 @@ public class PerfExample
          messageConsumer.setMessageListener(new PerfListener(countDownLatch));
          log.info("READY!!!");
          countDownLatch.await();
-
       }
       catch (Exception e)
       {
@@ -197,10 +212,20 @@ public class PerfExample
          {
             try
             {
+               boolean committed = false;
                BytesMessage bm = (BytesMessage) message;
                messageCount++;      
+               if (messageCount % transactionSize == 0)
+               {
+                  session.commit();
+                  committed = true;
+               }
                if (messageCount == params.getNoOfMessagesToSend())
                {
+                  if (!committed)
+                  {
+                     session.commit();
+                  }
                   countDownLatch.countDown();
                   scheduler.shutdownNow();
                   log.info("average " +  command.getAverage() + " per " + (params.getSamplePeriod()/1000) + " secs" );
