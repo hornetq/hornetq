@@ -6,7 +6,6 @@
  */
 package org.jboss.messaging.util;
 
-import static org.jboss.messaging.util.DataConstants.SIZE_BYTE;
 import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
 import java.io.Serializable;

@@ -99,7 +99,7 @@ public class QueueImpl implements Queue
    private AtomicInteger deliveringCount = new AtomicInteger(0);
 
    private volatile FlowController flowController;
-
+   
    public QueueImpl(final long persistenceID, final SimpleString name,
          final Filter filter, final boolean clustered, final boolean durable,
          final boolean temporary, final int maxSize,
@@ -475,121 +475,112 @@ public class QueueImpl implements Queue
 
    private HandleStatus add(final MessageReference ref, final boolean first)
    {
-      if (!checkFull()) { return HandleStatus.BUSY; }
-
+      if (maxSize != -1)
+      {
+         int size = deliveringCount.get() + messageReferences.size() + scheduledRunnables.size();
+         
+         if (size >= maxSize)
+         {
+            return HandleStatus.BUSY;
+         }      
+      }
+      
       if (!first)
       {
          messagesAdded.incrementAndGet();
       }
-
-      if (!checkAndSchedule(ref))
+      
+      if (checkAndSchedule(ref))
       {
-         boolean add = false;
+         return HandleStatus.HANDLED;         
+      }
 
-         if (direct)
+      boolean add = false;
+
+      if (direct)
+      {
+         // Deliver directly
+
+         HandleStatus status = deliver(ref);
+
+         if (status == HandleStatus.HANDLED)
          {
-            // Deliver directly
-
-            HandleStatus status = deliver(ref);
-
-            if (status == HandleStatus.HANDLED)
-            {
-               // Ok
-            }
-            else if (status == HandleStatus.BUSY)
-            {
-               add = true;
-            }
-            else if (status == HandleStatus.NO_MATCH)
-            {
-               add = true;
-            }
-
-            if (add)
-            {
-               direct = false;
-            }
+            // Ok
          }
-         else
+         else if (status == HandleStatus.BUSY)
+         {
+            add = true;
+         }
+         else if (status == HandleStatus.NO_MATCH)
          {
             add = true;
          }
 
          if (add)
          {
-            if (first)
-            {
-               messageReferences.addFirst(ref, ref.getMessage().getPriority());
-            }
-            else
-            {
-               messageReferences.addLast(ref, ref.getMessage().getPriority());
-            }
-
-            if (!direct && promptDelivery)
-            {
-               // We have consumers with filters which don't match, so we need
-               // to prompt delivery every time
-               // a new message arrives - this is why you really shouldn't use
-               // filters with queues - in most cases
-               // it's an ant-pattern since it would cause a queue scan on each
-               // message
-               deliver();
-            }
+            direct = false;
          }
       }
+      else
+      {
+         add = true;
+      }
+
+      if (add)
+      {
+         if (first)
+         {
+       //     messageReferences.addFirst(ref, ref.getMessage().getPriority());
+         }
+         else
+         {
+      //      messageReferences.addLast(ref, ref.getMessage().getPriority());
+         }
+
+         if (!direct && promptDelivery)
+         {
+            // We have consumers with filters which don't match, so we need
+            // to prompt delivery every time
+            // a new message arrives - this is why you really shouldn't use
+            // filters with queues - in most cases
+            // it's an ant-pattern since it would cause a queue scan on each
+            // message
+            deliver();
+         }
+      }     
 
       return HandleStatus.HANDLED;
    }
 
    private boolean checkAndSchedule(final MessageReference ref)
    {
-      long now = System.currentTimeMillis();
-
-      if (scheduledExecutor != null && ref.getScheduledDeliveryTime() > now)
-      {
-         if (trace)
+      long deliveryTime = ref.getScheduledDeliveryTime();
+      
+      if (deliveryTime != 0 && scheduledExecutor != null)
+      {      
+         long now = System.currentTimeMillis();
+      
+         if (deliveryTime > now)
          {
-            log.trace("Scheduling delivery for " + ref + " to occur at "
-                  + ref.getScheduledDeliveryTime());
+            if (trace)
+            {
+               log.trace("Scheduling delivery for " + ref + " to occur at "  + deliveryTime);
+            }
+   
+            long delay = deliveryTime - now;
+   
+            ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(ref);
+   
+            scheduledRunnables.add(runnable);
+   
+            Future<?> future = scheduledExecutor.schedule(runnable, delay, TimeUnit.MILLISECONDS);
+   
+            runnable.setFuture(future);
+   
+            return true;
          }
-
-         long delay = ref.getScheduledDeliveryTime() - now;
-
-         ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(ref);
-
-         scheduledRunnables.add(runnable);
-
-         Future<?> future = scheduledExecutor.schedule(runnable, delay,
-               TimeUnit.MILLISECONDS);
-
-         runnable.setFuture(future);
-
-         return true;
       }
-      else
-      {
-         return false;
-      }
-   }
-
-   private boolean checkFull()
-   {
-      if (maxSize != -1
-            && (deliveringCount.get() + messageReferences.size() + scheduledRunnables
-                  .size()) >= maxSize)
-      {
-         if (trace)
-         {
-            log.trace(this + " queue is full, rejecting message");
-         }
-
-         return false;
-      }
-      else
-      {
-         return true;
-      }
+      return false;      
    }
 
    private HandleStatus deliver(final MessageReference reference)

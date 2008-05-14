@@ -57,34 +57,34 @@ public class CoreClientTest extends TestCase
       
       super.tearDown();
    }
-//   
-//   
-//   public void testCoreClient() throws Exception
-//   {
-//      Location location = new LocationImpl(TransportType.TCP, "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
-//            
-//      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location);
-//      ClientConnection conn = cf.createConnection();
-//      
-//      ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
-//      session.createQueue(QUEUE, QUEUE, null, false, false);
-//      
-//      ClientProducer producer = session.createProducer(QUEUE);
-//
-//      ClientMessage message = new ClientMessageImpl(JBossTextMessage.TYPE, false, 0,
-//            System.currentTimeMillis(), (byte) 1);
-//      message.getBody().putString("testINVMCoreClient");
-//      producer.send(message);
-//
-//      ClientConsumer consumer = session.createConsumer(QUEUE);
-//      conn.start();
-//      
-//      message = consumer.receive(1000);
-//      
-//      assertEquals("testINVMCoreClient", message.getBody().getString());
-//      
-//      conn.close();
-//   }
+   
+   
+   public void testCoreClient() throws Exception
+   {
+      Location location = new LocationImpl(TransportType.TCP, "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
+            
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location);
+      ClientConnection conn = cf.createConnection();
+      
+      ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
+      session.createQueue(QUEUE, QUEUE, null, false, false);
+      
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      ClientMessage message = new ClientMessageImpl(JBossTextMessage.TYPE, false, 0,
+            System.currentTimeMillis(), (byte) 1);
+      message.getBody().putString("testINVMCoreClient");
+      producer.send(message);
+
+      ClientConsumer consumer = session.createConsumer(QUEUE);
+      conn.start();
+      
+      message = consumer.receive(1000);
+      
+      assertEquals("testINVMCoreClient", message.getBody().getString());
+      
+      conn.close();
+   }
    
    public static void main(String[] args)
    {

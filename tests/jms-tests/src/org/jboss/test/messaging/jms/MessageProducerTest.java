@@ -22,15 +22,12 @@
 package org.jboss.test.messaging.jms;
 
 import java.io.Serializable;
-import java.util.concurrent.CountDownLatch;
 
-import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
@@ -55,22 +52,6 @@ public class MessageProducerTest extends JMSTestCase
 
    // Constructors --------------------------------------------------
 
-   public static void main(String[] args)
-   {
-      try
-      {
-         MessageProducerTest test = new MessageProducerTest();
-         
-         test.setUp();
-         test.testSpeed3();
-         test.tearDown();
-      }
-      catch (Throwable t)
-      {
-         t.printStackTrace();
-      }
-   }
-   
    public MessageProducerTest(String name)
    {
       super(name);
@@ -137,8 +118,6 @@ public class MessageProducerTest extends JMSTestCase
          pconn = cf.createConnection();
          cconn = cf.createConnection();
          
-         log.info("** created connections");
-
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer p = ps.createProducer(queue1);
@@ -169,209 +148,6 @@ public class MessageProducerTest extends JMSTestCase
       }
    }
 
-   public void testSpeed() throws Exception
-   {
-      Connection pconn = null;      
-
-      try
-      {
-         pconn = cf.createConnection();
-
-         Session ps = pconn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
-
-         MessageProducer p = ps.createProducer(queue1);
-             
-         pconn.start();
-         
-         p.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-         
-         p.setDisableMessageID(true);
-         p.setDisableMessageTimestamp(true);
-
-         final int numMessages = 100000;
-
-         long start = System.currentTimeMillis();
-
-         BytesMessage msg = ps.createBytesMessage();
-         
-         msg.writeBytes(new byte[200]);
-                           
-         for (int i = 0; i < numMessages; i++)
-         {
-            p.send(msg);
-         }
-         
-         long end = System.currentTimeMillis();
-
-         double actualRate = 1000 * (double)numMessages / ( end - start);
-
-         log.info("rate " + actualRate + " msgs /sec");
-
-      }
-      finally
-      {
-         pconn.close();
-      }
-   }
-   
-   public void testSpeed2() throws Exception
-   {
-      Connection pconn = null;      
-
-      try
-      {
-         pconn = cf.createConnection();
-
-         Session ps = pconn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
-
-         MessageProducer p = ps.createProducer(queue1);
-         
-         MessageConsumer cons = ps.createConsumer(queue1);
-         
-         pconn.start();
-         
-         p.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-         
-         p.setDisableMessageID(true);
-         p.setDisableMessageTimestamp(true);
-
-         final int numMessages = 10000;
-
-         long start = System.currentTimeMillis();
-
-         BytesMessage msg = ps.createBytesMessage();
-         
-         msg.writeBytes(new byte[1000]);
-         
-         final CountDownLatch latch = new CountDownLatch(1);
-         
-         class MyListener implements MessageListener
-         {
-            int count;
-
-            public void onMessage(Message msg)
-            {
-               count++;
-               
-               if (count == numMessages)
-               {
-                  latch.countDown();
-               }
-            }            
-         }
-         
-         cons.setMessageListener(new MyListener());
-         
-         for (int i = 0; i < numMessages; i++)
-         {
-            p.send(msg);
-         }
-         
-         latch.await();
-         
-         long end = System.currentTimeMillis();
-
-         double actualRate = 1000 * (double)numMessages / ( end - start);
-
-         log.info("rate " + actualRate + " msgs /sec");
-
-      }
-      finally
-      {
-         pconn.close();
-      }
-   }
-   
-   public MessageProducerTest()
-   {
-      super("MessageProducerTest");
-   }
-   
-
-   
-   public void testSpeed3() throws Exception
-   {
-      Connection pconn = null;      
-
-      try
-      {
-         pconn = cf.createConnection();
-
-         Session ps = pconn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
-
-         MessageProducer p = ps.createProducer(queue1);
-         
-         MessageConsumer cons = ps.createConsumer(queue1);
-             
-         p.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-         
-         p.setDisableMessageID(true);
-         p.setDisableMessageTimestamp(true);
-
-         final int numMessages = 100000;
-         
-         BytesMessage msg = ps.createBytesMessage();
-         
-         msg.writeBytes(new byte[200]);
-         
-         final CountDownLatch latch = new CountDownLatch(1);
-         
-         class MyListener implements MessageListener
-         {
-            int count;
-
-            public void onMessage(Message msg)
-            {
-               count++;
-               
-               if (count == numMessages)
-               {
-                  latch.countDown();
-               }
-            }            
-         }
-         
-         cons.setMessageListener(new MyListener());
-         
-         long start = System.currentTimeMillis();
-         
-         
-         for (int i = 0; i < numMessages; i++)
-         {
-            p.send(msg);
-         }
-         
-         
-         long end = System.currentTimeMillis();
-
-         double actualRate = 1000 * (double)numMessages / ( end - start);
-         
-         log.info("send rate " + actualRate + " msgs /sec");
-
-         log.info("Sleeping");
-         
-         Thread.sleep(10000);
-         
-         log.info("Let's go....");
-         
-         pconn.start();
-         
-         
-         latch.await();
-         
-         end = System.currentTimeMillis();
-
-         actualRate = 1000 * (double)numMessages / ( end - start);
-
-         log.info("consume rate " + actualRate + " msgs /sec");
-
-      }
-      finally
-      {
-         pconn.close();
-      }
-   }
-   
    public void testTransactedSendPersistent() throws Exception
    {
       transactedSend(true);
