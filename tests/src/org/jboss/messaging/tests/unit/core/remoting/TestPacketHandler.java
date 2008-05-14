@@ -14,18 +14,18 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketReturner;
-import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 
 public class TestPacketHandler implements PacketHandler
 {
    private final long id;
-   private final List<TextPacket> packets;
+   private final List<Ping> packets;
    private CountDownLatch latch;
    
    public TestPacketHandler(final long id)
    {
       this.id = id;
-      packets = new ArrayList<TextPacket>();
+      packets = new ArrayList<Ping>();
    }
 
    public long getID()
@@ -47,7 +47,7 @@ public class TestPacketHandler implements PacketHandler
 
    public void handle(Packet packet, PacketReturner sender)
    {
-      packets.add((TextPacket) packet);
+      packets.add((Ping) packet);
       
       doHandle(packet, sender);
 
@@ -59,7 +59,7 @@ public class TestPacketHandler implements PacketHandler
    {
    }
 
-   public List<TextPacket> getPackets()
+   public List<Ping> getPackets()
    {
       return packets;
    }

@@ -7,16 +7,18 @@
 package org.jboss.messaging.tests.integration.core.remoting.mina;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import junit.framework.TestCase;
 
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaHandler;
-import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.tests.unit.core.remoting.TestPacketHandler;
 
 /**
@@ -45,7 +47,7 @@ public class MinaHandlerTest extends TestCase
 
    public void testReceiveUnhandledAbstractPacket() throws Exception
    {
-      TextPacket packet = new TextPacket("testReceiveUnhandledAbstractPacket");
+      Packet packet = new Ping(randomLong());
       packet.setExecutorID(packetHandler.getID());
       
       handler.messageReceived(null, packet);
@@ -57,16 +59,16 @@ public class MinaHandlerTest extends TestCase
    {
       packetHandler.expectMessage(1);
 
-      TextPacket packet = new TextPacket("testReceiveHandledAbstractPacket");
-      packet.setTargetID(packetHandler.getID());
-      packet.setExecutorID(packetHandler.getID());
+      Ping ping = new Ping(randomLong());
+      ping.setTargetID(packetHandler.getID());
+      ping.setExecutorID(packetHandler.getID());
 
-      handler.messageReceived(null, packet);
+      handler.messageReceived(null, ping);
 
       assertTrue(packetHandler.await(500, MILLISECONDS));
       assertEquals(1, packetHandler.getPackets().size());
-      assertEquals(packet.getText(), packetHandler.getPackets().get(0)
-            .getText());
+      assertEquals(ping.getSessionID(), packetHandler.getPackets().get(0)
+            .getSessionID());
    }
 
    // TestCase overrides --------------------------------------------

@@ -17,7 +17,8 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
-import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
+import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
 import org.jboss.messaging.tests.unit.core.remoting.TestPacketHandler;
 
 /**
@@ -26,11 +27,11 @@ import org.jboss.messaging.tests.unit.core.remoting.TestPacketHandler;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class ReversePacketHandler extends TestPacketHandler
+public class PingHandler extends TestPacketHandler
 {
    // Constants -----------------------------------------------------
    
-   private static final Logger log = Logger.getLogger(ReversePacketHandler.class);
+   private static final Logger log = Logger.getLogger(PingHandler.class);
    
 
    // Attributes ----------------------------------------------------
@@ -43,7 +44,7 @@ public class ReversePacketHandler extends TestPacketHandler
 
    // Constructors --------------------------------------------------
    
-   public ReversePacketHandler(final long id)
+   public PingHandler(final long id)
    {
    	super(id);
    }
@@ -71,7 +72,7 @@ public class ReversePacketHandler extends TestPacketHandler
    @Override
    protected void doHandle(Packet packet, PacketReturner sender)
    {
-      Assert.assertTrue(packet instanceof TextPacket);
+      Assert.assertTrue(packet instanceof Ping);
 
       lastSender = sender;
 
@@ -86,10 +87,10 @@ public class ReversePacketHandler extends TestPacketHandler
          }
       }
                   
-      TextPacket message = (TextPacket) packet;
+      Ping message = (Ping) packet;
       if (isRequest(message))
       {
-         TextPacket response = new TextPacket(TestSupport.reverse(message.getText()));
+         Pong response = new Pong(message.getSessionID(), true);
          response.normalize(message);
          try
          {

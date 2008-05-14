@@ -8,6 +8,7 @@ package org.jboss.messaging.tests.unit.core.remoting.impl;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.messaging.tests.integration.core.remoting.mina.TestSupport.MANY_MESSAGES;
+import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -21,8 +22,8 @@ import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
-import org.jboss.messaging.tests.integration.core.remoting.mina.ReversePacketHandler;
+import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
+import org.jboss.messaging.tests.integration.core.remoting.mina.PingHandler;
 import org.jboss.messaging.tests.unit.core.remoting.TestPacketHandler;
 
 /**
@@ -38,7 +39,7 @@ public abstract class SessionTestBase extends TestCase
 
    // Attributes ----------------------------------------------------
 
-   protected ReversePacketHandler serverPacketHandler;
+   protected PingHandler serverPacketHandler;
 
    protected PacketDispatcher serverDispatcher;
    protected PacketDispatcher clientDispatcher;
@@ -69,39 +70,38 @@ public abstract class SessionTestBase extends TestCase
    {
       serverPacketHandler.expectMessage(1);
 
-      TextPacket packet = new TextPacket("testWrite");
+      Ping packet = new Ping(randomLong());
       packet.setTargetID(serverPacketHandler.getID());
       
       session.write(packet);
 
       assertTrue(serverPacketHandler.await(2, SECONDS));
 
-      List<TextPacket> messages = serverPacketHandler.getPackets();
+      List<Ping> messages = serverPacketHandler.getPackets();
       assertEquals(1, messages.size());
-      String response = ((TextPacket) messages.get(0)).getText();
-      assertEquals(packet.getText(), response);
+      assertEquals(packet.getSessionID(), messages.get(0).getSessionID());
    }
 
    public void testWriteMany() throws Exception
    {
       serverPacketHandler.expectMessage(MANY_MESSAGES);
 
-      TextPacket[] packets = new TextPacket[MANY_MESSAGES];
+      Ping[] packets = new Ping[MANY_MESSAGES];
       for (int i = 0; i < MANY_MESSAGES; i++)
       {
-         packets[i] = new TextPacket("testSendManyOneWay " + i);
+         packets[i] = new Ping(i);
          packets[i].setTargetID(serverPacketHandler.getID());
          session.write(packets[i]);
       }
 
       assertTrue(serverPacketHandler.await(10, SECONDS));
 
-      List<TextPacket> receivedPackets = serverPacketHandler.getPackets();
+      List<Ping> receivedPackets = serverPacketHandler.getPackets();
       assertEquals(MANY_MESSAGES, receivedPackets.size());
       for (int i = 0; i < MANY_MESSAGES; i++)
       {
-         TextPacket receivedPacket = (TextPacket) receivedPackets.get(i);
-         assertEquals(packets[i].getText(), receivedPacket.getText());
+         Ping receivedPacket = receivedPackets.get(i);
+         assertEquals(packets[i].getSessionID(), receivedPacket.getSessionID());
       }
    }
 
@@ -113,8 +113,7 @@ public abstract class SessionTestBase extends TestCase
       serverPacketHandler.expectMessage(1);
       clientHandler.expectMessage(1);
 
-      TextPacket packet = new TextPacket(
-            "testClientHandlePacketSentByServer from client");
+      Ping packet = new Ping(randomLong());
       packet.setTargetID(serverPacketHandler.getID());
       packet.setResponseTargetID(serverPacketHandler.getID());
       // send a packet to create a sender when the server
@@ -125,17 +124,16 @@ public abstract class SessionTestBase extends TestCase
 
       assertNotNull(serverPacketHandler.getLastSender());
       PacketReturner sender = serverPacketHandler.getLastSender();
-      TextPacket packetFromServer = new TextPacket(
-            "testClientHandlePacketSentByServer from server");
+      Ping packetFromServer = new Ping(randomLong());
       packetFromServer.setTargetID(clientHandler.getID());
       sender.send(packetFromServer);
       
       assertTrue(clientHandler.await(2, SECONDS));
 
-      List<TextPacket> packets = clientHandler.getPackets();
+      List<Ping> packets = clientHandler.getPackets();
       assertEquals(1, packets.size());
-      TextPacket packetReceivedByClient = (TextPacket) packets.get(0);
-      assertEquals(packetFromServer.getText(), packetReceivedByClient.getText());
+      Ping packetReceivedByClient = packets.get(0);
+      assertEquals(packetFromServer.getSessionID(), packetReceivedByClient.getSessionID());
    }
    
    // Protected -----------------------------------------------------
@@ -150,7 +148,7 @@ public abstract class SessionTestBase extends TestCase
       connector = createNIOConnector(clientDispatcher);
       session = connector.connect();
       
-      serverPacketHandler = new ReversePacketHandler(generateID());
+      serverPacketHandler = new PingHandler(generateID());
       serverDispatcher.register(serverPacketHandler);
       
    }

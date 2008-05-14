@@ -6,7 +6,6 @@
  */
 package org.jboss.messaging.tests.unit.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.BYTES;
 import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CONN_CREATESESSION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CONN_CREATESESSION_RESP;
@@ -58,7 +57,6 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS
 import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_XA_SET_TIMEOUT_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_XA_START;
 import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_XA_SUSPEND;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.TEXT;
 import static org.jboss.messaging.tests.unit.core.remoting.impl.wireformat.CodecAssert.assertEqualsByteArrays;
 import static org.jboss.messaging.tests.unit.core.remoting.impl.wireformat.CodecAssert.assertSameXids;
 import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
@@ -80,7 +78,6 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
 import org.jboss.messaging.core.remoting.impl.mina.MessagingCodec;
-import org.jboss.messaging.core.remoting.impl.wireformat.BytesPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
@@ -120,10 +117,8 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessag
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.XidCodecSupport;
 import org.jboss.messaging.core.version.impl.VersionImpl;
-import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
@@ -314,34 +309,6 @@ public class PacketTypeTest extends UnitTestCase
       assertEquals(PONG, decodedPong.getType());
       assertEquals(pong.getSessionID(), decodedPong.getSessionID());
       assertEquals(pong.isSessionFailed(), decodedPong.isSessionFailed());
-   }
-
-   public void testTextPacket() throws Exception
-   {
-      TextPacket packet = new TextPacket("testTextPacket");
-
-      Packet decodedPacket = encodeAndCheckBytesAndDecode(packet, packet
-            .getText());
-
-      assertTrue(decodedPacket instanceof TextPacket);
-      TextPacket p = (TextPacket) decodedPacket;
-
-      assertEquals(TEXT, p.getType());
-      assertEquals(packet.getText(), p.getText());
-   }
-
-   public void testBytesPacket() throws Exception
-   {
-      BytesPacket packet = new BytesPacket(RandomUtil.randomBytes());
-
-      Packet decodedPacket = encodeAndCheckBytesAndDecode(packet, packet
-            .getBytes());
-
-      assertTrue(decodedPacket instanceof BytesPacket);
-      BytesPacket p = (BytesPacket) decodedPacket;
-
-      assertEquals(BYTES, p.getType());
-      assertEqualsByteArrays(packet.getBytes(), p.getBytes());
    }
 
    public void testCreateConnectionRequest() throws Exception

@@ -37,8 +37,6 @@ public class EmptyPacket implements Packet
    // ------------------------------------------------------------------------------------
    
    public static final byte NULL = 1;
-   public static final byte TEXT = 2;
-   public static final byte BYTES = 3;
    public static final byte PING = 4;
    public static final byte PONG = 5;
    

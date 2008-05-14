@@ -6,7 +6,6 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.BYTES;
 import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CREATECONNECTION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CREATECONNECTION_RESP;
@@ -14,7 +13,6 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.EXCE
 import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.NULL;
 import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.PING;
 import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.PONG;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.TEXT;
 import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
 import org.apache.mina.common.IoBuffer;
@@ -27,7 +25,6 @@ import org.apache.mina.filter.codec.ProtocolEncoder;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.impl.wireformat.BytesPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
@@ -70,7 +67,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessag
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
 import org.jboss.messaging.util.MessagingBuffer;
 
 /**
@@ -156,18 +152,6 @@ public class MessagingCodec extends CumulativeProtocolDecoder
             case NULL:
             {
                packet = new EmptyPacket(EmptyPacket.NULL);
-               break;
-            }
-            case TEXT:
-            {
-               //TODO get rid of this!!!
-               packet = new TextPacket();
-               break;
-            }
-            case BYTES:
-            {
-               //TODO get rid of this!!!
-               packet = new BytesPacket();
                break;
             }
             case PING:

@@ -8,6 +8,7 @@ package org.jboss.messaging.tests.integration.core.remoting.mina;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -20,7 +21,7 @@ import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaHandler;
-import org.jboss.messaging.core.remoting.impl.wireformat.TextPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.tests.unit.core.remoting.TestPacketHandler;
 
 /**
@@ -60,7 +61,7 @@ public class MinaHandlerOrderingTest extends TestCase
       handler_1.expectMessage(2);
       handler_2.expectMessage(MANY_MESSAGES);
 
-      TextPacket packet_1 = new TextPacket("testSerializationOrder handled by handle_1");
+      Ping packet_1 = new Ping(randomLong());
       packet_1.setTargetID(handler_1.getID());
       packet_1.setExecutorID(handler_1.getID());
 
@@ -70,7 +71,7 @@ public class MinaHandlerOrderingTest extends TestCase
       handler.messageReceived(null, packet_1);
       for (int i = 0; i < MANY_MESSAGES; i++)
       {
-         TextPacket packet_2 = new TextPacket(Integer.toString(i));
+         Ping packet_2 = new Ping(i);
          packet_2.setTargetID(handler_2.getID());
          packet_2.setExecutorID(handler_2.getID());
          handler.messageReceived(null, packet_2);
@@ -84,13 +85,13 @@ public class MinaHandlerOrderingTest extends TestCase
       assertTrue("handler_2 should not have received all its message (size:" + size + ")", size < MANY_MESSAGES);
 
       assertTrue(handler_2.await(2, SECONDS));
-      List<TextPacket> packetsReceivedByHandler_2 = handler_2.getPackets();
+      List<Ping> packetsReceivedByHandler_2 = handler_2.getPackets();
       assertEquals(MANY_MESSAGES, packetsReceivedByHandler_2.size());      
       // we check that handler_2 receives all its messages in order:
       for (int i = 0; i < MANY_MESSAGES; i++)
       {
-         TextPacket p = packetsReceivedByHandler_2.get(i);
-         assertEquals(Integer.toString(i), p.getText());
+         Ping p = packetsReceivedByHandler_2.get(i);
+         assertEquals(i, p.getSessionID());
       }      
    }
 
