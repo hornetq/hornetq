@@ -146,11 +146,11 @@ public abstract class MessageImpl implements Message
       
       properties.decode(buffer);
       int len = buffer.getInt();
-      
+
       //TODO - this can be optimised
       byte[] bytes = new byte[len];
       buffer.getBytes(bytes);
-      body = new BufferWrapper(1024);
+      body = new BufferWrapper(len);
       body.putBytes(bytes);      
    }
    

@@ -269,7 +269,10 @@ public class MessageTest extends UnitTestCase
       properties.putDoubleProperty(new SimpleString("str10"), (double) 1);
       properties.putCharProperty(new SimpleString("str11"), 'a');
       
-      checkSizes(properties);
+      checkSizes(properties, new TypedProperties());
+      
+      properties.removeProperty(new SimpleString("str"));
+      checkSizes(properties, new TypedProperties());
       
    }
 
@@ -288,21 +291,42 @@ public class MessageTest extends UnitTestCase
       implMsg.setDestination(address);
       implMsg.setBody(bufferBody);
       implMsg.putStringProperty(new SimpleString("Key"), new SimpleString("This String is worthless!"));
+      implMsg.putStringProperty(new SimpleString("Key"), new SimpleString("This String is worthless and bigger!"));
+      implMsg.putStringProperty(new SimpleString("Key2"), new SimpleString("This String is worthless and bigger and bigger!"));
+      implMsg.removeProperty(new SimpleString("Key2"));
 
-      checkSizes(implMsg);
+      checkSizes(implMsg, new ServerMessageImpl());
 
       implMsg.removeProperty(new SimpleString("Key"));
       
-      checkSizes(implMsg);
+      checkSizes(implMsg, new ServerMessageImpl());
 
    }
    
-   private void checkSizes(EncodingSupport obj)
+   private void checkSizes(EncodingSupport obj, EncodingSupport newObject)
    {
       ByteBuffer bf = ByteBuffer.allocateDirect(1024);
       ByteBufferWrapper buffer = new ByteBufferWrapper(bf);
       obj.encode(buffer);
       assertEquals (buffer.position(), obj.encodeSize());
+      int originalSize = buffer.position();
+      
+      bf.rewind();
+      newObject.decode(buffer);
+      
+      log.info("Obj.size = " + obj.encodeSize() + " newObject.size = " + newObject.encodeSize());
+      
+      bf = ByteBuffer.allocateDirect(1024 * 10);
+      buffer = new ByteBufferWrapper(bf);
+      
+      newObject.encode(buffer);
+      
+      assertEquals(newObject.encodeSize(), bf.position());
+      assertEquals(originalSize, bf.position());
+      
+      
+      
+      
    }
    
 

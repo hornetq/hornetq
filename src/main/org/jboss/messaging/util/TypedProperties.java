@@ -45,6 +45,7 @@ import static org.jboss.messaging.util.DataConstants.STRING;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.logging.Logger;
@@ -63,6 +64,7 @@ public class TypedProperties implements EncodingSupport
 	private static final Logger log = Logger.getLogger(TypedProperties.class);
 	
 	private Map<SimpleString, PropertyValue> properties;
+	AtomicInteger size = new AtomicInteger(0);
 	
 	public TypedProperties()
 	{		
@@ -76,61 +78,61 @@ public class TypedProperties implements EncodingSupport
 	public void putBooleanProperty(final SimpleString key, final boolean value)
 	{
    	checkCreateProperties();   	
-		properties.put(key, new BooleanValue(value));
+   	doPutValue(key, new BooleanValue(value));
 	}
          	
 	public void putByteProperty(final SimpleString key, final byte value)
 	{
    	checkCreateProperties();   	
-   	properties.put(key, new ByteValue(value));
+   	doPutValue(key, new ByteValue(value));
 	}
 	
 	public void putBytesProperty(final SimpleString key, final byte[] value)
 	{
    	checkCreateProperties();   	
-   	properties.put(key, value == null ? new NullValue() : new BytesValue(value));
+   	doPutValue(key, value == null ? new NullValue() : new BytesValue(value));
 	}
 	
 	public void putShortProperty(final SimpleString key, final short value)
 	{
    	checkCreateProperties();
-   	properties.put(key, new ShortValue(value));
+   	doPutValue(key, new ShortValue(value));
 	}
 	
 	public void putIntProperty(final SimpleString key, final int value)
 	{
    	checkCreateProperties();
-   	properties.put(key, new IntValue(value));
+   	doPutValue(key, new IntValue(value));
 	}
 	
 	public void putLongProperty(final SimpleString key, final long value)
 	{
    	checkCreateProperties();
-   	properties.put(key, new LongValue(value));
+   	doPutValue(key, new LongValue(value));
 	}
 	
 	public void putFloatProperty(final SimpleString key, final float value)
 	{
    	checkCreateProperties();
-   	properties.put(key, new FloatValue(value));
+   	doPutValue(key, new FloatValue(value));
 	}
 	
 	public void putDoubleProperty(final SimpleString key, final double value)
 	{
    	checkCreateProperties();
-   	properties.put(key, new DoubleValue(value));
+   	doPutValue(key, new DoubleValue(value));
 	}
 	
 	public void putStringProperty(final SimpleString key, final SimpleString value)
 	{
    	checkCreateProperties();
-   	properties.put(key, value == null ? new NullValue() : new StringValue(value));
+   	doPutValue(key, value == null ? new NullValue() : new StringValue(value));
 	}
 	
 	public void putCharProperty(final SimpleString key, final char value)
 	{
    	checkCreateProperties();
-   	properties.put(key, new CharValue(value));
+   	doPutValue(key, new CharValue(value));
 	}
 	
 	public Object getProperty(final SimpleString key)
@@ -166,6 +168,7 @@ public class TypedProperties implements EncodingSupport
    	   int numHeaders = buffer.getInt();
    	 		
       	properties = new HashMap<SimpleString, PropertyValue>(numHeaders);
+      	size.set(0);
    		
    		for (int i = 0; i < numHeaders; i++)
    		{
@@ -183,67 +186,67 @@ public class TypedProperties implements EncodingSupport
    			   case NULL:
    			   {
    			      val = new NullValue();
-   			      properties.put(key, val);
+   			      doPutValue(key, val);
    			      break;
    			   }
    			   case CHAR:
    			   {
    			      val = new CharValue(buffer);
-   			      properties.put(key, val);
+   			      doPutValue(key, val);
    			      break;
    			   }
    				case BOOLEAN:
    				{
    					val = new BooleanValue(buffer);
-   					properties.put(key, val);	
+   					doPutValue(key, val);	
    					break;
    				}
    				case BYTE:
    				{
    					val = new ByteValue(buffer);
-   					properties.put(key, val);
+   					doPutValue(key, val);
    					break;
    				}
    				case BYTES:
    				{
    				   val = new BytesValue(buffer);
-   				   properties.put(key, val);
+   				   doPutValue(key, val);
    				   break;
    				}
    				case SHORT:
    				{
    					val = new ShortValue(buffer);
-   					properties.put(key, val);
+   					doPutValue(key, val);
    					break;
    				}
    				case INT:
    				{
    					val = new IntValue(buffer);
-   					properties.put(key, val);
+   					doPutValue(key, val);
    					break;
    				}
    				case LONG:
    				{
    					val = new LongValue(buffer);
-   					properties.put(key, val);
+   					doPutValue(key, val);
    					break;
    				}
    				case FLOAT:
    				{
    					val = new FloatValue(buffer);
-   					properties.put(key, val);   				
+   					doPutValue(key, val);   				
    					break;
    				}
    				case DOUBLE:
    				{
    					val = new DoubleValue(buffer);
-   					properties.put(key, val);
+   					doPutValue(key, val);
    					break;
    				}
    				case STRING:
    				{
    					val = new StringValue(buffer);
-   					properties.put(key, val);
+   					doPutValue(key, val);
    					break;
    				}
    				default:
@@ -287,12 +290,8 @@ public class TypedProperties implements EncodingSupport
 	   }
 	   else
 	   {
-	      int size = SIZE_BYTE + SIZE_INT;
-         for (Map.Entry<SimpleString, PropertyValue> entry: properties.entrySet())
-         {
-            size += SimpleString.sizeofString(entry.getKey()) + entry.getValue().encodeSize(); 
-         }
-         return size;
+         return SIZE_BYTE + SIZE_INT + size.intValue();
+         
 	   }
 	}
 	
@@ -314,7 +313,20 @@ public class TypedProperties implements EncodingSupport
    	}
    }
    
-	private Object doRemoveProperty(final Object key)
+   private void doPutValue(final SimpleString key, PropertyValue value)
+   {
+      PropertyValue oldValue = properties.put(key, value);
+      if (oldValue != null)
+      {
+         size.addAndGet(value.encodeSize() - oldValue.encodeSize());
+      }
+      else
+      {
+         size.addAndGet(SimpleString.sizeofString(key) + value.encodeSize());
+      }
+   }
+   
+	private Object doRemoveProperty(final SimpleString key)
 	{
 		if (properties == null)
 		{
@@ -322,6 +334,8 @@ public class TypedProperties implements EncodingSupport
 		}
 		
 		PropertyValue val = properties.remove(key);
+		
+		size.addAndGet((SimpleString.sizeofString(key) + val.encodeSize()) * -1);
 		
 		if (val == null)
 		{
