@@ -51,14 +51,15 @@ public class MinaHandler extends IoHandlerAdapter implements
 
    // Note! must use ConcurrentMap here to avoid race condition
    private final ConcurrentMap<Long, Executor> executors = new ConcurrentHashMap<Long, Executor>();
-
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
    public MinaHandler(final PacketDispatcher dispatcher,
-         final ExecutorService executorService,
-         final CleanUpNotifier failureNotifier,
-         final boolean closeSessionOnExceptionCaught)
+                      final ExecutorService executorService,
+                      final CleanUpNotifier failureNotifier,
+                      final boolean closeSessionOnExceptionCaught,
+                      final boolean useExecutor)
    {
       assert dispatcher != null;
       assert executorService != null;
@@ -66,8 +67,14 @@ public class MinaHandler extends IoHandlerAdapter implements
       this.dispatcher = dispatcher;
       this.failureNotifier = failureNotifier;
       this.closeSessionOnExceptionCaught = closeSessionOnExceptionCaught;
-
-      this.executorFactory = new OrderedExecutorFactory(executorService);
+      if (useExecutor)
+      {
+         this.executorFactory = new OrderedExecutorFactory(executorService);
+      }
+      else
+      {
+         this.executorFactory = null;
+      }
       this.dispatcher.setListener(this);
    }
 
@@ -112,35 +119,44 @@ public class MinaHandler extends IoHandlerAdapter implements
    throws Exception
    {
       final Packet packet = (Packet) message;
-      long executorID = packet.getExecutorID();
-
-      Executor executor = executors.get(executorID);
-      if (executor == null)
+      
+      if (executorFactory != null)
       {
-         executor = executorFactory.getOrderedExecutor();
-
-         Executor oldExecutor = executors.putIfAbsent(executorID, executor);
-
-         if (oldExecutor != null)
+         
+         long executorID = packet.getExecutorID();
+   
+         Executor executor = executors.get(executorID);
+         if (executor == null)
          {
-            //Avoid race
-            executor = oldExecutor;
-         }
-      }
-
-      executor.execute(new Runnable()
-      {
-         public void run()
-         {
-            try
+            executor = executorFactory.getOrderedExecutor();
+   
+            Executor oldExecutor = executors.putIfAbsent(executorID, executor);
+   
+            if (oldExecutor != null)
             {
-               messageReceivedInternal(session, packet);
-            } catch (Exception e)
-            {
-               log.error("unexpected error", e);
+               //Avoid race
+               executor = oldExecutor;
             }
          }
-      });
+   
+         executor.execute(new Runnable()
+         {
+            public void run()
+            {
+               try
+               {
+                  messageReceivedInternal(session, packet);
+               } catch (Exception e)
+               {
+                  log.error("unexpected error", e);
+               }
+            }
+         });
+      }
+      else
+      {
+         messageReceivedInternal(session, packet);
+      }
    }
 
    private final int high = 2000;

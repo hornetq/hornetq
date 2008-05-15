@@ -259,11 +259,11 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    public ClientConsumer createConsumer(final SimpleString queueName) throws MessagingException
    {
-      return createConsumer(queueName, null, false, false);
+      return createConsumer(queueName, null, false, false, false);
    }
    
    public ClientConsumer createConsumer(final SimpleString queueName, final SimpleString filterString, final boolean noLocal,
-                                        final boolean autoDeleteQueue) throws MessagingException
+                                        final boolean autoDeleteQueue, final boolean direct) throws MessagingException
    {
       checkClosed();
       
@@ -278,7 +278,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       int tokenBatchSize = response.getWindowSize() == -1 ? 0 : 1;
       
       ClientConsumerInternal consumer =
-         new ClientConsumerImpl(this, response.getConsumerTargetID(), clientTargetID, executor, remotingConnection, tokenBatchSize);
+         new ClientConsumerImpl(this, response.getConsumerTargetID(), clientTargetID, executor, remotingConnection, tokenBatchSize, direct);
 
       consumers.put(response.getConsumerTargetID(), consumer);
       

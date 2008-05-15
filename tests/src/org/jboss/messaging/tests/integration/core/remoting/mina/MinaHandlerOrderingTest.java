@@ -102,7 +102,7 @@ public class MinaHandlerOrderingTest extends TestCase
    {
       clientDispatcher = new PacketDispatcherImpl(null);
       threadPool = Executors.newCachedThreadPool();
-      handler = new MinaHandler(clientDispatcher, threadPool, null, true);
+      handler = new MinaHandler(clientDispatcher, threadPool, null, true, true);
 
       handler_1 = new TestPacketHandler(23);
       clientDispatcher.register(handler_1);
