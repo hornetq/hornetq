@@ -21,7 +21,10 @@
   */
 package org.jboss.messaging.jms.client;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.jms.BytesMessage;
 import javax.jms.DeliveryMode;
@@ -45,6 +48,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.UUIDGenerator;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -75,7 +79,11 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
    
    private int defaultDeliveryMode = DeliveryMode.PERSISTENT;
    
-   private JBossDestination defaultDestination;   
+   private JBossDestination defaultDestination;
+   
+   private final String messageIDPrefix;
+   
+   private final AtomicLong sequenceNumber = new AtomicLong(0);
 
    // Constructors --------------------------------------------------
    
@@ -84,6 +92,19 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
       this.producer = producer;     
       
       this.defaultDestination = defaultDestination;
+      
+      //TODO the UUID should be generated at the JMS Connection level, 
+      // then session, producers & messages ID could be created using simple sequences
+      String uuid = null;
+      try
+      {
+         UUIDGenerator gen = UUIDGenerator.getInstance();
+         uuid = gen.generateTimeBasedUUID(InetAddress.getLocalHost()).toString();
+      } catch (UnknownHostException e)
+      {
+         uuid = java.util.UUID.randomUUID().toString();
+      }      
+      messageIDPrefix = "ID:" + uuid + ":";
    }
    
    // MessageProducer implementation --------------------------------
@@ -396,10 +417,7 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
       if (!disableMessageID)
       {
          // Generate an id
-
-         String id = UUID.randomUUID().toString();
-
-         jbm.setJMSMessageID("ID:" + id);
+         jbm.setJMSMessageID(messageIDPrefix + sequenceNumber.incrementAndGet());
       }
 
       if (foreign)
