@@ -24,11 +24,12 @@ package org.jboss.messaging.core.server.impl;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
@@ -55,7 +56,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessag
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.server.Delivery;
-import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConnection;
@@ -128,13 +128,15 @@ public class ServerSessionImpl implements ServerSession
 
    private final Set<ServerProducer> producers = new ConcurrentHashSet<ServerProducer>();
 
-   private final LinkedList<Delivery> deliveries = new LinkedList<Delivery>();
+   private final java.util.Queue<Delivery> deliveries = new ConcurrentLinkedQueue<Delivery>();
 
-   private long deliveryIDSequence = 0;
+   private final AtomicLong deliveryIDSequence = new AtomicLong(0);
 
    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
    private Transaction tx;
+   
+   private final Object rollbackCancelLock = new Object();
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -223,12 +225,18 @@ public class ServerSessionImpl implements ServerSession
       dispatcher.unregister(producer.getID());
    }
 
-   public synchronized void handleDelivery(final MessageReference ref, final ServerConsumer consumer) throws Exception
+   public void handleDelivery(final MessageReference ref, final ServerConsumer consumer) throws Exception
    {
-      Delivery delivery = new DeliveryImpl(ref, id, consumer.getClientTargetID(), deliveryIDSequence++, sender);
-
-      deliveries.add(delivery);
-
+      Delivery delivery;
+      synchronized (rollbackCancelLock)
+      {
+         long nextID = deliveryIDSequence.getAndIncrement();
+         
+         delivery = new DeliveryImpl(ref, id, consumer.getClientTargetID(), nextID, sender);
+         
+         deliveries.add(delivery);
+      }
+                 
       delivery.deliver();
    }
 
@@ -324,7 +332,7 @@ public class ServerSessionImpl implements ServerSession
       }
    }
 
-   public synchronized void acknowledge(final long deliveryID, final boolean allUpTo) throws Exception
+   public void acknowledge(final long deliveryID, final boolean allUpTo) throws Exception
    {
    	/*
        Note that we do not consider it an error if the deliveries cannot be found to be acked.
@@ -421,7 +429,7 @@ public class ServerSessionImpl implements ServerSession
       }
 
       // Synchronize to prevent any new deliveries arriving during this recovery. 
-      synchronized (this)
+      synchronized (rollbackCancelLock)
       {
          // Add any unacked deliveries into the tx. Doing this ensures all references are rolled back in the correct
          // order in a single contiguous block
@@ -433,7 +441,7 @@ public class ServerSessionImpl implements ServerSession
         
          deliveries.clear();
          
-         deliveryIDSequence -= tx.getAcknowledgementsCount();
+         deliveryIDSequence.addAndGet(-tx.getAcknowledgementsCount());
       }
       
       tx.rollback(queueSettingsRepository);
@@ -449,7 +457,7 @@ public class ServerSessionImpl implements ServerSession
 
          Transaction cancelTx;
 
-         synchronized (this)
+         synchronized (rollbackCancelLock)
          {
             cancelTx = new TransactionImpl(persistenceManager, postOffice);
 
@@ -1066,19 +1074,16 @@ public class ServerSessionImpl implements ServerSession
 
 		if (message.isDurable() && queue.isDurable())
 		{
-			synchronized (message)
-			{
-				message.decrementDurableRefCount();
+			int count = message.decrementDurableRefCount();
 
-				if (message.getDurableRefCount() == 0)
-				{
-					persistenceManager.storeDelete(message.getMessageID());
-				}
-				else
-				{
-					persistenceManager.storeAcknowledge(queue.getPersistenceID(), message.getMessageID());
-				}
+			if (count == 0)
+			{
+				persistenceManager.storeDelete(message.getMessageID());
 			}
+			else
+			{
+				persistenceManager.storeAcknowledge(queue.getPersistenceID(), message.getMessageID());
+			}			
 		}
 
 		queue.referenceAcknowledged();

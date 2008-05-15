@@ -339,8 +339,6 @@ public class ConnectionFactoryTest extends JMSTestCase
 
          assertTrue(fast.processed == numMessages - 2);
          
-        // Thread.sleep(10000);
-         
       }
       finally
       {

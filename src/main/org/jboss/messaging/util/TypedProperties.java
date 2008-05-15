@@ -45,7 +45,6 @@ import static org.jboss.messaging.util.DataConstants.STRING;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.logging.Logger;
@@ -64,7 +63,8 @@ public class TypedProperties implements EncodingSupport
 	private static final Logger log = Logger.getLogger(TypedProperties.class);
 	
 	private Map<SimpleString, PropertyValue> properties;
-	AtomicInteger size = new AtomicInteger(0);
+	
+	private volatile int size;
 	
 	public TypedProperties()
 	{		
@@ -168,7 +168,7 @@ public class TypedProperties implements EncodingSupport
    	   int numHeaders = buffer.getInt();
    	 		
       	properties = new HashMap<SimpleString, PropertyValue>(numHeaders);
-      	size.set(0);
+      	size = 0;
    		
    		for (int i = 0; i < numHeaders; i++)
    		{
@@ -290,7 +290,7 @@ public class TypedProperties implements EncodingSupport
 	   }
 	   else
 	   {
-         return SIZE_BYTE + SIZE_INT + size.intValue();
+         return SIZE_BYTE + SIZE_INT + size;
          
 	   }
 	}
@@ -318,11 +318,11 @@ public class TypedProperties implements EncodingSupport
       PropertyValue oldValue = properties.put(key, value);
       if (oldValue != null)
       {
-         size.addAndGet(value.encodeSize() - oldValue.encodeSize());
+         size += value.encodeSize() - oldValue.encodeSize();
       }
       else
       {
-         size.addAndGet(SimpleString.sizeofString(key) + value.encodeSize());
+         size += SimpleString.sizeofString(key) + value.encodeSize();
       }
    }
    
@@ -334,15 +334,15 @@ public class TypedProperties implements EncodingSupport
 		}
 		
 		PropertyValue val = properties.remove(key);
-		
-		size.addAndGet((SimpleString.sizeofString(key) + val.encodeSize()) * -1);
-		
+				
 		if (val == null)
 		{
          return null;
 		}
 		else
 		{
+		   size -= SimpleString.sizeofString(key) + val.encodeSize();
+	      
 			return val.getValue();
 		}
 	}

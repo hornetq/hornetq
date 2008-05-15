@@ -141,7 +141,6 @@ public class MinaHandler extends IoHandlerAdapter implements
             }
          }
       });
-
    }
 
    private final int high = 2000;
@@ -177,10 +176,6 @@ public class MinaHandler extends IoHandlerAdapter implements
 
    public void acquireSemaphore() throws Exception
    {
-      // if (!sem.tryAcquire(5000, TimeUnit.MILLISECONDS))
-      // {
-      // throw new IllegalStateException("Timed out");
-      // }
       int newcount = count.incrementAndGet();
 
       if (newcount == high)
@@ -214,7 +209,17 @@ public class MinaHandler extends IoHandlerAdapter implements
          {
             public void send(Packet p) throws Exception
             {
+               try
+               {
+                  acquireSemaphore();
+               }
+               catch (Exception e)
+               {
+                  log.error("Failed to acquire sem", e);
+               }
+               
                dispatcher.callFilters(p);
+
                session.write(p);
             }
 

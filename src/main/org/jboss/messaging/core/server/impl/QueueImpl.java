@@ -43,7 +43,6 @@ import org.jboss.messaging.core.server.DistributionPolicy;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.SimpleString;
@@ -172,6 +171,8 @@ public class QueueImpl implements Queue
       deliver();
    }
  
+   //private volatile int count = 0;
+   
    /*
     * Attempt to deliver all the messages in the queue
     * 
@@ -219,7 +220,11 @@ public class QueueImpl implements Queue
          {
             if (iterator == null)
             {
-               messageReferences.removeFirst();
+//               count++;
+//               if (count == 500000)
+//               {
+                  messageReferences.removeFirst();
+            //   }
             }
             else
             {

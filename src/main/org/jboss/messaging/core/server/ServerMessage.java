@@ -42,9 +42,9 @@ public interface ServerMessage extends Message
    
    MessageReference createReference(Queue queue);   
 
-   void decrementDurableRefCount();
+   int decrementDurableRefCount();
    
-   void incrementDurableRefCount();
+   int incrementDurableRefCount();
    
    int getDurableRefCount();
    

@@ -120,14 +120,14 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return durableRefCount.get();
    }
    
-   public void decrementDurableRefCount()
+   public int decrementDurableRefCount()
    {
-      durableRefCount.decrementAndGet();
+      return durableRefCount.decrementAndGet();
    }
    
-   public void incrementDurableRefCount()
+   public int incrementDurableRefCount()
    {
-      durableRefCount.incrementAndGet();
+      return durableRefCount.incrementAndGet();
    }
      
    public ServerMessage copy()
