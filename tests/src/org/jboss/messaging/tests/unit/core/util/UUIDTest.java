@@ -8,7 +8,6 @@ package org.jboss.messaging.tests.unit.core.util;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -49,11 +48,8 @@ public class UUIDTest extends TestCase
          uuids.add(gen.generateTimeBasedUUID(addr).toString());
       }
       
-      // we sort the UUIDs...
-      Collections.sort(uuids);
-      // ...and put them in a set to check duplicates
+      // we put them in a set to check duplicates
       Set<String> uuidsSet = new HashSet<String>(uuids);
-      
       assertEquals(MANY_TIMES, uuidsSet.size());
    }
    
