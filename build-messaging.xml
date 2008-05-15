@@ -68,6 +68,7 @@
    <property name="src.etc.dir" value="${src.dir}/etc"/>
    <property name="src.bin.dir" value="${src.dir}/bin"/>
    <property name="doc.dir" value="docs"/>
+   <property name="licenses.dir" value="licenses"/>
    <property name="doc.examples.dir" value="examples"/>
    <property name="doc.build.dir" value="${doc.dir}/userguide/build"/>
    <property name="build.api.dir" value="${build.dir}/api"/>
@@ -81,6 +82,8 @@
    <property name="build.distro.bin.dir" value="${build.distro.dir}/bin"/>
    <property name="build.distro.api.dir" value="${build.distro.dir}/docs/api"/>
    <property name="build.distro.examples.dir" value="${build.distro.dir}/examples"/>
+   <property name="build.distro.licenses.dir" value="${build.distro.dir}/licenses"/>
+
    <!-- ======================================================================================== -->
    <!-- Thirdparty Dependency Definitions                                                        -->
    <!-- ======================================================================================== -->
@@ -392,6 +395,7 @@
       <mkdir dir="${build.distro.config.dir}"/>
       <mkdir dir="${build.distro.bin.dir}"/>
       <mkdir dir="${build.distro.api.dir}"/>
+      <mkdir dir="${build.distro.licenses.dir}"/>
 
       <copy todir="${build.distro.lib.dir}">
          <fileset dir="${build.jars.dir}">
@@ -519,6 +523,12 @@
       <antcall target="javadoc"/>
       <copy todir="${build.distro.api.dir}/">
          <fileset dir="${build.api.dir}">
+            <include name="**"/>
+         </fileset>
+      </copy>
+
+      <copy todir="${build.distro.licenses.dir}/">
+         <fileset dir="${licenses.dir}">
             <include name="**"/>
          </fileset>
       </copy>
