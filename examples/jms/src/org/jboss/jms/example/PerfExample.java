@@ -34,6 +34,7 @@ import java.util.concurrent.*;
  * 
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="clebert.suconic@jboss.com">Clebert Suconic</a>
  */
 public class PerfExample
 {
@@ -50,7 +51,8 @@ public class PerfExample
       PerfExample perfExample = new PerfExample();
       if (args[0].equalsIgnoreCase("-l"))
       {
-         perfExample.runListener();
+         int noOfMessages = Integer.parseInt(args[1]);
+         perfExample.runListener(noOfMessages);
       }
       else
       {
@@ -94,9 +96,6 @@ public class PerfExample
          producer.setDisableMessageID(true);
          producer.setDisableMessageTimestamp(true);
          producer.setDeliveryMode(perfParams.getDeliveryMode());
-         ObjectMessage m = session.createObjectMessage();
-         m.setObject(perfParams);
-         producer.send(m);
          scheduler.scheduleAtFixedRate(command, perfParams.getSamplePeriod(), perfParams.getSamplePeriod(), TimeUnit.SECONDS);
          BytesMessage bytesMessage = session.createBytesMessage();
          byte[] payload = new byte[1024];
@@ -144,10 +143,11 @@ public class PerfExample
       }
    }
 
-   public void runListener()
+   public void runListener(int numberOfMessages)
    {
       try
       {
+         System.out.println("Running listener for " + numberOfMessages);
          init(false);
          MessageConsumer messageConsumer = session.createConsumer(queue);
          CountDownLatch countDownLatch = new CountDownLatch(1);
@@ -161,7 +161,7 @@ public class PerfExample
                break;
             }
          }
-         messageConsumer.setMessageListener(new PerfListener(countDownLatch));
+         messageConsumer.setMessageListener(new PerfListener(countDownLatch, numberOfMessages));
          log.info("READY!!!");
          countDownLatch.await();
 
@@ -191,15 +191,16 @@ public class PerfExample
     */
    class PerfListener implements MessageListener
    {
-      private boolean started = false;
-      private PerfParams params = null;
-      int count = 0;
       private CountDownLatch countDownLatch;
+      int noOfMessages;
+      
+      boolean started = false;
 
 
-      public PerfListener(CountDownLatch countDownLatch)
+      public PerfListener(CountDownLatch countDownLatch, int noOfMessages)
       {
          this.countDownLatch = countDownLatch;
+         this.noOfMessages = noOfMessages;
       }
 
       public void onMessage(Message message)
@@ -207,37 +208,25 @@ public class PerfExample
          if (!started)
          {
             started = true;
-            ObjectMessage m = (ObjectMessage) message;
-            try
-            {
-               params = (PerfParams) m.getObject();
-            }
-            catch (JMSException e)
-            {
-               params = new PerfParams();
-            }
-            log.info("params = " + params);
-            scheduler.scheduleAtFixedRate(command, params.getSamplePeriod(), params.getSamplePeriod(), TimeUnit.SECONDS);
+            scheduler.scheduleAtFixedRate(command, 1, 1, TimeUnit.SECONDS);
          }
-         else
+
+         try
          {
-            try
+            BytesMessage bm = (BytesMessage) message;
+            messageCount++;      
+            if (messageCount == noOfMessages)
             {
-               BytesMessage bm = (BytesMessage) message;
-               messageCount++;      
-               if (messageCount == params.getNoOfMessagesToSend())
-               {
-                  countDownLatch.countDown();
-                  scheduler.shutdownNow();
-                  log.info("average " +  command.getAverage() + " per " + (params.getSamplePeriod()/1000) + " secs" );
-               }
-            }
-            catch (Exception e)
-            {
-               e.printStackTrace();
+               countDownLatch.countDown();
+               scheduler.shutdownNow();
+               log.info("average " +  command.getAverage() + " per sec" );
             }
          }
-      }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+         }
+       }
    }
 
    /**

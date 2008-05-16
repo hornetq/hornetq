@@ -109,22 +109,23 @@
          <classpath refid="runtime.classpath"/>
       	<jvmarg value="-Xmx1024M"/>
       	<jvmarg value="-XX:+UseParallelGC"/>
-         <arg value="-l"/>
+        <arg value="-l"/>
+        <arg value="${message.count}"/>
       </java>
    </target>
 
 
    <target name="perfSender" depends="compile">
-      <echo>*****************************************************************</echo>
-      <echo>* available parameters (-Dmessage.count=1000)                   *</echo>
-      <echo>*                                                               *</echo>
-      <echo>*     param            description                default       *</echo>
-      <echo>*  message.count    number of messages            200000        *</echo>
-      <echo>*  delivery.mode  PERSISTENT/NON_PERSISTENT    NON_PERSISTENT   *</echo>
-      <echo>*  sample.period  timing period in seconds       1 second       *</echo>
-      <echo>*   sess.trans      Is session transacted          false        *</echo>
-      <echo>* sess.trans.size  batch size to commit            5000         *</echo>
-      <echo>*****************************************************************</echo>
+      <echo>***********************************************************************************</echo>
+      <echo>* available parameters (-Dmessage.count=1000)                                </echo>
+      <echo>*                                                                            </echo>
+      <echo>*     param            description                default          current</echo>
+   	  <echo>*  message.count    number of messages            200000           ${message.count}</echo>
+      <echo>*  delivery.mode  PERSISTENT/NON_PERSISTENT    NON_PERSISTENT      ${delivery.mode}</echo>
+      <echo>*  sample.period  timing period in seconds       1 second          ${sample.period}</echo>
+      <echo>*   sess.trans      Is session transacted          false           ${sess.trans}</echo>
+      <echo>* sess.trans.size  batch size to commit            5000            ${sess.trans.size}</echo>
+      <echo>***********************************************************************************</echo>
       <java classname="org.jboss.jms.example.PerfExample" fork="true">
          <classpath refid="runtime.classpath"/>
       	<jvmarg value="-Xmx512M"/>
