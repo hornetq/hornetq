@@ -84,7 +84,7 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
        return (dispatcher != null);
    }
 
-   public synchronized NIOConnector getConnector(Location location, ConnectionParams connectionParams,  PacketDispatcher dispatcher)
+   public synchronized NIOConnector getConnector(Location location, ConnectionParams connectionParams)
    {
       assert location != null;
       String key = location.getLocation();
@@ -125,12 +125,12 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
 
       if (transport == TCP)
       {
-         connector = new MinaConnector(location, connectionParams, dispatcher);
+         connector = new MinaConnector(location, connectionParams, new PacketDispatcherImpl(null));
       }
       else if (transport == INVM)
       {
          PacketDispatcher localDispatcher = localDispatchers.get(key);
-         connector = new INVMConnector(idCounter.getAndIncrement(), dispatcher, localDispatcher);
+         connector = new INVMConnector(idCounter.getAndIncrement(), new PacketDispatcherImpl(null), localDispatcher);
       }
 
       if (connector == null)

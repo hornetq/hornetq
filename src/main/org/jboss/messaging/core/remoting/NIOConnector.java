@@ -27,4 +27,6 @@ public interface NIOConnector
    void removeSessionListener(RemotingSessionListener listener);
 
    String getServerURI();
+
+   PacketDispatcher getDispatcher();
 }

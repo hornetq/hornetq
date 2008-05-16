@@ -22,7 +22,7 @@
       <remoting-host>localhost</remoting-host>
 
       <!--  timeout in seconds -->
-      <remoting-timeout>5</remoting-timeout>
+      <remoting-timeout>50000</remoting-timeout>
       
       <!-- true to disable invm communication when the client and the server are in the same JVM.     -->
       <!-- it is not allowed to disable invm communication when the remoting-transport is set to INVM -->
@@ -61,11 +61,11 @@
       
       <!-- Storage configuration -->
                  
-      <bindings-directory>${user.home}/jbm-test/data/bindings</bindings-directory>
+      <bindings-directory>data/bindings</bindings-directory>
       
       <create-bindings-dir>true</create-bindings-dir>
       
-      <journal-directory>${user.home}/jbm-test/data/journal</journal-directory>
+      <journal-directory>data/journal</journal-directory>
       
       <create-journal-dir>true</create-journal-dir>
       

@@ -4,17 +4,11 @@ import java.util.concurrent.CountDownLatch;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
-import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientProducer;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.Location;
-import org.jboss.messaging.core.client.MessageHandler;
+import org.jboss.messaging.core.client.*;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
+import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
@@ -85,7 +79,37 @@ public class CoreClientTest extends TestCase
       
       conn.close();
    }
-   
+
+   public void testCoreClientMultipleConnections() throws Exception
+   {
+      Location location = new LocationImpl(TransportType.TCP, "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
+      ConnectionParams connectionParams = new ConnectionParamsImpl();
+      connectionParams.setTimeout(500000);
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location, connectionParams);
+      ClientConnection conn = cf.createConnection();
+
+      ClientConnectionFactory cf2 = new ClientConnectionFactoryImpl(location, connectionParams);
+      ClientConnection conn2 = cf2.createConnection();
+
+      ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
+      session.createQueue(QUEUE, QUEUE, null, false, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      ClientMessage message = new ClientMessageImpl(JBossTextMessage.TYPE, false, 0,
+            System.currentTimeMillis(), (byte) 1);
+      message.getBody().putString("testINVMCoreClient");
+      producer.send(message);
+
+      ClientConsumer consumer = session.createConsumer(QUEUE);
+      conn.start();
+
+      message = consumer.receive(1000);
+
+      assertEquals("testINVMCoreClient", message.getBody().getString());
+
+      conn.close();
+   }
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

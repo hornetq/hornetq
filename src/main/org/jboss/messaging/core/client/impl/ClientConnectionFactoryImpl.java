@@ -65,8 +65,6 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
    private final Location location;
 
    private final ConnectionParams connectionParams;
-   
-   private final PacketDispatcher dispatcher;
  
    private final boolean strictTck;
       
@@ -94,7 +92,6 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
       this.defaultConsumerMaxRate = defaultConsumerMaxRate;
       this.defaultProducerWindowSize = defaultProducerWindowSize;
       this.defaultProducerMaxRate = defaultProducerMaxRate;
-      this.dispatcher = new PacketDispatcherImpl(null);
       this.connectionParams = connectionParams;
    }
    
@@ -115,7 +112,6 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
       this.defaultConsumerMaxRate = -1;
       this.defaultProducerWindowSize = 1000;
       this.defaultProducerMaxRate = -1;
-      this.dispatcher = new PacketDispatcherImpl(null);
       this.location = location;
       this.connectionParams = connectionParams;
    }
@@ -132,7 +128,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
       RemotingConnection remotingConnection = null;
       try
       {
-         remotingConnection = new RemotingConnectionImpl(location, connectionParams,  dispatcher);
+         remotingConnection = new RemotingConnectionImpl(location, connectionParams);
        
          remotingConnection.start();
          

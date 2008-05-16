@@ -45,7 +45,7 @@ public interface ConnectorRegistry
     */
    boolean unregister(Location location);
 
-   NIOConnector getConnector(Location location, ConnectionParams connectionParams, PacketDispatcher dispatcher);
+   NIOConnector getConnector(Location location, ConnectionParams connectionParams);
 
    /**
     * Decrement the number of references on the NIOConnector corresponding to

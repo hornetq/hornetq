@@ -68,19 +68,17 @@ public class RemotingConnectionImpl implements RemotingConnection
    
    private RemotingSessionListener listener;
 
-   private transient PacketDispatcher dispatcher;
+   //private transient PacketDispatcher dispatcher;
    
    // Constructors ---------------------------------------------------------------------------------
 
-   public RemotingConnectionImpl(final Location location, ConnectionParams connectionParams, final PacketDispatcher dispatcher) throws Exception
+   public RemotingConnectionImpl(final Location location, ConnectionParams connectionParams) throws Exception
    {
       assert location != null;
-      assert dispatcher != null;
       assert connectionParams != null;
       
       this.location = location;
       this.connectionParams = connectionParams;
-      this.dispatcher = dispatcher;
       
       log.trace(this + " created with configuration " + location);
    }
@@ -93,7 +91,7 @@ public class RemotingConnectionImpl implements RemotingConnection
    {
       if (log.isTraceEnabled()) { log.trace(this + " started remoting connection"); }
 
-      connector = REGISTRY.getConnector(location, connectionParams, dispatcher);
+      connector = REGISTRY.getConnector(location, connectionParams);
       session = connector.connect();
 
       if (log.isDebugEnabled())
@@ -143,11 +141,11 @@ public class RemotingConnectionImpl implements RemotingConnection
    {
       checkConnected();
       
-      long handlerID = dispatcher.generateID();
+      long handlerID = connector.getDispatcher().generateID();
       
       ResponseHandler handler = new ResponseHandler(handlerID);
       
-      dispatcher.register(handler);
+      connector.getDispatcher().register(handler);
       
       try
       {  
@@ -186,7 +184,7 @@ public class RemotingConnectionImpl implements RemotingConnection
       }
       finally
       {
-         dispatcher.unregister(handlerID);
+         connector.getDispatcher().unregister(handlerID);
       }           
    }
    
@@ -229,7 +227,7 @@ public class RemotingConnectionImpl implements RemotingConnection
    
    public PacketDispatcher getPacketDispatcher()
    {
-      return dispatcher;
+      return connector.getDispatcher();
    }
    
    public Location getLocation()

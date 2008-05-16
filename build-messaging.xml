@@ -488,14 +488,6 @@
             <include name="messaging.truststore"/>
          </fileset>
       </copy>
-      <replace file="${build.distro.config.dir}/jbm-configuration.xml">
-         <replacetoken id="token"><![CDATA[${user.home}/jbm-test/data/bindings]]></replacetoken>
-         <replacevalue id="value">../data/bindings</replacevalue>
-      </replace>
-      <replace file="${build.distro.config.dir}/jbm-configuration.xml">
-         <replacetoken id="token"><![CDATA[${user.home}/jbm-test/data/journal]]></replacetoken>
-         <replacevalue id="value">../data/journal</replacevalue>
-      </replace>
       <copy todir="${build.distro.bin.dir}">
          <fileset dir="${src.bin.dir}">
             <include name="run.sh"/>

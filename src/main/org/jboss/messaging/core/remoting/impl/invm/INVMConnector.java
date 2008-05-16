@@ -73,7 +73,12 @@ public class INVMConnector implements NIOConnector
    {
       return INVM + "://localhost";
    }
-   
+
+   public PacketDispatcher getDispatcher()
+   {
+      return clientDispatcher;
+   }
+
    public void addSessionListener(RemotingSessionListener listener)
    {      
    }

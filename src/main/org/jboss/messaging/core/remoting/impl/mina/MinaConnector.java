@@ -238,7 +238,12 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
    { 
       return location.getLocation() + connectionParams.getURI();
    }
-   
+
+   public PacketDispatcher getDispatcher()
+   {
+      return dispatcher;
+   }
+
    // FailureNotifier implementation -------------------------------
    
    public synchronized void fireCleanup(long sessionID, MessagingException me)
