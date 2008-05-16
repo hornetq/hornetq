@@ -65,7 +65,7 @@
    <property name="build.src.dir" value="${build.dir}/src"/>
    <property name="src.dir" value="src"/>
    <property name="src.main.dir" value="${src.dir}/main"/>
-   <property name="src.etc.dir" value="${src.dir}/etc"/>
+   <property name="src.config.dir" value="${src.dir}/config"/>
    <property name="src.bin.dir" value="${src.dir}/bin"/>
    <property name="doc.dir" value="docs"/>
    <property name="licenses.dir" value="licenses"/>
@@ -231,15 +231,15 @@
    </path>
 
    <path id="unit.test.execution.classpath">
-      <pathelement location="${test.dir}/etc"/>
+      <pathelement location="${test.dir}/config"/>
       <pathelement location="${test.classes.dir}"/>
-      <pathelement location="${src.etc.dir}"/>
+      <pathelement location="config"/>
       <path refid="test.compilation.classpath"/>
    </path>
 
    <path id="jms.test.execution.classpath">
-      <pathelement location="${src.etc.dir}"/>
-      <pathelement location="${test.jms.dir}/etc"/>
+      <pathelement location="${src.config.dir}"/>
+      <pathelement location="${test.jms.dir}/config"/>
       <pathelement location="${test.jms.classes.dir}"/>
       <path refid="jms.test.compilation.classpath"/>
       <path refid="trove.trove.classpath"/>
@@ -479,11 +479,11 @@
       </copy>
 
       <copy todir="${build.distro.config.dir}">
-         <fileset dir="${src.etc.dir}">
+         <fileset dir="${src.config.dir}">
             <include name="*.xml"/>
             <include name="jndi.properties"/>
          </fileset>
-         <fileset dir="${test.dir}/etc">
+         <fileset dir="${test.dir}/config">
             <include name="messaging.keystore"/>
             <include name="messaging.truststore"/>
          </fileset>

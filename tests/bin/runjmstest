@@ -174,8 +174,8 @@ if [ "$remote_debug" = "true" ]; then
    fi
 fi
 
-mkdir $reldir/../jms-tests/build/etc
-cp $reldir/../../src/etc/*.xml $reldir/../jms-tests/build/etc 
+mkdir $reldir/../jms-tests/build/config
+cp $reldir/../../src/config/*.xml $reldir/../jms-tests/build/config 
 
 "$JAVA_HOME/bin/java" -Xmx1024M $JAVA_OPTS -Djava.library.path=$reldir/../../native/bin -Djgroups.bind_addr=localhost -cp "$CLASSPATH" \
 org.jboss.test.messaging.tools.junit.SelectiveTestRunner $TARGET_CLASS $TARGET_TEST

@@ -72,7 +72,7 @@ public class SSLSupportTest extends TestCase
          return;
       }
       
-      SSLSupport.createServerContext("etc/messaging.keystore",
+      SSLSupport.createServerContext("config/messaging.keystore",
             keyStorePassword, trustStorePath, trustStorePassword);
    }
    

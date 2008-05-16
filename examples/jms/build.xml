@@ -37,7 +37,7 @@
    <property file="../build.properties"/>
 
    <property name="src.dir" value="src"/>
-   <property name="etc.dir" value="etc"/>
+   <property name="config.dir" value="config"/>
    <property name="build.dir" value="build"/>
 
    <!--perf props-->
@@ -57,7 +57,7 @@
    <path id="runtime.classpath">
       <path refid="compile.classpath"/>
       <pathelement location="${build.dir}"/>
-      <pathelement location="${etc.dir}"/>
+      <pathelement location="config"/>
    </path>
 
    <target name="help">
