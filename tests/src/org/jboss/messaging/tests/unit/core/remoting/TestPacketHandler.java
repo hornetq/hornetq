@@ -37,7 +37,10 @@ public class TestPacketHandler implements PacketHandler
    {
      if (latch == null)
         return false;
-     return latch.await(time, timeUnit);
+     boolean receivedAll = latch.await(time, timeUnit);
+     if (!receivedAll)
+        System.out.println("Received only " + latch.getCount() + " packets");
+     return receivedAll;
    }
 
    public void expectMessage(int count)

@@ -94,7 +94,7 @@ public abstract class SessionTestBase extends TestCase
          session.write(packets[i]);
       }
 
-      assertTrue(serverPacketHandler.await(10, SECONDS));
+      assertTrue(serverPacketHandler.await(25, SECONDS));
 
       List<Ping> receivedPackets = serverPacketHandler.getPackets();
       assertEquals(MANY_MESSAGES, receivedPackets.size());
