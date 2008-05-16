@@ -45,6 +45,9 @@ public class ConnectionParamsImpl implements ConnectionParams
    protected String keyStorePassword;
    protected String trustStorePath;
    protected String trustStorePassword;
+   protected long writeQueueBlockTimeout = 5000;
+   protected long writeQueueMinBytes = 65536;
+   protected long writeQueueMaxBytes = 1048576;
 
    public int getTimeout()
    {
@@ -124,6 +127,36 @@ public class ConnectionParamsImpl implements ConnectionParams
    public void setTcpSendBufferSize(int tcpSendBufferSize)
    {
       this.tcpSendBufferSize = tcpSendBufferSize;
+   }
+   
+   public long getWriteQueueBlockTimeout()
+   {
+      return writeQueueBlockTimeout;
+   }
+
+   public long getWriteQueueMaxBytes()
+   {
+      return writeQueueMaxBytes;
+   }
+
+   public long getWriteQueueMinBytes()
+   {
+      return writeQueueMinBytes;
+   }
+   
+   public void setWriteQueueBlockTimeout(final long timeout)
+   {
+      this.writeQueueBlockTimeout = timeout;
+   }
+
+   public void setWriteQueueMaxBytes(final long bytes)
+   {
+      this.writeQueueMaxBytes = bytes;
+   }
+
+   public void setWriteQueueMinBytes(final long bytes)
+   {
+      this.writeQueueMinBytes = bytes;
    }
 
    public boolean isSSLEnabled()

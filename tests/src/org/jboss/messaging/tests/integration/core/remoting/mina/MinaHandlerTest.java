@@ -78,7 +78,7 @@ public class MinaHandlerTest extends TestCase
    {
       clientDispatcher = new PacketDispatcherImpl(null);
       threadPool = Executors.newCachedThreadPool();
-      handler = new MinaHandler(clientDispatcher, threadPool, null, true, true);
+      handler = new MinaHandler(clientDispatcher, threadPool, null, true, true, 5000, 1 * 204 * 1024, 5 * 1024 * 1024);
 
       packetHandler = new TestPacketHandler(23);
       clientDispatcher.register(packetHandler);

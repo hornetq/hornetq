@@ -10,7 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.mina.common.IoHandlerAdapter;
 import org.apache.mina.common.IoSession;
@@ -38,7 +37,7 @@ public class MinaHandler extends IoHandlerAdapter implements
    private static final Logger log = Logger.getLogger(MinaHandler.class);
 
    private static boolean trace = log.isTraceEnabled();
-
+      
    // Attributes ----------------------------------------------------
 
    private final PacketDispatcher dispatcher;
@@ -52,6 +51,14 @@ public class MinaHandler extends IoHandlerAdapter implements
    // Note! must use ConcurrentMap here to avoid race condition
    private final ConcurrentMap<Long, Executor> executors = new ConcurrentHashMap<Long, Executor>();
    
+   private volatile boolean blocked;
+   
+   private final long blockTimeout;
+   
+   private final long bytesLow;
+   
+   private final long bytesHigh;
+     
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -59,10 +66,17 @@ public class MinaHandler extends IoHandlerAdapter implements
                       final ExecutorService executorService,
                       final CleanUpNotifier failureNotifier,
                       final boolean closeSessionOnExceptionCaught,
-                      final boolean useExecutor)
+                      final boolean useExecutor,
+                      final long blockTimeout,
+                      final long bytesLow,
+                      final long bytesHigh)
    {
       assert dispatcher != null;
       assert executorService != null;
+
+      this.blockTimeout = blockTimeout;
+      this.bytesLow = bytesLow;
+      this.bytesHigh = bytesHigh;
 
       this.dispatcher = dispatcher;
       this.failureNotifier = failureNotifier;
@@ -159,53 +173,42 @@ public class MinaHandler extends IoHandlerAdapter implements
       }
    }
 
-   private final int high = 2000;
-
-   private final int low = 500;
-
-   private AtomicInteger count = new AtomicInteger(0);
-
-   private volatile boolean blocked = true;
-
    @Override
-   public void messageSent(final IoSession session, final Object message)
-         throws Exception
-   {
-      int newcount = count.decrementAndGet();
-
+   public void messageSent(final IoSession session, final Object message) throws Exception
+   {      
       if (blocked)
       {
-         if (newcount == low)
+         long bytes = session.getScheduledWriteBytes();
+                      
+         if (bytes <= bytesLow)
          {
             blocked = false;
-
-            // log.info("unblocking");
-
+   
             synchronized (this)
             {
-               this.notify();
+               notify();
             }
          }
       }
-
    }
-
-   public void acquireSemaphore() throws Exception
+   
+   public void checkWrite(final IoSession session) throws Exception
    {
-      int newcount = count.incrementAndGet();
-
-      if (newcount == high)
+      if (session.getScheduledWriteBytes() >= bytesHigh)
       {
          blocked = true;
 
-         // log.info("blocking");
-
          synchronized (this)
          {
-            this.wait(5000);
+            wait(blockTimeout);
          }
-      }
-
+         
+         if (session.getScheduledWriteBytes() >= bytesHigh)
+         {
+            //TODO should really cope with spurious wakeups
+            throw new IllegalStateException("Timed out waiting for MINA write queue to free up");
+         }
+      }      
    }
 
    // Package protected ---------------------------------------------
@@ -227,7 +230,7 @@ public class MinaHandler extends IoHandlerAdapter implements
             {
                try
                {
-                  acquireSemaphore();
+                  checkWrite(session);
                }
                catch (Exception e)
                {

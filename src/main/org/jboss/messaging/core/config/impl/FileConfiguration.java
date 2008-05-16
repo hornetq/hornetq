@@ -79,6 +79,12 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
       tcpReceiveBufferSize = getInteger(e, "remoting-tcp-receive-buffer-size", -1);
 
       tcpSendBufferSize = getInteger(e, "remoting-tcp-send-buffer-size", -1);
+      
+      writeQueueBlockTimeout = getLong(e, "remoting-writequeue-block-timeout", 10000L);
+      
+      writeQueueMinBytes = getLong(e, "remoting-writequeue-minbytes", 65536L);
+      
+      writeQueueMaxBytes = getLong(e, "remoting-writequeue-maxbytes", 1048576L);
 
       sslEnabled = getBoolean(e, "remoting-enable-ssl", false);
       

@@ -73,6 +73,12 @@ public interface Configuration
 
    int getTimeout();
    
+   long getWriteQueueMaxBytes();
+
+   long getWriteQueueMinBytes();
+   
+   long getWriteQueueBlockTimeout();
+      
    boolean isSecurityEnabled();
 
    String getKeyStorePath();

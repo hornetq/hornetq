@@ -161,7 +161,11 @@ public class MinaService implements RemotingService, CleanUpNotifier
          acceptor.setCloseOnDeactivation(false);
 
          threadPool = Executors.newCachedThreadPool();
-         acceptor.setHandler(new MinaHandler(dispatcher, threadPool, this, true, true));
+         acceptor.setHandler(new MinaHandler(dispatcher, threadPool,
+                                             this, true, true,
+                                             config.getWriteQueueBlockTimeout(),
+                                             config.getWriteQueueMinBytes(),
+                                             config.getWriteQueueMaxBytes()));
          acceptor.bind();
          acceptorListener = new MinaSessionListener();
          acceptor.addListener(acceptorListener);

@@ -49,12 +49,13 @@ public class MinaSession implements NIOSession
    {
       return session.getId();
    }
-
+   
+   
    public void write(Packet packet)
-   {      
+   {     
       try
       {
-         handler.acquireSemaphore();
+         handler.checkWrite(session);
       }
       catch (Exception e)
       {

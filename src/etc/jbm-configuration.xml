@@ -41,7 +41,13 @@
       <!-- Set it to -1 if you want to use the value hinted by the Operating System      --> 
       <!-- This setting is taken into account only when remoting-transport is set to TCP -->
       <remoting-tcp-send-buffer-size>32768</remoting-tcp-send-buffer-size>
-
+      
+      <remoting-writequeue-block-timeout>10000</remoting-writequeue-block-timeout>
+      
+      <remoting-writequeue-minbytes>65536</remoting-writequeue-minbytes>
+      
+      <remoting-writequeue-maxbytes>1048576</remoting-writequeue-maxbytes>
+      
       <!--  if ssl is enabled, all remoting-ssl-* properties must be set -->
       <remoting-enable-ssl>false</remoting-enable-ssl>
       
