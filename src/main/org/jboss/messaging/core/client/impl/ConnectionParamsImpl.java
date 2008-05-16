@@ -45,9 +45,9 @@ public class ConnectionParamsImpl implements ConnectionParams
    protected String keyStorePassword;
    protected String trustStorePath;
    protected String trustStorePassword;
-   protected long writeQueueBlockTimeout = 5000;
-   protected long writeQueueMinBytes = 65536;
-   protected long writeQueueMaxBytes = 1048576;
+   protected long writeQueueBlockTimeout = 10000;
+   protected long writeQueueMinBytes = 32 * 1024L;
+   protected long writeQueueMaxBytes = 64 * 1024L;
 
    public int getTimeout()
    {

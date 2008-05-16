@@ -44,9 +44,9 @@
       
       <remoting-writequeue-block-timeout>10000</remoting-writequeue-block-timeout>
       
-      <remoting-writequeue-minbytes>65536</remoting-writequeue-minbytes>
+      <remoting-writequeue-minbytes>32768</remoting-writequeue-minbytes>
       
-      <remoting-writequeue-maxbytes>1048576</remoting-writequeue-maxbytes>
+      <remoting-writequeue-maxbytes>65536</remoting-writequeue-maxbytes>
       
       <!--  if ssl is enabled, all remoting-ssl-* properties must be set -->
       <remoting-enable-ssl>false</remoting-enable-ssl>

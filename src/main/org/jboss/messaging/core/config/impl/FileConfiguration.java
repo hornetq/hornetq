@@ -82,9 +82,9 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
       
       writeQueueBlockTimeout = getLong(e, "remoting-writequeue-block-timeout", 10000L);
       
-      writeQueueMinBytes = getLong(e, "remoting-writequeue-minbytes", 65536L);
+      writeQueueMinBytes = getLong(e, "remoting-writequeue-minbytes", 32 * 1024L);
       
-      writeQueueMaxBytes = getLong(e, "remoting-writequeue-maxbytes", 1048576L);
+      writeQueueMaxBytes = getLong(e, "remoting-writequeue-maxbytes", 64 * 1024L);
 
       sslEnabled = getBoolean(e, "remoting-enable-ssl", false);
       

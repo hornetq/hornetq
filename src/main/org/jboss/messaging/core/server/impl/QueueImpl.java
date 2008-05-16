@@ -171,7 +171,7 @@ public class QueueImpl implements Queue
       deliver();
    }
  
-   //private volatile int count = 0;
+  // private volatile int count = 0;
    
    /*
     * Attempt to deliver all the messages in the queue

@@ -241,8 +241,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          return;
       }
       
-      log.info("** max size is " + this.maxSize);
-      
       try
       {
          // Now we wait for any current handler runners to run.
