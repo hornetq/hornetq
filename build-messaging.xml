@@ -233,7 +233,7 @@
    <path id="unit.test.execution.classpath">
       <pathelement location="${test.dir}/config"/>
       <pathelement location="${test.classes.dir}"/>
-      <pathelement location="config"/>
+      <pathelement location="${src.config.dir}"/>
       <path refid="test.compilation.classpath"/>
    </path>
 
