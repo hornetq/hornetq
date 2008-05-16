@@ -275,10 +275,31 @@ public class ClientSessionImpl implements ClientSessionInternal
       
       SessionCreateConsumerResponseMessage response = (SessionCreateConsumerResponseMessage)remotingConnection.sendBlocking(serverTargetID, serverTargetID, request);
       
-      int tokenBatchSize = response.getWindowSize() == -1 ? 0 : 1;
+      int windowSize = response.getWindowSize();
+      
+      int clientWindowSize;
+      if (windowSize == -1)
+      {
+         //No flow control - buffer can increase without bound! Only use with caution for very fast consumers
+         clientWindowSize = 0;
+      }
+      else if (windowSize == 1)
+      {
+         //Slow consumer - no buffering
+         clientWindowSize = 1;
+      }
+      else if (windowSize > 1)
+      {
+         //Client window size is half server window size
+         clientWindowSize = windowSize >> 1;
+      }
+      else
+      {
+         throw new IllegalArgumentException("Invalid window size " + windowSize);
+      }
       
       ClientConsumerInternal consumer =
-         new ClientConsumerImpl(this, response.getConsumerTargetID(), clientTargetID, executor, remotingConnection, tokenBatchSize, direct);
+         new ClientConsumerImpl(this, response.getConsumerTargetID(), clientTargetID, executor, remotingConnection, clientWindowSize, direct);
 
       consumers.put(response.getConsumerTargetID(), consumer);
       

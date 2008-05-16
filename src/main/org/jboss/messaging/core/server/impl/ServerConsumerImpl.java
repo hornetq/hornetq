@@ -93,7 +93,7 @@ public class ServerConsumerImpl implements ServerConsumer
    private final AtomicInteger availableTokens;
    
    private boolean started;
-
+   
    // Constructors ---------------------------------------------------------------------------------
  
    ServerConsumerImpl(final long id, final long clientTargetID, final Queue messageQueue, final boolean noLocal, final Filter filter,
@@ -162,12 +162,12 @@ public class ServerConsumerImpl implements ServerConsumer
    }
    
    public HandleStatus handle(MessageReference ref) throws Exception
-   {
-      if (availableTokens != null && availableTokens.get() == 0)
+   {      
+      if (availableTokens != null && availableTokens.get() <= 0)
       {
          return HandleStatus.BUSY;
       }
-
+      
       if (ref.getMessage().isExpired())
       {         
          ref.expire(persistenceManager, postOffice, queueSettingsRepository);
@@ -209,7 +209,7 @@ public class ServerConsumerImpl implements ServerConsumer
                          
          if (availableTokens != null)
          {
-            availableTokens.decrementAndGet();
+            availableTokens.addAndGet(-message.encodeSize());
          }
                    
          try
@@ -274,18 +274,16 @@ public class ServerConsumerImpl implements ServerConsumer
    
    public void receiveTokens(final int tokens) throws Exception
    {
-      int previous = availableTokens != null ? availableTokens.getAndAdd(tokens) : 0;
-
-      if (previous == 0)
+      if (availableTokens != null)
       {
-      	promptDelivery();      
-      }   	
-   }
-   
-   public void promptDelivery()
-   {
-      sessionEndpoint.promptDelivery(messageQueue);
-   } 
+         int previous = availableTokens.getAndAdd(tokens);
+         
+         if (previous <= 0)
+         {
+            promptDelivery();
+         }
+      }  	
+   }      
 
    // Public -----------------------------------------------------------------------------
      
@@ -296,4 +294,8 @@ public class ServerConsumerImpl implements ServerConsumer
    
    // Private --------------------------------------------------------------------------------------
 
+   private void promptDelivery()
+   {
+      sessionEndpoint.promptDelivery(messageQueue);
+   } 
 }

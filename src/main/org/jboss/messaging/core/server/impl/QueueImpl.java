@@ -224,7 +224,7 @@ public class QueueImpl implements Queue
 //               if (count == 500000)
 //               {
                   messageReferences.removeFirst();
-            //   }
+              // }
             }
             else
             {

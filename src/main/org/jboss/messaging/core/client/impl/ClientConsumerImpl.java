@@ -68,7 +68,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    
    private final RemotingConnection remotingConnection;
 
-   private final int tokenBatchSize;
+   private final int clientWindowSize;
    
    private final PriorityLinkedList<ClientMessage> buffer = new PriorityLinkedListImpl<ClientMessage>(10);
    
@@ -104,7 +104,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                              final long clientTargetID,
                              final ExecutorService sessionExecutor,
                              final RemotingConnection remotingConnection,
-                             final int tokenBatchSize,
+                             final int clientWindowSize,
                              final boolean direct)
    {
       this.targetID = targetID;
@@ -117,7 +117,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       
       this.remotingConnection = remotingConnection;
       
-      this.tokenBatchSize = tokenBatchSize;
+      this.clientWindowSize = clientWindowSize;
       
       this.direct = direct;
    }
@@ -175,7 +175,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                
                session.delivered(m.getDeliveryID(), expired);
                
-               flowControl();
+               flowControl(m.encodeSize());
                                  
                if (expired)
                {
@@ -240,7 +240,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          return;
       }
- 
+      
+      log.info("** max size is " + this.maxSize);
+      
       try
       {
          // Now we wait for any current handler runners to run.
@@ -324,7 +326,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
             session.delivered(message.getDeliveryID(), expired);
             
-            flowControl();
+            flowControl(message.encodeSize());
 
             if (!expired)
             {
@@ -338,6 +340,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          	synchronized (this)
          	{
          		buffer.addLast(message, message.getPriority());
+         		
+         		maxSize = Math.max(maxSize, buffer.size());
          	}
          	            	
          	sessionExecutor.execute(new Runnable() { public void run() { callOnMessage(); } } );
@@ -355,6 +359,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       	}
       }      
    }
+   
+   int maxSize = 0;
 
    public void recover(final long lastDeliveryID)
    {
@@ -375,17 +381,17 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // Private
    // --------------------------------------------------------------------------------------
 
-   private void flowControl() throws MessagingException
+   private void flowControl(final int messageBytes) throws MessagingException
    {
-      if (tokenBatchSize > 0)
+      if (clientWindowSize > 0)
       {
-         tokensToSend++;
+         tokensToSend += messageBytes;
    
-         if (tokensToSend == tokenBatchSize)
-         {
-            tokensToSend = 0;
+         if (tokensToSend >= clientWindowSize)
+         {            
+            remotingConnection.sendOneWay(targetID, session.getServerTargetID(), new ConsumerFlowTokenMessage(tokensToSend));
             
-            remotingConnection.sendOneWay(targetID, session.getServerTargetID(), new ConsumerFlowTokenMessage(tokenBatchSize));                  
+            tokensToSend = 0;            
          }
       }
    }
@@ -456,7 +462,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    
             session.delivered(message.getDeliveryID(), expired);
             
-            flowControl();
+            flowControl(message.encodeSize());
    
             if (!expired)
             {

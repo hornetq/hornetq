@@ -100,28 +100,26 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
    
    public ClientConnectionFactoryImpl(final Location location)
    {
-      this.location = location;
-      this.strictTck = false;
-      this.defaultConsumerWindowSize = 1000;      
-      this.defaultConsumerMaxRate = -1;
-      this.defaultProducerWindowSize = 1000;
-      this.defaultProducerMaxRate = -1;
-      this.dispatcher = new PacketDispatcherImpl(null);
-      connectionParams = new ConnectionParamsImpl();
+      this(location, new ConnectionParamsImpl(), false);
    }
 
    public ClientConnectionFactoryImpl(final Location location, final ConnectionParams connectionParams)
    {
-      this.location = location;
+      this(location, connectionParams, false);
+   }
+   
+   protected ClientConnectionFactoryImpl(final Location location, final ConnectionParams connectionParams, final boolean dummy)
+   {
       this.strictTck = false;
-      this.defaultConsumerWindowSize = 1000;
+      this.defaultConsumerWindowSize = 1024 * 1024;      
       this.defaultConsumerMaxRate = -1;
       this.defaultProducerWindowSize = 1000;
       this.defaultProducerMaxRate = -1;
       this.dispatcher = new PacketDispatcherImpl(null);
+      this.location = location;
       this.connectionParams = connectionParams;
    }
-
+   
    public ClientConnection createConnection() throws MessagingException
    {
       return createConnection(null, null);

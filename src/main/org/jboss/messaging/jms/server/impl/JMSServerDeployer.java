@@ -126,7 +126,7 @@ public class JMSServerDeployer extends XmlDeployer
          String clientID = null;
          int dupsOKBatchSize = 1000;
          
-         int consumerWindowSize = 1000;
+         int consumerWindowSize = 1024 * 1024;
          int consumerMaxRate = -1;         
          int producerWindowSize = 1000;
          int producerMaxRate = -1;
