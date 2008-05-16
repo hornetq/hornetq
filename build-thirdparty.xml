@@ -58,7 +58,7 @@
    -->
    <property name="jbossbuild.repository" value="http://repository.jboss.com"/>
 
-   <import file="./tools/etc/jbossbuild/tasks.xml"/>
+   <import file="./tools/config/jbossbuild/tasks.xml"/>
 
    <!--
       | This is where JBoss Messaging external dependencies are declared. The repository is in CVS
