@@ -766,7 +766,7 @@
       <java classname="org.jboss.messaging.microcontainer.JBMBootstrapServer" fork="true">
          <jvmarg value="-XX:+UseParallelGC"/>
          <jvmarg value="-Xms512M"/>
-         <jvmarg value="-Xmx1024M"/>
+         <jvmarg value="-Xmx2048M"/>
          <jvmarg value="-Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.core.logging.JBMLoggerPlugin"/>
          <jvmarg value="-Djava.library.path=${native.bin.dir}"/>
          <jvmarg value="-Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory"/>

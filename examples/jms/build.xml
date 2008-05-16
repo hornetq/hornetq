@@ -44,6 +44,8 @@
    <property name="message.count" value="200000"/>
    <property name="delivery.mode" value="NON_PERSISTENT"/>
    <property name="sample.period" value="1"/>
+   <property name="sess.trans" value="false"/>
+   <property name="sess.trans.size" value="5000"/>
 
    <path id="compile.classpath">
       <fileset dir="${lib.dir}">
@@ -105,13 +107,24 @@
    <target name="perfListener" depends="compile">
       <java classname="org.jboss.jms.example.PerfExample" fork="true">
          <classpath refid="runtime.classpath"/>
-      	<jvmarg value="-Xmx512M"/>
+      	<jvmarg value="-Xmx1024M"/>
       	<jvmarg value="-XX:+UseParallelGC"/>
          <arg value="-l"/>
       </java>
    </target>
 
+
    <target name="perfSender" depends="compile">
+      <echo>*****************************************************************</echo>
+      <echo>* available parameters (-Dmessage.count=1000)                   *</echo>
+      <echo>*                                                               *</echo>
+      <echo>*     param            description                default       *</echo>
+      <echo>*  message.count    number of messages            200000        *</echo>
+      <echo>*  delivery.mode  PERSISTENT/NON_PERSISTENT    NON_PERSISTENT   *</echo>
+      <echo>*  sample.period  timing period in seconds       1 second       *</echo>
+      <echo>*   sess.trans      Is session transacted          false        *</echo>
+      <echo>* sess.trans.size  batch size to commit            5000         *</echo>
+      <echo>*****************************************************************</echo>
       <java classname="org.jboss.jms.example.PerfExample" fork="true">
          <classpath refid="runtime.classpath"/>
       	<jvmarg value="-Xmx512M"/>
@@ -120,27 +133,8 @@
          <arg value="${message.count}"/>
          <arg value="${delivery.mode}"/>
          <arg value="${sample.period}"/>
-      </java>
-   </target>
-	
-	<target name="perfListenerTransactional" depends="compile">
-      <java classname="org.jboss.jms.example.PerfTransactionExample" fork="true">
-         <classpath refid="runtime.classpath"/>
-      	<jvmarg value="-Xmx512M"/>
-      	<jvmarg value="-XX:+UseParallelGC"/>
-         <arg value="-l"/>
-      </java>
-   </target>
-
-   <target name="perfSenderTransactional" depends="compile">
-      <java classname="org.jboss.jms.example.PerfTransactionExample" fork="true">
-         <classpath refid="runtime.classpath"/>
-      	<jvmarg value="-Xmx512M"/>
-      	<jvmarg value="-XX:+UseParallelGC"/>
-         <arg value="-s"/>
-         <arg value="${message.count}"/>
-         <arg value="PERSISTENT"/>
-         <arg value="${sample.period}"/>
+         <arg value="${sess.trans}"/>
+         <arg value="${sess.trans.size}"/>
       </java>
    </target>
 	

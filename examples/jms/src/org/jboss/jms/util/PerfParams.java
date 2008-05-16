@@ -32,6 +32,8 @@ public class PerfParams implements Serializable
    int noOfMessagesToSend = 1000;
    long samplePeriod = 1000;
    int deliveryMode  = DeliveryMode.NON_PERSISTENT;
+   boolean isSessionTransacted = false;
+   int transactionBatchSize = 5000;
 
    public int getNoOfMessagesToSend()
    {
@@ -63,9 +65,31 @@ public class PerfParams implements Serializable
       this.deliveryMode = deliveryMode;
    }
 
+   public boolean isSessionTransacted()
+   {
+      return isSessionTransacted;
+   }
+
+   public void setSessionTransacted(boolean sessionTransacted)
+   {
+      isSessionTransacted = sessionTransacted;
+   }
+
+
+   public int getTransactionBatchSize()
+   {
+      return transactionBatchSize;
+   }
+
+   public void setTransactionBatchSize(int transactionBatchSize)
+   {
+      this.transactionBatchSize = transactionBatchSize;
+   }
+
    public String toString()
    {
       return "message to send = " + noOfMessagesToSend + " samplePeriod = " + samplePeriod + "ms" + " DeliveryMode = " +
-              (deliveryMode == DeliveryMode.PERSISTENT?"PERSISTENT":"NON_PERSISTENT");
+              (deliveryMode == DeliveryMode.PERSISTENT?"PERSISTENT":"NON_PERSISTENT") + " session transacted = " + isSessionTransacted +
+              (isSessionTransacted?" transaction batch size = " + transactionBatchSize:"");
    }
 }

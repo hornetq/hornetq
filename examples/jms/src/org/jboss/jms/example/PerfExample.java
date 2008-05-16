@@ -57,45 +57,71 @@ public class PerfExample
          int noOfMessages = Integer.parseInt(args[1]);
          int deliveryMode = args[2].equalsIgnoreCase("persistent")? DeliveryMode.PERSISTENT: DeliveryMode.NON_PERSISTENT;
          long samplePeriod = Long.parseLong(args[3]);
-         perfExample.runSender(noOfMessages, deliveryMode, samplePeriod);
+         boolean transacted = Boolean.parseBoolean(args[4]);
+         if(transacted)
+         {
+            deliveryMode = DeliveryMode.PERSISTENT;
+         }
+         int transactionBatchSize = Integer.parseInt(args[5]);
+         PerfParams perfParams = new PerfParams();
+         perfParams.setNoOfMessagesToSend(noOfMessages);
+         perfParams.setDeliveryMode(deliveryMode);
+         perfParams.setSamplePeriod(samplePeriod);
+         perfParams.setSessionTransacted(transacted);
+         perfParams.setTransactionBatchSize(transactionBatchSize);
+         perfExample.runSender(perfParams);
       }
 
    }
 
-   private void init()
+   private void init(boolean transacted)
            throws NamingException, JMSException
    {
       InitialContext initialContext = new InitialContext();
       queue = (Queue) initialContext.lookup("/queue/testPerfQueue");
       ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
       connection = cf.createConnection();
-      session = connection.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+      session = connection.createSession(transacted, Session.DUPS_OK_ACKNOWLEDGE);
    }
    
-   public void runSender(int noOfMessage, int deliveryMode, long samplePeriod)
+   public void runSender(PerfParams perfParams)
    {
       try
       {
-         init();
+         log.info("params = " + perfParams);
+         init(perfParams.isSessionTransacted());
          MessageProducer producer = session.createProducer(queue);
          producer.setDisableMessageID(true);
          producer.setDisableMessageTimestamp(true);
-         producer.setDeliveryMode(deliveryMode);
+         producer.setDeliveryMode(perfParams.getDeliveryMode());
          ObjectMessage m = session.createObjectMessage();
-         PerfParams perfParams = new PerfParams();
-         perfParams.setNoOfMessagesToSend(noOfMessage);
-         perfParams.setDeliveryMode(deliveryMode);
-         perfParams.setSamplePeriod(samplePeriod);
          m.setObject(perfParams);
          producer.send(m);
          scheduler.scheduleAtFixedRate(command, perfParams.getSamplePeriod(), perfParams.getSamplePeriod(), TimeUnit.SECONDS);
          BytesMessage bytesMessage = session.createBytesMessage();
          byte[] payload = new byte[1024];
          bytesMessage.writeBytes(payload);
-         for (int i = 1; i <= noOfMessage; i++)
+         boolean committed = false;
+         for (int i = 1; i <= perfParams.getNoOfMessagesToSend(); i++)
          {
             producer.send(bytesMessage);
-            messageCount++;            
+            messageCount++;
+            if (perfParams.isSessionTransacted())
+            {
+               if (messageCount % perfParams.getTransactionBatchSize() == 0)
+               {
+                  session.commit();
+                  committed = true;
+               }
+               else
+               {
+                  committed = false;
+               }
+            }
+         }
+         if (perfParams.isSessionTransacted() && !committed)
+         {
+            session.commit();
          }
          scheduler.shutdownNow();
          log.info("average " +  command.getAverage() + " per " + (perfParams.getSamplePeriod()/1000) + " secs" );
@@ -122,7 +148,7 @@ public class PerfExample
    {
       try
       {
-         init();
+         init(false);
          MessageConsumer messageConsumer = session.createConsumer(queue);
          CountDownLatch countDownLatch = new CountDownLatch(1);
          connection.start();
