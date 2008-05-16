@@ -235,7 +235,10 @@ public class StorageManagerTimingTest extends UnitTestCase
    
          for (int i = 0; i < numberOfThreads; i++)
          {
-            assertNull(threads[i].e);
+            if (threads[i].e != null)
+            {
+               throw threads[i].e;
+            }
          }
          
          double rates[] = new double[numberOfThreads];
