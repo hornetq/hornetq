@@ -8,9 +8,10 @@ package org.jboss.messaging.util;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * This factory creates a hierarchy of Executor which shares the threads of the
@@ -39,17 +40,14 @@ public final class OrderedExecutorFactory
 
    private final class ChildExecutor implements Executor, Runnable
    {
-      private final LinkedList<Runnable> tasks = new LinkedList<Runnable>();
-
+      private final Queue<Runnable> tasks = new LinkedBlockingQueue<Runnable>();
+      
       public void execute(Runnable command)
       {
-         synchronized (tasks)
+         tasks.offer(command);
+         if (tasks.size() == 1 && runningChildren.add(this))
          {
-            tasks.add(command);
-            if (tasks.size() == 1 && runningChildren.add(this))
-            {
-               parent.execute(this);
-            }
+            parent.execute(this);
          }
       }
 
@@ -57,15 +55,11 @@ public final class OrderedExecutorFactory
       {
          for (;;)
          {
-            final Runnable task;
-            synchronized (tasks)
+            final Runnable task = tasks.poll();
+            if (task == null)
             {
-               task = tasks.poll();
-               if (task == null)
-               {
-                  runningChildren.remove(this);
-                  return;
-               }
+               runningChildren.remove(this);
+               return;
             }
             task.run();
          }
