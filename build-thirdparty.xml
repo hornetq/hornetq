@@ -138,7 +138,7 @@
    <generate generate="jboss-messaging"/>
 
    <target name="generate-libraries-ent" depends="synchronize">
-      <gen-lib-file path="tools/etc/buildmagic" filename="${librariesEntFile}"/>
+      <gen-lib-file path="tools/config/buildmagic" filename="${librariesEntFile}"/>
       <visit-componentref-graph componentVisitor="org.jboss.ant.util.graph.ComponentRefGraphLicenseVisitor"/>
    </target>
 
