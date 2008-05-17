@@ -8,7 +8,6 @@
 package org.jboss.messaging.core.asyncio.impl;
 
 import java.nio.ByteBuffer;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -17,6 +16,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.jboss.messaging.core.asyncio.AIOCallback;
 import org.jboss.messaging.core.asyncio.AsynchronousFile;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.util.VariableLatch;
 
 
 /**
@@ -98,10 +98,9 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	private String fileName;
 	private Thread poller;	
 	private int maxIO;	
-	private Semaphore writeSemaphore;	
+	private VariableLatch writeLatch = new VariableLatch();	
 	private ReadWriteLock lock = new ReentrantReadWriteLock();
-	private Lock writeLock = lock.writeLock();	
-	private Semaphore pollerSemaphore = new Semaphore(1);
+	private Lock writeLock = lock.writeLock();
 	
 	/**
 	 *  Warning: Beware of the C++ pointer! It will bite you! :-)
@@ -119,8 +118,6 @@ public class AsynchronousFileImpl implements AsynchronousFile
 		{
 			writeLock.lock();
 			this.maxIO = maxIO;
-			
-			this.writeSemaphore = new Semaphore(maxIO);
 			
 			if (opened)
 			{
@@ -143,12 +140,12 @@ public class AsynchronousFileImpl implements AsynchronousFile
 		checkOpened();
 		
 		writeLock.lock();
-		writeSemaphore.acquire(maxIO);
+		writeLatch.waitCompletion();
 		stopPoller(handler);
-		// We need to make sure we won't call close until Poller is completely done, or we might get beautiful GPFs
+      // We need to make sure we won't call close until Poller is completely done, or we might get beautiful GPFs
+		poller.join();
 		try
 		{
-			pollerSemaphore.acquire();
 			closeInternal(handler);
 			addMax(maxIO * -1);
 			opened = false;
@@ -157,21 +154,20 @@ public class AsynchronousFileImpl implements AsynchronousFile
 		finally
 		{
 			writeLock.unlock();
-			pollerSemaphore.release();
 		}
 	}
 		
 	public void write(final long position, final long size, final ByteBuffer directByteBuffer, final AIOCallback aioPackage)
 	{
 		checkOpened();
-		this.writeSemaphore.acquireUninterruptibly();
+		writeLatch.up();
 		try
 		{
 			write (handler, position, size, directByteBuffer, aioPackage);
 		}
 		catch (RuntimeException e)
 		{
-			writeSemaphore.release();
+	      writeLatch.down();
 			throw e;
 		}
 		
@@ -180,14 +176,14 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	public void read(final long position, final long size, final ByteBuffer directByteBuffer, final AIOCallback aioPackage)
 	{
 		checkOpened();
-		this.writeSemaphore.acquireUninterruptibly();
+		writeLatch.up();
 		try
 		{
 			read (handler, position, size, directByteBuffer, aioPackage);
 		}
 		catch (RuntimeException e)
 		{
-			writeSemaphore.release();
+		   writeLatch.down();
 			throw e;
 		}		
 	}
@@ -217,14 +213,14 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	@SuppressWarnings("unused") // Called by the JNI layer.. just ignore the warning
 	private void callbackDone(AIOCallback callback)
 	{
-		writeSemaphore.release();
+		writeLatch.down();
 		callback.done();
 	}
 	
 	@SuppressWarnings("unused") // Called by the JNI layer.. just ignore the warning
 	private void callbackError(AIOCallback callback, int errorCode, String errorMessage)
 	{
-		writeSemaphore.release();
+      writeLatch.down();
 		callback.onError(errorCode, errorMessage);
 	}
 	
@@ -244,7 +240,6 @@ public class AsynchronousFileImpl implements AsynchronousFile
 		poller = new PollerThread(); 
 		try
 		{
-			this.pollerSemaphore.acquire();
 			poller.start();
 		}
 		catch (Exception ex)
@@ -305,14 +300,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
       public void run()
       {
          // informing caller that this thread already has the lock
-         try
-         {
-            pollEvents();
-         }
-         finally
-         {
-            pollerSemaphore.release();
-         }
+         pollEvents();
       }
    }	
 }

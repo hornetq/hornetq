@@ -100,10 +100,14 @@ public class AIOSequentialFile implements SequentialFile
 		
 		int blockSize = aioFile.getBlockSize();
 		
-		if (size % (10*1024*1024) == 0)
-		{
-			blockSize = 10*1024*1024;
-		}
+      if (size % (100*1024*1024) == 0)
+      {
+         blockSize = 100*1024*1024;
+      }
+      if (size % (10*1024*1024) == 0)
+      {
+         blockSize = 10*1024*1024;
+      }
 		else if (size % (1024*1024) == 0)
 		{
 			blockSize = 1024*1024;

@@ -39,7 +39,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -162,11 +166,18 @@ public class JournalImpl implements TestableJournal
 	private final ConcurrentMap<Long, TransactionCallback> transactionCallbacks = new ConcurrentHashMap<Long, TransactionCallback>();
 	
 	private final boolean shouldUseCallback;
+	
+   /**
+    * single thread... will shutdown the thread after 60 seconds
+    */ 
+	private ExecutorService closingExecutor = new ThreadPoolExecutor(1, 1, 60L,
+         TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());;
    
 		
 	/*
-	 * We use a semaphore rather than synchronized since it performs better when contended
-	 */
+    * We use a semaphore rather than synchronized since it performs better when
+    * contended
+    */
 	
 	//TODO - improve concurrency by allowing concurrent accesses if doesn't change current file
 	private final Semaphore lock = new Semaphore(1, true);
@@ -1292,6 +1303,9 @@ public class JournalImpl implements TestableJournal
 		
 		stopReclaimer();
 		
+		closingExecutor.shutdown();
+		closingExecutor.awaitTermination(120, TimeUnit.SECONDS);
+		
 		if (currentFile != null)
 		{
 			currentFile.getFile().close();
@@ -1455,9 +1469,7 @@ public class JournalImpl implements TestableJournal
 		
 		if (currentFile == null || fileSize - currentFile.getOffset() < size)
 		{
-			currentFile.getFile().close();
-			
-			dataFiles.add(currentFile);
+		   closeFile(currentFile);
 			
 			try
 			{
@@ -1469,6 +1481,23 @@ public class JournalImpl implements TestableJournal
 			}
 
 		}     
+	}
+	
+	private void closeFile(final JournalFile file)
+	{
+	   this.closingExecutor.execute(new Runnable() { public void run()
+	   {
+	      try
+	      {
+	         file.getFile().close();
+	      }
+	      catch (Exception e)
+	      {
+	         log.warn(e.getMessage(), e);
+	      }
+	      dataFiles.add(file);
+	   }
+	   });
 	}
 	
 	private TransactionNegPos getTransactionInfo(final long txID)
