@@ -208,7 +208,7 @@ public class QueueImpl implements Queue
             {
                // We delivered all the messages - go into direct delivery
                direct = true;
-
+               
                promptDelivery = false;
             }
             return;

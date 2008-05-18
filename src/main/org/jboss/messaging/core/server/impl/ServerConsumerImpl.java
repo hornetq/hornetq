@@ -273,12 +273,12 @@ public class ServerConsumerImpl implements ServerConsumer
    }
    
    public void receiveTokens(final int tokens) throws Exception
-   {
+   {      
       if (availableTokens != null)
       {
          int previous = availableTokens.getAndAdd(tokens);
-         
-         if (previous <= 0)
+
+         if (previous <= 0 && (previous + tokens) > 0)
          {
             promptDelivery();
          }

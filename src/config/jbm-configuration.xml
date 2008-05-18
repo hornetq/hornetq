@@ -44,9 +44,9 @@
       
       <remoting-writequeue-block-timeout>10000</remoting-writequeue-block-timeout>
       
-      <remoting-writequeue-minbytes>32768</remoting-writequeue-minbytes>
+      <remoting-writequeue-minbytes>4096</remoting-writequeue-minbytes>
       
-      <remoting-writequeue-maxbytes>65536</remoting-writequeue-maxbytes>
+      <remoting-writequeue-maxbytes>8192</remoting-writequeue-maxbytes>
       
       <!--  if ssl is enabled, all remoting-ssl-* properties must be set -->
       <remoting-enable-ssl>false</remoting-enable-ssl>
@@ -69,7 +69,7 @@
       
       <create-journal-dir>true</create-journal-dir>
       
-      <journal-type>asyncio</journal-type>
+      <journal-type>nio</journal-type>
       
       <journal-sync>true</journal-sync>
       

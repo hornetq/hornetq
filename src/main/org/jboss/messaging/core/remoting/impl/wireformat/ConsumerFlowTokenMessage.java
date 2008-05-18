@@ -21,7 +21,7 @@ public class ConsumerFlowTokenMessage extends EmptyPacket
    // Attributes ----------------------------------------------------
 
    private int tokens;
-
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------

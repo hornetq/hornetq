@@ -123,9 +123,11 @@ public class JournalStorageManager implements StorageManager
       
       if (config.getJournalType() == JournalType.ASYNCIO)
       {
+         log.info("AIO journal selected");
          if (!AIOSequentialFileFactory.isSupported())
          {
-            log.warn("AIO wasn't located on this platform, using just standard Java NIO. If you are on Linux, install LibAIO and the required wrapper and you will get a lot of performance benefit");
+            log.warn("AIO wasn't located on this platform, will fall back to  Java NIO." +
+                     "If you are on Linux, install LibAIO to enable the AIO journal");
             journalFF = new NIOSequentialFileFactory(journalDir);
          }
          else
@@ -136,10 +138,12 @@ public class JournalStorageManager implements StorageManager
       }
       else if (config.getJournalType() == JournalType.NIO)
       {
+         log.info("NIO Journal selected");
          journalFF = new NIOSequentialFileFactory(bindingsDir);
       }
       else if (config.getJournalType() == JournalType.JDBC)
       {
+         log.info("JDBC Journal selected");
          // Sanity check only... this is previously tested
          throw new IllegalArgumentException("JDBC Journal is not supported yet");
       }

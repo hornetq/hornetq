@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.server.impl;
 
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
@@ -38,6 +39,8 @@ import org.jboss.messaging.core.server.ServerConsumer;
  */
 public class ServerConsumerPacketHandler extends ServerPacketHandlerSupport
 {
+   private static final Logger log = Logger.getLogger(ServerConsumerPacketHandler.class);
+
 	private final ServerConsumer consumer;
 	
 	public ServerConsumerPacketHandler(final ServerConsumer consumer)

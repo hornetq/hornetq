@@ -51,7 +51,7 @@ public class MinaHandler extends IoHandlerAdapter implements
    // Note! must use ConcurrentMap here to avoid race condition
    private final ConcurrentMap<Long, Executor> executors = new ConcurrentHashMap<Long, Executor>();
    
-   private volatile boolean blocked;
+   private boolean blocked;
    
    private final long blockTimeout;
    
@@ -133,10 +133,9 @@ public class MinaHandler extends IoHandlerAdapter implements
    throws Exception
    {
       final Packet packet = (Packet) message;
-      
+                 
       if (executorFactory != null)
-      {
-         
+      {         
          long executorID = packet.getExecutorID();
    
          Executor executor = executors.get(executorID);
@@ -152,7 +151,7 @@ public class MinaHandler extends IoHandlerAdapter implements
                executor = oldExecutor;
             }
          }
-   
+         
          executor.execute(new Runnable()
          {
             public void run()
@@ -160,7 +159,8 @@ public class MinaHandler extends IoHandlerAdapter implements
                try
                {
                   messageReceivedInternal(session, packet);
-               } catch (Exception e)
+               }
+               catch (Exception e)
                {
                   log.error("unexpected error", e);
                }
@@ -173,42 +173,51 @@ public class MinaHandler extends IoHandlerAdapter implements
       }
    }
 
-   @Override
-   public void messageSent(final IoSession session, final Object message) throws Exception
-   {      
-      if (blocked)
-      {
-         long bytes = session.getScheduledWriteBytes();
-                      
-         if (bytes <= bytesLow)
-         {
-            blocked = false;
+   private final int maxSize = 2;
    
-            synchronized (this)
-            {
-               notify();
-            }
-         }
+   private int size;
+    
+   @Override
+   public synchronized void messageSent(final IoSession session, final Object message) throws Exception
+   {      
+//      if (blocked)
+//      {
+//         long bytes = session.getScheduledWriteBytes();
+//                      
+//         if (bytes <= bytesLow)
+//         {
+//            blocked = false;
+//   
+//            //Note that we need to notify all since there may be more than one thread waiting on this
+//            //E.g. the response from a blocking acknowledge and a delivery
+//            notifyAll();            
+//         }
+//      }
+      
+      size--;
+      
+      if (blocked && size == 0)
+      {
+         notifyAll();
       }
    }
    
-   public void checkWrite(final IoSession session) throws Exception
+   public synchronized void checkWrite(final IoSession session) throws Exception
    {
-      if (session.getScheduledWriteBytes() >= bytesHigh)
+//      if (session.getScheduledWriteBytes() >= bytesHigh)
+//      {
+//         blocked = true;
+//
+//         wait();                  
+//      }      
+      if (size == maxSize)
       {
          blocked = true;
-
-         synchronized (this)
-         {
-            wait(blockTimeout);
-         }
          
-         if (session.getScheduledWriteBytes() >= bytesHigh)
-         {
-            //TODO should really cope with spurious wakeups
-            throw new IllegalStateException("Timed out waiting for MINA write queue to free up");
-         }
-      }      
+         wait();
+      }
+            
+      size++;
    }
 
    // Package protected ---------------------------------------------

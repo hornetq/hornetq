@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.transaction.xa.XAException;
@@ -228,6 +229,7 @@ public class ServerSessionImpl implements ServerSession
    public void handleDelivery(final MessageReference ref, final ServerConsumer consumer) throws Exception
    {
       Delivery delivery;
+      
       synchronized (rollbackCancelLock)
       {
          long nextID = deliveryIDSequence.getAndIncrement();

@@ -835,7 +835,7 @@ public class ClientSessionImpl implements ClientSessionInternal
          remotingConnection.sendBlocking(serverTargetID, serverTargetID, message);
       }
       else
-      {
+      {         
          remotingConnection.sendOneWay(serverTargetID, serverTargetID, message);
       }
             

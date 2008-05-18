@@ -399,7 +399,7 @@ public class JBossConnection implements
             
             ackBatchSize = 1;
             
-            blockOnAcknowledge = true;
+            blockOnAcknowledge = false;
          }
          else if (acknowledgeMode == Session.DUPS_OK_ACKNOWLEDGE)
          {

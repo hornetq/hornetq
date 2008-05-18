@@ -25,12 +25,15 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.mina.common.IoSession;
 import org.apache.mina.common.IoSessionAttributeMap;
 import org.apache.mina.common.IoSessionDataStructureFactory;
 import org.apache.mina.common.WriteRequest;
 import org.apache.mina.common.WriteRequestQueue;
+import org.apache.mina.util.CircularQueue;
 
 /**
  * 
@@ -134,34 +137,34 @@ public class MessagingIOSessionDataStructureFactory implements IoSessionDataStru
   }
    
    
-//   private static class DefaultWriteRequestQueue implements WriteRequestQueue
-//   {
-//      private final Queue<WriteRequest> q = new CircularQueue<WriteRequest>(16);
-//      
-//      public void dispose(IoSession session) {
-//      }
-//      
-//      public void clear(IoSession session) {
-//          q.clear();
-//      }
-//
-//      public synchronized boolean isEmpty(IoSession session) {
-//          return q.isEmpty();
-//      }
-//
-//      public synchronized void offer(IoSession session, WriteRequest writeRequest) {
-//          q.offer(writeRequest);
-//      }
-//
-//      public synchronized WriteRequest poll(IoSession session) {
-//          return q.poll();
-//      }
-//      
-//      @Override
-//      public String toString() {
-//          return q.toString();
-//      }
-//  }
+   private static class DefaultWriteRequestQueue implements WriteRequestQueue
+   {
+      private final Queue<WriteRequest> q = new CircularQueue<WriteRequest>(16);
+      
+      public void dispose(IoSession session) {
+      }
+      
+      public void clear(IoSession session) {
+          q.clear();
+      }
+
+      public synchronized boolean isEmpty(IoSession session) {
+          return q.isEmpty();
+      }
+
+      public synchronized void offer(IoSession session, WriteRequest writeRequest) {
+          q.offer(writeRequest);
+      }
+
+      public synchronized WriteRequest poll(IoSession session) {
+          return q.poll();
+      }
+      
+      @Override
+      public String toString() {
+          return q.toString();
+      }
+  }
    
    private static class ConcurrentWriteRequestQueue implements WriteRequestQueue
    {
@@ -184,6 +187,56 @@ public class MessagingIOSessionDataStructureFactory implements IoSessionDataStru
 
       public synchronized WriteRequest poll(IoSession session) {
           return q.poll();
+      }
+      
+      @Override
+      public String toString() {
+          return q.toString();
+      }
+  }
+   
+   private static class SynchronousWriteRequestQueue implements WriteRequestQueue
+   {
+      private final LinkedBlockingQueue<WriteRequest> q = new LinkedBlockingQueue<WriteRequest>(1);
+      
+      public void dispose(IoSession session) {
+      }
+      
+      public void clear(IoSession session) {
+          q.clear();
+      }
+
+      public synchronized boolean isEmpty(IoSession session) {
+          return q.isEmpty();
+      }
+
+      public synchronized void offer(IoSession session, WriteRequest writeRequest) {
+         try
+         {
+          boolean ok = q.offer(writeRequest, 5000L, TimeUnit.MILLISECONDS);
+          
+          if (!ok)
+          {
+             throw new IllegalStateException("Timed out trying to offer to queue");
+          }
+         }
+         catch (InterruptedException e)
+         {
+            throw new IllegalStateException("Failed to offer");
+         }
+      }
+
+      public synchronized WriteRequest poll(IoSession session) {
+         try
+         {
+          WriteRequest request = q.poll(5000L, TimeUnit.MILLISECONDS);
+          
+          return request;
+         }
+         catch (InterruptedException e)
+         {
+            throw new IllegalStateException("Failed to offer");
+         }
       }
       
       @Override
