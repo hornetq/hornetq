@@ -61,5 +61,6 @@
 	<classpathentry kind="lib" path="tests/lib/easymock.jar"/>
 	<classpathentry kind="lib" path="thirdparty/slf4j/log4j/lib/slf4j-log4j12.jar"/>
 	<classpathentry exported="true" kind="lib" path="thirdparty/apache-mina/lib/mina-core-2.0.0-M2-20080418.144850.jar" sourcepath="thirdparty/apache-mina/lib/mina-core-2.0.0-M2-20080418.144850-sources.jar"/>
+	<classpathentry kind="lib" path="tests/jms-tests/config"/>
 	<classpathentry kind="output" path="eclipse-output"/>
 </classpath>
