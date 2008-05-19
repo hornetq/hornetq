@@ -32,6 +32,7 @@ import javax.jms.ObjectMessage;
 
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.util.ObjectInputStreamWithClassLoader;
 
 /**
  * This class implements javax.jms.ObjectMessage
@@ -133,7 +134,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
             byte[] data = new byte[len];
             body.getBytes(data);
             ByteArrayInputStream bais = new ByteArrayInputStream(data);
-            ObjectInputStream ois = new ObjectInputStream(bais);
+            ObjectInputStream ois = new ObjectInputStreamWithClassLoader(bais);
             object = (Serializable)ois.readObject();
          }
          catch (Exception e)
