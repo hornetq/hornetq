@@ -49,28 +49,27 @@ public class PerfExample
    public static void main(String[] args)
    {
       PerfExample perfExample = new PerfExample();
+      
+      int noOfMessages = Integer.parseInt(args[1]);
+      int deliveryMode = args[2].equalsIgnoreCase("persistent")? DeliveryMode.PERSISTENT: DeliveryMode.NON_PERSISTENT;
+      long samplePeriod = Long.parseLong(args[3]);
+      boolean transacted = Boolean.parseBoolean(args[4]);
+      log.info("Transacted:" + transacted);
+      int transactionBatchSize = Integer.parseInt(args[5]);
+      PerfParams perfParams = new PerfParams();
+      perfParams.setNoOfMessagesToSend(noOfMessages);
+      perfParams.setDeliveryMode(deliveryMode);
+      perfParams.setSamplePeriod(samplePeriod);
+      perfParams.setSessionTransacted(transacted);
+      perfParams.setTransactionBatchSize(transactionBatchSize);
+      
       if (args[0].equalsIgnoreCase("-l"))
       {
-         int noOfMessages = Integer.parseInt(args[1]);
-         perfExample.runListener(noOfMessages);
+         perfExample.runListener(perfParams);
       }
       else
       {
-         int noOfMessages = Integer.parseInt(args[1]);
-         int deliveryMode = args[2].equalsIgnoreCase("persistent")? DeliveryMode.PERSISTENT: DeliveryMode.NON_PERSISTENT;
-         long samplePeriod = Long.parseLong(args[3]);
-         boolean transacted = Boolean.parseBoolean(args[4]);
-         if(transacted)
-         {
-            deliveryMode = DeliveryMode.PERSISTENT;
-         }
-         int transactionBatchSize = Integer.parseInt(args[5]);
-         PerfParams perfParams = new PerfParams();
-         perfParams.setNoOfMessagesToSend(noOfMessages);
-         perfParams.setDeliveryMode(deliveryMode);
-         perfParams.setSamplePeriod(samplePeriod);
-         perfParams.setSessionTransacted(transacted);
-         perfParams.setTransactionBatchSize(transactionBatchSize);
+         
          perfExample.runSender(perfParams);
       }
 
@@ -83,7 +82,7 @@ public class PerfExample
       queue = (Queue) initialContext.lookup("/queue/testPerfQueue");
       ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
       connection = cf.createConnection();
-      session = connection.createSession(transacted, Session.DUPS_OK_ACKNOWLEDGE);
+      session = connection.createSession(transacted, transacted ? Session.SESSION_TRANSACTED : Session.DUPS_OK_ACKNOWLEDGE);
    }
    
    public void runSender(PerfParams perfParams)
@@ -143,12 +142,11 @@ public class PerfExample
       }
    }
 
-   public void runListener(int numberOfMessages)
+   public void runListener(final PerfParams perfParams)
    {
       try
       {
-         System.out.println("Running listener for " + numberOfMessages);
-         init(false);
+         init(perfParams.isSessionTransacted());
          MessageConsumer messageConsumer = session.createConsumer(queue);
          CountDownLatch countDownLatch = new CountDownLatch(1);
          connection.start();
@@ -161,7 +159,7 @@ public class PerfExample
                break;
             }
          }
-         messageConsumer.setMessageListener(new PerfListener(countDownLatch, numberOfMessages));
+         messageConsumer.setMessageListener(new PerfListener(countDownLatch, perfParams));
          log.info("READY!!!");
          countDownLatch.await();
 
@@ -192,15 +190,15 @@ public class PerfExample
    class PerfListener implements MessageListener
    {
       private CountDownLatch countDownLatch;
-      int noOfMessages;
+      PerfParams perfParams;
       
       boolean started = false;
 
 
-      public PerfListener(CountDownLatch countDownLatch, int noOfMessages)
+      public PerfListener(CountDownLatch countDownLatch, PerfParams perfParams)
       {
          this.countDownLatch = countDownLatch;
-         this.noOfMessages = noOfMessages;
+         this.perfParams = perfParams;
       }
 
       public void onMessage(Message message)
@@ -215,8 +213,13 @@ public class PerfExample
          {
             BytesMessage bm = (BytesMessage) message;
             messageCount++;      
-            if (messageCount == noOfMessages)
+            boolean committed = checkCommit();
+            if (messageCount == perfParams.getNoOfMessagesToSend())
             {
+               if (!committed)
+               {
+                  checkCommit();
+               }
                countDownLatch.countDown();
                scheduler.shutdownNow();
                log.info("average " +  command.getAverage() + " per sec" );
@@ -227,6 +230,20 @@ public class PerfExample
             e.printStackTrace();
          }
        }
+      
+      private boolean checkCommit() throws Exception
+      {
+         if (perfParams.isSessionTransacted())
+         {
+            if (messageCount % perfParams.getTransactionBatchSize() == 0)
+            {
+               session.commit();
+               
+               return true;
+            }
+         }
+         return false;
+      }
    }
 
    /**
