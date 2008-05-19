@@ -652,8 +652,7 @@
    <section id="configuration.beans">
       <title>The beans deployment file</title>
       <para>This beans deployment file, usually <literal>jbm-beans.xml</literal> or <literal>jbm-standalone-beans.xml</literal>,
-         is used by the JBoss Microcontainer to bootstrap all the components needed to run a JBoss Messaging Server. For
-         full documentation on the MicroContainer go to <ulink url="http://www.jboss.org/jbossmc/">http://www.jboss.org/jbossmc/</ulink>.
+         is used by the <ulink url="http://www.jboss.org/jbossmc/">JBoss Microcontainer</ulink> to bootstrap all the components needed to run a JBoss Messaging Server.
          For the purposes of configuring JBM it is sufficient to know that the implementation details of pluggable
          components are configured here.
       </para>
@@ -663,7 +662,7 @@
             <para>The naming Service</para>
             <para>This is only found in the standalone version of the beans file. When running within the App Server this
                is not needed since it is available as its own service. This also where you can change the ports used.</para>
-            <para>It is possible to replace this with any Naming Service however only the Jboss naming provider has been tested.
+            <para>It is possible to replace this with any Naming Service however only the JBoss naming provider has been tested.
             If you do provide your own implementation remember to edit the file jndi.properties</para>
             <programlisting>
                <![CDATA[
@@ -720,7 +719,7 @@
    </bean>
                ]]>
             </programlisting>
-            <para>The second is used when deployed in the Jboss App Server and will make use of JAAS:</para>
+            <para>The second is used when deployed in the JBoss App Server and will make use of JAAS:</para>
             <programlisting>
                <![CDATA[
       <bean name="JBMSecurityManager"
