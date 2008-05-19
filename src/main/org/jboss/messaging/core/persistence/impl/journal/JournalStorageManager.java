@@ -126,8 +126,8 @@ public class JournalStorageManager implements StorageManager
          log.info("AIO journal selected");
          if (!AIOSequentialFileFactory.isSupported())
          {
-            log.warn("AIO wasn't located on this platform, will fall back to  Java NIO." +
-                     "If you are on Linux, install LibAIO to enable the AIO journal");
+            log.warn("AIO wasn't located on this platform, it will fall back to Java NIO. " +
+                     "If your platform is Linux, install LibAIO to enable the AIO journal");
             journalFF = new NIOSequentialFileFactory(journalDir);
          }
          else
