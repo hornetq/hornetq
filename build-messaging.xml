@@ -164,12 +164,7 @@
         They must available in the repository and declared as <componentrefs> in build-thirdparty.xml.
    -->
    <path id="external.dependencies.classpath">
-      <!--<path refid="apache.logging.classpath"/>-->
-      <!--<path refid="oswego.concurrent.classpath"/>-->
-      <!--<path refid="javassist.classpath"/>-->
       <path refid="jgroups.jgroups.classpath"/>
-      <!--<path refid="trove.trove.classpath"/>-->
-      <path refid="apache.logging.classpath"/>
       <path refid="apache.mina.classpath"/>
       <path refid="apache.log4j.classpath"/>
       <path refid="slf4j.api.classpath"/>
@@ -185,9 +180,7 @@
     -->
    <path id="jboss.dependencies.classpath">
       <path refid="jboss.common.classpath"/>
-      <!--<path refid="jboss.aop.classpath"/>-->
       <path refid="jboss.jbossts14.classpath"/>
-      <!--<path refid="jbossas.core.libs.classpath"/>-->
       <path refid="jboss.microcontainer.classpath"/>
       <path refid="jboss.jboss.security.spi.classpath"/>
       <path refid="jboss.jboss.jaspi.api.classpath"/>
@@ -249,9 +242,6 @@
       <path refid="apache.logging.classpath"/>
       <path refid="apache.xerces.classpath"/>
       <path refid="jboss.jbossxb.classpath"/>
-      <path refid="apache.logging.classpath"/>
-      <path refid="apache.tomcat.classpath"/>
-      <path refid="apache.logging.classpath"/>
       <path refid="jboss.aop.classpath"/>
       <path refid="jboss.microcontainer.classpath"/>
       <path refid="jboss.jboss.security.spi.classpath"/>

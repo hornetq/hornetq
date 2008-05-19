@@ -13,11 +13,9 @@
 	<classpathentry kind="lib" path="thirdparty/apache-log4j/lib/log4j.jar"/>
 	<classpathentry kind="lib" path="thirdparty/junit/lib/junit.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/profiler/jvmti/lib/jboss-profiler-jvmti.jar"/>
-	<classpathentry kind="lib" path="thirdparty/hsqldb/lib/hsqldb.jar"/>
 	<classpathentry kind="lib" path="thirdparty/apache-logging/lib/commons-logging.jar"/>
 	<classpathentry kind="lib" path="thirdparty/sun-javacc/lib/javacc.jar"/>
 	<classpathentry kind="lib" path="thirdparty/apache-xerces/lib/xercesImpl.jar"/>
-	<classpathentry kind="lib" path="thirdparty/dom4j/lib/dom4j.jar"/>
 	<classpathentry kind="lib" path="thirdparty/javassist/lib/javassist.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jrockit-pluggable-instrumentor.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/pluggable-instrumentor.jar"/>

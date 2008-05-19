@@ -84,6 +84,7 @@
       <componentref name="sun-javacc" version="3.2"/>
       <componentref name="oswego-concurrent" version="1.3.4-brew"/>
       <componentref name="apache-log4j" version="1.2.14-brew"/>
+      <componentref name="apache-logging" version="1.1.0.jboss"/>
       <componentref name="javassist" version="3.6.0.GA/"/>
       <componentref name="jgroups" version="2.4.1.SP3-brew"/>
       <componentref name="trove" version="1.0.2-brew"/>
@@ -91,7 +92,6 @@
       <componentref name="jboss/common-core" version="2.2.2.GA"/>
       <componentref name="jboss/aop" version="2.0.0.beta2"/>
       <componentref name="jboss/jbossts14" version="4.2.3.SP3"/>
-      <!--<componentref name="jbossas/core-libs" version="4.2.1.GA"/>-->
       <componentref name="jboss/microcontainer" version="2.0.0.Beta5"/>
       <componentref name="jboss/jboss-security-spi" version="2.0.1.GA"/>
       <componentref name="jboss/jboss-jaspi-api" version="1.0-BETA1"/>
@@ -102,19 +102,10 @@
       <componentref name="apache-mina" version="2.0.0-M2-20080418.144850"/>
       <componentref name="slf4j/log4j" version="1.4.3"/>
 
-
-      <!--
-          Totally unapropriate here, but this is what we need to do for the time being if we
-          want HTTP.
-          See http://www.jboss.com/index.html?module=bb&op=viewtopic&p=4022727 for more details.
-      -->
-      <componentref name="apache-tomcat" version="5.5.15"/>
-
       <!--
            Dependencies required to test the project.
       -->
       <componentref name="junit" version="3.8.2-brew"/>
-      <componentref name="hsqldb" version="1.8.0.2"/>
       <componentref name="dom4j" version="1.6.1-brew"/>
       <componentref name="apache-xerces" version="2.7.1-brew"/> <!-- needed by org.jboss.logging.Log4jLoggerPlugin -->
       <componentref name="jboss/profiler/jvmti" version="1.0.0.CR5-brew"/>
