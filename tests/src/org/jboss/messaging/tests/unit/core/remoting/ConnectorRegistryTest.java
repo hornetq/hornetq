@@ -83,7 +83,8 @@ public class ConnectorRegistryTest extends TestCase
       assertTrue(registry.unregister(config_2.getLocation()));
    }
 
-   public void testINVMConnectorFromTCPConfiguration() throws Exception
+   // TODO run this test when invm transport is reenabled
+   public void _testINVMConnectorFromTCPConfiguration() throws Exception
    {
       Configuration config = ConfigurationHelper.newTCPConfiguration("localhost", PORT);
       

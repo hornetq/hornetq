@@ -171,6 +171,7 @@ public class MinaService implements RemotingService, CleanUpNotifier
          acceptor.addListener(acceptorListener);
       }
       
+      // TODO reenable invm transport
 //      boolean disableInvm = config.isInvmDisabled();
 //      if (log.isDebugEnabled())
 //         log.debug("invm optimization for remoting is " + (disableInvm ? "disabled" : "enabled"));
