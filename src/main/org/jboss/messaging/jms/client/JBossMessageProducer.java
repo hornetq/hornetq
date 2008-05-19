@@ -456,7 +456,7 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
    {
       if (producer.isClosed())
       {
-         throw new IllegalStateException("Prducer is closed");
+         throw new IllegalStateException("Producer is closed");
       }
    }
    
