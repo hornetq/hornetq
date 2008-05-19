@@ -259,9 +259,6 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	// Native
 	// ------------------------------------------------------------------------------------------
 	
-	/** 
-	 * I'm sending aioPackageClazz here, as you could have multiple classLoaders with the same class, and I don't want the hassle of doing classLoading in the Native layer
-	 */
 	@SuppressWarnings("unchecked")
 	private static native long init(String fileName, int maxIO, Logger logger);
 	
@@ -299,7 +296,6 @@ public class AsynchronousFileImpl implements AsynchronousFile
       }
       public void run()
       {
-         // informing caller that this thread already has the lock
          pollEvents();
       }
    }	
