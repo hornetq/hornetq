@@ -224,4 +224,14 @@ public class SimpleStringTest extends TestCase
 //	}
 	
 	
+	public void testUnicode() throws Exception
+   {
+      String myString = "abcdef&^*&!^ghijkl\uD5E2\uCAC7\uD2BB\uB7DD\uB7C7\uB3A3\uBCE4\uB5A5";
+
+      SimpleString s = new SimpleString(myString);
+      byte[] data = s.getData();
+      s = new SimpleString(data);
+      
+      assertEquals(myString, s.toString());
+   }
 }
