@@ -21,6 +21,7 @@ import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaHandler;
+import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.tests.unit.core.remoting.TestPacketHandler;
 
@@ -61,7 +62,7 @@ public class MinaHandlerOrderingTest extends TestCase
       handler_1.expectMessage(2);
       handler_2.expectMessage(MANY_MESSAGES);
 
-      Ping packet_1 = new Ping(randomLong());
+      ConnectionCreateSessionResponseMessage packet_1 = new ConnectionCreateSessionResponseMessage(randomLong());
       packet_1.setTargetID(handler_1.getID());
       packet_1.setExecutorID(handler_1.getID());
 
@@ -71,7 +72,7 @@ public class MinaHandlerOrderingTest extends TestCase
       handler.messageReceived(null, packet_1);
       for (int i = 0; i < MANY_MESSAGES; i++)
       {
-         Ping packet_2 = new Ping(i);
+         ConnectionCreateSessionResponseMessage packet_2 = new ConnectionCreateSessionResponseMessage(i);
          packet_2.setTargetID(handler_2.getID());
          packet_2.setExecutorID(handler_2.getID());
          handler.messageReceived(null, packet_2);
@@ -85,13 +86,13 @@ public class MinaHandlerOrderingTest extends TestCase
       assertTrue("handler_2 should not have received all its message (size:" + size + ")", size < MANY_MESSAGES);
 
       assertTrue(handler_2.await(2, SECONDS));
-      List<Ping> packetsReceivedByHandler_2 = handler_2.getPackets();
+      List<Packet> packetsReceivedByHandler_2 = handler_2.getPackets();
       assertEquals(MANY_MESSAGES, packetsReceivedByHandler_2.size());      
       // we check that handler_2 receives all its messages in order:
       for (int i = 0; i < MANY_MESSAGES; i++)
       {
-         Ping p = packetsReceivedByHandler_2.get(i);
-         assertEquals(i, p.getSessionID());
+         ConnectionCreateSessionResponseMessage receivedPacket = (ConnectionCreateSessionResponseMessage) packetsReceivedByHandler_2.get(i);
+         assertEquals(i, receivedPacket.getSessionID());
       }      
    }
 

@@ -18,6 +18,7 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaHandler;
+import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.tests.unit.core.remoting.TestPacketHandler;
 
@@ -59,16 +60,16 @@ public class MinaHandlerTest extends TestCase
    {
       packetHandler.expectMessage(1);
 
-      Ping ping = new Ping(randomLong());
-      ping.setTargetID(packetHandler.getID());
-      ping.setExecutorID(packetHandler.getID());
+      ConnectionCreateSessionResponseMessage packet = new ConnectionCreateSessionResponseMessage(randomLong());
+      packet.setTargetID(packetHandler.getID());
+      packet.setExecutorID(packetHandler.getID());
 
-      handler.messageReceived(null, ping);
+      handler.messageReceived(null, packet);
 
       assertTrue(packetHandler.await(500, MILLISECONDS));
       assertEquals(1, packetHandler.getPackets().size());
-      assertEquals(ping.getSessionID(), packetHandler.getPackets().get(0)
-            .getSessionID());
+      ConnectionCreateSessionResponseMessage receivedPacket = (ConnectionCreateSessionResponseMessage) packetHandler.getPackets().get(0);
+      assertEquals(packet.getSessionID(), receivedPacket.getSessionID());
    }
 
    // TestCase overrides --------------------------------------------

@@ -16,8 +16,8 @@ import junit.framework.Assert;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
-import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
 import org.jboss.messaging.tests.unit.core.remoting.TestPacketHandler;
 
@@ -27,11 +27,11 @@ import org.jboss.messaging.tests.unit.core.remoting.TestPacketHandler;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class PingHandler extends TestPacketHandler
+public class Handler extends TestPacketHandler
 {
    // Constants -----------------------------------------------------
    
-   private static final Logger log = Logger.getLogger(PingHandler.class);
+   private static final Logger log = Logger.getLogger(Handler.class);
    
 
    // Attributes ----------------------------------------------------
@@ -44,7 +44,7 @@ public class PingHandler extends TestPacketHandler
 
    // Constructors --------------------------------------------------
    
-   public PingHandler(final long id)
+   public Handler(final long id)
    {
    	super(id);
    }
@@ -72,7 +72,7 @@ public class PingHandler extends TestPacketHandler
    @Override
    protected void doHandle(Packet packet, PacketReturner sender)
    {
-      Assert.assertTrue(packet instanceof Ping);
+      Assert.assertTrue(packet instanceof ConnectionCreateSessionResponseMessage);
 
       lastSender = sender;
 
@@ -87,7 +87,7 @@ public class PingHandler extends TestPacketHandler
          }
       }
                   
-      Ping message = (Ping) packet;
+      ConnectionCreateSessionResponseMessage message = (ConnectionCreateSessionResponseMessage) packet;
       if (isRequest(message))
       {
          Pong response = new Pong(message.getSessionID(), true);
