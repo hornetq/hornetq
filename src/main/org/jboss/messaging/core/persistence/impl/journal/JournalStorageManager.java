@@ -5,20 +5,17 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
-import org.jboss.messaging.core.journal.IOCallback;
 import org.jboss.messaging.core.journal.Journal;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
@@ -40,13 +37,13 @@ import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.util.ByteBufferWrapper;
 import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.VariableLatch;
 
 /**
  * 
  * A JournalStorageManager
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
 public class JournalStorageManager implements StorageManager
