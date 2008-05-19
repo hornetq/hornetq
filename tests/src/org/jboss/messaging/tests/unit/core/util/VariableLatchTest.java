@@ -246,6 +246,66 @@ public class VariableLatchTest extends TestCase
       {
          assertFalse (waits[i].waiting);
       }
+   }
+   
+   public void testReuseLatch() throws Exception
+   {
+      final VariableLatch latch = new VariableLatch();
+      latch.up();
+      
+      class ThreadWait extends Thread
+      {
+         boolean waiting = false;
+         Exception e;
+         CountDownLatch readyLatch = new CountDownLatch(1);
+         public void run()
+         {
+            waiting = true;
+            readyLatch.countDown();
+            try
+            {
+               latch.waitCompletion(5);
+            }
+            catch (Exception e)
+            {
+               log.error(e);
+               this.e = e;
+            }
+             waiting = false;
+         }
+      }
+      
+      ThreadWait t = new ThreadWait();
+      t.start();
+      
+      t.readyLatch.await();
+      
+      assertEquals(true, t.waiting);
+      
+      latch.down();
+
+      t.join();
+
+      assertEquals(false, t.waiting);
+
+      assertNull(t.e);
+      
+      latch.up();
+      
+      t = new ThreadWait();
+      t.start();
+      
+      t.readyLatch.await();
+      
+      assertEquals(true, t.waiting);
+
+      latch.down();
+      
+      t.join();
+      
+      assertEquals(false, t.waiting);
+      
+      assertNull(t.e);
       
       
       
