@@ -76,6 +76,8 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
    
    private int defaultProducerMaxRate;
    
+   private boolean defaultBlockOnAcknowledge;
+   
    
    // Static ---------------------------------------------------------------------------------------
     
@@ -84,7 +86,8 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
    public ClientConnectionFactoryImpl(final Location location, final ConnectionParams connectionParams,
                                       final boolean strictTck,
                                       final int defaultConsumerWindowSize, final int defaultConsumerMaxRate,
-                                      final int defaultProducerWindowSize, final int defaultProducerMaxRate)
+                                      final int defaultProducerWindowSize, final int defaultProducerMaxRate,
+                                      final boolean defaultBlockOnAcknowledge)
    {
       this.location = location;
       this.strictTck = strictTck;
@@ -92,6 +95,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
       this.defaultConsumerMaxRate = defaultConsumerMaxRate;
       this.defaultProducerWindowSize = defaultProducerWindowSize;
       this.defaultProducerMaxRate = defaultProducerMaxRate;
+      this.defaultBlockOnAcknowledge = defaultBlockOnAcknowledge;
       this.connectionParams = connectionParams;
    }
    
@@ -142,7 +146,8 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
 
          return new ClientConnectionImpl(response.getConnectionTargetID(), strictTck, remotingConnection,
                defaultConsumerWindowSize, defaultConsumerMaxRate,
-               defaultProducerWindowSize, defaultProducerMaxRate, response.getServerVersion());
+               defaultProducerWindowSize, defaultProducerMaxRate,
+               defaultBlockOnAcknowledge, response.getServerVersion());
       }
       catch (Throwable t)
       {

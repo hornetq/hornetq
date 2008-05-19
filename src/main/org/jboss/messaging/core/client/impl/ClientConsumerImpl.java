@@ -160,6 +160,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                {
                }
                
+               //TODO - can avoid this extra System.currentTimeMillis call by exiting early
                long now = System.currentTimeMillis();
                
                toWait -= now - start;

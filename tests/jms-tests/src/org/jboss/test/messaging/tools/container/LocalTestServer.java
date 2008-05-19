@@ -651,7 +651,7 @@ public class LocalTestServer implements Server, Runnable
    {
       log.info("deploying connection factory with name: " + objectName + " and dupsok: " + dupsOkBatchSize);
       getJMSServerManager().createConnectionFactory(objectName, clientId, dupsOkBatchSize,
-      		strictTck, prefetchSize, -1, 1000, -1, jndiBindings);
+      		strictTck, prefetchSize, -1, 1000, -1, false, jndiBindings);
    }
 
 

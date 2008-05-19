@@ -95,6 +95,7 @@ public interface JMSServerManager extends Serializable
    		                          int dupsOKBatchSize, boolean strictTck,
    		                          int consumerWindowSize, int consumerMaxRate,
    		                          int producerWindowSize, int producerMaxRate,
+   		                          boolean blockOnAcknowledge,
    		                          String jndiBinding) throws Exception;
 
    /**
@@ -115,6 +116,7 @@ public interface JMSServerManager extends Serializable
    		                          boolean strictTck,
    		                          int consumerWindowSize, int consumerMaxRate,
    		                          int producerWindowSize, int producerMaxRate,
+   		                          boolean blockOnAcknowledge,
    		                          List<String> jndiBindings) throws Exception;
 
    /**

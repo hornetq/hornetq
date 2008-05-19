@@ -231,7 +231,7 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    public boolean createConnectionFactory(String name, String clientID,
    		int dupsOKBatchSize, boolean strictTck, int consumerWindowSize, int consumerMaxRate,
-   		int producerWindowSize, int producerMaxRate, String jndiBinding) throws Exception
+   		int producerWindowSize, int producerMaxRate, boolean blockOnAcknowledge, String jndiBinding) throws Exception
    {
       JBossConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
@@ -240,7 +240,8 @@ public class JMSServerManagerImpl implements JMSServerManager
                  messagingServerManagement.getConfiguration().getLocation(),
                  messagingServerManagement.getConfiguration().getConnectionParams(),                 
                  messagingServerManagement.getConfiguration().isStrictTck() || strictTck,
-                 consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate
+                 consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate,
+                 blockOnAcknowledge
                  );
       }
       if (!bindToJndi(jndiBinding, cf))
@@ -258,7 +259,7 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    public boolean createConnectionFactory(String name, String clientID, int dupsOKBatchSize,
    		                                 boolean strictTck, int consumerWindowSize, int consumerMaxRate,
-   		                                 int producerWindowSize, int producerMaxRate,
+   		                                 int producerWindowSize, int producerMaxRate, boolean blockOnAcknowledge,
    		                                 List<String> jndiBindings) throws Exception
    {
       JBossConnectionFactory cf = connectionFactories.get(name);
@@ -268,7 +269,8 @@ public class JMSServerManagerImpl implements JMSServerManager
                  messagingServerManagement.getConfiguration().getLocation(),
                  messagingServerManagement.getConfiguration().getConnectionParams(),
                  messagingServerManagement.getConfiguration().isStrictTck() || strictTck,
-                 consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate
+                 consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate,
+                 blockOnAcknowledge
                  );
       }
       for (String jndiBinding : jndiBindings)

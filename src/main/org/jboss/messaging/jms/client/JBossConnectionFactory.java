@@ -91,6 +91,8 @@ public class JBossConnectionFactory implements
    private final int defaultProducerWindowSize;
 
    private final int defaultProducerMaxRate;
+   
+   private final boolean defaultBlockOnAcknowledge;
 
    // Constructors ---------------------------------------------------------------------------------
    
@@ -102,7 +104,8 @@ public class JBossConnectionFactory implements
                                  final int defaultConsumerWindowSize,
                                  final int defaultConsumerMaxRate,
                                  final int defaultProducerWindowSize,
-                                 final int defaultProducerMaxRate)
+                                 final int defaultProducerMaxRate,
+                                 final boolean defaultBlockOnAcknowledge)
    {
       this.clientID = clientID;
       this.dupsOKBatchSize = dupsOKBatchSize;
@@ -113,6 +116,7 @@ public class JBossConnectionFactory implements
       this.defaultConsumerWindowSize = defaultConsumerWindowSize;
       this.defaultProducerMaxRate = defaultProducerMaxRate;
       this.defaultProducerWindowSize = defaultProducerWindowSize;
+      this.defaultBlockOnAcknowledge = defaultBlockOnAcknowledge;
    }
    // ConnectionFactory implementation -------------------------------------------------------------
    
@@ -212,24 +216,25 @@ public class JBossConnectionFactory implements
    {
       return "JBossConnectionFactory->" + connectionFactory;
    }
-   
-   public ClientConnectionFactory getDelegate()
-   {
-      if(connectionFactory == null)
-         {
-            connectionFactory = new ClientConnectionFactoryImpl(
-                    location,
-                    connectionParams,
-                    strictTck,
-                    defaultConsumerWindowSize,
-                    defaultConsumerMaxRate,
-                    defaultProducerWindowSize,
-                    defaultProducerMaxRate);
 
-         }
+   public synchronized ClientConnectionFactory getDelegate()
+   {
+      if (connectionFactory == null)
+      {
+         connectionFactory = new ClientConnectionFactoryImpl(
+               location,
+               connectionParams,
+               strictTck,
+               defaultConsumerWindowSize,
+               defaultConsumerMaxRate,
+               defaultProducerWindowSize,
+               defaultProducerMaxRate,
+               defaultBlockOnAcknowledge);
+
+      }
       return connectionFactory;
    }
-   
+
    // Package protected ----------------------------------------------------------------------------
    
    // Protected ------------------------------------------------------------------------------------
@@ -240,18 +245,8 @@ public class JBossConnectionFactory implements
    {
       try
       {
-         if(connectionFactory == null)
-         {
-            connectionFactory = new ClientConnectionFactoryImpl(
-                    location,
-                    connectionParams,
-                    strictTck,
-                    defaultConsumerWindowSize,
-                    defaultConsumerMaxRate,
-                    defaultProducerWindowSize, 
-                    defaultProducerMaxRate);
-            
-         }
+         getDelegate();
+         
          ClientConnection res = connectionFactory.createConnection(username, password);
                     
          return new JBossConnection(res, type, clientID, dupsOKBatchSize);

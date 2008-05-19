@@ -23,6 +23,7 @@ package org.jboss.messaging.core.server;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -54,6 +55,8 @@ public interface Queue
    void addListFirst(LinkedList<MessageReference> list);
    
    void deliver();
+   
+   void deliverAsync(Executor executor);
    
    void addConsumer(Consumer consumer);
 

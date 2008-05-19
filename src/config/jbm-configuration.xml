@@ -69,7 +69,7 @@
       
       <create-journal-dir>true</create-journal-dir>
       
-      <journal-type>nio</journal-type>
+      <journal-type>asyncio</journal-type>
       
       <journal-sync>true</journal-sync>
       

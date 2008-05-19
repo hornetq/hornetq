@@ -73,6 +73,8 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    private final int defaultProducerWindowSize;
    
    private final int defaultProducerMaxRate;
+   
+   private final boolean defaultBlockOnAcknowledge;
 
    private final Version serverVersion;
    
@@ -88,6 +90,7 @@ public class ClientConnectionImpl implements ClientConnectionInternal
                                final int defaultConsumerMaxRate,
                                final int defaultProducerWindowSize,
                                final int defaultProducerMaxRate,
+                               final boolean defaultBlockOnAcknowledge,
                                final Version serverVersion)
    {
       this.serverTargetID = serverTargetID;
@@ -103,6 +106,8 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       this.defaultProducerWindowSize = defaultProducerWindowSize;
       
       this.defaultProducerMaxRate = defaultProducerMaxRate;
+      
+      this.defaultBlockOnAcknowledge = defaultBlockOnAcknowledge;
 
       this.serverVersion = serverVersion;
    }
@@ -123,11 +128,19 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       ClientSession session =
       	new ClientSessionImpl(this, response.getSessionID(), ackBatchSize, cacheProducers,
       			autoCommitSends, autoCommitAcks, blockOnAcknowledge,
-      			defaultConsumerWindowSize, defaultConsumerMaxRate, defaultProducerWindowSize, defaultProducerMaxRate);
+      			defaultConsumerWindowSize, defaultConsumerMaxRate, defaultProducerWindowSize,
+      			defaultProducerMaxRate);
 
       sessions.add(session);
 
       return session;
+   }
+   
+   public ClientSession createClientSession(final boolean xa, final boolean autoCommitSends,
+         final boolean autoCommitAcks,
+         final int ackBatchSize) throws MessagingException
+   {
+      return createClientSession(xa, autoCommitSends, autoCommitAcks, ackBatchSize, defaultBlockOnAcknowledge, false);
    }
    
    public void start() throws MessagingException

@@ -48,6 +48,7 @@ public class JMSServerDeployer extends XmlDeployer
    private static final String SUPPORTS_FAILOVER = "supports-failover";
    private static final String SUPPORTS_LOAD_BALANCING = "supports-load-balancing";
    private static final String LOAD_BALANCING_FACTORY = "load-balancing-factory";
+   private static final String BLOCK_ON_ACKNOWLEDGE = "block-on-acknowledge";
    private static final String STRICT_TCK = "strict-tck";
    private static final String ENTRY_NODE_NAME = "entry";
    private static final String CONNECTION_FACTORY_NODE_NAME = "connection-factory";
@@ -130,6 +131,7 @@ public class JMSServerDeployer extends XmlDeployer
          int consumerMaxRate = -1;         
          int producerWindowSize = 1000;
          int producerMaxRate = -1;
+         boolean blockOnAcknowledge = false;
          
          for (int j = 0; j < attributes.getLength(); j++)
          {
@@ -161,18 +163,22 @@ public class JMSServerDeployer extends XmlDeployer
             {
                dupsOKBatchSize = Integer.parseInt(attributes.item(j).getTextContent().trim());
             }
-            if (SUPPORTS_FAILOVER.equalsIgnoreCase(attributes.item(j).getNodeName()))
+            else if (BLOCK_ON_ACKNOWLEDGE.equalsIgnoreCase(attributes.item(j).getNodeName()))
             {
-               //setSupportsFailover(Boolean.parseBoolean(attributes.item(j).getTextContent().trim()));
+               blockOnAcknowledge = Boolean.parseBoolean(attributes.item(j).getTextContent().trim());
             }
-            if (SUPPORTS_LOAD_BALANCING.equalsIgnoreCase(attributes.item(j).getNodeName()))
-            {
-               //setSupportsLoadBalancing(Boolean.parseBoolean(attributes.item(j).getTextContent().trim()));
-            }
-            if (LOAD_BALANCING_FACTORY.equalsIgnoreCase(attributes.item(j).getNodeName()))
-            {
-               //setLoadBalancingFactory(attributes.item(j).getTextContent().trim());
-            }
+//            if (SUPPORTS_FAILOVER.equalsIgnoreCase(attributes.item(j).getNodeName()))
+//            {
+//               //setSupportsFailover(Boolean.parseBoolean(attributes.item(j).getTextContent().trim()));
+//            }
+//            if (SUPPORTS_LOAD_BALANCING.equalsIgnoreCase(attributes.item(j).getNodeName()))
+//            {
+//               //setSupportsLoadBalancing(Boolean.parseBoolean(attributes.item(j).getTextContent().trim()));
+//            }
+//            if (LOAD_BALANCING_FACTORY.equalsIgnoreCase(attributes.item(j).getNodeName()))
+//            {
+//               //setLoadBalancingFactory(attributes.item(j).getTextContent().trim());
+//            }
          }
 
          NodeList children = node.getChildNodes();
@@ -188,7 +194,8 @@ public class JMSServerDeployer extends XmlDeployer
                String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
                String name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
                jmsServerManager.createConnectionFactory(name, clientID, dupsOKBatchSize, cfStrictTck,
-               		consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate, jndiName);
+               		consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate, 
+               		blockOnAcknowledge, jndiName);
             }
          }
       }

@@ -292,14 +292,7 @@ public class ServerSessionImpl implements ServerSession
 
    public void promptDelivery(final Queue queue)
    {
-      // TODO - do we really need to prompt on a different thread?
-      executor.execute(new Runnable()
-      {
-         public void run()
-         {
-            queue.deliver();
-         }
-      });
+      queue.deliverAsync(executor);
    }
 
    public void send(final ServerMessage msg) throws Exception

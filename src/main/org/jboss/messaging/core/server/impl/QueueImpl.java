@@ -27,9 +27,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.filter.Filter;
@@ -99,6 +101,11 @@ public class QueueImpl implements Queue
    private AtomicInteger deliveringCount = new AtomicInteger(0);
 
    private volatile FlowController flowController;
+   
+   private AtomicBoolean waitingToDeliver = new AtomicBoolean(false);  
+   
+   private final Runnable deliverRunner = new DeliverRunner();
+   
    
    public QueueImpl(final long persistenceID, final SimpleString name,
          final Filter filter, final boolean clustered, final boolean durable,
@@ -173,6 +180,17 @@ public class QueueImpl implements Queue
  
   // private volatile int count = 0;
    
+
+   public void deliverAsync(final Executor executor)
+   {
+      //Prevent too many executors running at once
+      
+      if (waitingToDeliver.compareAndSet(false, true))
+      {
+         executor.execute(deliverRunner);
+      }
+   }
+      
    /*
     * Attempt to deliver all the messages in the queue
     * 
@@ -655,6 +673,17 @@ public class QueueImpl implements Queue
    // Inner classes
    // --------------------------------------------------------------------------
 
+   private class DeliverRunner implements Runnable
+   {
+      public void run()
+      {
+         //Must be set to false *before* executing to avoid race
+         waitingToDeliver.set(false);
+         
+         deliver();
+      }
+   }   
+   
    private class ScheduledDeliveryRunnable implements Runnable
    {
       private final MessageReference ref;

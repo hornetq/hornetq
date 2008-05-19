@@ -46,10 +46,8 @@ import javax.jms.XATopicSession;
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.RemotingSessionListener;
-import org.jboss.messaging.core.client.impl.ClientConnectionInternal;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.version.Version;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -373,61 +371,31 @@ public class JBossConnection implements
       
       try
       {
-         int ackBatchSize;
-         
-         final boolean autoCommitSends;
-
-         final boolean autoCommitAcks;
-         
-         final boolean blockOnAcknowledge;
+         ClientSession session;
 
       	if (acknowledgeMode == Session.SESSION_TRANSACTED)
       	{
-      		autoCommitSends = false;
-
-            autoCommitAcks = false;
-            
-            ackBatchSize = -1; //Infinite
-            
-            blockOnAcknowledge = false;
+      	   session =
+               connection.createClientSession(isXA, false, false, -1, false, cacheProducers);
       	}
       	else if (acknowledgeMode == Session.AUTO_ACKNOWLEDGE)
          {
-            autoCommitSends = true;
-
-            autoCommitAcks = true;
-            
-            ackBatchSize = 1;
-            
-            blockOnAcknowledge = false;
+      	   session = connection.createClientSession(isXA, true, true, 1);
          }
          else if (acknowledgeMode == Session.DUPS_OK_ACKNOWLEDGE)
          {
-         	autoCommitSends = true;
-         	
-         	autoCommitAcks = true;
-         	
-         	ackBatchSize = dupsOKBatchSize;
-         	
-         	blockOnAcknowledge = false;
+            session =
+               connection.createClientSession(isXA, true, true, dupsOKBatchSize, false, cacheProducers);
          }
          else if (acknowledgeMode == Session.CLIENT_ACKNOWLEDGE)
          {
-            autoCommitSends = true;
-
-            autoCommitAcks = false;
-            
-            ackBatchSize = -1; //Infinite
-            
-            blockOnAcknowledge = false;
+            session =
+               connection.createClientSession(isXA, true, false, -1, false, cacheProducers);
          }         
          else
          {
          	throw new IllegalArgumentException("Invalid ackmode: " + acknowledgeMode);
          }
-
-         ClientSession session =
-         	connection.createClientSession(isXA, autoCommitSends, autoCommitAcks, ackBatchSize, blockOnAcknowledge, cacheProducers);
 
          justCreated = false;
          

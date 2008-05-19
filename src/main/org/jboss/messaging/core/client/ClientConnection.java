@@ -16,8 +16,12 @@ import org.jboss.messaging.core.version.Version;
  */
 public interface ClientConnection
 {    
+   //TODO create better selection of overloaded methods
    ClientSession createClientSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks,
                                      int ackBatchSize, boolean blockOnAcknowledge, boolean cacheProducers) throws MessagingException;
+
+   ClientSession createClientSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks,
+                                     int ackBatchSize) throws MessagingException;
 
    void start() throws MessagingException;
 
