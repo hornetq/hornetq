@@ -6,11 +6,10 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGISTRY;
-import static org.jboss.messaging.core.remoting.TransportType.INVM;
-import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addSSLFilter;
+import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.*;
+import static org.jboss.messaging.core.remoting.TransportType.*;
+import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.*;
+import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.*;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -38,9 +37,9 @@ import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public class MinaService implements RemotingService, CleanUpNotifier
 {
@@ -51,27 +50,27 @@ public class MinaService implements RemotingService, CleanUpNotifier
    // Attributes ----------------------------------------------------
 
    private boolean started = false;
-   
+
    private Configuration config;
-   
+
    private NioSocketAcceptor acceptor;
 
    private IoServiceListener acceptorListener;
 
-   private PacketDispatcher dispatcher;
+   private final PacketDispatcher dispatcher;
 
-   private ExecutorService threadPool; 
-   
-   private List<RemotingSessionListener> listeners = new ArrayList<RemotingSessionListener>();
+   private ExecutorService threadPool;
+
+   private final List<RemotingSessionListener> listeners = new ArrayList<RemotingSessionListener>();
 
    private ServerKeepAliveFactory factory;
-   
-   private List<Interceptor> filters = new CopyOnWriteArrayList<Interceptor>();
+
+   private final List<Interceptor> filters = new CopyOnWriteArrayList<Interceptor>();
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-   
+
    public MinaService(Configuration config)
    {
       this(config, new ServerKeepAliveFactory());
@@ -83,22 +82,22 @@ public class MinaService implements RemotingService, CleanUpNotifier
       assert factory != null;
 
       validate(config);
-      
+
       this.config = config;
       this.factory = factory;
-      this.dispatcher = new PacketDispatcherImpl(this.filters);
+      dispatcher = new PacketDispatcherImpl(filters);
    }
-   
+
    @Install
    public void addInterceptor(Interceptor filter)
    {
-      this.filters.add(filter);
+      filters.add(filter);
    }
 
    @Uninstall
    public void removeInterceptor(Interceptor filter)
    {
-      this.filters.remove(filter);
+      filters.remove(filter);
    }
 
    public void addRemotingSessionListener(RemotingSessionListener listener)
@@ -120,16 +119,18 @@ public class MinaService implements RemotingService, CleanUpNotifier
    public void start() throws Exception
    {
       if (log.isDebugEnabled())
+      {
          log.debug("Start MinaService with configuration:" + config);
-      
+      }
+
       // if INVM transport is set, we bypass MINA setup
-      if (config.getTransport() != INVM 
+      if (config.getTransport() != INVM
             && acceptor == null)
       {
          acceptor = new NioSocketAcceptor();
-         
+
          acceptor.setSessionDataStructureFactory(new MessagingIOSessionDataStructureFactory());
-         
+
          DefaultIoFilterChainBuilder filterChain = acceptor.getFilterChain();
 
          // addMDCFilter(filterChain);
@@ -158,6 +159,7 @@ public class MinaService implements RemotingService, CleanUpNotifier
          acceptor.setReuseAddress(true);
          acceptor.getSessionConfig().setReuseAddress(true);
          acceptor.getSessionConfig().setKeepAlive(true);
+         acceptor.getSessionConfig().setTcpNoDelay(true);
          acceptor.setCloseOnDeactivation(false);
 
          threadPool = Executors.newCachedThreadPool();
@@ -170,13 +172,13 @@ public class MinaService implements RemotingService, CleanUpNotifier
          acceptorListener = new MinaSessionListener();
          acceptor.addListener(acceptorListener);
       }
-      
+
       // TODO reenable invm transport
 //      boolean disableInvm = config.isInvmDisabled();
 //      if (log.isDebugEnabled())
 //         log.debug("invm optimization for remoting is " + (disableInvm ? "disabled" : "enabled"));
      // if (!disableInvm)
-      
+
       log.info("Registering:" + config.getLocation());
          REGISTRY.register(config.getLocation(), dispatcher);
 
@@ -195,9 +197,9 @@ public class MinaService implements RemotingService, CleanUpNotifier
          acceptor = null;
          threadPool.shutdown();
       }
-      
+
       REGISTRY.unregister(config.getLocation());
-      
+
       started = false;
    }
 
@@ -205,21 +207,21 @@ public class MinaService implements RemotingService, CleanUpNotifier
    {
       return dispatcher;
    }
-   
+
    public Configuration getConfiguration()
    {
       return config;
    }
-   
+
    /**
-    * This method must only be called by tests which requires 
+    * This method must only be called by tests which requires
     * to insert Filters (e.g. to simulate network failures)
     */
-   public DefaultIoFilterChainBuilder getFilterChain() 
+   public DefaultIoFilterChainBuilder getFilterChain()
    {
       assert started == true;
       assert acceptor != null;
-      
+
       return acceptor.getFilterChain();
    }
 
@@ -234,24 +236,24 @@ public class MinaService implements RemotingService, CleanUpNotifier
          {
             listener.sessionDestroyed(clientSessionID, me);
          }
-         factory.getSessions().remove(sessionID);  
+         factory.getSessions().remove(sessionID);
       }
    }
-   
+
    // Public --------------------------------------------------------
 
    public void setKeepAliveFactory(ServerKeepAliveFactory factory)
    {
       assert factory != null;
-      
+
       this.factory = factory;
    }
 
    public void setRemotingConfiguration(Configuration remotingConfig)
    {
       assert started == false;
-      
-      this.config = remotingConfig;
+
+      config = remotingConfig;
    }
 
    // Package protected ---------------------------------------------
@@ -285,5 +287,5 @@ public class MinaService implements RemotingService, CleanUpNotifier
       {
          fireCleanup(session.getId(), null);
       }
-   }  
+   }
 }

@@ -6,9 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addKeepAliveFilter;
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addSSLFilter;
+import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.*;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -35,41 +33,39 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
-import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public class MinaConnector implements NIOConnector, CleanUpNotifier
 {
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(MinaConnector.class);
-   
+
    private static boolean trace = log.isTraceEnabled();
-   
+
    // Attributes ----------------------------------------------------
 
-   private Location location;
+   private final Location location;
 
-   private ConnectionParams connectionParams;
+   private final ConnectionParams connectionParams;
 
    private transient NioSocketConnector connector;
 
-   private PacketDispatcher dispatcher;
+   private final PacketDispatcher dispatcher;
 
    private ExecutorService threadPool;
-   
+
    private IoSession session;
 
-   private List<RemotingSessionListener> listeners = new ArrayList<RemotingSessionListener>();
+   private final List<RemotingSessionListener> listeners = new ArrayList<RemotingSessionListener>();
    private IoServiceListenerAdapter ioListener;
-   
+
    private MinaHandler handler;
 
    // Static --------------------------------------------------------
@@ -105,9 +101,9 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
       this.connectionParams = connectionParams;
       this.dispatcher = dispatcher;
 
-      this.connector = new NioSocketConnector();
+      connector = new NioSocketConnector();
       DefaultIoFilterChainBuilder filterChain = connector.getFilterChain();
-      
+
       connector.setSessionDataStructureFactory(new MessagingIOSessionDataStructureFactory());
 
       // addMDCFilter(filterChain);
@@ -139,6 +135,7 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
       }
       connector.getSessionConfig().setKeepAlive(true);
       connector.getSessionConfig().setReuseAddress(true);
+      connector.getSessionConfig().setTcpNoDelay(true);
    }
 
    // NIOConnector implementation -----------------------------------
@@ -149,7 +146,7 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
       {
          return new MinaSession(session, handler);
       }
-      
+
       threadPool = Executors.newCachedThreadPool();
       //We don't order executions in the handler for messages received - this is done in the ClientConsumeImpl
       //since they are put on the queue in order
@@ -163,16 +160,16 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
       connector.setDefaultRemoteAddress(address);
       ioListener = new IoServiceListenerAdapter();
       connector.addListener(ioListener);
-      
+
       future.awaitUninterruptibly();
       if (!future.isConnected())
       {
          throw new IOException("Cannot connect to " + address.toString());
       }
-      this.session = future.getSession();
+      session = future.getSession();
 //      Packet packet = new Ping(session.getId());
 //      session.write(packet);
-      
+
       return new MinaSession(session, handler);
    }
 
@@ -185,11 +182,11 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
 
       CloseFuture closeFuture = session.close().awaitUninterruptibly();
       boolean closed = closeFuture.isClosed();
-      
+
       connector.removeListener(ioListener);
       connector.dispose();
       threadPool.shutdown();
-      
+
       SslFilter sslFilter = (SslFilter) session.getFilterChain().get("ssl");
       // FIXME without this hack, exceptions are thrown:
       // "Unexpected exception from SSLEngine.closeInbound()." -> because the ssl session is not stopped
@@ -205,7 +202,7 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
             // ignore
          }
       }
-      
+
       connector = null;
       session = null;
 
@@ -220,7 +217,9 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
       listeners.add(listener);
 
       if (trace)
+      {
          log.trace("added listener " + listener + " to " + this);
+      }
    }
 
    public synchronized void removeSessionListener(RemotingSessionListener listener)
@@ -231,11 +230,13 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
       listeners.remove(listener);
 
       if (trace)
+      {
          log.trace("removed listener " + listener + " from " + this);
+      }
    }
 
    public String getServerURI()
-   { 
+   {
       return location.getLocation() + connectionParams.getURI();
    }
 
@@ -245,7 +246,7 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
    }
 
    // FailureNotifier implementation -------------------------------
-   
+
    public synchronized void fireCleanup(long sessionID, MessagingException me)
    {
       for (RemotingSessionListener listener: listeners)
@@ -253,18 +254,18 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
          listener.sessionDestroyed(sessionID, me);
       }
    }
-   
+
    public void fireCleanup(long sessionID)
    {
       fireCleanup(sessionID, null);
    }
 
    // Public --------------------------------------------------------
-   
+
    @Override
    public String toString()
    {
-      return "MinaConnector@" + System.identityHashCode(this) + "[configuration=" + location + "]"; 
+      return "MinaConnector@" + System.identityHashCode(this) + "[configuration=" + location + "]";
    }
    // Package protected ---------------------------------------------
 
@@ -286,30 +287,38 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
       public void serviceActivated(IoService service)
       {
          if (trace)
+         {
             log.trace("activated " + service);
+         }
       }
 
       public void serviceDeactivated(IoService service)
       {
          if (trace)
+         {
             log.trace("deactivated " + service);
+         }
       }
 
       public void serviceIdle(IoService service, IdleStatus idleStatus)
       {
          if (trace)
+         {
             log.trace("idle " + service + ", status=" + idleStatus);
+         }
       }
 
       public void sessionCreated(IoSession session)
       {
          if (trace)
+         {
             log.trace("created session " + session);
+         }
       }
 
       public void sessionDestroyed(IoSession session)
       {
-         fireCleanup(session.getId(), 
+         fireCleanup(session.getId(),
                new MessagingException(MessagingException.INTERNAL_ERROR, "MINA session has been destroyed"));
       }
    }
