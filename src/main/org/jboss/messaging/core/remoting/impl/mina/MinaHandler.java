@@ -306,8 +306,8 @@ public class MinaHandler extends IoHandlerAdapter implements
       }
 
       if (trace) {
-        log.trace("received packet " + packet);
-    }
+         log.trace("received packet " + packet);
+      }
 
       dispatcher.dispatch(packet, returner);
    }
