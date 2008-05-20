@@ -22,7 +22,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 
 
 /**
- * 
+ *
  * @author clebert suconic
  *
  */
@@ -31,28 +31,30 @@ public abstract class MeasureBase extends TestCase
    protected MinaService service;
    protected PacketDispatcher serverDispatcher;
 
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
       startServer();
       serverDispatcher.register(new FakeHandler());
    }
-   
+
+   @Override
    public void tearDown() throws Exception
    {
       service.stop();
    }
-   
-   
+
+
    public void testMixingSends() throws Throwable
    {
       RemotingConnectionImpl remoting = new RemotingConnectionImpl(getLocation(), createParameters());
       remoting.start();
-      
+
       int NUMBER_OF_MESSAGES = 300;
-      
+
       long start = System.currentTimeMillis();
-      
+
       for (int i=0; i<NUMBER_OF_MESSAGES; i++)
       {
          if (i%2 == 0)
@@ -61,50 +63,50 @@ public abstract class MeasureBase extends TestCase
          }
          else
          {
-            EmptyPacket ret = (EmptyPacket)remoting.sendBlocking(10, 0, new EmptyPacket(EmptyPacket.CLOSE));
+            Object ret = remoting.sendBlocking(10, 0, new EmptyPacket(EmptyPacket.CLOSE));
             assertTrue (ret instanceof EmptyPacket);
             //assertEquals(EmptyPacket.EXCEPTION, ret.getType());
          }
       }
-      
+
       long end = System.currentTimeMillis();
-      
-      
-      System.out.println("Messages / second = " + (NUMBER_OF_MESSAGES * 1000 / (end-start)));
+
+
+      System.out.println("Messages / second = " + NUMBER_OF_MESSAGES * 1000 / (end-start));
       Thread.sleep(1000);
-      
+
       remoting.stop();
-      
+
    }
-   
+
    public void testBlockSends() throws Throwable
    {
        //NIOConnector connector = createNIOConnector(new PacketDispatcherImpl(null));
       //NIOSession session = connector.connect();
 
-      
-      
+
+
       RemotingConnectionImpl remoting = new RemotingConnectionImpl(getLocation(), createParameters());
       remoting.start();
-      
+
       int NUMBER_OF_MESSAGES = 100;
-      
+
       long start = System.currentTimeMillis();
-      
+
       for (int i=0; i<NUMBER_OF_MESSAGES; i++)
       {
          Object ret = remoting.sendBlocking(10, 10, new EmptyPacket(EmptyPacket.CLOSE));
          assertTrue (ret instanceof EmptyPacket);
       }
-      
+
       long end = System.currentTimeMillis();
-      
-      
-      System.out.println("Messages / second = " + (NUMBER_OF_MESSAGES * 1000 / (end-start)));
+
+
+      System.out.println("Messages / second = " + NUMBER_OF_MESSAGES * 1000 / (end-start));
       Thread.sleep(1000);
-      
+
       remoting.stop();
-      
+
    }
 
    public void testOneWaySends() throws Throwable
@@ -112,36 +114,36 @@ public abstract class MeasureBase extends TestCase
        //NIOConnector connector = createNIOConnector(new PacketDispatcherImpl(null));
       //NIOSession session = connector.connect();
 
-      
+
       RemotingConnectionImpl remoting = new RemotingConnectionImpl(getLocation(), createParameters());
       remoting.start();
-      
+
       int NUMBER_OF_MESSAGES = 30000;
-      
+
       long start = System.currentTimeMillis();
-      
+
       for (int i=0; i<NUMBER_OF_MESSAGES; i++)
       {
          remoting.sendOneWay(10, 10, new EmptyPacket(EmptyPacket.CLOSE));
       }
 
       remoting.sendBlocking(10, 10, new EmptyPacket(EmptyPacket.CLOSE));
-      
+
       long end = System.currentTimeMillis();
-      
-      
-      System.out.println("Messages / second = " + (NUMBER_OF_MESSAGES * 1000 / (end-start)));
-      
+
+
+      System.out.println("Messages / second = " + NUMBER_OF_MESSAGES * 1000 / (end-start));
+
       remoting.stop();
-      
+
    }
 
    protected abstract LocationImpl getLocation();
 
    protected abstract ConfigurationImpl createConfiguration();
 
-   
-   
+
+
    protected void startServer() throws Exception
    {
       service = new MinaService(createConfiguration());
@@ -151,18 +153,18 @@ public abstract class MeasureBase extends TestCase
    }
 
    // Private
-   
+
    protected ConnectionParamsImpl createParameters()
    {
       ConnectionParamsImpl param = new ConnectionParamsImpl();
       param.setTimeout(50000);
       return param;
    }
-   
 
-   
+
+
    // Inner Classes
-   
+
    class FakeHandler implements PacketHandler
    {
 
@@ -187,5 +189,5 @@ public abstract class MeasureBase extends TestCase
          }
       }
    }
-   
+
 }
