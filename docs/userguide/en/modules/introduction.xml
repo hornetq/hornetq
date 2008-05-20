@@ -50,7 +50,10 @@
          </listitem>
 
          <listitem>
-            <para>Mina based transport. todo</para>
+            <para>JBoss Messaging uses 
+            <ulink url="http://mina.apache.org/">MINA</ulink> to provide high 
+            performance and high scalability for its network layer with an 
+            asynchronous API via Java NIO.</para>
          </listitem>
 
          <listitem>
