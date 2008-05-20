@@ -68,7 +68,8 @@ public class TransactedSessionTest extends JMSTestCase
 	      s = conn.createSession(true, Session.SESSION_TRANSACTED);
 	      MessageConsumer c = s.createConsumer(queue1);
 	      conn.start();
-	      Message m = c.receive();
+	      Message m = c.receive(1000);
+	      assertNotNull(m);
 
 	      assertEquals("one", ((TextMessage)m).getText());
 	      assertFalse(m.getJMSRedelivered());
@@ -77,7 +78,9 @@ public class TransactedSessionTest extends JMSTestCase
 	      s.rollback();
 
 	      // get the message again
-	      m = c.receive();
+	      m = c.receive(1000);
+	      assertNotNull(m);
+	      
 	      assertTrue(m.getJMSRedelivered());
 	      assertEquals(2, m.getIntProperty("JMSXDeliveryCount"));
 
@@ -118,6 +121,8 @@ public class TransactedSessionTest extends JMSTestCase
          conn.start();
 
          TextMessage mRec1 = (TextMessage)consumer1.receive(2000);
+         assertNotNull(mRec1);
+         
          assertEquals("igloo", mRec1.getText());
          assertFalse(mRec1.getJMSRedelivered());
 
@@ -504,7 +509,8 @@ public class TransactedSessionTest extends JMSTestCase
 
          conn.start();
 
-         TextMessage tm = (TextMessage)cons.receive();
+         TextMessage tm = (TextMessage)cons.receive(1000);
+         assertNotNull(tm);
 
          assertEquals("a message", tm.getText());
 
@@ -556,7 +562,8 @@ public class TransactedSessionTest extends JMSTestCase
 
       sess.commit();
 
-      TextMessage mRec = (TextMessage)consumer.receive();
+      TextMessage mRec = (TextMessage)consumer.receive(1000);
+      assertNotNull(mRec);
       log.trace("Got 1");
       assertNotNull(mRec);
       assertEquals("igloo", mRec.getText());
@@ -569,14 +576,16 @@ public class TransactedSessionTest extends JMSTestCase
       sess.commit();
 
       log.trace("Receiving 2");
-      mRec = (TextMessage)consumer.receive();
+      mRec = (TextMessage)consumer.receive(1000);
+      assertNotNull(mRec);
+      
       log.trace("Received 2");
       assertNotNull(mRec);
       assertEquals("rollback", mRec.getText());
 
       sess.rollback();
 
-      TextMessage mRec2 = (TextMessage)consumer.receive();
+      TextMessage mRec2 = (TextMessage)consumer.receive(1000);
       assertNotNull(mRec2);
       assertEquals("rollback", mRec2.getText());
 
