@@ -23,6 +23,14 @@ public class ConfigurationHelper
       config.setPort(port);
       return config;
    }
+   
+   public static ConfigurationImpl newInVMConfig()
+   {
+      ConfigurationImpl config = new ConfigurationImpl();
+      config.setTransport(TransportType.INVM);
+      config.setServerID(0);
+      return config;
+   }
 
    // Package protected ---------------------------------------------
 
