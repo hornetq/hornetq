@@ -1,23 +1,31 @@
+/*
+ * JBoss, the OpenSource J2EE webOS
+ *
+ * Distributable under LGPL license.
+ * See terms of license at gnu.org.
+ */
+
 package org.jboss.messaging.tests.integration.core.remoting.mina.timing;
 
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.client.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
-import org.jboss.messaging.tests.integration.core.remoting.mina.TestSupport;
-import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 
 
+/**
+ * 
+ * @author clebert suconic
+ *
+ */
 public abstract class MeasureBase extends TestCase
 {
    protected MinaService service;
