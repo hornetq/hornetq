@@ -11,6 +11,7 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
+import javax.jms.TextMessage;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.test.messaging.JBMServerTestCase;
@@ -61,6 +62,40 @@ public class ExpiredMessageTest extends JBMServerTestCase
       conn.start();
 
       assertNull(cons.receive(2000));
+      
+      conn.close();
+   }
+   
+   public void testExpiredAndLivingMessages() throws Exception
+   {
+      Connection conn = getConnectionFactory().createConnection();
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer prod = session.createProducer(queue1);
+
+      // sent 2 messages: 1 expiring, 1 living
+      TextMessage livingMessage = session.createTextMessage("This message will live");
+      TextMessage expiringMessage = session.createTextMessage("This message will expire");
+
+      prod.setTimeToLive(1);
+      prod.send(expiringMessage);
+
+      prod.setTimeToLive(0);
+      prod.send(livingMessage);
+      
+      // wait for the expiring message to die
+      Thread.sleep(250);
+
+      MessageConsumer cons = session.createConsumer(queue1);
+      conn.start();
+
+      // receive living message
+      Message receivedMessage = cons.receive(1000);
+      assertNotNull("did not receive living message", receivedMessage);
+      assertTrue(receivedMessage instanceof TextMessage);
+      assertEquals(livingMessage.getText(), ((TextMessage)receivedMessage).getText());
+
+      // we do not receive the expiring message
+      assertNull(cons.receive(1000));
       
       conn.close();
    }
