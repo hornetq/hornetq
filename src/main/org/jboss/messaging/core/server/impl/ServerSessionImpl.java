@@ -282,8 +282,8 @@ public class ServerSessionImpl implements ServerSession
       {
          securityStore.check(msg.getDestination(), CheckType.WRITE, connection);
       }
-      catch (Exception e)
-      {
+      catch (MessagingException e)
+      {       
          if (!autoCommitSends)
          {
             MessagingException messagingException;
@@ -297,10 +297,7 @@ public class ServerSessionImpl implements ServerSession
             }
             tx.markAsRollbackOnly(messagingException);
          }
-         else
-         {
-            throw e;
-         }
+         throw e;         
       }
 
       msg.setMessageID(persistenceManager.generateMessageID());

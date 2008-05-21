@@ -169,7 +169,7 @@ public class ClientProducerImpl implements ClientProducerInternal
    	
    	boolean sendBlocking = msg.isDurable() && sendPersistentMessagesSynchronously ||
    	                       !msg.isDurable() && sendNonPersistentMessagesSynchronously;
-   	
+   		
    	if (sendBlocking)
    	{
    	   remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), message);

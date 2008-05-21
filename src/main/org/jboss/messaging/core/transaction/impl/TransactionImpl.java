@@ -239,7 +239,7 @@ public class TransactionImpl implements Transaction
       }
       else
       {
-         if (state != State.ACTIVE)
+         if (state != State.ACTIVE && state != State.ROLLBACK_ONLY)
          {
             throw new IllegalStateException("Transaction is in invalid state " + state);
          }
