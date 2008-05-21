@@ -62,10 +62,10 @@ public interface Transaction
 
    boolean isContainsPersistent();
 
-   void markAsFailed(MessagingException messagingException);
+   void markAsRollbackOnly(MessagingException messagingException);
 
    static enum State
    {
-      ACTIVE, PREPARED, COMMITTED, ROLLEDBACK, SUSPENDED;
+      ACTIVE, PREPARED, COMMITTED, ROLLEDBACK, SUSPENDED, ROLLBACK_ONLY;
    }
 }

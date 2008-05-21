@@ -295,7 +295,7 @@ public class ServerSessionImpl implements ServerSession
             {
                messagingException = new MessagingException(MessagingException.INTERNAL_ERROR, e.getMessage());
             }
-            tx.markAsFailed(messagingException);
+            tx.markAsRollbackOnly(messagingException);
          }
          else
          {

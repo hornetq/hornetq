@@ -62,8 +62,6 @@ public class TransactionImpl implements Transaction
 
    private MessagingException messagingException;
 
-   private boolean failed;
-
    public TransactionImpl(final StorageManager storageManager,
                           final PostOffice postOffice)
    {
@@ -183,9 +181,17 @@ public class TransactionImpl implements Transaction
 
    public void commit() throws Exception
    {
-      if (failed)
+      if (state == State.ROLLBACK_ONLY)
       {
-         throw messagingException;
+         if (messagingException != null)
+         {
+            throw messagingException;
+         }
+         else
+         {
+            throw new IllegalStateException("Transaction is in invalid state " + state);
+         }
+
       }
       if (xid != null)
       {
@@ -333,9 +339,9 @@ public class TransactionImpl implements Transaction
       return containsPersistent;
    }
 
-   public void markAsFailed(MessagingException messagingException)
+   public void markAsRollbackOnly(MessagingException messagingException)
    {
-      this.failed = true;
+      state = State.ROLLBACK_ONLY;
       this.messagingException = messagingException;
    }
 
