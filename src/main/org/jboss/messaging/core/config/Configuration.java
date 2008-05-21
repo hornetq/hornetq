@@ -106,6 +106,10 @@ public interface Configuration
    int getJournalFileSize();
 
    int getJournalMinFiles();
+   
+   int getJournalMaxAIO();
+   
+   void setJournalMaxAIO(int max);
 
    long getJournalTaskPeriod();
 

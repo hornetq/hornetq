@@ -127,7 +127,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
       this.minFiles = minFreeFiles;
       this.fileSize = fileSize;
       this.sync = sync;
-      this.maxAIO = 1000;
+      this.maxAIO = 50;
    }
    
 	public void createJournal() throws Exception

@@ -40,7 +40,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -1187,8 +1186,8 @@ public class JournalImpl implements TestableJournal
 		
 		reclaimer.scan(dataFiles.toArray(files));		
 	}
-	
-   public String debug() throws Exception
+
+	public String debug() throws Exception
    {
       this.checkReclaimStatus();
       
@@ -1208,6 +1207,28 @@ public class JournalImpl implements TestableJournal
       builder.append(((JournalFileImpl)currentFile).debug());
             
       return builder.toString();
+   }
+   
+   /** Method for use on testcases.
+    *  It will call waitComplete on every transaction, so any assertions on the file system will be correct after this */
+   public void debugWait() throws Exception
+   {
+      for (TransactionCallback callback: transactionCallbacks.values())
+      {
+         callback.waitCompletion();
+      }
+      
+      final CountDownLatch latch = new CountDownLatch(1);
+      
+      this.closingExecutor.execute(new Runnable(){
+         public void run()
+         {
+            latch.countDown();
+         }
+      });
+      
+      // just to make sure the closing thread is empty
+      latch.await();
    }
 
    // TestableJournal implementation --------------------------------------------------------------

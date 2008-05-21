@@ -50,7 +50,9 @@
       <remoting-ssl-keystore-path>messaging.keystore</remoting-ssl-keystore-path>      
       <remoting-ssl-keystore-password>secureexample keystore</remoting-ssl-keystore-password>     
       <remoting-ssl-truststore-path>messaging.truststore</remoting-ssl-truststore-path>            
-      <remoting-ssl-truststore-password>secureexample truststore</remoting-ssl-truststore-password>    
+      <remoting-ssl-truststore-password>secureexample truststore</remoting-ssl-truststore-password>
+      
+      <journal-max-aio>123</journal-max-aio>    
 
    </configuration>
 

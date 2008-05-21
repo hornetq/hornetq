@@ -136,6 +136,8 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
       
       this.journalTaskPeriod = getLong(e, "journal-task-period", 5000L);
       
+      this.maxAIO = getInteger(e, "journal-max-aio", DEFAULT_MAX_AIO);
+      
       this.securityEnabled = getBoolean(e, "security-enabled", true);
        
       NodeList defaultInterceptors = e.getElementsByTagName("default-interceptors-config");

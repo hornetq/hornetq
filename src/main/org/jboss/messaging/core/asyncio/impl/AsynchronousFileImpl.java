@@ -8,6 +8,7 @@
 package org.jboss.messaging.core.asyncio.impl;
 
 import java.nio.ByteBuffer;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -101,6 +102,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	private VariableLatch writeLatch = new VariableLatch();	
 	private ReadWriteLock lock = new ReentrantReadWriteLock();
 	private Lock writeLock = lock.writeLock();
+   private Semaphore writeSemaphore;   
 	
 	/**
 	 *  Warning: Beware of the C++ pointer! It will bite you! :-)
@@ -117,7 +119,8 @@ public class AsynchronousFileImpl implements AsynchronousFile
 		try
 		{
 			writeLock.lock();
-			this.maxIO = maxIO;
+         this.maxIO = maxIO;
+ 			writeSemaphore = new Semaphore(this.maxIO);
 			
 			if (opened)
 			{
@@ -125,8 +128,8 @@ public class AsynchronousFileImpl implements AsynchronousFile
 			}
 			opened = true;
 			this.fileName=fileName;
-			handler = init (fileName, maxIO, log);
-			addMax(maxIO);
+			handler = init (fileName, this.maxIO, log);
+			addMax(this.maxIO);
 			startPoller();
 		}
 		finally
@@ -139,14 +142,16 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	{
 		checkOpened();
 		
-		writeLock.lock();
-		writeLatch.waitCompletion();
-		stopPoller(handler);
-      // We need to make sure we won't call close until Poller is completely done, or we might get beautiful GPFs
-		poller.join();
 		try
 		{
-			closeInternal(handler);
+	      writeLock.lock();
+	      writeLatch.waitCompletion(120);
+	      writeSemaphore = null;
+	      stopPoller(handler);
+	      // We need to make sure we won't call close until Poller is completely done, or we might get beautiful GPFs
+	      poller.join();
+
+	      closeInternal(handler);
 			addMax(maxIO * -1);
 			opened = false;
 			handler = 0;
@@ -161,12 +166,14 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	{
 		checkOpened();
 		writeLatch.up();
+      writeSemaphore.acquireUninterruptibly();
 		try
 		{
 			write (handler, position, size, directByteBuffer, aioPackage);
 		}
 		catch (RuntimeException e)
 		{
+         writeSemaphore.release();
 	      writeLatch.down();
 			throw e;
 		}
@@ -177,12 +184,14 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	{
 		checkOpened();
 		writeLatch.up();
+      writeSemaphore.acquireUninterruptibly();
 		try
 		{
 			read (handler, position, size, directByteBuffer, aioPackage);
 		}
 		catch (RuntimeException e)
 		{
+         writeSemaphore.release();
 		   writeLatch.down();
 			throw e;
 		}		
@@ -213,6 +222,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	@SuppressWarnings("unused") // Called by the JNI layer.. just ignore the warning
 	private void callbackDone(AIOCallback callback)
 	{
+      writeSemaphore.release();
 		writeLatch.down();
 		callback.done();
 	}
@@ -220,6 +230,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	@SuppressWarnings("unused") // Called by the JNI layer.. just ignore the warning
 	private void callbackError(AIOCallback callback, int errorCode, String errorMessage)
 	{
+      writeSemaphore.release();
       writeLatch.down();
 		callback.onError(errorCode, errorMessage);
 	}

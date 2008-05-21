@@ -126,6 +126,11 @@ public class ConfigurationTest extends TestCase
       assertEquals("org.jboss.tst2", configuration.getDefaultInterceptors().get(1));
    }
    
+   public void testMaxAIO() throws Exception
+   {
+      assertEquals(123, configuration.getJournalMaxAIO());
+   }
+   
    //config is supposed to be immutable??
 //   public void testPropertyChangeListener() throws Exception
 //   {

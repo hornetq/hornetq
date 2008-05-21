@@ -78,6 +78,10 @@
       
       <journal-min-files>10</journal-min-files>
       
+      <!-- Maximum of simultaneous asynchronous writes accepted by the native layer.
+           (parameter ignored on NIO) -->
+      <journal-max-aio>5000</journal-max-aio>
+      
       <journal-task-period>5000</journal-task-period>
       
       <security-enabled>true</security-enabled>

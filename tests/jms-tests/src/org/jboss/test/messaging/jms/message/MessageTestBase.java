@@ -93,7 +93,8 @@ public class MessageTestBase extends JBMServerTestCase
 
       log.debug("Message sent");
 
-      Message r = queueCons.receive();
+      Message r = queueCons.receive(2000);
+      assertNotNull(r);
 
       log.debug("Message received");
 
@@ -110,7 +111,8 @@ public class MessageTestBase extends JBMServerTestCase
 
       queueProd.send(message);
 
-      Message r = queueCons.receive();
+      Message r = queueCons.receive(1000);
+      assertNotNull(r);
 
       assertEquals(DeliveryMode.PERSISTENT, r.getJMSDeliveryMode());
 

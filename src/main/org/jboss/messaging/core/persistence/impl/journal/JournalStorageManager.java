@@ -147,7 +147,7 @@ public class JournalStorageManager implements StorageManager
 	      
 	   messageJournal = new JournalImpl(config.getJournalFileSize(), 
 	   		config.getJournalMinFiles(), config.isJournalSync(), journalFF,
-	   		config.getJournalTaskPeriod(), "jbm-data", "jbm", 2000);
+	   		config.getJournalTaskPeriod(), "jbm-data", "jbm", config.getJournalMaxAIO());
 	}
 	
 	public long generateMessageID()

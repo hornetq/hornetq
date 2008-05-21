@@ -739,6 +739,8 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 			addTx(1, i);
 		}
 		
+		journal.debugWait();
+		
 		assertEquals(calculateNumberOfFiles(fileSize , journal.getAlignment(), 100, recordLength), journal.getDataFilesCount());
 		assertEquals(0, journal.getFreeFilesCount());
 		assertEquals(0, journal.getIDMapSize());
@@ -775,6 +777,8 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		{
 			updateTx(1, i);
 		}
+		
+		journal.debugWait();
 		
 		assertEquals(calculateNumberOfFiles(fileSize , journal.getAlignment(), 200, recordLength), journal.getDataFilesCount());
 		assertEquals(0, journal.getFreeFilesCount());
@@ -813,6 +817,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 			deleteTx(1, i);
 		}
 		
+		journal.debugWait();
 		
 		assertEquals(calculateNumberOfFiles(fileSize , journal.getAlignment(), 200, recordLength, 200, JournalImpl.SIZE_DELETE_RECORD_TX), journal.getDataFilesCount());
 		
@@ -921,6 +926,8 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		
 		deleteTx(1, 1);        // in file 1
 		
+		journal.debugWait();
+		
 		List<String> files2 = fileFactory.listFiles(fileExtension);
 		
 		assertEquals(2, files2.size());
@@ -975,7 +982,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		assertEquals(0, journal.getFreeFilesCount());
 		assertEquals(2, journal.getIDMapSize());     
 		
-		Thread.sleep(1000);
+		journal.debugWait();
 		//Now restart
 		
 		stopJournal();
@@ -1228,6 +1235,8 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		assertEquals(0, journal.getIDMapSize());
 		
 		addTx(1, 1);
+		
+		journal.debugWait();
 		
 		List<String> files2 = fileFactory.listFiles(fileExtension);
 		
