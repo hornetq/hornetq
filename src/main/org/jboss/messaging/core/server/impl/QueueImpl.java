@@ -632,6 +632,9 @@ public class QueueImpl implements Queue
          }
          catch (Throwable t)
          {
+            log.warn("removing consumer which did not handle a message, " +
+                  "consumer=" + consumer + ", message=" + reference, t);
+
             // If the consumer throws an exception we remove the consumer
             removeConsumer(consumer);
 
