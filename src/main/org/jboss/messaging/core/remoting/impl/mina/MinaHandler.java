@@ -60,6 +60,8 @@ public class MinaHandler extends IoHandlerAdapter implements
    private final long bytesLow;
 
    private final long bytesHigh;
+   
+   private boolean blocked;
 
    // Static --------------------------------------------------------
 
@@ -109,12 +111,6 @@ public class MinaHandler extends IoHandlerAdapter implements
    }
 
    // IoHandlerAdapter overrides ------------------------------------
-
-   @Override
-   public void sessionCreated(IoSession session) throws Exception {
-      // Initialize the default attributes.
-      session.setAttribute(BLOCKED, Boolean.FALSE);
-   }
 
    @Override
    public void exceptionCaught(final IoSession session, final Throwable cause)
@@ -184,14 +180,13 @@ public class MinaHandler extends IoHandlerAdapter implements
    @Override
    public synchronized void messageSent(final IoSession session, final Object message) throws Exception
    {
-      boolean blocked = (Boolean) session.getAttribute(BLOCKED);
       if (blocked)
       {
          long bytes = session.getScheduledWriteBytes();
 
          if (bytes <= bytesLow)
          {
-            session.setAttribute(BLOCKED, Boolean.FALSE);
+            blocked = false;
 
             //Note that we need to notify all since there may be more than one thread waiting on this
             //E.g. the response from a blocking acknowledge and a delivery
@@ -204,7 +199,7 @@ public class MinaHandler extends IoHandlerAdapter implements
    {
       while (session.getScheduledWriteBytes() >= bytesHigh)
       {
-         session.setAttribute(BLOCKED, Boolean.TRUE);
+         blocked = true;
 
          long start = System.currentTimeMillis();
 

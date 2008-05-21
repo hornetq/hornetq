@@ -44,7 +44,7 @@
       
       <remoting-writequeue-block-timeout>10000</remoting-writequeue-block-timeout>
       
-      <remoting-writequeue-minbytes>4096</remoting-writequeue-minbytes>
+      <remoting-writequeue-minbytes>0</remoting-writequeue-minbytes>
       
       <remoting-writequeue-maxbytes>8192</remoting-writequeue-maxbytes>
       

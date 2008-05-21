@@ -42,9 +42,9 @@
 
    <!--perf props-->
    <property name="message.count" value="200000"/>
-   <property name="delivery.mode" value="PERSISTENT"/>
+   <property name="delivery.mode" value="NON_PERSISTENT"/>
    <property name="sample.period" value="1"/>
-   <property name="sess.trans" value="true"/>
+   <property name="sess.trans" value="false"/>
    <property name="sess.trans.size" value="1"/>
 
    <path id="compile.classpath">
@@ -120,6 +120,8 @@
          <classpath refid="runtime.classpath"/>
       	<jvmarg value="-Xmx1024M"/>
       	<jvmarg value="-XX:+UseParallelGC"/>
+	<jvmarg value="-XX:+AggressiveOpts"/>
+	<jvmarg value="-XX:+UseFastAccessorMethods"/>
         <arg value="-l"/>
         <arg value="${message.count}"/>
 	<arg value="${delivery.mode}"/>
@@ -145,6 +147,8 @@
          <classpath refid="runtime.classpath"/>
       	<jvmarg value="-Xmx512M"/>
       	<jvmarg value="-XX:+UseParallelGC"/>
+	<jvmarg value="-XX:+AggressiveOpts"/>
+	<jvmarg value="-XX:+UseFastAccessorMethods"/>
          <arg value="-s"/>
          <arg value="${message.count}"/>
          <arg value="${delivery.mode}"/>

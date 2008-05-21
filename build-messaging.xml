@@ -749,6 +749,8 @@
          <jvmarg value="-XX:+UseParallelGC"/>
          <jvmarg value="-Xms512M"/>
          <jvmarg value="-Xmx2048M"/>
+	 <jvmarg value="-XX:+AggressiveOpts"/>
+	 <jvmarg value="-XX:+UseFastAccessorMethods"/>
          <jvmarg value="-Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.core.logging.JBMLoggerPlugin"/>
          <jvmarg value="-Djava.library.path=${native.bin.dir}"/>
          <jvmarg value="-Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory"/>
