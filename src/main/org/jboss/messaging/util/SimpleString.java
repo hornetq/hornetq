@@ -10,6 +10,8 @@ import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
 import java.io.Serializable;
 
+import org.jboss.messaging.core.logging.Logger;
+
 
 /**
  * 
@@ -24,6 +26,9 @@ import java.io.Serializable;
 public class SimpleString implements CharSequence, Serializable
 {
    private static final long serialVersionUID = 4204223851422244307L;
+   
+   private static final Logger log = Logger.getLogger(SimpleString.class);
+   
 
    // Attributes
 	// ------------------------------------------------------------------------
@@ -49,9 +54,13 @@ public class SimpleString implements CharSequence, Serializable
 		{
 			char c = string.charAt(i);
 			
-			data[j++] = (byte)(c & 0xFF);  // low byte
+			byte low = (byte)(c & 0xFF);  // low byte
 			
-			data[j++] = (byte)(c >> 8 & 0xFF);  // high byte
+			data[j++] = low;
+			
+			byte high = (byte)(c >> 8 & 0xFF);  // high byte
+			
+			data[j++] = high;
 		}
 		
 		str = string;
@@ -140,7 +149,11 @@ public class SimpleString implements CharSequence, Serializable
    		
    		for (int i = 0; i < len; i++)
    		{
-   			chars[i] = (char)(data[j++] | data[j++] << 8);
+   		   int low = data[j++] & 0xFF;
+   		   
+   		   int high = (data[j++] << 8) & 0xFF00 ;
+   		   
+   			chars[i] = (char)(low | high);
    		}
    		
    		str =  new String(chars);

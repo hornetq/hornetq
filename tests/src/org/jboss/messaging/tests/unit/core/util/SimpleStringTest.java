@@ -192,41 +192,20 @@ public class SimpleStringTest extends TestCase
 		assertFalse(new SimpleString("abcdef").equals(new SimpleString("abggcdef")));
 	}
 	
-//	public void testPerf() throws Exception
-//	{
-//		StringBuffer buff = new StringBuffer();
-//		
-//		for (int i = 0; i < 1000; i++)
-//		{
-//			buff.append('X');
-//		}
-//		
-//		String s = buff.toString();
-//		
-//		long start = System.currentTimeMillis();
-//		
-//		long tot = 0;
-//		
-//		for (int i = 0; i < 1000000; i++)
-//		{
-//			SimpleString ss = new SimpleString(s);
-//			
-//			byte[] data = ss.getData();	
-//			
-//			tot += data.length;
-//		}
-//		
-//		long end = System.currentTimeMillis();
-//		
-//		double rate = 1000 * (double)1000000 / ( end - start);
-//		
-//		System.out.println("Rate: " + rate);
-//	}
-	
-	
 	public void testUnicode() throws Exception
    {
-      String myString = "abcdef&^*&!^ghijkl\uD5E2\uCAC7\uD2BB\uB7DD\uB7C7\uB3A3\uBCE4\uB5A5";
+      String myString = "abcdef&^*&!^ghijkl\uB5E2\uCAC7\uB2BB\uB7DD\uB7C7\uB3A3\uBCE4\uB5A5";
+
+      SimpleString s = new SimpleString(myString);
+      byte[] data = s.getData();
+      s = new SimpleString(data);
+      
+      assertEquals(myString, s.toString());
+   }
+	
+	public void testUnicodeWithSurrogates() throws Exception
+   {
+      String myString = "abcdef&^*&!^ghijkl\uD900\uDD00";
 
       SimpleString s = new SimpleString(myString);
       byte[] data = s.getData();
