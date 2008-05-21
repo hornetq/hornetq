@@ -1,39 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module version="4" relativePaths="true" type="JAVA_MODULE">
-  <component name="ModuleRootManager" />
-  <component name="NewModuleRootManager" inherit-compiler-output="false">
+<module relativePaths="true" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_5" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/output/classes" />
     <exclude-output />
     <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/build/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/docs/examples/common/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/docs/examples/distributed-queue/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/docs/examples/distributed-topic/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/docs/examples/embedded/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/docs/examples/http/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/docs/examples/jms/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/docs/examples/mdb/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/docs/examples/messaging/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/docs/examples/queue-failover/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/docs/examples/queue/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/docs/examples/secure-socket/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/docs/examples/stateless/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/docs/examples/topic/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/examples/jms/src" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/examples/messaging/src" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/native/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/output/gen-parsers" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/perf/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/perf/tests" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/test" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/jms-tests/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/tests/src" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/build/api" />
+      <excludeFolder url="file://$MODULE_DIR$/build/classes" />
+      <excludeFolder url="file://$MODULE_DIR$/build/jars" />
+      <excludeFolder url="file://$MODULE_DIR$/build/messaging-2.0.0.alpha1" />
       <excludeFolder url="file://$MODULE_DIR$/classes" />
       <excludeFolder url="file://$MODULE_DIR$/docs/examples/bridge/output" />
       <excludeFolder url="file://$MODULE_DIR$/docs/examples/common/output" />
       <excludeFolder url="file://$MODULE_DIR$/docs/examples/distributed-queue/output" />
       <excludeFolder url="file://$MODULE_DIR$/docs/examples/distributed-topic/output" />
       <excludeFolder url="file://$MODULE_DIR$/docs/examples/ejb3mdb/output" />
+      <excludeFolder url="file://$MODULE_DIR$/docs/examples/embedded/output" />
       <excludeFolder url="file://$MODULE_DIR$/docs/examples/http/output" />
+      <excludeFolder url="file://$MODULE_DIR$/docs/examples/jms/build" />
+      <excludeFolder url="file://$MODULE_DIR$/docs/examples/messaging/build" />
       <excludeFolder url="file://$MODULE_DIR$/docs/examples/output" />
       <excludeFolder url="file://$MODULE_DIR$/docs/examples/queue-failover/output" />
       <excludeFolder url="file://$MODULE_DIR$/docs/examples/queue/output" />
       <excludeFolder url="file://$MODULE_DIR$/docs/examples/stateless/output" />
       <excludeFolder url="file://$MODULE_DIR$/docs/examples/topic/output" />
       <excludeFolder url="file://$MODULE_DIR$/docs/examples/web-service/output" />
+      <excludeFolder url="file://$MODULE_DIR$/examples/jms/build" />
+      <excludeFolder url="file://$MODULE_DIR$/examples/messaging/build" />
       <excludeFolder url="file://$MODULE_DIR$/output" />
       <excludeFolder url="file://$MODULE_DIR$/output/classes" />
       <excludeFolder url="file://$MODULE_DIR$/output/etc" />
@@ -42,6 +58,8 @@
       <excludeFolder url="file://$MODULE_DIR$/output/scoped-sar" />
       <excludeFolder url="file://$MODULE_DIR$/release" />
       <excludeFolder url="file://$MODULE_DIR$/tests/ObjectStore" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/build" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/jms-tests/build" />
       <excludeFolder url="file://$MODULE_DIR$/tests/lib/jdbc-drivers" />
       <excludeFolder url="file://$MODULE_DIR$/tests/output" />
     </content>
@@ -62,107 +80,16 @@
     <orderEntry type="library" name="apache" level="project" />
     <orderEntry type="library" name="jdbc-drivers" level="project" />
     <orderEntry type="library" name="dom4j" level="project" />
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/thirdparty/trove/lib/trove.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../Desktop/jboss-common-core.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../devtools/jboss-5.0.0.Beta2/lib/jboss-container.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="file://$MODULE_DIR$/output/etc" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/thirdparty/jboss/jboss-security-spi/lib/jboss-security-spi.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/thirdparty/jboss/jboss-jaspi-api/lib/jboss-jaspi-api.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/tests/lib/jdbc-drivers/mysql-connector-java-5.0.7-bin.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/thirdparty/jboss/jnpserver/lib/jnpserver.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES>
-          <root url="jar://$MODULE_DIR$/thirdparty/jboss/jnpserver/lib/jnpserver-sources.jar!/" />
-        </SOURCES>
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/thirdparty/jboss/jboss-javaee/lib/jboss-javaee.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
     <orderEntry type="library" name="jboss" level="project" />
     <orderEntry type="library" name="mina" level="project" />
     <orderEntry type="library" name="easymock" level="project" />
     <orderEntry type="library" name="bdb" level="project" />
     <orderEntry type="library" name="test-etc" level="project" />
+    <orderEntry type="library" name="messaging" level="project" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="file://$MODULE_DIR$/src/etc/server/default/deploy" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="file://$MODULE_DIR$/docs/examples/queue/etc" />
+          <root url="jar://$APPLICATION_HOME_DIR$/lib/javaee.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
