@@ -73,6 +73,7 @@ public class TypedProperties implements EncodingSupport
 	public TypedProperties(final TypedProperties other)
 	{	   
 		this.properties = other.properties == null ? null : new HashMap<SimpleString, PropertyValue>(other.properties);
+		this.size = other.size;
 	}
 	
 	public void putBooleanProperty(final SimpleString key, final boolean value)
