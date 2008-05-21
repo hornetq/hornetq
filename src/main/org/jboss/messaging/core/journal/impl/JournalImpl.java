@@ -40,6 +40,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -166,13 +167,8 @@ public class JournalImpl implements TestableJournal
 	
 	private final boolean shouldUseCallback;
 	
-   /**
-    * single thread... will shutdown the thread after 60 seconds
-    */ 
-	private ExecutorService closingExecutor = new ThreadPoolExecutor(1, 1, 60L,
-         TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());;
-   
-		
+	private final ExecutorService closingExecutor = Executors.newSingleThreadExecutor();
+   		
 	/*
     * We use a semaphore rather than synchronized since it performs better when
     * contended
@@ -1552,9 +1548,11 @@ public class JournalImpl implements TestableJournal
 
    private static class SimpleCallback implements IOCallback
    {      
-      String errorMessage;
-      int errorCode;
-      CountDownLatch latch = new CountDownLatch(1);
+      private String errorMessage;
+      
+      private int errorCode;
+      
+      private CountDownLatch latch = new CountDownLatch(1);
 
       public void done()
       {
@@ -1584,10 +1582,11 @@ public class JournalImpl implements TestableJournal
    
    private static class TransactionCallback implements IOCallback
    {      
-      VariableLatch countLatch = new VariableLatch();
+      private final VariableLatch countLatch = new VariableLatch();
       
-      String errorMessage = null;
-      int errorCode = 0;
+      private String errorMessage = null;
+      
+      private int errorCode = 0;
       
       public void countUp()
       {
