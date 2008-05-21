@@ -384,8 +384,7 @@ public class JBossConnection implements
          }
          else if (acknowledgeMode == Session.DUPS_OK_ACKNOWLEDGE)
          {
-            session =
-               connection.createClientSession(isXA, true, true, dupsOKBatchSize, false, cacheProducers);
+            session = connection.createClientSession(isXA, true, true, dupsOKBatchSize);
          }
          else if (acknowledgeMode == Session.CLIENT_ACKNOWLEDGE)
          {

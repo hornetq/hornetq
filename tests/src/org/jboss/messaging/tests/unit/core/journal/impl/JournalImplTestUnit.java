@@ -944,6 +944,9 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		
 		assertEquals(3, files3.size());
 		
+		log.info("data files count "+ journal.getDataFilesCount());
+		log.info("free files count "+ journal.getFreeFilesCount());
+		
 		assertEquals(2, journal.getDataFilesCount());
 		assertEquals(0, journal.getFreeFilesCount());
 		assertEquals(1, journal.getIDMapSize());
