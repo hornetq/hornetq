@@ -78,6 +78,8 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
    
    private boolean defaultBlockOnAcknowledge;
    
+   private final boolean defaultSendNonPersistentMessagesBlocking;
+   
    
    // Static ---------------------------------------------------------------------------------------
     
@@ -87,7 +89,8 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
                                       final boolean strictTck,
                                       final int defaultConsumerWindowSize, final int defaultConsumerMaxRate,
                                       final int defaultProducerWindowSize, final int defaultProducerMaxRate,
-                                      final boolean defaultBlockOnAcknowledge)
+                                      final boolean defaultBlockOnAcknowledge,
+                                      final boolean defaultSendNonPersistentMessagesBlocking)
    {
       this.location = location;
       this.strictTck = strictTck;
@@ -96,6 +99,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
       this.defaultProducerWindowSize = defaultProducerWindowSize;
       this.defaultProducerMaxRate = defaultProducerMaxRate;
       this.defaultBlockOnAcknowledge = defaultBlockOnAcknowledge;
+      this.defaultSendNonPersistentMessagesBlocking = defaultSendNonPersistentMessagesBlocking;
       this.connectionParams = connectionParams;
    }
    
@@ -117,6 +121,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
       this.defaultProducerWindowSize = 1000;
       this.defaultProducerMaxRate = -1;
       this.location = location;
+      this.defaultSendNonPersistentMessagesBlocking = false;
       this.connectionParams = connectionParams;
    }
    
@@ -147,7 +152,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
          return new ClientConnectionImpl(response.getConnectionTargetID(), strictTck, remotingConnection,
                defaultConsumerWindowSize, defaultConsumerMaxRate,
                defaultProducerWindowSize, defaultProducerMaxRate,
-               defaultBlockOnAcknowledge, response.getServerVersion());
+               defaultBlockOnAcknowledge, defaultSendNonPersistentMessagesBlocking, response.getServerVersion());
       }
       catch (Throwable t)
       {

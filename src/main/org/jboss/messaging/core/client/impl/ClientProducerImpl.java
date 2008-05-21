@@ -69,7 +69,9 @@ public class ClientProducerImpl implements ClientProducerInternal
      
    private final TokenBucketLimiter rateLimiter;
    
-   private final boolean transactional;
+   private final boolean sendNonPersistentMessagesSynchronously;
+   
+   private final boolean sendPersistentMessagesSynchronously;
      
    // Static ---------------------------------------------------------------------------------------
 
@@ -79,7 +81,9 @@ public class ClientProducerImpl implements ClientProducerInternal
                              final long clientTargetID,
    		                    final SimpleString address,
    		                    final RemotingConnection remotingConnection, final int windowSize,
-   		                    final int maxRate, final boolean transactional)
+   		                    final int maxRate,
+   		                    final boolean sendNonPersistentMessagesSynchronously,
+   		                    final boolean sendPersistentMessagesSynchronously)
    {   	
       this.session = session;
       
@@ -102,7 +106,9 @@ public class ClientProducerImpl implements ClientProducerInternal
       	this.rateLimiter = null;
       }
       
-      this.transactional = transactional;
+      this.sendNonPersistentMessagesSynchronously = sendNonPersistentMessagesSynchronously; 
+      
+      this.sendPersistentMessagesSynchronously = sendPersistentMessagesSynchronously; 
    }
    
    // ClientProducer implementation ----------------------------------------------------------------
@@ -161,7 +167,10 @@ public class ClientProducerImpl implements ClientProducerInternal
 //   		windowSize--;
 //   	}
    	
-   	if (msg.isDurable() && !transactional)
+   	boolean sendBlocking = msg.isDurable() && sendPersistentMessagesSynchronously ||
+   	                       !msg.isDurable() && sendNonPersistentMessagesSynchronously;
+   	
+   	if (sendBlocking)
    	{
    	   remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), message);
    	}

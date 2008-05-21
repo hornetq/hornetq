@@ -21,11 +21,25 @@
   */
 package org.jboss.test.messaging.jms;
 
-import EDU.oswego.cs.dl.util.concurrent.Latch;
+import java.util.ArrayList;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.TopicConnection;
+import javax.jms.TopicPublisher;
+import javax.jms.TopicSession;
+import javax.jms.TopicSubscriber;
+
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 
-import javax.jms.*;
-import java.util.ArrayList;
+import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -52,7 +66,7 @@ public class AcknowledgementTest extends JMSTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      getJmsServerManager().createConnectionFactory("ackconnectionfactory", null, 1000, true, 1024 * 1024, -1, 1000, -1, true, "/ackconnectionfactory");
+      getJmsServerManager().createConnectionFactory("ackconnectionfactory", null, 1000, true, 1024 * 1024, -1, 1000, -1, true, true, "/ackconnectionfactory");
       cf = (JBossConnectionFactory) getInitialContext().lookup("/ackconnectionfactory");
    }
 

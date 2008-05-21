@@ -231,7 +231,8 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    public boolean createConnectionFactory(String name, String clientID,
    		int dupsOKBatchSize, boolean strictTck, int consumerWindowSize, int consumerMaxRate,
-   		int producerWindowSize, int producerMaxRate, boolean blockOnAcknowledge, String jndiBinding) throws Exception
+   		int producerWindowSize, int producerMaxRate, boolean blockOnAcknowledge,
+   		boolean defaultSendNonPersistentMessagesBlocking, String jndiBinding) throws Exception
    {
       JBossConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
@@ -241,7 +242,8 @@ public class JMSServerManagerImpl implements JMSServerManager
                  messagingServerManagement.getConfiguration().getConnectionParams(),                 
                  messagingServerManagement.getConfiguration().isStrictTck() || strictTck,
                  consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate,
-                 blockOnAcknowledge
+                 blockOnAcknowledge,
+                 defaultSendNonPersistentMessagesBlocking
                  );
       }
       if (!bindToJndi(jndiBinding, cf))
@@ -260,6 +262,7 @@ public class JMSServerManagerImpl implements JMSServerManager
    public boolean createConnectionFactory(String name, String clientID, int dupsOKBatchSize,
    		                                 boolean strictTck, int consumerWindowSize, int consumerMaxRate,
    		                                 int producerWindowSize, int producerMaxRate, boolean blockOnAcknowledge,
+   		                                 boolean defaultSendNonPersistentMessagesBlocking,
    		                                 List<String> jndiBindings) throws Exception
    {
       JBossConnectionFactory cf = connectionFactories.get(name);
@@ -270,7 +273,7 @@ public class JMSServerManagerImpl implements JMSServerManager
                  messagingServerManagement.getConfiguration().getConnectionParams(),
                  messagingServerManagement.getConfiguration().isStrictTck() || strictTck,
                  consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate,
-                 blockOnAcknowledge
+                 blockOnAcknowledge, defaultSendNonPersistentMessagesBlocking
                  );
       }
       for (String jndiBinding : jndiBindings)

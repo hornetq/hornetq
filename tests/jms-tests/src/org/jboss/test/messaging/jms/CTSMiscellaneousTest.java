@@ -82,7 +82,10 @@ public class CTSMiscellaneousTest extends JBMServerTestCase
 			//Deploy a connection factory with load balancing but no failover on node0
          List<String> bindings = new ArrayList<String>();
          bindings.add("StrictTCKConnectionFactory");
-         deployConnectionFactory("StrictTCKConnectionFactory", bindings, true);
+         
+         getJmsServerManager().createConnectionFactory("StrictTCKConnectionFactory", null,
+               1000, true, 1024 * 1024, -1, 1000, -1, true, true, "/StrictTCKConnectionFactory");
+                 
          cf = (JBossConnectionFactory) getInitialContext().lookup("/StrictTCKConnectionFactory");
 		}
 		catch (Exception e)

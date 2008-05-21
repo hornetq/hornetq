@@ -145,12 +145,15 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    private final boolean blockOnAcknowledge;
    
+   private final boolean sendNonPersistentMessagesBlocking;
+   
    // Constructors ---------------------------------------------------------------------------------
    
    public ClientSessionImpl(final ClientConnectionInternal connection, final long serverTargetID,
                             final int lazyAckBatchSize, final boolean cacheProducers,                            
                             final boolean autoCommitSends, final boolean autoCommitAcks,
                             final boolean blockOnAcknowledge,
+                            final boolean sendNonPersistentMessagesBlocking,
                             final int defaultConsumerWindowSize,  
                             final int defaultConsumerMaxRate,
                             final int defaultProducerWindowSize,
@@ -195,6 +198,8 @@ public class ClientSessionImpl implements ClientSessionInternal
       this.autoCommitSends = autoCommitSends;
       
       this.blockOnAcknowledge = blockOnAcknowledge;
+      
+      this.sendNonPersistentMessagesBlocking = sendNonPersistentMessagesBlocking;
    }
    
    // ClientSession implementation -----------------------------------------------------------------
@@ -363,7 +368,8 @@ public class ClientSessionImpl implements ClientSessionInternal
       	
       	producer = new ClientProducerImpl(this, response.getProducerTargetID(), clientTargetID, address,
       			                            remotingConnection, response.getWindowSize(),
-      			                            response.getMaxRate(), !autoCommitSends);  
+      			                            response.getMaxRate(),
+      			                            sendNonPersistentMessagesBlocking, !autoCommitSends);  
       	
       	remotingConnection.getPacketDispatcher().register(new ClientProducerPacketHandler(producer, clientTargetID));
       }

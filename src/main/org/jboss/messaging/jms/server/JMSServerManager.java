@@ -96,6 +96,7 @@ public interface JMSServerManager extends Serializable
    		                          int consumerWindowSize, int consumerMaxRate,
    		                          int producerWindowSize, int producerMaxRate,
    		                          boolean blockOnAcknowledge,
+   		                          boolean defaultSendNonPersistentMessagesBlocking,
    		                          String jndiBinding) throws Exception;
 
    /**
@@ -117,6 +118,7 @@ public interface JMSServerManager extends Serializable
    		                          int consumerWindowSize, int consumerMaxRate,
    		                          int producerWindowSize, int producerMaxRate,
    		                          boolean blockOnAcknowledge,
+   		                          boolean defaultSendNonPersistentMessagesBlocking,
    		                          List<String> jndiBindings) throws Exception;
 
    /**

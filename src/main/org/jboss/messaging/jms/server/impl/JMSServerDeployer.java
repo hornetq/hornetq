@@ -49,6 +49,7 @@ public class JMSServerDeployer extends XmlDeployer
    private static final String SUPPORTS_LOAD_BALANCING = "supports-load-balancing";
    private static final String LOAD_BALANCING_FACTORY = "load-balancing-factory";
    private static final String BLOCK_ON_ACKNOWLEDGE = "block-on-acknowledge";
+   private static final String  SEND_NP_MESSAGES_SYNCHRONOUSLY = "send-np-messages-synchronously";
    private static final String STRICT_TCK = "strict-tck";
    private static final String ENTRY_NODE_NAME = "entry";
    private static final String CONNECTION_FACTORY_NODE_NAME = "connection-factory";
@@ -132,6 +133,7 @@ public class JMSServerDeployer extends XmlDeployer
          int producerWindowSize = 1000;
          int producerMaxRate = -1;
          boolean blockOnAcknowledge = false;
+         boolean sendNonPersistentMessagesSynchronously = false;
          
          for (int j = 0; j < attributes.getLength(); j++)
          {
@@ -167,6 +169,10 @@ public class JMSServerDeployer extends XmlDeployer
             {
                blockOnAcknowledge = Boolean.parseBoolean(attributes.item(j).getTextContent().trim());
             }
+            else if (SEND_NP_MESSAGES_SYNCHRONOUSLY.equalsIgnoreCase(attributes.item(j).getNodeName()))
+            {
+               sendNonPersistentMessagesSynchronously = Boolean.parseBoolean(attributes.item(j).getTextContent().trim());
+            }
 //            if (SUPPORTS_FAILOVER.equalsIgnoreCase(attributes.item(j).getNodeName()))
 //            {
 //               //setSupportsFailover(Boolean.parseBoolean(attributes.item(j).getTextContent().trim()));
@@ -195,7 +201,7 @@ public class JMSServerDeployer extends XmlDeployer
                String name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
                jmsServerManager.createConnectionFactory(name, clientID, dupsOKBatchSize, cfStrictTck,
                		consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate, 
-               		blockOnAcknowledge, jndiName);
+               		blockOnAcknowledge, sendNonPersistentMessagesSynchronously, jndiName);
             }
          }
       }

@@ -93,6 +93,8 @@ public class JBossConnectionFactory implements
    private final int defaultProducerMaxRate;
    
    private final boolean defaultBlockOnAcknowledge;
+   
+   private final boolean defaultSendNonPersistentMessagesBlocking;
 
    // Constructors ---------------------------------------------------------------------------------
    
@@ -105,7 +107,8 @@ public class JBossConnectionFactory implements
                                  final int defaultConsumerMaxRate,
                                  final int defaultProducerWindowSize,
                                  final int defaultProducerMaxRate,
-                                 final boolean defaultBlockOnAcknowledge)
+                                 final boolean defaultBlockOnAcknowledge,
+                                 final boolean defaultSendNonPersistentMessagesBlocking)
    {
       this.clientID = clientID;
       this.dupsOKBatchSize = dupsOKBatchSize;
@@ -117,6 +120,7 @@ public class JBossConnectionFactory implements
       this.defaultProducerMaxRate = defaultProducerMaxRate;
       this.defaultProducerWindowSize = defaultProducerWindowSize;
       this.defaultBlockOnAcknowledge = defaultBlockOnAcknowledge;
+      this.defaultSendNonPersistentMessagesBlocking = defaultSendNonPersistentMessagesBlocking;
    }
    // ConnectionFactory implementation -------------------------------------------------------------
    
@@ -229,7 +233,8 @@ public class JBossConnectionFactory implements
                defaultConsumerMaxRate,
                defaultProducerWindowSize,
                defaultProducerMaxRate,
-               defaultBlockOnAcknowledge);
+               defaultBlockOnAcknowledge,
+               defaultSendNonPersistentMessagesBlocking);
 
       }
       return connectionFactory;
