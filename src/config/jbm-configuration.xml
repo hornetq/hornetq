@@ -30,7 +30,7 @@
       
       <!-- Enable/Disable Nagle's Algorithm (resp. true/false)                           -->
       <!-- This setting is taken into account only when remoting-transport is set to TCP -->
-      <remoting-tcp-nodelay>false</remoting-tcp-nodelay>
+      <remoting-tcp-nodelay>true</remoting-tcp-nodelay>
       
       <!-- Set the TCP Receive Buffer size (SO_RCVBUF).                                    -->
       <!-- Set it to -1 if you want to use the value hinted by the Operating System      --> 

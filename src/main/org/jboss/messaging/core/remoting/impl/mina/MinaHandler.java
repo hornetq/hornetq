@@ -193,11 +193,6 @@ public class MinaHandler extends IoHandlerAdapter implements
          {
             session.setAttribute(BLOCKED, Boolean.FALSE);
 
-            // Resume read operation if it's suspended.
-            if (!session.getTrafficMask().isReadable()) {
-               session.resumeRead();
-            }
-
             //Note that we need to notify all since there may be more than one thread waiting on this
             //E.g. the response from a blocking acknowledge and a delivery
             notifyAll();
@@ -250,38 +245,19 @@ public class MinaHandler extends IoHandlerAdapter implements
    {
       PacketReturner returner;
 
-      final Thread ioThread = Thread.currentThread();
-
       if (packet.getResponseTargetID() != Packet.NO_ID_SET)
       {
          returner = new PacketReturner()
          {
             public void send(Packet p) throws Exception
             {
-               // Make sure we don't block the I/O thread.
-               if (Thread.currentThread() != ioThread)
+               try
                {
-                  try
-                  {
-                     checkWrite(session);
-                  }
-                  catch (Exception e)
-                  {
-                     log.error("Failed to acquire sem", e);
-                  }
+                  checkWrite(session);
                }
-               else
+               catch (Exception e)
                {
-                  // If we are running this in the I/O thread, we should not block, because
-                  // blocking will prevent the decrement of the scheduledWriteBytes() property.
-                  // Instead, we should disable the read operation temporarily so we don't
-                  // need to handle incoming messages which causes write queue overflow.
-
-                  if (session.getScheduledWriteBytes() >= bytesHigh)
-                  {
-                     // Will resume on messageSent()
-                     session.suspendRead();
-                  }
+                  log.error("Failed to acquire sem", e);
                }
 
                dispatcher.callFilters(p);

@@ -135,7 +135,6 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
       }
       connector.getSessionConfig().setKeepAlive(true);
       connector.getSessionConfig().setReuseAddress(true);
-      connector.getSessionConfig().setTcpNoDelay(true);
    }
 
    // NIOConnector implementation -----------------------------------

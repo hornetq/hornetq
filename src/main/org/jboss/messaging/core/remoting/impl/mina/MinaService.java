@@ -159,7 +159,6 @@ public class MinaService implements RemotingService, CleanUpNotifier
          acceptor.setReuseAddress(true);
          acceptor.getSessionConfig().setReuseAddress(true);
          acceptor.getSessionConfig().setKeepAlive(true);
-         acceptor.getSessionConfig().setTcpNoDelay(true);
          acceptor.setCloseOnDeactivation(false);
 
          threadPool = Executors.newCachedThreadPool();
