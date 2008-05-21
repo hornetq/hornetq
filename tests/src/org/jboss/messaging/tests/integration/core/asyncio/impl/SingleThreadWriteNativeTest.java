@@ -20,9 +20,6 @@ import org.jboss.messaging.core.asyncio.AIOCallback;
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.core.logging.Logger;
 
-import junit.extensions.TestDecorator;
-import junit.extensions.TestSetup;
-import junit.framework.Test;
 import junit.framework.TestCase;
 
 /**
@@ -221,7 +218,6 @@ public class SingleThreadWriteNativeTest extends TestCase
       try
       {
           
-          final int NUMBER_LINES = 1;
           final int SIZE = 512;
           
           controller.open(FILE_NAME, 10);
@@ -676,7 +672,6 @@ public class SingleThreadWriteNativeTest extends TestCase
            System.out.println("++testDirectDataNoPage"); System.out.flush();
            final int NUMBER_LINES = 10000; 
            final int SIZE = 1024;
-           //final int SIZE = 512;
            
            final AsynchronousFileImpl controller = new AsynchronousFileImpl();
            controller.open(FILE_NAME, 2000);
@@ -736,7 +731,7 @@ public class SingleThreadWriteNativeTest extends TestCase
        long startPreAllocate = System.currentTimeMillis();
        controller.fill(0l, 1, size, (byte)0);
        long endPreAllocate = System.currentTimeMillis() - startPreAllocate;
-       if (endPreAllocate != 0) System.out.println("PreAllocated the file in " + endPreAllocate + " seconds, What means " + (size/endPreAllocate) + " bytes per millisecond");
+       if (endPreAllocate != 0) System.out.println("PreAllocated the file (size = " + size + " bytes) in " + endPreAllocate + " Milliseconds, What means " + (size/endPreAllocate) + " bytes per millisecond");
    }
    
    
