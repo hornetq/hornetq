@@ -20,6 +20,9 @@ import org.jboss.messaging.core.asyncio.AIOCallback;
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.core.logging.Logger;
 
+import junit.extensions.TestDecorator;
+import junit.extensions.TestSetup;
+import junit.framework.Test;
 import junit.framework.TestCase;
 
 /**
@@ -32,6 +35,7 @@ import junit.framework.TestCase;
  *   */
 public class SingleThreadWriteNativeTest extends TestCase
 {
+
    private static final Logger log = Logger.getLogger(SingleThreadWriteNativeTest.class);
    
    private static CharsetEncoder UTF_8_ENCODER = Charset.forName("UTF-8").newEncoder();
@@ -40,12 +44,19 @@ public class SingleThreadWriteNativeTest extends TestCase
    byte commonBuffer[] = null; 
    
    String FILE_NAME="/tmp/libaio.log";
-   
-   
+      
    @Override
    protected void setUp() throws Exception
    {
        super.setUp();
+       if (!AsynchronousFileImpl.isLoaded())
+       {
+          fail(String.format("libAIO is not loaded on %s %s %s", 
+                System.getProperty("os.name"), 
+                System.getProperty("os.arch"), 
+                System.getProperty("os.version")));
+       }
+
        LocalAIO.staticDone = 0;
        File file = new File(FILE_NAME);
        file.delete();
