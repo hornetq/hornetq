@@ -156,162 +156,165 @@ public class String64KLimitTest extends JMSTestCase
       return new String(chars);
    }
    
-   public void test64KLimitWithTextMessage() throws Exception
-   {            
-      Connection conn = null;
-      
-      try
-      {         
-         conn = cf.createConnection();
+   //Tests commented out until message chunking is complete
+   //See http://jira.jboss.org/jira/browse/JBMESSAGING-379
    
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod = sess.createProducer(queue1);
-         
-         MessageConsumer cons = sess.createConsumer(queue1);
-         
-         conn.start();                  
-               
-         String s1 = genString(16 * 1024);   
-         
-         String s2 = genString(32 * 1024); 
-         
-         String s3 = genString(64 * 1024); 
-         
-         String s4 = genString(10 * 64 * 1024); 
-         
-         TextMessage tm1 = sess.createTextMessage(s1);
-         
-         TextMessage tm2 = sess.createTextMessage(s2);
-         
-         TextMessage tm3 = sess.createTextMessage(s3);
-         
-         TextMessage tm4 = sess.createTextMessage(s4);
-         
-         prod.send(tm1);
-         
-         prod.send(tm2);
-         
-         prod.send(tm3);
-         
-         prod.send(tm4);
-   
-         TextMessage rm1 = (TextMessage)cons.receive(1000);
-         
-         assertNotNull(rm1);           
-         
-         TextMessage rm2 = (TextMessage)cons.receive(1000);
-         
-         assertNotNull(rm2);
-         
-         TextMessage rm3 = (TextMessage)cons.receive(1000);
-         
-         assertNotNull(rm3);
-         
-         TextMessage rm4 = (TextMessage)cons.receive(1000);
-         
-         assertNotNull(rm4);
-         
-         assertEquals(s1.length(), rm1.getText().length());
-         
-         assertEquals(s1, rm1.getText());
-         
-         assertEquals(s2.length(), rm2.getText().length());
-         
-         assertEquals(s2, rm2.getText());
-         
-         assertEquals(s3.length(), rm3.getText().length());
-         
-         assertEquals(s3, rm3.getText());
-         
-         assertEquals(s4.length(), rm4.getText().length());
-         
-         assertEquals(s4, rm4.getText());
-      }
-      finally
-      {            
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-   }
-         
-   public void test64KLimitWithObjectMessage() throws Exception
-   {            
-      Connection conn = null;
-      
-      try
-      {         
-         conn = cf.createConnection();
-   
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod = sess.createProducer(queue1);
-         
-         MessageConsumer cons = sess.createConsumer(queue1);
-         
-         conn.start();
-               
-         String s1 = genString(16 * 1024);   
-         
-         String s2 = genString(32 * 1024); 
-         
-         String s3 = genString(64 * 1024); 
-         
-         String s4 = genString(10 * 64 * 1024);
-         
-         ObjectMessage om1 = sess.createObjectMessage();
-         
-         om1.setObject(s1);
-         
-         ObjectMessage om2 = sess.createObjectMessage();
-         
-         om2.setObject(s2);
-         
-         ObjectMessage om3 = sess.createObjectMessage();
-         
-         om3.setObject(s3);
-         
-         ObjectMessage om4 = sess.createObjectMessage();
-         
-         om4.setObject(s4);
-         
-         prod.send(om1);
-         
-         prod.send(om2);
-         
-         prod.send(om3);
-         
-         prod.send(om4);
-   
-         ObjectMessage rm1 = (ObjectMessage)cons.receive(1000);
-         
-         assertNotNull(rm1);
-         
-         ObjectMessage rm2 = (ObjectMessage)cons.receive(1000);
-         
-         assertNotNull(rm2);
-         
-         ObjectMessage rm3 = (ObjectMessage)cons.receive(1000);
-         
-         assertNotNull(rm3);
-         
-         ObjectMessage rm4 = (ObjectMessage)cons.receive(1000);
-         
-         assertNotNull(rm4);
-         
-         assertEquals(s1, rm1.getObject());
-         
-         assertEquals(s2, rm2.getObject());
-         
-         assertEquals(s3, rm3.getObject());
-         
-         assertEquals(s4, rm4.getObject());
-      }
-      finally
-      {            
-         conn.close();
-      }
-   }
+//   public void test64KLimitWithTextMessage() throws Exception
+//   {            
+//      Connection conn = null;
+//      
+//      try
+//      {         
+//         conn = cf.createConnection();
+//   
+//         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//         
+//         MessageProducer prod = sess.createProducer(queue1);
+//         
+//         MessageConsumer cons = sess.createConsumer(queue1);
+//         
+//         conn.start();                  
+//               
+//         String s1 = genString(16 * 1024);   
+//         
+//         String s2 = genString(32 * 1024); 
+//         
+//         String s3 = genString(64 * 1024); 
+//         
+//         String s4 = genString(10 * 64 * 1024); 
+//         
+//         TextMessage tm1 = sess.createTextMessage(s1);
+//         
+//         TextMessage tm2 = sess.createTextMessage(s2);
+//         
+//         TextMessage tm3 = sess.createTextMessage(s3);
+//         
+//         TextMessage tm4 = sess.createTextMessage(s4);
+//         
+//         prod.send(tm1);
+//         
+//         prod.send(tm2);
+//         
+//         prod.send(tm3);
+//         
+//         prod.send(tm4);
+//   
+//         TextMessage rm1 = (TextMessage)cons.receive(1000);
+//         
+//         assertNotNull(rm1);           
+//         
+//         TextMessage rm2 = (TextMessage)cons.receive(1000);
+//         
+//         assertNotNull(rm2);
+//         
+//         TextMessage rm3 = (TextMessage)cons.receive(1000);
+//         
+//         assertNotNull(rm3);
+//         
+//         TextMessage rm4 = (TextMessage)cons.receive(1000);
+//         
+//         assertNotNull(rm4);
+//         
+//         assertEquals(s1.length(), rm1.getText().length());
+//         
+//         assertEquals(s1, rm1.getText());
+//         
+//         assertEquals(s2.length(), rm2.getText().length());
+//         
+//         assertEquals(s2, rm2.getText());
+//         
+//         assertEquals(s3.length(), rm3.getText().length());
+//         
+//         assertEquals(s3, rm3.getText());
+//         
+//         assertEquals(s4.length(), rm4.getText().length());
+//         
+//         assertEquals(s4, rm4.getText());
+//      }
+//      finally
+//      {            
+//         if (conn != null)
+//         {
+//            conn.close();
+//         }
+//      }
+//   }
+//         
+//   public void test64KLimitWithObjectMessage() throws Exception
+//   {            
+//      Connection conn = null;
+//      
+//      try
+//      {         
+//         conn = cf.createConnection();
+//   
+//         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//         
+//         MessageProducer prod = sess.createProducer(queue1);
+//         
+//         MessageConsumer cons = sess.createConsumer(queue1);
+//         
+//         conn.start();
+//               
+//         String s1 = genString(16 * 1024);   
+//         
+//         String s2 = genString(32 * 1024); 
+//         
+//         String s3 = genString(64 * 1024); 
+//         
+//         String s4 = genString(10 * 64 * 1024);
+//         
+//         ObjectMessage om1 = sess.createObjectMessage();
+//         
+//         om1.setObject(s1);
+//         
+//         ObjectMessage om2 = sess.createObjectMessage();
+//         
+//         om2.setObject(s2);
+//         
+//         ObjectMessage om3 = sess.createObjectMessage();
+//         
+//         om3.setObject(s3);
+//         
+//         ObjectMessage om4 = sess.createObjectMessage();
+//         
+//         om4.setObject(s4);
+//         
+//         prod.send(om1);
+//         
+//         prod.send(om2);
+//         
+//         prod.send(om3);
+//         
+//         prod.send(om4);
+//   
+//         ObjectMessage rm1 = (ObjectMessage)cons.receive(1000);
+//         
+//         assertNotNull(rm1);
+//         
+//         ObjectMessage rm2 = (ObjectMessage)cons.receive(1000);
+//         
+//         assertNotNull(rm2);
+//         
+//         ObjectMessage rm3 = (ObjectMessage)cons.receive(1000);
+//         
+//         assertNotNull(rm3);
+//         
+//         ObjectMessage rm4 = (ObjectMessage)cons.receive(1000);
+//         
+//         assertNotNull(rm4);
+//         
+//         assertEquals(s1, rm1.getObject());
+//         
+//         assertEquals(s2, rm2.getObject());
+//         
+//         assertEquals(s3, rm3.getObject());
+//         
+//         assertEquals(s4, rm4.getObject());
+//      }
+//      finally
+//      {            
+//         conn.close();
+//      }
+//   }
 }
