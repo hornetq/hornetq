@@ -21,14 +21,7 @@
  */
 package org.jboss.messaging.core.transaction.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import javax.transaction.xa.Xid;
-
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -39,310 +32,325 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 
+import javax.transaction.xa.Xid;
+import java.util.*;
+
 /**
- * 
  * A TransactionImpl
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
  */
 public class TransactionImpl implements Transaction
 {
-	private static final Logger log = Logger.getLogger(TransactionImpl.class);
+   private static final Logger log = Logger.getLogger(TransactionImpl.class);
 
-	private final StorageManager storageManager;
+   private final StorageManager storageManager;
 
-	private final PostOffice postOffice;
+   private final PostOffice postOffice;
 
-	private final List<MessageReference> refsToAdd = new ArrayList<MessageReference>();
+   private final List<MessageReference> refsToAdd = new ArrayList<MessageReference>();
 
-	private final List<MessageReference> acknowledgements = new ArrayList<MessageReference>();
+   private final List<MessageReference> acknowledgements = new ArrayList<MessageReference>();
 
-	private final Xid xid;
+   private final Xid xid;
 
-	private final long id;
+   private final long id;
 
-	private volatile State state = State.ACTIVE;
+   private volatile State state = State.ACTIVE;
 
-	private volatile boolean containsPersistent;
+   private volatile boolean containsPersistent;
 
-	public TransactionImpl(final StorageManager storageManager,
-			final PostOffice postOffice)
-	{
-		this.storageManager = storageManager;
+   private MessagingException messagingException;
 
-		this.postOffice = postOffice;
+   private boolean failed;
 
-		this.xid = null;
+   public TransactionImpl(final StorageManager storageManager,
+                          final PostOffice postOffice)
+   {
+      this.storageManager = storageManager;
 
-		this.id = storageManager.generateTransactionID();
-	}
+      this.postOffice = postOffice;
 
-	public TransactionImpl(final Xid xid, final StorageManager storageManager,
-			final PostOffice postOffice)
-	{
-		this.storageManager = storageManager;
+      this.xid = null;
 
-		this.postOffice = postOffice;
+      this.id = storageManager.generateTransactionID();
+   }
 
-		this.xid = xid;
+   public TransactionImpl(final Xid xid, final StorageManager storageManager,
+                          final PostOffice postOffice)
+   {
+      this.storageManager = storageManager;
 
-		this.id = storageManager.generateTransactionID();
-	}
+      this.postOffice = postOffice;
 
-	// Transaction implementation
-	// -----------------------------------------------------------
+      this.xid = xid;
 
-	public long getID()
-	{
-		return id;
-	}
+      this.id = storageManager.generateTransactionID();
+   }
 
-	public void addMessage(final ServerMessage message) throws Exception
-	{
-		if (state != State.ACTIVE)
-		{
-			throw new IllegalStateException("Transaction is in invalid state " + state);
-		}
+   // Transaction implementation
+   // -----------------------------------------------------------
 
-		List<MessageReference> refs = postOffice.route(message);
+   public long getID()
+   {
+      return id;
+   }
 
-		refsToAdd.addAll(refs);
+   public void addMessage(final ServerMessage message) throws Exception
+   {
+      if (state != State.ACTIVE)
+      {
+         throw new IllegalStateException("Transaction is in invalid state " + state);
+      }
 
-		if (message.getDurableRefCount() != 0)
-		{
-			storageManager.storeMessageTransactional(id, message);
+      List<MessageReference> refs = postOffice.route(message);
 
-			containsPersistent = true;
-		}
-	}
+      refsToAdd.addAll(refs);
+
+      if (message.getDurableRefCount() != 0)
+      {
+         storageManager.storeMessageTransactional(id, message);
+
+         containsPersistent = true;
+      }
+   }
 
    public void addAcknowledgement(final MessageReference acknowledgement)
-			throws Exception
-	{
-		if (state != State.ACTIVE)
-		{
-			throw new IllegalStateException("Transaction is in invalid state " + state);
-		}
-		acknowledgements.add(acknowledgement);
+           throws Exception
+   {
+      if (state != State.ACTIVE)
+      {
+         throw new IllegalStateException("Transaction is in invalid state " + state);
+      }
+      acknowledgements.add(acknowledgement);
 
-		ServerMessage message = acknowledgement.getMessage();
+      ServerMessage message = acknowledgement.getMessage();
 
-		if (message.isDurable())
-		{
-			Queue queue = acknowledgement.getQueue();
+      if (message.isDurable())
+      {
+         Queue queue = acknowledgement.getQueue();
 
-			if (queue.isDurable())
-			{
-				// Need to lock on the message to prevent a race where the ack and
-				// delete
-				// records get recorded in the log in the wrong order
+         if (queue.isDurable())
+         {
+            // Need to lock on the message to prevent a race where the ack and
+            // delete
+            // records get recorded in the log in the wrong order
 
-				// TODO For now - we just use synchronized - can probably do better
-				// locking
+            // TODO For now - we just use synchronized - can probably do better
+            // locking
 
-				synchronized (message)
-				{
-					message.decrementDurableRefCount();
+            synchronized (message)
+            {
+               message.decrementDurableRefCount();
 
-					if (message.getDurableRefCount() == 0)
-					{
-						storageManager.storeDeleteTransactional(id, message
-								.getMessageID());
-					}
-					else
-					{
-						storageManager.storeAcknowledgeTransactional(id, queue
-								.getPersistenceID(), message.getMessageID());
-					}
+               if (message.getDurableRefCount() == 0)
+               {
+                  storageManager.storeDeleteTransactional(id, message
+                          .getMessageID());
+               }
+               else
+               {
+                  storageManager.storeAcknowledgeTransactional(id, queue
+                          .getPersistenceID(), message.getMessageID());
+               }
 
-					containsPersistent = true;
-				}
-			}
-		}
+               containsPersistent = true;
+            }
+         }
+      }
 
-	}
+   }
 
-	public void prepare() throws Exception
-	{
-		if (state != State.ACTIVE)
-		{
-			throw new IllegalStateException("Transaction is in invalid state " + state);
-		}
+   public void prepare() throws Exception
+   {
+      if (state != State.ACTIVE)
+      {
+         throw new IllegalStateException("Transaction is in invalid state " + state);
+      }
 
-		if (xid == null)
-		{
-			throw new IllegalStateException("Cannot prepare non XA transaction");
-		}
+      if (xid == null)
+      {
+         throw new IllegalStateException("Cannot prepare non XA transaction");
+      }
 
-		if (containsPersistent)
-		{
-			storageManager.prepare(id);
-		}
+      if (containsPersistent)
+      {
+         storageManager.prepare(id);
+      }
 
-		state = State.PREPARED;
-	}
+      state = State.PREPARED;
+   }
 
-	public void commit() throws Exception
-	{
-		if (xid != null)
-		{
-			if (state != State.PREPARED)
-			{
-				throw new IllegalStateException("Transaction is in invalid state " + state);
-			}
-		}
-		else
-		{
-			if (state != State.ACTIVE)
-			{
-				throw new IllegalStateException("Transaction is in invalid state " + state);
-			}
-		}
+   public void commit() throws Exception
+   {
+      if (failed)
+      {
+         throw messagingException;
+      }
+      if (xid != null)
+      {
+         if (state != State.PREPARED)
+         {
+            throw new IllegalStateException("Transaction is in invalid state " + state);
+         }
+      }
+      else
+      {
+         if (state != State.ACTIVE)
+         {
+            throw new IllegalStateException("Transaction is in invalid state " + state);
+         }
+      }
 
-		if (containsPersistent)
-		{
-			storageManager.commit(id);
-		}
+      if (containsPersistent)
+      {
+         storageManager.commit(id);
+      }
 
-		for (MessageReference ref : refsToAdd)
-		{
-			ref.getQueue().addLast(ref);
-		}
+      for (MessageReference ref : refsToAdd)
+      {
+         ref.getQueue().addLast(ref);
+      }
 
-		for (MessageReference reference : acknowledgements)
-		{
-			reference.getQueue().referenceAcknowledged();
-		}
+      for (MessageReference reference : acknowledgements)
+      {
+         reference.getQueue().referenceAcknowledged();
+      }
 
-		clear();
+      clear();
 
-		state = State.COMMITTED;
-	}
+      state = State.COMMITTED;
+   }
 
-	public void rollback(final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
-	{
-		if (xid != null)
-		{
-			if (state != State.PREPARED && state != State.ACTIVE)
-			{
-				throw new IllegalStateException("Transaction is in invalid state " + state);
-			}
-		}
-		else
-		{
-			if (state != State.ACTIVE)
-			{
-				throw new IllegalStateException("Transaction is in invalid state " + state);
-		   }
-		}
+   public void rollback(final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+   {
+      if (xid != null)
+      {
+         if (state != State.PREPARED && state != State.ACTIVE)
+         {
+            throw new IllegalStateException("Transaction is in invalid state " + state);
+         }
+      }
+      else
+      {
+         if (state != State.ACTIVE)
+         {
+            throw new IllegalStateException("Transaction is in invalid state " + state);
+         }
+      }
 
-		if (containsPersistent)
-		{
-			storageManager.rollback(id);
-		}
+      if (containsPersistent)
+      {
+         storageManager.rollback(id);
+      }
 
-		Map<Queue, LinkedList<MessageReference>> queueMap = new HashMap<Queue, LinkedList<MessageReference>>();
+      Map<Queue, LinkedList<MessageReference>> queueMap = new HashMap<Queue, LinkedList<MessageReference>>();
 
-		// We sort into lists - one for each queue involved.
-		// Then we cancel back atomicly for each queue adding list on front to
-		// guarantee ordering is preserved
+      // We sort into lists - one for each queue involved.
+      // Then we cancel back atomicly for each queue adding list on front to
+      // guarantee ordering is preserved
 
-		for (MessageReference ref : acknowledgements)
-		{
-			Queue queue = ref.getQueue();
+      for (MessageReference ref : acknowledgements)
+      {
+         Queue queue = ref.getQueue();
 
-			ServerMessage message = ref.getMessage();
+         ServerMessage message = ref.getMessage();
 
-			if (message.isDurable() && queue.isDurable())
-			{
-				// Reverse the decrements we did in the tx
-				message.incrementDurableRefCount();
-			}
+         if (message.isDurable() && queue.isDurable())
+         {
+            // Reverse the decrements we did in the tx
+            message.incrementDurableRefCount();
+         }
 
-			LinkedList<MessageReference> list = queueMap.get(queue);
+         LinkedList<MessageReference> list = queueMap.get(queue);
 
-			if (list == null)
-			{
-				list = new LinkedList<MessageReference>();
+         if (list == null)
+         {
+            list = new LinkedList<MessageReference>();
 
-				queueMap.put(queue, list);
-			}
+            queueMap.put(queue, list);
+         }
 
-			if (ref.cancel(storageManager, postOffice, queueSettingsRepository))
-			{
-				list.add(ref);
-			}
-		}
+         if (ref.cancel(storageManager, postOffice, queueSettingsRepository))
+         {
+            list.add(ref);
+         }
+      }
 
-		for (Map.Entry<Queue, LinkedList<MessageReference>> entry : queueMap
-				.entrySet())
-		{
-			LinkedList<MessageReference> refs = entry.getValue();
+      for (Map.Entry<Queue, LinkedList<MessageReference>> entry : queueMap
+              .entrySet())
+      {
+         LinkedList<MessageReference> refs = entry.getValue();
 
-			entry.getKey().addListFirst(refs);
-		}
+         entry.getKey().addListFirst(refs);
+      }
 
-		clear();
+      clear();
 
-		state = State.ROLLEDBACK;
-	}
+      state = State.ROLLEDBACK;
+   }
 
-	public int getAcknowledgementsCount()
-	{
-		return acknowledgements.size();
-	}
+   public int getAcknowledgementsCount()
+   {
+      return acknowledgements.size();
+   }
 
-	public void suspend()
-	{
-		if (state != State.ACTIVE)
-		{
-			throw new IllegalStateException("Can only suspend active transaction");
-		}
-		state = State.SUSPENDED;
-	}
+   public void suspend()
+   {
+      if (state != State.ACTIVE)
+      {
+         throw new IllegalStateException("Can only suspend active transaction");
+      }
+      state = State.SUSPENDED;
+   }
 
-	public void resume()
-	{
-		if (state != State.SUSPENDED)
-		{
-			throw new IllegalStateException("Can only resume a suspended transaction");
-		}
-		state = State.ACTIVE;
-	}
+   public void resume()
+   {
+      if (state != State.SUSPENDED)
+      {
+         throw new IllegalStateException("Can only resume a suspended transaction");
+      }
+      state = State.ACTIVE;
+   }
 
-	public Transaction.State getState()
-	{
-		return state;
-	}
+   public Transaction.State getState()
+   {
+      return state;
+   }
 
-	public Xid getXid()
-	{
-		return xid;
-	}
+   public Xid getXid()
+   {
+      return xid;
+   }
 
-	public boolean isEmpty()
-	{
-		return refsToAdd.isEmpty() && acknowledgements.isEmpty();
-	}
+   public boolean isEmpty()
+   {
+      return refsToAdd.isEmpty() && acknowledgements.isEmpty();
+   }
 
-	public boolean isContainsPersistent()
-	{
-		return containsPersistent;
-	}
+   public boolean isContainsPersistent()
+   {
+      return containsPersistent;
+   }
 
-	public void setContainsPersistent(final boolean containsPersistent)
-	{
-		this.containsPersistent = containsPersistent;
-	}
+   public void markAsFailed(MessagingException messagingException)
+   {
+      this.failed = true;
+      this.messagingException = messagingException;
+   }
 
-	// Private
-	// -------------------------------------------------------------------
+   public void setContainsPersistent(final boolean containsPersistent)
+   {
+      this.containsPersistent = containsPersistent;
+   }
 
-	private void clear()
-	{
-		refsToAdd.clear();
+   // Private
+   // -------------------------------------------------------------------
 
-		acknowledgements.clear();
-	}
+   private void clear()
+   {
+      refsToAdd.clear();
+
+      acknowledgements.clear();
+   }
 }

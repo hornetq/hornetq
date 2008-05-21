@@ -21,50 +21,51 @@
  */
 package org.jboss.messaging.core.transaction;
 
-import javax.transaction.xa.Xid;
-
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 
+import javax.transaction.xa.Xid;
+
 /**
- * 
  * A JBoss Messaging internal transaction
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public interface Transaction
-{   
-	void prepare() throws Exception;
-	
+{
+   void prepare() throws Exception;
+
    void commit() throws Exception;
-   
+
    void rollback(HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
-   
+
    void addMessage(ServerMessage message) throws Exception;
 
    void addAcknowledgement(MessageReference acknowledgement) throws Exception;
-   
+
    int getAcknowledgementsCount();
-   
+
    long getID();
-   
+
    Xid getXid();
-   
+
    boolean isEmpty();
-   
+
    void suspend();
-   
+
    void resume();
-     
+
    State getState();
-   
+
    boolean isContainsPersistent();
-   
+
+   void markAsFailed(MessagingException messagingException);
+
    static enum State
    {
-   	ACTIVE, PREPARED, COMMITTED, ROLLEDBACK, SUSPENDED;
+      ACTIVE, PREPARED, COMMITTED, ROLLEDBACK, SUSPENDED;
    }
 }
