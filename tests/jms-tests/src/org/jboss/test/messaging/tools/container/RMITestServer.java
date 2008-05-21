@@ -435,10 +435,11 @@ public class RMITestServer extends UnicastRemoteObject implements Server
                                         boolean supportsFailover,
                                         boolean supportsLoadBalancing,
                                         boolean strictTck,
-                                        int dupsOkBatchSize) throws Exception
+                                        int dupsOkBatchSize,
+                                        boolean blockOnAcknowledge) throws Exception
    {
       server.deployConnectionFactory(clientId, objectName, jndiBindings, prefetchSize, defaultTempQueueFullSize, defaultTempQueuePageSize, defaultTempQueueDownCacheSize,
-              supportsFailover, supportsLoadBalancing, strictTck, dupsOkBatchSize);  
+              supportsFailover, supportsLoadBalancing, strictTck, dupsOkBatchSize, blockOnAcknowledge);  
    }
     public void deployConnectionFactory(String objectName,
                                        List<String> jndiBindings,

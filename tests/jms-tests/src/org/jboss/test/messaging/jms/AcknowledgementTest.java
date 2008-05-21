@@ -698,7 +698,7 @@ public class AcknowledgementTest extends JMSTestCase
 
       ArrayList<String> bindings = new ArrayList<String>();
       bindings.add("mycf");
-      deployConnectionFactory(null, "MyConnectionFactory2", bindings, -1, -1, -1, -1, false, false, false, BATCH_SIZE);
+      deployConnectionFactory(null, "MyConnectionFactory2", bindings, -1, -1, -1, -1, false, false, false, BATCH_SIZE, true);
 
       Connection conn = null;
 
@@ -780,7 +780,7 @@ public class AcknowledgementTest extends JMSTestCase
 
       ArrayList<String> bindings = new ArrayList<String>();
       bindings.add("mycf");
-      deployConnectionFactory(null, "MyConnectionFactory2", bindings, -1, -1, -1, -1, false, false, false, BATCH_SIZE);
+      deployConnectionFactory(null, "MyConnectionFactory2", bindings, -1, -1, -1, -1, false, false, false, BATCH_SIZE, true);
       Connection conn = null;
 
       try

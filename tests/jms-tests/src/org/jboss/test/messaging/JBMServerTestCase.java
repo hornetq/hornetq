@@ -785,10 +785,11 @@ public class JBMServerTestCase extends JBMBaseTestCase
                                        boolean supportsFailover,
                                        boolean supportsLoadBalancing,
                                        boolean strictTck,
-                                       int dupsOkBatchSize) throws Exception
+                                       int dupsOkBatchSize,
+                                       boolean blockOnAcknowledge) throws Exception
    {
       servers.get(0).deployConnectionFactory(clientId, objectName, jndiBindings, prefetchSize, defaultTempQueueFullSize,
-              defaultTempQueuePageSize, defaultTempQueueDownCacheSize, supportsFailover, supportsLoadBalancing, strictTck, dupsOkBatchSize);
+              defaultTempQueuePageSize, defaultTempQueueDownCacheSize, supportsFailover, supportsLoadBalancing, strictTck, dupsOkBatchSize, blockOnAcknowledge);
    }
 
    public static void deployConnectionFactory(String objectName,

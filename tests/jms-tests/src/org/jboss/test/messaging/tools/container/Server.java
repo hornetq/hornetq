@@ -197,7 +197,8 @@ public interface Server extends Remote
                                         boolean supportsFailover,
                                         boolean supportsLoadBalancing,
                                         boolean strictTck,
-                                        int dupsOkBatchSize) throws Exception;
+                                        int dupsOkBatchSize,
+                                        boolean blockOnAcknowledge) throws Exception;
 
    void deployConnectionFactory(String objectName,
                                 List<String> jndiBindings,
