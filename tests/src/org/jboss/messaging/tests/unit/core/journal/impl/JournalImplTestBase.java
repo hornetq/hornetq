@@ -110,6 +110,12 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		fileFactory = getFileFactory();
 	}
 	
+	protected void checkAndReclaimFiles() throws Exception
+	{
+	   journal.debugWait();
+	   journal.checkAndReclaimFiles();
+	}
+	
 	protected abstract SequentialFileFactory getFileFactory() throws Exception;
 	
 	// Private ---------------------------------------------------------------------------------
@@ -151,7 +157,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		//We do a reclaim in here
 		if (reclaim)
 		{
-			journal.checkAndReclaimFiles();
+			checkAndReclaimFiles();
 		}
 		
 		journal.stop();      
@@ -208,6 +214,8 @@ public abstract class JournalImplTestBase extends UnitTestCase
 			
 			records.add(new RecordInfo(arguments[i], (byte)0, record, false));         
 		}
+		
+		journal.debugWait();
 	}
 	
 	protected void update(long... arguments) throws Exception
@@ -220,6 +228,8 @@ public abstract class JournalImplTestBase extends UnitTestCase
 			
 			records.add(new RecordInfo(arguments[i], (byte)0, updateRecord, true)); 
 		}
+		
+		journal.debugWait();
 	}
 	
 	protected void delete(long... arguments) throws Exception
@@ -230,6 +240,8 @@ public abstract class JournalImplTestBase extends UnitTestCase
 			
 			removeRecordsForID(arguments[i]);
 		}
+
+		journal.debugWait();
 	}
 	
 	protected void addTx(long txID, long... arguments) throws Exception
@@ -245,7 +257,9 @@ public abstract class JournalImplTestBase extends UnitTestCase
 			
 			tx.records.add(new RecordInfo(arguments[i], (byte)0, record, false));
 			
-		}     
+		}
+		
+		journal.debugWait();
 	}
 	
 	protected void updateTx(long txID, long... arguments) throws Exception
@@ -260,6 +274,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 			
 			tx.records.add(new RecordInfo(arguments[i], (byte)0, updateRecord, true));
 		}     
+      journal.debugWait();
 	}
 	
 	protected void deleteTx(long txID, long... arguments) throws Exception
@@ -273,6 +288,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 			tx.deletes.add(arguments[i]);       
 		}
 		
+      journal.debugWait();
 	}
 	
 	protected void prepare(long txID) throws Exception
@@ -292,6 +308,8 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		journal.appendPrepareRecord(txID);
 		
 		tx.prepared = true;
+
+		journal.debugWait();
 	}
 	
 	protected void commit(long txID) throws Exception
@@ -306,6 +324,8 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		journal.appendCommitRecord(txID);
 		
 		this.commitTx(txID);
+		
+		journal.debugWait();
 	}
 	
 	protected void rollback(long txID) throws Exception
@@ -318,6 +338,8 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		}
 		
 		journal.appendRollbackRecord(txID);
+
+		journal.debugWait();
 	}
 	
 	private void commitTx(long txID)

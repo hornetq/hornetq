@@ -1214,17 +1214,21 @@ public class JournalImpl implements TestableJournal
          callback.waitCompletion();
       }
       
-      final CountDownLatch latch = new CountDownLatch(1);
-      
-      this.closingExecutor.execute(new Runnable(){
-         public void run()
+      if (!closingExecutor.isShutdown())
+      {
+         // Send something to the closingExecutor, just to make sure we went until its end
+         final CountDownLatch latch = new CountDownLatch(1);
+
+         this.closingExecutor.execute(new Runnable()
          {
-            latch.countDown();
-         }
-      });
-      
-      // just to make sure the closing thread is empty
-      latch.await();
+            public void run()
+            {
+               latch.countDown();
+            }
+         });
+         
+         latch.await();
+      }
    }
 
    // TestableJournal implementation --------------------------------------------------------------
@@ -1321,7 +1325,10 @@ public class JournalImpl implements TestableJournal
 		stopReclaimer();
 		
 		closingExecutor.shutdown();
-		closingExecutor.awaitTermination(120, TimeUnit.SECONDS);
+		if (!closingExecutor.awaitTermination(120, TimeUnit.SECONDS))
+		{
+		   throw new IllegalStateException("Time out waiting for closing executor to finish");
+		}
 		
 		if (currentFile != null)
 		{
