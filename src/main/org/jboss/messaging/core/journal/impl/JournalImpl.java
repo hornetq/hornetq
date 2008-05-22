@@ -279,7 +279,7 @@ public class JournalImpl implements TestableJournal
       {
          SimpleCallback callback = new SimpleCallback();
          usedFile = appendRecord(bb.getBuffer(), true, callback);
-         callback.waitCompletion();
+         callback.waitCompletion(aioTimeout);
       }
       else
       {
@@ -314,7 +314,7 @@ public class JournalImpl implements TestableJournal
       {         
          SimpleCallback callback = new SimpleCallback();
          usedFile = appendRecord(bb, true, callback);
-         callback.waitCompletion();
+         callback.waitCompletion(aioTimeout);
       }
       else
       {
@@ -355,7 +355,7 @@ public class JournalImpl implements TestableJournal
       {
          SimpleCallback callback = new SimpleCallback();
          usedFile = appendRecord(bb, true, callback);
-         callback.waitCompletion();
+         callback.waitCompletion(aioTimeout);
       }
       else
       {
@@ -394,7 +394,7 @@ public class JournalImpl implements TestableJournal
       {
          SimpleCallback callback = new SimpleCallback();
          appendRecord(bb, true, callback);
-         callback.waitCompletion();
+         callback.waitCompletion(aioTimeout);
       }
       else
       {
@@ -577,8 +577,6 @@ public class JournalImpl implements TestableJournal
 			throw new IllegalStateException("Journal must be loaded first");
 		}
 		
-      TransactionCallback callback = getTransactionCallback(txID);
-      callback.countUp();
       
 		TransactionNegPos tx = transactionInfos.remove(txID);
 		
@@ -596,9 +594,19 @@ public class JournalImpl implements TestableJournal
 		bb.put(DONE);           
 		bb.rewind();
 		
-		JournalFile usedFile = appendRecord(bb, true, callback); 
+		JournalFile usedFile;
+		if (shouldUseCallback)
+		{
+         TransactionCallback callback = getTransactionCallback(txID);
+         callback.countUp();
+   		usedFile = appendRecord(bb, true, callback); 
+   		callback.waitCompletion(aioTimeout);
+		}
+		else
+		{
+         usedFile = appendRecord(bb, true); 
+		}
 		
-		callback.waitCompletion();
 		transactionCallbacks.remove(txID);
 		
 		tx.commit(usedFile);
@@ -628,11 +636,17 @@ public class JournalImpl implements TestableJournal
 		bb.put(DONE);        
 		bb.rewind();
 		
-		SimpleCallback callback = new SimpleCallback();
-		
-		JournalFile usedFile = appendRecord(bb, true, callback);       
-		
-		callback.waitCompletion();
+		JournalFile usedFile;
+		if (shouldUseCallback)
+		{
+	      SimpleCallback callback = new SimpleCallback();
+   		usedFile = appendRecord(bb, true, callback);       
+   		callback.waitCompletion(aioTimeout);
+		}
+		else
+		{
+         usedFile = appendRecord(bb, true);      
+		}
 		
 		tx.rollback(usedFile);
 	}
@@ -1218,7 +1232,7 @@ public class JournalImpl implements TestableJournal
    {
       for (TransactionCallback callback: transactionCallbacks.values())
       {
-         callback.waitCompletion();
+         callback.waitCompletion(aioTimeout);
       }
       
       if (!closingExecutor.isShutdown())
@@ -1580,10 +1594,9 @@ public class JournalImpl implements TestableJournal
          latch.countDown();         
       }
       
-      public void waitCompletion() throws InterruptedException 
+      public void waitCompletion(int timeout) throws InterruptedException 
       {
-         // TODO: Variable Timeout?
-         if (!latch.await(30, TimeUnit.SECONDS))
+         if (!latch.await(timeout, TimeUnit.SECONDS))
          {
             throw new IllegalStateException("Timeout!");
          }
@@ -1612,9 +1625,9 @@ public class JournalImpl implements TestableJournal
          countLatch.down();
       }
       
-      public void waitCompletion() throws InterruptedException
+      public void waitCompletion(int timeout) throws InterruptedException
       {
-         countLatch.waitCompletion(90);
+         countLatch.waitCompletion(timeout);
          
          if (errorMessage != null)
          {
