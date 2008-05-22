@@ -45,7 +45,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       
    private Map<String, FakeSequentialFile> fileMap = new ConcurrentHashMap<String, FakeSequentialFile>();
    
-   public SequentialFile createSequentialFile(final String fileName, final boolean sync, final int maxAIO) throws Exception
+   public SequentialFile createSequentialFile(final String fileName, final boolean sync, final int maxAIO, final int timeout) throws Exception
    {
       FakeSequentialFile sf = fileMap.get(fileName);
       

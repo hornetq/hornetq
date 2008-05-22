@@ -42,6 +42,7 @@ import org.jboss.messaging.util.TypedProperties;
  * 
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @version <tt>$Revision: 2740 $</tt>
  * 
  * For normal message transportation serialization is not used

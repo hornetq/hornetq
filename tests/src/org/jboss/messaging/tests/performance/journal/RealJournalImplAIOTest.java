@@ -19,13 +19,23 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.tests.unit.core.journal.impl.timing;
+package org.jboss.messaging.tests.performance.journal;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
+import org.jboss.messaging.core.asyncio.AIOCallback;
+import org.jboss.messaging.core.journal.IOCallback;
+import org.jboss.messaging.core.journal.Journal;
+import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
+import org.jboss.messaging.core.journal.impl.JournalImpl;
+import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeCallback;
 
 /**
  * 

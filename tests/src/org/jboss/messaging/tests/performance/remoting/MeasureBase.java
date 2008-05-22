@@ -5,7 +5,7 @@
  * See terms of license at gnu.org.
  */
 
-package org.jboss.messaging.tests.integration.core.remoting.mina.timing;
+package org.jboss.messaging.tests.performance.remoting;
 
 import junit.framework.TestCase;
 

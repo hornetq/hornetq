@@ -24,7 +24,7 @@ public interface AsynchronousFile
 	 * @param fileName
 	 * @param maxIO The number of max concurrent asynchrnous IO operations. It has to be balanced between the size of your writes and the capacity of your disk.
 	 */
-	void open(String fileName, int maxIO);
+	void open(String fileName, int maxIO, int timeout);
 	
 	/** 
 	 * Warning: This function will perform a synchronous IO, probably translating to a fstat call

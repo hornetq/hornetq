@@ -19,30 +19,40 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.journal;
+package org.jboss.messaging.tests.performance.journal;
 
-import java.nio.ByteBuffer;
-import java.util.List;
+import java.io.File;
+
+import org.jboss.messaging.core.journal.SequentialFileFactory;
+import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
+import org.jboss.messaging.core.logging.Logger;
 
 /**
  * 
- * A SequentialFileFactory
+ * A RealJournalImplTest
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public interface SequentialFileFactory
+public class RealJournalImplTest extends JournalImplTestUnit
 {
-	SequentialFile createSequentialFile(String fileName, boolean sync, int maxIO, int timeout) throws Exception;
+	private static final Logger log = Logger.getLogger(RealJournalImplTest.class);
 	
-	List<String> listFiles(String extension) throws Exception;
+	protected String journalDir = System.getProperty("user.home") + "/journal-test";
+		
+	protected SequentialFileFactory getFileFactory() throws Exception
+	{
+		File file = new File(journalDir);
+		
+		log.info("deleting directory " + journalDir);
+		
+		deleteDirectory(file);
+		
+		file.mkdir();		
+		
+		return new NIOSequentialFileFactory(journalDir);
+	}
 	
-	boolean supportsCallbacks();
 	
-   ByteBuffer newBuffer(int size);
-
-   // Avoid using this method in production as it creates an unecessary copy 
-   ByteBuffer wrapBuffer(byte[] bytes);
-
 }
+

@@ -30,6 +30,7 @@ import org.jboss.messaging.core.server.MessagingComponent;
  * A Journal
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
 public interface Journal extends MessagingComponent

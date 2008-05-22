@@ -136,7 +136,9 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
       
       this.journalTaskPeriod = getLong(e, "journal-task-period", 5000L);
       
-      this.maxAIO = getInteger(e, "journal-max-aio", DEFAULT_MAX_AIO);
+      this.journalMaxAIO = getInteger(e, "journal-max-aio", DEFAULT_MAX_AIO);
+      
+      this.journalAIOTimeout = getInteger(e, "journal-aio-timeout", DEFAULT_AIO_TIMEOUT);
       
       this.securityEnabled = getBoolean(e, "security-enabled", true);
        

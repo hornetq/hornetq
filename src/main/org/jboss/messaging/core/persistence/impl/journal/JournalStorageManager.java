@@ -105,7 +105,7 @@ public class JournalStorageManager implements StorageManager
 			
 	   SequentialFileFactory bindingsFF = new NIOSequentialFileFactory(bindingsDir);
       
-	   bindingsJournal = new JournalImpl(1024 * 1024, 2, true, bindingsFF, 10000, "jbm-bindings", "bindings", 1);
+	   bindingsJournal = new JournalImpl(1024 * 1024, 2, true, bindingsFF, 10000, "jbm-bindings", "bindings", 1, 1);
 	      
 	   String journalDir = config.getJournalDirectory();
 	   
@@ -147,7 +147,7 @@ public class JournalStorageManager implements StorageManager
 	      
 	   messageJournal = new JournalImpl(config.getJournalFileSize(), 
 	   		config.getJournalMinFiles(), config.isJournalSync(), journalFF,
-	   		config.getJournalTaskPeriod(), "jbm-data", "jbm", config.getJournalMaxAIO());
+	   		config.getJournalTaskPeriod(), "jbm-data", "jbm", config.getJournalMaxAIO(), config.getJournalAIOTimeout());
 	}
 	
 	public long generateMessageID()

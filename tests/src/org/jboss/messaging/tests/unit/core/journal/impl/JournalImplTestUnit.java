@@ -102,7 +102,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 	{
 		try
 		{
-			new JournalImpl(JournalImpl.MIN_FILE_SIZE - 1, 10, true, fileFactory, 5000, filePrefix, fileExtension, 1);
+			new JournalImpl(JournalImpl.MIN_FILE_SIZE - 1, 10, true, fileFactory, 5000, filePrefix, fileExtension, 1, 120);
 			
 			fail("Should throw exception");
 		}
@@ -113,7 +113,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		
 		try
 		{
-			new JournalImpl(10 * 1024, 1, true, fileFactory, 5000, filePrefix, fileExtension, 1);
+			new JournalImpl(10 * 1024, 1, true, fileFactory, 5000, filePrefix, fileExtension, 1, 120);
 			
 			fail("Should throw exception");
 		}
@@ -124,7 +124,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		
 		try
 		{
-			new JournalImpl(10 * 1024, 10, true, null, 5000, filePrefix, fileExtension, 1);
+			new JournalImpl(10 * 1024, 10, true, null, 5000, filePrefix, fileExtension, 1, 120);
 			
 			fail("Should throw exception");
 		}
@@ -135,7 +135,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		
 		try
 		{
-			new JournalImpl(10 * 1024, 10, true, fileFactory, JournalImpl.MIN_TASK_PERIOD - 1, filePrefix, fileExtension, 1);
+			new JournalImpl(10 * 1024, 10, true, fileFactory, JournalImpl.MIN_TASK_PERIOD - 1, filePrefix, fileExtension, 1, 120);
 			
 			fail("Should throw exception");
 		}
@@ -146,7 +146,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		
 		try
 		{
-			new JournalImpl(10 * 1024, 10, true, fileFactory, 5000, null, fileExtension, 1);
+			new JournalImpl(10 * 1024, 10, true, fileFactory, 5000, null, fileExtension, 1, 120);
 			
 			fail("Should throw exception");
 		}
@@ -157,7 +157,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		
       try
       {
-         new JournalImpl(10 * 1024, 10, true, fileFactory, 5000, filePrefix, null, 1);
+         new JournalImpl(10 * 1024, 10, true, fileFactory, 5000, filePrefix, null, 1, 120);
          
          fail("Should throw exception");
       }
@@ -168,11 +168,22 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       
       try
       {
-         new JournalImpl(10 * 1024, 10, true, fileFactory, 5000, filePrefix, null, 0);
+         new JournalImpl(10 * 1024, 10, true, fileFactory, 5000, filePrefix, null, 0, 120);
          
          fail("Should throw exception");
       }
       catch (NullPointerException e)
+      {
+         //Ok
+      }
+      
+      try
+      {
+         new JournalImpl(10 * 1024, 10, true, fileFactory, 5000, filePrefix, fileExtension, 0, -1);
+         
+         fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
       {
          //Ok
       }

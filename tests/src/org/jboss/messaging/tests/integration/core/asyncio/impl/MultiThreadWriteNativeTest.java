@@ -7,17 +7,13 @@
 
 package org.jboss.messaging.tests.integration.core.asyncio.impl;
 
-import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import junit.framework.TestCase;
 
 import org.jboss.messaging.core.asyncio.AIOCallback;
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
@@ -30,108 +26,33 @@ import org.jboss.messaging.core.logging.Logger;
  *   I - Run->Open Run Dialog
  *   II - Find the class on the list (you will find it if you already tried running this testcase before)  
  *   III - Add -Djava.library.path=<your project place>/native/src/.libs
+ *   
+ *  @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>.
  *   */
-public class MultiThreadWriteNativeTest extends TestCase
+public class MultiThreadWriteNativeTest extends AIOTestBase
 {
 
    static Logger log = Logger.getLogger(MultiThreadWriteNativeTest.class);
    
-   static AtomicInteger position = new AtomicInteger(0);
-   
-   String FILE_NAME="/tmp/libaio.log";
+   AtomicInteger position = new AtomicInteger(0);
    
    static final int SIZE = 1024;
-   static final int NUMBER_OF_THREADS = 40;
-   static final int NUMBER_OF_LINES = 5000;
+   static final int NUMBER_OF_THREADS = 10;
+   static final int NUMBER_OF_LINES = 1000;
    
 //   Executor exec
    
-   static Executor executor = Executors.newSingleThreadExecutor();
-   
-   static Semaphore semaphore = new Semaphore(1, false);
-
-   
-   static class ExecClass implements Runnable
-   {
-       
-       AsynchronousFileImpl aio;
-       ByteBuffer buffer;
-       AIOCallback callback;
-       
-       
-       public ExecClass(AsynchronousFileImpl aio, ByteBuffer buffer, AIOCallback callback)
-       {
-           this.aio = aio;
-           this.buffer = buffer;
-           this.callback = callback;
-       }
-
-       public void run()
-       {
-           try
-           {
-               aio.write(getNewPosition()*SIZE, SIZE, buffer, callback);
-               
-           }
-           catch (Exception e)
-           {
-               callback.onError(-1, e.toString());
-               e.printStackTrace();
-           }
-           finally
-           {
-               try { semaphore.release(); } catch (Exception ignored){}
-           }
-       }
-       
-   }
-
-   
-   
-   private static void addData(AsynchronousFileImpl aio, ByteBuffer buffer, AIOCallback callback) throws Exception
-   {
-       //aio.write(getNewPosition()*SIZE, SIZE, buffer, callback);
-       executor.execute(new ExecClass(aio, buffer, callback));
-       
-       //semaphore.acquire();
-       //try
-       //{
-           //aio.write(getNewPosition()*SIZE, SIZE, buffer, callback);
-       //}
-       //finally
-       //{
-       //    semaphore.release();
-       //}
-       
-       
-       
-   }
-   
-   
-   
+   Executor executor = Executors.newSingleThreadExecutor();
    
    protected void setUp() throws Exception
    {
        super.setUp();
-       if (!AsynchronousFileImpl.isLoaded())
-       {
-          fail(String.format("libAIO is not loaded on %s %s %s", 
-                System.getProperty("os.name"), 
-                System.getProperty("os.arch"), 
-                System.getProperty("os.version")));
-       }
-
-       File file = new File(FILE_NAME);
-       file.delete();
-       
        position.set(0);
    }
    
    protected void tearDown() throws Exception
    {
       super.tearDown();
-      
-      assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
    }
    
    public void testMultipleASynchronousWrites() throws Throwable
@@ -148,7 +69,7 @@ public class MultiThreadWriteNativeTest extends TestCase
    {
        log.info(sync?"Sync test:":"Async test");
        AsynchronousFileImpl jlibAIO = new AsynchronousFileImpl();
-       jlibAIO.open(FILE_NAME, 21000);
+       jlibAIO.open(FILE_NAME, 21000, 120);
        try
        {
           log.debug("Preallocating file");
@@ -196,12 +117,12 @@ public class MultiThreadWriteNativeTest extends TestCase
    
 
    
-   private static int getNewPosition()
+   private int getNewPosition()
    {
        return position.addAndGet(1);
    }
    
-   static class ThreadProducer extends Thread
+   class ThreadProducer extends Thread
    {
 
        Throwable failed = null;
@@ -247,13 +168,13 @@ public class MultiThreadWriteNativeTest extends TestCase
                
                if (!sync) latchFinishThread = new CountDownLatch(NUMBER_OF_LINES);
 
-               LinkedList<LocalCallback> list = new LinkedList<LocalCallback>();
+               LinkedList<CountDownCallback> list = new LinkedList<CountDownCallback>();
                
                for (int i=0;i<NUMBER_OF_LINES;i++)
                {
                 
                    if (sync) latchFinishThread = new CountDownLatch(1);
-                   LocalCallback callback = new LocalCallback(latchFinishThread, buffer, libaio);
+                   CountDownCallback callback = new CountDownCallback(latchFinishThread);
                    if (!sync) list.add(callback);
                    addData(libaio, buffer,callback);
                    if (sync)
@@ -264,7 +185,7 @@ public class MultiThreadWriteNativeTest extends TestCase
                    }
                }
                if (!sync) latchFinishThread.await();
-               for (LocalCallback callback: list)
+               for (CountDownCallback callback: list)
                {
                    assertTrue (callback.doneCalled);
                    assertFalse (callback.errorCalled);
@@ -277,7 +198,7 @@ public class MultiThreadWriteNativeTest extends TestCase
                libaio.destroyBuffer(buffer);
                
                
-               for (LocalCallback callback: list)
+               for (CountDownCallback callback: list)
                {
                    assertTrue (callback.doneCalled);
                    assertFalse (callback.errorCalled);
@@ -296,41 +217,45 @@ public class MultiThreadWriteNativeTest extends TestCase
    private static void addString(String str, ByteBuffer buffer)
    {
        byte bytes[] = str.getBytes();
-       //buffer.putInt(bytes.length);
        buffer.put(bytes);
-       //CharBuffer charBuffer = CharBuffer.wrap(str);
-       //UTF_8_ENCODER.encode(charBuffer, buffer, true);
-       
    }
    
-   static class LocalCallback implements AIOCallback
+   private void addData(AsynchronousFileImpl aio, ByteBuffer buffer, AIOCallback callback) throws Exception
    {
-       boolean doneCalled = false;
-       boolean errorCalled = false;
-       CountDownLatch latchDone;
-       ByteBuffer releaseMe;
-       AsynchronousFileImpl libaio;
+       executor.execute(new WriteRunnable(aio, buffer, callback));
+   }
+   
+   private class WriteRunnable implements Runnable
+   {
        
-       public LocalCallback(CountDownLatch latchDone, ByteBuffer releaseMe, AsynchronousFileImpl libaio)
-       {
-           this.latchDone = latchDone;
-           this.releaseMe = releaseMe;
-           this.libaio = libaio;
-       }
+       AsynchronousFileImpl aio;
+       ByteBuffer buffer;
+       AIOCallback callback;
        
-       public void done()
+       
+       public WriteRunnable(AsynchronousFileImpl aio, ByteBuffer buffer, AIOCallback callback)
        {
-           doneCalled=true;
-           latchDone.countDown();
-           //libaio.destroyBuffer(releaseMe);
+           this.aio = aio;
+           this.buffer = buffer;
+           this.callback = callback;
        }
 
-       public void onError(int errorCode, String errorMessage)
+       public void run()
        {
-           errorCalled=true;
-           latchDone.countDown();
-           libaio.destroyBuffer(releaseMe);
+           try
+           {
+               aio.write(getNewPosition()*SIZE, SIZE, buffer, callback);
+               
+           }
+           catch (Exception e)
+           {
+               callback.onError(-1, e.toString());
+               e.printStackTrace();
+           }
        }
        
    }
+
+   
+   
 }

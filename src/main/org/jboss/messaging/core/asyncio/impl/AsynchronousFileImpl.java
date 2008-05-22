@@ -22,6 +22,8 @@ import org.jboss.messaging.util.VariableLatch;
 
 /**
  * 
+ * AsynchronousFile implementation
+ * 
  * @author clebert.suconic@jboss.com
  * Warning: Case you refactor the name or the package of this class
  *          You need to make sure you also rename the C++ native calls
@@ -103,6 +105,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	private ReadWriteLock lock = new ReentrantReadWriteLock();
 	private Lock writeLock = lock.writeLock();
    private Semaphore writeSemaphore;   
+   private int timeout;
 	
 	/**
 	 *  Warning: Beware of the C++ pointer! It will bite you! :-)
@@ -114,11 +117,12 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	// AsynchronousFile implementation
 	// ------------------------------------------------------------------------------------
 			
-	public void open(final String fileName, final int maxIO)
+	public void open(final String fileName, final int maxIO, final int timeout)
 	{
 		try
 		{
 			writeLock.lock();
+			this.timeout = timeout;
          this.maxIO = maxIO;
  			writeSemaphore = new Semaphore(this.maxIO);
 			
@@ -145,7 +149,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 		try
 		{
 	      writeLock.lock();
-	      writeLatch.waitCompletion(120);
+	      writeLatch.waitCompletion(timeout);
 	      writeSemaphore = null;
 	      stopPoller(handler);
 	      // We need to make sure we won't call close until Poller is completely done, or we might get beautiful GPFs

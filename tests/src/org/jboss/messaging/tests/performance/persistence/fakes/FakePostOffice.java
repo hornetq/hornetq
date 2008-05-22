@@ -1,4 +1,4 @@
-package org.jboss.messaging.tests.unit.core.persistence.fakes;
+package org.jboss.messaging.tests.performance.persistence.fakes;
 
 import java.util.List;
 import java.util.Map;

@@ -82,6 +82,15 @@
            (parameter ignored on NIO) -->
       <journal-max-aio>5000</journal-max-aio>
       
+      
+      <!--  Maximum time in seconds an AIO operation could take.
+            This includes:
+            - closing Asynchronous files
+            - Transaction awaits
+            - Awaits on non transactional writes
+       -->
+      <journal-aio-timeout>90</journal-aio-timeout>
+      
       <journal-task-period>5000</journal-task-period>
       
       <security-enabled>true</security-enabled>

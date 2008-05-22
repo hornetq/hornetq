@@ -31,6 +31,7 @@ import org.jboss.messaging.core.journal.SequentialFileFactory;
  * A NIOSequentialFileFactory
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
 public class NIOSequentialFileFactory extends AbstractSequentialFactory implements SequentialFileFactory 
@@ -40,7 +41,8 @@ public class NIOSequentialFileFactory extends AbstractSequentialFactory implemen
 		super(journalDir);
 	}	
 	
-	public SequentialFile createSequentialFile(final String fileName, final boolean sync, int maxIO)
+	// The timeout is ignored on NIO
+	public SequentialFile createSequentialFile(final String fileName, final boolean sync, int maxIO, int timeout)
 	{
 		return new NIOSequentialFile(journalDir, fileName, sync);
 	}

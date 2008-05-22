@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.tests.unit.core.persistence.impl.timing;
+package org.jboss.messaging.tests.performance.persistence;
 
 import java.io.File;
 import java.util.HashMap;
@@ -35,7 +35,7 @@ import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
-import org.jboss.messaging.tests.unit.core.persistence.fakes.FakePostOffice;
+import org.jboss.messaging.tests.performance.persistence.fakes.FakePostOffice;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 

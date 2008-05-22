@@ -33,7 +33,8 @@ import org.jboss.messaging.util.SimpleString;
  * The payload is opaque to the messaging system.
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- * @author <a href="mailto:tim.fox"jboss.com">Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">ClebertSuconic</a>
  * @version <tt>$Revision: 3341 $</tt>
  *
  * $Id: Message.java 3341 2007-11-19 14:34:57Z timfox $

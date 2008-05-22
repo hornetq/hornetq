@@ -109,6 +109,8 @@ public interface Configuration
    
    int getJournalMaxAIO();
    
+   int getJournalAIOTimeout();
+   
    void setJournalMaxAIO(int max);
 
    long getJournalTaskPeriod();

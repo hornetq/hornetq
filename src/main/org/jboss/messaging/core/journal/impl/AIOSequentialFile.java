@@ -41,6 +41,8 @@ public class AIOSequentialFile implements SequentialFile
 	
 	private final int maxIO;
 	
+	private final int timeout;
+	
 	private AsynchronousFile aioFile;
 	
 	private AtomicLong position = new AtomicLong(0);
@@ -49,11 +51,12 @@ public class AIOSequentialFile implements SequentialFile
 	// serious performance problems. Because of that we make all the writes on AIO using a single thread.
 	private ExecutorService executor;
 	
-	public AIOSequentialFile(final String journalDir, final String fileName, final int maxIO) throws Exception
+	public AIOSequentialFile(final String journalDir, final String fileName, final int maxIO, final int timeout) throws Exception
 	{
 		this.journalDir = journalDir;		
 		this.fileName = fileName;
 		this.maxIO = maxIO;
+		this.timeout = timeout;
 	}
 	
 	public int getAlignment() throws Exception
@@ -146,7 +149,7 @@ public class AIOSequentialFile implements SequentialFile
 	   opened = true;
 	   executor = Executors.newSingleThreadExecutor();
 		aioFile = new AsynchronousFileImpl();
-		aioFile.open(journalDir + "/" + fileName, maxIO);
+		aioFile.open(journalDir + "/" + fileName, maxIO, timeout);
 		position.set(0);
 		
 	}

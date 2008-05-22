@@ -41,9 +41,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -140,6 +138,9 @@ public class JournalImpl implements TestableJournal
 	// used for Asynchronous IO only (ignored on NIO).
 	private final int maxAIO;
 	
+   // used for Asynchronous IO only (ignored on NIO).
+	private final int aioTimeout;
+	
 	private final int fileSize;
 	
 	private final int minFiles;
@@ -193,7 +194,7 @@ public class JournalImpl implements TestableJournal
 	
 	public JournalImpl(final int fileSize, final int minFiles,
 			             final boolean sync, final SequentialFileFactory fileFactory, final long taskPeriod,
-			             final String filePrefix, final String fileExtension, final int maxAIO)
+			             final String filePrefix, final String fileExtension, final int maxAIO, final int aioTimeout)
 	{
 		if (fileSize < MIN_FILE_SIZE)
 		{
@@ -223,6 +224,10 @@ public class JournalImpl implements TestableJournal
 		{
 		   throw new IllegalStateException("maxAIO should aways be a positive number");
 		}
+		if (aioTimeout < 1)
+		{
+		   throw new IllegalStateException("aio-timeout cannot be less than 1 second");
+		}
 		
 		this.fileSize = fileSize;
 		
@@ -239,6 +244,8 @@ public class JournalImpl implements TestableJournal
 		this.fileExtension = fileExtension;
 		
 		this.maxAIO = maxAIO;
+		
+		this.aioTimeout = aioTimeout;
 		
 		shouldUseCallback = fileFactory.supportsCallbacks() && sync;
 	}
@@ -650,7 +657,7 @@ public class JournalImpl implements TestableJournal
       
       for (String fileName: fileNames)
       {
-         SequentialFile file = fileFactory.createSequentialFile(fileName, sync, maxAIO);
+         SequentialFile file = fileFactory.createSequentialFile(fileName, sync, maxAIO, aioTimeout);
          
          file.open();
          
@@ -1435,7 +1442,7 @@ public class JournalImpl implements TestableJournal
 		
 		if (trace) log.trace("Creating file " + fileName);
 		
-		SequentialFile sequentialFile = fileFactory.createSequentialFile(fileName, sync, maxAIO);
+		SequentialFile sequentialFile = fileFactory.createSequentialFile(fileName, sync, maxAIO, aioTimeout);
 		
 		sequentialFile.open();
 		

@@ -15,6 +15,14 @@ import java.util.List;
 
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 
+/**
+ * 
+ * An abstract SequentialFileFactory containing basic functionality for both AIO and NIO SequentialFactories
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ *
+ */
 public abstract class AbstractSequentialFactory implements SequentialFileFactory
 {
 	protected final String journalDir;

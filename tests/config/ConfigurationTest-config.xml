@@ -53,7 +53,8 @@
       <remoting-ssl-truststore-password>secureexample truststore</remoting-ssl-truststore-password>
       
       <journal-max-aio>123</journal-max-aio>    
-
+      <journal-aio-timeout>123</journal-aio-timeout>
+      
    </configuration>
 
 </deployment>

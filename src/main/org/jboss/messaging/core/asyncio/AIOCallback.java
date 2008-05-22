@@ -8,7 +8,7 @@
 package org.jboss.messaging.core.asyncio;
 
 /**
- * 
+ * The interface used AIO Callbacks.
  * @author clebert.suconic@jboss.com
  *
  */

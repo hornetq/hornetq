@@ -52,6 +52,7 @@ public class ConfigurationImpl implements Configuration, Serializable
    public static final boolean DEFAULT_INVM_DISABLED = false;
    public static final boolean DEFAULT_SSL_ENABLED = false;
    public static final int DEFAULT_MAX_AIO = 3000;
+   public static final int DEFAULT_AIO_TIMEOUT = 90;
    
    protected List<String> defaultInterceptors = new ArrayList<String>();
 
@@ -83,7 +84,9 @@ public class ConfigurationImpl implements Configuration, Serializable
    
    protected int journalMinFiles;
    
-   protected int maxAIO;
+   protected int journalMaxAIO;
+   
+   protected int journalAIOTimeout;
    
    protected long journalTaskPeriod;
    
@@ -410,15 +413,20 @@ public class ConfigurationImpl implements Configuration, Serializable
 
 	public int getJournalMaxAIO()
 	{
-	   return maxAIO;
+	   return journalMaxAIO;
 	}
 	
 	public void setJournalMaxAIO(int max)
 	{
-	   this.maxAIO = max;
+	   this.journalMaxAIO = max;
 	}
 	
-	public int getJournalMinFiles()
+	public int getJournalAIOTimeout()
+   {
+      return journalAIOTimeout;
+   }
+
+   public int getJournalMinFiles()
 	{
 		return journalMinFiles;
 	}

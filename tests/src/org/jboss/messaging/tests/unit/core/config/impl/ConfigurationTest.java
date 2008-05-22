@@ -131,6 +131,11 @@ public class ConfigurationTest extends TestCase
       assertEquals(123, configuration.getJournalMaxAIO());
    }
    
+   public void testAIOTimeout() throws Exception
+   {
+      assertEquals(123, configuration.getJournalAIOTimeout());
+   }
+   
    //config is supposed to be immutable??
 //   public void testPropertyChangeListener() throws Exception
 //   {
