@@ -283,6 +283,11 @@ public class ServerConnectionImpl implements ServerConnection
       return createdTime;
    }
 
+   public long getRemotingClientSessionID()
+   {
+      return remotingClientSessionID;
+   }
+
    public Collection<ServerSession> getSessions()
    {
       return sessions;

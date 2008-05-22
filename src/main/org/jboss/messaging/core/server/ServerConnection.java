@@ -73,5 +73,7 @@ public interface ServerConnection
 
    long getCreated();
 
+   long getRemotingClientSessionID();
+
    Collection<ServerSession> getSessions();
 }

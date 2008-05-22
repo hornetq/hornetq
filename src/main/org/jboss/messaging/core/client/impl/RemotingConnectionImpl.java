@@ -25,6 +25,9 @@ import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGIS
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.Location;
@@ -83,6 +86,18 @@ public class RemotingConnectionImpl implements RemotingConnection
       log.trace(this + " created with configuration " + location);
    }
 
+   public RemotingConnectionImpl(final Location location, ConnectionParams connectionParams, NIOConnector nioConnector) throws Exception
+   {
+      assert location != null;
+      assert connectionParams != null;
+
+      this.location = location;
+      this.connectionParams = connectionParams;
+      connector = nioConnector;
+      session = connector.connect();
+      log.trace(this + " created with connector " + nioConnector);
+   }
+
    // Public ---------------------------------------------------------------------------------------
 
    // RemotingConnection implementation ------------------------------------------------------------
@@ -99,7 +114,8 @@ public class RemotingConnectionImpl implements RemotingConnection
 
       log.trace(this + " started");
    }
-   
+
+
    public void stop()
    {
       log.trace(this + " stop");
@@ -124,7 +140,7 @@ public class RemotingConnectionImpl implements RemotingConnection
       
       log.trace(this + " closed");
    }
-   
+
    public long getSessionID()
    {
       if (session == null || !session.isConnected())

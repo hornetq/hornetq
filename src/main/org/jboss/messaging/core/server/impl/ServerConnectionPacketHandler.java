@@ -27,6 +27,7 @@ import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 import org.jboss.messaging.core.server.ServerConnection;
+import org.jboss.messaging.core.server.ClientPinger;
 
 /**
  * 
@@ -39,10 +40,12 @@ import org.jboss.messaging.core.server.ServerConnection;
 public class ServerConnectionPacketHandler extends ServerPacketHandlerSupport
 {
 	private final ServerConnection connection;
+   final ClientPinger clientPinger;
 	
-   public ServerConnectionPacketHandler(final ServerConnection connection)
+   public ServerConnectionPacketHandler(final ServerConnection connection, final ClientPinger clientPinger)
    {
    	this.connection = connection;
+      this.clientPinger = clientPinger;
    }
 
    public long getID()
@@ -69,6 +72,7 @@ public class ServerConnectionPacketHandler extends ServerPacketHandlerSupport
          connection.stop();
          break;
       case EmptyPacket.CLOSE:
+         clientPinger.unregister(connection.getRemotingClientSessionID());
          connection.close();
          break;
       default:

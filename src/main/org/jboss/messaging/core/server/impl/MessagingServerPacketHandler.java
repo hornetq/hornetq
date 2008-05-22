@@ -27,9 +27,14 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketReturner;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
-import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.*;
 import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.ClientPinger;
+import org.jboss.messaging.core.server.MessagingComponent;
+
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A packet handler for all packets that need to be handled at the server level
@@ -38,17 +43,39 @@ import org.jboss.messaging.core.server.MessagingServer;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
+public class MessagingServerPacketHandler extends ServerPacketHandlerSupport implements MessagingComponent
 {
    private static final Logger log = Logger.getLogger(MessagingServerPacketHandler.class);
    
    private final MessagingServer server;
 
-   public MessagingServerPacketHandler(final MessagingServer server)
+   private final ClientPinger clientPinger;
+
+   private ScheduledExecutorService scheduledExecutor;
+
+   public MessagingServerPacketHandler(final MessagingServer server, ClientPinger clientPinger)
    {
       this.server = server;
+      this.clientPinger = clientPinger;
+
    }
-   
+
+   public void start() throws Exception
+   {
+      if (server.getConfiguration().getKeepAliveInterval() > 0)
+      {
+         scheduledExecutor = new ScheduledThreadPoolExecutor(1);
+         scheduledExecutor.scheduleAtFixedRate(clientPinger, 0, server.getConfiguration().getKeepAliveInterval(), TimeUnit.SECONDS);
+      }
+   }
+
+   public void stop() throws Exception
+   {
+      if (server.getConfiguration().getKeepAliveInterval() > 0)
+      {
+         scheduledExecutor.shutdownNow();
+      }
+   }
    /*
    * The advantage to use String as ID is that we can leverage Java 5 UUID to
    * generate these IDs. However theses IDs are 128 bite long and it increases
@@ -73,11 +100,19 @@ public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
       {
          CreateConnectionRequest request = (CreateConnectionRequest) packet;
          
-         response = server.createConnection(request.getUsername(), request.getPassword(),
+         CreateConnectionResponse  createConnectionResponse = server.createConnection(request.getUsername(), request.getPassword(),
          		                             request.getRemotingSessionID(),
                                             sender.getRemoteAddress(),
                                             request.getVersion());
-      }     
+         clientPinger.registerConnection(request.getRemotingSessionID(), sender);
+         response = createConnectionResponse;
+         
+      }
+      else if(type == EmptyPacket.PONG)
+      {
+         Pong decodedPong = (Pong) packet;
+         clientPinger.pong(decodedPong);
+      }
       else
       {
          throw new MessagingException(MessagingException.UNSUPPORTED_PACKET,

@@ -132,7 +132,7 @@ public class ClientCrashTest extends TestCase
 
          assertEquals(9, p.exitValue());
 
-         Thread.sleep(2000);
+         Thread.sleep(4000);
          // the crash must have been detected and the client resources cleaned
          // up only the local connection remains
          assertActiveConnections(1);
@@ -161,6 +161,8 @@ public class ClientCrashTest extends TestCase
       super.setUp();
 
       ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
+      config.setKeepAliveInterval(2);
+      config.setKeepAliveTimeout(1);
       server = new MessagingServerImpl(config);
       server.start();
 

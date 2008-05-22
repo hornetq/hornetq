@@ -6,14 +6,14 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.*;
+import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
+import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addSSLFilter;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 import org.apache.mina.common.CloseFuture;
 import org.apache.mina.common.ConnectFuture;
@@ -27,13 +27,13 @@ import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.RemotingSessionListener;
+import org.jboss.messaging.core.client.ServerPonger;
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
+import org.jboss.messaging.core.client.impl.ServerPongerImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.KeepAliveFactory;
-import org.jboss.messaging.core.remoting.NIOConnector;
-import org.jboss.messaging.core.remoting.NIOSession;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.*;
+import org.jboss.messaging.core.remoting.impl.ClientKeepAliveHandler;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -68,6 +68,11 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
 
    private MinaHandler handler;
 
+   KeepAliveHandler keepAliveHandler;
+
+   private ScheduledExecutorService scheduledExecutor;
+
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -75,22 +80,22 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
    // Public --------------------------------------------------------
    public MinaConnector(Location location, PacketDispatcher dispatcher)
    {
-      this(location, new ConnectionParamsImpl(),  dispatcher, new ClientKeepAliveFactory());
+      this(location, new ConnectionParamsImpl(),  dispatcher, new ClientKeepAliveHandler());
    }
 
    public MinaConnector(Location location, ConnectionParams connectionParams, PacketDispatcher dispatcher)
    {
-      this(location, connectionParams,  dispatcher, new ClientKeepAliveFactory());
+      this(location, connectionParams,  dispatcher, new ClientKeepAliveHandler());
    }
 
    public MinaConnector(Location location, PacketDispatcher dispatcher,
-         KeepAliveFactory keepAliveFactory)
+         KeepAliveHandler keepAliveFactory)
    {
       this(location, new ConnectionParamsImpl(), dispatcher, keepAliveFactory);
    }
 
    public MinaConnector(Location location, ConnectionParams connectionParams, PacketDispatcher dispatcher,
-         KeepAliveFactory keepAliveFactory)
+         KeepAliveHandler keepAliveFactory)
    {
       assert location != null;
       assert dispatcher != null;
@@ -100,8 +105,8 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
       this.location = location;
       this.connectionParams = connectionParams;
       this.dispatcher = dispatcher;
-
-      connector = new NioSocketConnector();
+      this.keepAliveHandler = keepAliveFactory;
+      this.connector = new NioSocketConnector();
       DefaultIoFilterChainBuilder filterChain = connector.getFilterChain();
 
       connector.setSessionDataStructureFactory(new MessagingIOSessionDataStructureFactory());
@@ -120,7 +125,7 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
          }
       }
       addCodecFilter(filterChain);
-//      addKeepAliveFilter(filterChain, keepAliveFactory, connectionParams.getKeepAliveInterval(),
+//     addKeepAliveFilter(filterChain, keepAliveFactory, connectionParams.getKeepAliveInterval(),
 //            connectionParams.getKeepAliveTimeout(), this);
       connector.getSessionConfig().setTcpNoDelay(connectionParams.isTcpNoDelay());
       int receiveBufferSize = connectionParams.getTcpReceiveBufferSize();
@@ -166,9 +171,15 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
          throw new IOException("Cannot connect to " + address.toString());
       }
       session = future.getSession();
-//      Packet packet = new Ping(session.getId());
-//      session.write(packet);
 
+      ServerPongerImpl pinger = new ServerPongerImpl(this, keepAliveHandler, session, 0, connectionParams.getKeepAliveTimeout() * 1000, connectionParams.getKeepAliveInterval() * 1000);
+
+      getDispatcher().register(pinger);
+      if (connectionParams.getKeepAliveInterval() > 0)
+      {
+         scheduledExecutor = new ScheduledThreadPoolExecutor(1);
+         scheduledExecutor.scheduleAtFixedRate(pinger, 0, connectionParams.getKeepAliveInterval(), TimeUnit.SECONDS);
+      }
       return new MinaSession(session, handler);
    }
 
@@ -204,7 +215,10 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
 
       connector = null;
       session = null;
-
+      if (scheduledExecutor != null && !scheduledExecutor.isShutdown())
+      {
+         scheduledExecutor.shutdown();
+      }
       return closed;
    }
 
@@ -248,6 +262,10 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
 
    public synchronized void fireCleanup(long sessionID, MessagingException me)
    {
+      if (scheduledExecutor != null && !scheduledExecutor.isShutdown())
+      {
+         scheduledExecutor.shutdown();
+      }
       for (RemotingSessionListener listener: listeners)
       {
          listener.sessionDestroyed(sessionID, me);

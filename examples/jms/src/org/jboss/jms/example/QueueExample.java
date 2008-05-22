@@ -40,6 +40,7 @@ public class QueueExample
    public static void main(String[] args)
    {
       Connection connection = null;
+      Connection connection2 = null;
       try
       {
          //create an initial context, env will be picked up from jndi.properties
@@ -47,6 +48,7 @@ public class QueueExample
          Queue queue = (Queue) initialContext.lookup("/queue/testQueue");
          ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
          connection = cf.createConnection();
+         connection2 = cf.createConnection();
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer producer = session.createProducer(queue);
          Message message = session.createTextMessage("This is a text message!");
@@ -57,6 +59,14 @@ public class QueueExample
          TextMessage message2 = (TextMessage) messageConsumer.receive(5000);
          log.info("message received from queue");
          log.info("message = " + message2.getText());
+         try
+         {
+            Thread.sleep(200000);
+         }
+         catch (InterruptedException e)
+         {
+            e.printStackTrace();
+         }
       }
       catch (NamingException e)
       {
@@ -72,6 +82,7 @@ public class QueueExample
             try
             {
                connection.close();
+               connection2.close();
             }
             catch (JMSException e)
             {

@@ -40,6 +40,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.microcontainer.JBMBootstrapServer;
@@ -967,7 +968,7 @@ public class JBMServerTestCase extends JBMBaseTestCase
    protected void sleepIfRemoting(int time) throws Exception
    {
       Configuration config = servers.get(0).getMessagingServer().getRemotingService().getConfiguration();
-      if (config.isInvmDisabled())
+      if (config.getTransport() == TransportType.TCP)
       {
          Thread.sleep(time);
       }

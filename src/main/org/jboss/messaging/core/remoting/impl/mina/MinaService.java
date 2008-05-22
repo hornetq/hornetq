@@ -34,6 +34,8 @@ import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
+import org.jboss.messaging.core.server.ClientPinger;
+import org.jboss.messaging.core.server.impl.ClientPingerImpl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -61,11 +63,11 @@ public class MinaService implements RemotingService, CleanUpNotifier
 
    private ExecutorService threadPool;
 
-   private final List<RemotingSessionListener> listeners = new ArrayList<RemotingSessionListener>();
+   private List<RemotingSessionListener> listeners = new ArrayList<RemotingSessionListener>();
 
-   private ServerKeepAliveFactory factory;
+   private List<Interceptor> filters = new CopyOnWriteArrayList<Interceptor>();
 
-   private final List<Interceptor> filters = new CopyOnWriteArrayList<Interceptor>();
+   private ClientPinger clientPinger;
 
    // Static --------------------------------------------------------
 
@@ -73,18 +75,11 @@ public class MinaService implements RemotingService, CleanUpNotifier
 
    public MinaService(Configuration config)
    {
-      this(config, new ServerKeepAliveFactory());
-   }
-
-   public MinaService(Configuration config, ServerKeepAliveFactory factory)
-   {
       assert config != null;
-      assert factory != null;
 
       validate(config);
 
       this.config = config;
-      this.factory = factory;
       dispatcher = new PacketDispatcherImpl(filters);
    }
 
@@ -112,6 +107,12 @@ public class MinaService implements RemotingService, CleanUpNotifier
       assert listener != null;
 
       listeners.remove(listener);
+   }
+
+   public void setClientPinger(ClientPinger clientPinger)
+   {
+      this.clientPinger = clientPinger;
+      clientPinger.registerCleanUpNotifier(this);
    }
 
    // TransportService implementation -------------------------------
@@ -228,25 +229,14 @@ public class MinaService implements RemotingService, CleanUpNotifier
 
    public void fireCleanup(long sessionID, MessagingException me)
    {
-      if (factory.getSessions().containsKey(sessionID))
+      for (RemotingSessionListener listener : listeners)
       {
-         long clientSessionID = factory.getSessions().containsKey(sessionID)?factory.getSessions().get(sessionID):0;
-         for (RemotingSessionListener listener : listeners)
-         {
-            listener.sessionDestroyed(clientSessionID, me);
-         }
-         factory.getSessions().remove(sessionID);
+         listener.sessionDestroyed(sessionID, me);
       }
    }
 
    // Public --------------------------------------------------------
 
-   public void setKeepAliveFactory(ServerKeepAliveFactory factory)
-   {
-      assert factory != null;
-
-      this.factory = factory;
-   }
 
    public void setRemotingConfiguration(Configuration remotingConfig)
    {

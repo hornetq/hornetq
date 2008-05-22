@@ -44,16 +44,14 @@ import org.jboss.messaging.core.remoting.ConnectorRegistrySingleton;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
+import org.jboss.messaging.core.remoting.impl.mina.CleanUpNotifier;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
-import org.jboss.messaging.core.server.ConnectionManager;
-import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.QueueFactory;
-import org.jboss.messaging.core.server.ServerConnection;
+import org.jboss.messaging.core.server.*;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -98,6 +96,7 @@ public class MessagingServerImpl implements MessagingServer
    private Deployer queueSettingsDeployer;
    private JBMSecurityManager securityManager = new JBMSecurityManagerImpl(true);
    private DeploymentManager deploymentManager = new FileDeploymentManager();
+   private ClientPinger clientPinger;
 
    // plugins
 
@@ -112,6 +111,7 @@ public class MessagingServerImpl implements MessagingServer
    private QueueFactory queueFactory;
    private ResourceManager resourceManager = new ResourceManagerImpl(0);
    private ScheduledExecutorService scheduledExecutor;
+   private MessagingServerPacketHandler serverPacketHandler;
 
    // Constructors ---------------------------------------------------------------------------------
    /**
@@ -172,6 +172,8 @@ public class MessagingServerImpl implements MessagingServer
       }
       // Start the wired components
       securityDeployer.start();
+      clientPinger = new ClientPingerImpl(this);
+      remotingService.setClientPinger(clientPinger);
       remotingService.addRemotingSessionListener(connectionManager);
       memoryManager.start();
       deploymentManager.start(1);
@@ -179,10 +181,9 @@ public class MessagingServerImpl implements MessagingServer
       deploymentManager.registerDeployer(queueSettingsDeployer);
       postOffice.start();
       deploymentManager.start(2);
-
-      MessagingServerPacketHandler serverPacketHandler = new MessagingServerPacketHandler(this);
+      serverPacketHandler = new MessagingServerPacketHandler(this, clientPinger);
       getRemotingService().getDispatcher().register(serverPacketHandler);
-
+      serverPacketHandler.start();
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
       for (String interceptorClass : configuration.getDefaultInterceptors())
       {
@@ -216,6 +217,7 @@ public class MessagingServerImpl implements MessagingServer
       queueSettingsDeployer.stop();
       deploymentManager.stop();
       remotingService.removeRemotingSessionListener(connectionManager);
+      serverPacketHandler.stop();
       connectionManager = null;
       memoryManager.stop();
       memoryManager = null;
@@ -292,6 +294,7 @@ public class MessagingServerImpl implements MessagingServer
       this.postOffice = postOffice;
    }
 
+
    public HierarchicalRepository<HashSet<Role>> getSecurityRepository()
    {
       return securityRepository;
@@ -345,7 +348,7 @@ public class MessagingServerImpl implements MessagingServer
                           queueSettingsRepository,
                           postOffice, securityStore, connectionManager);
 
-      remotingService.getDispatcher().register(new ServerConnectionPacketHandler(connection));
+      remotingService.getDispatcher().register(new ServerConnectionPacketHandler(connection, clientPinger));
 
       return new CreateConnectionResponse(connection.getID(), version);
    }

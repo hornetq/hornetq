@@ -14,15 +14,20 @@ import java.util.concurrent.atomic.AtomicLong;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.RemotingSessionListener;
+import org.jboss.messaging.core.client.impl.RemotingConnection;
+import org.jboss.messaging.core.client.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
-import org.jboss.messaging.core.remoting.impl.mina.ServerKeepAliveFactory;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
+import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 
 /**
@@ -37,7 +42,7 @@ public class ServerKeepAliveTest extends TestCase
 
    // Attributes ----------------------------------------------------
 
-   private MinaService service;
+   private MessagingServer messagingServer;
 
    // Static --------------------------------------------------------
 
@@ -53,39 +58,25 @@ public class ServerKeepAliveTest extends TestCase
    @Override
    protected void tearDown() throws Exception
    {
-      service.stop();
-      service = null;
+      messagingServer.stop();
+      messagingServer = null;
    }
 
-   public void testKeepAliveWithServerNotResponding() throws Exception
+   public void testKeepAliveWithServerNotResponding() throws Throwable
    {
-      ServerKeepAliveFactory factory = new ServerKeepAliveFactory()
-      {
-         // server does not send ping
-         @Override
-         public Ping ping(long sessionID)
-         {
-            return null;
-         }
-
-         @Override
-         public Pong pong(long sessionID, Ping ping)
-         {
-            // no pong -> server is not responding
-            super.pong(sessionID, ping);
-            return null;
-         }
-      };
-
+      //set the server timeouts to be twice that of the server to force failure
       ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration(
             "localhost", TestSupport.PORT);
-      config.setKeepAliveInterval(TestSupport.KEEP_ALIVE_INTERVAL);
-      config.setKeepAliveTimeout(TestSupport.KEEP_ALIVE_TIMEOUT);
-      service = new MinaService(config, factory);
-      service.start();
+      config.setKeepAliveInterval(TestSupport.KEEP_ALIVE_INTERVAL * 2);
+      config.setKeepAliveTimeout(TestSupport.KEEP_ALIVE_TIMEOUT * 2);
+      ConfigurationImpl clientConfig = ConfigurationHelper.newTCPConfiguration(
+            "localhost", TestSupport.PORT);
+      clientConfig.setKeepAliveInterval(TestSupport.KEEP_ALIVE_INTERVAL);
+      clientConfig.setKeepAliveTimeout(TestSupport.KEEP_ALIVE_TIMEOUT);
+      messagingServer = new MessagingServerImpl(config);
+      messagingServer.start();
 
-      MinaConnector connector = new MinaConnector(service
-            .getConfiguration().getLocation(), service.getConfiguration().getConnectionParams(), new PacketDispatcherImpl(null));
+      MinaConnector connector = new MinaConnector(clientConfig.getLocation(), clientConfig.getConnectionParams(), new PacketDispatcherImpl(null));
 
       final AtomicLong sessionIDNotResponding = new AtomicLong(-1);
       final CountDownLatch latch = new CountDownLatch(1);
@@ -101,7 +92,8 @@ public class ServerKeepAliveTest extends TestCase
       connector.addSessionListener(listener);
 
       NIOSession session = connector.connect();
-
+      RemotingConnection remotingConnection =  new RemotingConnectionImpl(config.getLocation(), config.getConnectionParams(), connector);
+      createConnection(messagingServer, remotingConnection);
       boolean firedKeepAliveNotification = latch.await(TestSupport.KEEP_ALIVE_INTERVAL
             + TestSupport.KEEP_ALIVE_TIMEOUT + 2, SECONDS);
       assertTrue(firedKeepAliveNotification);
@@ -111,65 +103,21 @@ public class ServerKeepAliveTest extends TestCase
       connector.disconnect();
    }
 
-   public void testKeepAliveWithServerSessionFailed() throws Exception
-   {
-      ServerKeepAliveFactory factory = new ServerKeepAliveFactory()
-      {
-         // server does not send ping
-         @Override
-         public Ping ping(long sessionID)
-         {
-            return null;
-         }
-
-         @Override
-         public Pong pong(long sessionID, Ping ping)
-         {
-            // no pong -> server is not responding
-            super.pong(sessionID, ping);
-            return new Pong(sessionID, true);
-         }
-      };
-
-      ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration(
-            "localhost", TestSupport.PORT);
-      config.setKeepAliveInterval(TestSupport.KEEP_ALIVE_INTERVAL);
-      config.setKeepAliveTimeout(TestSupport.KEEP_ALIVE_TIMEOUT);
-      service = new MinaService(config, factory);
-      service.start();
-
-      MinaConnector connector = new MinaConnector(service
-            .getConfiguration().getLocation(), new PacketDispatcherImpl(null));
-
-      final AtomicLong sessionIDNotResponding = new AtomicLong(-1);
-      final CountDownLatch latch = new CountDownLatch(1);
-
-      RemotingSessionListener listener = new RemotingSessionListener()
-      {
-         public void sessionDestroyed(long sessionID, MessagingException me)
-         {
-            sessionIDNotResponding.set(sessionID);
-            latch.countDown();
-         }
-      };
-      connector.addSessionListener(listener);
-
-      NIOSession session = connector.connect();
-
-      boolean firedKeepAliveNotification = latch.await(TestSupport.KEEP_ALIVE_INTERVAL
-            + TestSupport.KEEP_ALIVE_TIMEOUT + 2, SECONDS);
-      assertTrue(firedKeepAliveNotification);
-      assertEquals(session.getID(), sessionIDNotResponding.longValue());
-
-      connector.removeSessionListener(listener);
-      connector.disconnect();
-   }
 
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+   private void createConnection(MessagingServer server, RemotingConnection remotingConnection) throws Throwable
+   {
+      long sessionID = remotingConnection.getSessionID();
 
+      CreateConnectionRequest request =
+              new CreateConnectionRequest(server.getVersion().getIncrementingVersion(), sessionID, null, null);
+
+      CreateConnectionResponse response =
+              (CreateConnectionResponse) remotingConnection.sendBlocking(0, 0, request);
+   }
    // Inner classes -------------------------------------------------
 }

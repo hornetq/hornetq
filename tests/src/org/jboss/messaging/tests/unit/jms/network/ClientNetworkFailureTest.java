@@ -130,6 +130,8 @@ public class ClientNetworkFailureTest extends TestCase
       boolean gotExceptionsOnTheServerAndTheClient = exceptionLatch.await(
             KEEP_ALIVE_INTERVAL + KEEP_ALIVE_TIMEOUT + 2, SECONDS);
       assertTrue(gotExceptionsOnTheServerAndTheClient);
+      //now we  need to wait for the server to detect the client failover
+      Thread.sleep((KEEP_ALIVE_INTERVAL + KEEP_ALIVE_TIMEOUT) * 1000);
       assertActiveConnectionsOnTheServer(0);
 
       try
@@ -163,6 +165,8 @@ public class ClientNetworkFailureTest extends TestCase
       boolean gotExceptionOnTheServer = exceptionLatch.await(
             KEEP_ALIVE_INTERVAL + KEEP_ALIVE_TIMEOUT + 5, SECONDS);
       assertTrue(gotExceptionOnTheServer);
+      //now we  need to wait for the server to detect the client failover
+      Thread.sleep((KEEP_ALIVE_INTERVAL + KEEP_ALIVE_TIMEOUT) * 1000);
       assertActiveConnectionsOnTheServer(0);
 
       try

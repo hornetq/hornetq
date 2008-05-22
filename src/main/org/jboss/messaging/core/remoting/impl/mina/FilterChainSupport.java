@@ -16,7 +16,6 @@ import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.keepalive.KeepAliveFilter;
 import org.apache.mina.filter.ssl.SslFilter;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
 
 /**
@@ -45,28 +44,6 @@ public class FilterChainSupport
       assert filterChain != null;
 
       filterChain.addLast("codec", new ProtocolCodecFilter(new MessagingCodec()));
-   }
-   
-   public static void addKeepAliveFilter(final DefaultIoFilterChainBuilder filterChain,
-         final KeepAliveFactory factory, final int keepAliveInterval,
-         final int keepAliveTimeout, final CleanUpNotifier notifier)
-   {
-      assert filterChain != null;
-      assert factory != null;
-      assert notifier != null; 
-     
-      if (keepAliveTimeout > keepAliveInterval)
-      {
-         throw new IllegalArgumentException("timeout must be greater than the interval: "
-               + "keepAliveTimeout= " + keepAliveTimeout
-               + ", keepAliveInterval=" + keepAliveInterval);
-      }
-
-      KeepAliveFilter filter = new KeepAliveFilter(
-            new MinaKeepAliveFactory(factory, notifier), BOTH_IDLE, EXCEPTION, keepAliveInterval,
-            keepAliveTimeout);
-      filter.setForwardEvent(true);
-      filterChain.addLast("keep-alive", filter);
    }
 
    public static void addSSLFilter(
