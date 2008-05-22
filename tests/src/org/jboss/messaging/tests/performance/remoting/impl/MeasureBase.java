@@ -157,6 +157,7 @@ public abstract class MeasureBase extends TestCase
    protected ConnectionParamsImpl createParameters()
    {
       ConnectionParamsImpl param = new ConnectionParamsImpl();
+      param.setTcpNoDelay(true);
       param.setTimeout(50000);
       return param;
    }

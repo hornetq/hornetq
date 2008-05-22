@@ -80,7 +80,7 @@
       
       <!-- Maximum of simultaneous asynchronous writes accepted by the native layer.
            (parameter ignored on NIO) -->
-      <journal-max-aio>5000</journal-max-aio>
+      <journal-max-aio>9000</journal-max-aio>
       
       
       <!--  Maximum time in seconds an AIO operation could take.

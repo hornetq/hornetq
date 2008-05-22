@@ -16,6 +16,8 @@ public interface TestableJournal extends Journal
 	
 	int getFreeFilesCount();
 	
+	int getOpenedFilesCount();
+	
 	int getIDMapSize();
 	
    String debug() throws Exception;

@@ -35,12 +35,14 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -160,6 +162,8 @@ public class JournalImpl implements TestableJournal
 	
 	private final Queue<JournalFile> freeFiles = new ConcurrentLinkedQueue<JournalFile>();
 	
+	private final BlockingQueue<JournalFile> openedFiles = new LinkedBlockingQueue<JournalFile>();
+	
 	private final Map<Long, PosFiles> posFilesMap = new ConcurrentHashMap<Long, PosFiles>();
 	
 	private final Map<Long, TransactionNegPos> transactionInfos = new ConcurrentHashMap<Long, TransactionNegPos>();
@@ -168,8 +172,14 @@ public class JournalImpl implements TestableJournal
 	
 	private final boolean shouldUseCallback;
 	
-	private final ExecutorService closingExecutor = Executors.newSingleThreadExecutor();
-   		
+   private final ExecutorService closingExecutor = Executors.newSingleThreadExecutor();
+   
+   /** 
+    * We have a separated executor for open, as if we used the same executor this would still represent
+    * a point of wait between the closing and open.
+    * */
+   private final ExecutorService openExecutor = Executors.newSingleThreadExecutor();
+   
 	/*
     * We use a semaphore rather than synchronized since it performs better when
     * contended
@@ -709,7 +719,7 @@ public class JournalImpl implements TestableJournal
       
       for (JournalFile file: orderedFiles)
       {  
-         file.getFile().open();
+         file.getFile().open();//aki
             
          ByteBuffer bb = fileFactory.newBuffer(fileSize);
          
@@ -1095,19 +1105,16 @@ public class JournalImpl implements TestableJournal
             }
          }
          
+         file.getFile().close();          
+
          if (hasData)
          {        
             dataFiles.add(file);
-            
-            file.getFile().close();          
          }
          else
          {           
             //Empty dataFiles with no data
             freeFiles.add(file);
-            
-            //Position it ready for writing
-            file.getFile().position(file.getFile().calculateBlockStart(SIZE_LONG));
          }                       
       }        
       
@@ -1121,7 +1128,7 @@ public class JournalImpl implements TestableJournal
       for (int i = 0; i < filesToCreate; i++)
       {
          // Keeping all files opened can be very costly (mainly on AIO)
-         freeFiles.add(createFile());
+         freeFiles.add(createFile(false));
       }
       
       //The current file is the last one
@@ -1149,7 +1156,10 @@ public class JournalImpl implements TestableJournal
       else
       {
          currentFile = freeFiles.remove();
-      }           
+         openFile(currentFile);
+      }
+      
+      pushOpenedFile();
       
       for (RecordInfo record: records)
       {
@@ -1191,7 +1201,7 @@ public class JournalImpl implements TestableJournal
       
       return maxMessageID;
    }
-	
+
 	public int getAlignment() throws Exception
 	{
 		return this.currentFile.getFile().getAlignment();
@@ -1250,6 +1260,23 @@ public class JournalImpl implements TestableJournal
          
          latch.await();
       }
+
+      if (!openExecutor.isShutdown())
+      {
+         // Send something to the closingExecutor, just to make sure we went until its end
+         final CountDownLatch latch = new CountDownLatch(1);
+
+         this.openExecutor.execute(new Runnable()
+         {
+            public void run()
+            {
+               latch.countDown();
+            }
+         });
+         
+         latch.await();
+      }
+   
    }
 
    // TestableJournal implementation --------------------------------------------------------------
@@ -1297,6 +1324,8 @@ public class JournalImpl implements TestableJournal
 					
 					jf.setOffset(bytesWritten);
 					
+					sf.close();
+					
 					freeFiles.add(jf);  
 				}
 				else
@@ -1317,6 +1346,11 @@ public class JournalImpl implements TestableJournal
 	public int getFreeFilesCount()
 	{
 		return freeFiles.size();
+	}
+	
+	public int getOpenedFilesCount()
+	{
+	   return openedFiles.size();
 	}
 	
 	public int getIDMapSize()
@@ -1346,7 +1380,7 @@ public class JournalImpl implements TestableJournal
 		stopReclaimer();
 		
 		closingExecutor.shutdown();
-		if (!closingExecutor.awaitTermination(120, TimeUnit.SECONDS))
+		if (!closingExecutor.awaitTermination(aioTimeout, TimeUnit.SECONDS))
 		{
 		   throw new IllegalStateException("Time out waiting for closing executor to finish");
 		}
@@ -1355,8 +1389,15 @@ public class JournalImpl implements TestableJournal
 		{
 			currentFile.getFile().close();
 		}
-		
-		for (JournalFile file: freeFiles)
+
+		openExecutor.shutdown();
+      if (!closingExecutor.awaitTermination(aioTimeout, TimeUnit.SECONDS))
+      {
+         throw new IllegalStateException("Time out waiting for open executor to finish");
+      }
+      
+
+		for (JournalFile file: openedFiles)
 		{
 			file.getFile().close();
 		}
@@ -1365,7 +1406,9 @@ public class JournalImpl implements TestableJournal
 		
 		dataFiles.clear();
 		
-		freeFiles.clear();      
+		freeFiles.clear();
+		
+		openedFiles.clear();
 		
 		state = STATE_STOPPED;
 	}
@@ -1448,7 +1491,7 @@ public class JournalImpl implements TestableJournal
 		file.getFile().position(pos);
 	}
 	
-	private JournalFile createFile() throws Exception
+	private JournalFile createFile(boolean keepOpened) throws Exception
 	{
 		long orderingID = generateOrderingID();
 		
@@ -1472,10 +1515,20 @@ public class JournalImpl implements TestableJournal
 		
 		JournalFile info = new JournalFileImpl(sequentialFile, orderingID);
 		
-		
 		info.extendOffset(bytesWritten);
 		
+		if (!keepOpened)
+      {
+         sequentialFile.close();
+      }
+		
 		return info;
+	}
+	
+	private void openFile(JournalFile file) throws Exception
+	{
+	   file.getFile().open();
+	   file.getFile().position(file.getFile().calculateBlockStart(SIZE_LONG));
 	}
 	
 	private long generateOrderingID()
@@ -1498,7 +1551,7 @@ public class JournalImpl implements TestableJournal
 		
 		return orderingID;
 	}
-	
+
 	private void checkFile(final int size) throws Exception
 	{		
 		if (size % currentFile.getFile().getAlignment() != 0)
@@ -1515,18 +1568,66 @@ public class JournalImpl implements TestableJournal
 		if (currentFile == null || fileSize - currentFile.getOffset() < size)
 		{
 		   closeFile(currentFile);
-			
-			try
-			{
-			   currentFile = freeFiles.remove();
-			}
-			catch (NoSuchElementException e)
-			{
-            currentFile = createFile();
-			}
+
+		   enqueueOpenFile();
+		   
+		   currentFile = openedFiles.poll(aioTimeout, TimeUnit.SECONDS);
+		   
+		   if (currentFile == null)
+		   {
+		      throw new IllegalStateException("Timed out waiting for an opened file");
+		   }
 
 		}     
 	}
+	
+	private void enqueueOpenFile()
+	{
+	   if (trace) log.trace("enqueueOpenFile with openedFiles.size=" + openedFiles.size());
+	   openExecutor.execute(new Runnable()
+      {
+         public void run()
+         {
+            try
+            {
+               pushOpenedFile();
+            }
+            catch (Exception e)
+            {
+               log.error(e.getMessage(), e);
+            }
+         }
+      });
+	}
+	
+	
+   /** 
+    * 
+    * Open a file an place it into the openedFiles queue
+    * */
+   private void pushOpenedFile() throws Exception
+   {
+      JournalFile nextOpenedFile = null;
+      try
+      {
+         nextOpenedFile = freeFiles.remove();
+      }
+      catch (NoSuchElementException ignored)
+      {
+      }
+
+      if (nextOpenedFile == null)
+      {
+         nextOpenedFile = createFile(true);
+      }
+      else
+      {
+         openFile(nextOpenedFile);
+      }
+
+      openedFiles.offer(nextOpenedFile);
+   }
+   
 	
 	private void closeFile(final JournalFile file)
 	{
