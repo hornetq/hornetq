@@ -64,8 +64,6 @@ public class RealAIOJournalImplTest extends JournalImplTestUnit
    {
       File file = new File(journalDir);
       
-      log.info("deleting directory " + journalDir);
-      
       deleteDirectory(file);
       
       file.mkdir();     
