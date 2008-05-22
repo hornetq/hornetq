@@ -43,6 +43,7 @@
    <!--perf props-->
    <property name="message.count" value="200000"/>
    <property name="delivery.mode" value="NON_PERSISTENT"/>
+	<!-- in seconds -->
    <property name="sample.period" value="1"/>
    <property name="sess.trans" value="false"/>
    <property name="sess.trans.size" value="1"/>

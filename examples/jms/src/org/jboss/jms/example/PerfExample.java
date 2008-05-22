@@ -122,7 +122,7 @@ public class PerfExample
             session.commit();
          }
          scheduler.shutdownNow();
-         log.info("average " +  command.getAverage() + " per " + (perfParams.getSamplePeriod()/1000) + " secs" );
+         log.info("average " +  command.getAverage() + " per " + perfParams.getSamplePeriod() + " secs" );
       }
       catch (Exception e)
       {
@@ -222,7 +222,7 @@ public class PerfExample
                }
                countDownLatch.countDown();
                scheduler.shutdownNow();
-               log.info("average " +  command.getAverage() + " per sec" );
+               log.info("average: " +  command.getAverage() + " msg/s" );
             }
          }
          catch (Exception e)
@@ -251,28 +251,44 @@ public class PerfExample
     */
    class Sampler implements Runnable
    {
+      private static final int IGNORED_SAMPLES = 4;
+      
       int sampleCount = 0;
-
+      int ignoredCount = 0;
+      
       long startTime = 0;
 
       long samplesTaken = 0;
 
       public void run()
-      {
+      {         
          if(startTime == 0)
          {
             startTime = System.currentTimeMillis();
          }
-         long elapsed = System.currentTimeMillis() - startTime;
+         long elapsed = (System.currentTimeMillis() - startTime) / 1000; // in s
          int lastCount = sampleCount;
          sampleCount = messageCount;
+         if (samplesTaken >= IGNORED_SAMPLES)
+         {
+            info(elapsed, sampleCount, sampleCount - lastCount, false);
+         } else {
+            info(elapsed, sampleCount, sampleCount - lastCount, true);
+            ignoredCount += (sampleCount - lastCount);            
+         }
          samplesTaken++;
-         log.info(" time elapsed " + (elapsed / 1000) + " secs, message count " + (sampleCount) + " : this period " + (sampleCount - lastCount));
       }
 
+      public void info(long elapsedTime, int totalCount, int sampleCount, boolean ignored)
+      {
+         String message = String.format("time elapsed: %2ds, message count: %7d, this period: %5d %s", 
+               elapsedTime, totalCount, sampleCount, ignored ? "[IGNORED]" : "");
+         log.info(message);
+      }
+      
       public long getAverage()
       {
-         return sampleCount/samplesTaken;
+         return (sampleCount - ignoredCount)/(samplesTaken - IGNORED_SAMPLES);
       }
 
    }
