@@ -29,12 +29,23 @@ import java.io.Serializable;
 */
 public class PerfParams implements Serializable
 {
+   int numberOfSender = 1;
    int noOfMessagesToSend = 1000;
    long samplePeriod = 1; // in seconds
    int deliveryMode  = DeliveryMode.NON_PERSISTENT;
    boolean isSessionTransacted = false;
    int transactionBatchSize = 5000;
 
+   public int getNumberOfSenders()
+   {
+      return numberOfSender;
+   }
+   
+   public void setNumberOfSender(int numberOfSender)
+   {
+      this.numberOfSender = numberOfSender;
+   }
+   
    public int getNoOfMessagesToSend()
    {
       return noOfMessagesToSend;
@@ -88,7 +99,7 @@ public class PerfParams implements Serializable
 
    public String toString()
    {
-      return "message to send = " + noOfMessagesToSend + " samplePeriod = " + samplePeriod + "s" + " DeliveryMode = " +
+      return "number of senders=" + numberOfSender + ", message to send = " + noOfMessagesToSend + " samplePeriod = " + samplePeriod + "s" + " DeliveryMode = " +
               (deliveryMode == DeliveryMode.PERSISTENT?"PERSISTENT":"NON_PERSISTENT") + " session transacted = " + isSessionTransacted +
               (isSessionTransacted?" transaction batch size = " + transactionBatchSize:"");
    }

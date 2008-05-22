@@ -47,6 +47,7 @@
    <property name="sample.period" value="1"/>
    <property name="sess.trans" value="false"/>
    <property name="sess.trans.size" value="1"/>
+   <property name="sender.count" value="2"/>
 
    <path id="compile.classpath">
       <fileset dir="${lib.dir}">
@@ -138,6 +139,7 @@
       <echo>* available parameters (-Dmessage.count=1000)                                </echo>
       <echo>*                                                                            </echo>
       <echo>*     param            description                default          current</echo>
+ 	  <echo>*  sender.count     number of senders                1             ${sender.count}</echo>
    	  <echo>*  message.count    number of messages            200000           ${message.count}</echo>
       <echo>*  delivery.mode  PERSISTENT/NON_PERSISTENT    NON_PERSISTENT      ${delivery.mode}</echo>
       <echo>*  sample.period  timing period in seconds       1 second          ${sample.period}</echo>
@@ -156,6 +158,7 @@
          <arg value="${sample.period}"/>
          <arg value="${sess.trans}"/>
          <arg value="${sess.trans.size}"/>
+         <arg value="${sender.count}"/>
       </java>
    </target>
 	
