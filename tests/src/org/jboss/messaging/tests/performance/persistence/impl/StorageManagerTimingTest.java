@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.tests.performance.persistence;
+package org.jboss.messaging.tests.performance.persistence.impl;
 
 import java.io.File;
 import java.util.HashMap;

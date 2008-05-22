@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.tests.performance.journal;
+package org.jboss.messaging.tests.performance.journal.impl;
 
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;

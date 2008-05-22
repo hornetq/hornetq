@@ -5,7 +5,7 @@
  * See terms of license at gnu.org.
  */
 
-package org.jboss.messaging.tests.performance.remoting;
+package org.jboss.messaging.tests.performance.remoting.impl;
 
 import junit.framework.TestCase;
 

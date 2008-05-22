@@ -5,29 +5,30 @@
  * See terms of license at gnu.org.
  */
 
-package org.jboss.messaging.tests.performance.remoting;
+package org.jboss.messaging.tests.performance.remoting.impl;
+
+import static org.jboss.messaging.core.remoting.TransportType.TCP;
 
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.tests.integration.core.remoting.mina.TestSupport;
 import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 
-
-/** This test was added to compare InVM calls against MINA calls */
-public class MeasureInVMTest extends MeasureBase
+public class MeasureRemoteTest extends MeasureBase
 {
 
    @Override
    protected LocationImpl getLocation()
    {
-      return new LocationImpl(0);
-      
+      return new LocationImpl(TCP, "localhost", TestSupport.PORT);
    }
-
+   
+   @Override
    protected ConfigurationImpl createConfiguration()
    {
-      return ConfigurationHelper.newInVMConfig();
+      return ConfigurationHelper.newTCPConfiguration("localhost", TestSupport.PORT);
    }
 
-   
+
 
 }
