@@ -122,7 +122,7 @@ public class PerfExample
             session.commit();
          }
          scheduler.shutdownNow();
-         log.info("average " +  command.getAverage() + " per " + perfParams.getSamplePeriod() + " secs" );
+         log.info("average: " + (command.getAverage() / perfParams.getSamplePeriod()) + " msg/s");
       }
       catch (Exception e)
       {
@@ -266,14 +266,14 @@ public class PerfExample
          {
             startTime = System.currentTimeMillis();
          }
-         long elapsed = (System.currentTimeMillis() - startTime) / 1000; // in s
+         long elapsedTime = (System.currentTimeMillis() - startTime) / 1000; // in s
          int lastCount = sampleCount;
          sampleCount = messageCount;
          if (samplesTaken >= IGNORED_SAMPLES)
          {
-            info(elapsed, sampleCount, sampleCount - lastCount, false);
+            info(elapsedTime, sampleCount, sampleCount - lastCount, false);
          } else {
-            info(elapsed, sampleCount, sampleCount - lastCount, true);
+            info(elapsedTime, sampleCount, sampleCount - lastCount, true);
             ignoredCount += (sampleCount - lastCount);            
          }
          samplesTaken++;
