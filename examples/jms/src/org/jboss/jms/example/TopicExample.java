@@ -24,6 +24,9 @@ package org.jboss.jms.example;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.jms.*;
+
+import org.jboss.messaging.core.logging.Logger;
+
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -34,6 +37,8 @@ import java.util.concurrent.CountDownLatch;
  */
 public class TopicExample
 {
+   final static Logger log = Logger.getLogger(TopicExample.class);
+
    public static void main(String[] args)
    {
       Connection connection = null;
@@ -56,8 +61,9 @@ public class TopicExample
             {
                try
                {
+                  log.info("message received from topic");
                   TextMessage textMessage = (TextMessage) message;
-                  System.out.println("message = " + textMessage.getText());
+                  log.info("message = " + textMessage.getText());
                }
                catch (JMSException e)
                {
@@ -68,6 +74,7 @@ public class TopicExample
          });
          connection.start();
 
+         log.info("publishing message to topic");
          messageProducer.send(message);
 
          try
