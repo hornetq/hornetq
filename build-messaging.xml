@@ -519,6 +519,7 @@
       <copy todir="${build.distro.examples.dir}">
          <fileset dir="${doc.examples.dir}">
             <exclude name="build.properties"/>
+            <exclude name="**/build/**"/>
          </fileset>
       </copy>
       <echo message="lib.dir=../../lib${line.separator}client.jar=../../lib/jboss-messaging-client.jar${line.separator}config.dir=../../config${line.separator}server.jar=../../lib/jboss-messaging.jar"
