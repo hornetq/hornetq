@@ -104,10 +104,9 @@ public class ConnectorRegistryTest extends TestCase
    public void testTCPConnectorFromTCPConfiguration() throws Exception
    {
       Configuration config = ConfigurationHelper.newTCPConfiguration("localhost", PORT);
-      
       // config is not registered -> client and server are not in the same vm
       
-      NIOConnector connector = registry.getConnector(config.getLocation(), new ConnectionParamsImpl());
+      NIOConnector connector = registry.getConnector(config.getLocation(), config.getConnectionParams());
       
       assertNotNull(connector);
       assertEquals(config.getURI(), connector.getServerURI());
