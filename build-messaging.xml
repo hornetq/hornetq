@@ -458,7 +458,7 @@
             <include name="jnpserver.jar"/>
          </fileset>
          <fileset dir="${apache.mina.lib}">
-            <include name="mina-core-2.0.0-M2-20080418.144850.jar" />
+            <include name="mina-core-2.0.0-M2-20080520.004618-19.jar" />
          </fileset>
          <fileset dir="${slf4j.api.lib}">
             <include name="slf4j-api-1.4.3.jar"/>
