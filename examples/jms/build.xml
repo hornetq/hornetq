@@ -61,7 +61,7 @@
       <pathelement location="config"/>
    </path>
 
-   <target name="help">
+   <target name="help" description="-> display help">
       <echo>*****************************************************************</echo>
       <echo>* to run examples execute one of the following                  *</echo>
       <echo>* ant queueExample                                              *</echo>
@@ -87,25 +87,25 @@
       </javac>
    </target>
 
-   <target name="queueExample" depends="compile">
+   <target name="queueExample" depends="compile" description="-> point to point example using a queue">
       <java classname="org.jboss.jms.example.QueueExample" fork="true">
          <classpath refid="runtime.classpath"/>      	
       </java>
    </target>
    
-    <target name="topicExample" depends="compile">
+    <target name="topicExample" depends="compile" description="-> publish/subscribe example using a topic">
       <java classname="org.jboss.jms.example.TopicExample" fork="true">
          <classpath refid="runtime.classpath"/>
       </java>
    </target>
 
-   <target name="DurSubExample" depends="compile">
+   <target name="DurSubExample" depends="compile" description="-> publish/subscribe example using a topic and a durable subscriber">
       <java classname="org.jboss.jms.example.DurableSubscriberExample" fork="true">
          <classpath refid="runtime.classpath"/>
       </java>
    </target>
 
-   <target name="perfListener" depends="compile">
+   <target name="perfListener" depends="compile" description="-> run performance test when listening to a queue">
 	<echo>***********************************************************************************</echo>
 	<echo>* available parameters (-Dmessage.count=1000)                                </echo>
 	<echo>*                                                                            </echo>
@@ -133,7 +133,7 @@
    </target>
 
 
-   <target name="perfSender" depends="compile">
+   <target name="perfSender" depends="compile" description="-> run performance test when sending to a queue">
       <echo>***********************************************************************************</echo>
       <echo>* available parameters (-Dmessage.count=1000)                                </echo>
       <echo>*                                                                            </echo>
@@ -158,5 +158,5 @@
          <arg value="${sess.trans.size}"/>
       </java>
    </target>
-	
+
 </project>
