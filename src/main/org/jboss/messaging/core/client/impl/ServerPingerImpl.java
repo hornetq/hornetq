@@ -26,7 +26,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
 import org.jboss.messaging.core.remoting.impl.mina.CleanUpNotifier;
 import org.jboss.messaging.core.remoting.*;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.client.ServerPonger;
+import org.jboss.messaging.core.client.ServerPinger;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.apache.mina.common.IoSession;
 
@@ -36,45 +36,17 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class ServerPongerImpl implements PacketHandler, ServerPonger
+public class ServerPingerImpl implements PacketHandler
 {
-   private static Logger log = Logger.getLogger(ServerPongerImpl.class);
+   private static Logger log = Logger.getLogger(ServerPingerImpl.class);
    private static boolean traceEnabled = log.isTraceEnabled();
-   IoSession session;
    private long id;
-   long interval;
-   long timeout;
-   CleanUpNotifier cleanUpNotifier;
    KeepAliveHandler keepAliveHandler;
-   CountDownLatch latch = new CountDownLatch(1);
 
-   public ServerPongerImpl(CleanUpNotifier cleanUpNotifier, KeepAliveHandler keepAliveHandler, IoSession session, long id, long timeout, long interval)
+   public ServerPingerImpl(KeepAliveHandler keepAliveHandler, Long id)
    {
-      this.cleanUpNotifier = cleanUpNotifier;
       this.keepAliveHandler = keepAliveHandler;
-      this.session = session;
       this.id = id;
-      this.timeout = timeout;
-      this.interval = interval;
-   }
-
-
-   public void run()
-   {
-      boolean pinged;
-      latch = new CountDownLatch(1);
-      try
-      {
-         pinged = latch.await(timeout + interval, TimeUnit.MILLISECONDS);
-         if(!pinged)
-         {
-            log.warn("no ping received from server, cleaning up connection.");
-            cleanUpNotifier.fireCleanup(session.getId(), new MessagingException(MessagingException.CONNECTION_TIMEDOUT, "no ping received from server"));
-         }
-      }
-      catch (InterruptedException e)
-      {
-      }
    }
 
    public long getID()
@@ -85,15 +57,22 @@ public class ServerPongerImpl implements PacketHandler, ServerPonger
    public void handle(Packet packet, PacketReturner sender)
    {
       Ping ping = (Ping) packet;
-      latch.countDown();
       if(traceEnabled)
       {
          log.trace("received ping:" + ping);
       }
       Pong pong = keepAliveHandler.ping(ping);
+
       if(pong != null)
       {
-         session.write(pong);
+         try
+         {
+            sender.send(pong);
+         }
+         catch (Exception e)
+         {
+            log.warn("error sending pong to server", e);
+         }
       }
    }
 }

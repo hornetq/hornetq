@@ -25,6 +25,9 @@ import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
 import org.jboss.messaging.core.remoting.impl.mina.CleanUpNotifier;
 import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.KeepAliveFactory;
+import org.jboss.messaging.core.remoting.PacketHandler;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.ServerConnection;
@@ -40,7 +43,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class ClientPingerImpl implements ClientPinger
+public class ClientPingerImpl implements ClientPinger, PacketHandler
 {
    private static Logger log = Logger.getLogger(ClientPingerImpl.class);
 
@@ -61,119 +64,73 @@ public class ClientPingerImpl implements ClientPinger
     * the cleanupnotifier to use on failed pings
     */
    private CleanUpNotifier cleanUpNotifier;
+   private KeepAliveFactory keepAliveFactory;
+   private PacketReturner sender;
+   long id = 0;
+   private Pong pong = null;
 
-   public ClientPingerImpl(MessagingServer server)
+   public ClientPingerImpl(MessagingServer server, KeepAliveFactory keepAliveFactory, CleanUpNotifier cleanUpNotifier, final PacketReturner sender)
    {
       this.server = server;
+      this.keepAliveFactory = keepAliveFactory;
+      this.cleanUpNotifier = cleanUpNotifier;
+      this.sender = sender;
    }
 
    public void run()
    {
-      try
+      id = server.getRemotingService().getDispatcher().generateID();
+      server.getRemotingService().getDispatcher().register(this);
+      Ping ping = keepAliveFactory.ping(sender.getSessionID());
+      ping.setTargetID(0);
+      ping.setResponseTargetID(id);
+      while(keepAliveFactory.isPinging(sender.getSessionID()))
       {
          synchronized (this)
          {
-            replies.clear();
-            //ping all the sessions
-            for (Long sessionId : connections.keySet())
-            {
-               try
-               {
-                  Ping ping = new Ping(sessionId);
-                  ping.setTargetID(0);
-                  connections.get(sessionId).getPacketReturner().send(ping);
-                  replies.add(sessionId);
-                  if(isTraceEnabled)
-                  {
-                     log.trace("sending " + ping);
-                  }
-               }
-               catch (Exception e)
-               {
-                  e.printStackTrace();
-               }
-            }
-            //wait for the keep alive timeout period
             try
             {
-               wait(server.getConfiguration().getKeepAliveTimeout() * 1000);
+               wait(server.getConfiguration().getKeepAliveInterval() * 1000);
             }
             catch (InterruptedException e)
             {
             }
          }
-         //at this point cleanup any replies we havent received
-         for (Long reply : replies)
+         pong = null;
+         try
          {
-            if(cleanUpNotifier != null)
-               cleanUpNotifier.fireCleanup(reply, new MessagingException(MessagingException.CONNECTION_TIMEDOUT, "unable to ping client"));
-            connections.remove(reply);
+            sender.send(ping);
+            synchronized (this)
+            {
+               wait(server.getConfiguration().getKeepAliveTimeout() * 1000);
+            }
+            if(pong == null)
+            {
+               cleanUpNotifier.fireCleanup(sender.getSessionID(), new MessagingException(MessagingException.CONNECTION_TIMEDOUT, "unable to ping client"));
+               break;
+            }
+         }
+         catch (Exception e)
+         {
+            log.warn("problem cleaning up session: " + sender.getSessionID(), e);
          }
       }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-      }
+      server.getRemotingService().getDispatcher().unregister(id);
    }
 
-   /**
-    * pong received from client
-    * @param pong
-    */
-   public void pong(Pong pong)
+   public long getID()
    {
+      return id;
+   }
+
+   public void handle(Packet packet, PacketReturner sender)
+   {
+      Pong pong = (Pong) packet;
       if(isTraceEnabled)
       {
          log.trace("received reply" + pong);
       }
-      replies.remove(pong.getSessionID());
-   }
-
-   /**
-    * register a connection.
-    *
-    * @param remotingSessionID
-    * @param sender
-    */
-   public void registerConnection(long remotingSessionID, PacketReturner sender)
-   {
-      if (connections.get(remotingSessionID) == null)
-      {
-         connections.put(remotingSessionID, new ConnectionHolder(remotingSessionID, sender));
-      }
-      else
-      {
-         connections.get(remotingSessionID).increment();
-      }
-
-   }
-
-   /**
-    * unregister a connection.
-    *
-    * @param remotingSessionID
-    */
-   public void unregister(long remotingSessionID)
-   {
-      ConnectionHolder connectionHolder = connections.get(remotingSessionID);
-      if(connectionHolder != null)
-      {
-         connectionHolder.decrement();
-         if(connectionHolder.get() == 0)
-         {
-            connections.remove(remotingSessionID);
-         }
-      }
-   }
-
-   /**
-    * register the cleanup notifier to use
-    *
-    * @param cleanUpNotifier
-    */
-   public void registerCleanUpNotifier(CleanUpNotifier cleanUpNotifier)
-   {
-      this.cleanUpNotifier = cleanUpNotifier;
+      this.pong = pong;
    }
 
    /**

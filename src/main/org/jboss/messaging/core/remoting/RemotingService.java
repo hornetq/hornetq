@@ -11,6 +11,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.ClientPinger;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.impl.mina.ServerKeepAliveFactory;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -23,6 +24,8 @@ public interface RemotingService extends MessagingComponent
    PacketDispatcher getDispatcher();
 
    Configuration getConfiguration();
+
+   ServerKeepAliveFactory getKeepAliveFactory();
    
    void addInterceptor(Interceptor interceptor);
 
@@ -31,6 +34,4 @@ public interface RemotingService extends MessagingComponent
    void addRemotingSessionListener(RemotingSessionListener listener);
 
    void removeRemotingSessionListener(RemotingSessionListener listener);
-
-   void setClientPinger(ClientPinger clientPinger);
 }

@@ -40,12 +40,12 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.persistence.impl.nullpm.NullStorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
-import org.jboss.messaging.core.remoting.ConnectorRegistrySingleton;
-import org.jboss.messaging.core.remoting.Interceptor;
-import org.jboss.messaging.core.remoting.RemotingService;
+import org.jboss.messaging.core.remoting.*;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.impl.mina.CleanUpNotifier;
+import org.jboss.messaging.core.remoting.impl.mina.ServerKeepAliveFactory;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
+import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.SecurityStore;
@@ -96,7 +96,6 @@ public class MessagingServerImpl implements MessagingServer
    private Deployer queueSettingsDeployer;
    private JBMSecurityManager securityManager = new JBMSecurityManagerImpl(true);
    private DeploymentManager deploymentManager = new FileDeploymentManager();
-   private ClientPinger clientPinger;
 
    // plugins
 
@@ -112,6 +111,7 @@ public class MessagingServerImpl implements MessagingServer
    private ResourceManager resourceManager = new ResourceManagerImpl(0);
    private ScheduledExecutorService scheduledExecutor;
    private MessagingServerPacketHandler serverPacketHandler;
+   private CleanUpNotifier cleanUpNotifier = null;
 
    // Constructors ---------------------------------------------------------------------------------
    /**
@@ -137,6 +137,7 @@ public class MessagingServerImpl implements MessagingServer
       this.configuration = configuration;
       createTransport = true;
       remotingService = new MinaService(configuration);
+      cleanUpNotifier = (CleanUpNotifier) remotingService;
    }
    // lifecycle methods ----------------------------------------------------------------
 
@@ -172,8 +173,6 @@ public class MessagingServerImpl implements MessagingServer
       }
       // Start the wired components
       securityDeployer.start();
-      clientPinger = new ClientPingerImpl(this);
-      remotingService.setClientPinger(clientPinger);
       remotingService.addRemotingSessionListener(connectionManager);
       memoryManager.start();
       deploymentManager.start(1);
@@ -181,9 +180,8 @@ public class MessagingServerImpl implements MessagingServer
       deploymentManager.registerDeployer(queueSettingsDeployer);
       postOffice.start();
       deploymentManager.start(2);
-      serverPacketHandler = new MessagingServerPacketHandler(this, clientPinger);
+      serverPacketHandler = new MessagingServerPacketHandler(this);
       getRemotingService().getDispatcher().register(serverPacketHandler);
-      serverPacketHandler.start();
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
       for (String interceptorClass : configuration.getDefaultInterceptors())
       {
@@ -217,7 +215,6 @@ public class MessagingServerImpl implements MessagingServer
       queueSettingsDeployer.stop();
       deploymentManager.stop();
       remotingService.removeRemotingSessionListener(connectionManager);
-      serverPacketHandler.stop();
       connectionManager = null;
       memoryManager.stop();
       memoryManager = null;
@@ -283,7 +280,12 @@ public class MessagingServerImpl implements MessagingServer
    {
       this.storageManager = storageManager;
    }
-   
+
+   public void setCleanUpNotifier(CleanUpNotifier cleanUpNotifier)
+   {
+      this.cleanUpNotifier = cleanUpNotifier;
+   }
+
    public PostOffice getPostOffice()
    {
       return postOffice;
@@ -322,7 +324,8 @@ public class MessagingServerImpl implements MessagingServer
 
    public CreateConnectionResponse createConnection(final String username, final String password,
                                                     final long remotingClientSessionID, final String clientAddress,
-                                                    final int incrementVersion)
+                                                    final int incrementVersion,
+                                                    final PacketReturner sender)
       throws Exception
    {
       log.trace("creating a new connection for user " + username);
@@ -348,9 +351,20 @@ public class MessagingServerImpl implements MessagingServer
                           queueSettingsRepository,
                           postOffice, securityStore, connectionManager);
 
-      remotingService.getDispatcher().register(new ServerConnectionPacketHandler(connection, clientPinger));
+      remotingService.getDispatcher().register(new ServerConnectionPacketHandler(connection));
 
-      return new CreateConnectionResponse(connection.getID(), version);
+      CreateConnectionResponse createConnectionResponse = new CreateConnectionResponse(connection.getID(), version);
+      if(cleanUpNotifier != null)
+      {
+         if(!getRemotingService().getKeepAliveFactory().isPinging(sender.getSessionID()))
+         {
+            getRemotingService().getKeepAliveFactory().getSessions().add(sender.getSessionID());
+            ClientPinger clientPinger = new ClientPingerImpl(this, getRemotingService().getKeepAliveFactory(), cleanUpNotifier, sender);
+            new Thread(clientPinger).start();
+         }
+      }
+
+      return createConnectionResponse;
    }
    
    // Public ---------------------------------------------------------------------------------------

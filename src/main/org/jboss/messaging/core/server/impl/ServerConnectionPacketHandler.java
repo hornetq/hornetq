@@ -40,12 +40,10 @@ import org.jboss.messaging.core.server.ClientPinger;
 public class ServerConnectionPacketHandler extends ServerPacketHandlerSupport
 {
 	private final ServerConnection connection;
-   final ClientPinger clientPinger;
 	
-   public ServerConnectionPacketHandler(final ServerConnection connection, final ClientPinger clientPinger)
+   public ServerConnectionPacketHandler(final ServerConnection connection)
    {
    	this.connection = connection;
-      this.clientPinger = clientPinger;
    }
 
    public long getID()
@@ -72,7 +70,7 @@ public class ServerConnectionPacketHandler extends ServerPacketHandlerSupport
          connection.stop();
          break;
       case EmptyPacket.CLOSE:
-         clientPinger.unregister(connection.getRemotingClientSessionID());
+         //clientPinger.unregister(connection.getRemotingClientSessionID());
          connection.close();
          break;
       default:

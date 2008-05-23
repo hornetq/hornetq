@@ -15,31 +15,5 @@ public interface ClientPinger extends Runnable
     */
    void run();
 
-   /**
-    * pong received from client
-    * @param pong the pong
-    */
-   void pong(Pong pong);
 
-   /**
-    * register a connection.
-    *
-    * @param remotingSessionID  the session id
-    * @param sender the sender
-    */
-   void registerConnection(long remotingSessionID, PacketReturner sender);
-
-   /**
-    * unregister a connection.
-    *
-    * @param remotingSessionID the session id
-    */
-   void unregister(long remotingSessionID);
-
-   /**
-    * register the cleanup notifier to use
-    *
-    * @param cleanUpNotifier the notifier
-    */
-   void registerCleanUpNotifier(CleanUpNotifier cleanUpNotifier);
 }

@@ -67,7 +67,7 @@ public class MinaService implements RemotingService, CleanUpNotifier
 
    private List<Interceptor> filters = new CopyOnWriteArrayList<Interceptor>();
 
-   private ClientPinger clientPinger;
+   private ServerKeepAliveFactory factory;
 
    // Static --------------------------------------------------------
 
@@ -75,11 +75,18 @@ public class MinaService implements RemotingService, CleanUpNotifier
 
    public MinaService(Configuration config)
    {
+      this(config, new ServerKeepAliveFactory());
+   }
+
+   public MinaService(Configuration config, ServerKeepAliveFactory factory)
+   {
       assert config != null;
+      assert factory != null;
 
       validate(config);
 
       this.config = config;
+      this.factory = factory;
       dispatcher = new PacketDispatcherImpl(filters);
    }
 
@@ -107,12 +114,6 @@ public class MinaService implements RemotingService, CleanUpNotifier
       assert listener != null;
 
       listeners.remove(listener);
-   }
-
-   public void setClientPinger(ClientPinger clientPinger)
-   {
-      this.clientPinger = clientPinger;
-      clientPinger.registerCleanUpNotifier(this);
    }
 
    // TransportService implementation -------------------------------
@@ -213,6 +214,11 @@ public class MinaService implements RemotingService, CleanUpNotifier
       return config;
    }
 
+   public ServerKeepAliveFactory getKeepAliveFactory()
+   {
+      return factory;
+   }
+
    /**
     * This method must only be called by tests which requires
     * to insert Filters (e.g. to simulate network failures)
@@ -229,10 +235,23 @@ public class MinaService implements RemotingService, CleanUpNotifier
 
    public void fireCleanup(long sessionID, MessagingException me)
    {
-      for (RemotingSessionListener listener : listeners)
+      if (factory.getSessions().contains(sessionID))
       {
-         listener.sessionDestroyed(sessionID, me);
+         for (RemotingSessionListener listener : listeners)
+         {
+            listener.sessionDestroyed(sessionID, me);
+         }
+         factory.getSessions().remove(sessionID);
       }
+   }
+
+   // Public --------------------------------------------------------
+
+   public void setKeepAliveFactory(ServerKeepAliveFactory factory)
+   {
+      assert factory != null;
+
+      this.factory = factory;
    }
 
    // Public --------------------------------------------------------

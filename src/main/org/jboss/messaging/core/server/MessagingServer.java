@@ -28,6 +28,7 @@ import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.RemotingService;
+import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.SecurityStore;
@@ -91,7 +92,8 @@ public interface MessagingServer extends MessagingComponent
    
    CreateConnectionResponse createConnection(String username, String password,
                                              long remotingClientSessionID, String clientAddress,
-                                             int incrementVersion) throws Exception;
+                                             int incrementVersion,
+                                             PacketReturner sender) throws Exception;
 
    DeploymentManager getDeploymentManager();
 }

@@ -27,9 +27,8 @@ import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.RemotingSessionListener;
-import org.jboss.messaging.core.client.ServerPonger;
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
-import org.jboss.messaging.core.client.impl.ServerPongerImpl;
+import org.jboss.messaging.core.client.impl.ServerPingerImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.*;
@@ -69,8 +68,6 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
    private MinaHandler handler;
 
    KeepAliveHandler keepAliveHandler;
-
-   private ScheduledExecutorService scheduledExecutor;
 
 
    // Static --------------------------------------------------------
@@ -172,14 +169,15 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
       }
       session = future.getSession();
 
-      ServerPongerImpl pinger = new ServerPongerImpl(this, keepAliveHandler, session, 0, connectionParams.getKeepAliveTimeout() * 1000, connectionParams.getKeepAliveInterval() * 1000);
-
+      ServerPingerImpl pinger = new ServerPingerImpl(keepAliveHandler, (long) 0);
+      /*
       getDispatcher().register(pinger);
       if (connectionParams.getKeepAliveInterval() > 0)
       {
          scheduledExecutor = new ScheduledThreadPoolExecutor(1);
          scheduledExecutor.scheduleAtFixedRate(pinger, 0, connectionParams.getKeepAliveInterval(), TimeUnit.SECONDS);
-      }
+      }*/
+      dispatcher.register(pinger);
       return new MinaSession(session, handler);
    }
 
@@ -189,7 +187,6 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
       {
          return false;
       }
-
       CloseFuture closeFuture = session.close().awaitUninterruptibly();
       boolean closed = closeFuture.isClosed();
 
@@ -215,10 +212,7 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
 
       connector = null;
       session = null;
-      if (scheduledExecutor != null && !scheduledExecutor.isShutdown())
-      {
-         scheduledExecutor.shutdown();
-      }
+
       return closed;
    }
 
@@ -262,10 +256,6 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
 
    public synchronized void fireCleanup(long sessionID, MessagingException me)
    {
-      if (scheduledExecutor != null && !scheduledExecutor.isShutdown())
-      {
-         scheduledExecutor.shutdown();
-      }
       for (RemotingSessionListener listener: listeners)
       {
          listener.sessionDestroyed(sessionID, me);

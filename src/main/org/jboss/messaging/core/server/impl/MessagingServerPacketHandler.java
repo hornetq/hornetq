@@ -43,38 +43,19 @@ import java.util.concurrent.TimeUnit;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class MessagingServerPacketHandler extends ServerPacketHandlerSupport implements MessagingComponent
+public class MessagingServerPacketHandler extends ServerPacketHandlerSupport 
 {
    private static final Logger log = Logger.getLogger(MessagingServerPacketHandler.class);
    
    private final MessagingServer server;
 
-   private final ClientPinger clientPinger;
 
    private ScheduledExecutorService scheduledExecutor;
 
-   public MessagingServerPacketHandler(final MessagingServer server, ClientPinger clientPinger)
+   public MessagingServerPacketHandler(final MessagingServer server)
    {
       this.server = server;
-      this.clientPinger = clientPinger;
 
-   }
-
-   public void start() throws Exception
-   {
-      if (server.getConfiguration().getKeepAliveInterval() > 0)
-      {
-         scheduledExecutor = new ScheduledThreadPoolExecutor(1);
-         scheduledExecutor.scheduleAtFixedRate(clientPinger, 0, server.getConfiguration().getKeepAliveInterval(), TimeUnit.SECONDS);
-      }
-   }
-
-   public void stop() throws Exception
-   {
-      if (server.getConfiguration().getKeepAliveInterval() > 0)
-      {
-         scheduledExecutor.shutdownNow();
-      }
    }
    /*
    * The advantage to use String as ID is that we can leverage Java 5 UUID to
@@ -103,15 +84,14 @@ public class MessagingServerPacketHandler extends ServerPacketHandlerSupport imp
          CreateConnectionResponse  createConnectionResponse = server.createConnection(request.getUsername(), request.getPassword(),
          		                             request.getRemotingSessionID(),
                                             sender.getRemoteAddress(),
-                                            request.getVersion());
-         clientPinger.registerConnection(request.getRemotingSessionID(), sender);
+                                            request.getVersion(),
+                                            sender);
          response = createConnectionResponse;
          
       }
       else if(type == EmptyPacket.PONG)
       {
          Pong decodedPong = (Pong) packet;
-         clientPinger.pong(decodedPong);
       }
       else
       {

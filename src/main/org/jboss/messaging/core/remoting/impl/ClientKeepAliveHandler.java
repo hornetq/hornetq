@@ -37,7 +37,7 @@ public class ClientKeepAliveHandler implements KeepAliveHandler
    public Pong ping(Ping ping)
    {
       Pong pong = new Pong(ping.getSessionID(), false);
-      pong.setTargetID(0);
+      pong.setTargetID(ping.getResponseTargetID());
       return pong;
    }
 }
