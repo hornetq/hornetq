@@ -46,7 +46,7 @@ public class ConfigurationImpl implements Configuration, Serializable
    public static final String REMOTING_ENABLE_SSL_SYSPROP_KEY = "jbm.remoting.enable.ssl";
 
    public static final int DEFAULT_REMOTING_PORT = 5400;
-   public static final int DEFAULT_KEEP_ALIVE_INTERVAL = 10; // in seconds
+   public static final int DEFAULT_KEEP_ALIVE_INTERVAL = 0; // in seconds
    public static final int DEFAULT_KEEP_ALIVE_TIMEOUT = 5; // in seconds
    public static final int DEFAULT_REQRES_TIMEOUT = 5; // in seconds
    public static final boolean DEFAULT_INVM_DISABLED = false;
