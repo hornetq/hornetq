@@ -93,9 +93,19 @@ public class PerfExample
       {
          log.info("params = " + perfParams);
          init(perfParams.isSessionTransacted());
+         // use 10% of the messages to warm up the system
+         int warmupMessages = perfParams.getNoOfMessagesToSend() / 10;
+         log.info("warming up by sending " + warmupMessages + " messages");
+         sendMessages(warmupMessages, perfParams.getTransactionBatchSize(), perfParams.getDeliveryMode(), perfParams.isSessionTransacted());         
+         log.info("warmed up");
+         // do not take into account messages received during warmup
+         messageCount.set(0);
+         int remainingMessages = perfParams.getNoOfMessagesToSend() - warmupMessages;
+
          scheduler.scheduleAtFixedRate(command, perfParams.getSamplePeriod(), perfParams.getSamplePeriod(), TimeUnit.SECONDS);
-         sendMessages(perfParams);         
+         sendMessages(remainingMessages, perfParams.getTransactionBatchSize(), perfParams.getDeliveryMode(), perfParams.isSessionTransacted());         
          scheduler.shutdownNow();
+         
          log.info("average: " + (command.getAverage() / perfParams.getSamplePeriod()) + " msg/s");
       }
       catch (Exception e)
@@ -116,24 +126,24 @@ public class PerfExample
       }
    }
 
-   private void sendMessages(PerfParams perfParams) throws JMSException
+   private void sendMessages(int numberOfMessages, int txBatchSize, int deliveryMode, boolean transacted) throws JMSException
    {
       MessageProducer producer = session.createProducer(queue);
       producer.setDisableMessageID(true);
       producer.setDisableMessageTimestamp(true);
-      producer.setDeliveryMode(perfParams.getDeliveryMode());
+      producer.setDeliveryMode(deliveryMode);
       BytesMessage bytesMessage = session.createBytesMessage();
       byte[] payload = new byte[1024];
       bytesMessage.writeBytes(payload);
 
       boolean committed = false;
-      for (int i = 1; i <= perfParams.getNoOfMessagesToSend(); i++)
+      for (int i = 1; i <= numberOfMessages; i++)
       {
          producer.send(bytesMessage);
          messageCount.incrementAndGet();
-         if (perfParams.isSessionTransacted())
+         if (transacted)
          {
-            if (messageCount.longValue() % perfParams.getTransactionBatchSize() == 0)
+            if (messageCount.longValue() % txBatchSize == 0)
             {
                session.commit();
                committed = true;
@@ -144,7 +154,7 @@ public class PerfExample
             }
          }
       }
-      if (perfParams.isSessionTransacted() && !committed)
+      if (transacted && !committed)
       {
          session.commit();
       }
@@ -259,10 +269,7 @@ public class PerfExample
     */
    class Sampler implements Runnable
    {
-      private static final int IGNORED_SAMPLES = 4;
-      
       long sampleCount = 0;
-      AtomicLong ignoredCount = new AtomicLong(0);
       
       long startTime = 0;
       long samplesTaken = 0;
@@ -276,26 +283,14 @@ public class PerfExample
          long elapsedTime = (System.currentTimeMillis() - startTime) / 1000; // in s
          long lastCount = sampleCount;
          sampleCount = messageCount.longValue();
-         if (samplesTaken >= IGNORED_SAMPLES)
-         {
-            info(elapsedTime, sampleCount, sampleCount - lastCount, false);
-         } else {
-            info(elapsedTime, sampleCount, sampleCount - lastCount, true);
-            ignoredCount.addAndGet(sampleCount - lastCount);            
-         }
+         log.info(String.format("time elapsed: %2ds, message count: %7d, this period: %5d", 
+                     elapsedTime, sampleCount, sampleCount - lastCount));
          samplesTaken++;
-      }
-
-      public void info(long elapsedTime, long totalCount, long sampleCount, boolean ignored)
-      {
-         String message = String.format("time elapsed: %2ds, message count: %7d, this period: %5d %s", 
-               elapsedTime, totalCount, sampleCount, ignored ? "[IGNORED]" : "");
-         log.info(message);
       }
       
       public long getAverage()
       {
-         return (sampleCount - ignoredCount.longValue())/(samplesTaken - IGNORED_SAMPLES);
+         return sampleCount/samplesTaken;
       }
 
    }
