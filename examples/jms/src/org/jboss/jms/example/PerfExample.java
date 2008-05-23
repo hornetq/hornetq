@@ -58,11 +58,6 @@ public class PerfExample
       boolean transacted = Boolean.parseBoolean(args[4]);
       log.info("Transacted:" + transacted);
       int transactionBatchSize = Integer.parseInt(args[5]);
-      int numberOfSenders = 1;
-      if (args.length >= 7)
-      {
-         numberOfSenders = Integer.parseInt(args[6]);
-      }
 
       PerfParams perfParams = new PerfParams();
       perfParams.setNoOfMessagesToSend(noOfMessages);
@@ -70,7 +65,6 @@ public class PerfExample
       perfParams.setSamplePeriod(samplePeriod);
       perfParams.setSessionTransacted(transacted);
       perfParams.setTransactionBatchSize(transactionBatchSize);
-      perfParams.setNumberOfSender(numberOfSenders);
       
       if (args[0].equalsIgnoreCase("-l"))
       {
@@ -78,7 +72,7 @@ public class PerfExample
       }
       else
       {
-         perfExample.runSenders(perfParams);
+         perfExample.runSender(perfParams);
       }
 
    }
@@ -93,40 +87,14 @@ public class PerfExample
       session = connection.createSession(transacted, transacted ? Session.SESSION_TRANSACTED : Session.DUPS_OK_ACKNOWLEDGE);
    }
    
-   public void runSenders(final PerfParams perfParams)
+   public void runSender(final PerfParams perfParams)
    {
       try
       {
          log.info("params = " + perfParams);
          init(perfParams.isSessionTransacted());
-         
-         final CountDownLatch startSignal = new CountDownLatch(1);
-         final CountDownLatch endSignal = new CountDownLatch(perfParams.getNumberOfSenders());
-         
-         for (int i = 0; i < perfParams.getNumberOfSenders(); i++)
-         {
-            Thread sender = new Thread() {
-               public void run()
-               {
-                  try
-                  {
-                     startSignal.await();
-                     sendMessages(perfParams);
-                  } catch (Exception e)
-                  {
-                     e.printStackTrace();
-                  } finally
-                  {
-                     endSignal.countDown();
-                  }
-               }
-            };
-            sender.start();
-         }
-
          scheduler.scheduleAtFixedRate(command, perfParams.getSamplePeriod(), perfParams.getSamplePeriod(), TimeUnit.SECONDS);
-         startSignal.countDown();
-         endSignal.await();
+         sendMessages(perfParams);         
          scheduler.shutdownNow();
          log.info("average: " + (command.getAverage() / perfParams.getSamplePeriod()) + " msg/s");
       }
@@ -159,7 +127,7 @@ public class PerfExample
       bytesMessage.writeBytes(payload);
 
       boolean committed = false;
-      for (int i = 1; i <= (perfParams.getNoOfMessagesToSend() / perfParams.getNumberOfSenders()); i++)
+      for (int i = 1; i <= perfParams.getNoOfMessagesToSend(); i++)
       {
          producer.send(bytesMessage);
          messageCount.incrementAndGet();
