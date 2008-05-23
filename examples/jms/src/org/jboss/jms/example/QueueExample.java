@@ -21,13 +21,18 @@
    */
 package org.jboss.jms.example;
 
-import org.jboss.messaging.core.logging.Logger;
-
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.jms.*;
-import java.util.ResourceBundle;
-import java.util.Properties;
+
+import org.jboss.messaging.core.logging.Logger;
 
 /**
  * A simple JMS Queue example that creates a producer and consumer on a queue and sends a message.
@@ -37,33 +42,32 @@ import java.util.Properties;
 public class QueueExample
 {
    final static Logger log = Logger.getLogger(QueueExample.class);
+
    public static void main(String[] args)
    {
       Connection connection = null;
-      Connection connection2 = null;
       try
       {
          //create an initial context, env will be picked up from jndi.properties
          InitialContext initialContext = new InitialContext();
          Queue queue = (Queue) initialContext.lookup("/queue/testQueue");
          ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
+         
          connection = cf.createConnection();
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer producer = session.createProducer(queue);
          Message message = session.createTextMessage("This is a text message!");
+         
          log.info("sending message to queue");
          producer.send(message);
+         
          MessageConsumer messageConsumer = session.createConsumer(queue);
          connection.start();
          TextMessage message2 = (TextMessage) messageConsumer.receive(5000);
          log.info("message received from queue");
          log.info("message = " + message2.getText());
       }
-      catch (NamingException e)
-      {
-         e.printStackTrace();
-      }
-      catch (JMSException e)
+      catch (Exception e)
       {
          e.printStackTrace();
       }
@@ -73,13 +77,11 @@ public class QueueExample
             try
             {
                connection.close();
-               connection2.close();
             }
             catch (JMSException e)
             {
                e.printStackTrace();
             }
       }
-
    }
 }
