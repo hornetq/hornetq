@@ -21,11 +21,13 @@
   */
 package org.jboss.messaging.core.server.impl;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketReturner;
-import org.jboss.messaging.core.remoting.impl.wireformat.ProducerReceiveTokensMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ProducerFlowCreditMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerProducer;
 import org.jboss.messaging.core.server.ServerSession;
@@ -52,15 +54,21 @@ public class ServerProducerImpl implements ServerProducer
 	
 	private final FlowController flowController;
 	
+	private final int windowSize;
+	
 	private final PacketReturner sender;
 	
 	private volatile boolean waiting;
 	
+   private AtomicInteger creditsToSend = new AtomicInteger(0);
+     	
 	// Constructors ----------------------------------------------------------------
 	
-	public ServerProducerImpl(final long id, final long clientTargetID, final ServerSession session, final SimpleString address, 
+	public ServerProducerImpl(final long id, final long clientTargetID, final ServerSession session,
+	                          final SimpleString address, 
 			                    final PacketReturner sender,
-			                    final FlowController flowController) throws Exception
+			                    final FlowController flowController,
+			                    final int windowSize) throws Exception
 	{
 		this.id = id;
 		
@@ -72,7 +80,9 @@ public class ServerProducerImpl implements ServerProducer
 		
 		this.sender = sender;
 		
-		this.flowController = flowController;				
+		this.flowController = flowController;		
+		
+		this.windowSize = windowSize;
 	}
 	
 	// ServerProducer implementation --------------------------------------------
@@ -86,26 +96,41 @@ public class ServerProducerImpl implements ServerProducer
 	{
 		session.removeProducer(this);
 	}
-		
+	
+
 	public void send(final ServerMessage message) throws Exception
 	{		
 		if (this.address != null)
 		{			
 		   //Only do flow control with non anonymous producers
 		   
-		   //TODO - flow control currently disabled
-//			if (flowController != null)
-//		   {
-//				flowController.messageReceived(this, 1);			
-//			}
+			if (flowController != null)
+		   {
+			   int creds = creditsToSend.addAndGet(message.encodeSize());
+			   
+			   if (creds >= windowSize)
+			   {
+			      requestAndSendCredits();
+			   }
+			}
 		}
 		
 		session.send(message);  		
 	}
+	
+	public void requestAndSendCredits() throws Exception
+	{	 
+	   if (!waiting)
+	   {
+	      flowController.requestAndSendCredits(this, creditsToSend.get());
+	   }
+	}
 
-	public void sendCredits() throws Exception
+	public void sendCredits(final int credits) throws Exception
 	{
-		Packet packet = new ProducerReceiveTokensMessage(1);
+	   creditsToSend.addAndGet(-credits);
+	   
+		Packet packet = new ProducerFlowCreditMessage(credits);
 		
 		packet.setTargetID(clientTargetID);
 		packet.setExecutorID(session.getID());

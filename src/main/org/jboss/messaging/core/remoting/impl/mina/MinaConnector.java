@@ -169,7 +169,7 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
       }
       session = future.getSession();
 
-      ServerPingerImpl pinger = new ServerPingerImpl(keepAliveHandler, (long) 0);
+      //ServerPingerImpl pinger = new ServerPingerImpl(keepAliveHandler, (long) 0);
       /*
       getDispatcher().register(pinger);
       if (connectionParams.getKeepAliveInterval() > 0)
@@ -177,7 +177,7 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
          scheduledExecutor = new ScheduledThreadPoolExecutor(1);
          scheduledExecutor.scheduleAtFixedRate(pinger, 0, connectionParams.getKeepAliveInterval(), TimeUnit.SECONDS);
       }*/
-      dispatcher.register(pinger);
+      //dispatcher.register(pinger);
       return new MinaSession(session, handler);
    }
 

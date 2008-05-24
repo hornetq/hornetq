@@ -130,7 +130,7 @@ public class JMSServerDeployer extends XmlDeployer
          
          int consumerWindowSize = 1024 * 1024;
          int consumerMaxRate = -1;         
-         int producerWindowSize = 1000;
+         int producerWindowSize = 1024 * 1024;
          int producerMaxRate = -1;
          boolean blockOnAcknowledge = false;
          boolean sendNonPersistentMessagesSynchronously = false;
@@ -194,9 +194,6 @@ public class JMSServerDeployer extends XmlDeployer
 
             if (ENTRY_NODE_NAME.equalsIgnoreCase(children.item(i).getNodeName()))
             {
-            	
-            	log.info("Creating cf ** with ws:" + producerWindowSize);
-            	
                String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
                String name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
                jmsServerManager.createConnectionFactory(name, clientID, dupsOKBatchSize, cfStrictTck,

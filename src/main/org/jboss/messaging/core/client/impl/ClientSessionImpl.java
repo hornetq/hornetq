@@ -39,7 +39,7 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
@@ -311,10 +311,10 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       remotingConnection.getPacketDispatcher().register(new ClientConsumerPacketHandler(consumer, clientTargetID));
       
-      //Now we send window size tokens to start the consumption
+      //Now we send window size credits to start the consumption
       //We even send it if windowSize == -1, since we need to start the consumer
       
-      remotingConnection.sendOneWay(response.getConsumerTargetID(), serverTargetID, new ConsumerFlowTokenMessage(response.getWindowSize()));
+      remotingConnection.sendOneWay(response.getConsumerTargetID(), serverTargetID, new ConsumerFlowCreditMessage(response.getWindowSize()));
 
       return consumer;
    }
@@ -367,11 +367,12 @@ public class ClientSessionImpl implements ClientSessionInternal
       	//maxRate and windowSize can be overridden by the server
       	
       	producer = new ClientProducerImpl(this, response.getProducerTargetID(), clientTargetID, address,
-      			                            remotingConnection, response.getWindowSize(),
+      			                            remotingConnection,
       			                            response.getMaxRate(),
-      			                            sendNonPersistentMessagesBlocking, autoCommitSends);  
+      			                            sendNonPersistentMessagesBlocking, autoCommitSends,
+      			                            response.getInitialCredits());  
       	
-      	remotingConnection.getPacketDispatcher().register(new ClientProducerPacketHandler(producer, clientTargetID));
+      	remotingConnection.getPacketDispatcher().register(new ClientProducerPacketHandler(producer, clientTargetID));      	
       }
 
       producers.add(producer);

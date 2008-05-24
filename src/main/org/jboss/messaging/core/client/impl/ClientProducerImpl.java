@@ -21,6 +21,8 @@
   */
 package org.jboss.messaging.core.client.impl;
 
+import java.util.concurrent.Semaphore;
+
 import org.jboss.messaging.core.client.AcknowledgementHandler;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -63,7 +65,9 @@ public class ClientProducerImpl implements ClientProducerInternal
    
    //For limit throttling
    
-   private volatile int windowSize;
+   //private AtomicInteger availableCredits = new AtomicInteger(0);
+   
+   private Semaphore availableCredits;
    
    //For rate throttling
      
@@ -72,6 +76,8 @@ public class ClientProducerImpl implements ClientProducerInternal
    private final boolean sendNonPersistentMessagesSynchronously;
    
    private final boolean sendPersistentMessagesSynchronously;
+   
+   private final boolean creditFlowControl;
      
    // Static ---------------------------------------------------------------------------------------
 
@@ -80,10 +86,11 @@ public class ClientProducerImpl implements ClientProducerInternal
    public ClientProducerImpl(final ClientSessionInternal session, final long serverTargetID,
                              final long clientTargetID,
    		                    final SimpleString address,
-   		                    final RemotingConnection remotingConnection, final int windowSize,
+   		                    final RemotingConnection remotingConnection,
    		                    final int maxRate,
    		                    final boolean sendNonPersistentMessagesSynchronously,
-   		                    final boolean sendPersistentMessagesSynchronously)
+   		                    final boolean sendPersistentMessagesSynchronously,
+   		                    final int initialCredits)
    {   	
       this.session = session;
       
@@ -94,8 +101,6 @@ public class ClientProducerImpl implements ClientProducerInternal
       this.address = address;
       
       this.remotingConnection = remotingConnection;
-      
-      this.windowSize = windowSize;
       
       if (maxRate != -1)
       {
@@ -108,7 +113,13 @@ public class ClientProducerImpl implements ClientProducerInternal
       
       this.sendNonPersistentMessagesSynchronously = sendNonPersistentMessagesSynchronously; 
       
-      this.sendPersistentMessagesSynchronously = sendPersistentMessagesSynchronously; 
+      this.sendPersistentMessagesSynchronously = sendPersistentMessagesSynchronously;
+      
+//      this.availableCredits.set(initialCredits);
+      
+      this.availableCredits = new Semaphore(initialCredits);
+      
+      this.creditFlowControl = initialCredits != -1;
    }
    
    // ClientProducer implementation ----------------------------------------------------------------
@@ -142,34 +153,19 @@ public class ClientProducerImpl implements ClientProducerInternal
       {
          msg.setDestination(this.address);
       }
-      
-   	ProducerSendMessage message = new ProducerSendMessage(msg);
-   	
-   	//TODO flow control disabled for now
-   	
-//   	//We only flow control with non-anonymous producers
-//   	if (address == null)
-//   	{
-//   		while (windowSize == 0)
-//   		{
-//				synchronized (this)
-//				{
-//					try
-//					{						
-//					   wait();						
-//					}
-//					catch (InterruptedException e)
-//					{   						
-//					}
-//				}		
-//   		}
-//   		
-//   		windowSize--;
-//   	}
+         	   	
+   	if (rateLimiter != null)
+      {
+         // Rate flow control
+                  
+         rateLimiter.limit();
+      }
    	
    	boolean sendBlocking = msg.isDurable() && sendPersistentMessagesSynchronously ||
    	                       !msg.isDurable() && sendNonPersistentMessagesSynchronously;
-   		
+   	
+      ProducerSendMessage message = new ProducerSendMessage(msg);
+         		
    	if (sendBlocking)
    	{
    	   remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), message);
@@ -177,14 +173,36 @@ public class ClientProducerImpl implements ClientProducerInternal
    	else
    	{
    	   remotingConnection.sendOneWay(serverTargetID, session.getServerTargetID(), message);
-   	}
-   	 	   	
-   	if (rateLimiter != null)
-   	{
-   	   // Rate flow control
-      	   		
-   		rateLimiter.limit();
-   	}
+   	}   	 
+   	
+      //We only flow control with non-anonymous producers
+      if (address == null && creditFlowControl)
+      {
+         try
+         {
+            this.availableCredits.acquire(message.getClientMessage().encodeSize());
+         }
+         catch (InterruptedException e)
+         {           
+         }
+         
+//       while (availableCredits.get() <= 0)
+//       {
+//          //log.info("**blocked");
+//          synchronized (this)
+//          {
+//             try
+//             {                 
+//                wait();                 
+//             }
+//             catch (InterruptedException e)
+//             {                    
+//             }
+//          }     
+//       }
+//       
+//       availableCredits.addAndGet(-message.getClientMessage().encodeSize());
+      }
    }
             
    public void registerAcknowledgementHandler(final AcknowledgementHandler handler)
@@ -218,11 +236,21 @@ public class ClientProducerImpl implements ClientProducerInternal
    
    // ClientProducerInternal implementation --------------------------------------------------------
    
-   public synchronized void receiveTokens(int tokens)
+   public void receiveCredits(final int credits)
    {
-   	windowSize += tokens;
-   		
-   	notify();
+     // log.info("received credits " + credits);
+      
+      this.availableCredits.release(credits);
+      
+//   	int prev = availableCredits.getAndAdd(credits);
+//   	
+//   	if (prev <= 0 && prev + credits > 0)
+//   	{   		
+//   	   synchronized (this)
+//   	   {
+//   	      notify();
+//   	   }
+//   	}
    }
    
    // Public ---------------------------------------------------------------------------------------

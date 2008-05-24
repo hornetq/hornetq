@@ -426,7 +426,6 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Journal must be loaded first");
       }
       
-      
       int recordLength = record.encodeSize();
       
       int size = SIZE_ADD_RECORD_TX + recordLength;
@@ -528,7 +527,7 @@ public class JournalImpl implements TestableJournal
 		{
 			throw new IllegalStateException("Journal must be loaded first");
 		}
-		
+	
       TransactionCallback callback = getTransactionCallback(txID);
       callback.countUp();
       
@@ -585,8 +584,7 @@ public class JournalImpl implements TestableJournal
 		if (state != STATE_LOADED)
 		{
 			throw new IllegalStateException("Journal must be loaded first");
-		}
-		
+		}		
       
 		TransactionNegPos tx = transactionInfos.remove(txID);
 		
@@ -743,7 +741,7 @@ public class JournalImpl implements TestableJournal
             int pos = bb.position();
             
             byte recordType = bb.get();
-                        
+                
             switch(recordType)
             {
                case ADD_RECORD:
@@ -753,7 +751,7 @@ public class JournalImpl implements TestableJournal
                   maxMessageID = Math.max(maxMessageID, id);
                   
                   byte userRecordType = bb.get();
-                  
+                   
                   int size = bb.getInt();                
                   byte[] record = new byte[size];                 
                   bb.get(record);
@@ -780,7 +778,7 @@ public class JournalImpl implements TestableJournal
                   maxMessageID = Math.max(maxMessageID, id);
                   
                   byte userRecordType = bb.get();
-                 
+                  
                   int size = bb.getInt();                
                   byte[] record = new byte[size];                 
                   bb.get(record);                  

@@ -80,13 +80,13 @@ import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
 import org.jboss.messaging.core.remoting.impl.mina.MessagingCodec;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
-import org.jboss.messaging.core.remoting.impl.wireformat.ProducerReceiveTokensMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ProducerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
@@ -486,7 +486,7 @@ public class PacketTypeTest extends UnitTestCase
             randomLong(), randomInt(), randomInt());
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(response, response
-            .getProducerTargetID(), response.getWindowSize(), response
+            .getProducerTargetID(), response.getInitialCredits(), response
             .getMaxRate());
 
       assertTrue(decodedPacket instanceof SessionCreateProducerResponseMessage);
@@ -494,7 +494,7 @@ public class PacketTypeTest extends UnitTestCase
       assertEquals(SESS_CREATEPRODUCER_RESP, decodedResponse.getType());
       assertEquals(response.getProducerTargetID(), decodedResponse
             .getProducerTargetID());
-      assertEquals(response.getWindowSize(), decodedResponse.getWindowSize());
+      assertEquals(response.getInitialCredits(), decodedResponse.getInitialCredits());
       assertEquals(response.getMaxRate(), decodedResponse.getMaxRate());
    }
 
@@ -518,28 +518,28 @@ public class PacketTypeTest extends UnitTestCase
 
    public void testConsumerFlowTokenMessage() throws Exception
    {
-      ConsumerFlowTokenMessage message = new ConsumerFlowTokenMessage(
+      ConsumerFlowCreditMessage message = new ConsumerFlowCreditMessage(
             randomInt());
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(message, message
             .getTokens());
 
-      assertTrue(decodedPacket instanceof ConsumerFlowTokenMessage);
-      ConsumerFlowTokenMessage decodedMessage = (ConsumerFlowTokenMessage) decodedPacket;
+      assertTrue(decodedPacket instanceof ConsumerFlowCreditMessage);
+      ConsumerFlowCreditMessage decodedMessage = (ConsumerFlowCreditMessage) decodedPacket;
       assertEquals(CONS_FLOWTOKEN, decodedMessage.getType());
       assertEquals(message.getTokens(), decodedMessage.getTokens());
    }
 
    public void testProducerReceiveTokensMessage() throws Exception
    {
-      ProducerReceiveTokensMessage message = new ProducerReceiveTokensMessage(
+      ProducerFlowCreditMessage message = new ProducerFlowCreditMessage(
             randomInt());
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(message, message
             .getTokens());
 
-      assertTrue(decodedPacket instanceof ProducerReceiveTokensMessage);
-      ProducerReceiveTokensMessage decodedMessage = (ProducerReceiveTokensMessage) decodedPacket;
+      assertTrue(decodedPacket instanceof ProducerFlowCreditMessage);
+      ProducerFlowCreditMessage decodedMessage = (ProducerFlowCreditMessage) decodedPacket;
       assertEquals(PROD_RECEIVETOKENS, decodedMessage.getType());
       assertEquals(message.getTokens(), decodedMessage.getTokens());
    }

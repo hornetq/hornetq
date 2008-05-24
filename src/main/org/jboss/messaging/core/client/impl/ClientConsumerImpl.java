@@ -31,7 +31,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 
 /**
@@ -84,7 +84,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       
    private volatile long ignoreDeliveryMark = -1;
    
-   private volatile int tokensToSend;   
+   private volatile int creditsToSend;   
    
    
 
@@ -384,13 +384,13 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       if (clientWindowSize > 0)
       {
-         tokensToSend += messageBytes;
+         creditsToSend += messageBytes;
    
-         if (tokensToSend >= clientWindowSize)
+         if (creditsToSend >= clientWindowSize)
          {            
-            remotingConnection.sendOneWay(targetID, session.getServerTargetID(), new ConsumerFlowTokenMessage(tokensToSend));
+            remotingConnection.sendOneWay(targetID, session.getServerTargetID(), new ConsumerFlowCreditMessage(creditsToSend));
             
-            tokensToSend = 0;            
+            creditsToSend = 0;            
          }
       }
    }

@@ -42,7 +42,7 @@ public class QueueSettingsDeployer extends XmlDeployer
    
    private static final String REDELIVERY_DELAY_NODE_NAME = "redelivery-delay";
    
-   private static final String MAX_SIZE_NODE_NAME = "max-size";
+   private static final String MAX_SIZE_BYTES_NODE_NAME = "max-size-bytes";
    
    private static final String DISTRIBUTION_POLICY_CLASS_NODE_NAME = "distribution-policy-class";
    
@@ -99,9 +99,9 @@ public class QueueSettingsDeployer extends XmlDeployer
          {
             queueSettings.setRedeliveryDelay(Long.valueOf(child.getTextContent()));
          }
-         else if (MAX_SIZE_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (MAX_SIZE_BYTES_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
-            queueSettings.setMaxSize(Integer.valueOf(child.getTextContent()));   
+            queueSettings.setMaxSizeBytes(Integer.valueOf(child.getTextContent()));   
          }
          else if (DISTRIBUTION_POLICY_CLASS_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {

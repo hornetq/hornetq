@@ -35,7 +35,7 @@ public interface FlowController
 {
 	void messageAcknowledged() throws Exception;
 	
-	void messageReceived(ServerProducer producer, int windowSize) throws Exception;
+	void requestAndSendCredits(ServerProducer producer, int windowSize) throws Exception;
 	
-	int getInitialTokens(int windowSize, ServerProducer producer);
+	int getInitialCredits(int windowSize, ServerProducer producer) throws Exception;
 }

@@ -58,22 +58,22 @@ public class JournalStorageManager implements StorageManager
    
    // Bindings journal record type
    
-	private static final byte BINDING_RECORD = 1;
+	private static final byte BINDING_RECORD = 21;
 	
-	private static final byte DESTINATION_RECORD = 2;
+	private static final byte DESTINATION_RECORD = 22;
 	   
    // type + expiration + timestamp + priority
    public static final int SIZE_FIELDS = SIZE_INT + SIZE_LONG + SIZE_LONG + SIZE_BYTE; 
    
    // Message journal record types
    
-   public static final byte ADD_MESSAGE = 1;
+   public static final byte ADD_MESSAGE = 31;
    
-   public static final byte ACKNOWLEDGE_REF = 2;
+   public static final byte ACKNOWLEDGE_REF = 32;
    
-   public static final byte UPDATE_DELIVERY_COUNT = 3;
+   public static final byte UPDATE_DELIVERY_COUNT = 33;
    
-   public static final byte SET_SCHEDULED_DELIVERY_TIME = 4;
+   public static final byte SET_SCHEDULED_DELIVERY_TIME = 44;
   	
 	private final AtomicLong messageIDSequence = new AtomicLong(0);
 	
@@ -449,16 +449,12 @@ public class JournalStorageManager implements StorageManager
 	{
 		List<RecordInfo> records = new ArrayList<RecordInfo>();
 		
-		bindingsJournal.load(records, null);
-
-		long maxID = -1;
+		long maxID = bindingsJournal.load(records, null);
 
 		for (RecordInfo record: records)
 		{		  
 			long id = record.id;
 			
-			maxID = Math.max(maxID, id);
-
 			byte[] data = record.data;
 
 			ByteArrayInputStream bais = new ByteArrayInputStream(data);

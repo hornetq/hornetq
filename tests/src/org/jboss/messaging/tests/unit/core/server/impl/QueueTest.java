@@ -114,7 +114,7 @@ public class QueueTest extends UnitTestCase
       assertTrue(queue.isTemporary());
    }
    
-   public void testGetSetMaxSize()
+   public void testGetMaxSizeBytes()
    {
       final int maxSize = 123456;
       
@@ -124,13 +124,7 @@ public class QueueTest extends UnitTestCase
       
       assertEquals(id, queue.getPersistenceID());
       
-      assertEquals(maxSize, queue.getMaxSize());
-      
-      final int maxSize2 = 654321;
-      
-      queue.setMaxSize(maxSize2);
-      
-      assertEquals(maxSize2, queue.getMaxSize());
+      assertEquals(maxSize, queue.getMaxSizeBytes());
    }
    
    public void testAddRemoveConsumer()
@@ -216,7 +210,7 @@ public class QueueTest extends UnitTestCase
    {
       Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
       
-      assertEquals(-1, queue.getMaxSize());        
+      assertEquals(-1, queue.getMaxSizeBytes());        
    }
    
    public void testSimpleAddLast()
@@ -513,9 +507,9 @@ public class QueueTest extends UnitTestCase
       
       refs.clear();
       
-      for (int i = 0; i < numMessages; i++)
+      for (MessageReference ref: refs)
       {
-         queue.referenceAcknowledged();
+         queue.referenceAcknowledged(ref);
       }
       
       for (int i = 0; i < 2 * numMessages; i++)
@@ -537,11 +531,12 @@ public class QueueTest extends UnitTestCase
       
       cons1.getReferences().clear();
       cons2.getReferences().clear();
-      refs.clear();
-      for (int i = 0; i < 2 * numMessages; i++)
+      
+      for (MessageReference ref: refs)
       {
-         queue.referenceAcknowledged();
+         queue.referenceAcknowledged(ref);
       }
+      refs.clear();
       
       FakeConsumer cons3 = new FakeConsumer();
       
@@ -572,11 +567,12 @@ public class QueueTest extends UnitTestCase
       
       cons3.getReferences().clear();
       cons2.getReferences().clear();
-      refs.clear();
-      for (int i = 0; i < 3 * numMessages; i++)
+      
+      for (MessageReference ref: refs)
       {
-         queue.referenceAcknowledged();
+         queue.referenceAcknowledged(ref);
       }
+      refs.clear();
       
       for (int i = 0; i < 2 * numMessages; i++)
       {
@@ -598,11 +594,12 @@ public class QueueTest extends UnitTestCase
       queue.removeConsumer(cons3);
       
       cons2.getReferences().clear();
-      refs.clear();
-      for (int i = 0; i < 2 * numMessages; i++)
+      
+      for (MessageReference ref: refs)
       {
-         queue.referenceAcknowledged();
+         queue.referenceAcknowledged(ref);
       }
+      refs.clear();
       
       for (int i = 0; i < numMessages; i++)
       {
@@ -862,39 +859,7 @@ public class QueueTest extends UnitTestCase
          MessageReference ref = generateReference(queue, i);
          
          assertEquals(HandleStatus.BUSY, queue.addLast(ref));
-      }
-    
-      //Increase the max size
-      
-      queue.setMaxSize(2 * queue.getMaxSize());
-      
-      for (int i = 0; i < maxSize; i++)
-      {
-         MessageReference ref = generateReference(queue, i);
-         
-         refs.add(ref);
-         
-         assertEquals(HandleStatus.HANDLED, queue.addLast(ref));
-      }
-      
-      assertEquals(maxSize * 2, queue.getMessageCount());   
-      assertEquals(0, queue.getScheduledCount());
-      assertEquals(0, queue.getDeliveringCount());
-      
-      //Now try and decrease maxSize
-      
-      try
-      {
-         queue.setMaxSize(maxSize);
-         
-         fail("Should throw exception");
-      }
-      catch (IllegalArgumentException e)
-      {
-         //Ok
-      }
-      
-      assertEquals(2 * maxSize, queue.getMaxSize());      
+      }                    
    }
    
    public void testWithPriorities()
@@ -1098,7 +1063,7 @@ public class QueueTest extends UnitTestCase
             
       assertRefListsIdenticalRefs(refs, consumer.getReferences()); 
       
-      queue.referenceAcknowledged();
+      queue.referenceAcknowledged(ref2);
 
       queue.removeConsumer(consumer);
             
@@ -1206,8 +1171,8 @@ public class QueueTest extends UnitTestCase
             
       assertRefListsIdenticalRefs(refs, consumer.getReferences()); 
       
-      queue.referenceAcknowledged();
-      queue.referenceAcknowledged();
+      queue.referenceAcknowledged(ref5);
+      queue.referenceAcknowledged(ref6);
       
       queue.removeConsumer(consumer);
       

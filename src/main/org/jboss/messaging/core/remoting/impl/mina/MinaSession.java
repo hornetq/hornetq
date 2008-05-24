@@ -54,14 +54,14 @@ public class MinaSession implements NIOSession
    
    public void write(Packet packet)
    {     
-      try
-      {
-         handler.checkWrite(session);
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to acquire sem", e);
-      }
+//      try
+//      {
+//         handler.checkWrite(session);
+//      }
+//      catch (Exception e)
+//      {
+//         log.error("Failed to acquire sem", e);
+//      }
       
       session.write(packet);
    }

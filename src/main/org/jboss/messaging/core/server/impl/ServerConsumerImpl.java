@@ -90,7 +90,7 @@ public class ServerConsumerImpl implements ServerConsumer
          
    private final Object startStopLock = new Object();
 
-   private final AtomicInteger availableTokens;
+   private final AtomicInteger availableCredits;
    
    private boolean started;
    
@@ -139,11 +139,11 @@ public class ServerConsumerImpl implements ServerConsumer
       
       if (enableFlowControl)
       {
-         availableTokens = new AtomicInteger(0);
+         availableCredits = new AtomicInteger(0);
       }
       else
       {
-      	availableTokens = null;
+      	availableCredits = null;
       }
       
       messageQueue.addConsumer(this);
@@ -163,7 +163,7 @@ public class ServerConsumerImpl implements ServerConsumer
    
    public HandleStatus handle(MessageReference ref) throws Exception
    {      
-      if (availableTokens != null && availableTokens.get() <= 0)
+      if (availableCredits != null && availableCredits.get() <= 0)
       {
          return HandleStatus.BUSY;
       }
@@ -207,9 +207,9 @@ public class ServerConsumerImpl implements ServerConsumer
             }            
          }
                          
-         if (availableTokens != null)
+         if (availableCredits != null)
          {
-            availableTokens.addAndGet(-message.encodeSize());
+            availableCredits.addAndGet(-message.encodeSize());
          }
                    
          try
@@ -272,13 +272,13 @@ public class ServerConsumerImpl implements ServerConsumer
       }
    }
    
-   public void receiveTokens(final int tokens) throws Exception
+   public void receiveCredits(final int credits) throws Exception
    {      
-      if (availableTokens != null)
+      if (availableCredits != null)
       {
-         int previous = availableTokens.getAndAdd(tokens);
+         int previous = availableCredits.getAndAdd(credits);
 
-         if (previous <= 0 && (previous + tokens) > 0)
+         if (previous <= 0 && (previous + credits) > 0)
          {
             promptDelivery();
          }

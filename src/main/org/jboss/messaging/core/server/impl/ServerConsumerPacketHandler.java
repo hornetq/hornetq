@@ -25,7 +25,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketReturner;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 import org.jboss.messaging.core.server.ServerConsumer;
 
@@ -61,8 +61,8 @@ public class ServerConsumerPacketHandler extends ServerPacketHandlerSupport
       switch (type)
       {
       case EmptyPacket.CONS_FLOWTOKEN:
-         ConsumerFlowTokenMessage message = (ConsumerFlowTokenMessage) packet;
-         consumer.receiveTokens(message.getTokens());
+         ConsumerFlowCreditMessage message = (ConsumerFlowCreditMessage) packet;
+         consumer.receiveCredits(message.getTokens());
          break;
       case EmptyPacket.CLOSE:
          consumer.close();

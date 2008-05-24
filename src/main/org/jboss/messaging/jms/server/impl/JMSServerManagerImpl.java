@@ -154,9 +154,9 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    public boolean destroyQueue(String name) throws Exception
    {
-   	JBossQueue jBossQueue = new JBossQueue(name);
-      messagingServerManagement.destroyQueue(new SimpleString(name));
-      messagingServerManagement.removeDestination(jBossQueue.getSimpleAddress());
+ //  	JBossQueue jBossQueue = new JBossQueue(name);
+//      messagingServerManagement.destroyQueue(new SimpleString(name));
+//      messagingServerManagement.removeDestination(jBossQueue.getSimpleAddress());
       List<String> jndiBindings = destinations.get(name);
       if (jndiBindings == null || jndiBindings.size() == 0)
       {
@@ -172,8 +172,8 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    public boolean destroyTopic(String name) throws Exception
    {
-      JBossTopic jBossTopic = new JBossTopic(name);
-      messagingServerManagement.removeDestination(jBossTopic.getSimpleAddress());
+   //   JBossTopic jBossTopic = new JBossTopic(name);
+    //  messagingServerManagement.removeDestination(jBossTopic.getSimpleAddress());
       List<String> jndiBindings = destinations.get(name);
       if (jndiBindings == null || jndiBindings.size() == 0)
       {
@@ -637,7 +637,7 @@ public class JMSServerManagerImpl implements JMSServerManager
             }
 
             SubscriptionInfo info = new SubscriptionInfo(queue.getName().toString(), queue.isDurable(), subName, clientID,
-                    queue.getFilter() == null ? null : queue.getFilter().getFilterString().toString(), queue.getMessageCount(), queue.getMaxSize());
+                    queue.getFilter() == null ? null : queue.getFilter().getFilterString().toString(), queue.getMessageCount(), queue.getMaxSizeBytes());
 
             subs.add(info);
          }

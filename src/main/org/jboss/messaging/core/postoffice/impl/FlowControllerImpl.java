@@ -21,14 +21,11 @@
  */
 package org.jboss.messaging.core.postoffice.impl;
 
-import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerProducer;
 import org.jboss.messaging.util.SimpleString;
 
@@ -45,7 +42,7 @@ public class FlowControllerImpl implements FlowController
 	
 	private int lastPot;
 		
-	private int tokenPot;
+	private int creditPot;
 	
 	private final PostOffice postOffice;
 	
@@ -58,17 +55,17 @@ public class FlowControllerImpl implements FlowController
 		this.address = address;
 		
 		this.postOffice = postOffice;
-		
-		fillPot();
 	}
 	
-	public synchronized int getInitialTokens(final int windowSize, final ServerProducer producer)
-	{
-		int num = Math.min(windowSize, tokenPot);
+	public synchronized int getInitialCredits(final int windowSize, final ServerProducer producer) throws Exception
+	{	     
+      fillPot();
+      
+		int num = Math.min(windowSize, creditPot);
 		
-		tokenPot -= num;
+		creditPot -= num;
 		
-		if (num == 0)
+		if (num <= 0)
 		{
 			//Register producer as a waiter or will never get any messages
 			
@@ -84,28 +81,30 @@ public class FlowControllerImpl implements FlowController
 	//also don't want to execute the whole method if already waiting
 	public synchronized void messageAcknowledged() throws Exception
 	{		
-		fillPot();
-			
-		while (tokenPot > 0)
-		{
-			ServerProducer producer = waitingList.poll();
-			
-			if (producer == null)
-			{
-				break;
-			}
-			
-			tokenPot--;
-			
-			producer.setWaiting(false);
-			
-			producer.sendCredits();
-		}					
+//	   log.info("acking");
+//	   
+//		fillPot();
+//		
+//		log.info("Filled pot is now " + creditPot);
+//			
+//		while (creditPot > 0)
+//		{
+//			ServerProducer producer = waitingList.poll();
+//			
+//			if (producer == null)
+//			{
+//				break;
+//			}
+//			
+//			producer.setWaiting(false);
+//			
+//			producer.requestAndSendCredits();
+//		}					
 	}
 		
-	public synchronized void messageReceived(final ServerProducer producer, final int windowSize) throws Exception
+	public synchronized void requestAndSendCredits(final ServerProducer producer, final int credits) throws Exception
 	{		
-		if (tokenPot == 0)
+		if (creditPot <= 0)
 		{
 			if (!producer.isWaiting())
 			{
@@ -116,48 +115,62 @@ public class FlowControllerImpl implements FlowController
 		}
 		else
 		{
-			tokenPot--;
+		   int creditsToTake = Math.min(credits, creditPot);
+		   
+			creditPot -= creditsToTake;
 			
-			producer.sendCredits();
+			producer.sendCredits(creditsToTake);
 		}
 	}
 			
 	private void fillPot() throws Exception
 	{
-		List<Binding> bindings = postOffice.getBindingsForAddress(address);
+	 //TODO - for now we don't take max size into account
+	   
+//		List<Binding> bindings = postOffice.getBindingsForAddress(address);
+//		
+//		int minAvailable = Integer.MAX_VALUE;
+//		
+//		for (Binding binding: bindings)
+//		{
+//			Queue queue = binding.getQueue();
+//			
+//			int maxSize = queue.getMaxSizeBytes();
+//			
+//			
+//			//log.info("max size is " + maxSize);
+//			
+//			int available;
+//			
+//			if (maxSize == -1)
+//			{
+//				available = Integer.MAX_VALUE;
+//			}
+//			else
+//			{
+//				available = maxSize - queue.getSizeBytes();
+//				
+//				log.info("Available is " + available);
+//			}
+//			
+//			if (available < 0)
+//			{
+//				available = 0;
+//			}
+//			
+//			minAvailable = Math.min(available, minAvailable);		
+//			
+//			log.info("min available is " + minAvailable);
+//		}
+//						
+//		log.info("lastpot is " + lastPot);
+//		if (minAvailable > lastPot)
+//		{
+//			creditPot += minAvailable - lastPot;
+//			
+//			lastPot = minAvailable;
+//		}
 		
-		int minAvailable = Integer.MAX_VALUE;
-		
-		for (Binding binding: bindings)
-		{
-			Queue queue = binding.getQueue();
-			
-			int maxSize = queue.getMaxSize();
-			
-			int available;
-			
-			if (maxSize == -1)
-			{
-				available = Integer.MAX_VALUE;
-			}
-			else
-			{
-				available = maxSize - queue.getMessageCount();
-			}
-			
-			if (available < 0)
-			{
-				available = 0;
-			}
-			
-			minAvailable = Math.min(available, minAvailable);			
-		}
-						
-		if (minAvailable > lastPot)
-		{
-			tokenPot += minAvailable - lastPot;
-			
-			lastPot = minAvailable;
-		}
+		creditPot = Integer.MAX_VALUE;
 	}
 }

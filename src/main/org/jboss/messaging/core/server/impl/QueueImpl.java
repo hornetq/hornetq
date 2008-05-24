@@ -77,8 +77,8 @@ public class QueueImpl implements Queue
 
    private final boolean temporary;
 
-   private volatile int maxSize;
-
+   private final int maxSizeBytes;
+     
    private final ScheduledExecutorService scheduledExecutor;
 
    private final PriorityLinkedList<MessageReference> messageReferences = new PriorityLinkedListImpl<MessageReference>(
@@ -95,6 +95,8 @@ public class QueueImpl implements Queue
    private boolean promptDelivery;
 
    private int pos;
+   
+   private AtomicInteger sizeBytes = new AtomicInteger(0);
 
    private AtomicInteger messagesAdded = new AtomicInteger(0);
 
@@ -109,7 +111,7 @@ public class QueueImpl implements Queue
    
    public QueueImpl(final long persistenceID, final SimpleString name,
          final Filter filter, final boolean clustered, final boolean durable,
-         final boolean temporary, final int maxSize,
+         final boolean temporary, final int maxSizeBytes,
          final ScheduledExecutorService scheduledExecutor)
    {
       this.persistenceID = persistenceID;
@@ -124,7 +126,7 @@ public class QueueImpl implements Queue
 
       this.temporary = temporary;
 
-      this.maxSize = maxSize;
+      this.maxSizeBytes = maxSizeBytes;
 
       this.scheduledExecutor = scheduledExecutor;
 
@@ -178,9 +180,6 @@ public class QueueImpl implements Queue
       deliver();
    }
  
-  // private volatile int count = 0;
-   
-
    public void deliverAsync(final Executor executor)
    {
       //Prevent too many executors running at once
@@ -238,11 +237,7 @@ public class QueueImpl implements Queue
          {
             if (iterator == null)
             {
-//               count++;
-//               if (count == 500000)
-//               {
-                  messageReferences.removeFirst();
-              // }
+               messageReferences.removeFirst();              
             }
             else
             {
@@ -385,14 +380,16 @@ public class QueueImpl implements Queue
       return deliveringCount.get();
    }
 
-   public void referenceAcknowledged() throws Exception
+   public void referenceAcknowledged(MessageReference ref) throws Exception
    {
       deliveringCount.decrementAndGet();
+      
+      sizeBytes.addAndGet(-ref.getMessage().encodeSize());
 
-      if (flowController != null)
-      {
-         flowController.messageAcknowledged();
-      }
+//      if (flowController != null)
+//      {
+//         flowController.messageAcknowledged();
+//      }
    }
 
    public void referenceCancelled()
@@ -400,20 +397,14 @@ public class QueueImpl implements Queue
       deliveringCount.decrementAndGet();
    }
 
-   public int getMaxSize()
+   public int getMaxSizeBytes()
    {
-      return maxSize;
+      return maxSizeBytes;
    }
-
-   public synchronized void setMaxSize(final int maxSize)
+   
+   public int getSizeBytes()
    {
-      int num = messageReferences.size() + scheduledRunnables.size();
-
-      if (maxSize < num) { throw new IllegalArgumentException(
-            "Cannot set maxSize to " + maxSize + " since there are " + num
-                  + " refs"); }
-
-      this.maxSize = maxSize;
+      return sizeBytes.get();
    }
 
    public DistributionPolicy getDistributionPolicy()
@@ -499,19 +490,16 @@ public class QueueImpl implements Queue
 
    private HandleStatus add(final MessageReference ref, final boolean first)
    {
-      if (maxSize != -1)
+      if (maxSizeBytes != -1 && sizeBytes.get() >= maxSizeBytes)
       {
-         int size = deliveringCount.get() + messageReferences.size() + scheduledRunnables.size();
-         
-         if (size >= maxSize)
-         {
-            return HandleStatus.BUSY;
-         }      
+         return HandleStatus.BUSY;              
       }
       
       if (!first)
       {
          messagesAdded.incrementAndGet();
+         
+         sizeBytes.addAndGet(ref.getMessage().encodeSize());
       }
       
       if (checkAndSchedule(ref))

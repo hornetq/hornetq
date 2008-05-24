@@ -27,14 +27,14 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowTokenMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
-import org.jboss.messaging.core.remoting.impl.wireformat.ProducerReceiveTokensMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ProducerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
@@ -401,7 +401,7 @@ public class MessagingCodec extends CumulativeProtocolDecoder
             }
             case EmptyPacket.CONS_FLOWTOKEN:
             {
-               packet = new ConsumerFlowTokenMessage();
+               packet = new ConsumerFlowCreditMessage();
                break;
             }
             case EmptyPacket.PROD_SEND:
@@ -411,7 +411,7 @@ public class MessagingCodec extends CumulativeProtocolDecoder
             }
             case EmptyPacket.PROD_RECEIVETOKENS:
             {
-               packet = new ProducerReceiveTokensMessage();
+               packet = new ProducerFlowCreditMessage();
                break;
             }
             case EmptyPacket.RECEIVE_MSG:

@@ -177,57 +177,57 @@ public class MinaHandler extends IoHandlerAdapter implements
       }
    }
 
-   @Override
-   public synchronized void messageSent(final IoSession session, final Object message) throws Exception
-   {
-      if (blocked)
-      {
-         long bytes = session.getScheduledWriteBytes();
-
-         if (bytes <= bytesLow)
-         {
-            blocked = false;
-
-            //Note that we need to notify all since there may be more than one thread waiting on this
-            //E.g. the response from a blocking acknowledge and a delivery
-            notifyAll();
-         }
-      }
-   }
-
-   public synchronized void checkWrite(final IoSession session) throws Exception
-   {
-      while (session.getScheduledWriteBytes() >= bytesHigh)
-      {
-         blocked = true;
-
-         long start = System.currentTimeMillis();
-
-         long toWait = blockTimeout;
-
-         do
-         {
-            wait(toWait);
-
-            if (session.getScheduledWriteBytes() < bytesHigh)
-            {
-               break;
-            }
-
-            long now = System.currentTimeMillis();
-
-            toWait -= now - start;
-
-            start = now;
-         }
-         while (toWait > 0);
-
-         if (toWait <= 0)
-         {
-            throw new IllegalStateException("Timed out waiting for MINA queue to free");
-         }
-      }
-   }
+//   @Override
+//   public synchronized void messageSent(final IoSession session, final Object message) throws Exception
+//   {
+//      if (blocked)
+//      {
+//         long bytes = session.getScheduledWriteBytes();
+//
+//         if (bytes <= bytesLow)
+//         {
+//            blocked = false;
+//
+//            //Note that we need to notify all since there may be more than one thread waiting on this
+//            //E.g. the response from a blocking acknowledge and a delivery
+//            notifyAll();
+//         }
+//      }
+//   }
+//
+//   public synchronized void checkWrite(final IoSession session) throws Exception
+//   {
+//      while (session.getScheduledWriteBytes() >= bytesHigh)
+//      {
+//         blocked = true;
+//
+//         long start = System.currentTimeMillis();
+//
+//         long toWait = blockTimeout;
+//
+//         do
+//         {
+//            wait(toWait);
+//
+//            if (session.getScheduledWriteBytes() < bytesHigh)
+//            {
+//               break;
+//            }
+//
+//            long now = System.currentTimeMillis();
+//
+//            toWait -= now - start;
+//
+//            start = now;
+//         }
+//         while (toWait > 0);
+//
+//         if (toWait <= 0)
+//         {
+//            throw new IllegalStateException("Timed out waiting for MINA queue to free");
+//         }
+//      }
+//   }
 
    // Package protected ---------------------------------------------
 
@@ -246,14 +246,14 @@ public class MinaHandler extends IoHandlerAdapter implements
          {
             public void send(Packet p) throws Exception
             {
-               try
-               {
-                  checkWrite(session);
-               }
-               catch (Exception e)
-               {
-                  log.error("Failed to acquire sem", e);
-               }
+//               try
+//               {
+//                  checkWrite(session);
+//               }
+//               catch (Exception e)
+//               {
+//                  log.error("Failed to acquire sem", e);
+//               }
 
                dispatcher.callFilters(p);
 

@@ -17,5 +17,5 @@ import org.jboss.messaging.core.client.ClientProducer;
  */
 public interface ClientProducerInternal extends ClientProducer
 {
-	void receiveTokens(int tokens) throws Exception;
+	void receiveCredits(int credits) throws Exception;
 }

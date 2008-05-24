@@ -21,7 +21,7 @@ public class SessionCreateProducerResponseMessage extends EmptyPacket
 
    private long producerTargetID;
    
-   private int windowSize;
+   private int initialCredits;
    
    private int maxRate;
 
@@ -29,13 +29,13 @@ public class SessionCreateProducerResponseMessage extends EmptyPacket
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateProducerResponseMessage(final long producerTargetID, final int windowSize, final int maxRate)
+   public SessionCreateProducerResponseMessage(final long producerTargetID, final int initialCredits, final int maxRate)
    {
       super(SESS_CREATEPRODUCER_RESP);
 
       this.producerTargetID = producerTargetID;
       
-      this.windowSize = windowSize;
+      this.initialCredits = initialCredits;
       
       this.maxRate = maxRate;
    }
@@ -52,9 +52,9 @@ public class SessionCreateProducerResponseMessage extends EmptyPacket
       return producerTargetID;
    }
    
-   public int getWindowSize()
+   public int getInitialCredits()
    {
-   	return windowSize;
+   	return initialCredits;
    }
    
    public int getMaxRate()
@@ -65,14 +65,14 @@ public class SessionCreateProducerResponseMessage extends EmptyPacket
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putLong(producerTargetID);
-      buffer.putInt(windowSize);
+      buffer.putInt(initialCredits);
       buffer.putInt(maxRate);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
       producerTargetID = buffer.getLong();      
-      windowSize = buffer.getInt();
+      initialCredits = buffer.getInt();
       maxRate = buffer.getInt();
    }
    
@@ -82,7 +82,7 @@ public class SessionCreateProducerResponseMessage extends EmptyPacket
    {
       StringBuffer buf = new StringBuffer(getParentString());
       buf.append(", producerTargetID=" + producerTargetID);
-      buf.append(", windowSize=" + windowSize);
+      buf.append(", initialCredits=" + initialCredits);
       buf.append(", maxRate=" + maxRate);
       buf.append("]");
       return buf.toString();

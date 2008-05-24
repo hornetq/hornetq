@@ -108,7 +108,7 @@ public class PostOfficeImpl implements PostOffice
    	{   	
       	if (!temporary)
       	{
-      		storageManager.addDestination(address);
+      		storageManager.addDestination(address);     
       	}
       	 
          flowControllers.put(address, new FlowControllerImpl(address, this));
@@ -288,7 +288,7 @@ public class PostOfficeImpl implements PostOffice
       }     
       
       FlowController flowController = flowControllers.get(binding.getAddress());
-           
+                    
       binding.getQueue().setFlowController(flowController);
    }
    
@@ -339,7 +339,13 @@ public class PostOfficeImpl implements PostOffice
       List<SimpleString> dests = new ArrayList<SimpleString>();
       
       storageManager.loadBindings(queueFactory, bindings, dests);
-   	
+                  
+      //Destinations must be added first to ensure flow controllers exist before queues are created
+      for (SimpleString destination: destinations)
+      {
+         addDestination(destination, false);
+      }
+                	
       Map<Long, Queue> queues = new HashMap<Long, Queue>();
       
       for (Binding binding: bindings)
@@ -348,9 +354,7 @@ public class PostOfficeImpl implements PostOffice
          
          queues.put(binding.getQueue().getPersistenceID(), binding.getQueue());
       }
-      
-      destinations.addAll(dests);
-      
+                 
       storageManager.loadMessages(this, queues);
    }
 

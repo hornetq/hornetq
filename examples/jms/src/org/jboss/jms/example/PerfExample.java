@@ -53,14 +53,16 @@ public class PerfExample
       PerfExample perfExample = new PerfExample();
 
       int noOfMessages = Integer.parseInt(args[1]);
-      int deliveryMode = args[2].equalsIgnoreCase("persistent")? DeliveryMode.PERSISTENT: DeliveryMode.NON_PERSISTENT;
-      long samplePeriod = Long.parseLong(args[3]);
-      boolean transacted = Boolean.parseBoolean(args[4]);
+      int noOfWarmupMessages = Integer.parseInt(args[2]);
+      int deliveryMode = args[3].equalsIgnoreCase("persistent")? DeliveryMode.PERSISTENT: DeliveryMode.NON_PERSISTENT;
+      long samplePeriod = Long.parseLong(args[4]);
+      boolean transacted = Boolean.parseBoolean(args[5]);
       log.info("Transacted:" + transacted);
-      int transactionBatchSize = Integer.parseInt(args[5]);
+      int transactionBatchSize = Integer.parseInt(args[6]);
 
       PerfParams perfParams = new PerfParams();
       perfParams.setNoOfMessagesToSend(noOfMessages);
+      perfParams.setNoOfWarmupMessages(noOfWarmupMessages);
       perfParams.setDeliveryMode(deliveryMode);
       perfParams.setSamplePeriod(samplePeriod);
       perfParams.setSessionTransacted(transacted);
@@ -93,17 +95,14 @@ public class PerfExample
       {
          log.info("params = " + perfParams);
          init(perfParams.isSessionTransacted());
-         // use 10% of the messages to warm up the system
-         int warmupMessages = perfParams.getNoOfMessagesToSend() / 10;
-         log.info("warming up by sending " + warmupMessages + " messages");
-         sendMessages(warmupMessages, perfParams.getTransactionBatchSize(), perfParams.getDeliveryMode(), perfParams.isSessionTransacted());         
-         log.info("warmed up");
-         // do not take into account messages received during warmup
+         // use 10% of the messages to warm up the system       
+         log.info("warming up by sending " + perfParams.getNoOfWarmupMessages() + " messages");
+         sendMessages(perfParams.getNoOfWarmupMessages(), perfParams.getTransactionBatchSize(), perfParams.getDeliveryMode(), perfParams.isSessionTransacted());         
+         log.info("warmed up");         
          messageCount.set(0);
-         int remainingMessages = perfParams.getNoOfMessagesToSend() - warmupMessages;
 
          scheduler.scheduleAtFixedRate(command, perfParams.getSamplePeriod(), perfParams.getSamplePeriod(), TimeUnit.SECONDS);
-         sendMessages(remainingMessages, perfParams.getTransactionBatchSize(), perfParams.getDeliveryMode(), perfParams.isSessionTransacted());         
+         sendMessages(perfParams.getNoOfMessagesToSend(), perfParams.getTransactionBatchSize(), perfParams.getDeliveryMode(), perfParams.isSessionTransacted());         
          scheduler.shutdownNow();
          
          log.info("average: " + (command.getAverage() / perfParams.getSamplePeriod()) + " msg/s");
@@ -208,10 +207,10 @@ public class PerfExample
    class PerfListener implements MessageListener
    {
       private CountDownLatch countDownLatch;
-      PerfParams perfParams;
       
-      boolean started = false;
-
+      private PerfParams perfParams;
+      
+      private boolean started = false;
 
       public PerfListener(CountDownLatch countDownLatch, PerfParams perfParams)
       {

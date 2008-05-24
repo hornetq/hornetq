@@ -46,7 +46,8 @@
       
       <remoting-writequeue-minbytes>0</remoting-writequeue-minbytes>
       
-      <remoting-writequeue-maxbytes>8192</remoting-writequeue-maxbytes>
+      <!-- Effectively disable this since we're using producer and consumer flow control -->
+      <remoting-writequeue-maxbytes>100000000</remoting-writequeue-maxbytes>
       
       <!--  if ssl is enabled, all remoting-ssl-* properties must be set -->
       <remoting-enable-ssl>false</remoting-enable-ssl>
@@ -69,7 +70,7 @@
       
       <create-journal-dir>true</create-journal-dir>
       
-      <journal-type>asyncio</journal-type>
+      <journal-type>nio</journal-type>
       
       <journal-sync>true</journal-sync>
       

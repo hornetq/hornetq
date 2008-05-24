@@ -5,7 +5,7 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
-import org.jboss.messaging.core.remoting.impl.wireformat.ProducerReceiveTokensMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ProducerFlowCreditMessage;
 
 /**
  * 
@@ -42,9 +42,9 @@ public class ClientProducerPacketHandler implements PacketHandler
          
          if (type == EmptyPacket.PROD_RECEIVETOKENS)
          {
-            ProducerReceiveTokensMessage message = (ProducerReceiveTokensMessage) packet;
+            ProducerFlowCreditMessage message = (ProducerFlowCreditMessage) packet;
             
-            clientProducer.receiveTokens(message.getTokens());
+            clientProducer.receiveCredits(message.getTokens());
          }
          else
          {

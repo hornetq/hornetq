@@ -78,15 +78,21 @@ public interface Queue
    
    int getDeliveringCount();
    
-   void referenceAcknowledged() throws Exception;
+   void referenceAcknowledged(MessageReference ref) throws Exception;
   
    void referenceCancelled();
    
    int getScheduledCount();
           
-   int getMaxSize();
+  // int getMaxSize();
    
-   void setMaxSize(int maxSize);
+  // int getSizeBytes();
+   
+ //  void setMaxSize(int maxSize);
+   
+   int getMaxSizeBytes();
+   
+   int getSizeBytes();
    
    DistributionPolicy getDistributionPolicy();
    

@@ -979,7 +979,7 @@ public class ServerSessionImpl implements ServerSession
 
          SimpleString filterString = filter == null ? null : filter.getFilterString();
 
-         response = new SessionQueueQueryResponseMessage(queue.isDurable(), queue.isTemporary(), queue.getMaxSize(),
+         response = new SessionQueueQueryResponseMessage(queue.isDurable(), queue.isTemporary(), queue.getMaxSizeBytes(),
                  queue.getConsumerCount(), queue.getMessageCount(),
                  filterString, binding.getAddress());
       }
@@ -1044,9 +1044,8 @@ public class ServerSessionImpl implements ServerSession
     * @param address    The address to produce too
     * @param windowSize - the producer window size to use for flow control.
     *                   Specify -1 to disable flow control completely
-    *                   The actual window size used may be less than the specified window size if the queue's maxSize attribute
-    *                   is set and there are not sufficient empty spaces in the queue, or it is overridden by any producer-window_size
-    *                   specified on the queue
+    *                   The actual window size used may be less than the specified window size if
+    *                   it is overridden by any producer-window-size specified on the queue
     */
    public SessionCreateProducerResponseMessage createProducer(final long clientTargetID, final SimpleString address, final int windowSize,
                                                               final int maxRate) throws Exception
@@ -1055,24 +1054,31 @@ public class ServerSessionImpl implements ServerSession
 
       final int maxRateToUse = maxRate;
 
-      // TODO Flow control disabled for now
-
-//   	if (address != null)
-//   	{
-//   		flowController = windowSize == -1 ? null : postOffice.getFlowController(address);
-//   	}
+   	if (address != null)
+   	{
+   		flowController = windowSize == -1 ? null : postOffice.getFlowController(address);
+   	}
 
       long id = dispatcher.generateID();
-
-      ServerProducerImpl producer = new ServerProducerImpl(id, clientTargetID, this, address, sender, flowController);
+      
+      final int windowToUse = flowController == null ? -1 : windowSize;
+      
+      //Server window size is 0.75 client window size for producer flow control (other way round to consumer flow control)
+      
+      final int serverWindowSize = windowToUse == -1 ? -1 : (int)(windowToUse * 0.75);            
+      
+      ServerProducerImpl producer 
+         = new ServerProducerImpl(id, clientTargetID, this, address, sender, flowController, serverWindowSize);
 
       producers.add(producer);
 
       dispatcher.register(new ServerProducerPacketHandler(producer));
-
-      final int windowToUse = flowController == null ? -1 : flowController.getInitialTokens(windowSize, producer);
-
-      return new SessionCreateProducerResponseMessage(producer.getID(), windowToUse, maxRateToUse);
+      
+      //Get some initial credits to send to the producer - we try for windowToUse
+      
+      int initialCredits = flowController == null ? -1 : flowController.getInitialCredits(windowToUse, producer);
+      
+      return new SessionCreateProducerResponseMessage(producer.getID(), initialCredits, maxRateToUse);
    }
 
    // Public ---------------------------------------------------------------------------------------------
@@ -1104,7 +1110,7 @@ public class ServerSessionImpl implements ServerSession
          }
       }
 
-      queue.referenceAcknowledged();
+      queue.referenceAcknowledged(ref);
    }
 
 

@@ -10,31 +10,31 @@ import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * 
- * A ProducerReceiveTokensMessage
+ * A ProducerFlowCreditMessage
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class ProducerReceiveTokensMessage extends EmptyPacket
+public class ProducerFlowCreditMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private int tokens;
+   private int credits;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ProducerReceiveTokensMessage(final int tokens)
+   public ProducerFlowCreditMessage(final int credits)
    {
       super(PROD_RECEIVETOKENS);
 
-      this.tokens = tokens;
+      this.credits = credits;
    }
    
-   public ProducerReceiveTokensMessage()
+   public ProducerFlowCreditMessage()
    {
       super(PROD_RECEIVETOKENS);
    }
@@ -43,24 +43,24 @@ public class ProducerReceiveTokensMessage extends EmptyPacket
 
    public int getTokens()
    {
-      return tokens;
+      return credits;
    }
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putInt(tokens);
+      buffer.putInt(credits);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      tokens = buffer.getInt();
+      credits = buffer.getInt();
    }
 
    @Override
    public String toString()
    {
       StringBuffer buf = new StringBuffer(getParentString());
-      buf.append(", tokens=" + tokens);
+      buf.append(", credits=" + credits);
       buf.append("]");
       return buf.toString();
    }

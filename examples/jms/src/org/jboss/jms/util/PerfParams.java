@@ -30,6 +30,7 @@ import java.io.Serializable;
 public class PerfParams implements Serializable
 {
    int noOfMessagesToSend = 1000;
+   int noOfWarmupMessages;
    long samplePeriod = 1; // in seconds
    int deliveryMode  = DeliveryMode.NON_PERSISTENT;
    boolean isSessionTransacted = false;
@@ -43,6 +44,16 @@ public class PerfParams implements Serializable
    public void setNoOfMessagesToSend(int noOfMessagesToSend)
    {
       this.noOfMessagesToSend = noOfMessagesToSend;
+   }
+   
+   public int getNoOfWarmupMessages()
+   {
+      return noOfWarmupMessages;
+   }
+
+   public void setNoOfWarmupMessages(int noOfWarmupMessages)
+   {
+      this.noOfWarmupMessages = noOfWarmupMessages;
    }
 
    public long getSamplePeriod()

@@ -118,7 +118,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
       this.strictTck = false;
       this.defaultConsumerWindowSize = 1024 * 1024;      
       this.defaultConsumerMaxRate = -1;
-      this.defaultProducerWindowSize = 1000;
+      this.defaultProducerWindowSize = 1024 * 1024;
       this.defaultProducerMaxRate = -1;
       this.location = location;
       this.defaultSendNonPersistentMessagesBlocking = false;

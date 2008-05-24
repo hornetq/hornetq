@@ -14,26 +14,26 @@ import org.jboss.messaging.util.MessagingBuffer;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class ConsumerFlowTokenMessage extends EmptyPacket
+public class ConsumerFlowCreditMessage extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private int tokens;
+   private int credits;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ConsumerFlowTokenMessage(final int tokens)
+   public ConsumerFlowCreditMessage(final int credits)
    {
       super(CONS_FLOWTOKEN);
 
-      this.tokens = tokens;
+      this.credits = credits;
    }
    
-   public ConsumerFlowTokenMessage()
+   public ConsumerFlowCreditMessage()
    {
       super(CONS_FLOWTOKEN);
    }
@@ -42,23 +42,23 @@ public class ConsumerFlowTokenMessage extends EmptyPacket
 
    public int getTokens()
    {
-      return tokens;
+      return credits;
    }
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putInt(tokens);
+      buffer.putInt(credits);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      tokens = buffer.getInt();
+      credits = buffer.getInt();
    }
 
    @Override
    public String toString()
    {
-      return getParentString() + ", tokens=" + tokens + "]";
+      return getParentString() + ", credits=" + credits + "]";
    }
    // Package protected ---------------------------------------------
 

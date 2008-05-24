@@ -65,7 +65,7 @@ public class QueueSettingsDeployerTest extends TestCase
       QueueSettings queueSettings = new QueueSettings();
       queueSettings.setClustered(false);
       queueSettings.setRedeliveryDelay((long) 100);
-      queueSettings.setMaxSize(-100);
+      queueSettings.setMaxSizeBytes(-100);
       queueSettings.setDistributionPolicyClass("org.jboss.messaging.core.impl.RoundRobinDistributionPolicy");
       queueSettings.setMessageCounterHistoryDayLimit(1000);
       queueSettings.setDLQ(new SimpleString("DLQtest"));
@@ -111,7 +111,7 @@ public class QueueSettingsDeployerTest extends TestCase
          if (!queueSettings.isClustered().equals(that.isClustered())) return false;
          if (!queueSettings.getDistributionPolicyClass().equals(that.getDistributionPolicyClass())) return false;
          if (!queueSettings.getMaxDeliveryAttempts().equals(that.getMaxDeliveryAttempts())) return false;
-         if (!queueSettings.getMaxSize().equals(that.getMaxSize())) return false;
+         if (!queueSettings.getMaxSizeBytes().equals(that.getMaxSizeBytes())) return false;
          if (!queueSettings.getMessageCounterHistoryDayLimit().equals(that.getMessageCounterHistoryDayLimit()))
             return false;
          if (!queueSettings.getRedeliveryDelay().equals(that.getRedeliveryDelay())) return false;

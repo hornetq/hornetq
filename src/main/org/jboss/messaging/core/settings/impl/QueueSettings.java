@@ -23,7 +23,6 @@ package org.jboss.messaging.core.settings.impl;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.server.DistributionPolicy;
-import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.impl.RoundRobinDistributionPolicy;
 import org.jboss.messaging.core.settings.Mergeable;
 import org.jboss.messaging.util.SimpleString;
@@ -32,6 +31,7 @@ import org.jboss.messaging.util.SimpleString;
  * The Queue Settings that will be used to configure a queue
  * 
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
 public class QueueSettings implements Mergeable<QueueSettings>
 {
@@ -41,14 +41,14 @@ public class QueueSettings implements Mergeable<QueueSettings>
     */
    public static final DistributionPolicy DEFAULT_DISTRIBUTION_POLICY = new RoundRobinDistributionPolicy();
    public static final Boolean DEFAULT_CLUSTERED = false;
-   public static final Integer DEFAULT_MAX_SIZE = -1;
+   public static final Integer DEFAULT_MAX_SIZE_BYTES = -1;
    public static final Integer DEFAULT_MAX_DELIVERY_ATTEMPTS = 10;
    public static final Integer DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT = 0;
    public static final Long DEFAULT_REDELIVER_DELAY = (long) 500;
    
 
    private Boolean clustered = null;
-   private Integer maxSize = null;
+   private Integer maxSizeBytes = null;
    private String distributionPolicyClass = null;
    private Integer maxDeliveryAttempts = null;
    private Integer messageCounterHistoryDayLimit = null;
@@ -71,14 +71,14 @@ public class QueueSettings implements Mergeable<QueueSettings>
       this.clustered = clustered;
    }
 
-   public Integer getMaxSize()
+   public Integer getMaxSizeBytes()
    {
-      return maxSize != null?maxSize:DEFAULT_MAX_SIZE;
+      return maxSizeBytes != null ? maxSizeBytes:DEFAULT_MAX_SIZE_BYTES;
    }
 
-   public void setMaxSize(Integer maxSize)
+   public void setMaxSizeBytes(Integer maxSizeBytes)
    {
-      this.maxSize = maxSize;
+      this.maxSizeBytes = maxSizeBytes;
    }
 
    public Integer getMaxDeliveryAttempts()
@@ -212,9 +212,9 @@ public class QueueSettings implements Mergeable<QueueSettings>
       {
          maxDeliveryAttempts = merged.maxDeliveryAttempts;
       }
-      if(maxSize == null)
+      if(maxSizeBytes == null)
       {
-         maxSize = merged.maxSize;
+         maxSizeBytes = merged.maxSizeBytes;
       }
       if(messageCounterHistoryDayLimit == null)
       {

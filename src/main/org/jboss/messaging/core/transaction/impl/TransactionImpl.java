@@ -220,7 +220,7 @@ public class TransactionImpl implements Transaction
 
       for (MessageReference reference : acknowledgements)
       {
-         reference.getQueue().referenceAcknowledged();
+         reference.getQueue().referenceAcknowledged(reference);
       }
 
       clear();

@@ -354,15 +354,15 @@ public class MessagingServerImpl implements MessagingServer
       remotingService.getDispatcher().register(new ServerConnectionPacketHandler(connection));
 
       CreateConnectionResponse createConnectionResponse = new CreateConnectionResponse(connection.getID(), version);
-      if(cleanUpNotifier != null)
-      {
-         if(!getRemotingService().getKeepAliveFactory().isPinging(sender.getSessionID()))
-         {
-            getRemotingService().getKeepAliveFactory().getSessions().add(sender.getSessionID());
-            ClientPinger clientPinger = new ClientPingerImpl(this, getRemotingService().getKeepAliveFactory(), cleanUpNotifier, sender);
-            new Thread(clientPinger).start();
-         }
-      }
+//      if(cleanUpNotifier != null)
+//      {
+//         if(!getRemotingService().getKeepAliveFactory().isPinging(sender.getSessionID()))
+//         {
+//            getRemotingService().getKeepAliveFactory().getSessions().add(sender.getSessionID());
+//            ClientPinger clientPinger = new ClientPingerImpl(this, getRemotingService().getKeepAliveFactory(), cleanUpNotifier, sender);
+//            new Thread(clientPinger).start();
+//         }
+//      }
 
       return createConnectionResponse;
    }
