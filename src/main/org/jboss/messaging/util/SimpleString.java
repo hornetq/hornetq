@@ -204,6 +204,10 @@ public class SimpleString implements CharSequence, Serializable
 	
 	public static int sizeofString(final SimpleString str)
 	{
+	   if (str == null)
+	   {
+	      return SIZE_INT;
+	   }
 		return SIZE_INT + str.data.length;
 	}
 }
