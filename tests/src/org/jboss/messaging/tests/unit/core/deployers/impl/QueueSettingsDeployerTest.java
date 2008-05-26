@@ -44,7 +44,7 @@ public class QueueSettingsDeployerTest extends TestCase
            "      <dlq>DLQtest</dlq>\n" +
            "      <expiry-queue>ExpiryQueueTest</expiry-queue>\n" +
            "      <redelivery-delay>100</redelivery-delay>\n" +
-           "      <max-size>-100</max-size>\n" +
+           "      <max-size-bytes>-100</max-size-bytes>\n" +
            "      <distribution-policy-class>org.jboss.messaging.core.impl.RoundRobinDistributionPolicy</distribution-policy-class>\n" +
            "      <message-counter-history-day-limit>1000</message-counter-history-day-limit>\n" +
            "   </queue-settings>";

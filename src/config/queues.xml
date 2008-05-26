@@ -99,7 +99,7 @@
       <dlq>DLQ</dlq>
       <expiry-queue>queuejms.ExpiryQueue</expiry-queue>
       <redelivery-delay>0</redelivery-delay>
-      <max-size>-1</max-size>
+      <max-size-bytes>-1</max-size-bytes>
       <distribution-policy-class>org.jboss.messaging.core.server.impl.RoundRobinDistributionPolicy</distribution-policy-class>
       <message-counter-history-day-limit>10</message-counter-history-day-limit>
    </queue-settings>
