@@ -341,7 +341,7 @@ public class PostOfficeImpl implements PostOffice
       storageManager.loadBindings(queueFactory, bindings, dests);
                   
       //Destinations must be added first to ensure flow controllers exist before queues are created
-      for (SimpleString destination: destinations)
+      for (SimpleString destination: dests)
       {
          addDestination(destination, false);
       }
