@@ -3742,99 +3742,99 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
-
-   public void testExceptionMessageListener1() throws Exception
-   {
-   	Connection conn = null;
-      
-      try
-      {	      
-	      conn = cf.createConnection();
-
-	      conn.start();
-	
-	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	
-	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	
-	      MessageConsumer cons = sess.createConsumer(queue1);
-	
-	      ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
-	
-	      cons.setMessageListener(listener);
-	
-	      MessageProducer prod = sessSend.createProducer(queue1);
-	      TextMessage m1 = sess.createTextMessage("a");
-	      TextMessage m2 = sess.createTextMessage("b");
-	      TextMessage m3 = sess.createTextMessage("c");
-	
-	      prod.send(m1);
-	      prod.send(m2);
-	      prod.send(m3);
-	
-	      listener.waitForMessages();
-	
-	      assertFalse(listener.message, listener.failed);
-	
-	      conn.close();
-	      
-	      conn = null;
-	   }
-	   finally
-	   {
-	   	if (conn != null)
-	   	{
-	   		conn.close();
-	   	}
-	   }
-   }
-
-   public void testExceptionMessageListener2() throws Exception
-   {
-   	Connection conn = null;
-      
-      try
-      {	      
-	      conn = cf.createConnection();
-
-	      conn.start();
-	
-	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	
-	      Session sess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
-	
-	      MessageConsumer cons = sess.createConsumer(queue1);
-	
-	      ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
-	
-	      cons.setMessageListener(listener);
-	
-	      MessageProducer prod = sessSend.createProducer(queue1);
-	      TextMessage m1 = sess.createTextMessage("a");
-	      TextMessage m2 = sess.createTextMessage("b");
-	      TextMessage m3 = sess.createTextMessage("c");
-	
-	      prod.send(m1);
-	      prod.send(m2);
-	      prod.send(m3);
-	
-	      listener.waitForMessages();
-	
-	      assertFalse(listener.message, listener.failed);
-	  	
-	
-	      conn.close();
-	      
-	      conn = null;
-	   }
-	   finally
-	   {
-	   	if (conn != null)
-	   	{
-	   		conn.close();
-	   	}
-	   }
-   }
+// http://jira.jboss.org/jira/browse/JBMESSAGING-1294 - commented out until 2.0 beta
+//   public void testExceptionMessageListener1() throws Exception
+//   {
+//   	Connection conn = null;
+//      
+//      try
+//      {	      
+//	      conn = cf.createConnection();
+//
+//	      conn.start();
+//	
+//	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//	
+//	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//	
+//	      MessageConsumer cons = sess.createConsumer(queue1);
+//	
+//	      ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
+//	
+//	      cons.setMessageListener(listener);
+//	
+//	      MessageProducer prod = sessSend.createProducer(queue1);
+//	      TextMessage m1 = sess.createTextMessage("a");
+//	      TextMessage m2 = sess.createTextMessage("b");
+//	      TextMessage m3 = sess.createTextMessage("c");
+//	
+//	      prod.send(m1);
+//	      prod.send(m2);
+//	      prod.send(m3);
+//	
+//	      listener.waitForMessages();
+//	
+//	      assertFalse(listener.message, listener.failed);
+//	
+//	      conn.close();
+//	      
+//	      conn = null;
+//	   }
+//	   finally
+//	   {
+//	   	if (conn != null)
+//	   	{
+//	   		conn.close();
+//	   	}
+//	   }
+//   }
+//
+//   public void testExceptionMessageListener2() throws Exception
+//   {
+//   	Connection conn = null;
+//      
+//      try
+//      {	      
+//	      conn = cf.createConnection();
+//
+//	      conn.start();
+//	
+//	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//	
+//	      Session sess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+//	
+//	      MessageConsumer cons = sess.createConsumer(queue1);
+//	
+//	      ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
+//	
+//	      cons.setMessageListener(listener);
+//	
+//	      MessageProducer prod = sessSend.createProducer(queue1);
+//	      TextMessage m1 = sess.createTextMessage("a");
+//	      TextMessage m2 = sess.createTextMessage("b");
+//	      TextMessage m3 = sess.createTextMessage("c");
+//	
+//	      prod.send(m1);
+//	      prod.send(m2);
+//	      prod.send(m3);
+//	
+//	      listener.waitForMessages();
+//	
+//	      assertFalse(listener.message, listener.failed);
+//	  	
+//	
+//	      conn.close();
+//	      
+//	      conn = null;
+//	   }
+//	   finally
+//	   {
+//	   	if (conn != null)
+//	   	{
+//	   		conn.close();
+//	   	}
+//	   }
+//   }
 
    public void testExceptionMessageListener3() throws Exception
    {
