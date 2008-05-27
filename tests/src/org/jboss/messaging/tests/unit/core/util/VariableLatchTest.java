@@ -69,7 +69,7 @@ public class VariableLatchTest extends TestCase
       long start = System.currentTimeMillis();
       try
       {
-         latch.waitCompletion(1);
+         latch.waitCompletion(1000);
          fail ("It was suppsoed to throw an exception");
       }
       catch (Exception ignored)
@@ -106,7 +106,7 @@ public class VariableLatchTest extends TestCase
          {
             try
             {
-               latch.waitCompletion(5);
+               latch.waitCompletion(5000);
             }
             catch (Exception e)
             {
