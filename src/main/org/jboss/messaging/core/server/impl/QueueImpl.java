@@ -366,6 +366,7 @@ public class QueueImpl implements Queue
 
    public synchronized int getMessageCount()
    {
+      //log.info("mr: " + messageReferences.size() + " sc:" + getScheduledCount() + " dc:" + getDeliveringCount());
       return messageReferences.size() + getScheduledCount()
             + getDeliveringCount();
    }
@@ -490,7 +491,7 @@ public class QueueImpl implements Queue
 
    private HandleStatus add(final MessageReference ref, final boolean first)
    {
-      if (maxSizeBytes != -1 && sizeBytes.get() >= maxSizeBytes)
+      if (maxSizeBytes != -1 && sizeBytes.get() + ref.getMessage().encodeSize() >= maxSizeBytes)
       {
          return HandleStatus.BUSY;              
       }

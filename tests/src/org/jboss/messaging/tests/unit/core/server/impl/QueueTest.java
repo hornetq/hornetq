@@ -505,13 +505,13 @@ public class QueueTest extends UnitTestCase
       
       cons1.getReferences().clear();
       
-      refs.clear();
-      
       for (MessageReference ref: refs)
       {
          queue.referenceAcknowledged(ref);
       }
       
+      refs.clear();
+            
       for (int i = 0; i < 2 * numMessages; i++)
       {
          MessageReference ref = generateReference(queue, i);
@@ -820,46 +820,57 @@ public class QueueTest extends UnitTestCase
    
    public void testMaxSize()
    {
-      final int maxSize = 20;
+      final int maxSize = 10 * 1024;
       
       Queue queue = new QueueImpl(1, queue1, null, false, true, false, maxSize, scheduledExecutor);
       
       List<MessageReference> refs = new ArrayList<MessageReference>();
       
-      for (int i = 0; i < maxSize; i++)
+      int size = 0;
+      
+      int i = 0;
+      while (true)
       {
-         MessageReference ref = generateReference(queue, i);
+         MessageReference ref = generateReference(queue, i++);
+                           
+         if (size + ref.getMessage().encodeSize() > maxSize)
+         {
+            break;
+         }
+         
+         size += ref.getMessage().encodeSize();
          
          refs.add(ref);
          
          assertEquals(HandleStatus.HANDLED, queue.addLast(ref));
       }
       
-      assertEquals(maxSize, queue.getMessageCount());   
-      assertEquals(0, queue.getScheduledCount());
-      assertEquals(0, queue.getDeliveringCount());
-      
+      assertEquals(maxSize, queue.getMaxSizeBytes());
+      assertEquals(size, queue.getSizeBytes());
+
       //Try to add more
       
-      for (int i = 0; i < 10; i++)
+      for (int j = 0; j < 10; j++)
       {
-         MessageReference ref = generateReference(queue, i);
+         MessageReference ref = generateReference(queue, j);
          
          assertEquals(HandleStatus.BUSY, queue.addLast(ref));
       }
       
-      assertEquals(maxSize, queue.getMessageCount());   
-      assertEquals(0, queue.getScheduledCount());
-      assertEquals(0, queue.getDeliveringCount());
-      
+      assertEquals(maxSize, queue.getMaxSizeBytes()); 
+      assertEquals(size, queue.getSizeBytes());
+
       // Try to add at front too
       
-      for (int i = 0; i < 10; i++)
+      for (int j = 0; j < 10; j++)
       {
          MessageReference ref = generateReference(queue, i);
          
          assertEquals(HandleStatus.BUSY, queue.addLast(ref));
-      }                    
+      }     
+      
+      assertEquals(maxSize, queue.getMaxSizeBytes()); 
+      assertEquals(size, queue.getSizeBytes());
    }
    
    public void testWithPriorities()

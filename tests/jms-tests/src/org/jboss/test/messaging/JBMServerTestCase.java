@@ -716,8 +716,6 @@ public class JBMServerTestCase extends JBMBaseTestCase
 
    protected boolean assertRemainingMessages(int expected) throws Exception
    {
-      sleepIfRemoting(500);
-      
       Integer messageCount = servers.get(0).getMessageCountForQueue("Queue1");
 
       assertEquals(expected, messageCount.intValue());
@@ -952,25 +950,5 @@ public class JBMServerTestCase extends JBMBaseTestCase
 
          log.info("server " + i + " killed and dead");
       }
-   }
-   
-
-   /**
-    * Sleeps a little if invm optimization is disabled for remoting.
-    * 
-    * This little sleep is necessary due to the async behavior of our remoting code.
-    * If we send non-durable messages and checks immediately that 
-    * they've been received on the server, it may fail since these
-    * messages are sent asynchronously.
-    * 
-    * @param time sleep time in milliseconds
-    */
-   protected void sleepIfRemoting(int time) throws Exception
-   {
-      Configuration config = servers.get(0).getMessagingServer().getRemotingService().getConfiguration();
-      if (config.getTransport() == TransportType.TCP)
-      {
-         Thread.sleep(time);
-      }
-   }
+   }   
 }

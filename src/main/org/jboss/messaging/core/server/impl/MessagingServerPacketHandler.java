@@ -89,7 +89,7 @@ public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
          response = createConnectionResponse;
          
       }
-      else if(type == EmptyPacket.PONG)
+      else if (type == EmptyPacket.PONG)
       {
          Pong decodedPong = (Pong) packet;
       }

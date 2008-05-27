@@ -948,7 +948,7 @@ public class AcknowledgementTest extends JMSTestCase
          listener.waitForMessages();
 
          Thread.sleep(500);
-
+         
          assertRemainingMessages(0);
 
          assertFalse(listener.failed);
@@ -1078,7 +1078,8 @@ public class AcknowledgementTest extends JMSTestCase
 
          listener.waitForMessages();
 
-         assertRemainingMessages(3);
+         //Recover forces an ack so there will be one
+         assertRemainingMessages(1);
 
          conn.close();
 
@@ -1212,7 +1213,8 @@ public class AcknowledgementTest extends JMSTestCase
 
       public void waitForMessages() throws InterruptedException
       {
-         assertTrue("failed to receive all messages", latch.attempt(2000));
+         assertTrue("failed to receive all messages", latch.attempt(
+               2000));
       }
 
       public abstract void onMessage(Message m);
@@ -1307,6 +1309,8 @@ public class AcknowledgementTest extends JMSTestCase
             count++;
 
             TextMessage tm = (TextMessage) m;
+            
+            log.info("got message " + tm.getText());
 
             // Receive first three messages then recover() session
             // Only last message should be redelivered
@@ -1343,7 +1347,8 @@ public class AcknowledgementTest extends JMSTestCase
             }
             if (count == 4)
             {
-               assertRemainingMessages(3);
+               //Recover forces an ack, so there will be only one left
+               assertRemainingMessages(1);
 
                if (!"c".equals(tm.getText()))
                {
