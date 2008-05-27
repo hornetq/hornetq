@@ -84,13 +84,13 @@
       <journal-max-aio>9000</journal-max-aio>
       
       
-      <!--  Maximum time in seconds an AIO operation could take.
+      <!--  Maximum time in milliseconds an AIO operation could take.
             This includes:
             - closing Asynchronous files
             - Transaction awaits
             - Awaits on non transactional writes
        -->
-      <journal-aio-timeout>90</journal-aio-timeout>
+      <journal-aio-timeout>90000</journal-aio-timeout>
       
       <journal-task-period>5000</journal-task-period>
       

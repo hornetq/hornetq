@@ -41,7 +41,7 @@ public class AIOSequentialFile implements SequentialFile
 	
 	private final int maxIO;
 	
-	private final int timeout;
+	private final long timeout;
 	
 	private AsynchronousFile aioFile;
 	
@@ -51,7 +51,7 @@ public class AIOSequentialFile implements SequentialFile
 	// serious performance problems. Because of that we make all the writes on AIO using a single thread.
 	private ExecutorService executor;
 	
-	public AIOSequentialFile(final String journalDir, final String fileName, final int maxIO, final int timeout) throws Exception
+	public AIOSequentialFile(final String journalDir, final String fileName, final int maxIO, final long timeout) throws Exception
 	{
 		this.journalDir = journalDir;		
 		this.fileName = fileName;

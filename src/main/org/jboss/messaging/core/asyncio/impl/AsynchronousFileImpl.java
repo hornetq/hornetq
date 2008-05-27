@@ -105,7 +105,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	private ReadWriteLock lock = new ReentrantReadWriteLock();
 	private Lock writeLock = lock.writeLock();
    private Semaphore writeSemaphore;   
-   private int timeout;
+   private long timeout;
 	
 	/**
 	 *  Warning: Beware of the C++ pointer! It will bite you! :-)
@@ -117,7 +117,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	// AsynchronousFile implementation
 	// ------------------------------------------------------------------------------------
 			
-	public void open(final String fileName, final int maxIO, final int timeout)
+	public void open(final String fileName, final int maxIO, final long timeout)
 	{
 		try
 		{

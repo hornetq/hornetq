@@ -141,7 +141,7 @@ public class JournalImpl implements TestableJournal
 	private final int maxAIO;
 	
    // used for Asynchronous IO only (ignored on NIO).
-	private final int aioTimeout;
+	private final long aioTimeout; // in ms
 	
 	private final int fileSize;
 	
@@ -204,7 +204,7 @@ public class JournalImpl implements TestableJournal
 	
 	public JournalImpl(final int fileSize, final int minFiles,
 			             final boolean sync, final SequentialFileFactory fileFactory, final long taskPeriod,
-			             final String filePrefix, final String fileExtension, final int maxAIO, final int aioTimeout)
+			             final String filePrefix, final String fileExtension, final int maxAIO, final long aioTimeout)
 	{
 		if (fileSize < MIN_FILE_SIZE)
 		{
@@ -1693,9 +1693,9 @@ public class JournalImpl implements TestableJournal
          latch.countDown();         
       }
       
-      public void waitCompletion(int timeout) throws InterruptedException 
+      public void waitCompletion(long timeout) throws InterruptedException 
       {
-         if (!latch.await(timeout, TimeUnit.SECONDS))
+         if (!latch.await(timeout, TimeUnit.MILLISECONDS))
          {
             throw new IllegalStateException("Timeout!");
          }
@@ -1724,7 +1724,7 @@ public class JournalImpl implements TestableJournal
          countLatch.down();
       }
       
-      public void waitCompletion(int timeout) throws InterruptedException
+      public void waitCompletion(long timeout) throws InterruptedException
       {
          countLatch.waitCompletion(timeout);
          

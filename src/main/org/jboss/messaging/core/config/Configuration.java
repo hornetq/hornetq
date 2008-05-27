@@ -109,7 +109,7 @@ public interface Configuration
    
    int getJournalMaxAIO();
    
-   int getJournalAIOTimeout();
+   long getJournalAIOTimeout();
    
    void setJournalMaxAIO(int max);
 
