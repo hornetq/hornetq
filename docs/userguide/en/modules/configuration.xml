@@ -119,6 +119,18 @@
          <journal-file-size>10485760</journal-file-size>
 
          <journal-min-files>10</journal-min-files>
+         
+         <!-- Maximum simultaneous asynchronous writes accepted by the native layer.
+              (parameter ignored on NIO) -->
+         <journal-max-aio>9000</journal-max-aio>
+
+         <!--  Maximum time in milliseconds an AIO operation could take.
+               This includes:
+               - closing Asynchronous files
+               - Transaction awaits
+               - Awaits on non transactional writes
+          -->
+         <journal-aio-timeout>90000</journal-aio-timeout>
 
          <journal-task-period>5000</journal-task-period>
 
@@ -226,6 +238,14 @@
          <listitem>
             <para>journal-min-files</para>
             <para>Minimum number of created files to start with</para>
+         </listitem>
+         <listitem>
+            <para>journal-max-aio</para>
+            <para>Maximum pending asynchronous writes accepted by the native layer per opened file. There is a limit and the total max AIO can't be higher than /proc/sys/fs/aio-max-nr. If you are combining the usage of JBoss Messaging with other systems that are using libaio (e.g. Oracle) you might need to increase this value on the OS. This parameter is only available on AIO which is only available on Linux at the moment.</para>
+         </listitem>
+         <listitem>
+            <para>journal-aio-timeout</para>
+            <para>Maximum amount of time any asynchronous operation can take in milliseconds. If any operation takes more than this amount a timeout exception will be logged. This parameter is only available on AIO which is only available on Linux.</para>
          </listitem>
          <listitem>
             <para>journal-task-period</para>

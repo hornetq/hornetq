@@ -160,7 +160,7 @@
 
    <section id="installation.jboss">
       <title>Installing JBoss Messaging in JBoss AS 5</title>
-      <para>To Do</para>
+      <para>At this point JBoss Messaging 2 Alpha is a technology preview and we only support the standalone or embedded runs.</para>
    </section>
 
 </chapter>
