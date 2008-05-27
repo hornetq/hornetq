@@ -13,8 +13,8 @@
       </layout>
    </appender>
 
-   <appender name="FILE" class="org.jboss.logging.appender.DailyRollingFileAppender">
-      <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
+   <appender name="FILE" class="org.apache.log4j.DailyRollingFileAppender">
+      <errorHandler class="org.apache.log4j.helpers.OnlyOnceErrorHandler"/>
 
       <param name="File" value="./logs/messaging.log"/>
 
