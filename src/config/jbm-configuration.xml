@@ -22,7 +22,7 @@
       <remoting-host>localhost</remoting-host>
 
       <!--  timeout in seconds -->
-      <remoting-timeout>5000</remoting-timeout>
+      <remoting-timeout>5</remoting-timeout>
       
       <!-- true to disable invm communication when the client and the server are in the same JVM.     -->
       <!-- it is not allowed to disable invm communication when the remoting-transport is set to INVM -->
