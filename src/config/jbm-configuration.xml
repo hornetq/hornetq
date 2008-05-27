@@ -70,7 +70,7 @@
       
       <create-journal-dir>true</create-journal-dir>
       
-      <journal-type>nio</journal-type>
+      <journal-type>asyncio</journal-type>
       
       <journal-sync>true</journal-sync>
       
@@ -79,9 +79,9 @@
       
       <journal-min-files>10</journal-min-files>
       
-      <!-- Maximum of simultaneous asynchronous writes accepted by the native layer.
+      <!-- Maximum simultaneous asynchronous writes accepted by the native layer.
            (parameter ignored on NIO) -->
-      <journal-max-aio>9000</journal-max-aio>
+      <journal-max-aio>10000</journal-max-aio>
       
       
       <!--  Maximum time in milliseconds an AIO operation could take.
@@ -89,8 +89,9 @@
             - closing Asynchronous files
             - Transaction awaits
             - Awaits on non transactional writes
+            You can verify the max AIO on the OS level at /proc/sys/fs/aio_max_nr. (aio-nr will give you the current max-aio being used)
        -->
-      <journal-aio-timeout>90000</journal-aio-timeout>
+      <journal-aio-timeout>60000</journal-aio-timeout>
       
       <journal-task-period>5000</journal-task-period>
       
