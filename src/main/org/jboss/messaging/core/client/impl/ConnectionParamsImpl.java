@@ -31,9 +31,9 @@ import java.io.Serializable;
 public class ConnectionParamsImpl implements ConnectionParams
 {
 
-   protected int timeout = DEFAULT_REQRES_TIMEOUT;
-   protected int keepAliveInterval = DEFAULT_KEEP_ALIVE_INTERVAL;
-   protected int keepAliveTimeout = DEFAULT_KEEP_ALIVE_TIMEOUT;
+   protected long timeout = DEFAULT_REQRES_TIMEOUT;
+   protected long keepAliveInterval = DEFAULT_KEEP_ALIVE_INTERVAL;
+   protected long keepAliveTimeout = DEFAULT_KEEP_ALIVE_TIMEOUT;
    protected boolean invmDisabled = DEFAULT_INVM_DISABLED;
    protected boolean invmDisabledModified = false;
    protected boolean tcpNoDelay;
@@ -49,32 +49,32 @@ public class ConnectionParamsImpl implements ConnectionParams
    protected long writeQueueMinBytes = 32 * 1024L;
    protected long writeQueueMaxBytes = 64 * 1024L;
 
-   public int getTimeout()
+   public long getTimeout()
    {
       return timeout;
    }
 
-   public void setTimeout(int timeout)
+   public void setTimeout(long timeout)
    {
       this.timeout = timeout;
    }
 
-   public int getKeepAliveInterval()
+   public long getKeepAliveInterval()
    {
       return keepAliveInterval;
    }
 
-   public void setKeepAliveInterval(int keepAliveInterval)
+   public void setKeepAliveInterval(long keepAliveInterval)
    {
       this.keepAliveInterval = keepAliveInterval;
    }
 
-   public int getKeepAliveTimeout()
+   public long getKeepAliveTimeout()
    {
       return keepAliveTimeout;
    }
 
-   public void setKeepAliveTimeout(int keepAliveTimeout)
+   public void setKeepAliveTimeout(long keepAliveTimeout)
    {
       this.keepAliveTimeout = keepAliveTimeout;
    }

@@ -67,11 +67,11 @@ public interface Configuration
 
    int getTcpSendBufferSize();
 
-   int getKeepAliveInterval();
+   long getKeepAliveInterval();
 
-   int getKeepAliveTimeout();
+   long getKeepAliveTimeout();
 
-   int getTimeout();
+   long getTimeout();
    
    long getWriteQueueMaxBytes();
 

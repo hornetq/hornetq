@@ -29,6 +29,7 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 
+import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.util.XMLUtil;
@@ -70,7 +71,7 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
 
       port = getInteger(e, "remoting-bind-address", DEFAULT_REMOTING_PORT);
       
-      timeout = getInteger(e, "remoting-timeout", 5);
+      timeout = getInteger(e, "remoting-timeout", ConnectionParams.DEFAULT_REQRES_TIMEOUT);
       
       invmDisabled = getBoolean(e, "remoting-disable-invm", false);
       

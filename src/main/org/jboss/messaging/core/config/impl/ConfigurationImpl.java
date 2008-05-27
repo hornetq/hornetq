@@ -46,9 +46,6 @@ public class ConfigurationImpl implements Configuration, Serializable
    public static final String REMOTING_ENABLE_SSL_SYSPROP_KEY = "jbm.remoting.enable.ssl";
 
    public static final int DEFAULT_REMOTING_PORT = 5400;
-   public static final int DEFAULT_KEEP_ALIVE_INTERVAL = 10; // in seconds
-   public static final int DEFAULT_KEEP_ALIVE_TIMEOUT = 5; // in seconds
-   public static final int DEFAULT_REQRES_TIMEOUT = 5; // in seconds
    public static final boolean DEFAULT_INVM_DISABLED = false;
    public static final boolean DEFAULT_SSL_ENABLED = false;
    public static final int DEFAULT_MAX_AIO = 3000;
@@ -99,9 +96,9 @@ public class ConfigurationImpl implements Configuration, Serializable
    protected int port = DEFAULT_REMOTING_PORT;
    protected int serverID = 0;
    
-   protected int timeout = DEFAULT_REQRES_TIMEOUT;
-   protected int keepAliveInterval = DEFAULT_KEEP_ALIVE_INTERVAL;
-   protected int keepAliveTimeout = DEFAULT_KEEP_ALIVE_TIMEOUT;
+   protected long timeout = ConnectionParams.DEFAULT_REQRES_TIMEOUT;
+   protected long keepAliveInterval = ConnectionParams.DEFAULT_KEEP_ALIVE_INTERVAL;
+   protected long keepAliveTimeout = ConnectionParams.DEFAULT_KEEP_ALIVE_TIMEOUT;
    protected boolean invmDisabled = DEFAULT_INVM_DISABLED;
    protected boolean invmDisabledModified = false;
    protected boolean tcpNoDelay;
@@ -198,27 +195,27 @@ public class ConfigurationImpl implements Configuration, Serializable
       this.serverID = serverID;
    }
    
-   public int getKeepAliveInterval()
+   public long getKeepAliveInterval()
    {
       return keepAliveInterval;
    }
    
-   public void setKeepAliveInterval(int keepAliveInterval)
+   public void setKeepAliveInterval(long keepAliveInterval)
    {
       this.keepAliveInterval = keepAliveInterval;
    }
 
-   public int getKeepAliveTimeout()
+   public long getKeepAliveTimeout()
    {
       return keepAliveTimeout;
    }
 
-   public void setKeepAliveTimeout(int keepAliveTimeout)
+   public void setKeepAliveTimeout(long keepAliveTimeout)
    {
       this.keepAliveTimeout = keepAliveTimeout;
    }
    
-   public int getTimeout()
+   public long getTimeout()
    {
       return timeout;
    }

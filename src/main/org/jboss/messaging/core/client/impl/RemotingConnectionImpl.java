@@ -180,7 +180,7 @@ public class RemotingConnectionImpl implements RemotingConnection
             throw new MessagingException(MessagingException.INTERNAL_ERROR);
          }
          
-         Packet response = handler.waitForResponse(1000 * connectionParams.getTimeout());
+         Packet response = handler.waitForResponse(connectionParams.getTimeout());
          
          if (response == null)
          {

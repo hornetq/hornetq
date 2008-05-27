@@ -9,9 +9,9 @@ import java.io.Serializable;
  */
 public interface ConnectionParams extends Serializable
 {
-   int DEFAULT_KEEP_ALIVE_INTERVAL = 10; // in seconds
-   int DEFAULT_KEEP_ALIVE_TIMEOUT = 5; // in seconds
-   int DEFAULT_REQRES_TIMEOUT = 5; // in seconds
+   int DEFAULT_KEEP_ALIVE_INTERVAL = 10000; // in ms
+   int DEFAULT_KEEP_ALIVE_TIMEOUT = 5000; // ms
+   int DEFAULT_REQRES_TIMEOUT = 5000; // in ms
    boolean DEFAULT_INVM_DISABLED = false;
    boolean DEFAULT_SSL_ENABLED = false;
    public final static String REMOTING_SSL_KEYSTORE_PATH = "remoting.ssl.keystore.path";
@@ -20,17 +20,17 @@ public interface ConnectionParams extends Serializable
    public final static String REMOTING_SSL_TRUSTSTORE_PASSWORD = "remoting.ssl.truststore.password";
    public final static String REMOTING_ENABLE_SSL = "remoting.enable.ssl";
 
-   int getTimeout();
+   long getTimeout();
 
-   void setTimeout(int timeout);
+   void setTimeout(long timeout);
 
-   int getKeepAliveInterval();
+   long getKeepAliveInterval();
 
-   void setKeepAliveInterval(int keepAliveInterval);
+   void setKeepAliveInterval(long keepAliveInterval);
 
-   int getKeepAliveTimeout();
+   long getKeepAliveTimeout();
 
-   void setKeepAliveTimeout(int keepAliveTimeout);
+   void setKeepAliveTimeout(long keepAliveTimeout);
 
    boolean isInvmDisabled();
 

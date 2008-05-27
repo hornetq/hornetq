@@ -90,7 +90,7 @@ public class ClientPingerImpl implements ClientPinger, PacketHandler
          {
             try
             {
-               wait(server.getConfiguration().getKeepAliveInterval() * 1000);
+               wait(server.getConfiguration().getKeepAliveInterval());
             }
             catch (InterruptedException e)
             {
@@ -102,7 +102,7 @@ public class ClientPingerImpl implements ClientPinger, PacketHandler
             sender.send(ping);
             synchronized (this)
             {
-               wait(server.getConfiguration().getKeepAliveTimeout() * 1000);
+               wait(server.getConfiguration().getKeepAliveTimeout());
             }
             if(pong == null)
             {

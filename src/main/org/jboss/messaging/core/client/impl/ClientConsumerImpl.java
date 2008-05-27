@@ -53,7 +53,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private static final boolean trace = log.isTraceEnabled();
    
-   private static final long CLOSE_TIMEOUT_SECONDS = 10;
+   private static final long CLOSE_TIMEOUT_MILLISECONDS = 10000;
 
    // Attributes
    // -----------------------------------------------------------------------------------
@@ -413,7 +413,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       long start = System.currentTimeMillis();
       try
       {
-      	future.get(CLOSE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+      	future.get(CLOSE_TIMEOUT_MILLISECONDS, TimeUnit.MILLISECONDS);
       }
       catch (Exception e)
       {
@@ -421,7 +421,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
       long end = System.currentTimeMillis();
       
-      if (end - start >= CLOSE_TIMEOUT_SECONDS * 1000)
+      if (end - start >= CLOSE_TIMEOUT_MILLISECONDS)
       {
       	log.warn("Timed out waiting for handler to complete processing");
       }
