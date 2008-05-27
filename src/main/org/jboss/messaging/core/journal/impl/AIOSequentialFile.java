@@ -80,7 +80,10 @@ public class AIOSequentialFile implements SequentialFile
 		checkOpened();
 		opened = false;
       executor.shutdown();
-      executor.awaitTermination(120, TimeUnit.SECONDS);
+      if (!executor.awaitTermination(timeout, TimeUnit.MILLISECONDS))
+      {
+         throw new Exception("Timeout!");
+      }
 		aioFile.close();
 		aioFile = null;		
 	}
