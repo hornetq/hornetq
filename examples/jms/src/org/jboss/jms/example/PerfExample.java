@@ -113,7 +113,7 @@ public class PerfExample
          sendMessages(perfParams.getNoOfMessagesToSend(), perfParams.getTransactionBatchSize(), perfParams.getDeliveryMode(), perfParams.isSessionTransacted());
          scheduler.shutdownNow();
 
-         log.info("average: " + (command.getAverage() / perfParams.getSamplePeriod()) + " msg/s");
+         log.info(String.format("average: %.2f msg/s", (command.getAverage() / perfParams.getSamplePeriod())));
       }
       catch (Exception e)
       {
@@ -244,7 +244,7 @@ public class PerfExample
             if (warmingUp)
             {
                boolean committed = checkCommit();
-               if (messageCount.incrementAndGet() == perfParams.getNoOfWarmupMessages())
+               if (messageCount.longValue() == perfParams.getNoOfWarmupMessages())
                {
                   log.info("warmed up after receiving " + messageCount.longValue() + " msgs");
                   if (!committed)
@@ -254,6 +254,8 @@ public class PerfExample
                   warmingUp = false;
                   // reset messageCount to take stats
                   messageCount.set(0);
+               } else {
+                  messageCount.incrementAndGet();
                }
                return;
             }
@@ -274,7 +276,7 @@ public class PerfExample
                }
                countDownLatch.countDown();
                scheduler.shutdownNow();
-               log.info("average: " + command.getAverage() + " msg/s");
+               log.info(String.format("average: %.2f msg/s", command.getAverage()));
             }
          }
          catch (Exception e)
@@ -322,9 +324,9 @@ public class PerfExample
          samplesTaken++;
       }
 
-      public long getAverage()
+      public double getAverage()
       {
-         return sampleCount / samplesTaken;
+         return (1.0 * sampleCount)/samplesTaken;
       }
 
    }
