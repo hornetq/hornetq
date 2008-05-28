@@ -225,6 +225,7 @@ public class PerfExample
       
       private PerfParams perfParams;
 
+      private boolean warmingUp = true;
       private boolean started = false;
 
       public PerfListener(CountDownLatch countDownLatch, PerfParams perfParams)
@@ -235,14 +236,31 @@ public class PerfExample
 
       public void onMessage(Message message)
       {
-         if (!started)
-         {
-            started = true;
-            scheduler.scheduleAtFixedRate(command, 1, 1, TimeUnit.SECONDS);
-         }
-
          try
          {
+            if (warmingUp)
+            {
+               boolean committed = checkCommit();
+               if (messageCount.incrementAndGet() == perfParams.getNoOfWarmupMessages())
+               {
+                  log.info("warmed up after receiving " + messageCount.longValue() + " msgs");
+                  if (!committed)
+                  {
+                     checkCommit();
+                  }
+                  warmingUp = false;
+                  // reset messageCount to take stats
+                  messageCount.set(0);
+               }
+               return;
+            }
+
+            if (!started)
+            {
+               started = true;
+               scheduler.scheduleAtFixedRate(command, 1, 1, TimeUnit.SECONDS);
+            }
+
             messageCount.incrementAndGet();
             boolean committed = checkCommit();
             if (messageCount.longValue() == perfParams.getNoOfMessagesToSend())
