@@ -236,6 +236,7 @@ public class PerfExample
       {
          this.countDownLatch = countDownLatch;
          this.perfParams = perfParams;
+         warmingUp = perfParams.getNoOfWarmupMessages() > 0;
       }
 
       public void onMessage(Message message)
@@ -245,7 +246,7 @@ public class PerfExample
             if (warmingUp)
             {
                boolean committed = checkCommit();
-               if (messageCount.longValue() == perfParams.getNoOfWarmupMessages())
+               if (messageCount.incrementAndGet() == perfParams.getNoOfWarmupMessages())
                {
                   log.info("warmed up after receiving " + messageCount.longValue() + " msgs");
                   if (!committed)
@@ -255,8 +256,6 @@ public class PerfExample
                   warmingUp = false;
                   // reset messageCount to take stats
                   messageCount.set(0);
-               } else {
-                  messageCount.incrementAndGet();
                }
                return;
             }
