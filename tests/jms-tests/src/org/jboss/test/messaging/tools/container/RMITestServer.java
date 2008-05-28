@@ -418,13 +418,6 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       server.deployConnectionFactory(objectName, jndiBindings, prefetchSize);
    }
 
-
-    public void deployConnectionFactory(String objectName, List<String> jndiBindings, boolean strictTck) throws Exception
-    {
-        server.deployConnectionFactory(objectName, jndiBindings, strictTck);
-
-    }
-
    public void deployConnectionFactory(String clientId,
                                         String objectName,
                                         List<String> jndiBindings,
@@ -434,12 +427,11 @@ public class RMITestServer extends UnicastRemoteObject implements Server
                                         int defaultTempQueueDownCacheSize,
                                         boolean supportsFailover,
                                         boolean supportsLoadBalancing,
-                                        boolean strictTck,
                                         int dupsOkBatchSize,
                                         boolean blockOnAcknowledge) throws Exception
    {
       server.deployConnectionFactory(clientId, objectName, jndiBindings, prefetchSize, defaultTempQueueFullSize, defaultTempQueuePageSize, defaultTempQueueDownCacheSize,
-              supportsFailover, supportsLoadBalancing, strictTck, dupsOkBatchSize, blockOnAcknowledge);  
+              supportsFailover, supportsLoadBalancing, dupsOkBatchSize, blockOnAcknowledge);  
    }
     public void deployConnectionFactory(String objectName,
                                        List<String> jndiBindings,

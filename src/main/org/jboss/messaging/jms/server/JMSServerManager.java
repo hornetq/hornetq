@@ -82,7 +82,6 @@ public interface JMSServerManager extends Serializable
     * @param name the name of this connection factory
     * @param clientID the client id
     * @param dupsOKBatchSize the bath size
-    * @param strictTck Whether it is strict TCK or not
     * @param consumerWindowSize The consumer window size
     * @param consumerMaxRate the Consumer max rate
     * @param producerWindowSize the producer window size
@@ -92,7 +91,7 @@ public interface JMSServerManager extends Serializable
     * @throws Exception if a problem occurred creating the connection factory
     */
    boolean createConnectionFactory(String name, String clientID,
-   		                          int dupsOKBatchSize, boolean strictTck,
+   		                          int dupsOKBatchSize,
    		                          int consumerWindowSize, int consumerMaxRate,
    		                          int producerWindowSize, int producerMaxRate,
    		                          boolean blockOnAcknowledge,
@@ -104,7 +103,6 @@ public interface JMSServerManager extends Serializable
     * @param name the name of this connection factory
     * @param clientID the client id
     * @param dupsOKBatchSize the bath size
-    * @param strictTck Whether it is strict TCK or not
     * @param consumerWindowSize The consumer window size
     * @param consumerMaxRate the Consumer max rate
     * @param producerWindowSize the producer window size
@@ -114,7 +112,6 @@ public interface JMSServerManager extends Serializable
     * @throws Exception if a problem occurred creating the connection factory
     */
    boolean createConnectionFactory(String name, String clientID, int dupsOKBatchSize,
-   		                          boolean strictTck,
    		                          int consumerWindowSize, int consumerMaxRate,
    		                          int producerWindowSize, int producerMaxRate,
    		                          boolean blockOnAcknowledge,

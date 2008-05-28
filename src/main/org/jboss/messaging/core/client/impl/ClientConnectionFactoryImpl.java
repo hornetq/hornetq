@@ -66,8 +66,6 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
 
    private final ConnectionParams connectionParams;
  
-   private final boolean strictTck;
-      
    private int defaultConsumerWindowSize;
    
    private int defaultConsumerMaxRate;
@@ -86,14 +84,12 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
    // Constructors ---------------------------------------------------------------------------------
 
    public ClientConnectionFactoryImpl(final Location location, final ConnectionParams connectionParams,
-                                      final boolean strictTck,
                                       final int defaultConsumerWindowSize, final int defaultConsumerMaxRate,
                                       final int defaultProducerWindowSize, final int defaultProducerMaxRate,
                                       final boolean defaultBlockOnAcknowledge,
                                       final boolean defaultSendNonPersistentMessagesBlocking)
    {
       this.location = location;
-      this.strictTck = strictTck;
       this.defaultConsumerWindowSize = defaultConsumerWindowSize;  
       this.defaultConsumerMaxRate = defaultConsumerMaxRate;
       this.defaultProducerWindowSize = defaultProducerWindowSize;
@@ -115,7 +111,6 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
    
    protected ClientConnectionFactoryImpl(final Location location, final ConnectionParams connectionParams, final boolean dummy)
    {
-      this.strictTck = false;
       this.defaultConsumerWindowSize = 1024 * 1024;      
       this.defaultConsumerMaxRate = -1;
       this.defaultProducerWindowSize = 1024 * 1024;
@@ -149,7 +144,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
          CreateConnectionResponse response =
             (CreateConnectionResponse)remotingConnection.sendBlocking(0, 0, request);
 
-         return new ClientConnectionImpl(response.getConnectionTargetID(), strictTck, remotingConnection,
+         return new ClientConnectionImpl(response.getConnectionTargetID(), remotingConnection,
                defaultConsumerWindowSize, defaultConsumerMaxRate,
                defaultProducerWindowSize, defaultProducerMaxRate,
                defaultBlockOnAcknowledge, defaultSendNonPersistentMessagesBlocking, response.getServerVersion());
@@ -203,11 +198,6 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
    {
       defaultProducerWindowSize = size;
    }
-
-	public boolean isStrictTck()
-	{
-		return strictTck;
-	}
 
 	public int getDefaultProducerMaxRate()
 	{

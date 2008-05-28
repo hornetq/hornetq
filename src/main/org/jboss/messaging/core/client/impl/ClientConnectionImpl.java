@@ -60,8 +60,6 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    
    private final RemotingConnection remotingConnection;
 
-   private final boolean strictTck;
-   
    private final Set<ClientSession> sessions = new ConcurrentHashSet<ClientSession>();
 
    private volatile boolean closed;
@@ -86,7 +84,6 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    // Constructors ---------------------------------------------------------------------------------
 
    public ClientConnectionImpl(final long serverTargetID,
-   									 final boolean strictTck,
                                final RemotingConnection connection,
                                final int defaultConsumerWindowSize,     
                                final int defaultConsumerMaxRate,
@@ -97,8 +94,6 @@ public class ClientConnectionImpl implements ClientConnectionInternal
                                final Version serverVersion)
    {
       this.serverTargetID = serverTargetID;
-      
-      this.strictTck = strictTck;
       
       this.remotingConnection = connection;
       

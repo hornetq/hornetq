@@ -56,8 +56,6 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
       xml = XMLUtil.replaceSystemProps(xml);
       Element e = XMLUtil.stringToElement(xml);
 
-      strictTck = getBoolean(e, "strict-tck", strictTck);
-
       clustered = getBoolean(e, "clustered", clustered);
 
       scheduledThreadPoolMaxSize = getInteger(e, "scheduled-executor-max-pool-size", scheduledThreadPoolMaxSize);

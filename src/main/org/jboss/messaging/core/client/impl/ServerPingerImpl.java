@@ -21,17 +21,13 @@
    */
 package org.jboss.messaging.core.client.impl;
 
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.KeepAliveHandler;
+import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.PacketHandler;
+import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
-import org.jboss.messaging.core.remoting.impl.mina.CleanUpNotifier;
-import org.jboss.messaging.core.remoting.*;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.client.ServerPinger;
-import org.jboss.messaging.core.exception.MessagingException;
-import org.apache.mina.common.IoSession;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>

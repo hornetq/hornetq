@@ -596,26 +596,21 @@ public class LocalTestServer implements Server, Runnable
    public void deployConnectionFactory(String clientId, String objectName,
                                        List<String> jndiBindings) throws Exception
    {
-      deployConnectionFactory(clientId, objectName, jndiBindings, -1, -1, -1, -1, false, false, false, -1, false);
+      deployConnectionFactory(clientId, objectName, jndiBindings, -1, -1, -1, -1, false, false, -1, false);
    }
 
    public void deployConnectionFactory(String objectName,
                                        List<String> jndiBindings,
                                        int consumerWindowSize) throws Exception
    {
-      deployConnectionFactory(null, objectName, jndiBindings, consumerWindowSize, -1, -1, -1, false, false, false, -1, false);
+      deployConnectionFactory(null, objectName, jndiBindings, consumerWindowSize, -1, -1, -1, false, false, -1, false);
    }
 
 
    public void deployConnectionFactory(String objectName,
                                        List<String> jndiBindings) throws Exception
    {
-      deployConnectionFactory(null, objectName, jndiBindings, -1, -1, -1, -1, false, false, false, -1, false);
-   }
-
-   public void deployConnectionFactory(String objectName, List<String> jndiBindings, boolean strictTck) throws Exception
-   {
-      deployConnectionFactory(null, objectName, jndiBindings, -1, -1, -1, -1, false, false, strictTck, -1, false);
+      deployConnectionFactory(null, objectName, jndiBindings, -1, -1, -1, -1, false, false, -1, false);
    }
 
    public void deployConnectionFactory(String objectName,
@@ -626,7 +621,7 @@ public class LocalTestServer implements Server, Runnable
                                        int defaultTempQueueDownCacheSize) throws Exception
    {
       this.deployConnectionFactory(null, objectName, jndiBindings, prefetchSize, defaultTempQueueFullSize,
-              defaultTempQueuePageSize, defaultTempQueueDownCacheSize, false, false, false, -1, false);
+              defaultTempQueuePageSize, defaultTempQueueDownCacheSize, false, false, -1, false);
    }
 
    public void deployConnectionFactory(String objectName,
@@ -634,7 +629,7 @@ public class LocalTestServer implements Server, Runnable
                                        boolean supportsFailover, boolean supportsLoadBalancing) throws Exception
    {
       this.deployConnectionFactory(null, objectName, jndiBindings, -1, -1,
-              -1, -1, supportsFailover, supportsLoadBalancing, false, -1, false);
+              -1, -1, supportsFailover, supportsLoadBalancing, -1, false);
    }
 
    public void deployConnectionFactory(String clientId,
@@ -645,14 +640,13 @@ public class LocalTestServer implements Server, Runnable
                                        int defaultTempQueuePageSize,
                                        int defaultTempQueueDownCacheSize,
                                        boolean supportsFailover,
-                                       boolean supportsLoadBalancing,
-                                       boolean strictTck,
+                                       boolean supportsLoadBalancing,                                     
                                        int dupsOkBatchSize,
                                        boolean blockOnAcknowledge) throws Exception
    {
       log.info("deploying connection factory with name: " + objectName + " and dupsok: " + dupsOkBatchSize);
       getJMSServerManager().createConnectionFactory(objectName, clientId, dupsOkBatchSize,
-      		strictTck, prefetchSize, -1, 1000, -1, blockOnAcknowledge, true, jndiBindings);
+      		prefetchSize, -1, 1000, -1, blockOnAcknowledge, true, jndiBindings);
    }
 
 

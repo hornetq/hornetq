@@ -195,8 +195,7 @@ public interface Server extends Remote
                                         int defaultTempQueuePageSize,
                                         int defaultTempQueueDownCacheSize,
                                         boolean supportsFailover,
-                                        boolean supportsLoadBalancing,
-                                        boolean strictTck,
+                                        boolean supportsLoadBalancing,                             
                                         int dupsOkBatchSize,
                                         boolean blockOnAcknowledge) throws Exception;
 
@@ -251,8 +250,6 @@ public interface Server extends Remote
 
    void flushManagedConnectionPool() throws Exception;
    
-   void deployConnectionFactory(String objectName, List<String> jndiBindings, boolean strictTck) throws Exception;
-
    MessagingServer getMessagingServer() throws Exception;
 
    InitialContext getInitialContext() throws Exception;

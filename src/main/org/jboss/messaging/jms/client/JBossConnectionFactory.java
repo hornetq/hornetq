@@ -82,8 +82,6 @@ public class JBossConnectionFactory implements
 
    private final ConnectionParams connectionParams;
 
-   private final boolean strictTck;
-
    private final int defaultConsumerWindowSize;
 
    private final int defaultConsumerMaxRate;
@@ -102,7 +100,6 @@ public class JBossConnectionFactory implements
    		                        final int dupsOKBatchSize,
                                  final Location location,
                                  final ConnectionParams connectionParams,                         
-                                 final boolean strictTck,
                                  final int defaultConsumerWindowSize,
                                  final int defaultConsumerMaxRate,
                                  final int defaultProducerWindowSize,
@@ -114,7 +111,6 @@ public class JBossConnectionFactory implements
       this.dupsOKBatchSize = dupsOKBatchSize;
       this.location = location;
       this.connectionParams = connectionParams;
-      this.strictTck = strictTck;
       this.defaultConsumerMaxRate = defaultConsumerMaxRate;
       this.defaultConsumerWindowSize = defaultConsumerWindowSize;
       this.defaultProducerMaxRate = defaultProducerMaxRate;
@@ -228,7 +224,6 @@ public class JBossConnectionFactory implements
          connectionFactory = new ClientConnectionFactoryImpl(
                location,
                connectionParams,
-               strictTck,
                defaultConsumerWindowSize,
                defaultConsumerMaxRate,
                defaultProducerWindowSize,

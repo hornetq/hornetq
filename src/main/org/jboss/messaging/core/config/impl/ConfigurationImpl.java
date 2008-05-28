@@ -53,8 +53,6 @@ public class ConfigurationImpl implements Configuration, Serializable
    
    protected List<String> defaultInterceptors = new ArrayList<String>();
 
-   protected boolean strictTck = false;
-
    protected boolean clustered = false;
    
    protected int scheduledThreadPoolMaxSize = 30;
@@ -120,16 +118,6 @@ public class ConfigurationImpl implements Configuration, Serializable
       return defaultInterceptors;
    }
 
-   public Boolean isStrictTck()
-   {
-      return strictTck || "true".equalsIgnoreCase(System.getProperty("jboss.messaging.stricttck"));
-   }
-
-   public void setStrictTck(Boolean strictTck)
-   {
-      strictTck = strictTck || "true".equalsIgnoreCase(System.getProperty("jboss.messaging.stricttck"));
-   }
-  
    public Boolean isClustered()
    {
       return clustered;

@@ -47,11 +47,6 @@ public class ConfigurationTest extends TestCase
       configuration = null;
    }
 
-   public void testSetStrictTck() throws Exception
-   {
-      assertEquals("failed to set strict tck", Boolean.TRUE, configuration.isStrictTck());
-   }
-
    public void testSetClustered() throws Exception
    {
       assertEquals("failed to set clustered", Boolean.TRUE, configuration.isClustered());

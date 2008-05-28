@@ -66,7 +66,7 @@ public class AcknowledgementTest extends JMSTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      getJmsServerManager().createConnectionFactory("ackconnectionfactory", null, 1000, true, 1024 * 1024, -1, 1000, -1, true, true, "/ackconnectionfactory");
+      getJmsServerManager().createConnectionFactory("ackconnectionfactory", null, 1000, 1024 * 1024, -1, 1000, -1, true, true, "/ackconnectionfactory");
       cf = (JBossConnectionFactory) getInitialContext().lookup("/ackconnectionfactory");
    }
 
@@ -698,7 +698,7 @@ public class AcknowledgementTest extends JMSTestCase
 
       ArrayList<String> bindings = new ArrayList<String>();
       bindings.add("mycf");
-      deployConnectionFactory(null, "MyConnectionFactory2", bindings, -1, -1, -1, -1, false, false, false, BATCH_SIZE, true);
+      deployConnectionFactory(null, "MyConnectionFactory2", bindings, -1, -1, -1, -1, false, false, BATCH_SIZE, true);
 
       Connection conn = null;
 
@@ -780,7 +780,7 @@ public class AcknowledgementTest extends JMSTestCase
 
       ArrayList<String> bindings = new ArrayList<String>();
       bindings.add("mycf");
-      deployConnectionFactory(null, "MyConnectionFactory2", bindings, -1, -1, -1, -1, false, false, false, BATCH_SIZE, true);
+      deployConnectionFactory(null, "MyConnectionFactory2", bindings, -1, -1, -1, -1, false, false, BATCH_SIZE, true);
       Connection conn = null;
 
       try

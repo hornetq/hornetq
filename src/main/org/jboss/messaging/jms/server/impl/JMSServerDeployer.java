@@ -45,12 +45,8 @@ public class JMSServerDeployer extends XmlDeployer
    private static final String CONSUMER_MAX_RATE = "consumer-max-rate";
    private static final String PRODUCER_WINDOW_SIZE = "producer-window-size";
    private static final String PRODUCER_MAX_RATE = "producer-max-rate";
-   private static final String SUPPORTS_FAILOVER = "supports-failover";
-   private static final String SUPPORTS_LOAD_BALANCING = "supports-load-balancing";
-   private static final String LOAD_BALANCING_FACTORY = "load-balancing-factory";
    private static final String BLOCK_ON_ACKNOWLEDGE = "block-on-acknowledge";
    private static final String  SEND_NP_MESSAGES_SYNCHRONOUSLY = "send-np-messages-synchronously";
-   private static final String STRICT_TCK = "strict-tck";
    private static final String ENTRY_NODE_NAME = "entry";
    private static final String CONNECTION_FACTORY_NODE_NAME = "connection-factory";
    private static final String QUEUE_NODE_NAME = "queue";
@@ -123,8 +119,7 @@ public class JMSServerDeployer extends XmlDeployer
       {
          // See http://www.jboss.com/index.html?module=bb&op=viewtopic&p=4076040#4076040
          NodeList attributes = node.getChildNodes();
-         boolean cfStrictTck = false;
-         
+  
          String clientID = null;
          int dupsOKBatchSize = 1000;
          
@@ -137,11 +132,7 @@ public class JMSServerDeployer extends XmlDeployer
          
          for (int j = 0; j < attributes.getLength(); j++)
          {
-            if (STRICT_TCK.equalsIgnoreCase(attributes.item(j).getNodeName()))
-            {
-               cfStrictTck = Boolean.parseBoolean(attributes.item(j).getTextContent().trim());
-            }
-            else if (CONSUMER_WINDOW_SIZE_ELEMENT.equalsIgnoreCase(attributes.item(j).getNodeName()))
+            if (CONSUMER_WINDOW_SIZE_ELEMENT.equalsIgnoreCase(attributes.item(j).getNodeName()))
             {
                consumerWindowSize = Integer.parseInt(attributes.item(j).getTextContent().trim());
             }
@@ -173,18 +164,6 @@ public class JMSServerDeployer extends XmlDeployer
             {
                sendNonPersistentMessagesSynchronously = Boolean.parseBoolean(attributes.item(j).getTextContent().trim());
             }
-//            if (SUPPORTS_FAILOVER.equalsIgnoreCase(attributes.item(j).getNodeName()))
-//            {
-//               //setSupportsFailover(Boolean.parseBoolean(attributes.item(j).getTextContent().trim()));
-//            }
-//            if (SUPPORTS_LOAD_BALANCING.equalsIgnoreCase(attributes.item(j).getNodeName()))
-//            {
-//               //setSupportsLoadBalancing(Boolean.parseBoolean(attributes.item(j).getTextContent().trim()));
-//            }
-//            if (LOAD_BALANCING_FACTORY.equalsIgnoreCase(attributes.item(j).getNodeName()))
-//            {
-//               //setLoadBalancingFactory(attributes.item(j).getTextContent().trim());
-//            }
          }
 
          NodeList children = node.getChildNodes();
@@ -196,8 +175,8 @@ public class JMSServerDeployer extends XmlDeployer
             {
                String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
                String name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
-               jmsServerManager.createConnectionFactory(name, clientID, dupsOKBatchSize, cfStrictTck,
-               		consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate, 
+               jmsServerManager.createConnectionFactory(name, clientID, dupsOKBatchSize, 
+                     consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate, 
                		blockOnAcknowledge, sendNonPersistentMessagesSynchronously, jndiName);
             }
          }

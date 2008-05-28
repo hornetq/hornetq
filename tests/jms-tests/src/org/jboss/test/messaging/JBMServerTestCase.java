@@ -769,11 +769,6 @@ public class JBMServerTestCase extends JBMBaseTestCase
       servers.get(server).deployConnectionFactory(objectName, jndiBindings);
    }
 
-   public void deployConnectionFactory(String objectName, List<String> jndiBindings, boolean strictTck) throws Exception
-   {
-      servers.get(0).deployConnectionFactory(objectName, jndiBindings, strictTck);
-   }
-
    public void deployConnectionFactory(String clientId,
                                        String objectName,
                                        List<String> jndiBindings,
@@ -782,13 +777,12 @@ public class JBMServerTestCase extends JBMBaseTestCase
                                        int defaultTempQueuePageSize,
                                        int defaultTempQueueDownCacheSize,
                                        boolean supportsFailover,
-                                       boolean supportsLoadBalancing,
-                                       boolean strictTck,
+                                       boolean supportsLoadBalancing,              
                                        int dupsOkBatchSize,
                                        boolean blockOnAcknowledge) throws Exception
    {
       servers.get(0).deployConnectionFactory(clientId, objectName, jndiBindings, prefetchSize, defaultTempQueueFullSize,
-              defaultTempQueuePageSize, defaultTempQueueDownCacheSize, supportsFailover, supportsLoadBalancing, strictTck, dupsOkBatchSize, blockOnAcknowledge);
+              defaultTempQueuePageSize, defaultTempQueueDownCacheSize, supportsFailover, supportsLoadBalancing, dupsOkBatchSize, blockOnAcknowledge);
    }
 
    public static void deployConnectionFactory(String objectName,

@@ -40,7 +40,6 @@ import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.SubscriptionInfo;
 import org.jboss.messaging.util.JNDIUtil;
 import org.jboss.messaging.util.Pair;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * A Deployer used to create and add to JNDI queues, topics and connection factories. Typically this would only be used
@@ -230,7 +229,7 @@ public class JMSServerManagerImpl implements JMSServerManager
 //   }
 
    public boolean createConnectionFactory(String name, String clientID,
-   		int dupsOKBatchSize, boolean strictTck, int consumerWindowSize, int consumerMaxRate,
+   		int dupsOKBatchSize, int consumerWindowSize, int consumerMaxRate,
    		int producerWindowSize, int producerMaxRate, boolean blockOnAcknowledge,
    		boolean defaultSendNonPersistentMessagesBlocking, String jndiBinding) throws Exception
    {
@@ -240,7 +239,6 @@ public class JMSServerManagerImpl implements JMSServerManager
          cf = new JBossConnectionFactory( clientID, dupsOKBatchSize,
                  messagingServerManagement.getConfiguration().getLocation(),
                  messagingServerManagement.getConfiguration().getConnectionParams(),                 
-                 messagingServerManagement.getConfiguration().isStrictTck() || strictTck,
                  consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate,
                  blockOnAcknowledge,
                  defaultSendNonPersistentMessagesBlocking
@@ -260,7 +258,7 @@ public class JMSServerManagerImpl implements JMSServerManager
 
 
    public boolean createConnectionFactory(String name, String clientID, int dupsOKBatchSize,
-   		                                 boolean strictTck, int consumerWindowSize, int consumerMaxRate,
+   		                                 int consumerWindowSize, int consumerMaxRate,
    		                                 int producerWindowSize, int producerMaxRate, boolean blockOnAcknowledge,
    		                                 boolean defaultSendNonPersistentMessagesBlocking,
    		                                 List<String> jndiBindings) throws Exception
@@ -271,7 +269,6 @@ public class JMSServerManagerImpl implements JMSServerManager
          cf = new JBossConnectionFactory( clientID, dupsOKBatchSize,
                  messagingServerManagement.getConfiguration().getLocation(),
                  messagingServerManagement.getConfiguration().getConnectionParams(),
-                 messagingServerManagement.getConfiguration().isStrictTck() || strictTck,
                  consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate,
                  blockOnAcknowledge, defaultSendNonPersistentMessagesBlocking
                  );

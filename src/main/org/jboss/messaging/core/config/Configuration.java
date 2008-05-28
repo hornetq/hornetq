@@ -39,8 +39,6 @@ public interface Configuration
 {
    List<String> getDefaultInterceptors();
 
-   Boolean isStrictTck();
-
    Boolean isClustered();
 
    Integer getScheduledThreadPoolMaxSize();
