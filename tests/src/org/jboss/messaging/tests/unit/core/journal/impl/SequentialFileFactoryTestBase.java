@@ -190,21 +190,15 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       byte[] bytes3 = s3.getBytes("UTF-8");
       ByteBuffer bb3 = factory.wrapBuffer(bytes3);
       
-      FakeCallback callback = new FakeCallback();
-      int bytesWritten = sf.write(bb1, true, callback);
-      callback.waitComplete();
+      int bytesWritten = sf.write(bb1, true);
       
       assertEquals(calculateRecordSize(bytes1.length, sf.getAlignment()), bytesWritten);
       
-      callback = new FakeCallback();
-      bytesWritten = sf.write(bb2, true, callback);
-      callback.waitComplete();
+      bytesWritten = sf.write(bb2, true);
       
       assertEquals(calculateRecordSize(bytes2.length, sf.getAlignment()), bytesWritten);
       
-      callback = new FakeCallback();
-      bytesWritten = sf.write(bb3, true, callback);
-      callback.waitComplete();
+      bytesWritten = sf.write(bb3, true);
       
       assertEquals(calculateRecordSize(bytes3.length, sf.getAlignment()), bytesWritten);
       
@@ -214,9 +208,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       ByteBuffer rb2 = factory.newBuffer(bytes2.length);
       ByteBuffer rb3 = factory.newBuffer(bytes3.length);
 
-      callback = new FakeCallback();
-      int bytesRead = sf.read(rb1, callback);
-      callback.waitComplete();
+      int bytesRead = sf.read(rb1);
       assertEquals(calculateRecordSize(bytes1.length, sf.getAlignment()), bytesRead);     
 
       for (int i=0; i<bytes1.length; i++)
@@ -224,9 +216,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       	assertEquals(bytes1[i], rb1.get(i));
       }
       
-      callback = new FakeCallback();
-      bytesRead = sf.read(rb2, callback);
-      callback.waitComplete();
+      bytesRead = sf.read(rb2);
       assertEquals(calculateRecordSize(bytes2.length, sf.getAlignment()), bytesRead);     
       for (int i=0; i<bytes2.length; i++)
       {
@@ -234,9 +224,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       }
       
       
-      callback = new FakeCallback();
-      bytesRead = sf.read(rb3, callback);
-      callback.waitComplete();
+      bytesRead = sf.read(rb3);
       assertEquals(calculateRecordSize(bytes3.length, sf.getAlignment()), bytesRead);     
       for (int i=0; i<bytes3.length; i++)
       {
@@ -265,21 +253,15 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       byte[] bytes3 = s3.getBytes("UTF-8");
       ByteBuffer bb3 = factory.wrapBuffer(bytes3);
       
-      FakeCallback callback = new FakeCallback();
-      int bytesWritten = sf.write(bb1, true, callback);
-      callback.waitComplete();
+      int bytesWritten = sf.write(bb1, true);
       
       assertEquals(bb1.limit(), bytesWritten);
       
-      callback = new FakeCallback();
-      bytesWritten = sf.write(bb2, true, callback);
-      callback.waitComplete();
+      bytesWritten = sf.write(bb2, true);
       
       assertEquals(bb2.limit(), bytesWritten);
       
-      callback = new FakeCallback();
-      bytesWritten = sf.write(bb3, true, callback);
-      callback.waitComplete();
+      bytesWritten = sf.write(bb3, true);
       
       assertEquals(bb3.limit(), bytesWritten);
       
@@ -329,9 +311,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       byte[] bytes1 = s1.getBytes("UTF-8");
       ByteBuffer bb1 = factory.wrapBuffer(bytes1);
       
-      FakeCallback callback = new FakeCallback();
-      int bytesWritten = sf.write(bb1, true, callback);
-      callback.waitComplete();
+      int bytesWritten = sf.write(bb1, true);
       
       assertEquals(bb1.limit(), bytesWritten);
       

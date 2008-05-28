@@ -48,7 +48,7 @@ public interface SequentialFile
    
    void delete() throws Exception;
    
-   int write(ByteBuffer bytes, boolean sync, IOCallback callback) throws Exception;
+   int write(ByteBuffer bytes, IOCallback callback) throws Exception;
    
    int write(ByteBuffer bytes, boolean sync) throws Exception;
    

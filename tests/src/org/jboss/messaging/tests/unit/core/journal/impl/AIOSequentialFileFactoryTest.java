@@ -138,7 +138,7 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
             buffer.put((byte)'b');
          }
          
-         file.write(buffer, true, callback);
+         file.write(buffer, callback);
       }
       
       

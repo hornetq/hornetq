@@ -43,7 +43,9 @@ public class AIOSequentialFile implements SequentialFile
 	
 	private final long timeout;
 	
-	private AsynchronousFile aioFile;
+   private final boolean sync;
+
+   private AsynchronousFile aioFile;
 	
 	private AtomicLong position = new AtomicLong(0);
 
@@ -51,12 +53,13 @@ public class AIOSequentialFile implements SequentialFile
 	// serious performance problems. Because of that we make all the writes on AIO using a single thread.
 	private ExecutorService executor;
 	
-	public AIOSequentialFile(final String journalDir, final String fileName, final int maxIO, final long timeout) throws Exception
+	public AIOSequentialFile(final String journalDir, final String fileName, final int maxIO, final long timeout, final boolean sync) throws Exception
 	{
 		this.journalDir = journalDir;		
 		this.fileName = fileName;
 		this.maxIO = maxIO;
 		this.timeout = timeout;
+		this.sync = sync;
 	}
 	
 	public int getAlignment() throws Exception
@@ -188,18 +191,13 @@ public class AIOSequentialFile implements SequentialFile
 		
 		int bytesRead = read (bytes, waitCompletion);
 		
-		waitCompletion.waitLatch();
-		
-		if (waitCompletion.errorMessage != null)
-		{
-			throw new MessagingException(waitCompletion.errorCode, waitCompletion.errorMessage);
-		}
+		waitCompletion.waitLatch(timeout);
 		
 		return bytesRead;
 	}
 	
 	
-	public int write(final ByteBuffer bytes, boolean sync, final IOCallback callback) throws Exception
+	public int write(final ByteBuffer bytes, final IOCallback callback) throws Exception
 	{
 		final int bytesToWrite = bytes.limit();
 		
@@ -210,33 +208,51 @@ public class AIOSequentialFile implements SequentialFile
 		return bytesToWrite;
 	}
 
-   private void execWrite(final ByteBuffer bytes, final IOCallback callback,
-                          final int bytesToWrite, final long positionToWrite)
-   {
-      executor.execute(new Runnable()
-		{
-		   public void run()
-		   {
-		      try
-		      {
-		         aioFile.write(positionToWrite, bytesToWrite, bytes, callback);
-		      }
-		      catch (Exception e)
-		      {
-		         log.warn (e.getMessage(), e);
-		         if (callback != null)
-		         {
-		            callback.onError(-1, e.getMessage());
-		         }
-		      }
-		   }
-		});      
-   }
-	
 	public int write(final ByteBuffer bytes, final boolean sync) throws Exception
 	{
-		return write (bytes, sync, DummyCallback.instance);
+	   if (sync && this.sync)
+	   {
+	      WaitCompletion completion = new WaitCompletion();
+	      
+	      int bytesWritten = write(bytes, completion);
+	      
+	      completion.waitLatch(timeout);
+	      
+	      return bytesWritten;
+	   }
+	   else
+	   {
+	      return write (bytes, DummyCallback.instance);
+	   }
+		
 	}
+
+	
+	// Private methods
+	// -----------------------------------------------------------------------------------------------------
+	
+   private void execWrite(final ByteBuffer bytes, final IOCallback callback,
+         final int bytesToWrite, final long positionToWrite)
+   {
+      executor.execute(new Runnable()
+      {
+         public void run()
+         {
+            try
+            {
+               aioFile.write(positionToWrite, bytesToWrite, bytes, callback);
+            } catch (Exception e)
+            {
+               log.warn(e.getMessage(), e);
+               if (callback != null)
+               {
+                  callback.onError(-1, e.getMessage());
+               }
+            }
+         }
+      });
+   }
+
 	
 	private void checkOpened() throws Exception
 	{
@@ -281,9 +297,23 @@ public class AIOSequentialFile implements SequentialFile
 			latch.countDown();			
 		}
 		
-		public void waitLatch() throws Exception
+		public boolean waitLatch(long timeout) throws Exception
 		{
-			latch.await();
+			if (latch.await(timeout, TimeUnit.MILLISECONDS))
+			{
+   	      if (errorMessage != null)
+   	      {
+   	         throw new MessagingException(errorCode, errorMessage);
+   	      }
+   	      return true;
+			}
+			else
+			{
+			   return false;
+			}
+	      
+
+			
 		}		
 	}	
 }

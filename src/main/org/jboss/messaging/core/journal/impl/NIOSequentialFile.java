@@ -158,24 +158,34 @@ public class NIOSequentialFile implements SequentialFile
 	
 	public int write(final ByteBuffer bytes, final boolean sync) throws Exception
 	{
-		return write(bytes, sync, null);
+      int bytesRead = channel.write(bytes);
+      
+      if (sync && this.sync)
+      {
+         channel.force(false);
+      }
+      
+      return bytesRead;
 	}
 	
-	public int write(final ByteBuffer bytes, final boolean sync, final IOCallback callback) throws Exception
+	public int write(final ByteBuffer bytes, final IOCallback callback) throws Exception
 	{
-		int bytesRead = channel.write(bytes);
-		
-		if (sync && this.sync)
-		{
-			channel.force(false);
-		}
-		
-		if (callback != null)
-		{
-			callback.done();
-		}
-		
-		return bytesRead;
+	   try
+	   {
+         int bytesRead = channel.write(bytes);
+         
+         if (callback != null)
+         {
+            callback.done();
+         }
+         
+         return bytesRead;
+	   }
+	   catch (Exception e)
+	   {
+	      callback.onError(-1, e.getMessage());
+	      throw e;
+	   }
 	}
 	
 	public void position(final int pos) throws Exception

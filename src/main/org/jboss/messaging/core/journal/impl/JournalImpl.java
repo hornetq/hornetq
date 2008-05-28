@@ -288,7 +288,7 @@ public class JournalImpl implements TestableJournal
       if (shouldUseCallback)
       {
          SimpleCallback callback = new SimpleCallback();
-         usedFile = appendRecord(bb.getBuffer(), true, callback);
+         usedFile = appendRecord(bb.getBuffer(), callback);
          callback.waitCompletion(aioTimeout);
       }
       else
@@ -323,7 +323,7 @@ public class JournalImpl implements TestableJournal
       if (shouldUseCallback)
       {         
          SimpleCallback callback = new SimpleCallback();
-         usedFile = appendRecord(bb, true, callback);
+         usedFile = appendRecord(bb, callback);
          callback.waitCompletion(aioTimeout);
       }
       else
@@ -364,7 +364,7 @@ public class JournalImpl implements TestableJournal
       if (shouldUseCallback)
       {
          SimpleCallback callback = new SimpleCallback();
-         usedFile = appendRecord(bb, true, callback);
+         usedFile = appendRecord(bb, callback);
          callback.waitCompletion(aioTimeout);
       }
       else
@@ -403,7 +403,7 @@ public class JournalImpl implements TestableJournal
       if (shouldUseCallback)
       {
          SimpleCallback callback = new SimpleCallback();
-         appendRecord(bb, true, callback);
+         appendRecord(bb, callback);
          callback.waitCompletion(aioTimeout);
       }
       else
@@ -447,7 +447,7 @@ public class JournalImpl implements TestableJournal
       {
          TransactionCallback callback = getTransactionCallback(txID);
          callback.countUp();
-         usedFile = appendRecord(bb.getBuffer(), false, callback);
+         usedFile = appendRecord(bb.getBuffer(), callback);
       }
       else
       {
@@ -483,7 +483,7 @@ public class JournalImpl implements TestableJournal
 	   bb.put(DONE);     
 	   bb.rewind();
 	   
-	   JournalFile usedFile = appendRecord(bb, false, callback);
+	   JournalFile usedFile = appendRecord(bb, callback);
 	   
 	   TransactionNegPos tx = getTransactionInfo(txID);
 	   
@@ -514,7 +514,7 @@ public class JournalImpl implements TestableJournal
 		bb.put(DONE);     
 		bb.rewind();
 		
-		JournalFile usedFile = appendRecord(bb, false, callback);
+		JournalFile usedFile = appendRecord(bb, callback);
 		
 		TransactionNegPos tx = getTransactionInfo(txID);
 		
@@ -541,7 +541,7 @@ public class JournalImpl implements TestableJournal
 		bb.put(DONE);        
 		bb.rewind();
 		
-		JournalFile usedFile = appendRecord(bb, false, callback);      
+		JournalFile usedFile = appendRecord(bb, callback);      
 		
 		TransactionNegPos tx = getTransactionInfo(txID);
 		
@@ -574,7 +574,7 @@ public class JournalImpl implements TestableJournal
 		bb.put(DONE);           
 		bb.rewind();
 		
-		JournalFile usedFile = appendRecord(bb, true, callback);    
+		JournalFile usedFile = appendRecord(bb, callback);    
 		
 		tx.prepare(usedFile);
 	}
@@ -607,7 +607,7 @@ public class JournalImpl implements TestableJournal
 		{
          TransactionCallback callback = getTransactionCallback(txID);
          callback.countUp();
-   		usedFile = appendRecord(bb, true, callback); 
+   		usedFile = appendRecord(bb, callback); 
    		callback.waitCompletion(aioTimeout);
 		}
 		else
@@ -648,7 +648,7 @@ public class JournalImpl implements TestableJournal
 		if (shouldUseCallback)
 		{
 	      SimpleCallback callback = new SimpleCallback();
-   		usedFile = appendRecord(bb, true, callback);       
+   		usedFile = appendRecord(bb, callback);       
    		callback.waitCompletion(aioTimeout);
 		}
 		else
@@ -1459,7 +1459,7 @@ public class JournalImpl implements TestableJournal
 		}
 	}
 	
-	private JournalFile appendRecord(final ByteBuffer bb, final boolean sync, final IOCallback callback) throws Exception
+	private JournalFile appendRecord(final ByteBuffer bb, final IOCallback callback) throws Exception
 	{
 		lock.acquire();
 		
@@ -1468,7 +1468,7 @@ public class JournalImpl implements TestableJournal
 		try
 		{                 
 			checkFile(size);
-			currentFile.getFile().write(bb, sync, callback);       
+			currentFile.getFile().write(bb, callback);       
 			currentFile.extendOffset(size);
 			return currentFile;
 		}

@@ -229,7 +229,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          data.position(pos);
       }
 
-      public int write(ByteBuffer bytes, boolean sync, IOCallback callback) throws Exception
+      public int write(ByteBuffer bytes, IOCallback callback) throws Exception
       {
          if (!open)
          {
@@ -252,7 +252,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       
       public int write(ByteBuffer bytes, boolean sync) throws Exception
       {
-         return write(bytes, sync, null);
+         return write(bytes, null);
       }
       
       private void checkAndResize(int size)
