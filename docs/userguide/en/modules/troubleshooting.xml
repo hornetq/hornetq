@@ -1,4 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="troubleshooting">
    <title>Troubleshooting</title>
+     <para>
+      <itemizedlist>
+         <listitem>
+           <para>Message on logs: AIO wasn't located on this platform</para>
+           <para>Possible causes are: 
+             <itemizedlist>
+               <listitem>
+               <para>Linux is not your platform</para>
+               <para>Solution: Just ignore the message as NIO will be selected automatically or change the journal type to NIO on jbm-configuration.xml</para>
+               </listitem>
+               <listitem>
+               <para>The JBoss Messaging JNI wrapper is not on library.path</para>
+               <para>Solution: Make sure you have libJBMLibAIO32.so or libJBMLibAIO64.so as provided on the download package.</para>
+               </listitem>
+               <listitem>
+               <para>libaio is not installed</para>
+               <para>Solution: Make sure you have libaio installed at your Linux distribution. This could be done as yum install libaio on Fedora. (Refer to your manual to how to upgrade or install packages)</para>
+               </listitem>
+               <listitem>
+               <para>libaio is very old</para>
+               <para>Solution: We have been using and testing libaio 0.3.106 and Kernel 2.6. If you have older versions you might need to update or change the journal type to NIO on jbm-configuration.xml</para>
+               </listitem>
+             </itemizedlist>
+           </para>
+         </listitem>
+         <listitem>
+           <para>Low response time even though the CPU and IO seems ok</para>
+           <para>Possible causes are: 
+             <itemizedlist>
+               <listitem>
+               <para>You are using short transactions in your system and you don't have TCPNoDelay set</para>
+               <para>Make sure you have remoting-tcp-nodelay set to true on jbm-configuration.xml</para>
+               </listitem>
+               <listitem>
+               <para>The journal directory is a Network Disk</para>
+               <para>You shouldn't use a journal over a network storage.</para>
+               </listitem>
+             </itemizedlist>
+           </para>
+         </listitem>
+      </itemizedlist>
+     </para>
+   
 </chapter>

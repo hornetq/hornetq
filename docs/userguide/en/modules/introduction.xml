@@ -46,7 +46,8 @@
 
       <itemizedlist>
          <listitem>
-            <para>Journal based persistence. todo</para>
+            <para>Journal based persistence.</para>
+            <para>An append only file system where messages and transactions are stored at a high performance rate. We don't even need an external database for that.</para>
          </listitem>
 
          <listitem>
@@ -57,11 +58,14 @@
          </listitem>
 
          <listitem>
-            <para>Native io. todo</para>
+            <para>Asynchronous IO (Linux only at the moment)</para>
+            <para>Instead of syncing the disk and waiting slow IO operations to complete during transactions, we can submit the writes directly on the kernel and get a notification when it is complete. 
+                  With this design we can support very high transaction rates even on very short transactions containing just few messages or acknowledgements. </para>
          </listitem>
 
          <listitem>
-            <para>Standalone and embedded versions. todo</para>
+            <para>Standalone and embedded versions.</para>
+            <para>You can embed JBoss Messaging at your own system without the requirement of any servers at all. Just instantiate few POJOS and you have a Messaging System running.</para>
          </listitem>
       </itemizedlist>
 
@@ -119,10 +123,10 @@
             <para>Extensive JMX management interface</para>
          </listitem>
 
-         <listitem>
+         <!--  <listitem>
             <para>Support for most major databases including Oracle, Sybase,
             MS SQL Server, PostgreSQL and MySQL</para>
-         </listitem>
+         </listitem>  -->
 
          <listitem>
             <para>HTTP transport to allow use through firewalls that only
@@ -144,10 +148,10 @@
             subscriptions</para>
          </listitem>
 
-         <listitem>
+         <!--  <listitem>
             <para>Automatic paging of messages to storage. Allows the use of
             very large queues - too large to fit in memory at once</para>
-         </listitem>
+         </listitem>  -->
       </itemizedlist>
 
      <!-- <para>Clustering features:</para>
