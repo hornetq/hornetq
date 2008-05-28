@@ -21,17 +21,25 @@
    */
 package org.jboss.jms.example;
 
-import org.jboss.jms.util.PerfParams;
-import org.jboss.messaging.core.logging.Logger;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicLong;
 
-import javax.jms.*;
+import javax.jms.BytesMessage;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
+
+import org.jboss.jms.util.PerfParams;
+import org.jboss.messaging.core.logging.Logger;
 
 /**
  * a performance example that can be used to gather simple performance figures.
@@ -45,10 +53,8 @@ public class PerfExample
    private static Logger log = Logger.getLogger(PerfExample.class);
    private Queue queue;
    private Connection connection;
-   private AtomicLong messageCount = new AtomicLong(0);
-   private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
    private Session session;
-   private Sampler command = new Sampler();
+   private long start;
 
    public static void main(String[] args)
    {
@@ -57,20 +63,17 @@ public class PerfExample
       int noOfMessages = Integer.parseInt(args[1]);
       int noOfWarmupMessages = Integer.parseInt(args[2]);
       int deliveryMode = args[3].equalsIgnoreCase("persistent") ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT;
-      long samplePeriod = Long.parseLong(args[4]);
-      boolean transacted = Boolean.parseBoolean(args[5]);
-      log.info("Transacted:" + transacted);
-      int transactionBatchSize = Integer.parseInt(args[6]);
-      boolean dupsok = "DUPS_OK".equalsIgnoreCase(args[7]);
-      boolean drainQueue = Boolean.parseBoolean(args[8]);
-      String queueLookup = args[9];
-      String connectionFactoryLookup = args[10];
+      boolean transacted = Boolean.parseBoolean(args[4]);
+      int transactionBatchSize = Integer.parseInt(args[5]);
+      boolean dupsok = "DUPS_OK".equalsIgnoreCase(args[6]);
+      boolean drainQueue = Boolean.parseBoolean(args[7]);
+      String queueLookup = args[8];
+      String connectionFactoryLookup = args[9];
 
       PerfParams perfParams = new PerfParams();
       perfParams.setNoOfMessagesToSend(noOfMessages);
       perfParams.setNoOfWarmupMessages(noOfWarmupMessages);
       perfParams.setDeliveryMode(deliveryMode);
-      perfParams.setSamplePeriod(samplePeriod);
       perfParams.setSessionTransacted(transacted);
       perfParams.setTransactionBatchSize(transactionBatchSize);
       perfParams.setDupsOk(dupsok);
@@ -99,22 +102,29 @@ public class PerfExample
       session = connection.createSession(transacted, transacted ? Session.SESSION_TRANSACTED : (dupsOk ? Session.DUPS_OK_ACKNOWLEDGE : Session.AUTO_ACKNOWLEDGE));
    }
 
+   private void displayAverage(long numberOfMessages, long start, long end)
+   {
+      double duration = (1.0 * end - start) / 1000; // in seconds
+      double average = (1.0 * numberOfMessages / duration);
+      log.info(String.format("average: %.2f msg/s (%d messages in %2.2fs)", average, numberOfMessages, duration));
+   }
+
    public void runSender(final PerfParams perfParams)
    {
       try
       {
          log.info("params = " + perfParams);
          init(perfParams.isSessionTransacted(), perfParams.getQueueLookup(), perfParams.getConnectionFactoryLookup(), perfParams.isDupsOk());
+         start = System.currentTimeMillis();
          log.info("warming up by sending " + perfParams.getNoOfWarmupMessages() + " messages");
-         sendMessages(perfParams.getNoOfWarmupMessages(), perfParams.getTransactionBatchSize(), perfParams.getDeliveryMode(), perfParams.isSessionTransacted());
+         sendMessages(perfParams.getNoOfWarmupMessages(), perfParams.getTransactionBatchSize(), perfParams.getDeliveryMode(), perfParams.isSessionTransacted(), false);
          log.info("warmed up");
-         messageCount.set(0);
 
-         scheduler.scheduleAtFixedRate(command, perfParams.getSamplePeriod(), perfParams.getSamplePeriod(), TimeUnit.SECONDS);
-         sendMessages(perfParams.getNoOfMessagesToSend(), perfParams.getTransactionBatchSize(), perfParams.getDeliveryMode(), perfParams.isSessionTransacted());
-         scheduler.shutdownNow();
+         start = System.currentTimeMillis();
+         sendMessages(perfParams.getNoOfMessagesToSend(), perfParams.getTransactionBatchSize(), perfParams.getDeliveryMode(), perfParams.isSessionTransacted(), true);
+         long end = System.currentTimeMillis();
 
-         log.info(String.format("average: %.2f msg/s", (command.getAverage() / perfParams.getSamplePeriod())));
+         displayAverage(perfParams.getNoOfMessagesToSend(), start, end);
       }
       catch (Exception e)
       {
@@ -134,7 +144,7 @@ public class PerfExample
       }
    }
 
-   private void sendMessages(int numberOfMessages, int txBatchSize, int deliveryMode, boolean transacted) throws JMSException
+   private void sendMessages(int numberOfMessages, int txBatchSize, int deliveryMode, boolean transacted, boolean display) throws JMSException
    {
       MessageProducer producer = session.createProducer(queue);
       producer.setDisableMessageID(true);
@@ -143,15 +153,16 @@ public class PerfExample
       BytesMessage bytesMessage = session.createBytesMessage();
       byte[] payload = new byte[1024];
       bytesMessage.writeBytes(payload);
+      
+      int modulo = numberOfMessages / 10;
 
       boolean committed = false;
       for (int i = 1; i <= numberOfMessages; i++)
       {
          producer.send(bytesMessage);
-         messageCount.incrementAndGet();
          if (transacted)
          {
-            if (messageCount.longValue() % txBatchSize == 0)
+            if (i % txBatchSize == 0)
             {
                session.commit();
                committed = true;
@@ -160,6 +171,11 @@ public class PerfExample
             {
                committed = false;
             }
+         }
+         if (display && (i % modulo == 0))
+         {
+            double duration = (1.0 * System.currentTimeMillis() - start) / 1000;
+            log.info(String.format("sent %6d messages in %2.2fs", i, duration));
          }
       }
       if (transacted && !committed)
@@ -186,7 +202,9 @@ public class PerfExample
          CountDownLatch countDownLatch = new CountDownLatch(1);
          messageConsumer.setMessageListener(new PerfListener(countDownLatch, perfParams));
          countDownLatch.await();
-
+         long end = System.currentTimeMillis();
+         // start was set on the first received message
+         displayAverage(perfParams.getNoOfMessagesToSend(), start, end);
       }
       catch (Exception e)
       {
@@ -211,7 +229,7 @@ public class PerfExample
       log.info("draining queue");
       while (true)
       {
-         Message m = consumer.receive(500);
+         Message m = consumer.receive(5000);
          if (m == null)
          {
             log.info("queue is drained");
@@ -232,11 +250,15 @@ public class PerfExample
       private boolean warmingUp = true;
       private boolean started = false;
 
+      private int modulo;
+      private AtomicLong count = new AtomicLong(0);
+
       public PerfListener(CountDownLatch countDownLatch, PerfParams perfParams)
       {
          this.countDownLatch = countDownLatch;
          this.perfParams = perfParams;
          warmingUp = perfParams.getNoOfWarmupMessages() > 0;
+         this.modulo = perfParams.getNoOfMessagesToSend() / 10;
       }
 
       public void onMessage(Message message)
@@ -246,16 +268,14 @@ public class PerfExample
             if (warmingUp)
             {
                boolean committed = checkCommit();
-               if (messageCount.incrementAndGet() == perfParams.getNoOfWarmupMessages())
+               if (count.incrementAndGet() == perfParams.getNoOfWarmupMessages())
                {
-                  log.info("warmed up after receiving " + messageCount.longValue() + " msgs");
+                  log.info("warmed up after receiving " + count.longValue() + " msgs");
                   if (!committed)
                   {
                      checkCommit();
                   }
                   warmingUp = false;
-                  // reset messageCount to take stats
-                  messageCount.set(0);
                }
                return;
             }
@@ -263,20 +283,25 @@ public class PerfExample
             if (!started)
             {
                started = true;
-               scheduler.scheduleAtFixedRate(command, 1, 1, TimeUnit.SECONDS);
+               // reset count to take stats
+               count.set(0);
+               start = System.currentTimeMillis();
             }
 
-            messageCount.incrementAndGet();
+            long currentCount = count.incrementAndGet();
             boolean committed = checkCommit();
-            if (messageCount.longValue() == perfParams.getNoOfMessagesToSend())
+            if (currentCount == perfParams.getNoOfMessagesToSend())
             {
                if (!committed)
                {
                   checkCommit();
                }
                countDownLatch.countDown();
-               scheduler.shutdownNow();
-               log.info(String.format("average: %.2f msg/s", command.getAverage()));
+            }
+            if (currentCount % modulo == 0)
+            {
+               double duration = (1.0 * System.currentTimeMillis() - start) / 1000;
+               log.info(String.format("received %6d messages in %2.2fs", currentCount, duration));
             }
          }
          catch (Exception e)
@@ -289,7 +314,7 @@ public class PerfExample
       {
          if (perfParams.isSessionTransacted())
          {
-            if (messageCount.longValue() % perfParams.getTransactionBatchSize() == 0)
+            if (count.longValue() % perfParams.getTransactionBatchSize() == 0)
             {
                session.commit();
 
@@ -298,36 +323,5 @@ public class PerfExample
          }
          return false;
       }
-   }
-
-   /**
-    * simple class to gather performance figures
-    */
-   class Sampler implements Runnable
-   {
-      long sampleCount = 0;
-
-      long startTime = 0;
-      long samplesTaken = 0;
-
-      public void run()
-      {
-         if (startTime == 0)
-         {
-            startTime = System.currentTimeMillis();
-         }
-         long elapsedTime = (System.currentTimeMillis() - startTime) / 1000; // in s
-         long lastCount = sampleCount;
-         sampleCount = messageCount.longValue();
-         log.info(String.format("time elapsed: %2ds, message count: %7d, this period: %5d",
-                 elapsedTime, sampleCount, sampleCount - lastCount));
-         samplesTaken++;
-      }
-
-      public double getAverage()
-      {
-         return (1.0 * sampleCount)/samplesTaken;
-      }
-
    }
 }

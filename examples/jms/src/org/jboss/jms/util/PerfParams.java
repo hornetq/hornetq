@@ -31,7 +31,6 @@ public class PerfParams implements Serializable
 {
    int noOfMessagesToSend = 1000;
    int noOfWarmupMessages;
-   long samplePeriod = 1; // in seconds
    int deliveryMode = DeliveryMode.NON_PERSISTENT;
    boolean isSessionTransacted = false;
    int transactionBatchSize = 5000;
@@ -58,16 +57,6 @@ public class PerfParams implements Serializable
    public void setNoOfWarmupMessages(int noOfWarmupMessages)
    {
       this.noOfWarmupMessages = noOfWarmupMessages;
-   }
-
-   public long getSamplePeriod()
-   {
-      return samplePeriod;
-   }
-
-   public void setSamplePeriod(long samplePeriod)
-   {
-      this.samplePeriod = samplePeriod;
    }
 
    public int getDeliveryMode()
@@ -143,7 +132,7 @@ public class PerfParams implements Serializable
 
    public String toString()
    {
-      return "message to send = " + noOfMessagesToSend + ", samplePeriod = " + samplePeriod + "s" + ", DeliveryMode = " +
+      return "message to send = " + noOfMessagesToSend + ", DeliveryMode = " +
               (deliveryMode == DeliveryMode.PERSISTENT ? "PERSISTENT" : "NON_PERSISTENT") + ", session transacted = " + isSessionTransacted +
               (isSessionTransacted ? ", transaction batch size = " + transactionBatchSize : "") + ", drain queue = " + drainQueue +
               ", queue lookup = " + queueLookup + ", connection factory lookup = " + connectionFactoryLookup +
