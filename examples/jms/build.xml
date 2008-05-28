@@ -43,10 +43,10 @@
    <!--perf props-->
    <property name="message.count" value="200000"/>
    <property name="message.warmup.count" value="10000"/>
-   <property name="delivery.mode" value="PERSISTENT"/>
+   <property name="delivery.mode" value="NON_PERSISTENT"/>
 	<!-- in seconds -->
    <property name="sample.period" value="1"/>
-   <property name="sess.trans" value="true"/>
+   <property name="sess.trans" value="false"/>
    <property name="sess.trans.size" value="100"/>
 
    <path id="compile.classpath">
