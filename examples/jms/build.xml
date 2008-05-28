@@ -44,9 +44,10 @@
    <property name="message.count" value="200000"/>
    <property name="message.warmup.count" value="10000"/>
    <property name="delivery.mode" value="NON_PERSISTENT"/>
-	<!-- in seconds -->
+   <!-- in seconds -->
    <property name="sample.period" value="1"/>
    <property name="sess.trans" value="false"/>
+   <property name="sess.ackmode" value="DUPS_OK"/>
    <property name="sess.trans.size" value="100"/>
    <property name="drain.queue" value="true"/>
    <property name="queue.lookup" value="/queue/testPerfQueue"/>
@@ -67,11 +68,11 @@
 
    <target name="help" description="-> display help">
       <echo>*****************************************************************</echo>
-      <echo>* to run examples execute one of the following                  *</echo>
-      <echo>* ant queueExample                                              *</echo>
-      <echo>* ant topicExample                                              *</echo>
-      <echo>* ant DurSubExample                                             *</echo>
-      <echo>* ant perfListener followed by ant perfSender                   *</echo>
+      <echo>* to run examples execute one of the following *</echo>
+      <echo>* ant queueExample *</echo>
+      <echo>* ant topicExample *</echo>
+      <echo>* ant DurSubExample *</echo>
+      <echo>* ant perfListener followed by ant perfSender *</echo>
       <echo>*****************************************************************</echo>
    </target>
 
@@ -86,76 +87,78 @@
 
    <target name="compile" depends="init">
       <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on"
-         source="1.5">
+             source="1.5">
          <classpath refid="compile.classpath"/>
       </javac>
    </target>
 
    <target name="queueExample" depends="compile" description="-> point to point example using a queue">
       <java classname="org.jboss.jms.example.QueueExample" fork="true">
-         <classpath refid="runtime.classpath"/>      	
+         <classpath refid="runtime.classpath"/>
       </java>
    </target>
-   
-    <target name="topicExample" depends="compile" description="-> publish/subscribe example using a topic">
+
+   <target name="topicExample" depends="compile" description="-> publish/subscribe example using a topic">
       <java classname="org.jboss.jms.example.TopicExample" fork="true">
          <classpath refid="runtime.classpath"/>
       </java>
    </target>
 
-   <target name="DurSubExample" depends="compile" description="-> publish/subscribe example using a topic and a durable subscriber">
+   <target name="DurSubExample" depends="compile"
+           description="-> publish/subscribe example using a topic and a durable subscriber">
       <java classname="org.jboss.jms.example.DurableSubscriberExample" fork="true">
          <classpath refid="runtime.classpath"/>
       </java>
    </target>
 
-    <target name="echo-params">
-   	 <echo>
-***********************************************************************************
-* available parameters (-Dmessage.count=1000)
-*
-* parameter             description                      default               current
-* ---------             -----------                      -------               -------
-* message.count         number of messages               200000                ${message.count}
-* message.warmup.count  number of messages to warm up    10000                 ${message.warmup.count}
-* delivery.mode         PERSISTENT/NON_PERSISTENT        PERSISTENT            ${delivery.mode}
-* sample.period         timing period in seconds         1                     ${sample.period}
-* sess.trans            Is session transacted            true                  ${sess.trans}
-* sess.trans.size       batch size to commit             100                   ${sess.trans.size}
-* drain.queue           drain the queue (listener only)  true                  ${drain.queue}
-* queue.lookup          Queue JNDI lookup                /queue/testPerfQueue  ${queue.lookup}
-* cf.lookup             ConnectionFactory JNDI lookup    /ConnectionFactory    ${cf.lookup}
-***********************************************************************************
-   	  </echo>            
-    </target>
+   <target name="echo-params">
+      <echo>
+         ***********************************************************************************
+         * available parameters (-Dmessage.count=1000)
+         *
+         * parameter description default current
+         * --------- ----------- ------- -------
+         * message.count number of messages 200000 ${message.count}
+         * message.warmup.count number of messages to warm up 10000 ${message.warmup.count}
+         * delivery.mode PERSISTENT/NON_PERSISTENT PERSISTENT ${delivery.mode}
+         * sample.period timing period in seconds 1 ${sample.period}
+         * sess.trans Is session transacted true ${sess.trans}
+         * sess.ackmode Ack mode DUPS_OK/AUTO_ACK DUPS_OK ${sess.ackmode}
+         * sess.trans.size batch size to commit 100 ${sess.trans.size}
+         * drain.queue drain the queue (listener only) true ${drain.queue}
+         * queue.lookup Queue JNDI lookup /queue/testPerfQueue ${queue.lookup}
+         * cf.lookup ConnectionFactory JNDI lookup /ConnectionFactory ${cf.lookup}
+         ***********************************************************************************
+      </echo>
+   </target>
 
    <target name="perfListener" depends="compile" description="-> run performance test when listening to a queue">
-      <antcall target="echo-params" />
-   
-   	  <java classname="org.jboss.jms.example.PerfExample" fork="true">
+      <antcall target="echo-params"/>
+
+      <java classname="org.jboss.jms.example.PerfExample" fork="true">
          <classpath refid="runtime.classpath"/>
-      	<jvmarg value="-Xmx1024M"/>
-      	<jvmarg value="-XX:+UseParallelGC"/>
-      	<jvmarg value="-XX:+AggressiveOpts"/>
-      	<jvmarg value="-XX:+UseFastAccessorMethods"/>
-        <arg value="-l"/>
-        <arg value="${message.count}"/>
-        <arg value="${message.warmup.count}"/>
-        <arg value="${delivery.mode}"/>
-      	<arg value="${sample.period}"/>
-      	<arg value="${sess.trans}"/>
-        <arg value="${sess.trans.size}"/>
-        <arg value="${drain.queue}"/>
-        <arg value="${queue.lookup}"/>
-        <arg value="${cf.lookup}"/>
+         <jvmarg value="-Xmx1024M"/>
+         <jvmarg value="-XX:+UseParallelGC"/>
+         <jvmarg value="-XX:+AggressiveOpts"/>
+         <jvmarg value="-XX:+UseFastAccessorMethods"/>
+         <arg value="-l"/>
+         <arg value="${message.count}"/>
+         <arg value="${message.warmup.count}"/>
+         <arg value="${delivery.mode}"/>
+         <arg value="${sample.period}"/>
+         <arg value="${sess.trans}"/>
+         <arg value="${sess.trans.size}"/>
+         <arg value="${drain.queue}"/>
+         <arg value="${queue.lookup}"/>
+         <arg value="${cf.lookup}"/>
+         <arg value="${sess.ackmode}"/>
       </java>
    </target>
 
 
    <target name="perfSender" depends="compile" description="-> run performance test when sending to a queue">
-     <antcall target="echo-params" />
-
-     <java classname="org.jboss.jms.example.PerfExample" fork="true">
+      <antcall target="echo-params"/>
+      <java classname="org.jboss.jms.example.PerfExample" fork="true">
          <classpath refid="runtime.classpath"/>
          <jvmarg value="-Xmx512M"/>
          <jvmarg value="-XX:+UseParallelGC"/>
@@ -171,7 +174,40 @@
          <arg value="false"/>
          <arg value="${queue.lookup}"/>
          <arg value="${cf.lookup}"/>
+         <arg value="${sess.ackmode}"/>
       </java>
    </target>
 
+   <target name="perfNonTransactionalSender" depends="compile"
+           description="-> run performance test when sending to a queue">
+      <antcall target="perfSender">
+         <param name="sess.trans" value="false"/>
+      </antcall>
+   </target>
+
+   <target name="perfTransactionalSender" depends="compile"
+           description="-> run performance test when sending to a queue">
+      <antcall target="perfSender">
+         <param name="sess.trans" value="true"/>
+      </antcall>
+   </target>
+
+   <target name="perfAutoAckListener" depends="compile" description="-> run performance test when listening to a queue">
+      <antcall target="perfListener">
+         <param name="sess.ackmode" value="AUTO_ACK"/>
+      </antcall>
+   </target>
+
+   <target name="perfDupsOKListener" depends="compile" description="-> run performance test when listening to a queue">
+      <antcall target="perfListener">
+         <param name="sess.ackmode" value="DUPS_OK"/>
+      </antcall>
+   </target>
+
+   <target name="perfTransactionalListener" depends="compile"
+           description="-> run performance test when listening to a queue">
+      <antcall target="perfListener">
+         <param name="sess.trans" value="true"/>
+      </antcall>
+   </target>
 </project>

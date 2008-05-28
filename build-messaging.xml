@@ -779,8 +779,28 @@
       <ant dir="${examples.dir}/jms" antfile="build.xml" target="perfListener"/>
    </target>
 
+   <target name="perfAutoAckListener" depends="client-jar">
+      <ant dir="${examples.dir}/jms" antfile="build.xml" target="perfAutoAckListener"/>
+   </target>
+
+   <target name="perfDupsOKListener" depends="client-jar">
+      <ant dir="${examples.dir}/jms" antfile="build.xml" target="perfDupsOKListener"/>
+   </target>
+
+   <target name="perfTransactionalListener" depends="client-jar">
+      <ant dir="${examples.dir}/jms" antfile="build.xml" target="perfTransactionalListener"/>
+   </target>
+
    <target name="perfSender" depends="client-jar">
       <ant dir="${examples.dir}/jms" antfile="build.xml" target="perfSender"/>
+   </target>
+
+   <target name="perfNonTransactionalSender" depends="client-jar">
+      <ant dir="${examples.dir}/jms" antfile="build.xml" target="perfNonTransactionalSender"/>
+   </target>
+
+   <target name="perfTransactionalSender" depends="client-jar">
+      <ant dir="${examples.dir}/jms" antfile="build.xml" target="perfTransactionalSender"/>
    </target>
 
    <target name="SimpleClient" depends="client-jar">

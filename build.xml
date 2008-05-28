@@ -42,7 +42,7 @@
         parent, as project root. DO NOT change this.
    -->
    <property name="external.project" value="true"/>
-    <!--
+   <!--
         Setting "nodownload" to true inhibits downloading of up-to-date dependencies.
    -->
    <property name="nodownload" value="false"/>
@@ -63,15 +63,15 @@
    </target>
 
    <target name="clean" depends="createthirdparty">
-       <ant antfile="build-messaging.xml" target="clean"/>
+      <ant antfile="build-messaging.xml" target="clean"/>
    </target>
 
    <target name="init" depends="createthirdparty">
-       <ant antfile="build-messaging.xml" target="init"/>
+      <ant antfile="build-messaging.xml" target="init"/>
    </target>
 
    <target name="compile" depends="createthirdparty">
-       <ant antfile="build-messaging.xml" target="compile"/>
+      <ant antfile="build-messaging.xml" target="compile"/>
    </target>
 
    <target name="build-native" depends="createthirdparty">
@@ -82,11 +82,11 @@
    <!-- ======================================================================================== -->
 
    <target name="jar" depends="createthirdparty">
-       <ant antfile="build-messaging.xml" target="jar"/>
+      <ant antfile="build-messaging.xml" target="jar"/>
    </target>
 
    <target name="client-jar" depends="createthirdparty">
- <ant antfile="build-messaging.xml" target="client-jar"/>
+      <ant antfile="build-messaging.xml" target="client-jar"/>
    </target>
    <!-- ======================================================================================== -->
    <!-- Distro Tasks                                                                           -->
@@ -94,7 +94,7 @@
 
 
    <target name="distro" depends="createthirdparty">
- <ant antfile="build-messaging.xml" target="distro"/>
+      <ant antfile="build-messaging.xml" target="distro"/>
    </target>
 
 
@@ -102,23 +102,23 @@
 
 
    <target name="compile-unit-tests" depends="createthirdparty">
-       <ant antfile="build-messaging.xml" target="compile-unit-tests"/>
+      <ant antfile="build-messaging.xml" target="compile-unit-tests"/>
    </target>
 
    <target name="compile-jms-tests" depends="createthirdparty">
-       <ant antfile="build-messaging.xml" target="compile"/>
+      <ant antfile="build-messaging.xml" target="compile"/>
    </target>
 
    <target name="unit-tests" depends="createthirdparty">
-       <ant antfile="build-messaging.xml" target="unit-tests"/>
+      <ant antfile="build-messaging.xml" target="unit-tests"/>
    </target>
 
    <target name="jms-tests" depends="createthirdparty">
-       <ant antfile="build-messaging.xml" target="jms-tests"/>
+      <ant antfile="build-messaging.xml" target="jms-tests"/>
    </target>
 
    <target name="all-tests" depends="createthirdparty">
-       <ant antfile="build-messaging.xml" target="all-tests"/>
+      <ant antfile="build-messaging.xml" target="all-tests"/>
    </target>
 
    <target name="compile-reports" depends="createthirdparty">
@@ -148,8 +148,28 @@
       <ant antfile="build-messaging.xml" target="perfListener"/>
    </target>
 
+   <target name="perfAutoAckListener" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="perfAutoAckListener"/>
+   </target>
+
+   <target name="perfDupsOKListener" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="perfDupsOKListener"/>
+   </target>
+
+   <target name="perfTransactionalListener" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="perfTransactionalListener"/>
+   </target>
+
    <target name="perfSender" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="perfSender"/>
+   </target>
+
+   <target name="perfNonTransactionalSender" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="perfNonTransactionalSender"/>
+   </target>
+
+   <target name="perfTransactionalSender" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="perfTransactionalSender"/>
    </target>
 
    <target name="SimpleClient" depends="createthirdparty">
@@ -160,7 +180,7 @@
       <ant antfile="build-messaging.xml" target="SSLClient"/>
    </target>
 
-    <target name="SimpleExample" depends="createthirdparty">
+   <target name="SimpleExample" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="SimpleExample"/>
    </target>
 </project>

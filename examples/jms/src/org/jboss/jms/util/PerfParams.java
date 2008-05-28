@@ -26,19 +26,20 @@ import java.io.Serializable;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
-*/
+ */
 public class PerfParams implements Serializable
 {
    int noOfMessagesToSend = 1000;
    int noOfWarmupMessages;
    long samplePeriod = 1; // in seconds
-   int deliveryMode  = DeliveryMode.NON_PERSISTENT;
+   int deliveryMode = DeliveryMode.NON_PERSISTENT;
    boolean isSessionTransacted = false;
    int transactionBatchSize = 5000;
    private boolean drainQueue = true;
    private String queueLookup = "/queue/testPerfQueue";
    private String connectionFactoryLookup = "/ConnectionFactory";
-   
+   private boolean dupsOk;
+
    public int getNoOfMessagesToSend()
    {
       return noOfMessagesToSend;
@@ -48,7 +49,7 @@ public class PerfParams implements Serializable
    {
       this.noOfMessagesToSend = noOfMessagesToSend;
    }
-   
+
    public int getNoOfWarmupMessages()
    {
       return noOfWarmupMessages;
@@ -102,40 +103,52 @@ public class PerfParams implements Serializable
 
    public boolean isDrainQueue()
    {
-      return drainQueue ;
+      return drainQueue;
    }
 
    public void setDrainQueue(boolean drainQueue)
    {
       this.drainQueue = drainQueue;
    }
-   
+
    public String getQueueLookup()
    {
       return queueLookup;
    }
-   
+
    public void setQueueLookup(String queueLookup)
    {
       this.queueLookup = queueLookup;
    }
-   
+
    public String getConnectionFactoryLookup()
    {
       return connectionFactoryLookup;
    }
-   
+
    public void setConnectionFactoryLookup(String connectionFactoryLookup)
    {
       this.connectionFactoryLookup = connectionFactoryLookup;
    }
-   
+
+   public boolean isDupsOk()
+   {
+      return dupsOk;
+   }
+
+   public void setDupsOk(boolean dupsOk)
+   {
+      this.dupsOk = dupsOk;
+   }
+
    public String toString()
    {
       return "message to send = " + noOfMessagesToSend + ", samplePeriod = " + samplePeriod + "s" + ", DeliveryMode = " +
-              (deliveryMode == DeliveryMode.PERSISTENT?"PERSISTENT":"NON_PERSISTENT") + ", session transacted = " + isSessionTransacted +
-              (isSessionTransacted?", transaction batch size = " + transactionBatchSize:"" ) + ", drain queue = " + drainQueue +
-              ", queue lookup = " + queueLookup + ", connection factory lookup = " + connectionFactoryLookup;
+              (deliveryMode == DeliveryMode.PERSISTENT ? "PERSISTENT" : "NON_PERSISTENT") + ", session transacted = " + isSessionTransacted +
+              (isSessionTransacted ? ", transaction batch size = " + transactionBatchSize : "") + ", drain queue = " + drainQueue +
+              ", queue lookup = " + queueLookup + ", connection factory lookup = " + connectionFactoryLookup +
+              ", Session Acknowledge mode = " + (dupsOk ? "DUPS_OK_ACKNOWLEDGE" : "AUTO_ACKNOWLEDGE");
    }
+
 
 }
