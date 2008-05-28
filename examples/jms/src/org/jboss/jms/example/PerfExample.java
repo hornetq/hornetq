@@ -61,10 +61,11 @@ public class PerfExample
       boolean transacted = Boolean.parseBoolean(args[5]);
       log.info("Transacted:" + transacted);
       int transactionBatchSize = Integer.parseInt(args[6]);
-      boolean drainQueue = Boolean.parseBoolean(args[7]);
-      String queueLookup = args[8];
-      String connectionFactoryLookup = args[9];
-      boolean dupsok = "DUPS_OK".equalsIgnoreCase(args[10]);
+      boolean dupsok = "DUPS_OK".equalsIgnoreCase(args[7]);
+      boolean drainQueue = Boolean.parseBoolean(args[8]);
+      String queueLookup = args[9];
+      String connectionFactoryLookup = args[10];
+
       PerfParams perfParams = new PerfParams();
       perfParams.setNoOfMessagesToSend(noOfMessages);
       perfParams.setNoOfWarmupMessages(noOfWarmupMessages);
@@ -72,10 +73,10 @@ public class PerfExample
       perfParams.setSamplePeriod(samplePeriod);
       perfParams.setSessionTransacted(transacted);
       perfParams.setTransactionBatchSize(transactionBatchSize);
+      perfParams.setDupsOk(dupsok);
       perfParams.setDrainQueue(drainQueue);
       perfParams.setQueueLookup(queueLookup);
       perfParams.setConnectionFactoryLookup(connectionFactoryLookup);
-      perfParams.setDupsOk(dupsok);
 
       if (args[0].equalsIgnoreCase("-l"))
       {
