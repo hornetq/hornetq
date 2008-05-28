@@ -36,6 +36,8 @@ public class PerfParams implements Serializable
    boolean isSessionTransacted = false;
    int transactionBatchSize = 5000;
    private boolean drainQueue = true;
+   private String queueLookup = "/queue/testPerfQueue";
+   private String connectionFactoryLookup = "/ConnectionFactory";
    
    public int getNoOfMessagesToSend()
    {
@@ -107,12 +109,33 @@ public class PerfParams implements Serializable
    {
       this.drainQueue = drainQueue;
    }
-
+   
+   public String getQueueLookup()
+   {
+      return queueLookup;
+   }
+   
+   public void setQueueLookup(String queueLookup)
+   {
+      this.queueLookup = queueLookup;
+   }
+   
+   public String getConnectionFactoryLookup()
+   {
+      return connectionFactoryLookup;
+   }
+   
+   public void setConnectionFactoryLookup(String connectionFactoryLookup)
+   {
+      this.connectionFactoryLookup = connectionFactoryLookup;
+   }
+   
    public String toString()
    {
       return "message to send = " + noOfMessagesToSend + ", samplePeriod = " + samplePeriod + "s" + ", DeliveryMode = " +
               (deliveryMode == DeliveryMode.PERSISTENT?"PERSISTENT":"NON_PERSISTENT") + ", session transacted = " + isSessionTransacted +
-              (isSessionTransacted?", transaction batch size = " + transactionBatchSize:"" + ", drain queue = " + drainQueue);
+              (isSessionTransacted?", transaction batch size = " + transactionBatchSize:"" ) + ", drain queue = " + drainQueue +
+              ", queue lookup = " + queueLookup + ", connection factory lookup = " + connectionFactoryLookup;
    }
 
 }

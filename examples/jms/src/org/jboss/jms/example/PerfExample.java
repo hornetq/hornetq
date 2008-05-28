@@ -60,6 +60,8 @@ public class PerfExample
       log.info("Transacted:" + transacted);
       int transactionBatchSize = Integer.parseInt(args[6]);
       boolean drainQueue = Boolean.parseBoolean(args[7]);
+      String queueLookup = args[8];
+      String connectionFactoryLookup = args[9];
       
       PerfParams perfParams = new PerfParams();
       perfParams.setNoOfMessagesToSend(noOfMessages);
@@ -69,6 +71,8 @@ public class PerfExample
       perfParams.setSessionTransacted(transacted);
       perfParams.setTransactionBatchSize(transactionBatchSize);
       perfParams.setDrainQueue(drainQueue);
+      perfParams.setQueueLookup(queueLookup);
+      perfParams.setConnectionFactoryLookup(connectionFactoryLookup);
       
       if (args[0].equalsIgnoreCase("-l"))
       {
@@ -81,12 +85,12 @@ public class PerfExample
 
    }
 
-   private void init(boolean transacted)
+   private void init(boolean transacted, String queueLookup, String connectionFactoryLookup)
            throws NamingException, JMSException
    {
       InitialContext initialContext = new InitialContext();
-      queue = (Queue) initialContext.lookup("/queue/testPerfQueue");
-      ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
+      queue = (Queue) initialContext.lookup(queueLookup);
+      ConnectionFactory cf = (ConnectionFactory) initialContext.lookup(connectionFactoryLookup);
       connection = cf.createConnection();
       session = connection.createSession(transacted, transacted ? Session.SESSION_TRANSACTED : Session.DUPS_OK_ACKNOWLEDGE);
    }
@@ -96,7 +100,7 @@ public class PerfExample
       try
       {
          log.info("params = " + perfParams);
-         init(perfParams.isSessionTransacted());
+         init(perfParams.isSessionTransacted(), perfParams.getQueueLookup(), perfParams.getConnectionFactoryLookup());
          log.info("warming up by sending " + perfParams.getNoOfWarmupMessages() + " messages");
          sendMessages(perfParams.getNoOfWarmupMessages(), perfParams.getTransactionBatchSize(), perfParams.getDeliveryMode(), perfParams.isSessionTransacted());         
          log.info("warmed up");         
@@ -164,7 +168,7 @@ public class PerfExample
    {
       try
       {
-         init(perfParams.isSessionTransacted());
+         init(perfParams.isSessionTransacted(), perfParams.getQueueLookup(), perfParams.getConnectionFactoryLookup());
          MessageConsumer messageConsumer = session.createConsumer(queue);
          connection.start();
 

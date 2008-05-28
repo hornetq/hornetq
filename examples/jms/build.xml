@@ -49,6 +49,8 @@
    <property name="sess.trans" value="false"/>
    <property name="sess.trans.size" value="100"/>
    <property name="drain.queue" value="true"/>
+   <property name="queue.lookup" value="/queue/testPerfQueue"/>
+   <property name="cf.lookup" value="/ConnectionFactory"/>
 
    <path id="compile.classpath">
       <fileset dir="${lib.dir}">
@@ -112,15 +114,17 @@
 ***********************************************************************************
 * available parameters (-Dmessage.count=1000)
 *
-* parameter             description                      default     current
-* ---------             -----------                      -------     -------
-* message.count         number of messages               200000      ${message.count}
-* message.warmup.count  number of messages to warm up    10000       ${message.warmup.count}
-* delivery.mode         PERSISTENT/NON_PERSISTENT        PERSISTENT  ${delivery.mode}
-* sample.period         timing period in seconds         1           ${sample.period}
-* sess.trans            Is session transacted            true        ${sess.trans}
-* sess.trans.size       batch size to commit             100         ${sess.trans.size}
-* drain.queue           drain the queue (listener only)  true        ${drain.queue}
+* parameter             description                      default               current
+* ---------             -----------                      -------               -------
+* message.count         number of messages               200000                ${message.count}
+* message.warmup.count  number of messages to warm up    10000                 ${message.warmup.count}
+* delivery.mode         PERSISTENT/NON_PERSISTENT        PERSISTENT            ${delivery.mode}
+* sample.period         timing period in seconds         1                     ${sample.period}
+* sess.trans            Is session transacted            true                  ${sess.trans}
+* sess.trans.size       batch size to commit             100                   ${sess.trans.size}
+* drain.queue           drain the queue (listener only)  true                  ${drain.queue}
+* queue.lookup          Queue JNDI lookup                /queue/testPerfQueue  ${queue.lookup}
+* cf.lookup             ConnectionFactory JNDI lookup    /ConnectionFactory    ${cf.lookup}
 ***********************************************************************************
    	  </echo>            
     </target>
@@ -142,6 +146,8 @@
       	<arg value="${sess.trans}"/>
         <arg value="${sess.trans.size}"/>
         <arg value="${drain.queue}"/>
+        <arg value="${queue.lookup}"/>
+        <arg value="${cf.lookup}"/>
       </java>
    </target>
 
@@ -163,6 +169,8 @@
          <arg value="${sess.trans}"/>
          <arg value="${sess.trans.size}"/>
          <arg value="false"/>
+         <arg value="${queue.lookup}"/>
+         <arg value="${cf.lookup}"/>
       </java>
    </target>
 
