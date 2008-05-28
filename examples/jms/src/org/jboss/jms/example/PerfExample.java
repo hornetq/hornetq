@@ -59,7 +59,8 @@ public class PerfExample
       boolean transacted = Boolean.parseBoolean(args[5]);
       log.info("Transacted:" + transacted);
       int transactionBatchSize = Integer.parseInt(args[6]);
-
+      boolean drainQueue = Boolean.parseBoolean(args[7]);
+      
       PerfParams perfParams = new PerfParams();
       perfParams.setNoOfMessagesToSend(noOfMessages);
       perfParams.setNoOfWarmupMessages(noOfWarmupMessages);
@@ -67,6 +68,7 @@ public class PerfExample
       perfParams.setSamplePeriod(samplePeriod);
       perfParams.setSessionTransacted(transacted);
       perfParams.setTransactionBatchSize(transactionBatchSize);
+      perfParams.setDrainQueue(drainQueue);
       
       if (args[0].equalsIgnoreCase("-l"))
       {
@@ -95,7 +97,6 @@ public class PerfExample
       {
          log.info("params = " + perfParams);
          init(perfParams.isSessionTransacted());
-         // use 10% of the messages to warm up the system       
          log.info("warming up by sending " + perfParams.getNoOfWarmupMessages() + " messages");
          sendMessages(perfParams.getNoOfWarmupMessages(), perfParams.getTransactionBatchSize(), perfParams.getDeliveryMode(), perfParams.isSessionTransacted());         
          log.info("warmed up");         
@@ -165,19 +166,17 @@ public class PerfExample
       {
          init(perfParams.isSessionTransacted());
          MessageConsumer messageConsumer = session.createConsumer(queue);
-         CountDownLatch countDownLatch = new CountDownLatch(1);
          connection.start();
-         log.info("emptying queue");
-         while (true)
+
+         if (perfParams.isDrainQueue()) 
          {
-            Message m = messageConsumer.receive(500);
-            if (m == null)
-            {
-               break;
-            }
+            drainQueue(messageConsumer);
          }
-         messageConsumer.setMessageListener(new PerfListener(countDownLatch, perfParams));
+         
          log.info("READY!!!");
+         
+         CountDownLatch countDownLatch = new CountDownLatch(1);
+         messageConsumer.setMessageListener(new PerfListener(countDownLatch, perfParams));
          countDownLatch.await();
 
       }
@@ -199,7 +198,19 @@ public class PerfExample
       }
    }
 
-
+   private void drainQueue(MessageConsumer consumer) throws JMSException
+   {
+      log.info("draining queue");
+      while (true)
+      {
+         Message m = consumer.receive(500);
+         if (m == null)
+         {
+            log.info("queue is drained");
+            break;
+         }
+      }
+   }
 
    /**
     * a message listener
@@ -209,7 +220,7 @@ public class PerfExample
       private CountDownLatch countDownLatch;
       
       private PerfParams perfParams;
-      
+
       private boolean started = false;
 
       public PerfListener(CountDownLatch countDownLatch, PerfParams perfParams)
@@ -228,8 +239,7 @@ public class PerfExample
 
          try
          {
-            BytesMessage bm = (BytesMessage) message;
-            messageCount.incrementAndGet();      
+            messageCount.incrementAndGet();
             boolean committed = checkCommit();
             if (messageCount.longValue() == perfParams.getNoOfMessagesToSend())
             {
@@ -246,7 +256,7 @@ public class PerfExample
          {
             e.printStackTrace();
          }
-       }
+      }
       
       private boolean checkCommit() throws Exception
       {

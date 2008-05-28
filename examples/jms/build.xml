@@ -48,6 +48,7 @@
    <property name="sample.period" value="1"/>
    <property name="sess.trans" value="false"/>
    <property name="sess.trans.size" value="100"/>
+   <property name="drain.queue" value="true"/>
 
    <path id="compile.classpath">
       <fileset dir="${lib.dir}">
@@ -106,19 +107,28 @@
       </java>
    </target>
 
-   <target name="perfListener" depends="compile" description="-> run performance test when listening to a queue">
-	<echo>***********************************************************************************</echo>
-	<echo>* available parameters (-Dmessage.count=1000)                                </echo>
-	<echo>*                                                                            </echo>
-	<echo>*     param            description                default          current</echo>
-	<echo>*  message.count    number of messages            200000           ${message.count}</echo>
-	<echo>*  delivery.mode  PERSISTENT/NON_PERSISTENT    NON_PERSISTENT      ${delivery.mode}</echo>
-	<echo>*  sample.period  timing period in seconds       1 second          ${sample.period}</echo>
-	<echo>*   sess.trans      Is session transacted          false           ${sess.trans}</echo>
-	<echo>* sess.trans.size  batch size to commit            5000            ${sess.trans.size}</echo>
-	<echo>***********************************************************************************</echo>
+    <target name="echo-params">
+   	 <echo>
+***********************************************************************************
+* available parameters (-Dmessage.count=1000)
+*
+* parameter             description                      default     current
+* ---------             -----------                      -------     -------
+* message.count         number of messages               200000      ${message.count}
+* message.warmup.count  number of messages to warm up    10000       ${message.warmup.count}
+* delivery.mode         PERSISTENT/NON_PERSISTENT        PERSISTENT  ${delivery.mode}
+* sample.period         timing period in seconds         1           ${sample.period}
+* sess.trans            Is session transacted            true        ${sess.trans}
+* sess.trans.size       batch size to commit             100         ${sess.trans.size}
+* drain.queue           drain the queue (listener only)  true        ${drain.queue}
+***********************************************************************************
+   	  </echo>            
+    </target>
 
-      <java classname="org.jboss.jms.example.PerfExample" fork="true">
+   <target name="perfListener" depends="compile" description="-> run performance test when listening to a queue">
+      <antcall target="echo-params" />
+   
+   	  <java classname="org.jboss.jms.example.PerfExample" fork="true">
          <classpath refid="runtime.classpath"/>
       	<jvmarg value="-Xmx1024M"/>
       	<jvmarg value="-XX:+UseParallelGC"/>
@@ -131,22 +141,15 @@
       	<arg value="${sample.period}"/>
       	<arg value="${sess.trans}"/>
         <arg value="${sess.trans.size}"/>
+        <arg value="${drain.queue}"/>
       </java>
    </target>
 
 
    <target name="perfSender" depends="compile" description="-> run performance test when sending to a queue">
-      <echo>***********************************************************************************</echo>
-      <echo>* available parameters (-Dmessage.count=1000)                                </echo>
-      <echo>*                                                                            </echo>
-      <echo>*     param            description                default          current</echo>
-   	  <echo>*  message.count    number of messages            200000           ${message.count}</echo>
-      <echo>*  delivery.mode  PERSISTENT/NON_PERSISTENT    NON_PERSISTENT      ${delivery.mode}</echo>
-      <echo>*  sample.period  timing period in seconds       1 second          ${sample.period}</echo>
-      <echo>*   sess.trans      Is session transacted          false           ${sess.trans}</echo>
-      <echo>* sess.trans.size  batch size to commit            5000            ${sess.trans.size}</echo>
-      <echo>***********************************************************************************</echo>
-      <java classname="org.jboss.jms.example.PerfExample" fork="true">
+     <antcall target="echo-params" />
+
+     <java classname="org.jboss.jms.example.PerfExample" fork="true">
          <classpath refid="runtime.classpath"/>
          <jvmarg value="-Xmx512M"/>
          <jvmarg value="-XX:+UseParallelGC"/>
@@ -159,6 +162,7 @@
          <arg value="${sample.period}"/>
          <arg value="${sess.trans}"/>
          <arg value="${sess.trans.size}"/>
+         <arg value="false"/>
       </java>
    </target>
 
