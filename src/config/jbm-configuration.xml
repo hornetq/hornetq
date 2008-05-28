@@ -85,7 +85,7 @@
       <!-- 10 MB journal file size -->
       <journal-file-size>10485760</journal-file-size>
 
-      <journal-min-files>10</journal-min-files>
+      <journal-min-files>40</journal-min-files>
 
       <!-- Maximum simultaneous asynchronous writes accepted by the native layer.
       (parameter ignored on NIO)
