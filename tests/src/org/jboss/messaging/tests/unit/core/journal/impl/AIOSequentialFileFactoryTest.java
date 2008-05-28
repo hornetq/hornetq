@@ -122,7 +122,7 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
       
       final int NUMBER_OF_RECORDS = 10000;
       
-      SequentialFile file = factory.createSequentialFile("callbackBlock.log", true, 1000, 120);
+      SequentialFile file = factory.createSequentialFile("callbackBlock.log", true, 1000, 12000);
       file.open();
       file.fill(0, 512 * NUMBER_OF_RECORDS, (byte)'a');
 

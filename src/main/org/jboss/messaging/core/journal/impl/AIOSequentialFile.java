@@ -82,6 +82,13 @@ public class AIOSequentialFile implements SequentialFile
       executor.shutdown();
       if (!executor.awaitTermination(timeout, TimeUnit.MILLISECONDS))
       {
+         try
+         {
+            aioFile.close();
+         }
+         catch (Exception ignored)
+         {
+         }
          throw new Exception("Timeout!");
       }
 		aioFile.close();
