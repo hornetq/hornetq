@@ -1,103 +1,111 @@
 <deployment>
    <configuration>
-   
+
       <!-- TODO!! Should specify all available properties in here -->
-   
+
       <strict-tck>true</strict-tck>
-      
+
       <clustered>false</clustered>
-      
+
       <scheduled-executor-max-pool-size>30</scheduled-executor-max-pool-size>
-      
+
       <require-destinations>true</require-destinations>
-           
+
       <!-- Remoting configuration -->
-      
+
       <!-- one of: TCP, INVM                                                                     -->
-      <!-- INVM: the server is accessible only by clients in the same VM (no sockets are opened) --> 
+      <!-- INVM: the server is accessible only by clients in the same VM (no sockets are opened) -->
       <remoting-transport>TCP</remoting-transport>
-      
+
       <remoting-bind-address>5400</remoting-bind-address>
-      
+
       <remoting-host>localhost</remoting-host>
 
       <!--  timeout in milliseconds -->
       <remoting-timeout>5000</remoting-timeout>
-      
+
       <!-- true to disable invm communication when the client and the server are in the same JVM.     -->
       <!-- it is not allowed to disable invm communication when the remoting-transport is set to INVM -->
       <remoting-disable-invm>false</remoting-disable-invm>
-      
+
       <!-- Enable/Disable Nagle's Algorithm (resp. true/false)                           -->
       <!-- This setting is taken into account only when remoting-transport is set to TCP -->
       <remoting-tcp-nodelay>true</remoting-tcp-nodelay>
-      
+
       <!-- Set the TCP Receive Buffer size (SO_RCVBUF).                                    -->
-      <!-- Set it to -1 if you want to use the value hinted by the Operating System      --> 
+      <!-- Set it to -1 if you want to use the value hinted by the Operating System      -->
       <!-- This setting is taken into account only when remoting-transport is set to TCP -->
       <remoting-tcp-receive-buffer-size>32768</remoting-tcp-receive-buffer-size>
 
       <!-- Set the TCP Send Buffer size (SO_SNDBUF).                                     -->
-      <!-- Set it to -1 if you want to use the value hinted by the Operating System      --> 
+      <!-- Set it to -1 if you want to use the value hinted by the Operating System      -->
       <!-- This setting is taken into account only when remoting-transport is set to TCP -->
       <remoting-tcp-send-buffer-size>32768</remoting-tcp-send-buffer-size>
-      
+
+      <!-- The interval to send a ping message to send to the client/server to make sure it is still alive.-->
+      <!-- Set to 0 if you want to disable this functionality-->
+      <remoting-keep-alive-interval>10000</remoting-keep-alive-interval>
+
+      <!--How long to wait for a returning pong after sending a ping message to a client/server.-->
+      <!-- If no pong is received after this time resources are cleaned up-->
+      <remoting-keep-alive-timeout>5000</remoting-keep-alive-timeout>
+
       <remoting-writequeue-block-timeout>10000</remoting-writequeue-block-timeout>
-      
+
       <remoting-writequeue-minbytes>0</remoting-writequeue-minbytes>
-      
+
       <!-- Effectively disable this since we're using producer and consumer flow control -->
       <remoting-writequeue-maxbytes>100000000</remoting-writequeue-maxbytes>
-      
+
       <!--  if ssl is enabled, all remoting-ssl-* properties must be set -->
       <remoting-enable-ssl>false</remoting-enable-ssl>
-      
-      <remoting-ssl-keystore-path>messaging.keystore</remoting-ssl-keystore-path>      
-      
-      <remoting-ssl-keystore-password>secureexample</remoting-ssl-keystore-password>     
-       
-      <remoting-ssl-truststore-path>messaging.truststore</remoting-ssl-truststore-path>  
-          
-      <remoting-ssl-truststore-password>secureexample</remoting-ssl-truststore-password>    
-      
+
+      <remoting-ssl-keystore-path>messaging.keystore</remoting-ssl-keystore-path>
+
+      <remoting-ssl-keystore-password>secureexample</remoting-ssl-keystore-password>
+
+      <remoting-ssl-truststore-path>messaging.truststore</remoting-ssl-truststore-path>
+
+      <remoting-ssl-truststore-password>secureexample</remoting-ssl-truststore-password>
+
       <!-- Storage configuration -->
-                 
+
       <bindings-directory>data/bindings</bindings-directory>
-      
+
       <create-bindings-dir>true</create-bindings-dir>
-      
+
       <journal-directory>data/journal</journal-directory>
-      
+
       <create-journal-dir>true</create-journal-dir>
-      
+
       <journal-type>asyncio</journal-type>
-      
+
       <journal-sync>true</journal-sync>
-      
+
       <!-- 10 MB journal file size -->
       <journal-file-size>10485760</journal-file-size>
-      
+
       <journal-min-files>10</journal-min-files>
-      
+
       <!-- Maximum simultaneous asynchronous writes accepted by the native layer.
-           (parameter ignored on NIO) 
-            You can verify the max AIO on the OS level at /proc/sys/fs/aio_max_nr. (aio-nr will give you the current max-aio being used)
-           -->
+      (parameter ignored on NIO)
+       You can verify the max AIO on the OS level at /proc/sys/fs/aio_max_nr. (aio-nr will give you the current max-aio being used)
+      -->
       <journal-max-aio>10000</journal-max-aio>
-      
-      
+
+
       <!--  Maximum time in milliseconds an AIO operation could take.
-            This includes:
-            - closing Asynchronous files
-            - Transaction awaits
-            - Awaits on non transactional writes
-       -->
+           This includes:
+           - closing Asynchronous files
+           - Transaction awaits
+           - Awaits on non transactional writes
+      -->
       <journal-aio-timeout>60000</journal-aio-timeout>
-      
+
       <journal-task-period>5000</journal-task-period>
-      
+
       <security-enabled>true</security-enabled>
-      
+
    </configuration>
 
 </deployment>

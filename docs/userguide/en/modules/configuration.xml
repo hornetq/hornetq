@@ -91,6 +91,14 @@
          TCP -->
          <remoting-tcp-send-buffer-size>-1</remoting-tcp-send-buffer-size>
 
+         <!-- The interval to send a ping message to send to the client/server to make sure it is still alive.-->
+         <!-- Set to 0 if you want to disable this functionality-->
+         <remoting-keep-alive-interval>10000</remoting-keep-alive-interval>
+
+         <!--How long to wait for a returning pong after sending a ping message to a client/server.-->
+         <!-- If no pong is received after this time resources are cleaned up-->
+         <remoting-keep-alive-timeout>5000</remoting-keep-alive-timeout>
+
          <!--  if ssl is enabled, all remoting-ssl-* properties must be set -->
          <remoting-enable-ssl>false</remoting-enable-ssl>
 
@@ -186,16 +194,33 @@
          <listitem>
             <para>remoting-tcp-receive-buffer-size</para>
             <para>sets the TCP receive buffer size, -1 will set it to the value that the OS hints at to use. This is
-               only used when TCP transport is configured</para>
+               only used when TCP transport is configured
+            </para>
          </listitem>
          <listitem>
             <para>remoting-tcp-send-buffer-size</para>
             <para>sets the TCP send buffer size, -1 will set it to the value that the OS hints at to use. This is
-               only used when TCP transport is configured</para>
+               only used when TCP transport is configured
+            </para>
+         </listitem>
+         <listitem>
+            <para>remoting-keep-alive-interval</para>
+            <para>The interval, in milliseconds, at which a ping message will be sent to the client/server to make sure
+               it is still alive.
+               Setting to 0 will disable pinging
+            </para>
+         </listitem>
+         <listitem>
+            <para>remoting-keep-alive-timeout</para>
+            <para>The time, in milliseconds, to wait for a pong after a ping has ben sent to a client/server. If the
+               pong
+               isn't received after this timeout then the resources are cleaned up.
+            </para>
          </listitem>
          <listitem>
             <para>remoting-enable-ssl</para>
-            <para>Whether SSL is enabled for this server. If this is true then next 4 SSL properties need to be set</para>
+            <para>Whether SSL is enabled for this server. If this is true then next 4 SSL properties need to be set
+            </para>
          </listitem>
          <listitem>
             <para>remoting-ssl-keystore-path>messaging.keystore</para>
@@ -224,12 +249,15 @@
          <listitem>
             <para>journal-type</para>
             <para>The type of journal to use, valid configurations are 'asyncio','nio' and 'jdbc'. refere to the
-            'The journal based persistence approach' chapter for more detailed information</para>
+               'The journal based persistence approach' chapter for more detailed information
+            </para>
          </listitem>
          <listitem>
             <para>journal-sync</para>
-            <para>Whether or not to allow the synch to disk on commit and rollback. false will only write to the OS buffers
-            and lets the OS deal with synching</para>
+            <para>Whether or not to allow the synch to disk on commit and rollback. false will only write to the OS
+               buffers
+               and lets the OS deal with synching
+            </para>
          </listitem>
          <listitem>
             <para>journal-file-size</para>
@@ -241,11 +269,18 @@
          </listitem>
          <listitem>
             <para>journal-max-aio</para>
-            <para>Maximum pending asynchronous writes accepted by the native layer per opened file. There is a limit and the total max AIO can't be higher than /proc/sys/fs/aio-max-nr. If you are combining the usage of JBoss Messaging with other systems that are using libaio (e.g. Oracle) you might need to increase this value on the OS. This parameter is only available on AIO which is only available on Linux at the moment.</para>
+            <para>Maximum pending asynchronous writes accepted by the native layer per opened file. There is a limit and
+               the total max AIO can't be higher than /proc/sys/fs/aio-max-nr. If you are combining the usage of JBoss
+               Messaging with other systems that are using libaio (e.g. Oracle) you might need to increase this value on
+               the OS. This parameter is only available on AIO which is only available on Linux at the moment.
+            </para>
          </listitem>
          <listitem>
             <para>journal-aio-timeout</para>
-            <para>Maximum amount of time any asynchronous operation can take in milliseconds. If any operation takes more than this amount a timeout exception will be logged. This parameter is only available on AIO which is only available on Linux.</para>
+            <para>Maximum amount of time any asynchronous operation can take in milliseconds. If any operation takes
+               more than this amount a timeout exception will be logged. This parameter is only available on AIO which
+               is only available on Linux.
+            </para>
          </listitem>
          <listitem>
             <para>journal-task-period</para>
@@ -605,7 +640,8 @@
                <listitem>
                   <para>entry</para>
                   <para>The name to store the Connection Factory object in JNDI with.
-                     Multiple JNDI entries can be added.</para>
+                     Multiple JNDI entries can be added.
+                  </para>
                </listitem>
                <listitem>
                   <para>client-id</para>
@@ -652,7 +688,8 @@
                <listitem>
                   <para>entry</para>
                   <para>The name to store the Connection Factory object in JNDI with.
-                     Multiple JNDI entries can be added.</para>
+                     Multiple JNDI entries can be added.
+                  </para>
                </listitem>
             </itemizedlist>
          </listitem>
@@ -663,7 +700,8 @@
                <listitem>
                   <para>entry</para>
                   <para>The name to store the Connection Factory object in JNDI with.
-                     Multiple JNDI entries can be added.</para>
+                     Multiple JNDI entries can be added.
+                  </para>
                </listitem>
             </itemizedlist>
          </listitem>
@@ -671,8 +709,12 @@
    </section>
    <section id="configuration.beans">
       <title>The beans deployment file</title>
-      <para>This beans deployment file, usually <literal>jbm-beans.xml</literal> or <literal>jbm-standalone-beans.xml</literal>,
-         is used by the <ulink url="http://www.jboss.org/jbossmc/">JBoss Microcontainer</ulink> to bootstrap all the components needed to run a JBoss Messaging Server.
+      <para>This beans deployment file, usually
+         <literal>jbm-beans.xml</literal>
+         or<literal>jbm-standalone-beans.xml</literal>,
+         is used by the
+         <ulink url="http://www.jboss.org/jbossmc/">JBoss Microcontainer</ulink>
+         to bootstrap all the components needed to run a JBoss Messaging Server.
          For the purposes of configuring JBM it is sufficient to know that the implementation details of pluggable
          components are configured here.
       </para>
@@ -680,10 +722,14 @@
       <itemizedlist>
          <listitem>
             <para>The naming Service</para>
-            <para>This is only found in the standalone version of the beans file. When running within the App Server this
-               is not needed since it is available as its own service. This also where you can change the ports used.</para>
-            <para>It is possible to replace this with any Naming Service however only the JBoss naming provider has been tested.
-            If you do provide your own implementation remember to edit the file jndi.properties</para>
+            <para>This is only found in the standalone version of the beans file. When running within the App Server
+               this
+               is not needed since it is available as its own service. This also where you can change the ports used.
+            </para>
+            <para>It is possible to replace this with any Naming Service however only the JBoss naming provider has been
+               tested.
+               If you do provide your own implementation remember to edit the file jndi.properties
+            </para>
             <programlisting>
                <![CDATA[
    <bean name="Naming" class="org.jnp.server.NamingBeanImpl"/>
@@ -706,14 +752,19 @@
          class="org.jboss.messaging.core.config.impl.FileConfiguration"/>
                ]]>
             </programlisting>
-            <para>The Configuration component is used to configure the JBM Server and transports. The default implementation,
-            <literal>FileConfiguration</literal> reads in the configuration from the file <literal>jbm-configuration.xml</literal>.
-             To replace this component your class must implement following interface: </para>
+            <para>The Configuration component is used to configure the JBM Server and transports. The default
+               implementation,
+               <literal>FileConfiguration</literal>
+               reads in the configuration from the file<literal>jbm-configuration.xml</literal>.
+               To replace this component your class must implement following interface:
+            </para>
             <programlisting>org.jboss.messaging.core.config.Configuration</programlisting>
          </listitem>
          <listitem>
             <para>The Security Manager</para>
-            <para>There are 2 Security Manager implementations available to use. In standalone the default is the following</para>
+            <para>There are 2 Security Manager implementations available to use. In standalone the default is the
+               following
+            </para>
             <programlisting>
                <![CDATA[
    <bean name="JBMSecurityManager"
@@ -724,8 +775,11 @@
    </bean>
                ]]>
             </programlisting>
-            <para>This uses a simple security manager that also needs the following bean deployed which will read the security
-            configuration from the file <literal>jbm-security.xml</literal></para>
+            <para>This uses a simple security manager that also needs the following bean deployed which will read the
+               security
+               configuration from the file
+               <literal>jbm-security.xml</literal>
+            </para>
             <programlisting>
                <![CDATA[
    <bean name="SecurityManagerDeployer"
@@ -751,7 +805,9 @@
          </listitem>
          <listitem>
             <para>Messaging Server Management</para>
-            <para>This exposes Server management operations via JMX. This can be removed if this functionality is not needed</para>
+            <para>This exposes Server management operations via JMX. This can be removed if this functionality is not
+               needed
+            </para>
             <programlisting>
                <![CDATA[
    <bean name="MessagingServerManagement"
@@ -794,7 +850,8 @@
          <listitem>
             <para>The Storage Manager</para>
             <para>The Storage manager deals with the persistence of messages and bindings. For more information on this
-            refer to the chapter 'The journal based persistence approach'.</para>
+               refer to the chapter 'The journal based persistence approach'.
+            </para>
             <programlisting>
                <![CDATA[
    <bean name="StorageManager"
@@ -849,9 +906,11 @@
          </listitem>
          <listitem>
             <para>The JMS Server Deployer</para>
-            <para>The JMS Server Deployer takes care of deploying Destinations and Connection Factories into JNDi via the
-               file <literal>jbm-jndi.xml</literal>. This can be removed if no objects are needed in JNDI or if only core
-               messaging is being used.</para>
+            <para>The JMS Server Deployer takes care of deploying Destinations and Connection Factories into JNDi via
+               the
+               file<literal>jbm-jndi.xml</literal>. This can be removed if no objects are needed in JNDI or if only core
+               messaging is being used.
+            </para>
             <programlisting>
                <![CDATA[
    <bean name="JMSServerDeployer"
@@ -867,6 +926,6 @@
             </programlisting>
          </listitem>
       </itemizedlist>
-      
+
    </section>
 </chapter>

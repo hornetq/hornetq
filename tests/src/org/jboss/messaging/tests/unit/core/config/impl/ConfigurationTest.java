@@ -21,13 +21,12 @@
    */
 package org.jboss.messaging.tests.unit.core.config.impl;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
 import junit.framework.TestCase;
-
 import org.jboss.messaging.core.config.impl.FileConfiguration;
 import org.jboss.messaging.core.remoting.TransportType;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -62,12 +61,12 @@ public class ConfigurationTest extends TestCase
    {
       assertEquals(TransportType.TCP, configuration.getTransport());
    }
-   
+
    public void testRemotingHost() throws Exception
    {
       assertEquals("localhost", configuration.getHost());
    }
-   
+
    public void testSetRemotingPort() throws Exception
    {
       assertEquals(10000, configuration.getPort());
@@ -78,12 +77,12 @@ public class ConfigurationTest extends TestCase
    {
       assertEquals(100, configuration.getTimeout());
    }
-   
+
    public void testRemotingTcpNodelay() throws Exception
    {
       assertEquals(true, configuration.isTcpNoDelay());
    }
-   
+
    public void testRemotingTcpReceiveBufferSize() throws Exception
    {
       assertEquals(8192, configuration.getTcpReceiveBufferSize());
@@ -94,16 +93,26 @@ public class ConfigurationTest extends TestCase
       assertEquals(1024, configuration.getTcpSendBufferSize());
    }
 
+   public void testRemotingKeepAliveInterval() throws Exception
+   {
+      assertEquals(1234, configuration.getKeepAliveInterval());
+   }
+
+   public void testRemotingKeepAliveTimeout() throws Exception
+   {
+      assertEquals(5678, configuration.getKeepAliveTimeout());
+   }
+
    public void testRemotingEnableSSL() throws Exception
    {
       assertEquals(true, configuration.isSSLEnabled());
    }
-   
+
    public void testRemotingSSLKeyStorePath() throws Exception
    {
       assertEquals("messaging.keystore", configuration.getKeyStorePath());
    }
-   
+
    public void testRemotingSSLKeyStorePassword() throws Exception
    {
       assertEquals("secureexample keystore", configuration.getKeyStorePassword());
@@ -113,29 +122,29 @@ public class ConfigurationTest extends TestCase
    {
       assertEquals("messaging.truststore", configuration.getTrustStorePath());
    }
-   
+
    public void testRemotingSSLTrustStorePassword() throws Exception
    {
       assertEquals("secureexample truststore", configuration.getTrustStorePassword());
    }
-   
+
    public void testSetInterceptorsList() throws Exception
    {
       assertEquals("Didn't get the correct number of elements on interceptors", 2, configuration.getDefaultInterceptors().size());
       assertEquals("org.jboss.tst", configuration.getDefaultInterceptors().get(0));
       assertEquals("org.jboss.tst2", configuration.getDefaultInterceptors().get(1));
    }
-   
+
    public void testMaxAIO() throws Exception
    {
       assertEquals(123, configuration.getJournalMaxAIO());
    }
-   
+
    public void testAIOTimeout() throws Exception
    {
       assertEquals(123, configuration.getJournalAIOTimeout());
    }
-   
+
    //config is supposed to be immutable??
 //   public void testPropertyChangeListener() throws Exception
 //   {
@@ -145,7 +154,7 @@ public class ConfigurationTest extends TestCase
 //      configuration.setMessageCounterSamplePeriod(1000000);
 //      assertTrue("property change listener not fired", listener.isCalled());
 //   }
-   
+
    class MyListener implements PropertyChangeListener
    {
       boolean called = false;

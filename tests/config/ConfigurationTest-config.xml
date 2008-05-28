@@ -33,11 +33,11 @@
       <clustered>true</clustered>
       <group-name>MessagingPostOfficetest</group-name>
       <state-timeout>10000</state-timeout>
-       <cast-timeout>10000</cast-timeout>
+      <cast-timeout>10000</cast-timeout>
       <control-channel-name>udp-synctest</control-channel-name>
       <data-channel-name>udptest</data-channel-name>
       <channel-partition-name>JMStest</channel-partition-name>
-      
+
       <remoting-transport>TCP</remoting-transport>
       <remoting-bind-address>10000</remoting-bind-address>
       <remoting-host>localhost</remoting-host>
@@ -47,14 +47,16 @@
       <remoting-tcp-receive-buffer-size>8192</remoting-tcp-receive-buffer-size>
       <remoting-tcp-send-buffer-size>1024</remoting-tcp-send-buffer-size>
       <remoting-enable-ssl>true</remoting-enable-ssl>
-      <remoting-ssl-keystore-path>messaging.keystore</remoting-ssl-keystore-path>      
-      <remoting-ssl-keystore-password>secureexample keystore</remoting-ssl-keystore-password>     
-      <remoting-ssl-truststore-path>messaging.truststore</remoting-ssl-truststore-path>            
+      <remoting-keep-alive-interval>1234</remoting-keep-alive-interval>
+      <remoting-keep-alive-timeout>5678</remoting-keep-alive-timeout>
+      <remoting-ssl-keystore-path>messaging.keystore</remoting-ssl-keystore-path>
+      <remoting-ssl-keystore-password>secureexample keystore</remoting-ssl-keystore-password>
+      <remoting-ssl-truststore-path>messaging.truststore</remoting-ssl-truststore-path>
       <remoting-ssl-truststore-password>secureexample truststore</remoting-ssl-truststore-password>
-      
-      <journal-max-aio>123</journal-max-aio>    
+
+      <journal-max-aio>123</journal-max-aio>
       <journal-aio-timeout>123</journal-aio-timeout>
-      
+
    </configuration>
 
 </deployment>

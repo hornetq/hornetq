@@ -21,7 +21,13 @@
    */
 package org.jboss.messaging.core.config.impl;
 
+import org.jboss.messaging.core.client.ConnectionParams;
+import org.jboss.messaging.core.remoting.TransportType;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
+import org.jboss.messaging.core.server.JournalType;
+import org.jboss.messaging.util.XMLUtil;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -29,23 +35,17 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 
-import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.remoting.TransportType;
-import org.jboss.messaging.core.server.JournalType;
-import org.jboss.messaging.util.XMLUtil;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
-/**ConfigurationImpl
+/**
+ * ConfigurationImpl
  * This class allows the Configuration class to be configured via a config file.
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public class FileConfiguration extends ConfigurationImpl implements Serializable
 {
-	private static final long serialVersionUID = -4766689627675039596L;
-	
-	//default config file location
+   private static final long serialVersionUID = -4766689627675039596L;
+
+   //default config file location
    private String configurationUrl = "jbm-configuration.xml";
 
    public void start() throws Exception
@@ -55,102 +55,106 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
       String xml = XMLUtil.readerToString(reader);
       xml = XMLUtil.replaceSystemProps(xml);
       Element e = XMLUtil.stringToElement(xml);
-      
+
       strictTck = getBoolean(e, "strict-tck", strictTck);
-      
+
       clustered = getBoolean(e, "clustered", clustered);
-      
+
       scheduledThreadPoolMaxSize = getInteger(e, "scheduled-executor-max-pool-size", scheduledThreadPoolMaxSize);
-      
+
       transport = TransportType.valueOf(getString(e, "remoting-transport", TCP.name()));
-      
+
       host = getString(e, "remoting-host", "localhost");
 
       if (System.getProperty("java.rmi.server.hostname") == null)
          System.setProperty("java.rmi.server.hostname", host);
 
       port = getInteger(e, "remoting-bind-address", DEFAULT_REMOTING_PORT);
-      
+
       timeout = getInteger(e, "remoting-timeout", ConnectionParams.DEFAULT_REQRES_TIMEOUT);
-      
+
       invmDisabled = getBoolean(e, "remoting-disable-invm", false);
-      
+
       tcpNoDelay = getBoolean(e, "remoting-tcp-nodelay", false);
-      
+
       tcpReceiveBufferSize = getInteger(e, "remoting-tcp-receive-buffer-size", -1);
 
       tcpSendBufferSize = getInteger(e, "remoting-tcp-send-buffer-size", -1);
-      
+
+      keepAliveInterval = getInteger(e, "remoting-keep-alive-interval", ConnectionParams.DEFAULT_KEEP_ALIVE_INTERVAL);
+
+      keepAliveTimeout = getInteger(e, "remoting-keep-alive-timeout", ConnectionParams.DEFAULT_KEEP_ALIVE_TIMEOUT);
+
       writeQueueBlockTimeout = getLong(e, "remoting-writequeue-block-timeout", 10000L);
-      
+
       writeQueueMinBytes = getLong(e, "remoting-writequeue-minbytes", 32 * 1024L);
-      
+
       writeQueueMaxBytes = getLong(e, "remoting-writequeue-maxbytes", 64 * 1024L);
 
       sslEnabled = getBoolean(e, "remoting-enable-ssl", false);
-      
+
       keyStorePath = getString(e, "remoting-ssl-keystore-path", null);
-      
+
       keyStorePassword = getString(e, "remoting-ssl-keystore-password", null);
-      
+
       trustStorePath = getString(e, "remoting-ssl-truststore-path", null);
-      
+
       trustStorePassword = getString(e, "remoting-ssl-truststore-password", null);
 
       requireDestinations = getBoolean(e, "require-destinations", requireDestinations);
-      
+
       //Persistence config
-      
+
       this.bindingsDirectory = getString(e, "bindings-directory", bindingsDirectory);
-      
+
       this.createBindingsDir = getBoolean(e, "create-bindings-dir", createBindingsDir);
-      
+
       this.journalDirectory = getString(e, "journal-directory", journalDirectory);
-      
+
       this.createJournalDir = getBoolean(e, "create-journal-dir", createJournalDir);
-      
+
       String s = getString(e, "journal-type", "nio");
-      
+
       if (s == null || (!s.equals("nio") && !s.equals("asyncio") && !s.equals("jdbc")))
       {
-      	throw new IllegalArgumentException("Invalid journal type " + s);
+         throw new IllegalArgumentException("Invalid journal type " + s);
       }
-      
+
       if (s.equals("nio"))
       {
-      	journalType = JournalType.NIO;
+         journalType = JournalType.NIO;
       }
       else if (s.equals("asyncio"))
       {
-      	journalType = JournalType.ASYNCIO;
+         journalType = JournalType.ASYNCIO;
       }
       else if (s.equals("jdbc"))
       {
-      	journalType = JournalType.JDBC;
+         journalType = JournalType.JDBC;
       }
-      		
+
       this.journalSync = getBoolean(e, "journal-sync", true);
-      
+
       this.journalFileSize = getInteger(e, "journal-file-size", 10 * 1024 * 1024);
-      
+
       this.journalMinFiles = getInteger(e, "journal-min-files", 10);
-      
+
       this.journalTaskPeriod = getLong(e, "journal-task-period", 5000L);
-      
+
       this.journalMaxAIO = getInteger(e, "journal-max-aio", DEFAULT_MAX_AIO);
-      
+
       this.journalAIOTimeout = getLong(e, "journal-aio-timeout", DEFAULT_AIO_TIMEOUT);
-      
+
       this.securityEnabled = getBoolean(e, "security-enabled", true);
-       
+
       NodeList defaultInterceptors = e.getElementsByTagName("default-interceptors-config");
 
       ArrayList<String> interceptorList = new ArrayList<String>();
-      
+
       if (defaultInterceptors.getLength() > 0)
       {
          NodeList interceptors = defaultInterceptors.item(0).getChildNodes();
-         
+
          for (int k = 0; k < interceptors.getLength(); k++)
          {
             if ("interceptor".equalsIgnoreCase(interceptors.item(k).getNodeName()))
@@ -162,7 +166,7 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
       }
       this.defaultInterceptors = interceptorList;
    }
-   
+
    public String getConfigurationUrl()
    {
       return configurationUrl;
