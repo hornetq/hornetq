@@ -43,7 +43,7 @@
    <!--perf props-->
    <property name="message.count" value="200000"/>
    <property name="message.warmup.count" value="10000"/>
-   <property name="delivery.mode" value="PERSISTENT"/>
+   <property name="delivery.mode" value="NON_PERSISTENT"/>
    <!-- in seconds -->
    <property name="sample.period" value="1"/>
    <property name="sess.trans" value="false"/>
@@ -120,9 +120,9 @@
 * ---------             -----------                      -------               -------
 * message.count         number of messages               200000                ${message.count}
 * message.warmup.count  number of messages to warm up    10000                 ${message.warmup.count}
-* delivery.mode         PERSISTENT/NON_PERSISTENT        PERSISTENT            ${delivery.mode}
+* delivery.mode         PERSISTENT/NON_PERSISTENT        NON_PERSISTENT        ${delivery.mode}
 * sample.period         timing period in seconds         1                     ${sample.period}
-* sess.trans            Is session transacted            true                  ${sess.trans}
+* sess.trans            Is session transacted            false                 ${sess.trans}
 * sess.trans.size       batch size to commit             1000                  ${sess.trans.size}
 * sess.ackmode          Ack mode DUPS_OK/AUTO_ACK        DUPS_OK               ${sess.ackmode}
 * drain.queue           drain the queue (listener only)  true                  ${drain.queue}
