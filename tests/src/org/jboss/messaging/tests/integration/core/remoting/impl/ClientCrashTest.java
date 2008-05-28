@@ -21,21 +21,15 @@
  */
 package org.jboss.messaging.tests.integration.core.remoting.impl;
 
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import junit.framework.TestCase;
-
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
-import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientProducer;
-import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.*;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
+import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
@@ -47,12 +41,10 @@ import org.jboss.messaging.util.SimpleString;
 /**
  * A test that makes sure that a Messaging server cleans up the associated
  * resources when one of its client crashes.
- * 
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
  * @version <tt>$Revision: 4032 $</tt>
- * 
  */
 public class ClientCrashTest extends TestCase
 {
@@ -101,12 +93,12 @@ public class ClientCrashTest extends TestCase
          // spawn a JVM that creates a JMS client, which waits to receive a test
          // message
          Process p = SpawnedVMSupport.spawnVM(CrashClient.class
-               .getName(), new String[] { Integer
-               .toString(numberOfConnectionsOnTheClient) });
+                 .getName(), new String[]{Integer
+                 .toString(numberOfConnectionsOnTheClient)});
 
          connection = cf.createConnection();
          ClientSession session = connection.createClientSession(false, true,
-               true, -1, false, false);
+                 true, -1, false, false);
          session.createQueue(QUEUE, QUEUE, null, false, false);
          ClientConsumer consumer = session.createConsumer(QUEUE);
          ClientProducer producer = session.createProducer(QUEUE);
@@ -123,7 +115,7 @@ public class ClientCrashTest extends TestCase
          assertActiveConnections(1 + numberOfConnectionsOnTheClient);
 
          ClientMessage message = new ClientMessageImpl(JBossTextMessage.TYPE, false, 0,
-               System.currentTimeMillis(), (byte) 1);
+                 System.currentTimeMillis(), (byte) 1);
          message.getBody().putString(ClientCrashTest.MESSAGE_TEXT_FROM_SERVER);
          producer.send(message);
 
@@ -140,13 +132,15 @@ public class ClientCrashTest extends TestCase
          connection.close();
 
          assertActiveConnections(0);
-      } finally
+      }
+      finally
       {
          try
          {
             if (connection != null)
                connection.close();
-         } catch (Throwable ignored)
+         }
+         catch (Throwable ignored)
          {
             log.warn("Exception ignored:" + ignored.toString(), ignored);
          }
@@ -161,8 +155,8 @@ public class ClientCrashTest extends TestCase
       super.setUp();
 
       ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
-      config.setKeepAliveInterval(2);
-      config.setKeepAliveTimeout(1);
+      config.setKeepAliveInterval(2000);
+      config.setKeepAliveTimeout(1000);
       server = new MessagingServerImpl(config);
       server.start();
 
@@ -182,7 +176,7 @@ public class ClientCrashTest extends TestCase
    // Private -------------------------------------------------------
 
    private void assertActiveConnections(int expectedActiveConnections)
-         throws Exception
+           throws Exception
    {
       ConnectionManager cm = server.getConnectionManager();
       assertEquals(expectedActiveConnections, cm.getActiveConnections().size());

@@ -6,23 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.*;
-import static org.jboss.messaging.core.remoting.TransportType.*;
-import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.*;
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.*;
-
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import org.apache.mina.common.DefaultIoFilterChainBuilder;
-import org.apache.mina.common.IdleStatus;
-import org.apache.mina.common.IoService;
-import org.apache.mina.common.IoServiceListener;
-import org.apache.mina.common.IoSession;
+import org.apache.mina.common.*;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.jboss.beans.metadata.api.annotations.Install;
 import org.jboss.beans.metadata.api.annotations.Uninstall;
@@ -30,18 +14,27 @@ import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.ping.Pinger;
+import org.jboss.messaging.core.ping.impl.PingerImpl;
+import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGISTRY;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingService;
+import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
-import org.jboss.messaging.core.server.ClientPinger;
-import org.jboss.messaging.core.server.impl.ClientPingerImpl;
+import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
+import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
+import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addSSLFilter;
+
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.*;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
  * @version <tt>$Revision$</tt>
- *
  */
 public class MinaService implements RemotingService, CleanUpNotifier
 {
@@ -69,6 +62,10 @@ public class MinaService implements RemotingService, CleanUpNotifier
 
    private ServerKeepAliveFactory factory;
 
+   private ScheduledExecutorService scheduledExecutor;
+   private Map<IoSession, ScheduledFuture> currentScheduledPingers;
+   private Map<IoSession, Pinger> currentPingers;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -88,6 +85,10 @@ public class MinaService implements RemotingService, CleanUpNotifier
       this.config = config;
       this.factory = factory;
       dispatcher = new PacketDispatcherImpl(filters);
+
+      scheduledExecutor = new ScheduledThreadPoolExecutor(config.getScheduledThreadPoolMaxSize());
+      currentScheduledPingers = new ConcurrentHashMap<IoSession, ScheduledFuture>();
+      currentPingers = new ConcurrentHashMap<IoSession, Pinger>();
    }
 
    @Install
@@ -127,7 +128,7 @@ public class MinaService implements RemotingService, CleanUpNotifier
 
       // if INVM transport is set, we bypass MINA setup
       if (config.getTransport() != INVM
-            && acceptor == null)
+              && acceptor == null)
       {
          acceptor = new NioSocketAcceptor();
 
@@ -139,9 +140,9 @@ public class MinaService implements RemotingService, CleanUpNotifier
          if (config.isSSLEnabled())
          {
             addSSLFilter(filterChain, false, config.getKeyStorePath(),
-                  config.getKeyStorePassword(), config
-                        .getTrustStorePath(), config
-                        .getTrustStorePassword());
+                    config.getKeyStorePassword(), config
+                    .getTrustStorePath(), config
+                    .getTrustStorePassword());
          }
          addCodecFilter(filterChain);
 
@@ -165,10 +166,10 @@ public class MinaService implements RemotingService, CleanUpNotifier
 
          threadPool = Executors.newCachedThreadPool();
          acceptor.setHandler(new MinaHandler(dispatcher, threadPool,
-                                             this, true, true,
-                                             config.getWriteQueueBlockTimeout(),
-                                             config.getWriteQueueMinBytes(),
-                                             config.getWriteQueueMaxBytes()));
+                 this, true, true,
+                 config.getWriteQueueBlockTimeout(),
+                 config.getWriteQueueMinBytes(),
+                 config.getWriteQueueMaxBytes()));
          acceptor.bind();
          acceptorListener = new MinaSessionListener();
          acceptor.addListener(acceptorListener);
@@ -178,10 +179,10 @@ public class MinaService implements RemotingService, CleanUpNotifier
 //      boolean disableInvm = config.isInvmDisabled();
 //      if (log.isDebugEnabled())
 //         log.debug("invm optimization for remoting is " + (disableInvm ? "disabled" : "enabled"));
-     // if (!disableInvm)
+      // if (!disableInvm)
 
       log.info("Registering:" + config.getLocation());
-         REGISTRY.register(config.getLocation(), dispatcher);
+      REGISTRY.register(config.getLocation(), dispatcher);
 
       started = true;
    }
@@ -287,12 +288,41 @@ public class MinaService implements RemotingService, CleanUpNotifier
       {
       }
 
+      /**
+       * register a pinger for the new client
+       *
+       * @param session
+       */
       public void sessionCreated(IoSession session)
       {
+         //register pinger
+         if (config.getKeepAliveInterval() > 0)
+         {
+            Pinger pinger = new PingerImpl(getDispatcher(), new MinaSession(session, null), config.getKeepAliveTimeout(), MinaService.this);
+            ScheduledFuture future = scheduledExecutor.scheduleAtFixedRate(pinger, config.getKeepAliveInterval(), config.getKeepAliveInterval(), TimeUnit.MILLISECONDS);
+            currentScheduledPingers.put(session, future);
+            currentPingers.put(session, pinger);
+            factory.getSessions().add(session.getId());
+         }
       }
 
+      /**
+       * destry th epinger and stop
+       *
+       * @param session
+       */
       public void sessionDestroyed(IoSession session)
       {
+         ScheduledFuture future = currentScheduledPingers.remove(session);
+         if (future != null)
+         {
+            future.cancel(true);
+         }
+         Pinger pinger = currentPingers.remove(session);
+         if (pinger != null)
+         {
+            pinger.close();
+         }
          fireCleanup(session.getId(), null);
       }
    }

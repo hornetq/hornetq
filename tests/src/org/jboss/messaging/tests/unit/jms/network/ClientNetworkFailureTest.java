@@ -21,34 +21,31 @@
  */
 package org.jboss.messaging.tests.unit.jms.network;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
+import junit.framework.TestCase;
+import org.jboss.messaging.core.client.ClientConnection;
+import org.jboss.messaging.core.client.ClientConnectionFactory;
+import org.jboss.messaging.core.client.RemotingSessionListener;
+import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.client.impl.LocationImpl;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.TransportType;
+import static org.jboss.messaging.core.remoting.TransportType.TCP;
+import org.jboss.messaging.core.remoting.impl.mina.MinaService;
+import org.jboss.messaging.core.server.ConnectionManager;
+import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import static org.jboss.messaging.tests.integration.core.remoting.mina.TestSupport.KEEP_ALIVE_INTERVAL;
 import static org.jboss.messaging.tests.integration.core.remoting.mina.TestSupport.KEEP_ALIVE_TIMEOUT;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
-
-import org.jboss.messaging.core.client.RemotingSessionListener;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.messaging.core.client.impl.LocationImpl;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.impl.mina.MinaService;
-import org.jboss.messaging.core.remoting.TransportType;
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
-import org.jboss.messaging.core.server.impl.MessagingServerImpl;
-import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.ConnectionManager;
-import org.jboss.messaging.core.logging.Logger;
-import junit.framework.TestCase;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
  * @version <tt>$Revision$</tt>
- * 
  */
 public class ClientNetworkFailureTest extends TestCase
 {
@@ -86,7 +83,7 @@ public class ClientNetworkFailureTest extends TestCase
       minaService = (MinaService) server.getRemotingService();
       networkFailureFilter = new NetworkFailureFilter();
       minaService.getFilterChain().addFirst("network-failure",
-            networkFailureFilter);
+              networkFailureFilter);
 
       assertActiveConnectionsOnTheServer(0);
    }
@@ -104,7 +101,7 @@ public class ClientNetworkFailureTest extends TestCase
    // Public --------------------------------------------------------
 
    public void testServerResourcesCleanUpWhenClientCommThrowsException()
-         throws Exception
+           throws Exception
    {
       ClientConnectionFactory cf = new ClientConnectionFactoryImpl(new LocationImpl(TCP, "localhost", 5400));
 
@@ -124,21 +121,22 @@ public class ClientNetworkFailureTest extends TestCase
       minaService.addRemotingSessionListener(listener);
 
       networkFailureFilter.messageSentThrowsException = new IOException(
-            "Client is unreachable");
+              "Client is unreachable");
       networkFailureFilter.messageReceivedDropsPacket = true;
 
       boolean gotExceptionsOnTheServerAndTheClient = exceptionLatch.await(
-            KEEP_ALIVE_INTERVAL + KEEP_ALIVE_TIMEOUT + 2, SECONDS);
+              KEEP_ALIVE_INTERVAL + KEEP_ALIVE_TIMEOUT + 5000, MILLISECONDS);
       assertTrue(gotExceptionsOnTheServerAndTheClient);
       //now we  need to wait for the server to detect the client failover
-      Thread.sleep((KEEP_ALIVE_INTERVAL + KEEP_ALIVE_TIMEOUT) * 1000);
+      //Thread.sleep((KEEP_ALIVE_INTERVAL + KEEP_ALIVE_TIMEOUT) * 1000);
       assertActiveConnectionsOnTheServer(0);
 
       try
       {
          conn.close();
          fail("close should fail since client resources must have been cleaned up on the server side");
-      } catch (Exception e)
+      }
+      catch (Exception e)
       {
       }
 
@@ -146,9 +144,9 @@ public class ClientNetworkFailureTest extends TestCase
    }
 
    public void testServerResourcesCleanUpWhenClientCommDropsPacket()
-         throws Exception
+           throws Exception
    {
-       ClientConnectionFactory cf = new ClientConnectionFactoryImpl(new LocationImpl(TCP, "localhost", 5400));
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(new LocationImpl(TCP, "localhost", 5400));
 
       ClientConnection conn = cf.createConnection();
 
@@ -163,17 +161,18 @@ public class ClientNetworkFailureTest extends TestCase
       networkFailureFilter.messageReceivedDropsPacket = true;
 
       boolean gotExceptionOnTheServer = exceptionLatch.await(
-            KEEP_ALIVE_INTERVAL + KEEP_ALIVE_TIMEOUT + 5, SECONDS);
+              KEEP_ALIVE_INTERVAL + KEEP_ALIVE_TIMEOUT + 5000, MILLISECONDS);
       assertTrue(gotExceptionOnTheServer);
       //now we  need to wait for the server to detect the client failover
-      Thread.sleep((KEEP_ALIVE_INTERVAL + KEEP_ALIVE_TIMEOUT) * 1000);
+      //Thread.sleep((KEEP_ALIVE_INTERVAL + KEEP_ALIVE_TIMEOUT) * 1000);
       assertActiveConnectionsOnTheServer(0);
 
       try
       {
          conn.close();
          fail("close should fail since client resources must have been cleaned up on the server side");
-      } catch (Exception e)
+      }
+      catch (Exception e)
       {
       }
    }
@@ -201,10 +200,10 @@ public class ClientNetworkFailureTest extends TestCase
    }
 
    private void assertActiveConnectionsOnTheServer(int expectedSize)
-   throws Exception
+           throws Exception
    {
       ConnectionManager cm = server
-      .getConnectionManager();
+              .getConnectionManager();
       assertEquals(expectedSize, cm.getActiveConnections().size());
    }
 }

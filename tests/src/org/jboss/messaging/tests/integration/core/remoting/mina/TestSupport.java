@@ -9,7 +9,6 @@ package org.jboss.messaging.tests.integration.core.remoting.mina;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
- * 
  * @version <tt>$Revision$</tt>
  */
 public abstract class TestSupport
@@ -18,9 +17,9 @@ public abstract class TestSupport
 
    public static final int MANY_MESSAGES = 50000;
 
-   public static final int KEEP_ALIVE_INTERVAL = 2; // in seconds
+   public static final int KEEP_ALIVE_INTERVAL = 2000; // in seconds
 
-   public static final int KEEP_ALIVE_TIMEOUT = 1; // in seconds
+   public static final int KEEP_ALIVE_TIMEOUT = 1000; // in seconds
 
    public static final long REQRES_TIMEOUT = 2; // in seconds
 

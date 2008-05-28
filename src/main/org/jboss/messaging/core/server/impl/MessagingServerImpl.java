@@ -21,10 +21,6 @@
   */
 package org.jboss.messaging.core.server.impl;
 
-import java.util.HashSet;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -40,18 +36,22 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.persistence.impl.nullpm.NullStorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
-import org.jboss.messaging.core.remoting.*;
-import org.jboss.messaging.core.remoting.impl.mina.MinaService;
+import org.jboss.messaging.core.remoting.ConnectorRegistrySingleton;
+import org.jboss.messaging.core.remoting.Interceptor;
+import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.mina.CleanUpNotifier;
-import org.jboss.messaging.core.remoting.impl.mina.ServerKeepAliveFactory;
+import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
-import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
-import org.jboss.messaging.core.server.*;
+import org.jboss.messaging.core.server.ConnectionManager;
+import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.QueueFactory;
+import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -59,6 +59,10 @@ import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.impl.ResourceManagerImpl;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.VersionLoader;
+
+import java.util.HashSet;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /**
  * A Messaging Server
@@ -195,7 +199,7 @@ public class MessagingServerImpl implements MessagingServer
             log.warn("Error instantiating interceptor \"" + interceptorClass + "\"", e);
          }
       }
-      
+
       started = true;
    }
 
@@ -265,7 +269,7 @@ public class MessagingServerImpl implements MessagingServer
    {
       return deploymentManager;
    }
-   
+
    public ConnectionManager getConnectionManager()
    {
       return connectionManager;
@@ -306,10 +310,10 @@ public class MessagingServerImpl implements MessagingServer
    {
       return queueSettingsRepository;
    }
-   
+
    public SecurityStore getSecurityStore()
    {
-   	return securityStore;
+      return securityStore;
    }
 
    public JBMSecurityManager getSecurityManager()
@@ -326,11 +330,11 @@ public class MessagingServerImpl implements MessagingServer
                                                     final long remotingClientSessionID, final String clientAddress,
                                                     final int incrementVersion,
                                                     final PacketReturner sender)
-      throws Exception
+           throws Exception
    {
       log.trace("creating a new connection for user " + username);
 
-      if(version.getIncrementingVersion() < incrementVersion)
+      if (version.getIncrementingVersion() < incrementVersion)
       {
          throw new MessagingException(MessagingException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS,
                  "client not compatible with version: " + version.getFullVersion());
@@ -341,32 +345,21 @@ public class MessagingServerImpl implements MessagingServer
       // security my be screwed up, on account of thread local security stack being corrupted.
 
       securityStore.authenticate(username, password);
-      
+
       long id = remotingService.getDispatcher().generateID();
 
       final ServerConnection connection =
-         new ServerConnectionImpl(id, username, password,
-                          remotingClientSessionID, clientAddress,
-                          remotingService.getDispatcher(), resourceManager, storageManager,
-                          queueSettingsRepository,
-                          postOffice, securityStore, connectionManager);
+              new ServerConnectionImpl(id, username, password,
+                      sender.getSessionID(), clientAddress,
+                      remotingService.getDispatcher(), resourceManager, storageManager,
+                      queueSettingsRepository,
+                      postOffice, securityStore, connectionManager);
 
       remotingService.getDispatcher().register(new ServerConnectionPacketHandler(connection));
 
-      CreateConnectionResponse createConnectionResponse = new CreateConnectionResponse(connection.getID(), version);
-//      if(cleanUpNotifier != null)
-//      {
-//         if(!getRemotingService().getKeepAliveFactory().isPinging(sender.getSessionID()))
-//         {
-//            getRemotingService().getKeepAliveFactory().getSessions().add(sender.getSessionID());
-//            ClientPinger clientPinger = new ClientPingerImpl(this, getRemotingService().getKeepAliveFactory(), cleanUpNotifier, sender);
-//            new Thread(clientPinger).start();
-//         }
-//      }
-
-      return createConnectionResponse;
+      return new CreateConnectionResponse(connection.getID(), version);
    }
-   
+
    // Public ---------------------------------------------------------------------------------------
 
    // Package protected ----------------------------------------------------------------------------

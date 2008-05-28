@@ -21,32 +21,28 @@
    */
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CREATECONNECTION;
-
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.*;
+import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CREATECONNECTION;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.ClientPinger;
-import org.jboss.messaging.core.server.MessagingComponent;
 
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A packet handler for all packets that need to be handled at the server level
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class MessagingServerPacketHandler extends ServerPacketHandlerSupport 
+public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
 {
    private static final Logger log = Logger.getLogger(MessagingServerPacketHandler.class);
-   
+
    private final MessagingServer server;
 
 
@@ -57,6 +53,7 @@ public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
       this.server = server;
 
    }
+
    /*
    * The advantage to use String as ID is that we can leverage Java 5 UUID to
    * generate these IDs. However theses IDs are 128 bite long and it increases
@@ -67,39 +64,42 @@ public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
    */
    public long getID()
    {
-   	//0 is reserved for this handler
+      //0 is reserved for this handler
       return 0;
    }
 
    public Packet doHandle(final Packet packet, final PacketReturner sender) throws Exception
    {
       Packet response = null;
-     
+
       byte type = packet.getType();
-      
+
       if (type == CREATECONNECTION)
       {
          CreateConnectionRequest request = (CreateConnectionRequest) packet;
-         
-         CreateConnectionResponse  createConnectionResponse = server.createConnection(request.getUsername(), request.getPassword(),
-         		                             request.getRemotingSessionID(),
-                                            sender.getRemoteAddress(),
-                                            request.getVersion(),
-                                            sender);
+
+         CreateConnectionResponse createConnectionResponse = server.createConnection(request.getUsername(), request.getPassword(),
+                 request.getRemotingSessionID(),
+                 sender.getRemoteAddress(),
+                 request.getVersion(),
+                 sender);
          response = createConnectionResponse;
-         
+
       }
-      else if (type == EmptyPacket.PONG)
+      else if (type == EmptyPacket.PING)
       {
-         Pong decodedPong = (Pong) packet;
+         Ping decodedPing = (Ping) packet;
+         KeepAliveFactory keepAliveFactory = server.getRemotingService().getKeepAliveFactory();
+         Pong pong = keepAliveFactory.pong(sender.getSessionID(), decodedPing);
+         sender.send(pong);
       }
       else
       {
          throw new MessagingException(MessagingException.UNSUPPORTED_PACKET,
-                                      "Unsupported packet " + type);
+                 "Unsupported packet " + type);
       }
-      
+
       return response;
    }
-  
+
 }

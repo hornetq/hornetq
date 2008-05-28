@@ -192,7 +192,7 @@
    <path id="compilation.classpath">
       <path refid="external.dependencies.classpath"/>
       <path refid="jboss.dependencies.classpath"/>
-   	<path location="${build.classes.dir}"/>
+      <path location="${build.classes.dir}"/>
    </path>
 
    <path id="javadoc.classpath">
@@ -319,18 +319,18 @@
          <include name="**/*.java"/>
          <classpath refid="compilation.classpath"/>
       </javac>
-      <javah class="org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl" 
+      <javah class="org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl"
              classpathref="compilation.classpath" destdir="./native/src"/>
-   	
+
 
       <echo message="messaging.version.versionName=${messaging.version.name}${line.separator}messaging.version.majorVersion=${messaging.version.major}${line.separator}messaging.version.minorVersion=${messaging.version.minor}${line.separator}messaging.version.microVersion=${messaging.version.micro}${line.separator}messaging.version.incrementingVersion=${messaging.version.incrementing}${line.separator}messaging.version.versionSuffix=${messaging.version.suffix}${line.separator}"
             file="${build.classes.dir}/version.properties"/>
    </target>
 
    <target name="build-native">
-       <exec dir="native" executable="make">
-          <arg line="clean"/>
-       </exec>
+      <exec dir="native" executable="make">
+         <arg line="clean"/>
+      </exec>
       <exec dir="native" executable="bash">
          <arg line="bootstrap"/>
       </exec>
@@ -369,6 +369,7 @@
             <include name="org/jboss/messaging/core/server/JournalType.class"/>
             <include name="org/jboss/messaging/core/journal/EncodingSupport.class"/>
             <include name="org/jboss/messaging/core/server/ServerMessage.class"/>
+            <include name="org/jboss/messaging/core/ping/**/*.class"/>
          </fileset>
       </jar>
 
@@ -458,7 +459,7 @@
             <include name="jnpserver.jar"/>
          </fileset>
          <fileset dir="${apache.mina.lib}">
-            <include name="mina-core-2.0.0-M2-20080520.004618-19.jar" />
+            <include name="mina-core-2.0.0-M2-20080520.004618-19.jar"/>
          </fileset>
          <fileset dir="${slf4j.api.lib}">
             <include name="slf4j-api-1.4.3.jar"/>
@@ -601,7 +602,7 @@
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
-             timeout="${junit.timeout}" >
+             timeout="${junit.timeout}">
          <sysproperty key="user.home" value="${user.home}"/>
          <jvmarg value="-Djava.library.path=native/bin"/>
          <jvmarg value="-Xmx1024M"/>
@@ -654,13 +655,13 @@
             <fileset dir="${test.jms.classes.dir}">
                <include name="**/messaging/**/${test-mask}.class"/>
                <include name="**/jms/**/${test-mask}.class"/>
-            	<include name="**/messaging/util/**/${test-mask}.class"/>
+               <include name="**/messaging/util/**/${test-mask}.class"/>
                <!-- We exclude the recovery tests for now, until we get recovery up and running again -->
                <exclude name="**/jms/XARecoveryTest.class"/>
                <exclude name="**/jms/XAResourceRecoveryTest.class"/>
                <exclude name="**/jms/XATest.class"/>
                <exclude name="**/jms/ConnectionConsumerTest.class"/>
-               
+
                <exclude name="**/*NativeTest.class"/>
                <exclude name="**/jms/MemLeakTest.class"/>
                <exclude name="**/jms/RemotingConnectionConfigurationTest.class"/>
@@ -751,8 +752,8 @@
          <jvmarg value="-XX:+UseParallelGC"/>
          <jvmarg value="-Xms512M"/>
          <jvmarg value="-Xmx2048M"/>
-	 <jvmarg value="-XX:+AggressiveOpts"/>
-	 <jvmarg value="-XX:+UseFastAccessorMethods"/>
+         <jvmarg value="-XX:+AggressiveOpts"/>
+         <jvmarg value="-XX:+UseFastAccessorMethods"/>
          <jvmarg value="-Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.core.logging.JBMLoggerPlugin"/>
          <jvmarg value="-Djava.library.path=${native.bin.dir}"/>
          <jvmarg value="-Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory"/>

@@ -6,33 +6,19 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @version <tt>$Revision$</tt>
  */
-public class ServerKeepAliveFactory implements KeepAliveFactory
+public class ClientKeepAliveFactory implements KeepAliveFactory
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger
-           .getLogger(ServerKeepAliveFactory.class);
-
    // Attributes ----------------------------------------------------
-
-   // FIXME session mapping must be cleaned when the server session is closed:
-   // either normally or exceptionally
-   /**
-    * Key = server session ID Value = client session ID
-    */
-   private List<Long> sessions = new ArrayList<Long>();
 
    // Static --------------------------------------------------------
 
@@ -41,17 +27,23 @@ public class ServerKeepAliveFactory implements KeepAliveFactory
    // Public --------------------------------------------------------
 
    // KeepAliveFactory implementation -------------------------------
+   boolean isAlive = true;
 
    public Pong pong(long sessionID, Ping ping)
    {
-      Pong pong = new Pong(sessionID, !sessions.contains(sessionID));
+      Pong pong = new Pong(sessionID, !isAlive);
       pong.setTargetID(ping.getResponseTargetID());
       return pong;
    }
 
-   public List<Long> getSessions()
+   public boolean isAlive()
    {
-      return sessions;
+      return isAlive;
+   }
+
+   public void setAlive(boolean alive)
+   {
+      isAlive = alive;
    }
 
    // Package protected ---------------------------------------------

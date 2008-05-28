@@ -11,16 +11,9 @@ import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
  * @version <tt>$Revision$</tt>
- *
  */
 public interface KeepAliveFactory
 {
-
-   Ping ping(long sessionID);
-
    Pong pong(long sessionID, Ping ping);
-
-   boolean isPinging(long sessionID);
 }

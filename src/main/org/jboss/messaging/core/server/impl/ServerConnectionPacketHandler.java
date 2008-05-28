@@ -27,23 +27,20 @@ import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 import org.jboss.messaging.core.server.ServerConnection;
-import org.jboss.messaging.core.server.ClientPinger;
 
 /**
- * 
  * A ServerConnectionPacketHandler
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public class ServerConnectionPacketHandler extends ServerPacketHandlerSupport
 {
-	private final ServerConnection connection;
-	
+   private final ServerConnection connection;
+
    public ServerConnectionPacketHandler(final ServerConnection connection)
    {
-   	this.connection = connection;
+      this.connection = connection;
    }
 
    public long getID()
@@ -56,34 +53,34 @@ public class ServerConnectionPacketHandler extends ServerPacketHandlerSupport
       Packet response = null;
 
       byte type = packet.getType();
-      
+
       switch (type)
       {
-      case EmptyPacket.CONN_CREATESESSION:
-         ConnectionCreateSessionMessage request = (ConnectionCreateSessionMessage) packet;   
-         response = connection.createSession(request.isXA(), request.isAutoCommitSends(), request.isAutoCommitAcks(), sender);
-         break;
-      case EmptyPacket.CONN_START:
-         connection.start();
-         break;
-      case EmptyPacket.CONN_STOP:
-         connection.stop();
-         break;
-      case EmptyPacket.CLOSE:
-         //clientPinger.unregister(connection.getRemotingClientSessionID());
-         connection.close();
-         break;
-      default:
-         throw new MessagingException(MessagingException.UNSUPPORTED_PACKET,
-               "Unsupported packet " + type);
+         case EmptyPacket.CONN_CREATESESSION:
+            ConnectionCreateSessionMessage request = (ConnectionCreateSessionMessage) packet;
+            response = connection.createSession(request.isXA(), request.isAutoCommitSends(), request.isAutoCommitAcks(), sender);
+            break;
+         case EmptyPacket.CONN_START:
+            connection.start();
+            break;
+         case EmptyPacket.CONN_STOP:
+            connection.stop();
+            break;
+         case EmptyPacket.CLOSE:
+            //clientPinger.unregister(connection.getRemotingClientSessionID());
+            connection.close();
+            break;
+         default:
+            throw new MessagingException(MessagingException.UNSUPPORTED_PACKET,
+                    "Unsupported packet " + type);
       }
 
       // reply if necessary
       if (response == null && packet.getResponseTargetID() != Packet.NO_ID_SET)
       {
-         response = new EmptyPacket(EmptyPacket.NULL);               
+         response = new EmptyPacket(EmptyPacket.NULL);
       }
-      
+
       return response;
    }
 }

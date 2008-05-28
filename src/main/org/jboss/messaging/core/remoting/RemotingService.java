@@ -8,16 +8,12 @@ package org.jboss.messaging.core.remoting;
 
 import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.server.MessagingComponent;
-import org.jboss.messaging.core.server.ClientPinger;
-import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.mina.ServerKeepAliveFactory;
+import org.jboss.messaging.core.server.MessagingComponent;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
  * @version <tt>$Revision$</tt>
- *
  */
 public interface RemotingService extends MessagingComponent
 {
@@ -26,7 +22,7 @@ public interface RemotingService extends MessagingComponent
    Configuration getConfiguration();
 
    ServerKeepAliveFactory getKeepAliveFactory();
-   
+
    void addInterceptor(Interceptor interceptor);
 
    void removeInterceptor(Interceptor interceptor);
