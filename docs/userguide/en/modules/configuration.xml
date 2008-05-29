@@ -122,7 +122,11 @@
 
          <journal-type>asyncio</journal-type>
 
-         <journal-sync>true</journal-sync>
+         <!-- Does the journal sync to disk on each transaction commit, prepare or rollback? -->
+         <journal-sync-transactional>true</journal-sync-transactional>
+
+         <!-- Does the journal sync to disk for every non transactional persistent operation? -->
+         <journal-sync-non-transactional>false</journal-sync-non-transactional>
 
          <journal-file-size>10485760</journal-file-size>
 
@@ -253,10 +257,17 @@
             </para>
          </listitem>
          <listitem>
-            <para>journal-sync</para>
-            <para>Whether or not to allow the synch to disk on commit and rollback. false will only write to the OS
-               buffers
-               and lets the OS deal with synching
+            <para>journal-sync-transactional</para>
+            <para>Whether or not to synch to disk for a transaction on commit, prepare or rollback. false will only
+               write to the OS
+               buffers and lets the OS deal with synching
+            </para>
+         </listitem>
+         <listitem>
+            <para>journal-sync-non-transactional</para>
+            <para>Whether or not to synch to disk for every non transaction persistent operation. false will only write
+               to the OS
+               buffers and lets the OS deal with synching
             </para>
          </listitem>
          <listitem>
@@ -536,34 +547,24 @@
       <entry name="/acme/MyExampleConnectionFactoryDupe"/>
       <entry name="java:/xyz/CF1"/>
       <entry name="java:/connectionfactories/acme/connection_factory"/>
-      <!-- You can specify the default Client ID to use for connections created
-      using this factory -->
+      <!-- You can specify the default Client ID to use for connections created using this factory -->
       <client-id>MyClientID</client-id>
-      <!-- PrefetchSize determines the maximum number of messages the client consumer
-      will buffer locally -->
-      <prefetch-size>150</prefetch-size>
       <!-- The batch size to use when using the DUPS_OK_ACKNOWLEDGE acknowledgement mode -->
-      <dups-ok-batch-size>5000</dups-ok-batch-size>
-      <!-- Does this connection factory support automatic failover? -->
-      <supports-failover>false</supports-failover>
-      <!-- Does this connection factory support automatic client side load balancing? -->
-      <supports-load-balancing>false</supports-load-balancing>
-      <!-- The class name of the factory used to create the load balancing policy to
-      use on the client side -->
-      <load-balancing-factory>
-         org.jboss.messaging.jms.client.plugin.RoundRobinLoadBalancingFactory
-      </load-balancing-factory>
-      <!-- Whether we should be strict TCK compliant, i.e. how we deal with foreign messages,
-      defaults to false-->
-      <strict-tck>true</strict-tck>
-
-      <!-- This is the window size in number of messages to use when using producer
-      window based flow control -->
+      <dups-ok-batch-size>5000</dups-ok-batch-size>-size>
+      <!-- This is the window size in number of messages to use when using producer window based flow control -->
       <producer-window-size>1000</producer-window-size>
-
-      <!-- This is the maximum producer send rate that will be applied when using
-      rate based producer flow control -->
+      <!-- This is the maximum producer send rate that will be applied when using rate based producer flow control -->
       <producer-max-rate>100</producer-max-rate>
+       <!-- This is the window size in number of messages to use when using consumer window based flow control -->
+      <consumer-window-size>1000</consumer-window-size>
+      <!-- This is the maximum producer send rate that will be applied when using rate based consumer flow control -->
+      <consumer-max-rate>5000</consumer-max-rate>
+      <!--Whether or not we use a blocking call when acknowledging a message-->
+      <block-on-acknowledge>false</block-on-acknowledge>
+      <!--Whether we send non persistent messages synchronously-->
+      <send-np-messages-synchronously>true</send-np-messages-synchronously>
+      <!--Whether we send persistent messages synchronously-->
+      <send-p-messages-synchronously>true</send-p-messages-synchronously>
 
    </connection-factory>
 
@@ -648,36 +649,44 @@
                   <para>The client id for connections created using this Connection Factory</para>
                </listitem>
                <listitem>
-                  <para>prefetch-size</para>
-                  <para>The maximum number of messages a consumer can buffer locally</para>
-               </listitem>
-               <listitem>
                   <para>dups-ok-batch-size</para>
                   <para>The number of acks to batch up when DUPS_OK_ACKNOWLEDGE acknowledgement mode is used</para>
                </listitem>
                <listitem>
-                  <para>supports-failover</para>
-                  <para>Does the Connection Factory support failover, currently disabled.</para>
-               </listitem>
-               <listitem>
-                  <para>supports-load-balancing</para>
-                  <para>Does the Connection Factory support load balancing, currently disabled</para>
-               </listitem>
-               <listitem>
-                  <para>load-balancing-factory</para>
-                  <para>The class to use for creating the load balancing class, currently not used.</para>
-               </listitem>
-               <listitem>
-                  <para>strict-tck</para>
-                  <para>Whether strict tck shoul dbe adhered to</para>
-               </listitem>
-               <listitem>
                   <para>producer-window-size</para>
-                  <para>The window size when producer window based flow control is enabled.</para>
+                  <para>This is the window size in number of messages to use when using producer window based flow
+                     control
+                  </para>
                </listitem>
                <listitem>
                   <para>producer-max-rate</para>
-                  <para>The max rate when producer rate based flow control is enabled.</para>
+                  <para>This is the maximum producer send rate that will be applied when using rate based producer flow
+                     control.
+                  </para>
+               </listitem>
+               <listitem>
+                  <para>consumer-window-size</para>
+                  <para>This is the window size in number of messages to use when using consumer window based flow
+                     control
+                  </para>
+               </listitem>
+               <listitem>
+                  <para>consumer-max-rate</para>
+                  <para>This is the maximum producer send rate that will be applied when using rate based consumer flow
+                     control.
+                  </para>
+               </listitem>
+               <listitem>
+                  <para>block-on-acknowledge</para>
+                  <para>Whether or not we use a blocking call when acknowledging a message</para>
+               </listitem>
+               <listitem>
+                  <para>send-np-messages-synchronously</para>
+                  <para>Whether we send non persistent messages synchronously.</para>
+               </listitem>
+               <listitem>
+                  <para>send-p-messages-synchronously</para>
+                  <para>Whether we send persistent messages synchronously.</para>
                </listitem>
             </itemizedlist>
          </listitem>

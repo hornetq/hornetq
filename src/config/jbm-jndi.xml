@@ -27,25 +27,23 @@
       <entry name="java:/connectionfactories/acme/connection_factory"/>
       <!-- You can specify the default Client ID to use for connections created using this factory -->
       <client-id>MyClientID</client-id>
-      <!-- PrefetchSize determines the maximum number of messages the client consumer will buffer locally -->
-      <prefetch-size>150</prefetch-size>
       <!-- The batch size to use when using the DUPS_OK_ACKNOWLEDGE acknowledgement mode -->
-      <dups-ok-batch-size>5000</dups-ok-batch-size>
-      <!-- Does this connection factory support automatic failover? -->
-      <supports-failover>false</supports-failover>
-      <!-- Does this connection factory support automatic client side load balancing? -->
-      <supports-load-balancing>false</supports-load-balancing>
-      <!-- The class name of the factory used to create the load balancing policy to use on the client side -->
-      <load-balancing-factory>org.jboss.messaging.jms.client.plugin.RoundRobinLoadBalancingFactory</load-balancing-factory>
-      <!-- Whether we should be strict TCK compliant, i.e. how we deal with foreign messages, defaults to false-->
-      <strict-tck>true</strict-tck>
-      
+      <dups-ok-batch-size>5000</dups-ok-batch-size>-size>
       <!-- This is the window size in number of messages to use when using producer window based flow control -->
       <producer-window-size>1000</producer-window-size>
-      
       <!-- This is the maximum producer send rate that will be applied when using rate based producer flow control -->
       <producer-max-rate>100</producer-max-rate>
-      
+      <!-- This is the window size in number of messages to use when using consumer window based flow control -->
+      <consumer-window-size>1000</consumer-window-size>
+      <!-- This is the maximum producer send rate that will be applied when using rate based consumer flow control -->
+      <consumer-max-rate>5000</consumer-max-rate>
+      <!--Whether or not we use a blocking call when acknowledging a message-->
+      <block-on-acknowledge>false</block-on-acknowledge>
+      <!--Whether we send non persistent messages synchronously-->
+      <send-np-messages-synchronously>true</send-np-messages-synchronously>
+      <!--Whether we send persistent messages synchronously-->
+      <send-p-messages-synchronously>true</send-p-messages-synchronously>
+
    </connection-factory>
 
    <queue name="DLQ">
