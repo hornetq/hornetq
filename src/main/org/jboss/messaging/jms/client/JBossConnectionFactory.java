@@ -121,8 +121,6 @@ public class JBossConnectionFactory implements
       this.defaultBlockOnAcknowledge = defaultBlockOnAcknowledge;
       this.defaultSendNonPersistentMessagesBlocking = defaultSendNonPersistentMessagesBlocking;
       this.defaultSendPersistentMessagesBlocking = defaultSendPersistentMessagesBlocking;
-      log.info("cf np:" + this.defaultSendNonPersistentMessagesBlocking + " p:" + this.defaultSendPersistentMessagesBlocking);
-      
    }
    // ConnectionFactory implementation -------------------------------------------------------------
    

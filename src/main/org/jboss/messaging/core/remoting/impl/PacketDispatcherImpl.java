@@ -22,6 +22,7 @@ import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketHandlerRegistrationListener;
 import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -140,7 +141,11 @@ public class PacketDispatcherImpl implements PacketDispatcher
       }
       else
       {
-         log.error("Unhandled packet " + packet);
+         //Producer tokens can arrive after producer is closed - this is ok
+         if (packet.getType() != EmptyPacket.PROD_RECEIVETOKENS)
+         {
+            log.error("Unhandled packet " + packet);
+         }
       }
    }
 

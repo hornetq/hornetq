@@ -113,8 +113,6 @@ public class ClientProducerImpl implements ClientProducerInternal
       
       this.sendPersistentMessagesSynchronously = sendPersistentMessagesSynchronously;
       
-      log.info("send np:" + this.sendNonPersistentMessagesSynchronously + " p:" + this.sendPersistentMessagesSynchronously);
-      
       this.availableCredits = new Semaphore(initialCredits);
       
       this.creditFlowControl = initialCredits != -1;
@@ -159,8 +157,7 @@ public class ClientProducerImpl implements ClientProducerInternal
          rateLimiter.limit();
       }
    	
-   	boolean sendBlocking = msg.isDurable() && sendPersistentMessagesSynchronously ||
-   	                       !msg.isDurable() && sendNonPersistentMessagesSynchronously;
+   	boolean sendBlocking = msg.isDurable() ? sendPersistentMessagesSynchronously : sendNonPersistentMessagesSynchronously;
    	
       ProducerSendMessage message = new ProducerSendMessage(msg);
          		
@@ -178,7 +175,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       {
          try
          {
-            this.availableCredits.acquire(message.getClientMessage().encodeSize());
+            availableCredits.acquire(message.getClientMessage().encodeSize());
          }
          catch (InterruptedException e)
          {           
