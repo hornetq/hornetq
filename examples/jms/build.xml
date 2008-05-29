@@ -128,7 +128,7 @@
 * parameter            current (default)                 description                     
 * ---------            -----------------                 -----------                     
 * message.count        ${message.count} (200000)         number of messages    
-* message.size         ${message.size} (1000)            size of message in bytes      	
+* message.size         ${message.size} (1024)            size of message in bytes      	
 * message.warmup.count ${message.warmup.count} (10000)   number of messages to warm up   
 * delivery.mode        ${delivery.mode} (NON_PERSISTENT) PERSISTENT/NON_PERSISTENT       
 * sess.trans           ${sess.trans} (false)             Is session transacted           

@@ -170,7 +170,7 @@ public class PerfExample
       byte[] payload = new byte[messageSize];
       bytesMessage.writeBytes(payload);
       
-      final int modulo = 1000;
+      final int modulo = 2000;
       
       TokenBucketLimiter tbl = throttleRate != -1 ? new TokenBucketLimiter(throttleRate, false): null;
 
@@ -282,7 +282,7 @@ public class PerfExample
          this.countDownLatch = countDownLatch;
          this.perfParams = perfParams;
          warmingUp = perfParams.getNoOfWarmupMessages() > 0;
-         this.modulo = 1000;
+         this.modulo = 2000;
       }
 
       public void onMessage(final Message message)

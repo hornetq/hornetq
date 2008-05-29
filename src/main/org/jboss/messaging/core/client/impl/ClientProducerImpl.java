@@ -162,7 +162,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       ProducerSendMessage message = new ProducerSendMessage(msg);
          		
    	if (sendBlocking)
-   	{
+   	{   	   
    	   remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), message);
    	}
    	else
