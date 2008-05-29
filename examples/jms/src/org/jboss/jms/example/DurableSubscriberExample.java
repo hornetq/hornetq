@@ -21,7 +21,15 @@
    */
 package org.jboss.jms.example;
 
-import javax.jms.*;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.jms.TopicSubscriber;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -32,7 +40,7 @@ import javax.naming.NamingException;
  */
 public class DurableSubscriberExample
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       Connection connection = null;
       try
@@ -60,17 +68,14 @@ public class DurableSubscriberExample
          topicSubscriber.close();
          session.unsubscribe("myuniqueid");
       }
-      catch (NamingException e)
+      catch (Exception e)
       {
          e.printStackTrace();
-      }
-      catch (JMSException jmsException)
-      {
-         jmsException.printStackTrace();
       }
       finally
       {
          if (connection != null)
+         {
             try
             {
                connection.close();
@@ -79,6 +84,7 @@ public class DurableSubscriberExample
             {
                e.printStackTrace();
             }
+         }
       }
    }
 }

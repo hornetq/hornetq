@@ -46,7 +46,7 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class SimpleClient
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       ClientConnection clientConnection = null;
       try
@@ -59,7 +59,7 @@ public class SimpleClient
          SimpleString queue = new SimpleString("queuejms.testQueue");
          ClientProducer clientProducer = clientSession.createProducer(queue);
          ClientMessage message = new ClientMessageImpl(JBossTextMessage.TYPE, false, 0,
-                 System.currentTimeMillis(), (byte) 1);
+                                                       System.currentTimeMillis(), (byte) 1);
          message.getBody().putString("Hello!");
          clientProducer.send(message);
          ClientConsumer clientConsumer = clientSession.createConsumer(queue);
@@ -85,6 +85,5 @@ public class SimpleClient
             }
          }
       }
-
    }
 }

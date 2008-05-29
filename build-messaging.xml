@@ -762,7 +762,9 @@
          <classpath refid="jms.test.execution.classpath"/>
       </java>
    </target>
-   <!--examples-->
+	
+   <!-- Examples -->
+	
    <target name="queueExample" depends="client-jar">
       <ant dir="${examples.dir}/jms" antfile="build.xml" target="queueExample"/>
    </target>
@@ -771,9 +773,23 @@
       <ant dir="${examples.dir}/jms" antfile="build.xml" target="topicExample"/>
    </target>
 
-   <target name="DurSubExample" depends="client-jar">
-      <ant dir="${examples.dir}/jms" antfile="build.xml" target="DurSubExample"/>
+   <target name="durSubExample" depends="client-jar">
+      <ant dir="${examples.dir}/jms" antfile="build.xml" target="durSubExample"/>
    </target>
+	
+   <target name="SimpleClient" depends="client-jar">
+      <ant dir="${examples.dir}/messaging" antfile="build.xml" target="SimpleClient"/>
+   </target>
+
+   <target name="SSLClient" depends="client-jar">
+      <ant dir="${examples.dir}/messaging" antfile="build.xml" target="SSLClient"/>
+   </target>
+
+   <target name="SimpleExample" depends="jar, client-jar">
+      <ant dir="${examples.dir}/messaging" antfile="build.xml" target="SimpleExample"/>
+   </target>
+	
+	<!-- Performance examples -->
 
    <target name="perfListener" depends="client-jar">
       <ant dir="${examples.dir}/jms" antfile="build.xml" target="perfListener"/>
@@ -803,15 +819,5 @@
       <ant dir="${examples.dir}/jms" antfile="build.xml" target="perfTransactionalSender"/>
    </target>
 
-   <target name="SimpleClient" depends="client-jar">
-      <ant dir="${examples.dir}/messaging" antfile="build.xml" target="SimpleClient"/>
-   </target>
 
-   <target name="SSLClient" depends="client-jar">
-      <ant dir="${examples.dir}/messaging" antfile="build.xml" target="SSLClient"/>
-   </target>
-
-   <target name="SimpleExample" depends="jar, client-jar">
-      <ant dir="${examples.dir}/messaging" antfile="build.xml" target="SimpleExample"/>
-   </target>
 </project>

@@ -43,7 +43,7 @@ public class QueueExample
 {
    final static Logger log = Logger.getLogger(QueueExample.class);
 
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       Connection connection = null;
       try
@@ -74,6 +74,7 @@ public class QueueExample
       finally
       {
          if(connection != null)
+         {
             try
             {
                connection.close();
@@ -82,6 +83,7 @@ public class QueueExample
             {
                e.printStackTrace();
             }
+         }
       }
    }
 }

@@ -39,7 +39,7 @@ public class TopicExample
 {
    final static Logger log = Logger.getLogger(TopicExample.class);
 
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       Connection connection = null;
       try
@@ -85,17 +85,15 @@ public class TopicExample
          {
          }
       }
-      catch (NamingException e)
+      catch (Exception e)
       {
          e.printStackTrace();
       }
-      catch (JMSException jmsException)
-      {
-         jmsException.printStackTrace();
-      }
+
       finally
       {
          if (connection != null)
+         {
             try
             {
                connection.close();
@@ -104,6 +102,7 @@ public class TopicExample
             {
                e.printStackTrace();
             }
+         }
       }
    }
 }

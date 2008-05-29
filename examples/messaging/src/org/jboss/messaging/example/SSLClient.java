@@ -47,7 +47,7 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class SSLClient
 {
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       ClientConnection clientConnection = null;
       try
@@ -85,7 +85,7 @@ public class SSLClient
       }
       finally
       {
-         if(clientConnection != null)
+         if (clientConnection != null)
          {
             try
             {
@@ -97,6 +97,5 @@ public class SSLClient
             }
          }
       }
-
    }
 }

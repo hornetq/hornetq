@@ -36,13 +36,15 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 import org.jboss.jms.util.PerfParams;
 import org.jboss.messaging.core.logging.Logger;
 
 /**
- * a performance example that can be used to gather simple performance figures.
+ * A simple example that can be used to gather basic performance measurements.
+ * 
+ * It can be run against any JMS compliant provider, just by changing the jndi.properties file from
+ * the examples/jms/config directory, and ensuring that the providers client libraries are on the classpath
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
@@ -51,12 +53,16 @@ import org.jboss.messaging.core.logging.Logger;
 public class PerfExample
 {
    private static Logger log = Logger.getLogger(PerfExample.class);
+   
    private Queue queue;
+   
    private Connection connection;
+   
    private Session session;
+   
    private long start;
 
-   public static void main(String[] args)
+   public static void main(final String[] args)
    {
       PerfExample perfExample = new PerfExample();
 
@@ -89,11 +95,10 @@ public class PerfExample
       {
          perfExample.runSender(perfParams);
       }
-
    }
 
-   private void init(boolean transacted, String queueLookup, String connectionFactoryLookup, boolean dupsOk)
-           throws NamingException, JMSException
+   private void init(final boolean transacted, final String queueLookup, final String connectionFactoryLookup,
+                     final boolean dupsOk) throws Exception
    {
       InitialContext initialContext = new InitialContext();
       queue = (Queue) initialContext.lookup(queueLookup);
@@ -102,7 +107,7 @@ public class PerfExample
       session = connection.createSession(transacted, transacted ? Session.SESSION_TRANSACTED : (dupsOk ? Session.DUPS_OK_ACKNOWLEDGE : Session.AUTO_ACKNOWLEDGE));
    }
 
-   private void displayAverage(long numberOfMessages, long start, long end)
+   private void displayAverage(final long numberOfMessages, final long start, final long end)
    {
       double duration = (1.0 * end - start) / 1000; // in seconds
       double average = (1.0 * numberOfMessages / duration);
@@ -119,11 +124,9 @@ public class PerfExample
          log.info("warming up by sending " + perfParams.getNoOfWarmupMessages() + " messages");
          sendMessages(perfParams.getNoOfWarmupMessages(), perfParams.getTransactionBatchSize(), perfParams.getDeliveryMode(), perfParams.isSessionTransacted(), false);
          log.info("warmed up");
-
          start = System.currentTimeMillis();
          sendMessages(perfParams.getNoOfMessagesToSend(), perfParams.getTransactionBatchSize(), perfParams.getDeliveryMode(), perfParams.isSessionTransacted(), true);
          long end = System.currentTimeMillis();
-
          displayAverage(perfParams.getNoOfMessagesToSend(), start, end);
       }
       catch (Exception e)
@@ -133,6 +136,7 @@ public class PerfExample
       finally
       {
          if (connection != null)
+         {
             try
             {
                connection.close();
@@ -141,10 +145,12 @@ public class PerfExample
             {
                e.printStackTrace();
             }
+         }
       }
    }
 
-   private void sendMessages(int numberOfMessages, int txBatchSize, int deliveryMode, boolean transacted, boolean display) throws JMSException
+   private void sendMessages(final int numberOfMessages, final int txBatchSize, final int deliveryMode,
+                             final boolean transacted, final boolean display) throws JMSException
    {
       MessageProducer producer = session.createProducer(queue);
       producer.setDisableMessageID(true);
@@ -154,7 +160,7 @@ public class PerfExample
       byte[] payload = new byte[1024];
       bytesMessage.writeBytes(payload);
       
-      int modulo = numberOfMessages / 10;
+      final int modulo = numberOfMessages / 10;
 
       boolean committed = false;
       for (int i = 1; i <= numberOfMessages; i++)
@@ -213,6 +219,7 @@ public class PerfExample
       finally
       {
          if (connection != null)
+         {
             try
             {
                connection.close();
@@ -221,10 +228,11 @@ public class PerfExample
             {
                e.printStackTrace();
             }
+         }
       }
    }
 
-   private void drainQueue(MessageConsumer consumer) throws JMSException
+   private void drainQueue(final MessageConsumer consumer) throws JMSException
    {
       log.info("draining queue");
       while (true)
@@ -238,22 +246,21 @@ public class PerfExample
       }
    }
 
-   /**
-    * a message listener
-    */
-   class PerfListener implements MessageListener
+   private class PerfListener implements MessageListener
    {
-      private CountDownLatch countDownLatch;
+      private final CountDownLatch countDownLatch;
 
-      private PerfParams perfParams;
+      private final PerfParams perfParams;
 
       private boolean warmingUp = true;
+      
       private boolean started = false;
 
-      private int modulo;
-      private AtomicLong count = new AtomicLong(0);
+      private final int modulo;
+      
+      private final AtomicLong count = new AtomicLong(0);
 
-      public PerfListener(CountDownLatch countDownLatch, PerfParams perfParams)
+      public PerfListener(final CountDownLatch countDownLatch, final PerfParams perfParams)
       {
          this.countDownLatch = countDownLatch;
          this.perfParams = perfParams;
@@ -261,7 +268,7 @@ public class PerfExample
          this.modulo = perfParams.getNoOfMessagesToSend() / 10;
       }
 
-      public void onMessage(Message message)
+      public void onMessage(final Message message)
       {
          try
          {

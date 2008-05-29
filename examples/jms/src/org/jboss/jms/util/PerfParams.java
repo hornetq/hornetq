@@ -25,15 +25,20 @@ import javax.jms.DeliveryMode;
 import java.io.Serializable;
 
 /**
+ * 
+ * Class that holds the parameters used in the performance examples
+ * 
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public class PerfParams implements Serializable
 {
-   int noOfMessagesToSend = 1000;
-   int noOfWarmupMessages;
-   int deliveryMode = DeliveryMode.NON_PERSISTENT;
-   boolean isSessionTransacted = false;
-   int transactionBatchSize = 5000;
+   private static final long serialVersionUID = -4336539641012356002L;
+   
+   private int noOfMessagesToSend = 1000;
+   private int noOfWarmupMessages;
+   private int deliveryMode = DeliveryMode.NON_PERSISTENT;
+   private boolean isSessionTransacted = false;
+   private int transactionBatchSize = 5000;
    private boolean drainQueue = true;
    private String queueLookup = "/queue/testPerfQueue";
    private String connectionFactoryLookup = "/ConnectionFactory";
@@ -78,7 +83,6 @@ public class PerfParams implements Serializable
    {
       isSessionTransacted = sessionTransacted;
    }
-
 
    public int getTransactionBatchSize()
    {

@@ -49,11 +49,12 @@ import org.jboss.messaging.util.SimpleString;
 
 /**
  * A simple server is started with TCP transport, a message is sent and received.
+ * 
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public class SimpleExample
 {
-   public static void main(String[] args) throws Exception
+   public static void main(final String[] args) throws Exception
    {
       MessagingServer messagingServer = null;
       ClientConnection clientConnection = null;

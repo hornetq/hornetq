@@ -69,8 +69,8 @@
       <echo>* to run examples execute one of the following *</echo>
       <echo>* ant queueExample *</echo>
       <echo>* ant topicExample *</echo>
-      <echo>* ant DurSubExample *</echo>
-      <echo>* ant perfListener followed by ant perfSender *</echo>
+      <echo>* ant durSubExample *</echo>
+   	<echo>* etc               *</echo>
       <echo>*****************************************************************</echo>
    </target>
 
@@ -102,7 +102,7 @@
       </java>
    </target>
 
-   <target name="DurSubExample" depends="compile"
+   <target name="durSubExample" depends="compile"
            description="-> publish/subscribe example using a topic and a durable subscriber">
       <java classname="org.jboss.jms.example.DurableSubscriberExample" fork="true">
          <classpath refid="runtime.classpath"/>
