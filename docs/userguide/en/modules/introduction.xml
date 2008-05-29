@@ -2,7 +2,7 @@
 <chapter id="introduction">
    <title>Introduction</title>
 
-   <para>JBoss Messaging provides an open source and standards-based messaging
+   <para>JBoss Messaging provides an open source and standard-based messaging
    platform that brings enterprise-class messaging to the mass market.</para>
 
    <para>JBoss Messaging implements a high performance, robust messaging core
@@ -16,11 +16,11 @@
    clustering implementation.</para>
 -->
    <para>JBoss Messaging includes a JMS front-end to deliver messaging in a
-   standards-based format as well as being designed to be able to support
+   standard-based format as well as being designed to be able to support
    other messaging protocols in the future.</para>
 
 
-   <para>Currently JBM 2.0 is only available standalone or embedded, The current JBoss AS 5 release contains JBM 1.4.2.</para>
+   <para>Currently JBM 2.0 is only available standalone or embedded, the current JBoss AS 5 release contains JBM 1.4.2.</para>
 
 
   <!-- <section id="support">
@@ -47,7 +47,7 @@
       <itemizedlist>
          <listitem>
             <para>Journal based persistence.</para>
-            <para>An append only file system where messages and transactions are stored at a high performance rate. We don't even need an external database for that.</para>
+            <para>An append-only file system where messages and transactions are stored at a high performance rate. An external database is no longer required.</para>
          </listitem>
 
          <listitem>
@@ -59,13 +59,13 @@
 
          <listitem>
             <para>Asynchronous IO (Linux only at the moment)</para>
-            <para>Instead of syncing the disk and waiting slow IO operations to complete during transactions, we can submit the writes directly on the kernel and get a notification when it is complete. 
-                  With this design we can support very high transaction rates even on very short transactions containing just few messages or acknowledgements. </para>
+            <para>Instead of syncing the disk and waiting for slow IO operations to complete during transactions, the writes are submitted directly to the kernel and a notification is sent back when it is complete. 
+                  With this design a very high transaction rate is supported even on very short transactions containing just few messages or acknowledgements.</para>
          </listitem>
 
          <listitem>
             <para>Standalone and embedded versions.</para>
-            <para>You can embed JBoss Messaging at your own system without the requirement of any servers at all. Just instantiate few POJOS and you have a Messaging System running.</para>
+            <para>JBoss Messaging can be embedded in your own system without the requirement of any servers at all. Just instantiate a few POJOS (Plain Old Java Objects) and you have a Messaging System running.</para>
          </listitem>
       </itemizedlist>
 
@@ -128,11 +128,13 @@
             MS SQL Server, PostgreSQL and MySQL</para>
          </listitem>  -->
 
+         <!-- not available for JB2 alpha
          <listitem>
             <para>HTTP transport to allow use through firewalls that only
             allow HTTP traffic</para>
          </listitem>
-
+         -->
+         
          <listitem>
             <para>SSL transport</para>
          </listitem>

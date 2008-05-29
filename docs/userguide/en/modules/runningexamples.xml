@@ -2,10 +2,12 @@
 <chapter id="examples">
    <title>Running the Examples</title>
 
-   <para>In the directory <literal>examples</literal>, you will find 2 sets of examples. A set of pure JMS examples
-      and also a set of non JMS examples that demonstrate how to use the JBoss Messaging core API
-   </para>
-   <para>It is highly recommended that you familiarise yourself with the
+   <para>In the directory <literal>examples</literal>, you will find 2 sets of examples:</para>
+   <itemizedlist>
+     <listitem>a set of JMS examples</listitem>
+     <listitem>a set of non-JMS examples that demonstrate how to use the JBoss Messaging core API</listitem>
+   </itemizedlist>
+   <para>It is highly recommended that you familiarize yourself with the
       examples.
    </para>
    <para>Make sure you start JBoss Messaging before running the
@@ -77,7 +79,7 @@
                start, you will see <literal>READY!!!</literal> when the listener has started. The number of messages,
                delivery mode can be configured as follows:
                <programlisting>
-      ant -Dmessage.count=20000 -Ddelivery.mode=PERSISTENT -Dsample.period=1 perfSender
+      ant -Dmessage.count=20000 -Ddelivery.mode=PERSISTENT perfSender
                </programlisting>
                <itemizedlist>
                   <listitem>

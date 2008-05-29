@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="about">
    <title>About JBoss Messaging 2.0.0</title>
-   <para>JBoss Messaging 2 is the next level of messaging system being developed by JBoss, designed to attend very large demanding system and so we really believe JBoss Messaging 2 will be the most performatic 
-          Messaging System written in Java available on the market.</para>
+   <para>JBoss Messaging 2 is the next level of messaging system being developed by JBoss,
+    designed to attend very large demanding system and so we really believe JBoss 
+    Messaging 2 will be the most efficient Messaging System written in Java available
+    on the market.</para>
    <para>JBoss Messaging 1.4 has been the default implementation on JBoss Service Integration Platform and JBoss 5 for some time already. </para>
    <para>JBoss Messaging is an integral part of Red Hat's strategy for
    messaging.</para>
