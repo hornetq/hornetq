@@ -561,8 +561,7 @@ public class JournalImpl implements TestableJournal
          TransactionCallback callback = getTransactionCallback(txID);
          callback.countUp();
          usedFile = appendRecord(bb, callback);
-         
-         //FIXME!! Need to wait for completion!!! FIXME         
+         callback.waitCompletion(aioTimeout);     
       }
       else
       {
