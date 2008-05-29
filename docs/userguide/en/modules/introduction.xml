@@ -16,7 +16,7 @@
    clustering implementation.</para>
 -->
    <para>JBoss Messaging includes a JMS front-end to deliver messaging in a
-   standard-based format as well as being designed to be able to support
+   standard-based format. It is also designed to be able to support
    other messaging protocols in the future.</para>
 
 
