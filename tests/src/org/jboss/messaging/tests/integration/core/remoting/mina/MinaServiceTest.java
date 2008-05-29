@@ -41,7 +41,8 @@ public class MinaServiceTest extends TestCase
       assertFalse(session.isConnected());
    }
 
-   public void testMinaConnector_Failure() throws Exception
+   // disabled test since INVM transport is disabled for JBM2 alpha: JBMESSAGING-1348
+   public void _testMinaConnector_Failure() throws Exception
    {
       NIOConnector connector = new MinaConnector(new LocationImpl(
             TCP, "localhost", 9000), new PacketDispatcherImpl(null));
