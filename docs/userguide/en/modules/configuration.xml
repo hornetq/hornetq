@@ -7,11 +7,11 @@
       specific to JMS providers. JBoss Messaging has its own configuration files
       to configure these.
    </para>
-   <para>In this chapter, we discuss how to configure JBoss Messaging, which work together to provide JMS API level
+   <para>In this chapter, we discuss how to configure JBoss Messaging to provide JMS API level
       services to client applications.
    </para>
    <para>JBoss Messaging configuration is spread among several
-      configuration files.
+      configuration files:
       <itemizedlist>
          <listitem>
             <filename>jbm-configuration.xml</filename>
@@ -32,22 +32,17 @@
          </listitem>
       </itemizedlist>
    </para>
-   <para>The next sections explain each configuration file in detail</para>
+   <para>The next sections explain each configuration file in detail.</para>
 
    <section id="configuration.main">
       <title>jbm-configuration.xml</title>
       <para>This configuration file is the core configuration for the JBM server. The following is an example of a
-         typical configuration
+         typical configuration:
       </para>
       <programlisting>
          <![CDATA[
    <deployment>
       <configuration>
-
-         <!-- TODO!! Should specify all available properties in here -->
-
-         <strict-tck>true</strict-tck>
-
          <clustered>false</clustered>
 
          <scheduled-executor-max-pool-size>30</scheduled-executor-max-pool-size>
@@ -155,10 +150,6 @@
       </programlisting>
       <para>The available configuration attributes are:</para>
       <itemizedlist>
-         <listitem>
-            <para>strict-tck</para>
-            <para>Whether or not this server should adhere to strick tck</para>
-         </listitem>
          <listitem>
             <para>clustered</para>
             <para>Whether or not this server is clustered, currently disabled</para>
