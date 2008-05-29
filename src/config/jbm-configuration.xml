@@ -91,7 +91,7 @@
       (parameter ignored on NIO)
        You can verify the max AIO on the OS level at /proc/sys/fs/aio_max_nr. (aio-nr will give you the current max-aio being used)
       -->
-      <journal-max-aio>10000</journal-max-aio>
+      <journal-max-aio>5000</journal-max-aio>
 
 
       <!--  Maximum time in milliseconds an AIO operation could take.
