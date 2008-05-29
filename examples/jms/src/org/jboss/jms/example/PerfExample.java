@@ -68,17 +68,19 @@ public class PerfExample
 
       int noOfMessages = Integer.parseInt(args[1]);
       int noOfWarmupMessages = Integer.parseInt(args[2]);
-      int deliveryMode = args[3].equalsIgnoreCase("persistent") ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT;
-      boolean transacted = Boolean.parseBoolean(args[4]);
-      int transactionBatchSize = Integer.parseInt(args[5]);
-      boolean dupsok = "DUPS_OK".equalsIgnoreCase(args[6]);
-      boolean drainQueue = Boolean.parseBoolean(args[7]);
-      String queueLookup = args[8];
-      String connectionFactoryLookup = args[9];
+      int messageSize = Integer.parseInt(args[3]);
+      int deliveryMode = args[4].equalsIgnoreCase("persistent") ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT;
+      boolean transacted = Boolean.parseBoolean(args[5]);
+      int transactionBatchSize = Integer.parseInt(args[6]);
+      boolean dupsok = "DUPS_OK".equalsIgnoreCase(args[7]);
+      boolean drainQueue = Boolean.parseBoolean(args[8]);
+      String queueLookup = args[9];
+      String connectionFactoryLookup = args[10];
 
       PerfParams perfParams = new PerfParams();
       perfParams.setNoOfMessagesToSend(noOfMessages);
       perfParams.setNoOfWarmupMessages(noOfWarmupMessages);
+      perfParams.setMessageSize(messageSize);
       perfParams.setDeliveryMode(deliveryMode);
       perfParams.setSessionTransacted(transacted);
       perfParams.setTransactionBatchSize(transactionBatchSize);
@@ -122,10 +124,10 @@ public class PerfExample
          init(perfParams.isSessionTransacted(), perfParams.getQueueLookup(), perfParams.getConnectionFactoryLookup(), perfParams.isDupsOk());
          start = System.currentTimeMillis();
          log.info("warming up by sending " + perfParams.getNoOfWarmupMessages() + " messages");
-         sendMessages(perfParams.getNoOfWarmupMessages(), perfParams.getTransactionBatchSize(), perfParams.getDeliveryMode(), perfParams.isSessionTransacted(), false);
+         sendMessages(perfParams.getNoOfWarmupMessages(), perfParams.getMessageSize(), perfParams.getTransactionBatchSize(), perfParams.getDeliveryMode(), perfParams.isSessionTransacted(), false);
          log.info("warmed up");
          start = System.currentTimeMillis();
-         sendMessages(perfParams.getNoOfMessagesToSend(), perfParams.getTransactionBatchSize(), perfParams.getDeliveryMode(), perfParams.isSessionTransacted(), true);
+         sendMessages(perfParams.getNoOfMessagesToSend(), perfParams.getMessageSize(), perfParams.getTransactionBatchSize(), perfParams.getDeliveryMode(), perfParams.isSessionTransacted(), true);
          long end = System.currentTimeMillis();
          displayAverage(perfParams.getNoOfMessagesToSend(), start, end);
       }
@@ -149,15 +151,14 @@ public class PerfExample
       }
    }
 
-   private void sendMessages(final int numberOfMessages, final int txBatchSize, final int deliveryMode,
-                             final boolean transacted, final boolean display) throws JMSException
+   private void sendMessages(int numberOfMessages, int messageSize, int txBatchSize, int deliveryMode, boolean transacted, boolean display) throws JMSException
    {
       MessageProducer producer = session.createProducer(queue);
       producer.setDisableMessageID(true);
       producer.setDisableMessageTimestamp(true);
       producer.setDeliveryMode(deliveryMode);
       BytesMessage bytesMessage = session.createBytesMessage();
-      byte[] payload = new byte[1024];
+      byte[] payload = new byte[messageSize];
       bytesMessage.writeBytes(payload);
       
       final int modulo = numberOfMessages / 10;

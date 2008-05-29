@@ -43,6 +43,8 @@
    <!--perf props-->
    <property name="message.count" value="200000"/>
    <property name="message.warmup.count" value="10000"/>
+   <!-- in bytes -->
+   <property name="message.size" value="1024"/>
    <property name="delivery.mode" value="NON_PERSISTENT"/>
    <property name="sess.trans" value="false"/>
    <property name="sess.ackmode" value="DUPS_OK"/>
@@ -118,6 +120,7 @@
 * ---------             -----------                      -------               -------
 * message.count         number of messages               200000                ${message.count}
 * message.warmup.count  number of messages to warm up    10000                 ${message.warmup.count}
+* message.size          message size (in bytes)          1024                  ${message.size}
 * delivery.mode         PERSISTENT/NON_PERSISTENT        NON_PERSISTENT        ${delivery.mode}
 * sess.trans            Is session transacted            false                 ${sess.trans}
 * sess.trans.size       batch size to commit             1000                  ${sess.trans.size}
@@ -141,6 +144,7 @@
          <arg value="-l"/>
          <arg value="${message.count}"/>
          <arg value="${message.warmup.count}"/>
+         <arg value="${message.size}"/>      	
          <arg value="${delivery.mode}"/>
          <arg value="${sess.trans}"/>
          <arg value="${sess.trans.size}"/>
@@ -163,6 +167,7 @@
          <arg value="-s"/>
          <arg value="${message.count}"/>
          <arg value="${message.warmup.count}"/>
+         <arg value="${message.size}"/>      	
          <arg value="${delivery.mode}"/>
          <arg value="${sess.trans}"/>
          <arg value="${sess.trans.size}"/>

@@ -36,6 +36,7 @@ public class PerfParams implements Serializable
    
    private int noOfMessagesToSend = 1000;
    private int noOfWarmupMessages;
+   private int messageSize = 1024; // in bytes
    private int deliveryMode = DeliveryMode.NON_PERSISTENT;
    private boolean isSessionTransacted = false;
    private int transactionBatchSize = 5000;
@@ -64,6 +65,16 @@ public class PerfParams implements Serializable
       this.noOfWarmupMessages = noOfWarmupMessages;
    }
 
+   public int getMessageSize()
+   {
+      return messageSize;
+   }
+   
+   public void setMessageSize(int messageSize)
+   {
+      this.messageSize = messageSize;
+   }
+   
    public int getDeliveryMode()
    {
       return deliveryMode;
@@ -136,11 +147,12 @@ public class PerfParams implements Serializable
 
    public String toString()
    {
-      return "message to send = " + noOfMessagesToSend + ", DeliveryMode = " +
-              (deliveryMode == DeliveryMode.PERSISTENT ? "PERSISTENT" : "NON_PERSISTENT") + ", session transacted = " + isSessionTransacted +
-              (isSessionTransacted ? ", transaction batch size = " + transactionBatchSize : "") + ", drain queue = " + drainQueue +
-              ", queue lookup = " + queueLookup + ", connection factory lookup = " + connectionFactoryLookup +
-              ", Session Acknowledge mode = " + (dupsOk ? "DUPS_OK_ACKNOWLEDGE" : "AUTO_ACKNOWLEDGE");
+      return "message to send = " + noOfMessagesToSend + ", messages to warm up = " + noOfWarmupMessages + ", message size = " + messageSize + 
+               ", DeliveryMode = " + (deliveryMode == DeliveryMode.PERSISTENT ? "PERSISTENT" : "NON_PERSISTENT") + 
+               ", session transacted = " + isSessionTransacted + (isSessionTransacted ? ", transaction batch size = " + transactionBatchSize : "") +
+               ", drain queue = " + drainQueue +
+               ", queue lookup = " + queueLookup + ", connection factory lookup = " + connectionFactoryLookup +
+               ", Session Acknowledge mode = " + (dupsOk ? "DUPS_OK_ACKNOWLEDGE" : "AUTO_ACKNOWLEDGE");
    }
 
 
