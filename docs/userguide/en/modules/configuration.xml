@@ -547,17 +547,22 @@
       <entry name="/acme/MyExampleConnectionFactoryDupe"/>
       <entry name="java:/xyz/CF1"/>
       <entry name="java:/connectionfactories/acme/connection_factory"/>
-      <!-- You can specify the default Client ID to use for connections created using this factory -->
+      <!-- You can specify the default Client ID to use for connections created using
+      this factory -->
       <client-id>MyClientID</client-id>
       <!-- The batch size to use when using the DUPS_OK_ACKNOWLEDGE acknowledgement mode -->
       <dups-ok-batch-size>5000</dups-ok-batch-size>-size>
-      <!-- This is the window size in number of messages to use when using producer window based flow control -->
+      <!-- This is the window size in number of messages to use when using producer window
+      based flow control -->
       <producer-window-size>1000</producer-window-size>
-      <!-- This is the maximum producer send rate that will be applied when using rate based producer flow control -->
+      <!-- This is the maximum producer send rate that will be applied when using rate
+      based producer flow control -->
       <producer-max-rate>100</producer-max-rate>
-       <!-- This is the window size in number of messages to use when using consumer window based flow control -->
+       <!-- This is the window size in number of messages to use when using consumer window
+       based flow control -->
       <consumer-window-size>1000</consumer-window-size>
-      <!-- This is the maximum producer send rate that will be applied when using rate based consumer flow control -->
+      <!-- This is the maximum producer send rate that will be applied when using rate
+      based consumer flow control -->
       <consumer-max-rate>5000</consumer-max-rate>
       <!--Whether or not we use a blocking call when acknowledging a message-->
       <block-on-acknowledge>false</block-on-acknowledge>
