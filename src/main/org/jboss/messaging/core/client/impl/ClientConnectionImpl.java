@@ -75,6 +75,8 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    private final boolean defaultBlockOnAcknowledge;
    
    private final boolean defaultSendNonPersistentMessagesBlocking;
+   
+   private final boolean defaultSendPersistentMessagesBlocking;
 
    private final Version serverVersion;
    
@@ -91,6 +93,7 @@ public class ClientConnectionImpl implements ClientConnectionInternal
                                final int defaultProducerMaxRate,
                                final boolean defaultBlockOnAcknowledge,
                                final boolean defaultSendNonPersistentMessagesBlocking,
+                               final boolean defaultSendPersistentMessagesBlocking,
                                final Version serverVersion)
    {
       this.serverTargetID = serverTargetID;
@@ -108,6 +111,8 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       this.defaultBlockOnAcknowledge = defaultBlockOnAcknowledge;
       
       this.defaultSendNonPersistentMessagesBlocking = defaultSendNonPersistentMessagesBlocking;
+      
+      this.defaultSendPersistentMessagesBlocking = defaultSendPersistentMessagesBlocking;
 
       this.serverVersion = serverVersion;
    }
@@ -128,6 +133,7 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       ClientSession session =
       	new ClientSessionImpl(this, response.getSessionID(), ackBatchSize, cacheProducers,
       			autoCommitSends, autoCommitAcks, blockOnAcknowledge, defaultSendNonPersistentMessagesBlocking,
+      			defaultSendPersistentMessagesBlocking, 
       			defaultConsumerWindowSize, defaultConsumerMaxRate, defaultProducerWindowSize,
       			defaultProducerMaxRate);
 

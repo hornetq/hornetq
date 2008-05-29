@@ -231,7 +231,8 @@ public class JMSServerManagerImpl implements JMSServerManager
    public boolean createConnectionFactory(String name, String clientID,
    		int dupsOKBatchSize, int consumerWindowSize, int consumerMaxRate,
    		int producerWindowSize, int producerMaxRate, boolean blockOnAcknowledge,
-   		boolean defaultSendNonPersistentMessagesBlocking, String jndiBinding) throws Exception
+   		boolean defaultSendNonPersistentMessagesBlocking, boolean defaultSendPersistentMessagesBlocking,
+   		String jndiBinding) throws Exception
    {
       JBossConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
@@ -241,7 +242,8 @@ public class JMSServerManagerImpl implements JMSServerManager
                  messagingServerManagement.getConfiguration().getConnectionParams(),                 
                  consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate,
                  blockOnAcknowledge,
-                 defaultSendNonPersistentMessagesBlocking
+                 defaultSendNonPersistentMessagesBlocking,
+                 defaultSendPersistentMessagesBlocking
                  );
       }
       if (!bindToJndi(jndiBinding, cf))
@@ -261,6 +263,7 @@ public class JMSServerManagerImpl implements JMSServerManager
    		                                 int consumerWindowSize, int consumerMaxRate,
    		                                 int producerWindowSize, int producerMaxRate, boolean blockOnAcknowledge,
    		                                 boolean defaultSendNonPersistentMessagesBlocking,
+   		                                 boolean defaultSendPersistentMessagesBlocking,
    		                                 List<String> jndiBindings) throws Exception
    {
       JBossConnectionFactory cf = connectionFactories.get(name);
@@ -270,7 +273,8 @@ public class JMSServerManagerImpl implements JMSServerManager
                  messagingServerManagement.getConfiguration().getLocation(),
                  messagingServerManagement.getConfiguration().getConnectionParams(),
                  consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate,
-                 blockOnAcknowledge, defaultSendNonPersistentMessagesBlocking
+                 blockOnAcknowledge, defaultSendNonPersistentMessagesBlocking,
+                 defaultSendPersistentMessagesBlocking
                  );
       }
       for (String jndiBinding : jndiBindings)

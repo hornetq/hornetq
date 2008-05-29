@@ -99,7 +99,9 @@ public interface Configuration
 
    JournalType getJournalType();
 
-   boolean isJournalSync();
+   boolean isJournalSyncTransactional();
+   
+   boolean isJournalSyncNonTransactional();
 
    int getJournalFileSize();
 

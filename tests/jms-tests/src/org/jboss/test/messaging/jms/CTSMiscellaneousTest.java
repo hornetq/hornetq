@@ -84,7 +84,7 @@ public class CTSMiscellaneousTest extends JBMServerTestCase
          bindings.add("StrictTCKConnectionFactory");
          
          getJmsServerManager().createConnectionFactory("StrictTCKConnectionFactory", null,
-               1000, 1024 * 1024, -1, 1000, -1, true, true, "/StrictTCKConnectionFactory");
+               1000, 1024 * 1024, -1, 1000, -1, true, true, true, "/StrictTCKConnectionFactory");
                  
          cf = (JBossConnectionFactory) getInitialContext().lookup("/StrictTCKConnectionFactory");
 		}

@@ -42,22 +42,22 @@ public class NIOSequentialFileFactory extends AbstractSequentialFactory implemen
 	}	
 	
 	// The timeout is ignored on NIO
-	public SequentialFile createSequentialFile(final String fileName, final boolean sync, int maxIO, long timeout)
+	public SequentialFile createSequentialFile(final String fileName, final int maxIO, final long timeout)
 	{
-		return new NIOSequentialFile(journalDir, fileName, sync);
+		return new NIOSequentialFile(journalDir, fileName);
 	}
 
-   public boolean supportsCallbacks()
+   public boolean isSupportsCallbacks()
    {
       return false;
    }
    
-   public ByteBuffer newBuffer(int size)
+   public ByteBuffer newBuffer(final int size)
    {
       return ByteBuffer.allocate(size);
    }
    
-   public ByteBuffer wrapBuffer(byte[] bytes)
+   public ByteBuffer wrapBuffer(final byte[] bytes)
    {
       return ByteBuffer.wrap(bytes);
    }

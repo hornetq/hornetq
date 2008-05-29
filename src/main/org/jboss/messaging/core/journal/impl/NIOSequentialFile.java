@@ -46,21 +46,17 @@ public class NIOSequentialFile implements SequentialFile
 	
 	private String fileName;
 	
-	private boolean sync;
-	
 	private File file;
 	
 	private FileChannel channel;
 	
 	private RandomAccessFile rfile;
 	
-	public NIOSequentialFile(final String journalDir, final String fileName, final boolean sync)
+	public NIOSequentialFile(final String journalDir, final String fileName)
 	{
 		this.journalDir = journalDir;
 		
-		this.fileName = fileName;
-		
-		this.sync = sync;    
+		this.fileName = fileName;   
 	}
 	
 	public int getAlignment()
@@ -160,7 +156,7 @@ public class NIOSequentialFile implements SequentialFile
 	{
       int bytesRead = channel.write(bytes);
       
-      if (sync && this.sync)
+      if (sync)
       {
          channel.force(false);
       }

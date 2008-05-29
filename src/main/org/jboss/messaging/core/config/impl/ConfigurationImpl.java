@@ -73,7 +73,9 @@ public class ConfigurationImpl implements Configuration, Serializable
    
    public JournalType journalType;
    
-   protected boolean journalSync;
+   protected boolean journalSyncTransactional = true;
+   
+   protected boolean journalSyncNonTransactional = false;
    
    protected int journalFileSize;
    
@@ -386,10 +388,15 @@ public class ConfigurationImpl implements Configuration, Serializable
 	   this.journalType = type;
 	}
 
-	public boolean isJournalSync()
+	public boolean isJournalSyncTransactional()
 	{
-		return journalSync;
+		return journalSyncTransactional;
 	}
+	
+	public boolean isJournalSyncNonTransactional()
+   {
+      return journalSyncNonTransactional;
+   }
 
 	public int getJournalFileSize()
 	{

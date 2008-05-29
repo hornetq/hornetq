@@ -78,6 +78,8 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
    
    private final boolean defaultSendNonPersistentMessagesBlocking;
    
+   private final boolean defaultSendPersistentMessagesBlocking;
+   
    
    // Static ---------------------------------------------------------------------------------------
     
@@ -87,7 +89,8 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
                                       final int defaultConsumerWindowSize, final int defaultConsumerMaxRate,
                                       final int defaultProducerWindowSize, final int defaultProducerMaxRate,
                                       final boolean defaultBlockOnAcknowledge,
-                                      final boolean defaultSendNonPersistentMessagesBlocking)
+                                      final boolean defaultSendNonPersistentMessagesBlocking,
+                                      final boolean defaultSendPersistentMessagesBlocking)
    {
       this.location = location;
       this.defaultConsumerWindowSize = defaultConsumerWindowSize;  
@@ -96,6 +99,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
       this.defaultProducerMaxRate = defaultProducerMaxRate;
       this.defaultBlockOnAcknowledge = defaultBlockOnAcknowledge;
       this.defaultSendNonPersistentMessagesBlocking = defaultSendNonPersistentMessagesBlocking;
+      this.defaultSendPersistentMessagesBlocking = defaultSendPersistentMessagesBlocking;
       this.connectionParams = connectionParams;
    }
    
@@ -117,6 +121,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
       this.defaultProducerMaxRate = -1;
       this.location = location;
       this.defaultSendNonPersistentMessagesBlocking = false;
+      this.defaultSendPersistentMessagesBlocking = false;
       this.connectionParams = connectionParams;
    }
    
@@ -147,7 +152,8 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
          return new ClientConnectionImpl(response.getConnectionTargetID(), remotingConnection,
                defaultConsumerWindowSize, defaultConsumerMaxRate,
                defaultProducerWindowSize, defaultProducerMaxRate,
-               defaultBlockOnAcknowledge, defaultSendNonPersistentMessagesBlocking, response.getServerVersion());
+               defaultBlockOnAcknowledge, defaultSendNonPersistentMessagesBlocking,
+               defaultSendPersistentMessagesBlocking, response.getServerVersion());
       }
       catch (Throwable t)
       {

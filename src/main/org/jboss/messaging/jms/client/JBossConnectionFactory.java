@@ -93,6 +93,8 @@ public class JBossConnectionFactory implements
    private final boolean defaultBlockOnAcknowledge;
    
    private final boolean defaultSendNonPersistentMessagesBlocking;
+   
+   private final boolean defaultSendPersistentMessagesBlocking;
 
    // Constructors ---------------------------------------------------------------------------------
    
@@ -105,7 +107,8 @@ public class JBossConnectionFactory implements
                                  final int defaultProducerWindowSize,
                                  final int defaultProducerMaxRate,
                                  final boolean defaultBlockOnAcknowledge,
-                                 final boolean defaultSendNonPersistentMessagesBlocking)
+                                 final boolean defaultSendNonPersistentMessagesBlocking,
+                                 final boolean defaultSendPersistentMessagesBlocking)
    {
       this.clientID = clientID;
       this.dupsOKBatchSize = dupsOKBatchSize;
@@ -117,6 +120,9 @@ public class JBossConnectionFactory implements
       this.defaultProducerWindowSize = defaultProducerWindowSize;
       this.defaultBlockOnAcknowledge = defaultBlockOnAcknowledge;
       this.defaultSendNonPersistentMessagesBlocking = defaultSendNonPersistentMessagesBlocking;
+      this.defaultSendPersistentMessagesBlocking = defaultSendPersistentMessagesBlocking;
+      log.info("cf np:" + this.defaultSendNonPersistentMessagesBlocking + " p:" + this.defaultSendPersistentMessagesBlocking);
+      
    }
    // ConnectionFactory implementation -------------------------------------------------------------
    
@@ -229,7 +235,8 @@ public class JBossConnectionFactory implements
                defaultProducerWindowSize,
                defaultProducerMaxRate,
                defaultBlockOnAcknowledge,
-               defaultSendNonPersistentMessagesBlocking);
+               defaultSendNonPersistentMessagesBlocking,
+               defaultSendPersistentMessagesBlocking);
 
       }
       return connectionFactory;

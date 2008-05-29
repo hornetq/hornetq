@@ -147,6 +147,8 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    private final boolean sendNonPersistentMessagesBlocking;
    
+   private final boolean sendPersistentMessagesBlocking;
+   
    // Constructors ---------------------------------------------------------------------------------
    
    public ClientSessionImpl(final ClientConnectionInternal connection, final long serverTargetID,
@@ -154,6 +156,7 @@ public class ClientSessionImpl implements ClientSessionInternal
                             final boolean autoCommitSends, final boolean autoCommitAcks,
                             final boolean blockOnAcknowledge,
                             final boolean sendNonPersistentMessagesBlocking,
+                            final boolean sendPersistentMessagesBlocking,
                             final int defaultConsumerWindowSize,  
                             final int defaultConsumerMaxRate,
                             final int defaultProducerWindowSize,
@@ -200,6 +203,8 @@ public class ClientSessionImpl implements ClientSessionInternal
       this.blockOnAcknowledge = blockOnAcknowledge;
       
       this.sendNonPersistentMessagesBlocking = sendNonPersistentMessagesBlocking;
+      
+      this.sendPersistentMessagesBlocking = sendPersistentMessagesBlocking;
    }
    
    // ClientSession implementation -----------------------------------------------------------------
@@ -369,7 +374,8 @@ public class ClientSessionImpl implements ClientSessionInternal
       	producer = new ClientProducerImpl(this, response.getProducerTargetID(), clientTargetID, address,
       			                            remotingConnection,
       			                            response.getMaxRate(),
-      			                            sendNonPersistentMessagesBlocking, autoCommitSends,
+      			                            sendNonPersistentMessagesBlocking,      			                           
+      			                            autoCommitSends && sendPersistentMessagesBlocking,
       			                            response.getInitialCredits());  
       	
       	remotingConnection.getPacketDispatcher().register(new ClientProducerPacketHandler(producer, clientTargetID));      	

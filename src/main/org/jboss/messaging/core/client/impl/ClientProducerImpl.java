@@ -65,8 +65,6 @@ public class ClientProducerImpl implements ClientProducerInternal
    
    //For limit throttling
    
-   //private AtomicInteger availableCredits = new AtomicInteger(0);
-   
    private Semaphore availableCredits;
    
    //For rate throttling
@@ -115,7 +113,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       
       this.sendPersistentMessagesSynchronously = sendPersistentMessagesSynchronously;
       
-//      this.availableCredits.set(initialCredits);
+      log.info("send np:" + this.sendNonPersistentMessagesSynchronously + " p:" + this.sendPersistentMessagesSynchronously);
       
       this.availableCredits = new Semaphore(initialCredits);
       
@@ -184,24 +182,7 @@ public class ClientProducerImpl implements ClientProducerInternal
          }
          catch (InterruptedException e)
          {           
-         }
-         
-//       while (availableCredits.get() <= 0)
-//       {
-//          //log.info("**blocked");
-//          synchronized (this)
-//          {
-//             try
-//             {                 
-//                wait();                 
-//             }
-//             catch (InterruptedException e)
-//             {                    
-//             }
-//          }     
-//       }
-//       
-//       availableCredits.addAndGet(-message.getClientMessage().encodeSize());
+         }         
       }
    }
             
@@ -238,19 +219,7 @@ public class ClientProducerImpl implements ClientProducerInternal
    
    public void receiveCredits(final int credits)
    {
-     // log.info("received credits " + credits);
-      
-      this.availableCredits.release(credits);
-      
-//   	int prev = availableCredits.getAndAdd(credits);
-//   	
-//   	if (prev <= 0 && prev + credits > 0)
-//   	{   		
-//   	   synchronized (this)
-//   	   {
-//   	      notify();
-//   	   }
-//   	}
+      availableCredits.release(credits);
    }
    
    // Public ---------------------------------------------------------------------------------------

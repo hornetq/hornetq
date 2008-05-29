@@ -759,7 +759,7 @@ public class SecurityTest extends JMSTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-
+      
       oldDefaultConfig = getSecurityConfig();
 
       HashSet<Role> roles = new HashSet<Role>();
@@ -786,14 +786,14 @@ public class SecurityTest extends JMSTestCase
    protected void tearDown() throws Exception
    {
    	super.tearDown();
-
+   	
       setSecurityConfig(oldDefaultConfig);
       configureSecurityForDestination("Queue1", true,  null);
       configureSecurityForDestination("Queue2", true,  null);
       configureSecurityForDestination("Topic1", false, null);
       configureSecurityForDestination("Topic2", false, null);
    }
-
+      
    // Private -------------------------------------------------------
 
    private boolean canReadDestination(Connection conn, Destination dest) throws Exception

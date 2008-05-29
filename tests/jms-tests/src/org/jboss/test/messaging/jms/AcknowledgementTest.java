@@ -63,20 +63,6 @@ public class AcknowledgementTest extends JMSTestCase
 
    // TestCase overrides -------------------------------------------
 
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-      getJmsServerManager().createConnectionFactory("ackconnectionfactory", null, 1000, 1024 * 1024, -1, 1000, -1, true, true, "/ackconnectionfactory");
-      cf = (JBossConnectionFactory) getInitialContext().lookup("/ackconnectionfactory");
-   }
-
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-      getJmsServerManager().destroyConnectionFactory("ackconnectionfactory");
-      cf = null;
-   }
-
    // Public --------------------------------------------------------
 
    /* Topics shouldn't hold on to messages if there are no subscribers */

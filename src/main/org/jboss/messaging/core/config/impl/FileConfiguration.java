@@ -131,7 +131,9 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
          journalType = JournalType.JDBC;
       }
 
-      this.journalSync = getBoolean(e, "journal-sync", true);
+      this.journalSyncTransactional = getBoolean(e, "journal-sync-transactional", true);
+      
+      this.journalSyncNonTransactional = getBoolean(e, "journal-sync-non-transactional", false);
 
       this.journalFileSize = getInteger(e, "journal-file-size", 10 * 1024 * 1024);
 

@@ -32,7 +32,20 @@ public class JMSTestCase extends JBMServerTestCase
       super.setUp();
                         
       ic = getInitialContext();
-      cf = getConnectionFactory();
+
+      //All jms tests should use a specific cg which has blockOnAcknowledge = true and
+      //both np and p messages are sent synchronously
+      
+      getJmsServerManager().createConnectionFactory("testsuitecf", null, 1000, 1024 * 1024, -1, 1000, -1, true, true, true, "/testsuitecf");
+      
+      cf = (JBossConnectionFactory) getInitialContext().lookup("/testsuitecf");      
+   }
+   
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();   
+      getJmsServerManager().destroyConnectionFactory("testsuitecf");
+      cf = null;
    }
 
 

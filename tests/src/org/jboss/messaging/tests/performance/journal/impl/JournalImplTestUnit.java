@@ -201,8 +201,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    }
    
    public void internaltestSpeedNonTransactional() throws Exception
-   {
-      
+   {      
       final long numMessages = 10000;
       
       int numFiles =  (int)(((numMessages * 1024 + 512) / (10 * 1024 * 1024)) * 1.3);
@@ -212,7 +211,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       log.info("num Files=" + numFiles);
 
       Journal journal =
-         new JournalImpl(10 * 1024 * 1024,  numFiles, true, getFileFactory(),
+         new JournalImpl(10 * 1024 * 1024,  numFiles, true, true, getFileFactory(),
                5000, "jbm-data", "jbm", 5000, 120);
       
       journal.start();
@@ -287,7 +286,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       journal.stop();
       
       journal =
-         new JournalImpl(10 * 1024 * 1024,  numFiles, true, getFileFactory(),
+         new JournalImpl(10 * 1024 * 1024,  numFiles, true, true, getFileFactory(),
                5000, "jbm-data", "jbm", 5000, 120);
       
       journal.start();
@@ -299,7 +298,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    public void testSpeedTransactional() throws Exception
    {
       Journal journal =
-         new JournalImpl(10 * 1024 * 1024, 10, true, getFileFactory(),
+         new JournalImpl(10 * 1024 * 1024, 10, true, true, getFileFactory(),
                5000, "jbm-data", "jbm", 5000, 120);
       
       journal.start();

@@ -34,11 +34,11 @@ import java.util.List;
  */
 public interface SequentialFileFactory
 {
-	SequentialFile createSequentialFile(String fileName, boolean sync, int maxIO, long timeout) throws Exception;
+	SequentialFile createSequentialFile(String fileName, int maxIO, long timeout) throws Exception;
 	
 	List<String> listFiles(String extension) throws Exception;
 	
-	boolean supportsCallbacks();
+	boolean isSupportsCallbacks();
 	
    ByteBuffer newBuffer(int size);
 

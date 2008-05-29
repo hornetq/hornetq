@@ -190,8 +190,7 @@ public class JBMServerTestCase extends JBMBaseTestCase
       {
          // log the test start in the remote log, this will make hunting through logs so much easier
          ServerManagement.log(ServerManagement.INFO, banner);
-      }
-      
+      }           
    }
 
    protected boolean isRemote()

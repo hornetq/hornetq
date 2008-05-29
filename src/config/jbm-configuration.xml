@@ -1,10 +1,6 @@
 <deployment>
    <configuration>
 
-      <!-- TODO!! Should specify all available properties in here -->
-
-      <strict-tck>true</strict-tck>
-
       <clustered>false</clustered>
 
       <scheduled-executor-max-pool-size>30</scheduled-executor-max-pool-size>
@@ -80,7 +76,11 @@
 
       <journal-type>asyncio</journal-type>
 
-      <journal-sync>true</journal-sync>
+      <!-- Does the journal sync to disk on each transaction commit, prepare or rollback? -->
+      <journal-sync-transactional>true</journal-sync-transactional>
+      
+      <!-- Does the journal sync to disk for every non transactional persistent operation? -->
+      <journal-sync-non-transactional>false</journal-sync-non-transactional>
 
       <!-- 10 MB journal file size -->
       <journal-file-size>10485760</journal-file-size>

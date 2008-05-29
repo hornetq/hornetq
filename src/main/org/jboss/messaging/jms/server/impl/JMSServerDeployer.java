@@ -46,7 +46,8 @@ public class JMSServerDeployer extends XmlDeployer
    private static final String PRODUCER_WINDOW_SIZE = "producer-window-size";
    private static final String PRODUCER_MAX_RATE = "producer-max-rate";
    private static final String BLOCK_ON_ACKNOWLEDGE = "block-on-acknowledge";
-   private static final String  SEND_NP_MESSAGES_SYNCHRONOUSLY = "send-np-messages-synchronously";
+   private static final String SEND_NP_MESSAGES_SYNCHRONOUSLY = "send-np-messages-synchronously";
+   private static final String SEND_P_MESSAGES_SYNCHRONOUSLY = "send-p-messages-synchronously";
    private static final String ENTRY_NODE_NAME = "entry";
    private static final String CONNECTION_FACTORY_NODE_NAME = "connection-factory";
    private static final String QUEUE_NODE_NAME = "queue";
@@ -129,6 +130,7 @@ public class JMSServerDeployer extends XmlDeployer
          int producerMaxRate = -1;
          boolean blockOnAcknowledge = false;
          boolean sendNonPersistentMessagesSynchronously = false;
+         boolean sendPersistentMessagesSynchronously = false;
          
          for (int j = 0; j < attributes.getLength(); j++)
          {
@@ -164,6 +166,10 @@ public class JMSServerDeployer extends XmlDeployer
             {
                sendNonPersistentMessagesSynchronously = Boolean.parseBoolean(attributes.item(j).getTextContent().trim());
             }
+            else if (SEND_P_MESSAGES_SYNCHRONOUSLY.equalsIgnoreCase(attributes.item(j).getNodeName()))
+            {
+               sendPersistentMessagesSynchronously = Boolean.parseBoolean(attributes.item(j).getTextContent().trim());
+            }
          }
 
          NodeList children = node.getChildNodes();
@@ -177,7 +183,8 @@ public class JMSServerDeployer extends XmlDeployer
                String name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
                jmsServerManager.createConnectionFactory(name, clientID, dupsOKBatchSize, 
                      consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate, 
-               		blockOnAcknowledge, sendNonPersistentMessagesSynchronously, jndiName);
+               		blockOnAcknowledge, sendNonPersistentMessagesSynchronously, 
+               		sendPersistentMessagesSynchronously, jndiName);
             }
          }
       }

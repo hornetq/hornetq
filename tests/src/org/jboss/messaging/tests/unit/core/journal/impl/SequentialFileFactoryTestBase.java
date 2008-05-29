@@ -74,7 +74,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
          
          expectedFiles.add(fileName);
          
-         SequentialFile sf = factory.createSequentialFile(fileName, false, 1, 120);
+         SequentialFile sf = factory.createSequentialFile(fileName, 1, 120);
          
          sf.open();
          
@@ -85,10 +85,10 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       
       //Create a couple with a different extension - they shouldn't be picked up
       
-      SequentialFile sf1 = factory.createSequentialFile("different.file", false, 1, 120);
+      SequentialFile sf1 = factory.createSequentialFile("different.file", 1, 120);
       sf1.open();
       
-      SequentialFile sf2 = factory.createSequentialFile("different.cheese", false, 1, 120);
+      SequentialFile sf2 = factory.createSequentialFile("different.cheese", 1, 120);
       sf2.open();
                   
       List<String> fileNames = factory.listFiles("jbm");
@@ -119,7 +119,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
    
    public void testFill() throws Exception
    {
-      SequentialFile sf = factory.createSequentialFile("fill.jbm", true, 1, 120);
+      SequentialFile sf = factory.createSequentialFile("fill.jbm", 1, 120);
       
       sf.open();
       
@@ -144,11 +144,11 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
    
    public void testDelete() throws Exception
    {
-      SequentialFile sf = factory.createSequentialFile("delete-me.jbm", true, 1, 120);
+      SequentialFile sf = factory.createSequentialFile("delete-me.jbm", 1, 120);
       
       sf.open();
       
-      SequentialFile sf2 = factory.createSequentialFile("delete-me2.jbm", true, 1, 120);
+      SequentialFile sf2 = factory.createSequentialFile("delete-me2.jbm", 1, 120);
       
       sf2.open();
       
@@ -174,7 +174,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
    
    public void testWriteandRead() throws Exception
    {
-      SequentialFile sf = factory.createSequentialFile("write.jbm", true, 1, 120);
+      SequentialFile sf = factory.createSequentialFile("write.jbm", 1, 120);
       
       sf.open();
       
@@ -237,7 +237,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
    
    public void testPosition() throws Exception
    {
-      SequentialFile sf = factory.createSequentialFile("position.jbm", true, 1, 120);
+      SequentialFile sf = factory.createSequentialFile("position.jbm", 1, 120);
       
       sf.open();
       
@@ -303,7 +303,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
     
    public void testOpenClose() throws Exception
    {
-      SequentialFile sf = factory.createSequentialFile("openclose.jbm", true, 1, 120);
+      SequentialFile sf = factory.createSequentialFile("openclose.jbm", 1, 120);
       
       sf.open();
       
