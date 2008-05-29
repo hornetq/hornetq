@@ -86,11 +86,13 @@
          TCP -->
          <remoting-tcp-send-buffer-size>-1</remoting-tcp-send-buffer-size>
 
-         <!-- The interval to send a ping message to send to the client/server to make sure it is still alive.-->
+         <!-- The interval to send a ping message to send to the client/server to make
+              sure it is still alive.-->
          <!-- Set to 0 if you want to disable this functionality-->
          <remoting-keep-alive-interval>10000</remoting-keep-alive-interval>
 
-         <!--How long to wait for a returning pong after sending a ping message to a client/server.-->
+         <!-- How long to wait for a returning pong after sending a ping message 
+              to a client/server.-->
          <!-- If no pong is received after this time resources are cleaned up-->
          <remoting-keep-alive-timeout>5000</remoting-keep-alive-timeout>
 
@@ -117,10 +119,12 @@
 
          <journal-type>asyncio</journal-type>
 
-         <!-- Does the journal sync to disk on each transaction commit, prepare or rollback? -->
+         <!-- Does the journal sync to disk on each transaction commit, prepare 
+              or rollback? -->
          <journal-sync-transactional>true</journal-sync-transactional>
 
-         <!-- Does the journal sync to disk for every non transactional persistent operation? -->
+         <!-- Does the journal sync to disk for every non transactional persistent
+              operation? -->
          <journal-sync-non-transactional>false</journal-sync-non-transactional>
 
          <journal-file-size>10485760</journal-file-size>
