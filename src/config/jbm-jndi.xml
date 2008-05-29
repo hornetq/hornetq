@@ -5,6 +5,7 @@
    </connection-factory>
 
    <connection-factory name="ConnectionFactory">
+      <entry name="ConnectionFactory"/>
       <entry name="/ConnectionFactory"/>
       <entry name="/XAConnectionFactory"/>
       <entry name="java:/ConnectionFactory"/>
@@ -46,6 +47,9 @@
 
    </connection-factory>
 
+   <queue name="MyQueue">
+      <entry name="MyQueue"/>
+   </queue>
    <queue name="DLQ">
       <entry name="/queue/DLQ"/>
    </queue>

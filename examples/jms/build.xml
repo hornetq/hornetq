@@ -39,6 +39,7 @@
    <property name="src.dir" value="src"/>
    <property name="config.dir" value="config"/>
    <property name="build.dir" value="build"/>
+   <property name="other.system.client.dir" value="other-system-client-dir"/>
 
    <!--perf props-->
    <property name="message.count" value="200000"/>
@@ -50,8 +51,15 @@
    <property name="sess.ackmode" value="DUPS_OK"/>
    <property name="sess.trans.size" value="1000"/>
    <property name="drain.queue" value="true"/>
-   <property name="queue.lookup" value="/queue/testPerfQueue"/>
-   <property name="cf.lookup" value="/ConnectionFactory"/>
+   <property name="queue.lookup" value="MyQueue"/>
+   <property name="cf.lookup" value="ConnectionFactory"/>
+   <property name="throttle.rate" value="-1"/>
+
+   <path id="other.system.client.classpath">
+       <fileset dir="${other.system.client.dir}">
+         <include name="**/*.jar"/>
+      </fileset>
+   </path>
 
    <path id="compile.classpath">
       <fileset dir="${lib.dir}">
@@ -61,6 +69,7 @@
    </path>
 
    <path id="runtime.classpath">
+      <path refid="other.system.client.classpath"/>
       <path refid="compile.classpath"/>
       <pathelement location="${build.dir}"/>
       <pathelement location="config"/>
@@ -116,18 +125,19 @@
 ***********************************************************************************
 * available parameters (-Dmessage.count=1000)
 *
-* parameter             description                      default               current
-* ---------             -----------                      -------               -------
-* message.count         number of messages               200000                ${message.count}
-* message.warmup.count  number of messages to warm up    10000                 ${message.warmup.count}
-* message.size          message size (in bytes)          1024                  ${message.size}
-* delivery.mode         PERSISTENT/NON_PERSISTENT        NON_PERSISTENT        ${delivery.mode}
-* sess.trans            Is session transacted            false                 ${sess.trans}
-* sess.trans.size       batch size to commit             1000                  ${sess.trans.size}
-* sess.ackmode          Ack mode DUPS_OK/AUTO_ACK        DUPS_OK               ${sess.ackmode}
-* drain.queue           drain the queue (listener only)  true                  ${drain.queue}
-* queue.lookup          Queue JNDI lookup                /queue/testPerfQueue  ${queue.lookup}
-* cf.lookup             ConnectionFactory JNDI lookup    /ConnectionFactory    ${cf.lookup}
+* parameter            current (default)                 description                     
+* ---------            -----------------                 -----------                     
+* message.count        ${message.count} (200000)         number of messages    
+* message.size         ${message.size} (1000)            size of message in bytes      	
+* message.warmup.count ${message.warmup.count} (10000)   number of messages to warm up   
+* delivery.mode        ${delivery.mode} (NON_PERSISTENT) PERSISTENT/NON_PERSISTENT       
+* sess.trans           ${sess.trans} (false)             Is session transacted           
+* sess.trans.size      ${sess.trans.size} (1000)         batch size to commit            
+* sess.ackmode         ${sess.ackmode} (DUPS_OK)         Ack mode DUPS_OK/AUTO_ACK       
+* drain.queue          ${drain.queue} (true)             drain the queue (listener only) 
+* queue.lookup         ${queue.lookup} (MyQueue)         Queue JNDI lookup               
+* cf.lookup            ${cf.lookup} (ConnectionFactory)  ConnectionFactory JNDI lookup   
+* throttle.rate        ${throttle.rate} (-1)             The max rate to throttle senders to in msgs/sec, -1 = no throttle
 ***********************************************************************************
       </echo>
    </target>
@@ -152,6 +162,7 @@
          <arg value="${drain.queue}"/>
          <arg value="${queue.lookup}"/>
          <arg value="${cf.lookup}"/>
+         <arg value="${throttle.rate}"/>
       </java>
    </target>
 
@@ -175,6 +186,7 @@
          <arg value="false"/>
          <arg value="${queue.lookup}"/>
          <arg value="${cf.lookup}"/>
+         <arg value="${throttle.rate}"/>
       </java>
    </target>
 

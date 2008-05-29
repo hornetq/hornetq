@@ -39,6 +39,7 @@ import javax.naming.InitialContext;
 
 import org.jboss.jms.util.PerfParams;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.util.TokenBucketLimiter;
 
 /**
  * A simple example that can be used to gather basic performance measurements.
@@ -76,6 +77,7 @@ public class PerfExample
       boolean drainQueue = Boolean.parseBoolean(args[8]);
       String queueLookup = args[9];
       String connectionFactoryLookup = args[10];
+      int throttleRate = Integer.parseInt(args[11]);
 
       PerfParams perfParams = new PerfParams();
       perfParams.setNoOfMessagesToSend(noOfMessages);
@@ -88,6 +90,7 @@ public class PerfExample
       perfParams.setDrainQueue(drainQueue);
       perfParams.setQueueLookup(queueLookup);
       perfParams.setConnectionFactoryLookup(connectionFactoryLookup);
+      perfParams.setThrottleRate(throttleRate);
 
       if (args[0].equalsIgnoreCase("-l"))
       {
@@ -124,10 +127,14 @@ public class PerfExample
          init(perfParams.isSessionTransacted(), perfParams.getQueueLookup(), perfParams.getConnectionFactoryLookup(), perfParams.isDupsOk());
          start = System.currentTimeMillis();
          log.info("warming up by sending " + perfParams.getNoOfWarmupMessages() + " messages");
-         sendMessages(perfParams.getNoOfWarmupMessages(), perfParams.getMessageSize(), perfParams.getTransactionBatchSize(), perfParams.getDeliveryMode(), perfParams.isSessionTransacted(), false);
+         sendMessages(perfParams.getNoOfWarmupMessages(), perfParams.getTransactionBatchSize(),
+               perfParams.getDeliveryMode(), perfParams.isSessionTransacted(),
+               false, perfParams.getThrottleRate(), perfParams.getMessageSize());
          log.info("warmed up");
          start = System.currentTimeMillis();
-         sendMessages(perfParams.getNoOfMessagesToSend(), perfParams.getMessageSize(), perfParams.getTransactionBatchSize(), perfParams.getDeliveryMode(), perfParams.isSessionTransacted(), true);
+         sendMessages(perfParams.getNoOfMessagesToSend(), perfParams.getTransactionBatchSize(),
+               perfParams.getDeliveryMode(), perfParams.isSessionTransacted(),
+               true, perfParams.getThrottleRate(), perfParams.getMessageSize());
          long end = System.currentTimeMillis();
          displayAverage(perfParams.getNoOfMessagesToSend(), start, end);
       }
@@ -151,7 +158,9 @@ public class PerfExample
       }
    }
 
-   private void sendMessages(int numberOfMessages, int messageSize, int txBatchSize, int deliveryMode, boolean transacted, boolean display) throws JMSException
+   private void sendMessages(final int numberOfMessages, final int txBatchSize, final int deliveryMode,
+                             final boolean transacted, final boolean display, final int throttleRate,
+                             final int messageSize) throws JMSException
    {
       MessageProducer producer = session.createProducer(queue);
       producer.setDisableMessageID(true);
@@ -161,7 +170,9 @@ public class PerfExample
       byte[] payload = new byte[messageSize];
       bytesMessage.writeBytes(payload);
       
-      final int modulo = numberOfMessages / 10;
+      final int modulo = 1000;
+      
+      TokenBucketLimiter tbl = throttleRate != -1 ? new TokenBucketLimiter(throttleRate, false): null;
 
       boolean committed = false;
       for (int i = 1; i <= numberOfMessages; i++)
@@ -183,6 +194,11 @@ public class PerfExample
          {
             double duration = (1.0 * System.currentTimeMillis() - start) / 1000;
             log.info(String.format("sent %6d messages in %2.2fs", i, duration));
+         }
+         
+         if (tbl != null)
+         {
+            tbl.limit();
          }
       }
       if (transacted && !committed)
@@ -266,7 +282,7 @@ public class PerfExample
          this.countDownLatch = countDownLatch;
          this.perfParams = perfParams;
          warmingUp = perfParams.getNoOfWarmupMessages() > 0;
-         this.modulo = perfParams.getNoOfMessagesToSend() / 10;
+         this.modulo = 1000;
       }
 
       public void onMessage(final Message message)

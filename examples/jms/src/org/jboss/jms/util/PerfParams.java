@@ -44,13 +44,14 @@ public class PerfParams implements Serializable
    private String queueLookup = "/queue/testPerfQueue";
    private String connectionFactoryLookup = "/ConnectionFactory";
    private boolean dupsOk;
+   private int throttleRate;
 
    public int getNoOfMessagesToSend()
    {
       return noOfMessagesToSend;
    }
 
-   public void setNoOfMessagesToSend(int noOfMessagesToSend)
+   public void setNoOfMessagesToSend(final int noOfMessagesToSend)
    {
       this.noOfMessagesToSend = noOfMessagesToSend;
    }
@@ -60,7 +61,7 @@ public class PerfParams implements Serializable
       return noOfWarmupMessages;
    }
 
-   public void setNoOfWarmupMessages(int noOfWarmupMessages)
+   public void setNoOfWarmupMessages(final int noOfWarmupMessages)
    {
       this.noOfWarmupMessages = noOfWarmupMessages;
    }
@@ -80,7 +81,7 @@ public class PerfParams implements Serializable
       return deliveryMode;
    }
 
-   public void setDeliveryMode(int deliveryMode)
+   public void setDeliveryMode(final int deliveryMode)
    {
       this.deliveryMode = deliveryMode;
    }
@@ -90,7 +91,7 @@ public class PerfParams implements Serializable
       return isSessionTransacted;
    }
 
-   public void setSessionTransacted(boolean sessionTransacted)
+   public void setSessionTransacted(final boolean sessionTransacted)
    {
       isSessionTransacted = sessionTransacted;
    }
@@ -100,7 +101,7 @@ public class PerfParams implements Serializable
       return transactionBatchSize;
    }
 
-   public void setTransactionBatchSize(int transactionBatchSize)
+   public void setTransactionBatchSize(final int transactionBatchSize)
    {
       this.transactionBatchSize = transactionBatchSize;
    }
@@ -110,7 +111,7 @@ public class PerfParams implements Serializable
       return drainQueue;
    }
 
-   public void setDrainQueue(boolean drainQueue)
+   public void setDrainQueue(final boolean drainQueue)
    {
       this.drainQueue = drainQueue;
    }
@@ -120,7 +121,7 @@ public class PerfParams implements Serializable
       return queueLookup;
    }
 
-   public void setQueueLookup(String queueLookup)
+   public void setQueueLookup(final String queueLookup)
    {
       this.queueLookup = queueLookup;
    }
@@ -130,7 +131,7 @@ public class PerfParams implements Serializable
       return connectionFactoryLookup;
    }
 
-   public void setConnectionFactoryLookup(String connectionFactoryLookup)
+   public void setConnectionFactoryLookup(final String connectionFactoryLookup)
    {
       this.connectionFactoryLookup = connectionFactoryLookup;
    }
@@ -140,19 +141,29 @@ public class PerfParams implements Serializable
       return dupsOk;
    }
 
-   public void setDupsOk(boolean dupsOk)
+   public void setDupsOk(final boolean dupsOk)
    {
       this.dupsOk = dupsOk;
+   }
+   
+   public int getThrottleRate()
+   {
+      return throttleRate;
+   }
+   
+   public void setThrottleRate(final int throttleRate)
+   {
+      this.throttleRate = throttleRate;
    }
 
    public String toString()
    {
-      return "message to send = " + noOfMessagesToSend + ", messages to warm up = " + noOfWarmupMessages + ", message size = " + messageSize + 
-               ", DeliveryMode = " + (deliveryMode == DeliveryMode.PERSISTENT ? "PERSISTENT" : "NON_PERSISTENT") + 
-               ", session transacted = " + isSessionTransacted + (isSessionTransacted ? ", transaction batch size = " + transactionBatchSize : "") +
-               ", drain queue = " + drainQueue +
-               ", queue lookup = " + queueLookup + ", connection factory lookup = " + connectionFactoryLookup +
-               ", Session Acknowledge mode = " + (dupsOk ? "DUPS_OK_ACKNOWLEDGE" : "AUTO_ACKNOWLEDGE");
+      return "message to send = " + noOfMessagesToSend + ", DeliveryMode = " +
+              (deliveryMode == DeliveryMode.PERSISTENT ? "PERSISTENT" : "NON_PERSISTENT") + ", session transacted = " + isSessionTransacted +
+              (isSessionTransacted ? ", transaction batch size = " + transactionBatchSize : "") + ", drain queue = " + drainQueue +
+              ", queue lookup = " + queueLookup + ", connection factory lookup = " + connectionFactoryLookup +
+              ", Session Acknowledge mode = " + (dupsOk ? "DUPS_OK_ACKNOWLEDGE" : "AUTO_ACKNOWLEDGE") + 
+              ", Throttle rate = " + throttleRate;
    }
 
 
