@@ -1,34 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="about">
-   <title>About JBoss Messaging 2.0.0</title>
-   <para>JBoss Messaging 2 is the next level of messaging system being developed by JBoss,
-      designed to attend very large demanding systems with the emphasis on making JBM the most efficient Messaging
-      System written in Java available
-      on the market.
-   </para>
-   <para>JBoss Messaging 1.4 has been the default implementation on JBoss Service Integration Platform and JBoss 5 for
-      some time already.
-   </para>
-   <para>JBoss Messaging is an integral part of Red Hat's strategy for
-      messaging.
+   <title>About JBoss Messaging 2.0</title>
+   <para>JBoss Messaging 2.0 is the new generation of JBoss' flagship messaging project</para>
+   <para>JBM 2.0's elegant new POJO-based design and re-factored core allows it to run in JBoss Micro-container as well as being embeddable in your own applications. It also contains a new optimised persistence model that removes the database as a point of contention in the architecture and promises lightning-fast scalable persistence while retaining high availability.
+   We also have a completely new NIO based transport using Apache MINA.</para>
+   <para> The goal of JBM 2.0 is simple and uncompromising- to bring unrivalled levels of performance and reliability to messaging, and to
+	   become the fastest, best featured and most scalable messaging system in the open source space</para>
+   <para>But enough marketing rhetoric!. We are not in the business of making empty statements with respect to performance so we ship this release with a set of basic performance measurements against competing messaging systems in the open source space, so you can decide for yourslef. All performance results are fully reproducible by you, using the tools shipped with this distribution.
    </para>
    <para>The procedure of installing and configuring JBoss Messaging is detailed in this guide, along with a set of
-      runnable examples.
+      runnable examples. This guide will be extended, before the general availability release of JBoss Messaging 2.0
    </para>
-   <para>Please send your suggestions or comments to the<ulink
-           url="http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=238">JBoss
-      Messaging user forum</ulink>.
-   </para>
-   <para>Permanent Team: Tim Fox (Project Lead), Jeff Mesnil (Core Developer),
+   <para>Team: Tim Fox (Project Lead), Jeff Mesnil (Core Developer),
       Andy Taylor (Core Developer), Clebert Suconic (Core Developer)
    </para>
-   <para>Contributors: Ovidiu Feodorov (Project Founder), Sergey Koshcheyev,
-      Ron Sigal, Madhu Konda, Jay Howell, Tyronne Wickramarathne, Aaron Walker,
-      Adrian Brock, Rajdeep Dua, Tom Elrod, Alex Fu, Juha Lindfors, Alexey
-      Loubyansky, Luc Texier, Scott Stark, Aslak Knutsen
-   </para>
-   <para>Messaging support team: Jay Howell, David Boeren, Tyronne
-      Wickramarathne
-   </para>
-   <para>Other thanks to: Mark Little and Pete Bennett</para>
 </chapter>

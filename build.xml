@@ -77,6 +77,10 @@
    <target name="build-native" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="build-native"/>
    </target>
+   
+   <target name="userdoc">
+      <ant antfile="build-messaging.xml" target="userdoc"/>
+   </target>
    <!-- ======================================================================================== -->
    <!-- Archival Tasks                                                                           -->
    <!-- ======================================================================================== -->
