@@ -256,7 +256,8 @@
     <title>Performance conclusions.</title>
     
     <para>JBoss Messaging 2.0 provides the highest throughput in all tests</para>
-    <para>In particular JBoss Messaging's superb performance for persistence and transactions compared to the other systems is clear to see. This is due to our state of art journal. Our winning non persistent message results demonstrate the power of our new transport. And remember, this is just an alpha release!</para>    
+    <para>In particular JBoss Messaging's superb performance for persistence and transactions compared to the other systems is clear to see. This is due to our state of art journal. Our winning non persistent message results demonstrate the power of our new transport. And remember, this is just an alpha release!</para>
+    <para>ActiveMQ is a good all round performer and provides respectable results, although beaten by JBM. QPid/MRG has reasonable results, with MRG persistent non transactional results being quite good, but is let down by poor transactional performance.</para>
     
   </section>
   
