@@ -106,8 +106,10 @@
       </listitem>      
     </itemizedlist>
   </section>
-   <section>
-    
+
+  <section id="performance.results">
+    <title>Performance Results</title>
+
     <para>All the tests were executed against these following systems:</para>
     
     <itemizedlist>
@@ -124,11 +126,6 @@
         <para>4. Red Hat MRG Messaging 1.0 C++ version with async journal and QPID Java JMS client. As recommended version was taken from trunk. SVN revisions are: Store 2093, QPID trunk 661704. This corresponds to MRG Messaging 1.0 after MRG Messaging 1.0 beta and just prior to MRG Messaging 1.0 GA. Out of the box config was used.</para>
       </listitem>
     </itemizedlist>
-     
-  </section>
-
-  <section id="performance.results">
-    <title>Performance Results</title>
 
     <table>
       <title>Performance Results (all results in messages/sec)</title>
