@@ -121,7 +121,7 @@
         <para>3. Apache QPid M2.1 Java version with BDB store, Java JMS client. This is the latest production/stable version of Apache QPid. Out of the box config was used.</para>
       </listitem>
       <listitem>
-        <para>4. Red Hat MRG Messaging 1.0 C++ version with QPID Java JMS client. As recommended version was taken from trunk. SVN revisions are: Store 2093, QPID trunk 661704. This corresponds to MRG Messaging 1.0 after MRG Messaging 1.0 beta and just prior to MRG Messaging 1.0 GA. Out of the box config was used.</para>
+        <para>4. Red Hat MRG Messaging 1.0 C++ version with async journal and QPID Java JMS client. As recommended version was taken from trunk. SVN revisions are: Store 2093, QPID trunk 661704. This corresponds to MRG Messaging 1.0 after MRG Messaging 1.0 beta and just prior to MRG Messaging 1.0 GA. Out of the box config was used.</para>
       </listitem>
     </itemizedlist>
      
