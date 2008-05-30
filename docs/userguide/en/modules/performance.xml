@@ -100,13 +100,14 @@
   <section id="performance.results">
     <title>Performance Results</title>
 
-    <informaltable>
-      <tgroup cols="2">
+    <table>
+      <title>Performance Results</title>
+      <tgroup cols="5">
         <colspec align="center" />
 
         <thead>
           <row>
-            <entry align="center">Short Descr/Server</entry>
+            <entry align="left">Short Descr/Server</entry>
 
             <entry align="center">Active MQ 5.1</entry>
 
@@ -120,7 +121,7 @@
 
         <tbody>
           <row>
-            <entry align="center">1. NP/Dups</entry>
+            <entry align="left">1. NP/Dups</entry>
 
             <entry align="center">12,963</entry>
 
@@ -132,7 +133,7 @@
           </row>
 
           <row>
-            <entry align="center">2. NP/AutoAck</entry>
+            <entry align="left">2. NP/AutoAck</entry>
 
             <entry align="center">9,813</entry>
 
@@ -144,7 +145,7 @@
           </row>
 
           <row>
-            <entry align="center">3. Persist/Blocking/NonTX</entry>
+            <entry align="left">3. Persist/Blocking/NonTX/DupsOk</entry>
 
             <entry align="center">312</entry>
 
@@ -156,7 +157,7 @@
           </row>
 
           <row>
-            <entry align="center">4. Persist/Non Blocking/NonTX</entry>
+            <entry align="left">4. Persist/Non Blocking/NonTX/DupsOk</entry>
 
             <entry align="center">Not Supported</entry>
 
@@ -167,8 +168,56 @@
             <entry align="center">6263</entry>
           </row>
 
+          <row>
+            <entry align="left">5. Persist/Blocking/NonTX/AutoAck</entry>
+
+            <entry align="center">524</entry>
+
+            <entry align="center">1,265</entry>
+
+            <entry align="center">Not Supported</entry>
+
+            <entry align="center">23</entry>
+          </row>
+
+          <row>
+            <entry align="left">6. Persist/Non Blocking/NonTX/AutoAck</entry>
+
+            <entry align="center">Not Supported</entry>
+
+            <entry align="center">12,056</entry>
+
+            <entry align="center">318</entry>
+
+            <entry align="center">7,886</entry>
+          </row>
+
+          <row>
+            <entry align="left">7. Persistent/Transacted size=1000</entry>
+
+            <entry align="center">1,576</entry>
+
+            <entry align="center">9,607</entry>
+
+            <entry align="center">3,242</entry>
+
+            <entry align="center">Unable to complete</entry>
+          </row>
+
+          <row>
+            <entry align="left">8. Persistent/Transacted size=2</entry>
+
+            <entry align="center">396</entry>
+
+            <entry align="center">1,818</entry>
+
+            <entry align="center">475</entry>
+
+            <entry align="center">147</entry>
+          </row>
+
         </tbody>
       </tgroup>
-    </informaltable>
+    </table>
   </section>
 </chapter>
