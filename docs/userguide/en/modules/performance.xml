@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter id="performance">
+  <title>Performance</title>
+
+  <section id="performance.running">
+    <title>How to execute our performance tests</title>
+
+    <para>We have tested JBoss Messaging 2, and we have used the same tests against other systems. 
+    We have used the <link linkend="examples">JMS Examples</link> to
+    produce these numbers, and we used perfSender and perfListener with
+    different scenarios. You can replicate those scenarios using these instructions provided bellow</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>1. Send non persistent, non tx, consume dups_ok </para>
+        <para>ant perfListener</para>
+        <para>ant perfSender</para>
+      </listitem>
+      <listitem>
+        <para>2. Send non persistent, non tx, consume dups_ok </para>
+        <para>ant -Dsess.ackmode=AUTO_ACK perfListener</para>
+        <para>ant perfSender</para>
+      </listitem>
+      <listitem>
+        <para>3. Send persistent (blocking *), non tx, consume dups_ok</para>
+        <para>ant perfListener</para>
+        <para>ant -Ddelivery.mode=PERSISTENT perfSender </para>
+      </listitem>
+      <listitem>
+        <para>4. Send persistent (non blocking *), non tx, consume dups_ok</para>
+        <para>ant perfListener</para>
+        <para>ant -Ddelivery.mode=PERSISTENT perfSender </para>
+      </listitem>
+      <listitem>
+        <para>5. Send persistent (blocking *), non tx, consume auto_ack</para>
+        <para>ant -Dsess.ackmode=AUTO_ACK perfListener</para>
+        <para>ant -Ddelivery.mode=PERSISTENT perfSender </para>
+      </listitem>
+      <listitem>
+        <para>6. Send persistent (non blocking *), non tx, consume auto_ack</para>
+        <para>ant -Dsess.ackmode=AUTO_ACK perfListener</para>
+        <para>ant -Ddelivery.mode=PERSISTENT perfSender </para>
+      </listitem>
+      <listitem>
+        <para>7. Send persistent, transactional, transaction size = 1000, consume persistent transactional, transaction size = 1000 </para>
+        <para>ant -Dssess.trans=true  perfListener</para>
+        <para>ant -Ddelivery.mode=PERSISTENT -Dsess.trans=true perfSender </para>
+      </listitem>
+      <listitem>
+        <para>8. Send persistent, transactional, transaction size = 2, consume persistent transactional, transaction size = 2 </para>
+        <para>ant -Dssess.trans=true  perfListener</para>
+        <para>ant -Ddelivery.mode=PERSISTENT -Dsess.trans=true perfSender </para>
+      </listitem>
+    </itemizedlist>
+    
+    <para>* These blocking and non blocking modes are set on configurations and this will vary for each server</para>
+
+  </section>
+  
+  <section id="performance.systemsUsed">
+     <title>Systems Used</title>
+    <para>
+    To run the perfListener and perfSender on different servers you need to add the client libraries into Add the client libraries on messaging-2.0.0.alpha1/examples/jms/other-system-client-dir
+    and change jndi.properties to the system used according to the examples provided under messaging-2.0.0.alpha1/examples/jms/config.
+    </para>
+    
+    <para>All the tests were executed on the same hardware:</para>
+    
+    <itemizedlist>
+      <listitem>
+        <para>Client</para>
+        <para>Dell Latitude D820, dual core, 2GB Ram, 1000Mb network</para>
+        <para>Linux system, 32 bit, </para>
+      </listitem>
+      <listitem>
+        <para>Server</para>
+        <para>Dell Precision 470 workstation, dual cpu, dual</para>
+      </listitem>
+    </itemizedlist>
+    
+    <para>All the tests against these following systems:</para>
+    
+    <itemizedlist>
+      <listitem>
+        <para>1. ActiveMQ 5.1</para>
+      </listitem>
+      <listitem>
+        <para>2. JBM 2.0 alpha</para>
+      </listitem>
+      <listitem>
+        <para>3. QPID M2.1 Java version with BDB persistence manager, java client</para>
+      </listitem>
+      <listitem>
+        <para>4. MRG Messaging 1.0 beta C++ version with java client</para>
+      </listitem>
+    </itemizedlist>
+     
+  </section>
+
+  <section id="performance.results">
+    <title>Performance Results</title>
+
+    <informaltable>
+      <tgroup cols="2">
+        <colspec align="center" />
+
+        <thead>
+          <row>
+            <entry align="center">Short Descr/Server</entry>
+
+            <entry align="center">Active MQ 5.1</entry>
+
+            <entry align="center">JBM 2.0 Alpha</entry>
+
+            <entry align="center">QPID M2.1 Java</entry>
+
+            <entry align="center">MRG Messaging C++</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry align="center">1. NP/Dups</entry>
+
+            <entry align="center">12,963</entry>
+
+            <entry align="center">18,836</entry>
+
+            <entry align="center">4,619</entry>
+
+            <entry align="center">6,790</entry>
+          </row>
+
+          <row>
+            <entry align="center">2. NP/AutoAck</entry>
+
+            <entry align="center">9,813</entry>
+
+            <entry align="center">14,143</entry>
+
+            <entry align="center">7,444</entry>
+
+            <entry align="center">4,691</entry>
+          </row>
+
+          <row>
+            <entry align="center">3. Persist/Blocking/NonTX</entry>
+
+            <entry align="center">312</entry>
+
+            <entry align="center">1,372</entry>
+
+            <entry align="center">Not Supported</entry>
+
+            <entry align="center">23</entry>
+          </row>
+
+          <row>
+            <entry align="center">4. Persist/Non Blocking/NonTX</entry>
+
+            <entry align="center">Not Supported</entry>
+
+            <entry align="center">14,977</entry>
+
+            <entry align="center">319</entry>
+
+            <entry align="center">6263</entry>
+          </row>
+
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+</chapter>

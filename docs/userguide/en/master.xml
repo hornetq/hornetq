@@ -8,6 +8,7 @@
         <!ENTITY runningexamples SYSTEM "modules/runningexamples.xml">
         <!ENTITY configuration SYSTEM "modules/configuration.xml">
         <!ENTITY journal SYSTEM "modules/journal.xml">
+        <!ENTITY performance SYSTEM "modules/performance.xml">
         <!ENTITY troubleshooting SYSTEM "modules/troubleshooting.xml">
         ]>
 <book lang="en">
@@ -33,6 +34,8 @@
    &configuration;
 
    &journal;
+   
+   &performance;
 
    &troubleshooting;
 
