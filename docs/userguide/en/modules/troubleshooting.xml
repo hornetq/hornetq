@@ -9,7 +9,7 @@
              <itemizedlist>
                <listitem>
                <para>Linux is not your platform</para>
-               <para>Solution: Just ignore the message as NIO will be selected automatically or change the journal type to NIO on jbm-configuration.xml</para>
+               <para>Just ignore the message as NIO will be selected automatically or change the journal type to NIO on jbm-configuration.xml</para>
                </listitem>
                <listitem>
                <para>The JBoss Messaging JNI wrapper is not on library.path</para>
@@ -17,11 +17,11 @@
                </listitem>
                <listitem>
                <para>libaio is not installed</para>
-               <para>Solution: Make sure you have libaio installed at your Linux distribution. This could be done as yum install libaio1 on Fedora or apt-get install libaio1 on Debian. (Refer to your manual to how to upgrade or install packages)</para>
+               <para>Make sure you have libaio installed at your Linux distribution. This could be done as yum install libaio1 on Fedora or apt-get install libaio1 on Debian. (Refer to your manual to how to upgrade or install packages)</para>
                </listitem>
                <listitem>
                <para>libaio is very old</para>
-               <para>Solution: We have been using and testing libaio 0.3.106 and Kernel 2.6. If you have older versions you might need to upgrade or change the journal type to NIO on jbm-configuration.xml</para>
+               <para>We have been using and testing libaio 0.3.106 and Kernel 2.6. If you have older versions you might need to upgrade or change the journal type to NIO on jbm-configuration.xml</para>
                </listitem>
              </itemizedlist>
            </para>
