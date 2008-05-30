@@ -17,11 +17,11 @@
                </listitem>
                <listitem>
                <para>libaio is not installed</para>
-               <para>Solution: Make sure you have libaio installed at your Linux distribution. This could be done as yum install libaio on Fedora. (Refer to your manual to how to upgrade or install packages)</para>
+               <para>Solution: Make sure you have libaio installed at your Linux distribution. This could be done as yum install libaio1 on Fedora or apt-get install libaio1 on Debian. (Refer to your manual to how to upgrade or install packages)</para>
                </listitem>
                <listitem>
                <para>libaio is very old</para>
-               <para>Solution: We have been using and testing libaio 0.3.106 and Kernel 2.6. If you have older versions you might need to update or change the journal type to NIO on jbm-configuration.xml</para>
+               <para>Solution: We have been using and testing libaio 0.3.106 and Kernel 2.6. If you have older versions you might need to upgrade or change the journal type to NIO on jbm-configuration.xml</para>
                </listitem>
              </itemizedlist>
            </para>
@@ -35,8 +35,12 @@
                <para>Make sure you have remoting-tcp-nodelay set to true on jbm-configuration.xml</para>
                </listitem>
                <listitem>
-               <para>The journal directory is a Network Disk</para>
-               <para>You shouldn't use a journal over a network storage.</para>
+               <para>The journal directory is a NFS</para>
+               <para>You shouldn't use the journal over a NFS. Make sure you have direct access to the disk device.</para>
+               </listitem>
+               <listitem>
+               <para>You are using Asynchronous IO on Linux and you don't have an ext3 or ext2 file system</para>
+               <para>If using AIO, make sure the journal folder is on an ext2 or ext3 file system.</para>
                </listitem>
              </itemizedlist>
            </para>
