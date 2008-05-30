@@ -23,14 +23,14 @@
       <para>For each example, you can always override the default ports it will
          try to connect to by editing jndi.properties in the config directory
       </para>
-      <para>to run a specific example open up a shell or command prompt and navigate into the
+      <para>To run a specific example open up a shell or command prompt and navigate into the
          <literal>examples/jms</literal>
          directory and run the command ant followed by the example name, as follows
       </para>
       <programlisting>
          ant queueExample
       </programlisting>
-      <para>The output should be similar top the following</para>
+      <para>The output should be similar to the following</para>
       <programlisting>
          Buildfile: build.xml
 
@@ -174,12 +174,13 @@
             <para>SSLClient</para>
             <para>This example shows a simple send and receive to a remote queue using SS. The server will need to be
                running and configured to use SSL for this example. Refer to the configuration chapter for details on how
-               to do this
+               to do this.
             </para>
          </listitem>
          <listitem>
             <para>simpleExample</para>
-            <para>This example shows how to create an embedded JBM server using the core API.
+            <para>This example shows how to create an embedded JBM server using the core API. The server must not have 
+               been started before running this example.
             </para>
          </listitem>
       </itemizedlist>
