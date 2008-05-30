@@ -7,7 +7,7 @@
    <section id="installation.standalone">
       <title>Installing JBoss Messaging standalone</title>
       <para>After downloading the distribution unzip it into your chosen directory. At this point it should be possible
-         to run straight of the box, the following describes the directory structure that should be seen
+         to run straight out of the box, the following describes the directory structure that should be seen
       </para>
       <programlisting>
          |-- bin

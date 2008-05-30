@@ -21,8 +21,7 @@
       </para>
 
       <para>For each example, you can always override the default ports it will
-         try to connect to by editing jndi.properties in the particular example
-         directory
+         try to connect to by editing jndi.properties in the config directory
       </para>
       <para>to run a specific example open up a shell or command prompt and navigate into the
          <literal>examples/jms</literal>
@@ -39,7 +38,8 @@
          [mkdir] Created dir: /home/andy/projects/jBossMessaging/docs/examples/jms/build
 
          compile:
-         [javac] Compiling 5 source files to /home/andy/projects/jBossMessaging/docs/examples/jms/build
+         [javac] Compiling 5 source files to /home/andy/projects/jBossMessaging/docs/
+         examples/jms/build
 
          queueExample:
          [java] 10:59:02,124 INFO @main [QueueExample] sending message to queue
@@ -90,6 +90,7 @@
                set to false
             </para>
             <para>
+               The following parameters can be configured:
                <itemizedlist>
                   <listitem>
                      <para>message.count</para>
@@ -172,7 +173,7 @@
          <listitem>
             <para>SSLClient</para>
             <para>This example shows a simple send and receive to a remote queue using SS. The server will need to be
-               running and configyred to use SSL for this example. Refer to the configuration chapter for details on how
+               running and configured to use SSL for this example. Refer to the configuration chapter for details on how
                to do this
             </para>
          </listitem>

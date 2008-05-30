@@ -86,13 +86,13 @@
          TCP -->
          <remoting-tcp-send-buffer-size>-1</remoting-tcp-send-buffer-size>
 
-         <!-- The interval to send a ping message to send to the client/server to make
-              sure it is still alive.-->
+         <!-- The interval to send a ping message to send to the client/server to make sure
+         it is still alive.-->
          <!-- Set to 0 if you want to disable this functionality-->
          <remoting-keep-alive-interval>10000</remoting-keep-alive-interval>
 
-         <!-- How long to wait for a returning pong after sending a ping message 
-              to a client/server.-->
+         <!--How long to wait for a returning pong after sending a ping message to a
+         client/server.-->
          <!-- If no pong is received after this time resources are cleaned up-->
          <remoting-keep-alive-timeout>5000</remoting-keep-alive-timeout>
 
@@ -119,18 +119,18 @@
 
          <journal-type>asyncio</journal-type>
 
-         <!-- Does the journal sync to disk on each transaction commit, prepare 
-              or rollback? -->
+         <!-- Does the journal sync to disk on each transaction commit,
+         prepare or rollback? -->
          <journal-sync-transactional>true</journal-sync-transactional>
 
-         <!-- Does the journal sync to disk for every non transactional persistent
-              operation? -->
+         <!-- Does the journal sync to disk for every non transactional
+         persistent operation? -->
          <journal-sync-non-transactional>false</journal-sync-non-transactional>
 
          <journal-file-size>10485760</journal-file-size>
 
          <journal-min-files>10</journal-min-files>
-         
+
          <!-- Maximum simultaneous asynchronous writes accepted by the native layer.
               (parameter ignored on NIO) -->
          <journal-max-aio>9000</journal-max-aio>
@@ -733,7 +733,7 @@
             <para>The naming Service</para>
             <para>This is only found in the standalone version of the beans file. When running within the App Server
                this
-               is not needed since it is available as its own service. This also where you can change the ports used.
+               is not needed since it is available as its own service. This is also where you can change the ports used.
             </para>
             <para>It is possible to replace this with any Naming Service however only the JBoss naming provider has been
                tested.
