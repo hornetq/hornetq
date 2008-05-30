@@ -1,17 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="about">
    <title>About JBoss Messaging 2.0</title>
-   <para>JBoss Messaging 2.0 is the new generation of JBoss' flagship messaging project</para>
-   <para>JBM 2.0's elegant new POJO-based design and re-factored core allows it to run in JBoss Micro-container as well as being embeddable in your own applications. It also contains a new optimised persistence model that removes the database as a point of contention in the architecture and promises lightning-fast scalable persistence while retaining high availability.
-   We also have a completely new NIO based transport using Apache MINA.</para>
-   <para> The goal of JBM 2.0 is simple and uncompromising- to bring unrivalled levels of performance and reliability to messaging, and to
-	   become the fastest, best featured and most scalable messaging system in the open source space</para>
-   <para>But enough marketing rhetoric!. We are not in the business of making empty statements with respect to performance so we ship this release with a set of basic performance measurements against competing messaging systems in the open source space, so you can decide for yourslef. All performance results are fully reproducible by you, using the tools shipped with this distribution.
+   <para>The goal of JBM 2.0 is simple and uncompromising- to bring unrivalled levels of performance and reliability to messaging, and to be the fastest, best featured and most scalable open source messaging system.</para>
+   <para>But enough marketing rhetoric! Unlike some other systems, we are not in the business of making vacuous statements about performance so we ship this release with a set of basic performance measurements against other open source messaging systems, so you can decide for yourself. All performance results are fully reproducible by you, using the tools shipped with this distribution, so there is nothing to hide. Let the facts speak for themselves. If you can't wait, the performance results are <link linkend="performance">here</link>.
    </para>
-   <para>The procedure of installing and configuring JBoss Messaging is detailed in this guide, along with a set of
+   <para>The procedure of installing and configuring JBoss Messaging 2.0 is detailed in this guide, along with a set of
       runnable examples. This guide will be extended, before the general availability release of JBoss Messaging 2.0
    </para>
-   <para>Team: Tim Fox (Project Lead), Jeff Mesnil (Core Developer),
-      Andy Taylor (Core Developer), Clebert Suconic (Core Developer)
+   <para>And remember, this is an alpha, technology-preview release! Even though at this early stage we are already showing performance that leaves other production messaging systems in the dust, this release is not designed for production use.</para>
+   <para>Enjoy!</para>
+   <para>Permanent team: Tim Fox (Lead), Jeff Mesnil,  Andy Taylor, Clebert Suconic
    </para>
 </chapter>

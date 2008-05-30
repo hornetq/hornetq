@@ -8,7 +8,8 @@
       <listitem>a set of JMS examples</listitem>
       <listitem>a set of non-JMS examples that demonstrate how to use the JBoss Messaging core API</listitem>
    </itemizedlist>
-   <para>It is highly recommended that you familiarize yourself with the
+   <para>The examples will be expanded on before JBoss Messaging 2.0 GA release</para>
+   <para>It is highly recommended that you familiarise yourself with the
       examples.
    </para>
    <para>Make sure you start JBoss Messaging before running the
@@ -69,14 +70,58 @@
             </para>
          </listitem>
          <listitem>
-            <para>perfListener</para>
-            <para>This example will run a basic performance test. This needs to be used in conjunction with the
-               perfSender example.
+            <para>perfSender</para>
+            <para>This example will run a basic performance test. It sends messages to a destination according to the specified parameters. This needs to be used in conjunction with the  perfListener example.
+		    The number of messages,  delivery mode etc can be configured as follows:
+		    <programlisting>
+			    ant -Dmessage.count=20000 -Ddelivery.mode=PERSISTENT perfSender
+               </programlisting>
+            </para>
+	    
+	    <para>
+		The following parameters can be configured for the sender
+		<itemizedlist>
+			<listitem>
+				<para>message.count</para>
+				<para>The number of messages to send.</para>
+			</listitem>
+			<listitem>
+				<para>delivery.mode</para>
+				<para>The delivery mode to use, PERSISTENT or NON_PERSISTENT.</para>
+			</listitem>
+			<listitem>
+				<para>message.warmup.count</para>
+				<para>How many messages to warm up for. Because of the JIT compiler maximum throughput will take a
+					little
+					while to kick in.
+				</para>
+			</listitem>
+			<listitem>
+				<para>message.size</para>
+				<para>The size of message to send, in bytes</para>
+			</listitem>
+			<listitem>
+				<para>sess.trans</para>
+				<para>Whether or not the session is transacted.</para>
+			</listitem>
+			<listitem>
+				<para>sess.trans.size</para>
+				<para>If the session is transacted the batch size to commit.</para>
+			</listitem>
+			<listitem>
+				<para>queue.lookup</para>
+				<para>The name of the queue to use.</para>
+			</listitem>
+			<listitem>
+				<para>cf.lookup</para>
+				<para>The name of the connection factory to use.</para>
+			</listitem>
+		</itemizedlist>
             </para>
          </listitem>
          <listitem>
-            <para>perfSender</para>
-            <para>This example will run a basic performance test. before running start the example and wait for it to
+            <para>perfListener</para>
+            <para>This example will run a basic performance test. It will consume messages from a destination according to the parameters specified. Before running start the example and wait for it to
                start, you will see
                <literal>READY!!!</literal>
                when the listener has started. The number of messages,
@@ -85,6 +130,7 @@
                   ant -Dmessage.count=20000 -Ddelivery.mode=PERSISTENT perfSender
                </programlisting>
             </para>
+	    
             <para>If running the sender and listener seperately make sure to run the listener with the parameter
                <literal>drain.queue</literal>
                set to false
@@ -94,11 +140,7 @@
                <itemizedlist>
                   <listitem>
                      <para>message.count</para>
-                     <para>The number of messages to send.</para>
-                  </listitem>
-                  <listitem>
-                     <para>delivery.mode</para>
-                     <para>The delivery mode to use, PERSISTENT or NON_PERSISTENT.</para>
+                     <para>The number of messages to consume.</para>
                   </listitem>
                   <listitem>
                      <para>message.warmup.count</para>
@@ -106,10 +148,6 @@
                         little
                         while to kick in.
                      </para>
-                  </listitem>
-                  <listitem>
-                     <para>message.size</para>
-                     <para>The size of message to send.</para>
                   </listitem>
                   <listitem>
                      <para>sess.trans</para>

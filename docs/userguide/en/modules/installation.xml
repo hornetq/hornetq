@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="installation">
    <title>JBoss Messaging Installation</title>
-   <para>This section describes the prerequisites and procedures to install JBoss Messaging.
+   <para>This section describes how to install JBoss Messaging 2.0.
    </para>
 
    <section id="installation.prerequisites">
       <title>Prerequisites</title>
-      <para><note>JBoss Messaging only runs with Java 5 or later.</note></para>
+      <para><note>JBoss Messaging only runs with Java 5 or later. We recommend Java 6 for the best performance.</note></para>
       <para>By default, JBoss Messaging server is run with 1GB of memory. If your computer has less memory, 
       modify the value in <literal>bin/run.sh</literal> accordingly.</para>
       <para><ulink url="http://ant.apache.org/">Ant</ulink> is required to build and run the examples.</para>

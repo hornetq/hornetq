@@ -1,17 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="configuration">
    <title>Configuration</title>
-   <para>The JMS API specifies how a messaging client interacts with a
-      messaging server. The exact definition and implementation of messaging
-      services, such as message destinations, connection factories and security, are
-      specific to JMS providers. JBoss Messaging has its own configuration files
-      to configure these.
-   </para>
-   <para>In this chapter, we discuss how to configure JBoss Messaging to provide JMS API level
-      services to client applications.
-   </para>
-   <para>JBoss Messaging configuration is spread among several
-      configuration files:
+   <para>In this chapter, we discuss how to configure JBoss Messaging</para>
+   <para>JBoss Messaging configuration is spread among several configuration files:
       <itemizedlist>
          <listitem>
             <filename>jbm-configuration.xml</filename>
@@ -154,10 +145,6 @@
       </programlisting>
       <para>The available configuration attributes are:</para>
       <itemizedlist>
-         <listitem>
-            <para>clustered</para>
-            <para>Whether or not this server is clustered, currently disabled</para>
-         </listitem>
          <listitem>
             <para>scheduled-executor-max-pool-size</para>
             <para>The maximum number of threads available for scheduling delivery of scheduled messages</para>
@@ -302,10 +289,8 @@
       <title>jbm-security.xml</title>
       <para>This configuration file is used to configure users and roles when JBM is running in standalone mode using
          the JBM Security Manager. The Security manager used is a pluggable component whose implementation can be
-         changed by
-         configuring the appropriate beans configuration file. Refer to the beans configuration section on how to do
-         this.
-         A typical jbm-security.xml config looks like:
+         changed by  configuring the appropriate beans configuration file. Refer to the beans configuration section on how to do
+         this. A typical jbm-security.xml config looks like:
       </para>
       <programlisting>
          <![CDATA[
@@ -508,7 +493,7 @@
    <section id="configuration.jms">
       <title>jbm-jndi.xml</title>
       <para>This configuration file is used to create destinations and Connection Factories and make them available in
-         JNDI. Note that this is the only configuration file that exposes JMS functionality.
+         JNDI. Note that this is the only configuration file that exposes JMS functionality, the rest of the configuration is 100% JMS agnostic.
       </para>
       <para>
          A typical jbm-jndi.xml config looks like:

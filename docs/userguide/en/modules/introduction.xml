@@ -30,7 +30,7 @@
          <listitem>
             <para>Class beating, ultra high performance journal based persistence</para>
             <para>We have designed and implemented a fast append only journal which  handles the persistence for JBoss Messaging 2.0. The journal is written 95% in Java for portability, and can run in one of two modes:</para>
-	    <para>a) Using pure Java NIO. This provides great performance and runs on any operating system ther JVM runs on.</para>
+	    <para>a) Using pure Java NIO. This provides great performance and runs on any operating system the JVM runs on.</para>
 	    <para>b) Using Linux asynchronous IO (aio). This provides even better performance, impossible via Java alone. This is implemented via a thin C++ layer which the journal tasks to via JNI. This option is only available when running on Linux</para>
          </listitem>
 

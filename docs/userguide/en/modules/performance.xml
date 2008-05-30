@@ -1,97 +1,127 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="performance">
-  <title>Performance</title>
+  <title>Performance Tests</title>
 
   <section id="performance.running">
     <title>How to execute our performance tests</title>
 
-    <para>We have tested JBoss Messaging 2, and we have used the same tests against other systems. 
+    <para>JBoss Messaging 2.0 ships with a set of basic performance measurements comparing our performance against a selection of other open source messaging systems. We would like to provide performance figures against proprietary systems too, but unfortunately, this is usually prohibited by the other messaging systems licence terms</para>
+    <note>
+    <para>It should be stressed that this performance figures are far from exhaustive and provide a very basic feeling for how JBoss Messaging 2.0 performs against the other systems in a selection of simple and classic JMS use cases. All the tests use the standard JMS API. Please remember JBoss Messaging is only an alpha release so don't expect this release to be perfect in all scenarios, although it is interesting to observe that even at this early stage JBoss Messaging appears to provide better performance that the other messaging systems. JBM 2.0 is still largely un-optimised - we have more performance to squeeze out still. More in depth performance figures will be provided for the final GA release.</para>
+    </note>
+    <para>In the spirit of open-ness and not wanting to make performance claims we cannot substantiate, all these performance figures can easily be reproduced using just the tools available in this distribution, assuming you have installed the other messaging systems.
     We have used the <link linkend="examples">JMS Examples</link> to
     produce these numbers, and we used perfSender and perfListener with
-    different scenarios. You can replicate those scenarios using these instructions provided bellow</para>
+    different scenarios. You can replicate those scenarios using these instructions provided below:</para>
 
+    <para>All messages used in the tests are BytesMessages with 1K bodies. Measurement time is taken from the time of the first message sent after the warmup period to the time of the last message consumed. Message throughput rates are measured in messages / sec. In most tests 200000 messages were sent, although this was reduced with some providers due to the provider running out of memory. In all tests we first start a consumer listening on the queue, then start a producer sending to the queue. Broker was running on the server machine, and both the producer and the consumer were running on the client machine.</para>
+    
+    <para>The tests were performed on very basic commodity hardware. In the near future we will be obtaining the use of a large performance lab with serious hardware, on which we look forward to obtaining more results</para>
+    
     <itemizedlist>
       <listitem>
-        <para>1. Send non persistent, non tx, consume dups_ok </para>
-        <para>ant perfListener</para>
-        <para>ant perfSender</para>
+        <para>Test 1. Send non persistent, non transactional messages. Consume messages non transactional with ack mode DUPS_OK_ACKNOWLEDGE</para>
+	<programlisting>
+           <para>ant perfListener</para>
+           <para>ant perfSender</para>
+        </programlisting>
       </listitem>
       <listitem>
-        <para>2. Send non persistent, non tx, consume dups_ok </para>
-        <para>ant -Dsess.ackmode=AUTO_ACK perfListener</para>
-        <para>ant perfSender</para>
+        <para>Test 2. Send non persistent, non transactional, messages. Consume mesages non transactional with ack mode AUTO_ACKNOWLEDGE</para>
+	<programlisting>
+	   <para>ant perfListener -Dsess.ackmode=AUTO_ACK</para>
+           <para>ant perfSender</para>
+        </programlisting>
       </listitem>
       <listitem>
-        <para>3. Send persistent (blocking *), non tx, consume dups_ok</para>
-        <para>ant perfListener</para>
-        <para>ant -Ddelivery.mode=PERSISTENT perfSender </para>
+	<para>Test 3. Send persistent (blocking *) non transactional, messages. Consume with ack mode DUPS_OK_ACKNOWLEDGE</para>
+	<programlisting>
+           <para>ant perfListener</para>
+	   <para>ant perfSender -Ddelivery.mode=PERSISTENT</para>
+        </programlisting>
       </listitem>
       <listitem>
-        <para>4. Send persistent (non blocking *), non tx, consume dups_ok</para>
-        <para>ant perfListener</para>
-        <para>ant -Ddelivery.mode=PERSISTENT perfSender </para>
+	<para>Test 4. Send persistent (non blocking *), non transactional, messages. Consume with ack mode DUPS_OK_ACKNOWLEDGE</para>
+	<programlisting>
+           <para>ant perfListener</para>
+	   <para>ant perfSender -Ddelivery.mode=PERSISTENT</para>
+        </programlisting>
       </listitem>
       <listitem>
-        <para>5. Send persistent (blocking *), non tx, consume auto_ack</para>
-        <para>ant -Dsess.ackmode=AUTO_ACK perfListener</para>
-        <para>ant -Ddelivery.mode=PERSISTENT perfSender </para>
+	<para>Test 5. Send persistent (blocking *), non transactional, messages. Consume with ack mode AUTO_ACKNOWLEDGE</para>
+	<programlisting>
+	   <para>ant perfListener -Dsess.ackmode=AUTO_ACK</para>
+	   <para>ant perfSender -Ddelivery.mode=PERSISTENT</para>
+        </programlisting>
       </listitem>
       <listitem>
-        <para>6. Send persistent (non blocking *), non tx, consume auto_ack</para>
-        <para>ant -Dsess.ackmode=AUTO_ACK perfListener</para>
-        <para>ant -Ddelivery.mode=PERSISTENT perfSender </para>
+	<para>Test 6. Send persistent (non blocking *), non transactional, messages. Consume with ack mode AUTO_ACKNOWLEDGE</para>
+	<programlisting>
+	   <para>ant perfListener -Dsess.ackmode=AUTO_ACK</para>
+	   <para>ant perfSender -Ddelivery.mode=PERSISTENT</para>
+        </programlisting>
       </listitem>
       <listitem>
-        <para>7. Send persistent, transactional, transaction size = 1000, consume persistent transactional, transaction size = 1000 </para>
-        <para>ant -Dssess.trans=true  perfListener</para>
-        <para>ant -Ddelivery.mode=PERSISTENT -Dsess.trans=true perfSender </para>
+        <para>Test 7. Large transaction test. Send persistent, transactional, messages with transaction size = 1000. Consume persistent transactional, transaction size = 1000</para>
+	<programlisting>
+	   <para>ant perfListener -Dsess.trans=true -Dsess.trans.size=1000</para>
+	   <para>ant perfSender -Dsess.trans=true -Dsess.trans.size=1000 -Ddelivery.mode=PERSISTENT</para>
+        </programlisting>
       </listitem>
       <listitem>
-        <para>8. Send persistent, transactional, transaction size = 2, consume persistent transactional, transaction size = 2 </para>
-        <para>ant -Dssess.trans=true  perfListener</para>
-        <para>ant -Ddelivery.mode=PERSISTENT -Dsess.trans=true perfSender </para>
+        <para>Test 8. Small transaction test. Send persistent, transactional, messages with transaction size = 2. Consume persistent transactional, transaction size = 2</para>
+	<programlisting>
+           <para>ant perfListener -Dsess.trans=true -Dsess.trans.size=2</para>
+	   <para>ant perfSender -Dsess.trans=true -Dsess.trans.size=2 -Ddelivery.mode=PERSISTENT</para>
+        </programlisting>
       </listitem>
     </itemizedlist>
     
-    <para>* These blocking and non blocking modes are set on configurations and this will vary for each server</para>
+    <para>* Some messaging systems send persistent messages by default synchronously, and others send them by default asynchronously. Some supports both modes and others only support one. To avoid confusion we consider sending persistent messages synchronously or asynchronously separately. Configuring a particular system to send synchronously or asynchronously is specific to the system.</para>
 
   </section>
   
   <section id="performance.systemsUsed">
      <title>Systems Used</title>
-    <para>
-    To run the perfListener and perfSender on different servers you need to add the client libraries into Add the client libraries on messaging-2.0.0.alpha1/examples/jms/other-system-client-dir
-    and change jndi.properties to the system used according to the examples provided under messaging-2.0.0.alpha1/examples/jms/config.
-    </para>
-    
-    <para>All the tests were executed on the same hardware:</para>
+
+    <para>All the tests were executed on the same hardware, operating system and JDK configuration. All messaging system configuration was with out of the box defaults unless otherwise stated.</para>
     
     <itemizedlist>
       <listitem>
-        <para>Client</para>
-        <para>Dell Latitude D820, dual core, 2GB Ram, 1000Mb network</para>
-        <para>Linux system, 32 bit, </para>
+        <para>Client:</para>
+        <para>Hardware: Dell Latitude D820, dual core 2 x 2GHz Intel CoreDuo, 2GB RAM, 1GB ethernet card.</para>
+	<para>Operating system: Linux, 32 bit, kernel version 2.6.22-14-generic</para>
+	<para>JDK: Sun JDK 1.6.0_03-b05</para>
       </listitem>
       <listitem>
-        <para>Server</para>
-        <para>Dell Precision 470 workstation, dual cpu, dual</para>
+        <para>Server:</para>
+        <para>Dell Precision 470 workstation, dual cpu 2 X 2.8 GHz Intel Xeon 64 bit, 2GB RAM, 1GB ethernet card.</para>
+	<para>Operating system: Linux, 64 bit, kernel version 2.6.22-14-generic</para>
+	<para>JDK: Sun JDK 1.6.0_03-b05 64bit</para>
       </listitem>
+      <listitem>
+	<para>Network:</para>
+	<para>1 GB ethernet</para>
+	<para>Netgear GS105 Gigabit switch</para>
+      </listitem>      
     </itemizedlist>
+  </section>
+   <section>
     
-    <para>All the tests against these following systems:</para>
+    <para>All the tests were executed against these following systems:</para>
     
     <itemizedlist>
       <listitem>
-        <para>1. ActiveMQ 5.1</para>
+         <para>1. JBM 2.0 alpha. Out of the box config used.</para>
       </listitem>
       <listitem>
-        <para>2. JBM 2.0 alpha</para>
+        <para>2. ActiveMQ 5.1. This is the latest production version of ActiveMQ. Out of the box config was used with two changes: 1) syncOnWrite was set to true in the persistence config (otherwise ActiveMQ won't sync to disc on tx boundaries) 2) The upper queue memory limit was extended to 100MB otherwise the tests would block as queues became full.</para>
       </listitem>
       <listitem>
-        <para>3. QPID M2.1 Java version with BDB persistence manager, java client</para>
+        <para>3. Apache QPid M2.1 Java version with BDB store, Java JMS client. This is the latest production/stable version of Apache QPid. Out of the box config was used.</para>
       </listitem>
       <listitem>
-        <para>4. MRG Messaging 1.0 beta C++ version with java client</para>
+        <para>4. Red Hat MRG Messaging 1.0 C++ version with QPID Java JMS client. As recommended version was taken from trunk. SVN revisions are: Store 2093, QPID trunk 661704. This corresponds to MRG Messaging 1.0 after MRG Messaging 1.0 beta and just prior to MRG Messaging 1.0 GA. Out of the box config was used.</para>
       </listitem>
     </itemizedlist>
      
@@ -101,116 +131,116 @@
     <title>Performance Results</title>
 
     <table>
-      <title>Performance Results</title>
+      <title>Performance Results (all results in messages/sec)</title>
       <tgroup cols="5">
         <colspec align="center" />
 
         <thead>
           <row>
-            <entry align="left">Short Descr/Server</entry>
+            <entry align="left">Test</entry>
 
+	    <entry align="center">JBM 2.0 Alpha</entry>
+	    
             <entry align="center">Active MQ 5.1</entry>
-
-            <entry align="center">JBM 2.0 Alpha</entry>
 
             <entry align="center">QPID M2.1 Java</entry>
 
-            <entry align="center">MRG Messaging C++</entry>
+            <entry align="center">MRG Messaging 1.0 C++</entry>
           </row>
         </thead>
 
         <tbody>
           <row>
-            <entry align="left">1. NP/Dups</entry>
+            <entry align="left">Test 1. NP/Dups</entry>
 
+	    <entry align="center">18,836</entry>
+	    
             <entry align="center">12,963</entry>
-
-            <entry align="center">18,836</entry>
-
+            
             <entry align="center">4,619</entry>
 
             <entry align="center">6,790</entry>
           </row>
 
           <row>
-            <entry align="left">2. NP/AutoAck</entry>
+            <entry align="left">Test 2. NP/AutoAck</entry>
 
+	    <entry align="center">14,143</entry>
+	    
             <entry align="center">9,813</entry>
-
-            <entry align="center">14,143</entry>
-
+            
             <entry align="center">7,444</entry>
 
             <entry align="center">4,691</entry>
           </row>
-
+	  
           <row>
-            <entry align="left">3. Persist/Blocking/NonTX/DupsOk</entry>
+            <entry align="left">Test 3. Persist/Blocking/NonTX/DupsOk</entry>
 
+	    <entry align="center">1,372</entry>
+	    
             <entry align="center">312</entry>
-
-            <entry align="center">1,372</entry>
-
-            <entry align="center">Not Supported</entry>
+            
+            <entry align="center">QPid M2.1 does not support blocking persistent message sends</entry>
 
             <entry align="center">23</entry>
           </row>
 
           <row>
-            <entry align="left">4. Persist/Non Blocking/NonTX/DupsOk</entry>
+            <entry align="left">Test 4. Persist/Non Blocking/NonTX/DupsOk</entry>
 
-            <entry align="center">Not Supported</entry>
-
-            <entry align="center">14,977</entry>
-
+	    <entry align="center">14,977</entry>
+	    
+            <entry align="center">ActiveMQ 5.1 does not support non blocking persistent message sends</entry>
+            
             <entry align="center">319</entry>
 
             <entry align="center">6263</entry>
           </row>
 
           <row>
-            <entry align="left">5. Persist/Blocking/NonTX/AutoAck</entry>
+            <entry align="left">Test 5. Persist/Blocking/NonTX/AutoAck</entry>
 
+	    <entry align="center">1,265</entry>
+	    
             <entry align="center">524</entry>
-
-            <entry align="center">1,265</entry>
-
-            <entry align="center">Not Supported</entry>
+            
+	    <entry align="center">QPid M2.1 does not support blocking persistent message sends</entry>
 
             <entry align="center">23</entry>
           </row>
 
           <row>
-            <entry align="left">6. Persist/Non Blocking/NonTX/AutoAck</entry>
+            <entry align="left">Test 6. Persist/Non Blocking/NonTX/AutoAck</entry>
 
-            <entry align="center">Not Supported</entry>
-
-            <entry align="center">12,056</entry>
-
+	    <entry align="center">12,056</entry>
+	    
+	    <entry align="center">ActiveMQ 5.1 does not support non blocking persistent message sends</entry>
+            
             <entry align="center">318</entry>
 
             <entry align="center">7,886</entry>
           </row>
 
           <row>
-            <entry align="left">7. Persistent/Transacted size=1000</entry>
+            <entry align="left">Test 7. Large transactions. Persistent/Transacted size=1000</entry>
 
+	    <entry align="center">9,607</entry>
+	    
             <entry align="center">1,576</entry>
-
-            <entry align="center">9,607</entry>
-
+            
             <entry align="center">3,242</entry>
 
-            <entry align="center">Unable to complete</entry>
+            <entry align="center">Unable to complete. The broker failed at this transaction size</entry>
           </row>
 
           <row>
-            <entry align="left">8. Persistent/Transacted size=2</entry>
+            <entry align="left">Test 8. Small transactions. Persistent/Transacted size=2</entry>
 
+	    <entry align="center">1,818</entry>
+	    
             <entry align="center">396</entry>
-
-            <entry align="center">1,818</entry>
-
+            
             <entry align="center">475</entry>
 
             <entry align="center">147</entry>
@@ -220,4 +250,14 @@
       </tgroup>
     </table>
   </section>
+  
+  <section id="performance.conclusions">
+	  
+    <title>Performance conclusions.</title>
+    
+    <para>JBoss Messaging 2.0 provides the highest throughput in all tests</para>
+    <para>In particular JBoss Messaging's superb performance for persistence and transactions compared to the other systems is clear to see. This is due to our state of art journal. Our winning non persistent message results demonstrate the power of our new transport. And remember, this is just an alpha release!</para>    
+    
+  </section>
+  
 </chapter>
