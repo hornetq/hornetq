@@ -232,7 +232,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
         
    	waitForOnMessageToComplete();   	
    	
-      this.handler = handler;      
+      this.handler = handler;
+      
+      flushBuffer(false);
    }
 
    public void close() throws MessagingException
@@ -343,13 +345,12 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          		maxSize = Math.max(maxSize, buffer.size());
          	}
          	            	
-         	sessionExecutor.execute(new Runnable() { public void run() { callOnMessage(); } } );
+         	flushBuffer(true);
          }
       }
       else
       {
       	 // Add it to the buffer
-      	
       	synchronized (this)
       	{
       		buffer.addLast(message, message.getPriority());
@@ -358,7 +359,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       	}
       }      
    }
-   
+
    int maxSize = 0;
 
    public void recover(final long lastDeliveryID)
@@ -380,6 +381,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // Private
    // --------------------------------------------------------------------------------------
 
+   private void flushBuffer(final boolean singleMessage)
+   {
+      sessionExecutor.execute(new Runnable() { public void run() { callOnMessage(singleMessage); } } );
+   }
+   
    private void flowControl(final int messageBytes) throws MessagingException
    {
       if (clientWindowSize > 0)
@@ -434,29 +440,39 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          throw new MessagingException(MessagingException.OBJECT_CLOSED, "Consumer is closed");
       }
    }
-        
-   private void callOnMessage()
+
+   
+   // TODO (JBMESSAGING-1351): I have made this parameter singleMessage as I just wanted to keep the current behavior of handleMessages now, 
+   //                  and as I don't want to mess up with results (performance, tests... everything else)
+   //                  But I have the impression that callOnMessage should aways run until the buffer is empty, on that case singleMessage 
+   //                  should be ignored
+   private void callOnMessage(final boolean singleMessage)
    {
    	try
 		{
-   		if (closed)
-   		{
-   			return;
-   		}
-   		
-   		//We pull the message from the buffer from inside the Runnable so we can ensure priority
-   		//ordering. If we just added a Runnable with the message to the executor immediately as we get it
-   		//we could not do that
-   		
-   		ClientMessage message;
-   		
-   		synchronized (this)
-   		{
-   		   message = buffer.removeFirst();
-   		}
-   		
-   		if (message != null)
-   		{      		
+   	   do
+   	   {
+      		if (closed)
+      		{
+      			return;
+      		}
+      		
+      		//We pull the message from the buffer from inside the Runnable so we can ensure priority
+      		//ordering. If we just added a Runnable with the message to the executor immediately as we get it
+      		//we could not do that
+      		
+      		ClientMessage message;
+      		
+      		synchronized (this)
+      		{
+      		   message = buffer.removeFirst();
+      		}
+      		
+      		if (message == null)
+      		{
+      		   break;
+      		}
+      		
       		boolean expired = message.isExpired();
    
             session.delivered(message.getDeliveryID(), expired);
@@ -469,7 +485,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          		
                handler.onMessage(message);
             }
-   		}
+   	   } 
+   	   while (!singleMessage);
 		}
 		catch (MessagingException e)
 		{
