@@ -65,8 +65,8 @@
             </para>
          </listitem>
          <listitem>
-            <para>DurSubExample</para>
-            <para>This example shows the use of a Durable Subscriber.
+            <para>durSubExample</para>
+            <para>This example shows the use of a durable subscriber.
             </para>
          </listitem>
          <listitem>

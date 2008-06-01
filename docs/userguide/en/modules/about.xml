@@ -2,7 +2,7 @@
 <chapter id="about">
    <title>About JBoss Messaging 2.0</title>
    <para>The goal of JBoss Messaging 2.0 is simple and uncompromising- to bring unrivalled levels of performance and reliability to messaging, and to be the fastest, best featured and most scalable open source messaging system.</para>
-   <para>We are not in the business of making unfalsifiable statements about performance so we ship this release with a set of basic performance measurements against other open source messaging systems, so you can decide for yourself. All performance results are fully reproducible by you, using the tools shipped with this distribution, so there is nothing to hide. Let the facts speak for themselves. If you can't wait, the performance results are provided in <link linkend="performance">Chapter 8, Performance</link>.
+   <para>We are not in the business of making unfalsifiable statements about performance so we ship this release with a set of basic performance measurements against other open source messaging systems, so you can decide for yourself. All performance results are fully reproducible by you, using the tools shipped with this distribution. Let the facts speak for themselves. If you can't wait, the performance results are provided in <link linkend="performance">Chapter 8, Performance</link>.
    </para>
    <para>The procedure of installing and configuring JBoss Messaging 2.0 is detailed in this guide, along with a set of
       runnable examples. This guide will be extended, before the general availability (GA) release of JBoss Messaging 2.0
