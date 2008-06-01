@@ -476,6 +476,7 @@
       <copy todir="${build.distro.bin.dir}">
          <fileset dir="${src.bin.dir}">
             <include name="run.sh"/>
+	    <include name="run.bat"/>
          </fileset>
       </copy>
 
