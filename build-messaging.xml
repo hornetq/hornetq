@@ -426,14 +426,8 @@
          <fileset dir="${jboss.common.core.lib}">
             <include name="jboss-common-core.jar"/>
          </fileset>
-         <fileset dir="${oswego.concurrent.lib}">
-            <include name="concurrent.jar"/>
-         </fileset>
          <fileset dir="${apache.xerces.lib}">
             <include name="xercesImpl.jar"/>
-         </fileset>
-         <fileset dir="${jgroups.jgroups.lib}">
-            <include name="jgroups.jar"/>
          </fileset>
          <fileset dir="${apache.logging.lib}">
             <include name="commons-logging.jar"/>
@@ -527,6 +521,20 @@
             file="${build.distro.examples.dir}/build.properties"/>
       <echo message="java.naming.factory.initial=org.jnp.interfaces.NamingContextFactory${line.separator}java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces"
             file="${build.distro.config.dir}/jndi.properties"/>
+
+      <zip basedir="${build.dir}"
+           destfile="${build.dir}/${module.name}-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}.zip">
+         <include
+                 name="${module.name}-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}/**"/>
+      </zip>
+      <tar basedir="${build.dir}"
+           destfile="${build.dir}/${module.name}-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}.tar"
+           longfile="gnu">
+         <include
+                 name="${module.name}-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}/**"/>
+      </tar>
+      <gzip src="${build.dir}/${module.name}-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}.tar"
+            destfile="${build.dir}/${module.name}-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}.tar.gz"/>
    </target>
 
    <target name="userdoc">
@@ -762,9 +770,9 @@
          <classpath refid="jms.test.execution.classpath"/>
       </java>
    </target>
-	
+
    <!-- Examples -->
-	
+
    <target name="queueExample" depends="client-jar">
       <ant dir="${examples.dir}/jms" antfile="build.xml" target="queueExample"/>
    </target>
@@ -776,7 +784,7 @@
    <target name="durSubExample" depends="client-jar">
       <ant dir="${examples.dir}/jms" antfile="build.xml" target="durSubExample"/>
    </target>
-	
+
    <target name="SimpleClient" depends="client-jar">
       <ant dir="${examples.dir}/messaging" antfile="build.xml" target="SimpleClient"/>
    </target>
@@ -788,8 +796,8 @@
    <target name="SimpleExample" depends="jar, client-jar">
       <ant dir="${examples.dir}/messaging" antfile="build.xml" target="SimpleExample"/>
    </target>
-	
-	<!-- Performance examples -->
+
+   <!-- Performance examples -->
 
    <target name="perfListener" depends="client-jar">
       <ant dir="${examples.dir}/jms" antfile="build.xml" target="perfListener"/>
