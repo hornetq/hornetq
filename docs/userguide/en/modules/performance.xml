@@ -5,16 +5,16 @@
   <section id="performance.running">
     <title>How to execute our performance tests</title>
 
-    <para>JBoss Messaging 2.0 ships with a set of basic performance measurements comparing our performance against a selection of other open source messaging systems. We would like to provide performance figures against proprietary systems too, but unfortunately, this is usually prohibited by the other messaging systems licence terms</para>
+    <para>JBoss Messaging 2.0 ships with a set of basic performance measurements comparing our performance against a selection of other open source messaging systems. We would like to provide performance figures against proprietary systems too, but unfortunately, this is usually prohibited by the other messaging system's licence terms</para>
     <note>
-    <para>It should be stressed that this performance figures are far from exhaustive and provide a very basic feeling for how JBoss Messaging 2.0 performs against the other systems in a selection of simple and classic JMS use cases. All the tests use the standard JMS API. Please remember JBoss Messaging is only an alpha release so don't expect this release to be perfect in all scenarios, although it is interesting to observe that even at this early stage JBoss Messaging appears to provide better performance that the other messaging systems. JBM 2.0 is still largely un-optimised - we have more performance to squeeze out still. More in depth performance figures will be provided for the final GA release.</para>
+    <para>It should be stressed that these performance figures are far from exhaustive and provide a basic view for how JBoss Messaging 2.0 performs against the other systems in a selection of simple and classic JMS use cases. All the tests use the standard JMS 1.1 API. Please remember JBoss Messaging 2.0 is only an alpha release so don't expect this release to be perfect in all scenarios, although it is interesting to observe that even at this early stage JBoss Messaging 2.0 appears to provide better performance than the other messaging systems. JBoss Messaging 2.0 is still largely un-optimised - we have more performance to squeeze out still. More in depth performance figures will be provided for the final GA release.</para>
     </note>
     <para>In the spirit of open-ness and not wanting to make performance claims we cannot substantiate, all these performance figures can easily be reproduced using just the tools available in this distribution, assuming you have installed the other messaging systems.
     We have used the <link linkend="examples">JMS Examples</link> to
     produce these numbers, and we used perfSender and perfListener with
     different scenarios. You can replicate those scenarios using these instructions provided below:</para>
 
-    <para>All messages used in the tests are BytesMessages with 1K bodies. Measurement time is taken from the time of the first message sent after the warmup period to the time of the last message consumed. Message throughput rates are measured in messages / sec. In most tests 200000 messages were sent, although this was reduced with some providers due to the provider running out of memory. In all tests we first start a consumer listening on the queue, then start a producer sending to the queue. Broker was running on the server machine, and both the producer and the consumer were running on the client machine.</para>
+    <para>All messages used in the tests are BytesMessage instances with 1K bodies. Measurement time is taken from the time of the first message sent after the warmup period to the time of the last message consumed. Message throughput rates are measured in messages / sec. In most tests 200000 messages were sent, although this was reduced with some providers due to the provider running out of memory. In all tests we first start a consumer listening on the queue, then start a producer sending to the queue. Broker was running on the server machine, and both the producer and the consumer were running on the client machine.</para>
     
     <para>The tests were performed on very basic commodity hardware. In the near future we will be obtaining the use of a large performance lab with serious hardware, on which we look forward to obtaining more results</para>
     
@@ -77,7 +77,7 @@
       </listitem>
     </itemizedlist>
     
-    <para>* Some messaging systems send persistent messages by default synchronously, and others send them by default asynchronously. Some supports both modes and others only support one. To avoid confusion we consider sending persistent messages synchronously or asynchronously separately. Configuring a particular system to send synchronously or asynchronously is specific to the system.</para>
+    <para>* Some messaging systems send persistent messages by default synchronously, and others send them by default asynchronously. Some supports both modes and others only support one. To avoid confusion we consider sending persistent messages synchronously or asynchronously separately. Configuring a particular system to send synchronously or asynchronously is specific to the system. For instance in Apache QPID we can specify use blocking mode by providing the system property "sync_persistence" with the value "true" to the client.</para>
 
   </section>
   
@@ -110,39 +110,49 @@
   <section id="performance.results">
     <title>Performance Results</title>
 
-    <para>All the tests were executed against these following systems:</para>
+    <para>All the tests were executed against these following messaging systems:</para>
     
     <itemizedlist>
       <listitem>
          <para>1. JBM 2.0 alpha. Out of the box config used.</para>
       </listitem>
       <listitem>
-        <para>2. ActiveMQ 5.1. This is the latest production version of ActiveMQ. Out of the box config was used with two changes: 1) syncOnWrite was set to true in the persistence config (otherwise ActiveMQ won't sync to disc on tx boundaries) 2) The upper queue memory limit was extended to 100MB otherwise the tests would block as queues became full.</para>
+	<para>2. JBM 1.4.0.SP3_CP02 - this is the production version used in JBoss Enterprise Application Platform 4.3 GA CP01. Out of the box config used. Used with MySQL 5.0.45 colocated with server and InnoDB tables with innodb_flush_log_at_trx_commit=1 (enable sync at tx commit)</para>
+      </listitem>      
+      <listitem>
+        <para>3. ActiveMQ 5.1. This is the latest production version of ActiveMQ. Out of the box config was used with two changes: 1) syncOnWrite was set to true in the persistence config (otherwise ActiveMQ won't sync to disc on tx boundaries) 2) The upper queue memory limit was extended to 100MB otherwise the tests would block as queues became full.</para>
       </listitem>
       <listitem>
-        <para>3. Apache QPid M2.1 Java version with BDB store, Java JMS client. This is the latest production/stable version of Apache QPid. Out of the box config was used.</para>
+        <para>4. Apache QPid M2.1 Java version with BDB store, Java JMS client. This is the latest production/stable version of Apache QPid. Out of the box config was used.</para>
       </listitem>
       <listitem>
-        <para>4. Red Hat MRG Messaging 1.0 C++ version with async journal and QPID Java JMS client. As recommended version was taken from trunk. SVN revisions are: Store 2093, QPID trunk 661704. This corresponds to MRG Messaging 1.0 after MRG Messaging 1.0 beta and just prior to MRG Messaging 1.0 GA. Out of the box config was used.</para>
+        <para>5. Red Hat MRG Messaging 1.0 C++ version with async journal and QPID Java JMS client. As recommended version was taken from trunk. SVN revisions are: Store 2093, QPID trunk 661704. This corresponds to MRG Messaging 1.0 after MRG Messaging 1.0 beta and just prior to MRG Messaging 1.0 GA. Out of the box config was used.</para>
       </listitem>
+      <listitem>
+	 <para>6. JBoss MQ in JBoss AS 4.2.2.GA. This is JBoss' legacy JMS provider - now superceded by JBoss Messaging. Used with MySQL 5.0.45 colocated with server and Innodb tables with innodb_flush_log_at_trx_commit=1 (enable sync at tx commit)</para>
+      </listitem>        
     </itemizedlist>
 
     <table>
       <title>Performance Results (all results in messages/sec)</title>
-      <tgroup cols="5">
+      <tgroup cols="7">
         <colspec align="center" />
 
         <thead>
           <row>
             <entry align="left">Test</entry>
 
-	    <entry align="center">JBM 2.0 Alpha</entry>
+	    <entry align="center">JBM 2.0_Alpha</entry>
 	    
-            <entry align="center">Active MQ 5.1</entry>
+	    <entry align="center">JBM 1.4.0.SP3_CP02</entry>
+	    
+            <entry align="center">Apache ActiveMQ 5.1</entry>
 
-            <entry align="center">QPID M2.1 Java</entry>
+            <entry align="center">Apache QPid M2.1 Java</entry>
 
             <entry align="center">MRG Messaging 1.0 C++</entry>
+	    
+	    <entry align="center">JBoss MQ</entry>
           </row>
         </thead>
 
@@ -152,11 +162,15 @@
 
 	    <entry align="center">18,836</entry>
 	    
+	    <entry align="center">13,401</entry>
+	    
             <entry align="center">12,963</entry>
             
             <entry align="center">4,619</entry>
 
             <entry align="center">6,790</entry>
+	    
+	    <entry align="center">881</entry>
           </row>
 
           <row>
@@ -164,11 +178,15 @@
 
 	    <entry align="center">14,143</entry>
 	    
+	    <entry align="center">3,889</entry>
+	    
             <entry align="center">9,813</entry>
             
             <entry align="center">7,444</entry>
 
             <entry align="center">4,691</entry>
+	    
+	    <entry align="center">672</entry>
           </row>
 	  
           <row>
@@ -176,11 +194,15 @@
 
 	    <entry align="center">1,372</entry>
 	    
+	    <entry align="center">442</entry>
+	    
             <entry align="center">312</entry>
             
             <entry align="center">QPid M2.1 does not support blocking persistent message sends</entry>
 
             <entry align="center">23</entry>
+	    
+	    <entry align="center">622</entry>
           </row>
 
           <row>
@@ -188,11 +210,15 @@
 
 	    <entry align="center">14,977</entry>
 	    
+	    <entry align="center">JBM 1.x does not support non blocking persistent message sends</entry>
+	    
             <entry align="center">ActiveMQ 5.1 does not support non blocking persistent message sends</entry>
             
             <entry align="center">319</entry>
 
             <entry align="center">6263</entry>
+	    
+	    <entry align="center">JBoss MQ does not support non blocking persistent message sends</entry>
           </row>
 
           <row>
@@ -200,11 +226,15 @@
 
 	    <entry align="center">1,265</entry>
 	    
+	    <entry align="center">421</entry>
+	    
             <entry align="center">524</entry>
             
 	    <entry align="center">QPid M2.1 does not support blocking persistent message sends</entry>
 
             <entry align="center">23</entry>
+	    
+	    <entry align="center">637</entry>
           </row>
 
           <row>
@@ -212,11 +242,15 @@
 
 	    <entry align="center">12,056</entry>
 	    
+	    <entry align="center">JBM 1.x does not support non blocking persistent message sends</entry>
+	    
 	    <entry align="center">ActiveMQ 5.1 does not support non blocking persistent message sends</entry>
             
             <entry align="center">318</entry>
 
             <entry align="center">7,886</entry>
+	    
+	    <entry align="center">JBoss MQ does not support non blocking persistent message sends</entry>
           </row>
 
           <row>
@@ -224,11 +258,15 @@
 
 	    <entry align="center">9,607</entry>
 	    
+	    <entry align="center">1,355</entry>
+	    
             <entry align="center">1,576</entry>
             
             <entry align="center">3,242</entry>
 
             <entry align="center">Unable to complete. The broker failed at this transaction size</entry>
+	    
+	    <entry align="center">805</entry>
           </row>
 
           <row>
@@ -236,11 +274,15 @@
 
 	    <entry align="center">1,818</entry>
 	    
+	    <entry align="center">546</entry>
+	    
             <entry align="center">396</entry>
             
             <entry align="center">475</entry>
 
             <entry align="center">147</entry>
+	    
+	    <entry align="center">523</entry>
           </row>
 
         </tbody>
@@ -252,9 +294,11 @@
 	  
     <title>Performance conclusions.</title>
     
-    <para>JBoss Messaging 2.0 provides the highest throughput in all tests</para>
-    <para>In particular JBoss Messaging's superb performance for persistence and transactions compared to the other systems is clear to see. This is due to our state of art journal. Our winning non persistent message results demonstrate the power of our new transport. And remember, this is just an alpha release!</para>
-    <para>ActiveMQ is a good all round performer and provides respectable results, although beaten by JBM. QPid/MRG has reasonable results, with MRG persistent non transactional results being quite good, but is let down by poor transactional performance.</para>
+    <para>JBoss Messaging 2.0 provides the highest throughput in all tests, and in particular shows ground breaking persistent performance for both transactional and non transactional operations.</para>
+    <para>JBoss Messaging 1.4.0.SP3_CP02 and ActiveMQ 5.1 are good all-round performers and show similar and respectable performance.</para>
+    <para>QPid/MRG have reasonable non transactional results - both persistent and non persistent, but are let down by poor transactional performance.</para>
+    <para>JBoss MQ has reasonable persistent performance, but is let down by poor non persistent results.
+    </para>
     
   </section>
   

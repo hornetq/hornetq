@@ -3,7 +3,7 @@
    <title>The journal based persistence approach</title>
    <section id="journal.asyncio">
       <title>ASYNCIO</title>
-      <para>If you are using JBoss Messaging 2 on a Linux system, you can take full advantage of this feature. All you
+      <para>If you are using JBoss Messaging 2.0 on a Linux system, you can take full advantage of this feature. All you
          have to do is to make sure libaio is installed and you are using an ext3 or ext2 file system, and kernel version 2.6 or later.
       </para>
       <para>To install libaio, run the command <literal>sudo yum install libaio1</literal> on Fedora or Red Hat or <literal>sudo

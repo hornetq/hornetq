@@ -2,29 +2,12 @@
 <chapter id="introduction">
    <title>Introduction</title>
 
-   <para>JBoss Messaging 2.0 provides an open source and standard-based messaging
-   platform that brings enterprise-class messaging to the mass market.</para>
-
-   <para>JBoss Messaging 2.0 implements a high performance, robust messaging core
-   that is designed to support the largest and most heavily utilized SOAs,
-   enterprise service buses (ESBs) and other integration needs ranging from
-   the simplest to the highest demand networks.</para>
-
-   <!--<para>It will allow you to smoothly distribute your application load across
-   your cluster, intelligently balancing and utilizing each nodes CPU cycles,
-   with no single point of failure, providing a highly scalable and performant
-   clustering implementation.</para>
--->
-   <para>JBoss Messaging includes a JMS front-end to deliver messaging in a
-   standard-based format. It is also designed to be able to support
-   other messaging protocols in the future.</para>
-
-   <section id="features">
-      <title>JBoss Messaging 2.0</title>
-      
+   <section id="intro.intro">
       <para>JBoss Messaging 2.0 alpha, is a bare-bones messaging system. This release is designed to show case the elegant architecture and high performance transport and persistence. Many other features, including state of the art clustering will be added before the final general availability (GA) release</para>
       
-      <para>This release contains the following features</para>
+      <para>JBoss Messaging builds upon the solid performance of JBoss Messaging 1.4 to bring unrivalled levels of performance and scalability</para>
+      
+      <para>This release contains the following features:</para>
 
       <itemizedlist>
          <listitem>
@@ -35,11 +18,11 @@
          </listitem>
 
          <listitem>
-            <para>JBoss Messaging 2.0 has a new high performance network transport which leverages Trustin Lee's
-            <ulink url="http://mina.apache.org/">MINA</ulink> to provide high 
+            <para>JBoss Messaging 2.0 has a new high performance network transport which leverages
+            <ulink url="http://mina.apache.org/">Apache MINA</ulink> to provide high 
             performance and high scalability at network layer with an 
             asynchronous API via Java NIO.</para>
-            <para>The JBoss Messaging team work closely with Trustin to ensure the smooth integration of MINA.</para>
+            <para>The JBoss Messaging team work closely with Trustin Lee, the lead of MINA, to ensure it's smooth integration.</para>
          </listitem>
 
          <listitem>
@@ -54,7 +37,7 @@
 	 
 	 <listitem>
             <para>JMS agnostic messaging core</para>
-            <para>JBoss Messaging core is actually 100% JMS agnostic. It provides its own non JMS API and fully supports transactional (including XA), reliable, persistent messaging without JMS. The JMS API is actually provided as a thin facade on the client side which translates calls to and from the messaging core API.</para>
+            <para>JBoss Messaging core is actually 100% JMS agnostic. It provides its own non JMS API and fully supports transactional (including XA), reliable, persistent messaging without JMS. The JMS API is actually provided as a thin facade on the client side which translates calls to and from the messaging core API. Abstracting out messaging functionality into a general purpose messaging core makes it easier for us to support other messaging protocols in the future, like AMQP.</para>
          </listitem>
       </itemizedlist>
 
