@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -3727,7 +3728,8 @@ public class MessageConsumerTest extends JMSTestCase
 	
 	      listener.waitForMessages();
 	
-	      assertFalse(listener.failed);
+	      log.debug(listener.messageOrder);
+	      assertFalse(listener.messageOrder, listener.failed);
 	
 	      conn.close();
 	      
@@ -4069,8 +4071,9 @@ public class MessageConsumerTest extends JMSTestCase
       private int count;
 
       private boolean failed;
+      private String messageOrder = "message sequence is: ";
 
-      private Latch latch = new Latch();
+      private CountDownLatch latch = new CountDownLatch(1);
 
       private boolean transacted;
 
@@ -4082,7 +4085,7 @@ public class MessageConsumerTest extends JMSTestCase
       /** Blocks the calling thread until at least a message is received */
       public void waitForMessages() throws InterruptedException
       {
-         latch.acquire();
+         latch.await();
       }
 
       public void onMessage(Message m)
@@ -4093,22 +4096,25 @@ public class MessageConsumerTest extends JMSTestCase
 
             log.trace("Got message:" + tm.getText() + " count is " + count);
 
+            messageOrder += tm.getText() + " ";
             if (count == 0)
             {
                if (!("a".equals(tm.getText())))
                {
                   log.trace("Should be a but was " + tm.getText());
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
                if (transacted)
                {
                   sess.rollback();
+                  messageOrder += "RB ";
                   log.trace("rollback() called");
                }
                else
                {
                   log.trace("Calling recover");
+                  messageOrder += "RC ";
                   sess.recover();
                   log.trace("recover() called");
                }
@@ -4120,12 +4126,12 @@ public class MessageConsumerTest extends JMSTestCase
                {
                   log.trace("Should be a but was " + tm.getText());
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
                if (!tm.getJMSRedelivered())
                {
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
             }
             if (count == 2)
@@ -4134,7 +4140,7 @@ public class MessageConsumerTest extends JMSTestCase
                {
                   log.trace("Should be b but was " + tm.getText());
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
             }
             if (count == 3)
@@ -4143,7 +4149,7 @@ public class MessageConsumerTest extends JMSTestCase
                {
                   log.trace("Should be c but was " + tm.getText());
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
                if (transacted)
                {
@@ -4154,7 +4160,7 @@ public class MessageConsumerTest extends JMSTestCase
                   log.trace("Acknowledging session");
                   tm.acknowledge();
                }
-               latch.release();
+               latch.countDown();
             }
             count++;
          }
@@ -4162,7 +4168,7 @@ public class MessageConsumerTest extends JMSTestCase
          {
             log.trace("Caught JMSException", e);
             failed = true;
-            latch.release();
+            latch.countDown();
          }
       }
    }
