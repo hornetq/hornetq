@@ -75,8 +75,9 @@
    <property name="native.bin.dir" value="native/bin"/>
    <property name="examples.dir" value="examples"/>
 
+   <property name="build.artifact" value="${module.name}-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}" />
    <property name="build.distro.dir"
-             value="${build.dir}/${module.name}-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}"/>
+             value="${build.dir}/${build.artifact}"/>
    <property name="build.distro.lib.dir" value="${build.distro.dir}/lib"/>
    <property name="build.distro.config.dir" value="${build.distro.dir}/config"/>
    <property name="build.distro.bin.dir" value="${build.distro.dir}/bin"/>
@@ -476,7 +477,7 @@
       <copy todir="${build.distro.bin.dir}">
          <fileset dir="${src.bin.dir}">
             <include name="run.sh"/>
-	    <include name="run.bat"/>
+	        <include name="run.bat"/>
          </fileset>
       </copy>
 
@@ -485,13 +486,7 @@
             <include name="*.so"/>
          </fileset>
       </copy>
-
-      <chmod perm="755">
-         <fileset dir="${build.distro.bin.dir}">
-            <include name="**/*.sh"/>
-         </fileset>
-      </chmod>
-
+   	
       <antcall target="userdoc"/>
       <copy todir="${build.distro.dir}/docs/userguide">
          <fileset dir="${doc.build.dir}">
@@ -524,18 +519,21 @@
             file="${build.distro.config.dir}/jndi.properties"/>
 
       <zip basedir="${build.dir}"
-           destfile="${build.dir}/${module.name}-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}.zip">
-         <include
-                 name="${module.name}-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}/**"/>
+           destfile="${build.dir}/${build.artifact}.zip">
+         <include name="${build.artifact}/**"/>
+         <!-- add run.sh using a zipfileset to preserve its file permission -->
+      	 <exclude name="${build.artifact}/bin/run.sh" />
+      	 <zipfileset dir="${build.dir}/${build.artifact}/bin" 
+      	 	includes="run.sh" filemode="755" prefix="${build.artifact}/bin" />
       </zip>
+   	
       <tar basedir="${build.dir}"
-           destfile="${build.dir}/${module.name}-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}.tar"
+           destfile="${build.dir}/${build.artifact}.tar"
            longfile="gnu">
-         <include
-                 name="${module.name}-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}/**"/>
+         <include name="${build.artifact}/**"/>
       </tar>
-      <gzip src="${build.dir}/${module.name}-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}.tar"
-            destfile="${build.dir}/${module.name}-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}.tar.gz"/>
+      <gzip src="${build.dir}/${build.artifact}.tar"
+            destfile="${build.dir}/${build.artifact}.tar.gz"/>
    </target>
 
    <target name="userdoc">
