@@ -531,6 +531,10 @@
            destfile="${build.dir}/${build.artifact}.tar"
            longfile="gnu">
          <include name="${build.artifact}/**"/>
+      	 <!-- add run.sh using a tarfileset to preserve its file permission -->
+      	 <exclude name="${build.artifact}/bin/run.sh"/>
+     	 <tarfileset dir="${build.dir}/${build.artifact}/bin" 
+     	 	includes="run.sh" filemode="755" prefix="${build.artifact}/bin" />
       </tar>
       <gzip src="${build.dir}/${build.artifact}.tar"
             destfile="${build.dir}/${build.artifact}.tar.gz"/>
