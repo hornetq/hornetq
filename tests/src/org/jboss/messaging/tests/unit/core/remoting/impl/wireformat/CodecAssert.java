@@ -44,7 +44,7 @@ public class CodecAssert extends Assert
       }
    }
 
-   static void assertEqualsByteArrays(byte[] expected, byte[] actual)
+   public static void assertEqualsByteArrays(byte[] expected, byte[] actual)
    {
       assertEquals(expected.length, actual.length);
       for (int i = 0; i < expected.length; i++)

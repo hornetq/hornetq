@@ -183,11 +183,6 @@ public class BufferWrapper implements MessagingBuffer
       return buffer.getInt();
    }
    
-   public long getUnsignedInt()
-   {
-      return buffer.getUnsignedInt();
-   }
-
    public long getLong()
    {
       return buffer.getLong();
@@ -340,12 +335,7 @@ public class BufferWrapper implements MessagingBuffer
    {
       return buffer.getPrefixedString(utf8.newDecoder());
    }
-   
-   public Object getUnderlyingBuffer()
-   {
-      return buffer;
-   }
-      
+         
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

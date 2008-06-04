@@ -57,8 +57,6 @@ public interface MessagingBuffer
 	
 	int getInt();
 	
-	long getUnsignedInt();
-	
 	long getLong();
 	
 	short getShort();
@@ -101,8 +99,5 @@ public interface MessagingBuffer
 	
 	void rewind();
 	
-	MessagingBuffer slice();
-	
-	Object getUnderlyingBuffer();
-	
+	MessagingBuffer slice();	
 }

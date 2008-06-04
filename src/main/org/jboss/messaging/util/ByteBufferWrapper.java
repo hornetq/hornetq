@@ -114,11 +114,6 @@ public class ByteBufferWrapper implements MessagingBuffer
 		return buffer.getInt();
 	}
 	
-	public long getUnsignedInt()
-	{
-	   return buffer.getInt() & 0xFFFFFFFFL;
-	}
-		
 	public long getLong()
 	{
 		return buffer.getLong();
@@ -331,10 +326,4 @@ public class ByteBufferWrapper implements MessagingBuffer
 	{
 		return buffer.remaining();
 	}
-	
-	public Object getUnderlyingBuffer()
-   {
-   	return buffer;
-   }
-		
 }

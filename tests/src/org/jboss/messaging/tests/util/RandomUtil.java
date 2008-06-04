@@ -60,6 +60,15 @@ public class RandomUtil
       return randomString().getBytes();
    }
    
+   public static double randomDouble()
+   {
+      return random.nextDouble();
+   }
+   
+   public static float randomFloat()
+   {
+      return random.nextFloat();
+   }
    
    public static Xid randomXid()
    {      
