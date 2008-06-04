@@ -14,6 +14,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CONN
 import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CONS_FLOWTOKEN;
 import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CREATECONNECTION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CREATECONNECTION_RESP;
+import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.EXCEPTION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.NULL;
 import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.PING;
 import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.PONG;
@@ -74,6 +75,7 @@ import javax.transaction.xa.Xid;
 
 import org.apache.mina.common.IoBuffer;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
@@ -84,6 +86,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessa
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerFlowCreditMessage;
@@ -197,6 +200,11 @@ public class PacketTypeTest extends UnitTestCase
          {
             Xid xid = (Xid) arg;
             XidCodecSupport.encodeXid(xid, buffer);
+         } else if (arg instanceof MessagingException)
+         {
+            MessagingException exception = (MessagingException) arg;
+            buffer.putInt(exception.getCode());
+            buffer.putNullableString(exception.getMessage());
          } else
          {
             fail("no encoding defined for " + arg);
@@ -240,12 +248,14 @@ public class PacketTypeTest extends UnitTestCase
       int bodyLength = packetLength - (SIZE_BYTE + 3 * SIZE_LONG);
       checkBody(buffer, bodyLength, bodyObjects);
       buffer.rewind();
-
+      
       SimpleProtocolDecoderOutput out = new SimpleProtocolDecoderOutput();
       MessagingCodec codec = new MessagingCodec();
       codec.doDecode(null, IoBuffer.wrap(buffer.array()), out);
       Object message = out.getMessage();
       assertTrue(message instanceof Packet);
+
+      log.info("encoded and decoded " + packet);
 
       return (Packet) message;
    }
@@ -311,6 +321,18 @@ public class PacketTypeTest extends UnitTestCase
       assertEquals(pong.isSessionFailed(), decodedPong.isSessionFailed());
    }
 
+   public void testMessagingExceptionMessage() throws Exception
+   {
+      MessagingExceptionMessage message = new MessagingExceptionMessage(new MessagingException(MessagingException.ILLEGAL_STATE));
+      
+      Packet decodedPacket = encodeAndCheckBytesAndDecode(message, message.getException());
+      
+      assertTrue(decodedPacket instanceof MessagingExceptionMessage);
+      MessagingExceptionMessage decodedMessage = (MessagingExceptionMessage) decodedPacket;
+      assertEquals(EXCEPTION, decodedMessage.getType());
+      assertEquals(message.getException().getCode(), decodedMessage.getException().getCode());
+   }
+   
    public void testCreateConnectionRequest() throws Exception
    {
       int version = randomInt();
@@ -516,7 +538,7 @@ public class PacketTypeTest extends UnitTestCase
       assertEquals(CONN_STOP, decodedPacket.getType());
    }
 
-   public void testConsumerFlowTokenMessage() throws Exception
+   public void testConsumerFlowCreditMessage() throws Exception
    {
       ConsumerFlowCreditMessage message = new ConsumerFlowCreditMessage(
             randomInt());
