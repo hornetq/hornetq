@@ -75,7 +75,8 @@
    <property name="native.bin.dir" value="native/bin"/>
    <property name="examples.dir" value="examples"/>
 
-   <property name="build.artifact" value="${module.name}-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}" />
+   <property name="build.artifact"
+             value="${module.name}-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}"/>
    <property name="build.distro.dir"
              value="${build.dir}/${build.artifact}"/>
    <property name="build.distro.lib.dir" value="${build.distro.dir}/lib"/>
@@ -477,7 +478,7 @@
       <copy todir="${build.distro.bin.dir}">
          <fileset dir="${src.bin.dir}">
             <include name="run.sh"/>
-	        <include name="run.bat"/>
+            <include name="run.bat"/>
          </fileset>
       </copy>
 
@@ -486,7 +487,7 @@
             <include name="*.so"/>
          </fileset>
       </copy>
-   	
+
       <antcall target="userdoc"/>
       <copy todir="${build.distro.dir}/docs/userguide">
          <fileset dir="${doc.build.dir}">
@@ -522,19 +523,19 @@
            destfile="${build.dir}/${build.artifact}.zip">
          <include name="${build.artifact}/**"/>
          <!-- add run.sh using a zipfileset to preserve its file permission -->
-      	 <exclude name="${build.artifact}/bin/run.sh" />
-      	 <zipfileset dir="${build.dir}/${build.artifact}/bin" 
-      	 	includes="run.sh" filemode="755" prefix="${build.artifact}/bin" />
+         <exclude name="${build.artifact}/bin/run.sh"/>
+         <zipfileset dir="${build.dir}/${build.artifact}/bin"
+                     includes="run.sh" filemode="755" prefix="${build.artifact}/bin"/>
       </zip>
-   	
+
       <tar basedir="${build.dir}"
            destfile="${build.dir}/${build.artifact}.tar"
            longfile="gnu">
          <include name="${build.artifact}/**"/>
-      	 <!-- add run.sh using a tarfileset to preserve its file permission -->
-      	 <exclude name="${build.artifact}/bin/run.sh"/>
-     	 <tarfileset dir="${build.dir}/${build.artifact}/bin" 
-     	 	includes="run.sh" filemode="755" prefix="${build.artifact}/bin" />
+         <!-- add run.sh using a tarfileset to preserve its file permission -->
+         <exclude name="${build.artifact}/bin/run.sh"/>
+         <tarfileset dir="${build.dir}/${build.artifact}/bin"
+                     includes="run.sh" filemode="755" prefix="${build.artifact}/bin"/>
       </tar>
       <gzip src="${build.dir}/${build.artifact}.tar"
             destfile="${build.dir}/${build.artifact}.tar.gz"/>
@@ -756,6 +757,80 @@
       <echo message="${test.execution.classpath.unix}" file="${test.execution.classpath.file}"/>
    </target>
 
+   <target name="emma" depends="compile, compile-unit-tests">
+      <property name="emma.dir" location="${build.dir}/emma"/>
+
+      <path id="emma.lib">
+         <pathelement location="${test.dir}/lib/emma.jar"/>
+         <pathelement location="${test.dir}/lib/emma_ant.jar"/>
+      </path>
+
+      <taskdef resource="emma_ant.properties" classpathref="emma.lib"/>
+      <!-- Instrument the .class files. -->
+      <mkdir dir="${build.dir}/emmaclasses"/>
+      <emma enabled="true">
+         <instr instrpath="${build.dir}/classes"
+                destdir="${build.dir}/classes"
+                metadatafile="${emma.dir}/metadata.emma"
+                merge="true" mode="overwrite">
+         </instr>
+      </emma>
+
+      <path id="emma.execution.classpath">
+         <path refid="emma.lib"/>
+         <path refid="unit.test.execution.classpath"/>
+      </path>
+
+      <echo message=""/>
+      <echo message="Running unit tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message=""/>
+      <mkdir dir="${test.output.dir}"/>
+      <mkdir dir="${test.reports.dir}"/>
+      <junit printsummary="${junit.printsummary}"
+             fork="on"
+             forkMode="once"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+         <sysproperty key="user.home" value="${user.home}"/>
+         <sysproperty key="emma.coverage.out.file" value="${emma.dir}/coverage.emma"/>
+         <sysproperty key="emma.coverage.out.merge" value="true"/>
+         <jvmarg value="-Djava.library.path=native/bin"/>
+         <jvmarg value="-Xmx1024M"/>
+         <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
+         <!--<jvmarg value="-ea"/>-->
+         <classpath refid="emma.execution.classpath"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest todir="${junit.batchtest.todir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${test.classes.dir}">
+               <include name="**/org/jboss/messaging/tests/integration/**/*${test-mask}.class"/>
+               <include name="**/org/jboss/messaging/tests/unit/**/*${test-mask}.class"/>
+               <exclude name="**/org/jboss/messaging/tests/local/**/*${test-mask}.class"/>
+               <exclude name="**/org/jboss/messaging/tests/performance/**/*${test-mask}.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+
+      <!-- Generate Emma reports. -->
+      <emma enabled="true">
+         <report sourcepath="${src.main.dir}"
+                 sort="+name"
+                 metrics="method:70,block:80,line:80,class:100">
+            <fileset dir="${emma.dir}">
+               <include name="*.emma"/>
+            </fileset>
+            <xml outfile="${test.reports.dir}/emma/coverage.xml" depth="method"/>
+            <html outfile="${test.reports.dir}/emma/coverage.html"
+                  depth="method" columns="name,class,method,block,line"/>
+         </report>
+      </emma>
+
+   </target>
    <!--server-->
 
    <target name="runServer" depends="jar">

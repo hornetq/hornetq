@@ -77,7 +77,7 @@
    <target name="build-native" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="build-native"/>
    </target>
-   
+
    <target name="userdoc">
       <ant antfile="build-messaging.xml" target="userdoc"/>
    </target>
@@ -127,6 +127,10 @@
 
    <target name="compile-reports" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="compile-reports"/>
+   </target>
+
+   <target name="emma" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="emma"/>
    </target>
 
    <!--server-->
