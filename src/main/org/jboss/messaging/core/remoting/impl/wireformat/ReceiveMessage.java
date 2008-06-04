@@ -35,19 +35,6 @@ public class ReceiveMessage extends EmptyPacket
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-
-   public ReceiveMessage(final ClientMessage message)
-   {
-      super(RECEIVE_MSG);
-
-      this.clientMessage = message;
-      
-      this.serverMessage = null;
-      
-      this.deliveryCount = -1;
-      
-      this.deliveryID = -1;
-   }
    
    public ReceiveMessage(final ServerMessage message, final int deliveryCount, final long deliveryID)
    {
