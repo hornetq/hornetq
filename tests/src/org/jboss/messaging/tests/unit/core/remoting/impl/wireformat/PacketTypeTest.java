@@ -78,7 +78,7 @@ import org.apache.mina.filter.codec.ProtocolDecoderOutput;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
+import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.mina.MessagingCodec;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
@@ -148,7 +148,7 @@ public class PacketTypeTest extends UnitTestCase
    private static MessagingBuffer encode(int length, Object... args)
          throws Exception
    {
-      BufferWrapper buffer = new BufferWrapper(length);
+      IoBufferWrapper buffer = new IoBufferWrapper(length);
       for (Object arg : args)
       {
          if (arg instanceof Byte)
@@ -262,7 +262,7 @@ public class PacketTypeTest extends UnitTestCase
 
    private static MessagingBuffer encode(final Packet packet) throws Exception
    {
-      MessagingBuffer buffer = new BufferWrapper(512);
+      MessagingBuffer buffer = new IoBufferWrapper(512);
       packet.encode(buffer);
 
       assertNotNull(buffer);

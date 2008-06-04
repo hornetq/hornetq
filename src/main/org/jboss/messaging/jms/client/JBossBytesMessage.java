@@ -31,7 +31,7 @@ import javax.jms.MessageFormatException;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
+import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
 
 /**
  * This class implements javax.jms.BytesMessage.
@@ -406,7 +406,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
    {
       super.clearBody();
 
-      body = new BufferWrapper(1024);
+      body = new IoBufferWrapper(1024);
    }
 
    public long getBodyLength() throws JMSException

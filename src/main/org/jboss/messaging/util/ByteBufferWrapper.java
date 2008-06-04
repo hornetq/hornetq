@@ -164,7 +164,7 @@ public class ByteBufferWrapper implements MessagingBuffer
 		//TODO This is quite inefficient - can be improved using a method similar to what MINA IOBuffer does
 		//(putPrefixedString)
 		ByteBuffer bb = utf8.encode(str);
-   	buffer.putInt(bb.capacity());
+   	buffer.putInt(bb.limit() - bb.position());
    	buffer.put(bb);
    }
 

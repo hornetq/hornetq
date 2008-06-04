@@ -30,7 +30,7 @@ import java.util.Set;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
+import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
 import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TypedProperties;
@@ -91,7 +91,7 @@ public abstract class MessageImpl implements Message
       this.expiration = expiration;
       this.timestamp = timestamp;
       this.priority = priority;            
-      this.body = new BufferWrapper(1024);
+      this.body = new IoBufferWrapper(1024);
    }
    
    /*
@@ -151,7 +151,7 @@ public abstract class MessageImpl implements Message
       //TODO - this can be optimised
       byte[] bytes = new byte[len];
       buffer.getBytes(bytes);
-      body = new BufferWrapper(len);
+      body = new IoBufferWrapper(len);
       body.putBytes(bytes);      
    }
    

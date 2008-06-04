@@ -26,13 +26,13 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class BufferWrapper implements MessagingBuffer
+public class IoBufferWrapper implements MessagingBuffer
 {
    // Constants -----------------------------------------------------
 
    private static final Charset utf8 = Charset.forName("UTF-8");
    
-   private static final Logger log = Logger.getLogger(BufferWrapper.class);
+   private static final Logger log = Logger.getLogger(IoBufferWrapper.class);
    
    // Attributes ----------------------------------------------------
 
@@ -42,14 +42,14 @@ public class BufferWrapper implements MessagingBuffer
 
    // Constructors --------------------------------------------------
 
-   public BufferWrapper(final int size)
+   public IoBufferWrapper(final int size)
    {
       buffer = IoBuffer.allocate(size);
       
       buffer.setAutoExpand(true);
    }
          
-   public BufferWrapper(final IoBuffer buffer)
+   public IoBufferWrapper(final IoBuffer buffer)
    {
       this.buffer = buffer;
    }
@@ -95,7 +95,7 @@ public class BufferWrapper implements MessagingBuffer
    
    public MessagingBuffer slice()
    {
-      return new BufferWrapper(buffer.slice());
+      return new IoBufferWrapper(buffer.slice());
    }
    
    public int remaining()

@@ -31,7 +31,7 @@ import javax.jms.StreamMessage;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
+import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
 import org.jboss.messaging.util.DataConstants;
 
 /**
@@ -561,7 +561,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    {
       super.clearBody();
       
-      body = new BufferWrapper(1024);
+      body = new IoBufferWrapper(1024);
    }
    
    public void doBeforeSend() throws Exception

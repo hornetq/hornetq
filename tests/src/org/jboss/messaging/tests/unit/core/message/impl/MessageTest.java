@@ -27,7 +27,7 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
+import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
@@ -279,7 +279,7 @@ public class MessageTest extends UnitTestCase
    public void testEncodingMessage() throws Exception
    {
       byte[] bytes = new byte[]{(byte)1, (byte)2, (byte)3};
-      final BufferWrapper bufferBody = new BufferWrapper(bytes.length);
+      final IoBufferWrapper bufferBody = new IoBufferWrapper(bytes.length);
       bufferBody.putBytes(bytes);
       
       

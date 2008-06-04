@@ -110,7 +110,7 @@ public class MessagingCodec extends CumulativeProtocolDecoder
       
       iobuf.setAutoExpand(true);
       
-      MessagingBuffer buffer = new BufferWrapper(iobuf);
+      MessagingBuffer buffer = new IoBufferWrapper(iobuf);
 
       packet.encode(buffer);
       
@@ -425,7 +425,7 @@ public class MessagingCodec extends CumulativeProtocolDecoder
             }
          }
          
-         MessagingBuffer buff = new BufferWrapper(in.slice());
+         MessagingBuffer buff = new IoBufferWrapper(in.slice());
          
          packet.decode(buff);
 

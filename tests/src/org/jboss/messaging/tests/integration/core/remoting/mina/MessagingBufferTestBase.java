@@ -17,16 +17,17 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import junit.framework.TestCase;
 
 import org.apache.mina.common.IoBuffer;
-import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
+import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
 import org.jboss.messaging.tests.unit.core.remoting.impl.wireformat.CodecAssert;
 import org.jboss.messaging.tests.util.RandomUtil;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
  * 
  * @version <tt>$Revision$</tt>
  */
-public class BufferWrapperTest extends TestCase
+public abstract class MessagingBufferTestBase extends TestCase
 {
    // Constants -----------------------------------------------------
 
@@ -38,24 +39,22 @@ public class BufferWrapperTest extends TestCase
 
    // Public --------------------------------------------------------
 
-   private BufferWrapper wrapper;
-   private IoBuffer buffer;
+   private MessagingBuffer wrapper;
 
    @Override
    protected void setUp() throws Exception
    {
-      buffer = IoBuffer.allocate(256);
-      buffer.setAutoExpand(true);
-      wrapper = new BufferWrapper(buffer);
+      wrapper = createBuffer();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
       wrapper = null;
-      buffer = null;
-
    }
+
+   protected abstract MessagingBuffer createBuffer();
+   protected abstract void flipBuffer();
 
    public void testNullString() throws Exception
    {
@@ -85,7 +84,7 @@ public class BufferWrapperTest extends TestCase
       byte b = randomByte();
       wrapper.putByte(b);
       
-      buffer.flip();
+      flipBuffer();
       
       assertEquals(b, wrapper.getByte());
    }
@@ -95,7 +94,7 @@ public class BufferWrapperTest extends TestCase
       byte[] bytes = randomBytes();
       wrapper.putBytes(bytes);
       
-      buffer.flip();
+      flipBuffer();
       
       byte[] b = new byte[bytes.length];
       wrapper.getBytes(b);
@@ -106,7 +105,7 @@ public class BufferWrapperTest extends TestCase
    {
       wrapper.putBoolean(true);
       
-      buffer.flip();
+      flipBuffer();
       
       assertTrue(wrapper.getBoolean());
    }
@@ -115,7 +114,7 @@ public class BufferWrapperTest extends TestCase
    {
       wrapper.putBoolean(false);
       
-      buffer.flip();
+      flipBuffer();
       
       assertFalse(wrapper.getBoolean());
    }
@@ -124,7 +123,7 @@ public class BufferWrapperTest extends TestCase
    {
       wrapper.putChar('a');
       
-      buffer.flip();
+      flipBuffer();
       
       assertEquals('a', wrapper.getChar());
    }
@@ -134,7 +133,7 @@ public class BufferWrapperTest extends TestCase
       int i = randomInt();
       wrapper.putInt(i);
       
-      buffer.flip();
+      flipBuffer();
       
       assertEquals(i, wrapper.getInt());
    }
@@ -143,7 +142,7 @@ public class BufferWrapperTest extends TestCase
    {
       wrapper.putShort((short) 1);
       
-      buffer.flip();
+      flipBuffer();
       
       assertEquals((short)1, wrapper.getShort());
    }
@@ -153,7 +152,7 @@ public class BufferWrapperTest extends TestCase
       double d = randomDouble();
       wrapper.putDouble(d);
       
-      buffer.flip();
+      flipBuffer();
       
       assertEquals(d, wrapper.getDouble());
    }
@@ -163,7 +162,7 @@ public class BufferWrapperTest extends TestCase
       float f = randomFloat();
       wrapper.putFloat(f);
       
-      buffer.flip();
+      flipBuffer();
       
       assertEquals(f, wrapper.getFloat());
    }
@@ -173,7 +172,7 @@ public class BufferWrapperTest extends TestCase
       String str = randomString();
       wrapper.putUTF(str);
       
-      buffer.flip();
+      flipBuffer();
       
       assertEquals(str, wrapper.getUTF());
    }
@@ -188,7 +187,7 @@ public class BufferWrapperTest extends TestCase
    {
       wrapper.putNullableString(nullableString);
 
-      buffer.flip();
+      flipBuffer();
       
       return wrapper.getNullableString();
    }

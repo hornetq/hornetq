@@ -31,7 +31,7 @@ import org.jboss.messaging.core.config.impl.FileConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager;
-import org.jboss.messaging.core.remoting.impl.mina.BufferWrapper;
+import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
@@ -142,7 +142,7 @@ public class StorageManagerTimingTest extends UnitTestCase
       }
       
       
-      final BufferWrapper buffer = new BufferWrapper(1024);
+      final IoBufferWrapper buffer = new IoBufferWrapper(1024);
       buffer.putBytes(bytes);
 
       final AtomicLong transactionGenerator = new AtomicLong(1);
