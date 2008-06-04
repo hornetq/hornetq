@@ -10,11 +10,14 @@ import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import static org.jboss.messaging.tests.integration.core.remoting.mina.TestSupport.PORT;
 import junit.framework.TestCase;
 
+import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
+import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.remoting.ConnectorRegistry;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.remoting.impl.ConnectorRegistryImpl;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
@@ -183,6 +186,17 @@ public class ConnectorRegistryTest extends TestCase
 
       assertNull(registry.removeConnector(config1.getLocation()));
       assertNotNull(registry.removeConnector(config2.getLocation()));
+   }
+   
+   public void testRemoveUnknownLocation() throws Exception
+   {
+      Location location = new LocationImpl(TransportType.TCP, "whatever", PORT);
+      try {
+         registry.removeConnector(location);
+         fail("removing a connector for an unknown location throws an IllegalStateException");
+      } catch (IllegalStateException e)
+      {
+      }
    }
 
    // Package protected ---------------------------------------------
