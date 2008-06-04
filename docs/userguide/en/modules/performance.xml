@@ -123,19 +123,13 @@
         <para>3. ActiveMQ 5.1. This is the latest production version of ActiveMQ. Out of the box config was used with two changes: 1) syncOnWrite was set to true in the persistence config (otherwise ActiveMQ won't sync to disc on tx boundaries) 2) The upper queue memory limit was extended to 100MB otherwise the tests would block as queues became full.</para>
       </listitem>
       <listitem>
-        <para>4. Apache QPid M2.1 Java version with BDB store, Java JMS client. This is the latest production/stable version of Apache QPid. Out of the box config was used.</para>
-      </listitem>
-      <listitem>
-        <para>5. Red Hat MRG Messaging 1.0 C++ version with async journal and QPID Java JMS client. As recommended version was taken from trunk. SVN revisions are: Store 2093, QPID trunk 661704. This corresponds to MRG Messaging 1.0 after MRG Messaging 1.0 beta and just prior to MRG Messaging 1.0 GA. Out of the box config was used.</para>
-      </listitem>
-      <listitem>
-	 <para>6. JBoss MQ in JBoss AS 4.2.2.GA. This is JBoss' legacy JMS provider - now superceded by JBoss Messaging. Used with MySQL 5.0.45 colocated with server and Innodb tables with innodb_flush_log_at_trx_commit=1 (enable sync at tx commit)</para>
+	 <para>4. JBoss MQ in JBoss AS 4.2.2.GA. This is JBoss' legacy JMS provider - now superceded by JBoss Messaging. Used with MySQL 5.0.45 colocated with server and Innodb tables with innodb_flush_log_at_trx_commit=1 (enable sync at tx commit)</para>
       </listitem>        
     </itemizedlist>
 
     <table>
       <title>Performance Results (all results in messages/sec)</title>
-      <tgroup cols="7">
+      <tgroup cols="5">
         <colspec align="center" />
 
         <thead>
@@ -148,10 +142,6 @@
 	    
             <entry align="center">Apache ActiveMQ 5.1</entry>
 
-            <entry align="center">Apache QPid M2.1 Java</entry>
-
-            <entry align="center">MRG Messaging 1.0 C++</entry>
-	    
 	    <entry align="center">JBoss MQ</entry>
           </row>
         </thead>
@@ -166,10 +156,6 @@
 	    
             <entry align="center">12,963</entry>
             
-            <entry align="center">4,619</entry>
-
-            <entry align="center">6,790</entry>
-	    
 	    <entry align="center">881</entry>
           </row>
 
@@ -182,10 +168,6 @@
 	    
             <entry align="center">9,813</entry>
             
-            <entry align="center">7,444</entry>
-
-            <entry align="center">4,691</entry>
-	    
 	    <entry align="center">672</entry>
           </row>
 	  
@@ -196,10 +178,6 @@
 	    
 	    <entry align="center">442</entry>
 	    
-            <entry align="center">312</entry>
-            
-            <entry align="center">QPid M2.1 does not support blocking persistent message sends</entry>
-
             <entry align="center">23</entry>
 	    
 	    <entry align="center">622</entry>
@@ -214,10 +192,6 @@
 	    
             <entry align="center">ActiveMQ 5.1 does not support non blocking persistent message sends</entry>
             
-            <entry align="center">319</entry>
-
-            <entry align="center">6263</entry>
-	    
 	    <entry align="center">JBoss MQ does not support non blocking persistent message sends</entry>
           </row>
 
@@ -230,10 +204,6 @@
 	    
             <entry align="center">524</entry>
             
-	    <entry align="center">QPid M2.1 does not support blocking persistent message sends</entry>
-
-            <entry align="center">23</entry>
-	    
 	    <entry align="center">637</entry>
           </row>
 
@@ -246,10 +216,6 @@
 	    
 	    <entry align="center">ActiveMQ 5.1 does not support non blocking persistent message sends</entry>
             
-            <entry align="center">318</entry>
-
-            <entry align="center">7,886</entry>
-	    
 	    <entry align="center">JBoss MQ does not support non blocking persistent message sends</entry>
           </row>
 
@@ -260,10 +226,6 @@
 	    
 	    <entry align="center">1,355</entry>
 	    
-            <entry align="center">1,576</entry>
-            
-            <entry align="center">3,242</entry>
-
             <entry align="center">Unable to complete. The broker failed at this transaction size</entry>
 	    
 	    <entry align="center">805</entry>
@@ -278,10 +240,6 @@
 	    
             <entry align="center">396</entry>
             
-            <entry align="center">475</entry>
-
-            <entry align="center">147</entry>
-	    
 	    <entry align="center">523</entry>
           </row>
 
@@ -296,7 +254,6 @@
     
     <para>JBoss Messaging 2.0 provides the highest throughput in all tests, and in particular shows ground breaking persistent performance for both transactional and non transactional operations.</para>
     <para>JBoss Messaging 1.4.0.SP3_CP02 and ActiveMQ 5.1 are good all-round performers and show similar and respectable performance.</para>
-    <para>QPid/MRG have reasonable non transactional results - both persistent and non persistent, but are let down by poor transactional performance.</para>
     <para>JBoss MQ has reasonable persistent performance, but is let down by poor non persistent results.
     </para>
     
