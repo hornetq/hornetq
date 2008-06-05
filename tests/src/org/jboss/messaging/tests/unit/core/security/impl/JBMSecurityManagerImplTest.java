@@ -22,17 +22,18 @@
 package org.jboss.messaging.tests.unit.core.security.impl;
 
 import junit.framework.TestCase;
-import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
 
 import java.util.HashSet;
 
 /**
- * tests JBMSecurityManagerImpl 
+ * tests JBMSecurityManagerImpl
+ *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class JBMSecurityManagerImplTest  extends TestCase
+public class JBMSecurityManagerImplTest extends TestCase
 {
    private JBMSecurityManagerImpl securityManager;
 
@@ -104,6 +105,14 @@ public class JBMSecurityManagerImplTest  extends TestCase
       assertTrue(securityManager.validateUser("newuser1", "newpassword1"));
       securityManager.removeUser("newuser1");
       assertFalse(securityManager.validateUser("newuser1", "newpassword1"));
+   }
+
+   public void testRemovingInvalidUsers()
+   {
+      securityManager.addUser("newuser1", "newpassword1");
+      assertTrue(securityManager.validateUser("newuser1", "newpassword1"));
+      securityManager.removeUser("nonuser");
+      assertTrue(securityManager.validateUser("newuser1", "newpassword1"));
    }
 
    public void testAddingRoles()

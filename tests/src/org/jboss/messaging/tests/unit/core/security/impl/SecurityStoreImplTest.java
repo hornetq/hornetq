@@ -21,10 +21,7 @@
    */
 package org.jboss.messaging.tests.unit.core.security.impl;
 
-import java.util.HashSet;
-
 import junit.framework.TestCase;
-
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.JBMSecurityManager;
@@ -34,8 +31,11 @@ import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.util.SimpleString;
 
+import java.util.HashSet;
+
 /**
  * tests SecurityStoreImpl
+ *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public class SecurityStoreImplTest extends TestCase
@@ -44,7 +44,7 @@ public class SecurityStoreImplTest extends TestCase
 
    protected void setUp() throws Exception
    {
-      securityStore  = new SecurityStoreImpl(1000000000, true);
+      securityStore = new SecurityStoreImpl(1000000000, true);
    }
 
    protected void tearDown() throws Exception
@@ -98,15 +98,15 @@ public class SecurityStoreImplTest extends TestCase
       EasyMock.replay(securityManager);
       EasyMock.replay(serverConnection);
       securityStore.setSecurityRepository(repository);
-      securityStore.check(address, CheckType.CREATE, serverConnection );
+      securityStore.check(address, CheckType.CREATE, serverConnection);
       //now checked its cached
       EasyMock.reset(repository);
       EasyMock.reset(securityManager);
       EasyMock.reset(serverConnection);
       EasyMock.replay(repository);
       EasyMock.replay(securityManager);
-      securityStore.check(address, CheckType.CREATE, serverConnection );
-      
+      securityStore.check(address, CheckType.CREATE, serverConnection);
+
    }
 
    public void testUnsuccessfulCheck() throws Exception
@@ -131,7 +131,7 @@ public class SecurityStoreImplTest extends TestCase
       securityStore.setSecurityRepository(repository);
       try
       {
-         securityStore.check(address, CheckType.CREATE, serverConnection );
+         securityStore.check(address, CheckType.CREATE, serverConnection);
          fail("should throw exception");
       }
       catch (Exception e)
@@ -164,11 +164,12 @@ public class SecurityStoreImplTest extends TestCase
       EasyMock.replay(securityManager);
       EasyMock.replay(serverConnection);
       securityStore.setSecurityRepository(repository);
-      securityStore.check(address, CheckType.CREATE, serverConnection );
+      securityStore.check(address, CheckType.CREATE, serverConnection);
       securityStore.onChange();
-      securityStore.check(address, CheckType.CREATE, serverConnection );
+      securityStore.check(address, CheckType.CREATE, serverConnection);
 
    }
+
    public void testSuccessfulCheckTimeoutCache() throws Exception
    {
       securityStore = new SecurityStoreImpl(2000, true);
@@ -194,9 +195,52 @@ public class SecurityStoreImplTest extends TestCase
       EasyMock.replay(securityManager);
       EasyMock.replay(serverConnection);
       securityStore.setSecurityRepository(repository);
-      securityStore.check(address, CheckType.CREATE, serverConnection );
+      securityStore.check(address, CheckType.CREATE, serverConnection);
       Thread.sleep(2000);
-      securityStore.check(address, CheckType.CREATE, serverConnection );
+      securityStore.check(address, CheckType.CREATE, serverConnection);
 
+   }
+
+   public void testInvalidCheckType() throws Exception
+   {
+
+      CheckType badCheckType = new CheckType(4);
+      JBMSecurityManager securityManager = EasyMock.createStrictMock(JBMSecurityManager.class);
+      securityStore.setSecurityManager(securityManager);
+      //noinspection unchecked
+      HierarchicalRepository<HashSet<Role>> repository = EasyMock.createStrictMock(HierarchicalRepository.class);
+
+      SimpleString address = new SimpleString("anaddress");
+      HashSet<Role> roles = new HashSet<Role>();
+      roles.add(new Role("user", false, false, true));
+      repository.registerListener(securityStore);
+      EasyMock.expect(repository.getMatch(address.toString())).andReturn(roles);
+      ServerConnection serverConnection = EasyMock.createNiceMock(ServerConnection.class);
+      EasyMock.expect(serverConnection.getUsername()).andReturn("user");
+      EasyMock.expect(serverConnection.getPassword()).andReturn("password");
+      EasyMock.expect(securityManager.validateUserAndRole("user", "password", roles, badCheckType)).andReturn(true);
+      EasyMock.replay(repository);
+      EasyMock.replay(securityManager);
+      EasyMock.replay(serverConnection);
+      securityStore.setSecurityRepository(repository);
+      try
+      {
+         securityStore.check(address, badCheckType, serverConnection);
+         fail("should throw exception");
+      }
+      catch (IllegalArgumentException e)
+      {
+         e.printStackTrace();
+      }
+      //now try cached
+      try
+      {
+         securityStore.check(address, badCheckType, serverConnection);
+         fail("should throw exception");
+      }
+      catch (IllegalArgumentException e)
+      {
+         e.printStackTrace();
+      }
    }
 }

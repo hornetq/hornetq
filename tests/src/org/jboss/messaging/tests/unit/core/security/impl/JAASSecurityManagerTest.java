@@ -22,14 +22,14 @@
 package org.jboss.messaging.tests.unit.core.security.impl;
 
 import junit.framework.TestCase;
-import org.jboss.messaging.core.security.impl.JAASSecurityManager;
-import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.core.security.CheckType;
-import org.jboss.security.AuthenticationManager;
-import org.jboss.security.SimplePrincipal;
-import org.jboss.security.RealmMapping;
 import org.easymock.EasyMock;
 import org.easymock.IArgumentMatcher;
+import org.jboss.messaging.core.security.CheckType;
+import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.core.security.impl.JAASSecurityManager;
+import org.jboss.security.AuthenticationManager;
+import org.jboss.security.RealmMapping;
+import org.jboss.security.SimplePrincipal;
 
 import javax.security.auth.Subject;
 import java.util.HashSet;
@@ -37,11 +37,13 @@ import java.util.Set;
 
 /**
  * tests the JAASSecurityManager
+ *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public class JAASSecurityManagerTest extends TestCase
 {
    JAASSecurityManager securityManager;
+
    protected void setUp() throws Exception
    {
       securityManager = new JAASSecurityManager();
@@ -61,7 +63,7 @@ public class JAASSecurityManagerTest extends TestCase
       Subject subject = new Subject();
       EasyMock.expect(authenticationManager.isValid(principal(principal), EasyMock.aryEq(passwordChars), subject(subject))).andReturn(true);
       EasyMock.replay(authenticationManager);
-      
+
       securityManager.validateUser("newuser1", "newpassword1");
    }
 
@@ -78,7 +80,9 @@ public class JAASSecurityManagerTest extends TestCase
       EasyMock.replay(authenticationManager);
       EasyMock.expect(realmMapping.doesUserHaveRole(principal(principal), EasyMock.isA(Set.class))).andReturn(true);
       EasyMock.replay(realmMapping);
-      securityManager.validateUserAndRole("newuser1", "newpassword1", new HashSet<Role>(), CheckType.CREATE );   
+      HashSet<Role> roleHashSet = new HashSet<Role>();
+      roleHashSet.add(new Role("newuser1", true, true, true));
+      securityManager.validateUserAndRole("newuser1", "newpassword1", roleHashSet, CheckType.CREATE);
    }
 
    public static SimplePrincipal principal(SimplePrincipal principal)
@@ -104,7 +108,7 @@ public class JAASSecurityManagerTest extends TestCase
 
       public boolean matches(Object o)
       {
-         if(o instanceof SimplePrincipal)
+         if (o instanceof SimplePrincipal)
          {
             SimplePrincipal that = (SimplePrincipal) o;
             return that.getName().equals(principal.getName());
@@ -129,7 +133,7 @@ public class JAASSecurityManagerTest extends TestCase
 
       public boolean matches(Object o)
       {
-         if(o instanceof Subject)
+         if (o instanceof Subject)
          {
             Subject that = (Subject) o;
             return true;
