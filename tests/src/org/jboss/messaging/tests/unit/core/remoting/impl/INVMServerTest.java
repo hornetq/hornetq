@@ -1,4 +1,4 @@
-package org.jboss.messaging.tests.unit.jms.server;
+package org.jboss.messaging.tests.unit.core.remoting.impl;
 
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientConnectionFactory;

@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.tests.unit.jms.network;
+package org.jboss.messaging.tests.unit.core.remoting.network;
 
 import org.apache.mina.common.IoFilterAdapter;
 import org.apache.mina.common.IoSession;
