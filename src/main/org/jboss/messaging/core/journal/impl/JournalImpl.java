@@ -649,6 +649,8 @@ public class JournalImpl implements TestableJournal
 		{
 		   usedFile = appendRecord(bb, syncTransactional);      
 		}
+		
+		transactionCallbacks.remove(txID);
 				
 		tx.rollback(usedFile);
 	}
