@@ -85,7 +85,7 @@ public class VariableLatch
                return true;
             }
             
-            int newState = getState() - numberOfReleases;
+            int newState = actualState - numberOfReleases;
             
             if (compareAndSetState(actualState, newState))
             {
