@@ -2,7 +2,7 @@
 <chapter id="introduction">
    <title>Introduction</title>
 
-   <section id="intro.intro">
+   <section id="introduction.intro">
       <para>JBoss Messaging 2.0 alpha, is a bare-bones messaging system. This release is designed to show case the elegant architecture and high performance transport and persistence. Many other features, including state of the art clustering will be added before the final general availability (GA) release</para>
       
       <para>JBoss Messaging builds upon the solid performance of JBoss Messaging 1.4 to bring unrivalled levels of performance and scalability</para>

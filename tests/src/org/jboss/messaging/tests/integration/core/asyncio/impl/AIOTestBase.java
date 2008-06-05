@@ -25,6 +25,7 @@ package org.jboss.messaging.tests.integration.core.asyncio.impl;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.asyncio.AIOCallback;
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
@@ -94,29 +95,28 @@ public abstract class AIOTestBase extends UnitTestCase
 
    protected static class CountDownCallback implements AIOCallback
    {
-
-       CountDownLatch latch;
+       private final CountDownLatch latch;
        
-       public CountDownCallback(CountDownLatch latch)
+       public CountDownCallback(final CountDownLatch latch)
        {
            this.latch = latch;
        }
        
-       boolean doneCalled = false;
-       boolean errorCalled = false;
-       int timesDoneCalled = 0;
+       volatile boolean doneCalled = false;
+       volatile boolean errorCalled = false;
+       final AtomicInteger timesDoneCalled = new AtomicInteger(0);
 
        public void done()
        {
            doneCalled = true;
-           timesDoneCalled++;
+           timesDoneCalled.incrementAndGet();
            if (latch != null) 
            {
                latch.countDown();
            }
        }
 
-       public void onError(int errorCode, String errorMessage)
+       public void onError(final int errorCode, final String errorMessage)
        {
            errorCalled = true;
            if (latch != null)
@@ -125,9 +125,8 @@ public abstract class AIOTestBase extends UnitTestCase
                latch.countDown();
            }
            System.out.println("Received an Error - " + errorCode + " message=" + errorMessage);
-           
+          
        }
-
    }
 
    

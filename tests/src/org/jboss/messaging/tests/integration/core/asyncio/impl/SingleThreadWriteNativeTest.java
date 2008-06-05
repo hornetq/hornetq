@@ -138,14 +138,14 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          
          for (CountDownCallback callback : list)
          {
-            assertEquals(1, callback.timesDoneCalled);
+            assertEquals(1, callback.timesDoneCalled.get());
             assertTrue(callback.doneCalled);
             assertFalse(callback.errorCalled);
          }
          
          for (CountDownCallback callback : list2)
          {
-            assertEquals(1, callback.timesDoneCalled);
+            assertEquals(1, callback.timesDoneCalled.get());
             assertTrue(callback.doneCalled);
             assertFalse(callback.errorCalled);
          }
@@ -183,10 +183,10 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
    public void testInvalidReads() throws Exception
    {
       class LocalCallback implements AIOCallback
-      {
+      {         
+         private CountDownLatch latch = new CountDownLatch(1);
          
-         CountDownLatch latch = new CountDownLatch(1);
-         boolean error;
+         volatile boolean error;
          
          public void done()
          {
@@ -533,7 +533,7 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          
          for (CountDownCallback tmp : list)
          {
-            assertEquals(1, tmp.timesDoneCalled);
+            assertEquals(1, tmp.timesDoneCalled.get());
             assertTrue(tmp.doneCalled);
             assertFalse(tmp.errorCalled);
          }

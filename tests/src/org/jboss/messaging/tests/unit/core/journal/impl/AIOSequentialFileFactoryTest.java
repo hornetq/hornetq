@@ -25,6 +25,7 @@ package org.jboss.messaging.tests.unit.core.journal.impl;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.journal.IOCallback;
 import org.jboss.messaging.core.journal.SequentialFile;
@@ -71,10 +72,9 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
    public void testBlockCallback() throws Exception
    {
       class BlockCallback implements IOCallback
-      {
-         
-         int countDone = 0;
-         int countError = 0;
+      {         
+         AtomicInteger countDone = new AtomicInteger(0);
+         AtomicInteger countError = new AtomicInteger(0);
          CountDownLatch blockLatch;
 
          BlockCallback()
@@ -88,20 +88,17 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
          }
          
          public void done()
-         {
-            
-           try
+         {            
+            try
             {
                blockLatch.await();
-            } catch (InterruptedException e)
+            }
+            catch (InterruptedException e)
             {
                e.printStackTrace();
             }
-            
-            countDone ++;
-            
-            
-            
+
+            countDone.incrementAndGet();
          }
 
          public void onError(int errorCode, String errorMessage)
@@ -109,12 +106,13 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
             try
             {
                blockLatch.await();
-            } catch (InterruptedException e)
+            }
+            catch (InterruptedException e)
             {
                e.printStackTrace();
             }
             
-            countError ++;
+            countError.incrementAndGet();
          }
       }
       
@@ -144,10 +142,8 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
       
       callback.release();
       file.close();
-      assertEquals(NUMBER_OF_RECORDS, callback.countDone);
-      assertEquals(0, callback.countError);
-      
-      
+      assertEquals(NUMBER_OF_RECORDS, callback.countDone.get());
+      assertEquals(0, callback.countError.get());
       
       file.open();
       
@@ -172,10 +168,6 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
       
       
       file.close();
-      
-      
-      
-      
    }
    
 

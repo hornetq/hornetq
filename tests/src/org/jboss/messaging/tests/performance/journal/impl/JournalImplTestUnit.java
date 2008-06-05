@@ -217,50 +217,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       journal.start();
       
       journal.load(new ArrayList<RecordInfo>(), null);
-      
-
-      final CountDownLatch latch = new CountDownLatch((int)numMessages);
-      
-      
-      class LocalCallback implements IOCallback
-      {
-
-         int i=0;
-         String message = null;
-         boolean done = false;
-         CountDownLatch latch;
-         
-         public LocalCallback(int i, CountDownLatch latch)
-         {
-            this.i = i;
-            this.latch = latch;
-         }
-         public void done()
-         {
-            synchronized (this)
-            {
-               if (done)
-               {
-                  message = "done received in duplicate";
-               }
-               done = true;
-               this.latch.countDown();
-            }
-         }
-
-         public void onError(int errorCode, String errorMessage)
-         {
-            synchronized (this)
-            {
-               System.out.println("********************** Error = " + (i++));
-               message = errorMessage;
-               latch.countDown();
-            }
-         }
-         
-      }
-      
-      
+            
       log.info("Adding data");
       byte[] data = new byte[700];
       

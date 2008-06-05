@@ -1667,46 +1667,13 @@ public class JournalImpl implements TestableJournal
    
 	// Inner classes ---------------------------------------------------------------------------
 
-   private static class SimpleCallback implements IOCallback
-   {      
-      private String errorMessage;
-      
-      private int errorCode;
-      
-      private CountDownLatch latch = new CountDownLatch(1);
-
-      public void done()
-      {
-         latch.countDown();
-      }
-
-      public void onError(final int errorCode, final String errorMessage)
-      {
-         this.errorMessage = errorMessage;
-         this.errorCode = errorCode;
-         latch.countDown();         
-      }
-      
-      public void waitCompletion(long timeout) throws InterruptedException 
-      {
-         if (!latch.await(timeout, TimeUnit.MILLISECONDS))
-         {
-            throw new IllegalStateException("Timeout!");
-         }
-         if (errorMessage != null)
-         {
-            throw new IllegalStateException("Error on Transaction: " + errorCode + " - " + errorMessage);
-         }
-     }      
-   }
-   
    private static class TransactionCallback implements IOCallback
    {      
       private final VariableLatch countLatch = new VariableLatch();
       
-      private String errorMessage = null;
+      private volatile String errorMessage = null;
       
-      private int errorCode = 0;
+      private volatile int errorCode = 0;
       
       public void countUp()
       {

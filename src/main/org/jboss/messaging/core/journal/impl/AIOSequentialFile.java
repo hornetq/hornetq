@@ -273,11 +273,11 @@ public class AIOSequentialFile implements SequentialFile
 	
 	private static class WaitCompletion implements IOCallback
 	{		
-		CountDownLatch latch = new CountDownLatch(1);
+		private final CountDownLatch latch = new CountDownLatch(1);
 		
-		String errorMessage;
+		private volatile String errorMessage;
 		
-		int errorCode = 0;
+		private volatile int errorCode = 0;
 		
 		public void done()
 		{
@@ -307,9 +307,6 @@ public class AIOSequentialFile implements SequentialFile
 			{
 			   return false;
 			}
-	      
-
-			
 		}		
 	}	
 }

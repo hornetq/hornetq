@@ -6,11 +6,10 @@ import org.jboss.messaging.core.journal.IOCallback;
 
 public class FakeCallback implements IOCallback
 {
-
-   String msg;
-   CountDownLatch latch;
+   volatile String msg;
+   final CountDownLatch latch;
    
-   public FakeCallback(CountDownLatch latch)
+   public FakeCallback(final CountDownLatch latch)
    {
       this.latch = latch;
    }
@@ -25,7 +24,7 @@ public class FakeCallback implements IOCallback
       latch.countDown();
    }
 
-   public void onError(int errorCode, String errorMessage)
+   public void onError(final int errorCode, final String errorMessage)
    {
       latch.countDown();
       this.msg = errorMessage;
