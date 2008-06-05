@@ -21,20 +21,18 @@
    */
 package org.jboss.messaging.core.security.impl;
 
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.core.security.CheckType;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.security.AuthenticationManager;
 import org.jboss.security.RealmMapping;
 import org.jboss.security.SimplePrincipal;
-import org.jboss.security.AuthenticationManager;
 
-import javax.security.auth.Subject;
 import javax.naming.InitialContext;
+import javax.security.auth.Subject;
 import java.util.HashSet;
 import java.util.Set;
-import java.security.Principal;
 
 /**
  * This implementation delegates to the a real JAAS Authentication Manager and will typically be used within an appserver
@@ -85,7 +83,7 @@ public class JAASSecurityManager implements JBMSecurityManager
 
    public boolean validateUserAndRole(String user, String password, HashSet<Role> roles, CheckType checkType)
    {
-      SimplePrincipal principal = user == null? null:new SimplePrincipal(user);
+      SimplePrincipal principal = user == null ? null : new SimplePrincipal(user);
 
       char[] passwordChars = null;
 
@@ -96,19 +94,22 @@ public class JAASSecurityManager implements JBMSecurityManager
 
       Subject subject = new Subject();
 
-      boolean authenticated =  authenticationManager.isValid(principal, passwordChars, subject);
+      boolean authenticated = authenticationManager.isValid(principal, passwordChars, subject);
       // Authenticate. Successful authentication will place a new SubjectContext on thread local,
       // which will be used in the authorization process. However, we need to make sure we clean up
       // thread local immediately after we used the information, otherwise some other people
       // security my be screwed up, on account of thread local security stack being corrupted.
-      if(authenticated)
+      if (authenticated)
       {
          SecurityActions.pushSubjectContext(principal, passwordChars, subject);
          Set rolePrincipals = getRolePrincipals(checkType, roles);
 
          authenticated = realmMapping.doesUserHaveRole(principal, rolePrincipals);
 
-         if (trace) { log.trace("user " + user + (authenticated ? " is " : " is NOT ") + "authorized"); }
+         if (trace)
+         {
+            log.trace("user " + user + (authenticated ? " is " : " is NOT ") + "authorized");
+         }
          SecurityActions.popSubjectContext();
       }
       return authenticated;
@@ -119,9 +120,9 @@ public class JAASSecurityManager implements JBMSecurityManager
       Set<SimplePrincipal> principals = new HashSet<SimplePrincipal>();
       for (Role role : roles)
       {
-         if((checkType.equals(CheckType.CREATE) && role.isCreate()) ||
-                 (checkType.equals(CheckType.WRITE) && role.isWrite()) ||
-                 (checkType.equals(CheckType.READ) && role.isRead()))
+         if ((checkType.equals(CheckType.CREATE) && role.isCheckType(CheckType.CREATE)) ||
+                 (checkType.equals(CheckType.WRITE) && role.isCheckType(CheckType.WRITE)) ||
+                 (checkType.equals(CheckType.READ) && role.isCheckType(CheckType.READ)))
          {
             principals.add(new SimplePrincipal(role.getName()));
          }
@@ -141,12 +142,13 @@ public class JAASSecurityManager implements JBMSecurityManager
 
    /**
     * lifecycle method, needs to be called
+    *
     * @throws Exception
     */
    public void start() throws Exception
    {
       InitialContext ic = new InitialContext();
-      authenticationManager = (AuthenticationManager)ic.lookup(securityDomainName);
+      authenticationManager = (AuthenticationManager) ic.lookup(securityDomainName);
       realmMapping = (RealmMapping) authenticationManager;
    }
 

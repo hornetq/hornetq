@@ -21,7 +21,6 @@
    */
 package org.jboss.messaging.core.deployers.impl;
 
-import org.jboss.messaging.core.deployers.Deployer;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.w3c.dom.Node;
@@ -45,6 +44,10 @@ public class SecurityDeployer extends XmlDeployer
    private static final String MATCH = "match";
    private static final String SECURITY_ELEMENT_NAME = "security";
 
+   public static final String WRITE_NAME = "write";
+   public static final String READ_NAME = "read";
+   public static final String CREATE_NAME = "create";
+
    /**
     * The repository to add to
     */
@@ -54,8 +57,10 @@ public class SecurityDeployer extends XmlDeployer
    {
       this.securityRepository = securityRepository;
    }
+
    /**
     * the names of the elements to deploy
+    *
     * @return the names of the elements todeploy
     */
    public String[] getElementTagName()
@@ -65,6 +70,7 @@ public class SecurityDeployer extends XmlDeployer
 
    /**
     * the key attribute for theelement, usually 'name' but can be overridden
+    *
     * @return the key attribute
     */
    public String getKeyAttribute()
@@ -74,6 +80,7 @@ public class SecurityDeployer extends XmlDeployer
 
    /**
     * deploy an element
+    *
     * @param node the element to deploy
     * @throws Exception .
     */
@@ -97,15 +104,15 @@ public class SecurityDeployer extends XmlDeployer
             String[] roles = roleString.split(",");
             for (String role : roles)
             {
-               if (Role.CREATE_NAME.equals(type))
+               if (CREATE_NAME.equals(type))
                {
                   create.add(role.trim());
                }
-               else if (Role.WRITE_NAME.equals(type))
+               else if (WRITE_NAME.equals(type))
                {
                   write.add(role.trim());
                }
-               else if (Role.READ_NAME.equals(type))
+               else if (READ_NAME.equals(type))
                {
                   read.add(role);
                }
@@ -124,6 +131,7 @@ public class SecurityDeployer extends XmlDeployer
 
    /**
     * undeploys an element
+    *
     * @param node the element to undeploy
     * @throws Exception .
     */
