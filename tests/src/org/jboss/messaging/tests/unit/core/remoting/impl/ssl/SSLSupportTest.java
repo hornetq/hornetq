@@ -7,6 +7,7 @@
 package org.jboss.messaging.tests.unit.core.remoting.impl.ssl;
 
 import java.io.File;
+import java.net.URL;
 
 import junit.framework.TestCase;
 
@@ -47,6 +48,22 @@ public class SSLSupportTest extends TestCase
    public void testServerContextWithRightParameters() throws Exception
    {
       SSLSupport.createServerContext(keyStorePath, keyStorePassword,
+            trustStorePath, trustStorePassword);
+   }
+
+   public void testServerContextWithKeyStorePathAsURL() throws Exception
+   {
+      URL url = Thread.currentThread().getContextClassLoader().getResource(keyStorePath);
+      SSLSupport.createServerContext(url.toString(), keyStorePassword,
+            trustStorePath, trustStorePassword);
+   }
+
+
+   public void testServerContextWithKeyStorePathAsFile() throws Exception
+   {
+      URL url = Thread.currentThread().getContextClassLoader().getResource(keyStorePath);
+      File file = new File(url.toURI());
+      SSLSupport.createServerContext(file.getAbsolutePath(), keyStorePassword,
             trustStorePath, trustStorePassword);
    }
 
