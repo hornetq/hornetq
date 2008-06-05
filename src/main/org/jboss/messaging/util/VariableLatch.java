@@ -32,7 +32,10 @@ import java.util.concurrent.locks.AbstractQueuedSynchronizer;
  * 
  * The idea is, instead of providing each user specific Latch/Synchronization, java.util.concurrent provides the framework for reuses, based on an AtomicInteger (getState())
  * 
- * On JBossMessaging we have the requirement of increment and decrement a counter until the user fires a ready event (commit). At that point we just act as a regular countDown
+ * On JBossMessaging we have the requirement of increment and decrement a counter until the user fires a ready event (commit). At that point we just act as a regular countDown.
+ * 
+ * Note: This latch is reusable. Once it reaches zero, you can call up again, and reuse it on further waits.
+ *       For example: prepareTransaction will wait for the current completions, and further adds will be called on the latch. Later on when commit is called you can reuse the same latch.
  * 
  * @author Clebert Suconic
  * */
