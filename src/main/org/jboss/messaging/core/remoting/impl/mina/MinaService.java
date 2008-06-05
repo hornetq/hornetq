@@ -248,23 +248,6 @@ public class MinaService implements RemotingService, CleanUpNotifier
 
    // Public --------------------------------------------------------
 
-   public void setKeepAliveFactory(ServerKeepAliveFactory factory)
-   {
-      assert factory != null;
-
-      this.factory = factory;
-   }
-
-   // Public --------------------------------------------------------
-
-
-   public void setRemotingConfiguration(Configuration remotingConfig)
-   {
-      assert started == false;
-
-      config = remotingConfig;
-   }
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
