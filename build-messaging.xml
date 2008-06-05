@@ -161,49 +161,33 @@
    <property name="junit.test.haltonerror" value="false"/>
 
    <!--classpaths-->
-   <!--
-        Non-JBoss dependencies.
-        They must available in the repository and declared as <componentrefs> in build-thirdparty.xml.
-   -->
-   <path id="external.dependencies.classpath">
-      <path refid="jgroups.jgroups.classpath"/>
-      <path refid="apache.mina.classpath"/>
-      <path refid="apache.log4j.classpath"/>
-      <path refid="slf4j.api.classpath"/>
-      <path refid="slf4j.log4j.classpath"/>
-   </path>
-
-   <!--
-        JBoss dependencies.
-        They must available in the repository and declared as <componentrefs> in build-thirdparty.xml.
-
-        NOTE: If one of JBoss dependencies (jboss-remoting.jar) is locally
-              present in ./lib, it will take precedence over the corresponding repository instance.
-    -->
-   <path id="jboss.dependencies.classpath">
+   <path id="core.compilation.classpath">
       <path refid="jboss.common.classpath"/>
-      <path refid="jboss.jbossts14.classpath"/>
-      <path refid="jboss.microcontainer.classpath"/>
+      <path refid="apache.log4j.classpath"/>
+      <path refid="jboss.microcontainer.classpath"/>   	
+      <path refid="jboss.jbosssx.client.classpath"/>
       <path refid="jboss.jboss.security.spi.classpath"/>
       <path refid="jboss.jboss.jaspi.api.classpath"/>
-      <path refid="jboss.integration.classpath"/>
-      <path refid="jboss.jbosssx.client.classpath"/>
-      <path refid="jboss.jboss.javaee.classpath"/>
-   </path>
-
-   <path id="compilation.classpath">
-      <path refid="external.dependencies.classpath"/>
-      <path refid="jboss.dependencies.classpath"/>
+      <path refid="jgroups.jgroups.classpath"/>
+      <path refid="apache.mina.classpath"/>
       <path location="${build.classes.dir}"/>
+   </path>
+	
+   <path id="jms.compilation.classpath">
+      <path refid="jboss.jboss.javaee.classpath"/>
+      <path refid="jboss.jbossts14.classpath"/>
+      <path refid="jboss.integration.classpath"/>
    </path>
 
    <path id="javadoc.classpath">
-      <path refid="compilation.classpath"/>
+      <path refid="core.compilation.classpath"/>
+      <path refid="jms.compilation.classpath"/>
       <path location="${build.classes.dir}"/>
    </path>
 
    <path id="test.compilation.classpath">
-      <path refid="compilation.classpath"/>
+      <path refid="core.compilation.classpath"/>
+      <path refid="jms.compilation.classpath"/>
       <path location="${build.jars.dir}/jboss-${module.name}.jar"/>
       <path refid="junit.junit.classpath"/>
       <path refid="jboss.profiler.jvmti.classpath"/>
@@ -213,7 +197,8 @@
    </path>
 
    <path id="jms.test.compilation.classpath">
-      <path refid="compilation.classpath"/>
+      <path refid="core.compilation.classpath"/>
+      <path refid="jms.compilation.classpath"/>
       <path location="${build.jars.dir}/jboss-${module.name}.jar"/>
       <path refid="junit.junit.classpath"/>
       <path refid="jboss.profiler.jvmti.classpath"/>
@@ -222,7 +207,6 @@
       <pathelement location="${test.dir}/lib/easymock.jar"/>
       <path refid="oswego.concurrent.classpath"/>
       <path refid="apache.ant.classpath"/>
-
    </path>
 
    <path id="unit.test.execution.classpath">
@@ -230,6 +214,8 @@
       <pathelement location="${test.classes.dir}"/>
       <pathelement location="${src.config.dir}"/>
       <path refid="test.compilation.classpath"/>
+      <path refid="slf4j.api.classpath"/>
+      <path refid="slf4j.log4j.classpath"/>
    </path>
 
    <path id="jms.test.execution.classpath">
@@ -256,6 +242,8 @@
       <path refid="jboss.common.classpath"/>
       <path refid="jboss.common.core.classpath"/>
       <path refid="jboss.jnpserver.classpath"/>
+      <path refid="slf4j.api.classpath"/>
+      <path refid="slf4j.log4j.classpath"/>
    </path>
    <!--
         Setting "external.project" to true makes jbossbuild use the current directory, and not its
@@ -296,14 +284,16 @@
       <mkdir dir="${build.src.dir}"/>
    </target>
 
-   <target name="compile" depends="init">
+   <target name="compile" depends="compile-jms" />
+
+   <target name="compile-core" depends="init">
       <mkdir dir="${build.src.dir}/org/jboss/messaging/core/filter/impl"/>
       <echo message="${sun.javacc.lib}"/>
       <javacc target="${src.main.dir}/org/jboss/messaging/core/filter/impl/FilterParser.jj"
-              outputdirectory="${build.src.dir}/org/jboss/messaging/core/filter/impl"
+	          outputdirectory="${build.src.dir}/org/jboss/messaging/core/filter/impl"
               javacchome="${sun.javacc.lib}"
-              static="false"/>
-      <javac destdir="${build.classes.dir}"
+      	      static="false"/>
+   	  <javac destdir="${build.classes.dir}"
              target="${javac.target}"
              source="${javac.source}"
              optimize="${javac.optimize}"
@@ -318,17 +308,40 @@
             <pathelement path="${build.src.dir}"/>
             <pathelement path="${src.main.dir}"/>
          </src>
-         <include name="**/*.java"/>
-         <classpath refid="compilation.classpath"/>
+         <include name="**/messaging/microcontainer/**/*.java"/>
+         <include name="**/messaging/core/**/*.java"/>
+         <include name="**/messaging/util/**/*.java"/>
+         <classpath refid="core.compilation.classpath"/>
       </javac>
-      <javah class="org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl"
-             classpathref="compilation.classpath" destdir="./native/src"/>
-
+   	  <javah class="org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl"
+   	         classpathref="core.compilation.classpath" destdir="./native/src"/>
 
       <echo message="messaging.version.versionName=${messaging.version.name}${line.separator}messaging.version.majorVersion=${messaging.version.major}${line.separator}messaging.version.minorVersion=${messaging.version.minor}${line.separator}messaging.version.microVersion=${messaging.version.micro}${line.separator}messaging.version.incrementingVersion=${messaging.version.incrementing}${line.separator}messaging.version.versionSuffix=${messaging.version.suffix}${line.separator}"
-            file="${build.classes.dir}/version.properties"/>
+      	    file="${build.classes.dir}/version.properties"/>
    </target>
 
+   <target name="compile-jms" depends="compile-core">
+   	  <javac destdir="${build.classes.dir}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${build.src.dir}"/>
+            <pathelement path="${src.main.dir}"/>
+         </src>
+         <include name="**/jms/**/*.java"/>
+         <classpath refid="jms.compilation.classpath"/>
+         <classpath refid="core.compilation.classpath"/>
+      </javac>
+   </target>
+	
    <target name="build-native">
       <exec dir="native" executable="make">
          <arg line="clean"/>
