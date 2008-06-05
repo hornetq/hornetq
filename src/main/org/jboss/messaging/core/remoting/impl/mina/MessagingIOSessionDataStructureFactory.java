@@ -136,7 +136,7 @@ public class MessagingIOSessionDataStructureFactory implements IoSessionDataStru
       }
   }
    
-   
+   /*
    private static class DefaultWriteRequestQueue implements WriteRequestQueue
    {
       private final Queue<WriteRequest> q = new CircularQueue<WriteRequest>(16);
@@ -165,6 +165,7 @@ public class MessagingIOSessionDataStructureFactory implements IoSessionDataStru
           return q.toString();
       }
   }
+   */
    
    private static class ConcurrentWriteRequestQueue implements WriteRequestQueue
    {
@@ -195,6 +196,7 @@ public class MessagingIOSessionDataStructureFactory implements IoSessionDataStru
       }
   }
    
+   /*
    private static class SynchronousWriteRequestQueue implements WriteRequestQueue
    {
       private final LinkedBlockingQueue<WriteRequest> q = new LinkedBlockingQueue<WriteRequest>(1);
@@ -244,5 +246,5 @@ public class MessagingIOSessionDataStructureFactory implements IoSessionDataStru
           return q.toString();
       }
   }
-
+   */
 }
