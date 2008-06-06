@@ -23,8 +23,6 @@ public class IoBufferWrapperTest extends MessagingBufferTestBase
 
    // Attributes ----------------------------------------------------
 
-   private IoBuffer buffer;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -36,15 +34,9 @@ public class IoBufferWrapperTest extends MessagingBufferTestBase
    @Override
    protected MessagingBuffer createBuffer()
    {
-      buffer = IoBuffer.allocate(512);
+      IoBuffer buffer = IoBuffer.allocate(512);
       buffer.setAutoExpand(true);
       return new IoBufferWrapper(buffer);
-   }
-
-   @Override
-   protected void flipBuffer()
-   {
-      buffer.flip();
    }
 
    // Package protected ---------------------------------------------

@@ -210,11 +210,9 @@ public class ByteBufferWrapper implements MessagingBuffer
    	int b = buffer.get();
    	if (b == NULL)
    	{
-   		return null;
-   	}
-   	else
-   	{
-   	   return getSimpleString();
+   	   return null;
+   	} else {
+         return getSimpleString();
    	}
    }
    
@@ -226,6 +224,7 @@ public class ByteBufferWrapper implements MessagingBuffer
    	}
    	else
    	{
+   	   buffer.put(NOT_NULL);
    		putSimpleString(string);
    	}
    }

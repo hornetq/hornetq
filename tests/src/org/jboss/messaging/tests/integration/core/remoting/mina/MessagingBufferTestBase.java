@@ -6,21 +6,19 @@
  */
 package org.jboss.messaging.tests.integration.core.remoting.mina;
 
-import static java.util.UUID.randomUUID;
 import static org.jboss.messaging.tests.unit.core.remoting.impl.wireformat.CodecAssert.assertEqualsByteArrays;
 import static org.jboss.messaging.tests.util.RandomUtil.randomByte;
 import static org.jboss.messaging.tests.util.RandomUtil.randomBytes;
 import static org.jboss.messaging.tests.util.RandomUtil.randomDouble;
 import static org.jboss.messaging.tests.util.RandomUtil.randomFloat;
 import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
+import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import junit.framework.TestCase;
 
-import org.apache.mina.common.IoBuffer;
-import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
-import org.jboss.messaging.tests.unit.core.remoting.impl.wireformat.CodecAssert;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -54,13 +52,12 @@ public abstract class MessagingBufferTestBase extends TestCase
    }
 
    protected abstract MessagingBuffer createBuffer();
-   protected abstract void flipBuffer();
 
    public void testNullString() throws Exception
    {
       assertNull(putAndGetNullableString(null));
    }
-
+   
    public void testEmptyString() throws Exception
    {
       String result = putAndGetNullableString("");
@@ -71,12 +68,35 @@ public abstract class MessagingBufferTestBase extends TestCase
 
    public void testNonEmptyString() throws Exception
    {
-      String junk = randomUUID().toString();
-
+      String junk = randomString();
+      
       String result = putAndGetNullableString(junk);
 
       assertNotNull(result);
       assertEquals(junk, result);
+   }
+
+   public void testNullSimpleString() throws Exception
+   {
+      assertNull(putAndGetNullableSimpleString(null));
+   }
+   
+   public void testEmptySimpleString() throws Exception
+   {
+      SimpleString emptySimpleString = new SimpleString("");
+      SimpleString result = putAndGetNullableSimpleString(emptySimpleString);
+
+      assertNotNull(result);
+      assertEqualsByteArrays(emptySimpleString.getData(), result.getData());
+   }
+
+   public void testNonEmptySimpleString() throws Exception
+   {
+      SimpleString junk = RandomUtil.randomSimpleString();
+      SimpleString result = putAndGetNullableSimpleString(junk);
+
+      assertNotNull(result);
+      assertEqualsByteArrays(junk.getData(), result.getData());
    }
 
    public void testByte() throws Exception
@@ -84,7 +104,7 @@ public abstract class MessagingBufferTestBase extends TestCase
       byte b = randomByte();
       wrapper.putByte(b);
       
-      flipBuffer();
+      wrapper.flip();
       
       assertEquals(b, wrapper.getByte());
    }
@@ -94,18 +114,18 @@ public abstract class MessagingBufferTestBase extends TestCase
       byte[] bytes = randomBytes();
       wrapper.putBytes(bytes);
       
-      flipBuffer();
+      wrapper.flip();
       
       byte[] b = new byte[bytes.length];
       wrapper.getBytes(b);
       assertEqualsByteArrays(bytes, b);
    }
-   
+
    public void testPutTrueBoolean() throws Exception
    {
       wrapper.putBoolean(true);
       
-      flipBuffer();
+      wrapper.flip();
       
       assertTrue(wrapper.getBoolean());
    }
@@ -114,7 +134,7 @@ public abstract class MessagingBufferTestBase extends TestCase
    {
       wrapper.putBoolean(false);
       
-      flipBuffer();
+      wrapper.flip();
       
       assertFalse(wrapper.getBoolean());
    }
@@ -123,7 +143,7 @@ public abstract class MessagingBufferTestBase extends TestCase
    {
       wrapper.putChar('a');
       
-      flipBuffer();
+      wrapper.flip();
       
       assertEquals('a', wrapper.getChar());
    }
@@ -133,16 +153,42 @@ public abstract class MessagingBufferTestBase extends TestCase
       int i = randomInt();
       wrapper.putInt(i);
       
-      flipBuffer();
+      wrapper.flip();
       
       assertEquals(i, wrapper.getInt());
+   }
+   
+   public void testIntAtPosition() throws Exception
+   {
+      int firstInt = randomInt();
+      int secondInt = randomInt();
+      
+      wrapper.putInt(secondInt);
+      wrapper.putInt(secondInt);
+      // rewrite firstInt at the beginning
+      wrapper.putInt(0, firstInt);
+
+      wrapper.flip();
+      
+      assertEquals(firstInt, wrapper.getInt());
+      assertEquals(secondInt, wrapper.getInt());
+   }
+   
+   public void testLong() throws Exception
+   {
+      long l = randomLong();
+      wrapper.putLong(l);
+      
+      wrapper.flip();
+      
+      assertEquals(l, wrapper.getLong());
    }
    
    public void testShort() throws Exception
    {
       wrapper.putShort((short) 1);
       
-      flipBuffer();
+      wrapper.flip();
       
       assertEquals((short)1, wrapper.getShort());
    }
@@ -152,7 +198,7 @@ public abstract class MessagingBufferTestBase extends TestCase
       double d = randomDouble();
       wrapper.putDouble(d);
       
-      flipBuffer();
+      wrapper.flip();
       
       assertEquals(d, wrapper.getDouble());
    }
@@ -162,7 +208,7 @@ public abstract class MessagingBufferTestBase extends TestCase
       float f = randomFloat();
       wrapper.putFloat(f);
       
-      flipBuffer();
+      wrapper.flip();
       
       assertEquals(f, wrapper.getFloat());
    }
@@ -172,7 +218,7 @@ public abstract class MessagingBufferTestBase extends TestCase
       String str = randomString();
       wrapper.putUTF(str);
       
-      flipBuffer();
+      wrapper.flip();
       
       assertEquals(str, wrapper.getUTF());
    }
@@ -187,9 +233,19 @@ public abstract class MessagingBufferTestBase extends TestCase
    {
       wrapper.putNullableString(nullableString);
 
-      flipBuffer();
+      wrapper.flip();
       
       return wrapper.getNullableString();
    }
+   
+   private SimpleString putAndGetNullableSimpleString(SimpleString nullableSimpleString) throws Exception
+   {
+      wrapper.putNullableSimpleString(nullableSimpleString);
+
+      wrapper.flip();
+      
+      return wrapper.getNullableSimpleString();
+   }
+   
    // Inner classes -------------------------------------------------
 }

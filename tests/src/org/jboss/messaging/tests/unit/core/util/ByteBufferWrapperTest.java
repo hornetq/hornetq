@@ -25,8 +25,6 @@ public class ByteBufferWrapperTest extends MessagingBufferTestBase
 
    // Attributes ----------------------------------------------------
 
-   private ByteBuffer buffer;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -38,14 +36,7 @@ public class ByteBufferWrapperTest extends MessagingBufferTestBase
    @Override
    protected MessagingBuffer createBuffer()
    {
-      buffer = ByteBuffer.allocate(256);
-      return new ByteBufferWrapper(buffer);
-   }
-
-   @Override
-   protected void flipBuffer()
-   {
-      buffer.flip();
+      return new ByteBufferWrapper(ByteBuffer.allocate(512));
    }
    
    // Package protected ---------------------------------------------
