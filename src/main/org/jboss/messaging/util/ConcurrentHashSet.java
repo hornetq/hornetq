@@ -78,7 +78,7 @@ public class ConcurrentHashSet<E> extends AbstractSet<E> implements ConcurrentSe
    
    public boolean add(E o)
    {
-      return theMap.put(o, dummy) == dummy;
+      return theMap.put(o, dummy) == null;
    }
    
    public boolean contains(Object o)
