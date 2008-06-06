@@ -19,14 +19,14 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.util;
+package org.jboss.messaging.tests.unit.core.util;
+
+import junit.framework.TestCase;
 
 import org.jboss.messaging.util.XMLUtil;
-import org.jboss.test.messaging.MessagingTestCase;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import junit.framework.TestCase;
 
 
 /**
@@ -265,6 +265,14 @@ public class XMLUtilTest extends TestCase
       System.setProperty("sysprop2", "content4");
       String replaced = XMLUtil.replaceSystemProps(before);
       assertEquals(after, replaced);
+   }
+   
+   public void testStripCDATA() throws Exception
+   {
+      String xml = "<![CDATA[somedata]]>";
+      String stripped = XMLUtil.stripCDATA(xml);
+
+      assertEquals("somedata", stripped);
    }
 
 
