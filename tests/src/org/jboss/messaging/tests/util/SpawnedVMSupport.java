@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.tests.unit.core.util;
+package org.jboss.messaging.tests.util;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static junit.framework.Assert.assertNotSame;

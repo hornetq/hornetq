@@ -36,7 +36,7 @@ import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
-import org.jboss.messaging.tests.unit.core.util.SpawnedVMSupport;
+import org.jboss.messaging.tests.util.SpawnedVMSupport;
 import org.jboss.messaging.util.SimpleString;
 
 /**
