@@ -21,12 +21,16 @@
   */
 package org.jboss.test.messaging.jms.message;
 
+import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
+
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.ObjectMessage;
-
-import org.jboss.messaging.tests.unit.core.util.ObjectInputStreamWithClassLoaderTest;
 
 /**
  * A test that sends/receives object messages to the JMS provider and verifies their integrity.
@@ -79,7 +83,7 @@ public class ObjectMessageTest extends MessageTestBase
 
          SomeObject testObject = new SomeObject(3, 7);
 
-         ClassLoader testClassLoader = ObjectInputStreamWithClassLoaderTest.newClassLoader(testObject.getClass());
+         ClassLoader testClassLoader = newClassLoader(testObject.getClass());
 
          om.setObject(testObject);
 
@@ -142,4 +146,39 @@ public class ObjectMessageTest extends MessageTestBase
       ObjectMessage om = (ObjectMessage)m;
       assertEquals("this is the serializable object", om.getObject());
    }
+
+   protected static ClassLoader newClassLoader(Class anyUserClass) throws Exception
+   {
+      URL classLocation = anyUserClass.getProtectionDomain().getCodeSource().getLocation();
+      StringTokenizer tokenString = new StringTokenizer(System.getProperty("java.class.path"),
+         File.pathSeparator);
+      String pathIgnore = System.getProperty("java.home");
+      if (pathIgnore == null)
+      {
+         pathIgnore = classLocation.toString();
+      }
+
+      ArrayList urls = new ArrayList();
+      while (tokenString.hasMoreElements())
+      {
+         String value = tokenString.nextToken();
+         URL itemLocation = new File(value).toURL();
+         if (!itemLocation.equals(classLocation) &&
+                      itemLocation.toString().indexOf(pathIgnore) >= 0)
+         {
+            urls.add(itemLocation);
+         }
+      }
+
+      URL[] urlArray = (URL[]) urls.toArray(new URL[urls.size()]);
+
+      ClassLoader masterClassLoader = URLClassLoader.newInstance(urlArray, null);
+
+
+      ClassLoader appClassLoader = URLClassLoader.newInstance(new URL[]{classLocation},
+                                      masterClassLoader);
+
+      return appClassLoader;
+   }
+
 }
