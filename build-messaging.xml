@@ -205,7 +205,6 @@
       <path refid="jboss.test14.classpath"/>
       <path refid="jboss.jboss.retro.classpath"/>
       <pathelement location="${test.dir}/lib/easymock.jar"/>
-      <path refid="oswego.concurrent.classpath"/>
       <path refid="apache.ant.classpath"/>
    </path>
 
@@ -214,6 +213,7 @@
       <pathelement location="${test.classes.dir}"/>
       <pathelement location="${src.config.dir}"/>
       <path refid="test.compilation.classpath"/>
+      <path refid="oswego.concurrent.classpath"/>
       <path refid="slf4j.api.classpath"/>
       <path refid="slf4j.log4j.classpath"/>
    </path>
@@ -242,6 +242,7 @@
       <path refid="jboss.common.classpath"/>
       <path refid="jboss.common.core.classpath"/>
       <path refid="jboss.jnpserver.classpath"/>
+      <path refid="oswego.concurrent.classpath"/>
       <path refid="slf4j.api.classpath"/>
       <path refid="slf4j.log4j.classpath"/>
    </path>
