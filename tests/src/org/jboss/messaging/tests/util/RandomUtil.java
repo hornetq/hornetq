@@ -13,6 +13,7 @@ import java.util.Random;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.transaction.impl.XidImpl;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -34,6 +35,16 @@ public class RandomUtil
    {
       return randomUUID().toString();
    }
+   
+   public static SimpleString randomSimpleString()
+   {
+      return new SimpleString(randomString());
+   }
+   
+   public static char randomChar()
+   {
+      return randomString().charAt(0);
+   }
 
    public static long randomLong()
    {
@@ -43,6 +54,11 @@ public class RandomUtil
    public static int randomInt()
    {
       return random.nextInt();
+   }
+   
+   public static short randomShort()
+   {
+      return (short) random.nextInt(Short.MAX_VALUE);
    }
 
    public static byte randomByte()

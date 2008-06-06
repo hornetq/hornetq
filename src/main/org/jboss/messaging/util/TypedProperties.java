@@ -42,6 +42,7 @@ import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
 import static org.jboss.messaging.util.DataConstants.SIZE_SHORT;
 import static org.jboss.messaging.util.DataConstants.STRING;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -148,12 +149,18 @@ public class TypedProperties implements EncodingSupport
 	
 	public boolean containsProperty(final SimpleString key)
 	{
-		return properties.containsKey(key);
+	   if (properties != null)
+	      return properties.containsKey(key);
+	   else
+	      return false;
 	}
 	
 	public Set<SimpleString> getPropertyNames()
 	{
-		return properties.keySet();
+	   if (properties != null)
+	      return properties.keySet();
+	   else
+	      return Collections.EMPTY_SET;
 	}
 			
 	public void decode(final MessagingBuffer buffer)
@@ -376,8 +383,6 @@ public class TypedProperties implements EncodingSupport
 		void write(MessagingBuffer buffer);
 		
 		int encodeSize();
-		
-		byte getType();
 	}
    
    private static final class NullValue implements PropertyValue
@@ -396,11 +401,6 @@ public class TypedProperties implements EncodingSupport
          buffer.putByte(NULL);
       }
       
-      public byte getType()
-      {
-         return NULL;
-      }
-
       public int encodeSize()
       {
          return SIZE_BYTE;
@@ -431,11 +431,6 @@ public class TypedProperties implements EncodingSupport
 		{
 			buffer.putByte(BOOLEAN);
 			buffer.putBoolean(val);
-		}
-		
-		public byte getType()
-		{
-			return BOOLEAN;
 		}
 
       public int encodeSize()
@@ -468,11 +463,6 @@ public class TypedProperties implements EncodingSupport
 		{
 			buffer.putByte(BYTE);
 			buffer.putByte(val);
-		}
-		
-		public byte getType()
-		{
-			return BYTE;
 		}
 		
 		public int encodeSize()
@@ -509,11 +499,6 @@ public class TypedProperties implements EncodingSupport
 			buffer.putBytes(val);
 		}
 		
-		public byte getType()
-		{
-			return BYTES;
-		}
-		
       public int encodeSize()
       {
          return SIZE_BYTE + SIZE_INT + val.length;
@@ -546,11 +531,6 @@ public class TypedProperties implements EncodingSupport
 			buffer.putShort(val);
 		}
 		
-		public byte getType()
-		{
-			return SHORT;
-		}
-		
 		public int encodeSize()
 		{
 		   return SIZE_BYTE + SIZE_SHORT;
@@ -580,11 +560,6 @@ public class TypedProperties implements EncodingSupport
 		{
 			buffer.putByte(INT);
 			buffer.putInt(val);
-		}
-		
-		public byte getType()
-		{
-			return INT;
 		}
 
 		public int encodeSize()
@@ -616,11 +591,6 @@ public class TypedProperties implements EncodingSupport
 		{
 			buffer.putByte(LONG);
 			buffer.putLong(val);
-		}
-		
-		public byte getType()
-		{
-			return LONG;
 		}
 
 		public int encodeSize()
@@ -654,11 +624,6 @@ public class TypedProperties implements EncodingSupport
 			buffer.putFloat(val);
 		}
 		
-		public byte getType()
-		{
-			return FLOAT;
-		}
-		
       public int encodeSize()
       {
          return SIZE_BYTE + SIZE_FLOAT;
@@ -689,11 +654,6 @@ public class TypedProperties implements EncodingSupport
 		{
 			buffer.putByte(DOUBLE);
 			buffer.putDouble(val);
-		}
-			
-		public byte getType()
-		{
-			return DOUBLE;
 		}
 
 		public int encodeSize()
@@ -726,12 +686,7 @@ public class TypedProperties implements EncodingSupport
 			buffer.putByte(CHAR);
 			buffer.putChar(val);
 		}
-			
-		public byte getType()
-		{
-			return CHAR;
-		}
-		
+
 		public int size()
 		{
 			return SIZE_CHAR;
@@ -766,16 +721,6 @@ public class TypedProperties implements EncodingSupport
 		{
 			buffer.putByte(STRING);
 			buffer.putSimpleString(val);
-		}
-			
-		public byte getType()
-		{
-			return STRING;
-		}
-		
-		public int size()
-		{
-			return SimpleString.sizeofString(val);
 		}
 		
 		public int encodeSize()
