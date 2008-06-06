@@ -7,6 +7,9 @@
 package org.jboss.messaging.tests.unit.core.util;
 
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
+
+import java.util.Iterator;
+
 import junit.framework.TestCase;
 
 import org.jboss.messaging.util.ConcurrentHashSet;
@@ -95,6 +98,18 @@ public class ConcurrentHashSetTest extends TestCase
       assertTrue(set.isEmpty());
    }
 
+   public void testIterator() throws Exception
+   {
+      set.add(element);
+      
+      Iterator<String> iterator = set.iterator();
+      while (iterator.hasNext())
+      {
+         String e = (String) iterator.next();
+         assertEquals(element, e);
+      }
+   }
+   
    // TestCase overrides --------------------------------------------
 
    @Override

@@ -23,7 +23,6 @@ package org.jboss.messaging.util;
 
 import java.util.AbstractSet;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -42,23 +41,11 @@ public class ConcurrentHashSet<E> extends AbstractSet<E> implements ConcurrentSe
 {
    private ConcurrentMap<E, Object> theMap;
    
-   private static Object dummy = new Object();
+   private static final Object dummy = new Object();
    
    public ConcurrentHashSet()
    {
       theMap = new ConcurrentHashMap<E, Object>();
-   }
-   
-   public ConcurrentHashSet(Set<E> other)
-   {
-   	this();
-   	
-   	addAll(other);
-   }
-   
-   public ConcurrentHashSet(int size)
-   {
-   	theMap = new ConcurrentHashMap<E, Object>(size);
    }
    
    public int size()
