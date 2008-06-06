@@ -21,7 +21,10 @@
   */
 package org.jboss.test.messaging.jms;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -36,10 +39,6 @@ import javax.jms.TopicConnection;
 import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
-
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
-
-import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -1184,7 +1183,7 @@ public class AcknowledgementTest extends JMSTestCase
 
    private abstract class LatchListener implements MessageListener
    {
-      protected Latch latch = new Latch();
+      protected CountDownLatch latch = new CountDownLatch(1);
 
       protected Session sess;
 
@@ -1199,8 +1198,7 @@ public class AcknowledgementTest extends JMSTestCase
 
       public void waitForMessages() throws InterruptedException
       {
-         assertTrue("failed to receive all messages", latch.attempt(
-               2000));
+         assertTrue("failed to receive all messages", latch.await(2000, MILLISECONDS));
       }
 
       public abstract void onMessage(Message m);
@@ -1234,7 +1232,7 @@ public class AcknowledgementTest extends JMSTestCase
                if (!"a".equals(tm.getText()))
                {
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
             }
             if (count == 2)
@@ -1244,7 +1242,7 @@ public class AcknowledgementTest extends JMSTestCase
                if (!"b".equals(tm.getText()))
                {
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
             }
             if (count == 3)
@@ -1254,7 +1252,7 @@ public class AcknowledgementTest extends JMSTestCase
                if (!"c".equals(tm.getText()))
                {
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
                sess.recover();
             }
@@ -1265,16 +1263,16 @@ public class AcknowledgementTest extends JMSTestCase
                if (!"c".equals(tm.getText()))
                {
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
-               latch.release();
+               latch.countDown();
             }
 
          }
          catch (Exception e)
          {
             failed = true;
-            latch.release();
+            latch.countDown();
          }
       }
 
@@ -1307,7 +1305,7 @@ public class AcknowledgementTest extends JMSTestCase
                if (!"a".equals(tm.getText()))
                {
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
             }
             if (count == 2)
@@ -1317,7 +1315,7 @@ public class AcknowledgementTest extends JMSTestCase
                if (!"b".equals(tm.getText()))
                {
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
             }
             if (count == 3)
@@ -1327,7 +1325,7 @@ public class AcknowledgementTest extends JMSTestCase
                if (!"c".equals(tm.getText()))
                {
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
                sess.recover();
             }
@@ -1339,16 +1337,16 @@ public class AcknowledgementTest extends JMSTestCase
                if (!"c".equals(tm.getText()))
                {
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
-               latch.release();
+               latch.countDown();
             }
 
          }
          catch (Exception e)
          {
             failed = true;
-            latch.release();
+            latch.countDown();
          }
       }
 
@@ -1379,7 +1377,7 @@ public class AcknowledgementTest extends JMSTestCase
                {
                   log.trace("Expected a but got " + tm.getText());
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
             }
             if (count == 2)
@@ -1389,7 +1387,7 @@ public class AcknowledgementTest extends JMSTestCase
                {
                   log.trace("Expected b but got " + tm.getText());
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
             }
             if (count == 3)
@@ -1399,7 +1397,7 @@ public class AcknowledgementTest extends JMSTestCase
                {
                   log.trace("Expected c but got " + tm.getText());
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
                sess.recover();
             }
@@ -1410,7 +1408,7 @@ public class AcknowledgementTest extends JMSTestCase
                {
                   log.trace("Expected a but got " + tm.getText());
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
                tm.acknowledge();
                assertRemainingMessages(2);
@@ -1423,7 +1421,7 @@ public class AcknowledgementTest extends JMSTestCase
                {
                   log.trace("Expected b but got " + tm.getText());
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
                sess.recover();
             }
@@ -1434,7 +1432,7 @@ public class AcknowledgementTest extends JMSTestCase
                {
                   log.trace("Expected b but got " + tm.getText());
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
             }
             if (count == 7)
@@ -1444,11 +1442,11 @@ public class AcknowledgementTest extends JMSTestCase
                {
                   log.trace("Expected c but got " + tm.getText());
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
                tm.acknowledge();
                assertRemainingMessages(0);
-               latch.release();
+               latch.countDown();
             }
 
          }
@@ -1456,7 +1454,7 @@ public class AcknowledgementTest extends JMSTestCase
          {
             log.error("Caught exception", e);
             failed = true;
-            latch.release();
+            latch.countDown();
          }
       }
 
@@ -1485,7 +1483,7 @@ public class AcknowledgementTest extends JMSTestCase
                if (!"a".equals(tm.getText()))
                {
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
             }
             if (count == 2)
@@ -1494,7 +1492,7 @@ public class AcknowledgementTest extends JMSTestCase
                if (!"b".equals(tm.getText()))
                {
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
             }
             if (count == 3)
@@ -1503,7 +1501,7 @@ public class AcknowledgementTest extends JMSTestCase
                if (!"c".equals(tm.getText()))
                {
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
                log.trace("Rollback");
                sess.rollback();
@@ -1514,7 +1512,7 @@ public class AcknowledgementTest extends JMSTestCase
                if (!"a".equals(tm.getText()))
                {
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
             }
             if (count == 5)
@@ -1523,7 +1521,7 @@ public class AcknowledgementTest extends JMSTestCase
                if (!"b".equals(tm.getText()))
                {
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
                log.trace("commit");
                sess.commit();
@@ -1535,7 +1533,7 @@ public class AcknowledgementTest extends JMSTestCase
                if (!"c".equals(tm.getText()))
                {
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
                log.trace("recover");
                sess.rollback();
@@ -1546,19 +1544,19 @@ public class AcknowledgementTest extends JMSTestCase
                if (!"c".equals(tm.getText()))
                {
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
                log.trace("Commit");
                sess.commit();
                assertRemainingMessages(0);
-               latch.release();
+               latch.countDown();
             }
          }
          catch (Exception e)
          {
             //log.error(e);
             failed = true;
-            latch.release();
+            latch.countDown();
          }
       }
 

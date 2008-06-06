@@ -21,6 +21,10 @@
   */
 package org.jboss.test.messaging.jms;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
+import java.util.concurrent.CountDownLatch;
+
 import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -33,8 +37,6 @@ import javax.jms.TextMessage;
 
 import org.jboss.messaging.jms.client.JBossConnectionConsumer;
 import org.jboss.test.messaging.tools.ServerManagement;
-
-import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 
 /**
@@ -352,7 +354,7 @@ public class ConnectionConsumerTest extends JMSTestCase
 
    class SimpleMessageListener implements MessageListener
    {
-      Latch latch = new Latch();
+      CountDownLatch latch = new CountDownLatch(1);
 
       boolean failed;
       
@@ -371,7 +373,7 @@ public class ConnectionConsumerTest extends JMSTestCase
          msgsReceived++;
          if (msgsReceived == numExpectedMsgs)
          {
-            latch.release();
+            latch.countDown();
          }
          
       }
@@ -384,7 +386,7 @@ public class ConnectionConsumerTest extends JMSTestCase
       
       void waitForLatch(long timeout) throws Exception
       {
-         latch.attempt(timeout);
+         latch.await(timeout, MILLISECONDS);
          //Thread.sleep(2000); //Enough time for postDeliver to complete  
       }
       
@@ -412,7 +414,7 @@ public class ConnectionConsumerTest extends JMSTestCase
    
    class RedelMessageListener implements MessageListener
    {
-      Latch latch = new Latch();
+      CountDownLatch latch = new CountDownLatch(1);
 
       boolean failed;
       
@@ -427,7 +429,7 @@ public class ConnectionConsumerTest extends JMSTestCase
       
       void waitForLatch(long timeout) throws Exception
       {
-         latch.attempt(timeout);
+         latch.await(timeout, MILLISECONDS);
       }
       
       public synchronized void onMessage(Message message)
@@ -448,7 +450,7 @@ public class ConnectionConsumerTest extends JMSTestCase
                {
                   log.trace("Expected a but was " + tm.getText());
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
             }
             if (count == 2)
@@ -459,7 +461,7 @@ public class ConnectionConsumerTest extends JMSTestCase
                {
                   log.trace("Expected b but was " + tm.getText());
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
             }
             if (count == 3)
@@ -470,7 +472,7 @@ public class ConnectionConsumerTest extends JMSTestCase
                {
                   log.trace("Expected c but was " + tm.getText());
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
                else
                {
@@ -489,13 +491,13 @@ public class ConnectionConsumerTest extends JMSTestCase
                {
                   log.trace("Expected a but was " + tm.getText());
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
                if (!tm.getJMSRedelivered())
                {
 
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
             }
             if (count == 5)
@@ -506,13 +508,13 @@ public class ConnectionConsumerTest extends JMSTestCase
                {
                   log.trace("Expected b but was " + tm.getText());
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
                if (!tm.getJMSRedelivered())
                {
                   log.trace("Redelivered flag not set");
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
             }
             if (count == 6)
@@ -523,13 +525,13 @@ public class ConnectionConsumerTest extends JMSTestCase
                {
                   log.trace("Expected c but was " + tm.getText());
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
                if (!tm.getJMSRedelivered())
                {
                   log.trace("Redelivered flag not set");
                   failed = true;
-                  latch.release();
+                  latch.countDown();
                }
                else
                {
@@ -538,7 +540,7 @@ public class ConnectionConsumerTest extends JMSTestCase
                      log.trace("Committing");
                      sess.commit();
                   }                 
-                  latch.release();
+                  latch.countDown();
                }
             }
             

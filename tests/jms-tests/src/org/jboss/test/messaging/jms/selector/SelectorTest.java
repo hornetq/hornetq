@@ -24,6 +24,7 @@ package org.jboss.test.messaging.jms.selector;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -34,8 +35,6 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.jboss.test.messaging.JBMServerTestCase;
-
-import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -571,8 +570,8 @@ public class SelectorTest extends JBMServerTestCase
 
 	      final List received = new ArrayList();
 	      final List received2 = new ArrayList();
-	      final Latch latch = new Latch();
-	      final Latch latch2 = new Latch();
+	      final CountDownLatch latch = new CountDownLatch(1);
+	      final CountDownLatch latch2 = new CountDownLatch(1);
 
 	      new Thread(new Runnable()
 	      {
@@ -589,7 +588,7 @@ public class SelectorTest extends JBMServerTestCase
 	                  }
 	                  else
 	                  {
-	                     latch.release();
+	                     latch.countDown();
 	                     return;
 	                  }
 	               }
@@ -616,7 +615,7 @@ public class SelectorTest extends JBMServerTestCase
 	                  }
 	                  else
 	                  {
-	                     latch2.release();
+	                     latch2.countDown();
 	                     return;
 	                  }
 	               }
@@ -628,8 +627,8 @@ public class SelectorTest extends JBMServerTestCase
 	         }
 	      }, "consumer thread 2").start();
 
-	      latch.acquire();
-	      latch2.acquire();
+	      latch.await();
+	      latch2.await();
 
 	      assertEquals(5, received.size());
 	      for(Iterator i = received.iterator(); i.hasNext(); )

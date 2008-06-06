@@ -25,6 +25,9 @@ package org.jboss.test.messaging.jms.stress;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -39,9 +42,6 @@ import javax.naming.Context;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
 /**
  * In order for this test to run, you will need to edit /etc/security/limits.conf and change your max sockets to something bigger than 1024
@@ -81,8 +81,8 @@ public class SeveralClientsStressTest extends JBMServerTestCase
    // a producer should have a long wait between each message sent?
    protected static boolean LONG_WAIT_ON_PRODUCERS=false;
 
-   protected static SynchronizedInt producedMessages = new SynchronizedInt(0);
-   protected static SynchronizedInt readMessages = new SynchronizedInt(0);
+   protected static AtomicInteger producedMessages = new AtomicInteger(0);
+   protected static AtomicInteger readMessages = new AtomicInteger(0);
 
 
    protected Context createContext() throws Exception
@@ -107,7 +107,7 @@ public class SeveralClientsStressTest extends JBMServerTestCase
       HashSet threads = new HashSet();
 
       // A chhanel of communication between workers and the test method
-      LinkedQueue testChannel = new LinkedQueue();
+      LinkedBlockingQueue testChannel = new LinkedBlockingQueue();
 
 
       for (int i=0; i< NUMBER_OF_PRODUCERS; i++)
@@ -134,7 +134,7 @@ public class SeveralClientsStressTest extends JBMServerTestCase
 
       while (threads.size()>0)
       {
-         SeveralClientsStressTest.InternalMessage msg = (SeveralClientsStressTest.InternalMessage)testChannel.poll(2000);
+         SeveralClientsStressTest.InternalMessage msg = (SeveralClientsStressTest.InternalMessage)testChannel.poll(2000, TimeUnit.MILLISECONDS);
 
          log.info("Produced:" + producedMessages.get() + " and Consumed:" + readMessages.get() + " messages");
 
@@ -205,7 +205,7 @@ public class SeveralClientsStressTest extends JBMServerTestCase
 
       while (consumer.receive(1000)!=null)
       {
-         readMessages.increment();
+         readMessages.incrementAndGet();
          log.info("Received JMS message on clearMessages");
       }
 
@@ -229,8 +229,8 @@ public class SeveralClientsStressTest extends JBMServerTestCase
       }
 
       clearMessages();
-      producedMessages = new SynchronizedInt(0);
-      readMessages = new SynchronizedInt(0);
+      producedMessages = new AtomicInteger(0);
+      readMessages = new AtomicInteger(0);
    }
 
    // Private --------------------------------------------------------------------------------------
@@ -247,7 +247,7 @@ public class SeveralClientsStressTest extends JBMServerTestCase
       private int workerId;
       private Exception ex;
 
-      LinkedQueue  messageQueue;
+      LinkedBlockingQueue  messageQueue;
 
 
       public int getWorkerId()
@@ -292,7 +292,7 @@ public class SeveralClientsStressTest extends JBMServerTestCase
       }
 
 
-      public Worker(String name, int workerId, LinkedQueue  messageQueue)
+      public Worker(String name, int workerId, LinkedBlockingQueue  messageQueue)
       {
          super(name);
          this.workerId = workerId;
@@ -308,7 +308,7 @@ public class SeveralClientsStressTest extends JBMServerTestCase
 
    class Producer extends SeveralClientsStressTest.Worker
    {
-      public Producer(int producerId, LinkedQueue messageQueue)
+      public Producer(int producerId, LinkedBlockingQueue messageQueue)
       {
          super("Producer:" + producerId, producerId, messageQueue);
       }
@@ -349,7 +349,7 @@ public class SeveralClientsStressTest extends JBMServerTestCase
                while(System.currentTimeMillis() < timeToFinish)
                {
                   prod.send(sess.createTextMessage("Message sent at " + System.currentTimeMillis()));
-                  producedMessages.increment();
+                  producedMessages.incrementAndGet();
                   messageSent++;
                   if (messageSent%50==0)
                   {
@@ -385,7 +385,7 @@ public class SeveralClientsStressTest extends JBMServerTestCase
 
    class Consumer extends SeveralClientsStressTest.Worker
    {
-      public Consumer(int consumerId, LinkedQueue messageQueue)
+      public Consumer(int consumerId, LinkedBlockingQueue messageQueue)
       {
          super("ClientConsumer:" + consumerId, consumerId, messageQueue);
       }
@@ -429,7 +429,7 @@ public class SeveralClientsStressTest extends JBMServerTestCase
                         {
                            if (info) log.info("Commit transaction");
                            sess.commit();
-                           readMessages.add(msgs);
+                           readMessages.addAndGet(msgs);
                         }
                         else
                         {
@@ -445,7 +445,7 @@ public class SeveralClientsStressTest extends JBMServerTestCase
                   }
                }
 
-               readMessages.add(msgs);
+               readMessages.addAndGet(msgs);
                sess.commit();
 
                sendInternalMessage(new SeveralClientsStressTest.WorkedFinishedMessages(this));

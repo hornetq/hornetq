@@ -21,11 +21,14 @@
   */
 package org.jboss.test.messaging.jms;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -48,8 +51,6 @@ import javax.jms.TopicSubscriber;
 
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
-
-import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -2093,7 +2094,7 @@ public class MessageConsumerTest extends JMSTestCase
    		final MessageConsumer topicConsumer = consumerSession.createConsumer(topic1);
    	   	
 	      consumerConnection.start();
-	      final Latch latch = new Latch();
+	      final CountDownLatch latch = new CountDownLatch(1);
 	      Thread closerThread = new Thread(new Runnable()
 	      {
 	         public void run()
@@ -2110,7 +2111,7 @@ public class MessageConsumerTest extends JMSTestCase
 	            }
 	            finally
 	            {
-	               latch.release();
+	               latch.countDown();
 	            }
 	         }
 	      }, "closing thread");
@@ -2119,7 +2120,9 @@ public class MessageConsumerTest extends JMSTestCase
 	      assertNull(topicConsumer.receive(1500));
 	
 	      // wait for the closing thread to finish
-	      latch.acquire();
+	      boolean closed = latch.await(5000, TimeUnit.MILLISECONDS);
+	      assertTrue(closed);
+	      
    	}
    	finally
    	{
@@ -3946,7 +3949,7 @@ public class MessageConsumerTest extends JMSTestCase
 
    private class ExceptionRedelMessageListenerImpl implements MessageListener
    {
-      private Latch latch = new Latch();
+      private CountDownLatch latch = new CountDownLatch(1);
 
       private int count;
 
@@ -3965,7 +3968,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       public void waitForMessages() throws InterruptedException
       {
-         latch.acquire();
+         latch.await();
       }
 
       public ExceptionRedelMessageListenerImpl(Session sess)
@@ -3985,7 +3988,7 @@ public class MessageConsumerTest extends JMSTestCase
                if (!("a".equals(tm.getText())))
                {
                   failed("Should be a but was " + tm.getText());
-                  latch.release();
+                  latch.countDown();
                }
                throw new RuntimeException("Aardvark");
             }
@@ -3997,12 +4000,12 @@ public class MessageConsumerTest extends JMSTestCase
                   if (!("a".equals(tm.getText())))
                   {
                 	 failed("Should be a but was " + tm.getText());
-                     latch.release();
+                     latch.countDown();
                   }
                   if (!tm.getJMSRedelivered())
                   {
                 	 failed("Message was supposed to be a redelivery");
-                     latch.release();
+                     latch.countDown();
                   }
                }
                else
@@ -4011,7 +4014,7 @@ public class MessageConsumerTest extends JMSTestCase
                   if (!("b".equals(tm.getText())))
                   {
                      failed("Should be b but was " + tm.getText());
-                     latch.release();
+                     latch.countDown();
                   }
                }
             }
@@ -4022,7 +4025,7 @@ public class MessageConsumerTest extends JMSTestCase
                   if (!("b".equals(tm.getText())))
                   {
                      failed("Should be b but was " + tm.getText());
-                     latch.release();
+                     latch.countDown();
                   }
                }
                else
@@ -4030,9 +4033,9 @@ public class MessageConsumerTest extends JMSTestCase
                   if (!("c".equals(tm.getText())))
                   {
                      failed("Should be c but was " + tm.getText());
-                     latch.release();
+                     latch.countDown();
                   }
-                  latch.release();
+                  latch.countDown();
                }
             }
 
@@ -4043,15 +4046,15 @@ public class MessageConsumerTest extends JMSTestCase
                   if (!("c".equals(tm.getText())))
                   {
                      failed("Should be c but was " + tm.getText());
-                     latch.release();
+                     latch.countDown();
                   }
-                  latch.release();
+                  latch.countDown();
                }
                else
                {
                   //Shouldn't get a 4th messge
             	  failed("Shouldn't get a 4th message");
-                  latch.release();
+                  latch.countDown();
                }
             }
          }
@@ -4059,7 +4062,7 @@ public class MessageConsumerTest extends JMSTestCase
          {
          	log.error(e.getMessage(), e);
         	failed("Got a JMSException " + e.toString());
-            latch.release();
+            latch.countDown();
          }
       }
    }
@@ -4176,17 +4179,17 @@ public class MessageConsumerTest extends JMSTestCase
    private class MessageListenerImpl implements MessageListener
    {
       private List messages = Collections.synchronizedList(new ArrayList());
-      private Latch latch = new Latch();
+      private CountDownLatch latch = new CountDownLatch(1);
 
       /** Blocks the calling thread until at least a message is received */
       public void waitForMessages() throws InterruptedException
       {
-         latch.acquire();
+         latch.await();
       }
 
       public void waitForMessages(long timeout) throws InterruptedException
       {
-         boolean acquired = latch.attempt(timeout);
+         boolean acquired = latch.await(timeout, MILLISECONDS);
          if (!acquired)
          {
             log.trace("unsucessful latch aquire attemnpt");
@@ -4199,7 +4202,7 @@ public class MessageConsumerTest extends JMSTestCase
          messages.add(m);
          log.trace("Added message " + m + " to my list");
 
-         latch.release();
+         latch.countDown();
       };
 
       public Message getNextMessage()

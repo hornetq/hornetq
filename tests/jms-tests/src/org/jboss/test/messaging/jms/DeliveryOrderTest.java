@@ -21,6 +21,10 @@
  */
 package org.jboss.test.messaging.jms;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
+import java.util.concurrent.CountDownLatch;
+
 import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -29,8 +33,6 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-
-import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * 
@@ -65,7 +67,7 @@ public class DeliveryOrderTest extends JMSTestCase
          
          MessageConsumer cons = sess2.createConsumer(queue1);
          
-         Latch latch = new Latch();
+         CountDownLatch latch = new CountDownLatch(1);
          
          final int NUM_MESSAGES = 1000;
                   
@@ -90,7 +92,7 @@ public class DeliveryOrderTest extends JMSTestCase
          // need extra commit for cases in which the last message index is not a multiple of 10
          sess.commit();
 
-         latch.acquire();
+         latch.await(20000, MILLISECONDS);
          
          if (listener.failed)
          {
@@ -111,11 +113,11 @@ public class DeliveryOrderTest extends JMSTestCase
    {
       private int c;
       private int num;
-      private Latch latch;
+      private CountDownLatch latch;
       private volatile boolean failed;
       private String error;
 
-      MyListener(Latch latch, int num)
+      MyListener(CountDownLatch latch, int num)
       {
          this.latch = latch;
          this.num = num;
@@ -139,14 +141,14 @@ public class DeliveryOrderTest extends JMSTestCase
                failed = true;
                setError("Listener was supposed to get " + ("message" + c) +
                         " but got " + tm.getText());
-               latch.release();
+               latch.countDown();
             }
             
             c++;
             
             if (c == num)
             {
-               latch.release();
+               latch.countDown();
             }
          }
          catch (JMSException e)
@@ -156,7 +158,7 @@ public class DeliveryOrderTest extends JMSTestCase
             // Failed
             failed = true;
             setError("Listener got exception " + e.toString());
-            latch.release();
+            latch.countDown();
          }
       }
 

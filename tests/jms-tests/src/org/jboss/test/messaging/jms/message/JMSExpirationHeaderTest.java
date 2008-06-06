@@ -21,12 +21,12 @@
   */
 package org.jboss.test.messaging.jms.message;
 
+import java.util.concurrent.CountDownLatch;
+
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
 
 import org.jboss.messaging.jms.client.JBossMessage;
-
-import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -121,7 +121,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
       Thread.sleep(2000);
 
       // start the receiver thread
-      final Latch latch = new Latch();
+      final CountDownLatch latch = new CountDownLatch(1);
       Thread receiverThread = new Thread(new Runnable()
       {
          public void run()
@@ -136,13 +136,13 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
             }
             finally
             {
-               latch.release();
+               latch.countDown();
             }
          }
       }, "receiver thread");
       receiverThread.start();
 
-      latch.acquire();
+      latch.await();
       assertNull(expectedMessage);
    }
 
@@ -150,7 +150,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
    {
       final long timeToWaitForReceive = 5000;
 
-      final Latch receiverLatch = new Latch();
+      final CountDownLatch receiverLatch = new CountDownLatch(1);
 
       // start the receiver thread
       Thread receiverThread = new Thread(new Runnable()
@@ -169,13 +169,13 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
             }
             finally
             {
-               receiverLatch.release();
+               receiverLatch.countDown();
             }
          }
       }, "receiver thread");
       receiverThread.start();
 
-      final Latch senderLatch = new Latch();
+      final CountDownLatch senderLatch = new CountDownLatch(1);
 
       // start the sender thread
       Thread senderThread = new Thread(new Runnable()
@@ -207,15 +207,15 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
             }
             finally
             {
-               senderLatch.release();
+               senderLatch.countDown();
             }
          }
       }, "sender thread");
       senderThread.start();
 
 
-      senderLatch.acquire();
-      receiverLatch.acquire();
+      senderLatch.await();
+      receiverLatch.await();
 
       if (testFailed)
       {
@@ -257,7 +257,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
       //When a consumer is closed while a receive() is in progress it will make the
       //receive return with null
 
-      final Latch latch = new Latch();
+      final CountDownLatch latch = new CountDownLatch(1);
       // blocking read for a while to make sure I don't get anything, not even a null
       Thread receiverThread = new Thread(new Runnable()
       {
@@ -283,7 +283,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
             }
             finally
             {
-               latch.release();
+               latch.countDown();
             }
          }
       }, "receiver thread");
@@ -295,7 +295,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
       queueConsumer.close();
 
       // wait for the reading thread to conclude
-      latch.acquire();
+      latch.await();
 
       log.trace("Expected message:" + expectedMessage);
       

@@ -21,6 +21,12 @@
   */
 package org.jboss.test.messaging.jms;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
@@ -29,9 +35,6 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.naming.InitialContext;
-
-import EDU.oswego.cs.dl.util.concurrent.Slot;
 
 /**
  * The most comprehensive, yet simple, unit test.
@@ -328,9 +331,10 @@ public class JMSTest extends JMSTestCase
 
 	      conn.start();
 
-	      final Slot slot = new Slot();
+         final AtomicReference<Message> message = new AtomicReference<Message>();
+         final CountDownLatch latch = new CountDownLatch(1);
 
-	      new Thread(new Runnable()
+         new Thread(new Runnable()
 	      {
 	         public void run()
 	         {
@@ -339,7 +343,8 @@ public class JMSTest extends JMSTestCase
 	               Message m = cons.receive(5000);
 	               if (m != null)
 	               {
-	                  slot.put(m);
+	                  message.set(m);
+	                  latch.countDown();
 	               }
 	            }
 	            catch(Exception e)
@@ -357,7 +362,9 @@ public class JMSTest extends JMSTestCase
 
 	      prod.send(m);
 
-	      TextMessage rm = (TextMessage)slot.poll(5000);
+	      boolean gotMessage = latch.await(5000, TimeUnit.MILLISECONDS);
+	      assertTrue(gotMessage);
+	      TextMessage rm = (TextMessage) message.get();
 
 	      assertEquals("message one", rm.getText());
       }
@@ -382,20 +389,15 @@ public class JMSTest extends JMSTestCase
 
 	      MessageConsumer cons = session.createConsumer(queue1);
 
-	      final Slot slot = new Slot();
-
+	      final AtomicReference<Message> message = new AtomicReference<Message>();
+	      final CountDownLatch latch = new CountDownLatch(1);
+	      
 	      cons.setMessageListener(new MessageListener()
 	      {
 	         public void onMessage(Message m)
 	         {
-	            try
-	            {
-	               slot.put(m);
-	            }
-	            catch(InterruptedException e)
-	            {
-	               log.warn("got InterruptedException", e);
-	            }
+	            message.set(m);
+	            latch.countDown();
 	         }
 	      });
 
@@ -406,7 +408,9 @@ public class JMSTest extends JMSTestCase
 	      TextMessage m = session.createTextMessage("one");
 	      prod.send(m);
 
-	      TextMessage rm = (TextMessage)slot.poll(5000);
+	      boolean gotMessage = latch.await(5000, MILLISECONDS);
+	      assertTrue(gotMessage);
+	      TextMessage rm = (TextMessage) message.get();
 
 	      assertEquals("one", rm.getText());
       }
