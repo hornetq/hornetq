@@ -21,7 +21,7 @@
    */
 package org.jboss.messaging.core.settings.impl;
 
-import org.jboss.logging.Logger;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.DistributionPolicy;
 import org.jboss.messaging.core.server.impl.RoundRobinDistributionPolicy;
 import org.jboss.messaging.core.settings.Mergeable;

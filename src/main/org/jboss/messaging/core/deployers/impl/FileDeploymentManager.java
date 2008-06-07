@@ -21,17 +21,21 @@
    */
 package org.jboss.messaging.core.deployers.impl;
 
-import org.jboss.logging.Logger;
-import org.jboss.messaging.core.deployers.DeploymentManager;
-import org.jboss.messaging.core.deployers.Deployer;
-
-import java.util.*;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.net.URL;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import org.jboss.messaging.core.deployers.Deployer;
+import org.jboss.messaging.core.deployers.DeploymentManager;
+import org.jboss.messaging.core.logging.Logger;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>

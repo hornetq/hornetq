@@ -21,18 +21,21 @@
    */
 package org.jboss.messaging.core.deployers.impl;
 
-import org.jboss.messaging.core.deployers.Deployer;
-import org.jboss.messaging.core.server.MessagingComponent;
-import org.jboss.messaging.util.XMLUtil;
-import org.jboss.logging.Logger;
-import org.w3c.dom.Node;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
-import java.net.URL;
-import java.util.*;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Set;
+
+import org.jboss.messaging.core.deployers.Deployer;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.server.MessagingComponent;
+import org.jboss.messaging.util.XMLUtil;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>

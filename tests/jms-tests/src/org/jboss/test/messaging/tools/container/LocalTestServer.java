@@ -42,7 +42,7 @@ import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
 import org.jboss.kernel.spi.deployment.KernelDeployment;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.QueueSettings;

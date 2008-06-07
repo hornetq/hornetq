@@ -30,7 +30,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.jboss.logging.Logger;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.MessagingServerManagement;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.jms.JBossQueue;

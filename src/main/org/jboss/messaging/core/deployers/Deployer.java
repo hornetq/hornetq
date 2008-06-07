@@ -21,18 +21,9 @@
    */
 package org.jboss.messaging.core.deployers;
 
-import org.jboss.logging.Logger;
-import org.jboss.messaging.core.server.MessagingComponent;
-import org.jboss.messaging.util.XMLUtil;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Set;
+
+import org.jboss.messaging.core.server.MessagingComponent;
 
 /**
  * abstract class that helps with deployment of messaging components.

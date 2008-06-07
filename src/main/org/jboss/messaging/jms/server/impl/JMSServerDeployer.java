@@ -21,8 +21,8 @@
    */
 package org.jboss.messaging.jms.server.impl;
 
-import org.jboss.logging.Logger;
 import org.jboss.messaging.core.deployers.impl.XmlDeployer;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.w3c.dom.Node;
