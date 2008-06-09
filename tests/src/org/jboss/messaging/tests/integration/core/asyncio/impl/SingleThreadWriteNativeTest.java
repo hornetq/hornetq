@@ -58,7 +58,7 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
       final AsynchronousFileImpl controller = new AsynchronousFileImpl();
       for (int i = 0; i < 1000; i++)
       {
-         controller.open(FILE_NAME, 10000, 120);
+         controller.open(FILE_NAME, 10000, 1200);
          controller.close();
          
       }
@@ -73,8 +73,8 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
    {
       final AsynchronousFileImpl controller = new AsynchronousFileImpl();
       final AsynchronousFileImpl controller2 = new AsynchronousFileImpl();
-      controller.open(FILE_NAME + ".1", 10000, 120);
-      controller2.open(FILE_NAME + ".2", 10000, 120);
+      controller.open(FILE_NAME + ".1", 10000, 1200);
+      controller2.open(FILE_NAME + ".2", 10000, 1200);
       
       int numberOfLines = 1000;
       int size = 1024;
@@ -206,12 +206,12 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          
          final int SIZE = 512;
          
-         controller.open(FILE_NAME, 10, 120);
+         controller.open(FILE_NAME, 10, 1200);
          controller.close();
          
          controller = new AsynchronousFileImpl();
          
-         controller.open(FILE_NAME, 10, 120);
+         controller.open(FILE_NAME, 10, 1200);
          
          controller.fill(0, 1, 512, (byte) 'j');
          
@@ -296,7 +296,7 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          final int NUMBER_LINES = 1000;
          final int SIZE = 1024;
          
-         controller.open(FILE_NAME, 10, 120);
+         controller.open(FILE_NAME, 10, 1200);
          
          log.info("Filling file");
          
@@ -328,7 +328,7 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          log.info("Closing file");
          controller.close();
          log.info("Reading file");
-         controller.open(FILE_NAME, 10, 120);
+         controller.open(FILE_NAME, 10, 1200);
          
          ByteBuffer newBuffer = ByteBuffer.allocateDirect(SIZE);
          
@@ -427,7 +427,7 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          assertEquals(0, readLatch.getCount());
          readLatch.await();
          log.info("Reading file");
-         controller.open(FILE_NAME, 10, 120);
+         controller.open(FILE_NAME, 10, 1200);
          
          ByteBuffer newBuffer = ByteBuffer.allocateDirect(SIZE);
          
@@ -483,7 +483,7 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          throws Exception
    {
       final AsynchronousFileImpl controller = new AsynchronousFileImpl();
-      controller.open(FILE_NAME, aioLimit, 120);
+      controller.open(FILE_NAME, aioLimit, 1200);
       
       try
       {
@@ -563,7 +563,7 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          final int SIZE = 1024;
          
          final AsynchronousFileImpl controller = new AsynchronousFileImpl();
-         controller.open(FILE_NAME, 2000, 120);
+         controller.open(FILE_NAME, 2000, 1200);
          
          ByteBuffer block = ByteBuffer.allocateDirect(SIZE);
          encodeBufer(block);
@@ -594,7 +594,8 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
       }
       
    }
-   
+ 
+//   disabled until http://jira.jboss.com/jira/browse/JBMESSAGING-1334 is done
 //   public void testInvalidWrite() throws Exception
 //   {
 //      final AsynchronousFileImpl controller = new AsynchronousFileImpl();
