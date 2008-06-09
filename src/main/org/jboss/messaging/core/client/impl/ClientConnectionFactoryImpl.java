@@ -175,7 +175,6 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
       {
          remotingConnection = remotingConnectionFactory.createRemotingConnection(location, connectionParams);
        
-         log.info("calling start");
          remotingConnection.start();
          
          long sessionID = remotingConnection.getSessionID();
@@ -207,7 +206,6 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
          
          if (t instanceof MessagingException)
          {
-            log.info("got messaging excetption");
             throw (MessagingException)t;
          }
          else
