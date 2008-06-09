@@ -21,6 +21,20 @@
  */
 package org.jboss.messaging.core.server.impl;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
+
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
@@ -31,11 +45,24 @@ import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketReturner;
-import org.jboss.messaging.core.remoting.impl.wireformat.*;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.SecurityStore;
-import org.jboss.messaging.core.server.*;
+import org.jboss.messaging.core.server.Delivery;
+import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.ServerConnection;
+import org.jboss.messaging.core.server.ServerConsumer;
+import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.ServerProducer;
+import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
@@ -43,15 +70,6 @@ import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.SimpleString;
-
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Session implementation
@@ -117,7 +135,7 @@ public class ServerSessionImpl implements ServerSession
 
    private Transaction tx;
 
-   private final Object rollbackCancelLock = new Object();
+  // private final Object rollbackCancelLock = new Object();
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -210,14 +228,11 @@ public class ServerSessionImpl implements ServerSession
    {
       Delivery delivery;
 
-      synchronized (rollbackCancelLock)
-      {
-         long nextID = deliveryIDSequence.getAndIncrement();
+      long nextID = deliveryIDSequence.getAndIncrement();
 
-         delivery = new DeliveryImpl(ref, id, consumer.getClientTargetID(), nextID, sender);
+      delivery = new DeliveryImpl(ref, id, consumer.getClientTargetID(), nextID, sender);
 
-         deliveries.add(delivery);
-      }
+      deliveries.add(delivery);      
 
       delivery.deliver();
    }
@@ -422,25 +437,46 @@ public class ServerSessionImpl implements ServerSession
 
          tx = new TransactionImpl(persistenceManager, postOffice);
       }
-
-      // Synchronize to prevent any new deliveries arriving during this recovery. 
-      synchronized (rollbackCancelLock)
+      
+      //We need to lock all the queues while we're rolling back, to prevent any deliveries occurring during this
+      //period
+      
+      List<Queue> locked = new ArrayList<Queue>();
+      
+      for (ServerConsumer consumer: consumers)
+      {         
+         consumer.getQueue().lock();
+         
+         locked.add(consumer.getQueue());
+      }
+      
+      try
       {
+         
          // Add any unacked deliveries into the tx. Doing this ensures all references are rolled back in the correct
          // order in a single contiguous block
-
+   
          for (Delivery del : deliveries)
          {
             tx.addAcknowledgement(del.getReference());
          }
-
+   
          deliveries.clear();
-
+   
          deliveryIDSequence.addAndGet(-tx.getAcknowledgementsCount());
+         
+         tx.rollback(queueSettingsRepository);
       }
-
-      tx.rollback(queueSettingsRepository);
-
+      finally
+      {
+         //Now unlock
+         
+         for (Queue queue: locked)
+         {
+            queue.unlock();
+         }
+      }
+      
       tx = new TransactionImpl(persistenceManager, postOffice);
    }
 
@@ -449,22 +485,41 @@ public class ServerSessionImpl implements ServerSession
       if (deliveryID == -1)
       {
          // Cancel all
-
-         Transaction cancelTx;
-
-         synchronized (rollbackCancelLock)
+         
+         //We need to lock all the queues while we're rolling back, to prevent any deliveries occurring during this
+         //period
+         
+         List<Queue> locked = new ArrayList<Queue>();
+         
+         for (ServerConsumer consumer: consumers)
+         {         
+            consumer.getQueue().lock();
+            
+            locked.add(consumer.getQueue());
+         }
+         
+         try
          {
-            cancelTx = new TransactionImpl(persistenceManager, postOffice);
-
+            Transaction cancelTx = new TransactionImpl(persistenceManager, postOffice);
+   
             for (Delivery del : deliveries)
             {
                cancelTx.addAcknowledgement(del.getReference());
             }
-
+   
             deliveries.clear();
+            
+            cancelTx.rollback(queueSettingsRepository);
          }
-
-         cancelTx.rollback(queueSettingsRepository);
+         finally
+         {
+            //Now unlock
+            
+            for (Queue queue: locked)
+            {
+               queue.unlock();
+            }
+         }
       }
       else if (expired)
       {

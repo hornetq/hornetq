@@ -284,6 +284,11 @@ public class ServerConsumerImpl implements ServerConsumer
          }
       }  	
    }      
+   
+   public Queue getQueue()
+   {
+      return messageQueue;
+   }
 
    // Public -----------------------------------------------------------------------------
      

@@ -33,6 +33,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.list.PriorityLinkedList;
@@ -108,6 +110,7 @@ public class QueueImpl implements Queue
    
    private final Runnable deliverRunner = new DeliverRunner();
    
+   private final Lock lock = new ReentrantLock(false);
    
    public QueueImpl(final long persistenceID, final SimpleString name,
          final Filter filter, final boolean clustered, final boolean durable,
@@ -155,29 +158,53 @@ public class QueueImpl implements Queue
    {
       return name;
    }
-
-   public synchronized HandleStatus addLast(final MessageReference ref)
+   
+   public HandleStatus addLast(final MessageReference ref)
    {
-      return add(ref, false);
-   }
-
-   public synchronized HandleStatus addFirst(final MessageReference ref)
-   {
-      return add(ref, true);
-   }
-
-   public synchronized void addListFirst(final LinkedList<MessageReference> list)
-   {
-      ListIterator<MessageReference> iter = list.listIterator(list.size());
-
-      while (iter.hasPrevious())
+      lock.lock();
+      try
       {
-         MessageReference ref = iter.previous();
-
-         messageReferences.addFirst(ref, ref.getMessage().getPriority());
+         return add(ref, false);
       }
+      finally
+      {
+         lock.unlock();
+      }
+   }
 
-      deliver();
+   public HandleStatus addFirst(final MessageReference ref)
+   {
+      lock.lock();
+      try
+      {
+         return add(ref, true);
+      }
+      finally
+      {
+         lock.unlock();
+      }
+   }
+
+   public void addListFirst(final LinkedList<MessageReference> list)
+   {
+      lock.lock();
+      try
+      {
+         ListIterator<MessageReference> iter = list.listIterator(list.size());
+   
+         while (iter.hasPrevious())
+         {
+            MessageReference ref = iter.previous();
+   
+            messageReferences.addFirst(ref, ref.getMessage().getPriority());
+         }
+   
+         deliver();
+      }
+      finally
+      {
+         lock.unlock();
+      }
    }
  
    public void deliverAsync(final Executor executor)
@@ -195,66 +222,74 @@ public class QueueImpl implements Queue
     * 
     * @see org.jboss.messaging.newcore.intf.Queue#deliver()
     */
-   public synchronized void deliver()
+   public void deliver()
    {
-      MessageReference reference;
-
-      ListIterator<MessageReference> iterator = null;
-
-      while (true)
+      lock.lock();
+      try
       {
-         if (iterator == null)
-         {
-            reference = messageReferences.peekFirst();
-         }
-         else
-         {
-            if (iterator.hasNext())
-            {
-               reference = iterator.next();
-            }
-            else
-            {
-               reference = null;
-            }
-         }
-
-         if (reference == null)
+         MessageReference reference;
+   
+         ListIterator<MessageReference> iterator = null;
+   
+         while (true)
          {
             if (iterator == null)
             {
-               // We delivered all the messages - go into direct delivery
-               direct = true;
-               
-               promptDelivery = false;
-            }
-            return;
-         }
-
-         HandleStatus status = deliver(reference);
-
-         if (status == HandleStatus.HANDLED)
-         {
-            if (iterator == null)
-            {
-               messageReferences.removeFirst();              
+               reference = messageReferences.peekFirst();
             }
             else
             {
-               iterator.remove();
+               if (iterator.hasNext())
+               {
+                  reference = iterator.next();
+               }
+               else
+               {
+                  reference = null;
+               }
+            }
+   
+            if (reference == null)
+            {
+               if (iterator == null)
+               {
+                  // We delivered all the messages - go into direct delivery
+                  direct = true;
+                  
+                  promptDelivery = false;
+               }
+               return;
+            }
+   
+            HandleStatus status = deliver(reference);
+   
+            if (status == HandleStatus.HANDLED)
+            {
+               if (iterator == null)
+               {
+                  messageReferences.removeFirst();              
+               }
+               else
+               {
+                  iterator.remove();
+               }
+            }
+            else if (status == HandleStatus.BUSY)
+            {
+               // All consumers busy - give up
+               break;
+            }
+            else if (status == HandleStatus.NO_MATCH && iterator == null)
+            {
+               // Consumers not all busy - but filter not accepting - iterate back
+               // through the queue
+               iterator = messageReferences.iterator();
             }
          }
-         else if (status == HandleStatus.BUSY)
-         {
-            // All consumers busy - give up
-            break;
-         }
-         else if (status == HandleStatus.NO_MATCH && iterator == null)
-         {
-            // Consumers not all busy - but filter not accepting - iterate back
-            // through the queue
-            iterator = messageReferences.iterator();
-         }
+      }
+      finally
+      {
+         lock.unlock();
       }
    }
 
@@ -433,8 +468,7 @@ public class QueueImpl implements Queue
       return flowController;
    }
 
-   public synchronized void deleteAllReferences(
-         final StorageManager storageManager) throws Exception
+   public synchronized void deleteAllReferences(final StorageManager storageManager) throws Exception
    {
       Transaction tx = new TransactionImpl(storageManager, null);
 
@@ -467,7 +501,16 @@ public class QueueImpl implements Queue
 
       tx.commit();
    }
-
+   
+   public void lock()
+   {
+      lock.lock();
+   }
+   
+   public void unlock()
+   {
+      lock.unlock();
+   }
 
    // Public
    // -----------------------------------------------------------------------------
