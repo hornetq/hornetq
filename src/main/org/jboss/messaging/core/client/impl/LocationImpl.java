@@ -33,18 +33,18 @@ public class LocationImpl implements Location
 {
 	private static final long serialVersionUID = -1101852656621257742L;
 	
-	protected TransportType transport;
-   protected String host;
-   protected int port = ConfigurationImpl.DEFAULT_REMOTING_PORT;
+	private TransportType transport;
+   private String host;
+   private int port = ConfigurationImpl.DEFAULT_REMOTING_PORT;
    private int serverID;
    
-   public LocationImpl(int serverID)
+   public LocationImpl(final int serverID)
    {
       this.transport = TransportType.INVM;
       this.serverID = serverID;
    }
 
-   public LocationImpl(TransportType transport, String host, int port)
+   public LocationImpl(final TransportType transport, final String host, final int port)
    {
       assert host != null;
       assert port > 0;
@@ -54,6 +54,11 @@ public class LocationImpl implements Location
       this.transport = transport;
       this.host = host;
       this.port = port;
+   }
+   
+   public LocationImpl(final TransportType transport, final String host)
+   {
+      this(transport, host, ConfigurationImpl.DEFAULT_REMOTING_PORT);
    }
 
    public String getLocation()

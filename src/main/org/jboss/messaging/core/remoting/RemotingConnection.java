@@ -1,10 +1,8 @@
-package org.jboss.messaging.core.client.impl;
+package org.jboss.messaging.core.remoting;
 
 import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
 
 /**
  * 

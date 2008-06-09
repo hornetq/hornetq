@@ -22,7 +22,6 @@
 package org.jboss.messaging.jms.client;
 
 import java.io.Serializable;
-import java.io.IOException;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -42,12 +41,12 @@ import javax.naming.Reference;
 
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientConnectionFactory;
-import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.ConnectionParams;
+import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.impl.RemotingConnectionFactoryImpl;
 import org.jboss.messaging.jms.referenceable.SerializableObjectRefAddr;
 
 /**
@@ -226,6 +225,7 @@ public class JBossConnectionFactory implements
       if (connectionFactory == null)
       {
          connectionFactory = new ClientConnectionFactoryImpl(
+               new RemotingConnectionFactoryImpl(),
                location,
                connectionParams,
                defaultConsumerWindowSize,

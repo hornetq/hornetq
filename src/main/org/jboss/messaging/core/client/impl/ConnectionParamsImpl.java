@@ -1,36 +1,35 @@
 /*
-   * JBoss, Home of Professional Open Source
-   * Copyright 2005, JBoss Inc., and individual contributors as indicated
-   * by the @authors tag. See the copyright.txt in the distribution for a
-   * full listing of individual contributors.
-   *
-   * This is free software; you can redistribute it and/or modify it
-   * under the terms of the GNU Lesser General Public License as
-   * published by the Free Software Foundation; either version 2.1 of
-   * the License, or (at your option) any later version.
-   *
-   * This software is distributed in the hope that it will be useful,
-   * but WITHOUT ANY WARRANTY; without even the implied warranty of
-   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-   * Lesser General Public License for more details.
-   *
-   * You should have received a copy of the GNU Lesser General Public
-   * License along with this software; if not, write to the Free
-   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-   */
+ * JBoss, Home of Professional Open Source
+ * Copyright 2005, JBoss Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.messaging.core.client.impl;
 
 import org.jboss.messaging.core.client.ConnectionParams;
-
-import java.io.Serializable;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public class ConnectionParamsImpl implements ConnectionParams
 {
-
+   private static final long serialVersionUID = 1662480686951551534L;
+   
    protected long timeout = DEFAULT_REQRES_TIMEOUT;
    protected long keepAliveInterval = DEFAULT_KEEP_ALIVE_INTERVAL;
    protected long keepAliveTimeout = DEFAULT_KEEP_ALIVE_TIMEOUT;
@@ -48,7 +47,7 @@ public class ConnectionParamsImpl implements ConnectionParams
    protected long writeQueueBlockTimeout = 10000;
    protected long writeQueueMinBytes = 32 * 1024L;
    protected long writeQueueMaxBytes = 64 * 1024L;
-
+   
    public long getTimeout()
    {
       return timeout;
@@ -128,7 +127,7 @@ public class ConnectionParamsImpl implements ConnectionParams
    {
       this.tcpSendBufferSize = tcpSendBufferSize;
    }
-   
+
    public long getWriteQueueBlockTimeout()
    {
       return writeQueueBlockTimeout;
@@ -143,7 +142,7 @@ public class ConnectionParamsImpl implements ConnectionParams
    {
       return writeQueueMinBytes;
    }
-   
+
    public void setWriteQueueBlockTimeout(final long timeout)
    {
       this.writeQueueBlockTimeout = timeout;
@@ -224,7 +223,7 @@ public class ConnectionParamsImpl implements ConnectionParams
       this.trustStorePassword = trustStorePassword;
    }
 
-    public String getURI()
+   public String getURI()
    {
       StringBuffer buff = new StringBuffer();
       //buff.append(transport + "://" + host + ":" + port);
@@ -239,5 +238,29 @@ public class ConnectionParamsImpl implements ConnectionParams
       buff.append("&").append("keyStorePath=").append(keyStorePath);
       buff.append("&").append("trustStorePath=").append(trustStorePath);
       return buff.toString();
+   }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof ConnectionParams == false)
+      {
+         return false;
+      }
+      
+      ConnectionParams cp = (ConnectionParams)other;
+      
+      return cp.getTimeout() == timeout &&
+             cp.getKeepAliveTimeout() == this.keepAliveTimeout &&
+             cp.getKeepAliveInterval() == this.keepAliveInterval &&
+             cp.isInvmDisabled() == this.isInvmDisabled() &&
+             cp.isInvmDisabledModified() == this.isInvmDisabledModified() &&
+             cp.isTcpNoDelay() == this.isTcpNoDelay() &&
+             cp.getTcpReceiveBufferSize() == this.getTcpReceiveBufferSize() &&
+             cp.getTcpSendBufferSize() == this.getTcpSendBufferSize() &&
+             cp.isSSLEnabled() == this.isSSLEnabled() &&
+             cp.isSSLEnabledModified() == this.isSSLEnabledModified() &&
+             cp.getWriteQueueBlockTimeout() == this.getWriteQueueBlockTimeout() &&
+             cp.getWriteQueueMinBytes() == this.getWriteQueueMinBytes() &&
+             cp.getWriteQueueMaxBytes() == this.getWriteQueueMaxBytes();
    }
 }

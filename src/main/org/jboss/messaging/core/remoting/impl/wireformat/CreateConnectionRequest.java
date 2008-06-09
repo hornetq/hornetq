@@ -6,6 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.util.MessagingBuffer;
 
 /**
@@ -19,6 +20,9 @@ public class CreateConnectionRequest extends EmptyPacket
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(CreateConnectionRequest.class);
+
+   
    // Attributes ----------------------------------------------------
 
    private int version;
@@ -96,6 +100,23 @@ public class CreateConnectionRequest extends EmptyPacket
       return buf.toString();
    }
 
+   public boolean equals(Object other)
+   {
+      if (other instanceof CreateConnectionRequest == false)
+      {
+         return false;
+      }
+            
+      CreateConnectionRequest r = (CreateConnectionRequest)other;
+      
+      boolean matches = this.version == r.version &&
+                        this.remotingSessionID == r.remotingSessionID &&
+                        this.username == null ? r.username == null : this.username.equals(r.username) &&
+                        this.password == null ? r.password == null : this.password.equals(r.password);
+      
+      return matches;
+   }
+   
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------

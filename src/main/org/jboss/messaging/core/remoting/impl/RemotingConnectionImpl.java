@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.client.impl;
+package org.jboss.messaging.core.remoting.impl;
 
 import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGISTRY;
 
@@ -40,6 +40,7 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 
@@ -71,8 +72,6 @@ public class RemotingConnectionImpl implements RemotingConnection
    
    private RemotingSessionListener listener;
 
-   //private transient PacketDispatcher dispatcher;
-   
    // Constructors ---------------------------------------------------------------------------------
 
    public RemotingConnectionImpl(final Location location, ConnectionParams connectionParams) throws Exception

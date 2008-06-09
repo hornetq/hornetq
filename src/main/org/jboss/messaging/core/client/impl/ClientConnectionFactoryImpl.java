@@ -21,16 +21,15 @@
  */
 package org.jboss.messaging.core.client.impl;
 
-import java.io.Serializable;
-
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientConnectionFactory;
-import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.ConnectionParams;
+import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
+import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.RemotingConnectionFactory;
+import org.jboss.messaging.core.remoting.impl.RemotingConnectionFactoryImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.version.Version;
@@ -62,9 +61,11 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
 
    // Attributes -----------------------------------------------------------------------------------
    
+   private final RemotingConnectionFactory remotingConnectionFactory;
+      
    private final Location location;
 
-   private final ConnectionParams connectionParams;
+   private ConnectionParams connectionParams;
  
    private int defaultConsumerWindowSize;
    
@@ -76,55 +77,90 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
    
    private boolean defaultBlockOnAcknowledge;
    
-   private final boolean defaultSendNonPersistentMessagesBlocking;
+   private boolean defaultBlockOnPersistentSend;
    
-   private final boolean defaultSendPersistentMessagesBlocking;
+   private boolean defaultBlockOnNonPersistentSend;
    
    
+      
    // Static ---------------------------------------------------------------------------------------
+   
+   public static final int DEFAULT_CONSUMER_WINDOW_SIZE = 1024 * 1024;
+   
+   public static final int DEFAULT_CONSUMER_MAX_RATE = -1;
+   
+   public static final int DEFAULT_PRODUCER_WINDOW_SIZE = 1024 * 1024;
+   
+   public static final int DEFAULT_PRODUCER_MAX_RATE = -1;
+   
+   public static final boolean DEFAULT_BLOCK_ON_ACKNOWLEDGE = false;
+   
+   public static final boolean DEFAULT_BLOCK_ON_PERSISTENT_SEND = false;
+   
+   public static final boolean DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND = false;
     
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConnectionFactoryImpl(final Location location, final ConnectionParams connectionParams,
+   /**
+    * Create a ClientConnectionFactoryImpl specifying all attributes
+    */
+   public ClientConnectionFactoryImpl(final RemotingConnectionFactory remotingConnectionFactory,
+                                      final Location location, final ConnectionParams connectionParams,
                                       final int defaultConsumerWindowSize, final int defaultConsumerMaxRate,
                                       final int defaultProducerWindowSize, final int defaultProducerMaxRate,
                                       final boolean defaultBlockOnAcknowledge,
                                       final boolean defaultSendNonPersistentMessagesBlocking,
                                       final boolean defaultSendPersistentMessagesBlocking)
    {
+      this.remotingConnectionFactory = remotingConnectionFactory;
       this.location = location;
       this.defaultConsumerWindowSize = defaultConsumerWindowSize;  
       this.defaultConsumerMaxRate = defaultConsumerMaxRate;
       this.defaultProducerWindowSize = defaultProducerWindowSize;
       this.defaultProducerMaxRate = defaultProducerMaxRate;
       this.defaultBlockOnAcknowledge = defaultBlockOnAcknowledge;
-      this.defaultSendNonPersistentMessagesBlocking = defaultSendNonPersistentMessagesBlocking;
-      this.defaultSendPersistentMessagesBlocking = defaultSendPersistentMessagesBlocking;
+      this.defaultBlockOnNonPersistentSend = defaultSendNonPersistentMessagesBlocking;
+      this.defaultBlockOnPersistentSend = defaultSendPersistentMessagesBlocking;
       this.connectionParams = connectionParams;
    }
    
+   /**
+    * Create a ClientConnectionFactoryImpl specify location and using all default attribute values
+    * @param location the location of the server
+    */
    public ClientConnectionFactoryImpl(final Location location)
    {
-      this(location, new ConnectionParamsImpl(), false);
+      this(location, new ConnectionParamsImpl(), false);   
    }
 
+   /**
+    * Create a ClientConnectionFactoryImpl specify location and connection params and using all other default attribute values
+    * @param location the location of the server
+    * @param connectionParams the connection parameters
+    */
    public ClientConnectionFactoryImpl(final Location location, final ConnectionParams connectionParams)
    {
       this(location, connectionParams, false);
    }
    
-   protected ClientConnectionFactoryImpl(final Location location, final ConnectionParams connectionParams, final boolean dummy)
-   {
-      this.defaultConsumerWindowSize = 1024 * 1024;      
-      this.defaultConsumerMaxRate = -1;
-      this.defaultProducerWindowSize = 1024 * 1024;
-      this.defaultProducerMaxRate = -1;
-      this.location = location;
-      this.defaultSendNonPersistentMessagesBlocking = false;
-      this.defaultSendPersistentMessagesBlocking = false;
-      this.connectionParams = connectionParams;
-   }
    
+   private ClientConnectionFactoryImpl(final Location location, final ConnectionParams connectionParams,
+                                       final boolean dummy)
+   {
+      defaultConsumerWindowSize = DEFAULT_CONSUMER_WINDOW_SIZE;
+      defaultConsumerMaxRate = DEFAULT_CONSUMER_MAX_RATE;
+      defaultProducerWindowSize = DEFAULT_PRODUCER_WINDOW_SIZE;
+      defaultProducerMaxRate = DEFAULT_PRODUCER_MAX_RATE;
+      defaultBlockOnAcknowledge = DEFAULT_BLOCK_ON_ACKNOWLEDGE;
+      defaultBlockOnPersistentSend = DEFAULT_BLOCK_ON_PERSISTENT_SEND;
+      defaultBlockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
+      this.location = location;
+      this.connectionParams = connectionParams;
+      this.remotingConnectionFactory = new RemotingConnectionFactoryImpl();
+   }
+         
+   // ClientConnectionFactory implementation ---------------------------------------------
+
    public ClientConnection createConnection() throws MessagingException
    {
       return createConnection(null, null);
@@ -137,8 +173,9 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
       RemotingConnection remotingConnection = null;
       try
       {
-         remotingConnection = new RemotingConnectionImpl(location, connectionParams);
+         remotingConnection = remotingConnectionFactory.createRemotingConnection(location, connectionParams);
        
+         log.info("calling start");
          remotingConnection.start();
          
          long sessionID = remotingConnection.getSessionID();
@@ -152,8 +189,8 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
          return new ClientConnectionImpl(response.getConnectionTargetID(), remotingConnection,
                defaultConsumerWindowSize, defaultConsumerMaxRate,
                defaultProducerWindowSize, defaultProducerMaxRate,
-               defaultBlockOnAcknowledge, defaultSendNonPersistentMessagesBlocking,
-               defaultSendPersistentMessagesBlocking, response.getServerVersion());
+               defaultBlockOnAcknowledge, defaultBlockOnNonPersistentSend,
+               defaultBlockOnPersistentSend, response.getServerVersion());
       }
       catch (Throwable t)
       {
@@ -170,6 +207,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
          
          if (t instanceof MessagingException)
          {
+            log.info("got messaging excetption");
             throw (MessagingException)t;
          }
          else
@@ -183,8 +221,6 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
       }
    }
    
-   // ClientConnectionFactory implementation ---------------------------------------------
-
 	public int getDefaultConsumerWindowSize()
 	{
 		return defaultConsumerWindowSize;
@@ -194,40 +230,75 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
    {
       defaultConsumerWindowSize = size;
    }
-
+	
 	public int getDefaultProducerWindowSize()
 	{
 		return defaultProducerWindowSize;
 	}
-			
+				
 	public void setDefaultProducerWindowSize(final int size)
    {
       defaultProducerWindowSize = size;
    }
-
+	
 	public int getDefaultProducerMaxRate()
 	{
 		return defaultProducerMaxRate;
 	}
-	
+		
 	public void setDefaultProducerMaxRate(final int rate)
 	{
 	   this.defaultProducerMaxRate = rate;
 	}
-	
+		
 	public int getDefaultConsumerMaxRate()
    {
       return defaultConsumerMaxRate;
    }
-   
+   	
    public void setDefaultConsumerMaxRate(final int rate)
    {
       this.defaultConsumerMaxRate = rate;
    }
    
+   public boolean isDefaultBlockOnPersistentSend()
+   {
+      return defaultBlockOnPersistentSend;
+   }
+   
+   public void setDefaultBlockOnPersistentSend(final boolean blocking)
+   {
+      defaultBlockOnPersistentSend = blocking;
+   }
+   
+   public boolean isDefaultBlockOnNonPersistentSend()
+   {
+      return defaultBlockOnNonPersistentSend;
+   }
+   
+   public void setDefaultBlockOnNonPersistentSend(final boolean blocking)
+   {
+      defaultBlockOnNonPersistentSend = blocking;
+   }
+   
+   public boolean isDefaultBlockOnAcknowledge()
+   {
+      return this.defaultBlockOnAcknowledge;
+   }
+   
+   public void setDefaultBlockOnAcknowledge(final boolean blocking)
+   {
+      defaultBlockOnAcknowledge = blocking;
+   }
+            
    public ConnectionParams getConnectionParams()
    {
       return connectionParams;
+   }
+    
+   public void setConnectionParams(final ConnectionParams params)
+   {
+      this.connectionParams = params;
    }
    
    public Location getLocation()
