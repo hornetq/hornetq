@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.server.impl;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -232,7 +233,7 @@ public class QueueImpl implements Queue
    {
       MessageReference reference;
 
-      ListIterator<MessageReference> iterator = null;
+      Iterator<MessageReference> iterator = null;
 
       while (true)
       {
@@ -342,7 +343,7 @@ public class QueueImpl implements Queue
 
    public synchronized boolean removeReferenceWithID(final long id)
    {
-      ListIterator<MessageReference> iterator = messageReferences.iterator();
+      Iterator<MessageReference> iterator = messageReferences.iterator();
 
       boolean removed = false;
 
@@ -365,7 +366,7 @@ public class QueueImpl implements Queue
 
    public synchronized MessageReference getReference(final long id)
    {
-      ListIterator<MessageReference> iterator = messageReferences.iterator();
+      Iterator<MessageReference> iterator = messageReferences.iterator();
 
       while (iterator.hasNext())
       {
@@ -470,7 +471,7 @@ public class QueueImpl implements Queue
    {
       Transaction tx = new TransactionImpl(storageManager, null);
 
-      ListIterator<MessageReference> iter = messageReferences.iterator();
+      Iterator<MessageReference> iter = messageReferences.iterator();
 
       while (iter.hasNext())
       {

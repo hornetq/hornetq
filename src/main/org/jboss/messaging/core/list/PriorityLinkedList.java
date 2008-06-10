@@ -22,8 +22,8 @@
 
 package org.jboss.messaging.core.list;
 
+import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 
 /**
  * A type of linked list which maintains items according to a priority
@@ -42,8 +42,6 @@ public interface PriorityLinkedList<T>
    
    T removeFirst();
    
-   T removeLast();
-   
    T peekFirst();
    
    List<T> getAll();
@@ -52,9 +50,7 @@ public interface PriorityLinkedList<T>
    
    int size();
    
-   ListIterator<T> iterator();
+   Iterator<T> iterator();
    
    boolean isEmpty();
-
-   void remove(T messageReference, int priority);
 }

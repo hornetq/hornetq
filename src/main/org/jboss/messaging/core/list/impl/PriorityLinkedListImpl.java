@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.list.impl;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -102,31 +103,6 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
       return t;      
    }
    
-   public T removeLast()
-   {
-      T t = null;
-           
-      for (int i = 0; i < priorities; i++)
-      {
-         LinkedList<T> ll = linkedLists.get(i);
-         if (!ll.isEmpty())
-         {
-            t = ll.removeLast();
-         }
-         if (t != null)
-         {
-            break;
-         }
-      }
-      
-      if (t != null)
-      {
-         size--;  
-      }
-           
-      return t;      
-   }
-   
    public T peekFirst()
    {
       T t = null;
@@ -180,22 +156,12 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
       return size == 0;
    }
 
-   public void remove(final T messageReference, final int priority)
-   {
-      LinkedList<T> linkedList = linkedLists.get(priority);
-      
-      if (linkedList != null)
-      {
-         linkedList.remove(messageReference);
-      }
-   }
-
-   public ListIterator<T> iterator()
+   public Iterator<T> iterator()
    {
       return new PriorityLinkedListIterator();
    }
       
-   private class PriorityLinkedListIterator implements ListIterator<T>
+   private class PriorityLinkedListIterator implements Iterator<T>
    { 
       private int index;
       
@@ -206,11 +172,6 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
          index = linkedLists.size() - 1;
          
          currentIter = linkedLists.get(index).listIterator();
-      }
-
-      public void add(final Object obj)
-      {
-         throw new UnsupportedOperationException();
       }
 
       public boolean hasNext()
@@ -233,11 +194,6 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
          }
          return currentIter.hasNext();      
       }
-      
-      public boolean hasPrevious()
-      {
-         throw new UnsupportedOperationException();
-      }
 
       public T next()
       {
@@ -248,31 +204,11 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
          return currentIter.next();
       }
 
-      public int nextIndex()
-      {
-         throw new UnsupportedOperationException();
-      }
-
-      public T previous()
-      {
-         throw new UnsupportedOperationException();
-      }
-
-      public int previousIndex()
-      {
-         throw new UnsupportedOperationException();
-      }
-
       public void remove()
       {
          currentIter.remove();      
          
          size--;
-      }
-
-      public void set(final Object obj)
-      {
-         throw new UnsupportedOperationException();
       }
    }   
 }

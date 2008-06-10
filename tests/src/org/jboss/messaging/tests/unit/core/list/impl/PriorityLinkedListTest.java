@@ -22,7 +22,6 @@
 package org.jboss.messaging.tests.unit.core.list.impl;
 
 import java.util.Iterator;
-import java.util.ListIterator;
 
 import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
@@ -101,9 +100,23 @@ public class PriorityLinkedListTest extends UnitTestCase
    
    public void tearDown() throws Exception
    {
+      list = null; 
       super.tearDown();
    }
-         
+  
+   public void testEmpty() throws Exception
+   {
+      assertTrue(list.isEmpty());
+
+      list.addFirst(a, 0);
+
+      assertFalse(list.isEmpty());
+      
+      Wibble w = list.removeFirst();
+      assertEquals(a, w);
+      assertTrue(list.isEmpty());
+   }
+   
    public void testAddFirst() throws Exception
    {
       list.addFirst(a, 0);
@@ -138,6 +151,29 @@ public class PriorityLinkedListTest extends UnitTestCase
 
    }
    
+   public void testPeekFirst()
+   {
+      list.addLast(a, 0);
+      list.addLast(b, 1);
+      list.addLast(c, 2);
+      list.addLast(d, 3);
+      list.addLast(e, 4);
+      list.addLast(f, 5);
+      list.addLast(g, 6);
+      list.addLast(h, 7);
+      list.addLast(i, 8);
+      list.addLast(j, 9);
+
+      assertEquals(j, list.peekFirst());
+      assertEquals(j, list.peekFirst());
+
+      list.removeFirst();
+      
+      assertEquals(i, list.peekFirst());
+      assertEquals(i, list.peekFirst());
+      
+      list.clear();
+   }
    
    public void testRemoveFirst() throws Exception
    {
@@ -301,7 +337,7 @@ public class PriorityLinkedListTest extends UnitTestCase
       list.addLast(j, 9);
       
       
-      Iterator iter = list.getAll().iterator();
+      Iterator<Wibble> iter = list.getAll().iterator();
       int count = 0;
       while (iter.hasNext())
       {
@@ -380,7 +416,7 @@ public class PriorityLinkedListTest extends UnitTestCase
       list.addLast(y, 0);
       list.addLast(z, 0);
       
-      ListIterator iter = list.iterator();
+      Iterator<Wibble> iter = list.iterator();
       
       int c = 0;
       while (iter.hasNext())
