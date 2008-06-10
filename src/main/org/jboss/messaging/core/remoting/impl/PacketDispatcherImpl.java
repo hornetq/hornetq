@@ -97,8 +97,7 @@ public class PacketDispatcherImpl implements PacketDispatcher
 
       if (handler == null)
       {
-         log.warn("no handler defined for " + handlerID);
-         dump();
+         throw new IllegalArgumentException("Failed to unregister handler " + handlerID);
       }
       if (trace)
       {

@@ -103,11 +103,7 @@ public class ClientConnectionImpl implements ClientConnectionInternal
 
       ClientSession session =
       	new ClientSessionImpl(this, response.getSessionID(), xa, ackBatchSize, cacheProducers,
-      			autoCommitSends, autoCommitAcks, blockOnAcknowledge, connectionFactory.isDefaultBlockOnNonPersistentSend(),
-      			connectionFactory.isDefaultBlockOnPersistentSend(), 
-      			connectionFactory.getDefaultConsumerWindowSize(), connectionFactory.getDefaultConsumerMaxRate(),
-      			connectionFactory.getDefaultProducerWindowSize(),
-      			connectionFactory.getDefaultProducerMaxRate());
+      			                autoCommitSends, autoCommitAcks, blockOnAcknowledge);
 
       sessions.add(session);
 
@@ -190,6 +186,11 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    public Version getServerVersion()
    {
       return serverVersion;
+   }
+   
+   public ClientConnectionFactory getConnectionFactory()
+   {
+      return connectionFactory;
    }
 
    // Public ---------------------------------------------------------------------------------------

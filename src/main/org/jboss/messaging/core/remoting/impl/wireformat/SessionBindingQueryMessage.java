@@ -48,4 +48,16 @@ public class SessionBindingQueryMessage extends EmptyPacket
       address = buffer.getSimpleString();
    }
    
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionBindingQueryMessage == false)
+      {
+         return false;
+      }
+            
+      SessionBindingQueryMessage r = (SessionBindingQueryMessage)other;
+      
+      return this.address.equals(r.address);
+   }
+   
 }

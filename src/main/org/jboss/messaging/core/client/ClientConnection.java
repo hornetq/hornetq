@@ -34,4 +34,6 @@ public interface ClientConnection
    boolean isClosed();
 
    Version getServerVersion();
+      
+   ClientConnectionFactory getConnectionFactory();
 }

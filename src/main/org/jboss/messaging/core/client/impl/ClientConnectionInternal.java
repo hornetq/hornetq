@@ -9,6 +9,7 @@ package org.jboss.messaging.core.client.impl;
 import java.util.Set;
 
 import org.jboss.messaging.core.client.ClientConnection;
+import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 

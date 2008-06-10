@@ -75,6 +75,19 @@ public class SessionAddDestinationMessage extends EmptyPacket
       return getParentString() + ", address=" + address + ", temp=" + temporary +"]";
    }
    
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionAddDestinationMessage == false)
+      {
+         return false;
+      }
+            
+      SessionAddDestinationMessage r = (SessionAddDestinationMessage)other;
+      
+      return this.address.equals(r.address) &&
+             this.temporary == r.temporary;
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

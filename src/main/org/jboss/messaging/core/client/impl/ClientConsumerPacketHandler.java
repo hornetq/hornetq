@@ -9,6 +9,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  * @version <tt>$Revision$</tt>
  *
@@ -61,5 +62,17 @@ public class ClientConsumerPacketHandler implements PacketHandler
    public String toString()
    {
       return "ClientConsumerPacketHandler[id=" + consumerID + "]";
+   }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof ClientConsumerPacketHandler == false)
+      {
+         return false;
+      }
+            
+      ClientConsumerPacketHandler r = (ClientConsumerPacketHandler)other;
+      
+      return r.consumerID == this.consumerID;     
    }
 }

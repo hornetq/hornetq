@@ -9,7 +9,6 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
-
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
 
@@ -104,6 +103,22 @@ public class SessionCreateQueueMessage extends EmptyPacket
       filterString = buffer.getNullableSimpleString();
       durable = buffer.getBoolean();
       temporary = buffer.getBoolean();
+   }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionCreateQueueMessage == false)
+      {
+         return false;
+      }
+            
+      SessionCreateQueueMessage r = (SessionCreateQueueMessage)other;
+      
+      return r.address.equals(this.address) && 
+             r.queueName.equals(this.queueName) &&
+             (r.filterString == null ? this.filterString == null : r.filterString.equals(this.filterString)) &&
+             r.durable == this.durable &&
+             r.temporary == this.temporary;
    }
 
    // Package protected ---------------------------------------------

@@ -62,7 +62,15 @@ public class PacketDispatcherTest extends TestCase
       
       replay(handler);
       
-      dispatcher.unregister(id);
+      try
+      {
+         dispatcher.unregister(id);
+         fail("Should throw Exception");
+      }
+      catch (IllegalArgumentException e)
+      {
+         //Ok
+      }
       assertNull(dispatcher.getHandler(id));
       
       verify(handler);   

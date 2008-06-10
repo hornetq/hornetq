@@ -9,7 +9,6 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
-
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
 
@@ -63,6 +62,18 @@ public class SessionDeleteQueueMessage extends EmptyPacket
    public void decodeBody(final MessagingBuffer buffer)
    {
       queueName = buffer.getSimpleString();
+   }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionDeleteQueueMessage == false)
+      {
+         return false;
+      }
+            
+      SessionDeleteQueueMessage r = (SessionDeleteQueueMessage)other;
+      
+      return r.queueName.equals(this.queueName);
    }
 
    // Package protected ---------------------------------------------

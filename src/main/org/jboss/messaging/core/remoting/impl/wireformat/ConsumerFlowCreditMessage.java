@@ -60,6 +60,18 @@ public class ConsumerFlowCreditMessage extends EmptyPacket
    {
       return getParentString() + ", credits=" + credits + "]";
    }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof ConsumerFlowCreditMessage == false)
+      {
+         return false;
+      }
+            
+      ConsumerFlowCreditMessage r = (ConsumerFlowCreditMessage)other;
+      
+      return this.credits == r.credits;
+   }
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

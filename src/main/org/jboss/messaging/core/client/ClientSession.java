@@ -33,11 +33,15 @@ public interface ClientSession extends XAResource
    SessionQueueQueryResponseMessage queueQuery(SimpleString queueName) throws MessagingException;
    
    SessionBindingQueryResponseMessage bindingQuery(SimpleString address) throws MessagingException;
+               
+   ClientConsumer createConsumer(SimpleString queueName) throws MessagingException;
    
    ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean noLocal,
                                  boolean autoDeleteQueue, boolean direct) throws MessagingException;
    
-   ClientConsumer createConsumer(SimpleString queueName) throws MessagingException;
+   ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean noLocal,
+                                 boolean autoDeleteQueue, boolean direct,
+                                 int windowSize, int maxRate) throws MessagingException;
    
    ClientBrowser createBrowser(SimpleString queueName, SimpleString filterString) throws MessagingException;
    
@@ -72,4 +76,6 @@ public interface ClientSession extends XAResource
    int getLazyAckBatchSize();
    
    boolean isXA();
+   
+   ClientConnection getConnection();
 }

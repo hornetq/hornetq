@@ -24,4 +24,6 @@ public interface ClientConsumerInternal extends ClientConsumer
    void handleMessage(ClientMessage message) throws Exception;
    
    void recover(long lastDeliveryID) throws MessagingException;
+   
+   int getClientWindowSize();
 }

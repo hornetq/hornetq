@@ -87,8 +87,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    
    private volatile int creditsToSend;   
    
-   
-
+  
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -292,7 +291,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    public long getClientTargetID()
    {
-      return targetID;
+      return this.clientTargetID;
    }
 
    public void handleMessage(final ClientMessage message) throws Exception
@@ -348,9 +347,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          	
          	synchronized (this)
          	{
-         		buffer.addLast(message, message.getPriority());
-         		
-         		maxSize = Math.max(maxSize, buffer.size());
+         		buffer.addLast(message, message.getPriority());         		
          	}
          	            	
          	queueExecutor();
@@ -368,13 +365,16 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }      
    }
 
-   int maxSize = 0;
-
    public void recover(final long lastDeliveryID)
    {
       ignoreDeliveryMark = lastDeliveryID;
 
       buffer.clear();      
+   }
+   
+   public int getClientWindowSize()
+   {
+      return clientWindowSize;
    }
 
    // Public

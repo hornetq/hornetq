@@ -48,4 +48,16 @@ public class SessionQueueQueryMessage extends EmptyPacket
       queueName = buffer.getSimpleString();
    }
    
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionQueueQueryMessage == false)
+      {
+         return false;
+      }
+            
+      SessionQueueQueryMessage r = (SessionQueueQueryMessage)other;
+      
+      return r.queueName.equals(this.queueName);
+   }
+   
 }
