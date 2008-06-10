@@ -13,7 +13,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
-import org.jboss.messaging.core.remoting.impl.mina.MinaService;
+import org.jboss.messaging.core.remoting.impl.mina.RemotingServiceImpl;
 import org.jboss.messaging.core.remoting.impl.mina.ServerKeepAliveFactory;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
@@ -33,7 +33,7 @@ public class ServerKeepAliveTest extends TestCase
 
    // Attributes ----------------------------------------------------
 
-   private MinaService service;
+   private RemotingServiceImpl service;
 
    // Static --------------------------------------------------------
 
@@ -64,7 +64,7 @@ public class ServerKeepAliveTest extends TestCase
               "localhost", TestSupport.PORT);
       clientConfig.setKeepAliveInterval(TestSupport.KEEP_ALIVE_INTERVAL);
       clientConfig.setKeepAliveTimeout(TestSupport.KEEP_ALIVE_TIMEOUT);
-      service = new MinaService(config, new DummyServerKeepAliveFactory());
+      service = new RemotingServiceImpl(config, new DummyServerKeepAliveFactory());
       service.start();
 
       MinaConnector connector = new MinaConnector(clientConfig.getLocation(), clientConfig.getConnectionParams(), new PacketDispatcherImpl(null));

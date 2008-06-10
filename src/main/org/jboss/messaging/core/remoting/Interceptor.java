@@ -13,9 +13,9 @@ import org.jboss.messaging.core.exception.MessagingException;
  *
  * This is class is a simple way to intercepting server calls on JBoss Messaging.
  * 
- * To Add this interceptor, you have to modify jbm-configuration.xml, or call MinaService.addInterceptor manually.
+ * To Add this interceptor, you have to modify jbm-configuration.xml, or call RemotingServiceImpl.addInterceptor manually.
  * 
- * If you deploy any Interceptor as a POJO on the Microcontainer, MinaService.addInterceptor is called automagically.
+ * If you deploy any Interceptor as a POJO on the Microcontainer, RemotingServiceImpl.addInterceptor is called automagically.
  *  
  * @author clebert.suconic@jboss.com
  */

@@ -42,6 +42,8 @@ public interface Configuration
    Boolean isClustered();
 
    Integer getScheduledThreadPoolMaxSize();
+   
+   Integer getThreadPoolMaxSize();
 
    long getSecurityInvalidationInterval();
 
@@ -71,12 +73,6 @@ public interface Configuration
 
    long getTimeout();
    
-   long getWriteQueueMaxBytes();
-
-   long getWriteQueueMinBytes();
-   
-   long getWriteQueueBlockTimeout();
-      
    boolean isSecurityEnabled();
 
    String getKeyStorePath();

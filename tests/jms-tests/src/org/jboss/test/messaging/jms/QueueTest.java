@@ -172,7 +172,7 @@ public class QueueTest extends JMSTestCase
 
          	conn2 = cf.createConnection();
 
-         	Session s = conn1.createSession(true, Session.AUTO_ACKNOWLEDGE);
+         	Session s = conn1.createSession(true, Session.SESSION_TRANSACTED);
 
          	MessageProducer p = s.createProducer(queue1);
 
@@ -183,7 +183,7 @@ public class QueueTest extends JMSTestCase
 
             s.commit();
 
-            Session s2 = conn2.createSession(true, Session.AUTO_ACKNOWLEDGE);
+            Session s2 = conn2.createSession(true, Session.SESSION_TRANSACTED);
 
             // Create a consumer, start the session, close the consumer..
             // This shouldn't cause any message to be lost

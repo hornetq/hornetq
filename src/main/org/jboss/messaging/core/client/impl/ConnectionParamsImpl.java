@@ -44,9 +44,6 @@ public class ConnectionParamsImpl implements ConnectionParams
    protected String keyStorePassword;
    protected String trustStorePath;
    protected String trustStorePassword;
-   protected long writeQueueBlockTimeout = 10000;
-   protected long writeQueueMinBytes = 32 * 1024L;
-   protected long writeQueueMaxBytes = 64 * 1024L;
    
    public long getTimeout()
    {
@@ -126,36 +123,6 @@ public class ConnectionParamsImpl implements ConnectionParams
    public void setTcpSendBufferSize(int tcpSendBufferSize)
    {
       this.tcpSendBufferSize = tcpSendBufferSize;
-   }
-
-   public long getWriteQueueBlockTimeout()
-   {
-      return writeQueueBlockTimeout;
-   }
-
-   public long getWriteQueueMaxBytes()
-   {
-      return writeQueueMaxBytes;
-   }
-
-   public long getWriteQueueMinBytes()
-   {
-      return writeQueueMinBytes;
-   }
-
-   public void setWriteQueueBlockTimeout(final long timeout)
-   {
-      this.writeQueueBlockTimeout = timeout;
-   }
-
-   public void setWriteQueueMaxBytes(final long bytes)
-   {
-      this.writeQueueMaxBytes = bytes;
-   }
-
-   public void setWriteQueueMinBytes(final long bytes)
-   {
-      this.writeQueueMinBytes = bytes;
    }
 
    public boolean isSSLEnabled()
@@ -258,9 +225,6 @@ public class ConnectionParamsImpl implements ConnectionParams
              cp.getTcpReceiveBufferSize() == this.getTcpReceiveBufferSize() &&
              cp.getTcpSendBufferSize() == this.getTcpSendBufferSize() &&
              cp.isSSLEnabled() == this.isSSLEnabled() &&
-             cp.isSSLEnabledModified() == this.isSSLEnabledModified() &&
-             cp.getWriteQueueBlockTimeout() == this.getWriteQueueBlockTimeout() &&
-             cp.getWriteQueueMinBytes() == this.getWriteQueueMinBytes() &&
-             cp.getWriteQueueMaxBytes() == this.getWriteQueueMaxBytes();
+             cp.isSSLEnabledModified() == this.isSSLEnabledModified();
    }
 }

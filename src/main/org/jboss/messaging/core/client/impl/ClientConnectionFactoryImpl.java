@@ -80,9 +80,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
    private boolean defaultBlockOnPersistentSend;
    
    private boolean defaultBlockOnNonPersistentSend;
-   
-   
-      
+        
    // Static ---------------------------------------------------------------------------------------
    
    public static final int DEFAULT_CONSUMER_WINDOW_SIZE = 1024 * 1024;
@@ -98,7 +96,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
    public static final boolean DEFAULT_BLOCK_ON_PERSISTENT_SEND = false;
    
    public static final boolean DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND = false;
-    
+   
    // Constructors ---------------------------------------------------------------------------------
 
    /**
@@ -153,7 +151,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
       defaultProducerMaxRate = DEFAULT_PRODUCER_MAX_RATE;
       defaultBlockOnAcknowledge = DEFAULT_BLOCK_ON_ACKNOWLEDGE;
       defaultBlockOnPersistentSend = DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-      defaultBlockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
+      defaultBlockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;      
       this.location = location;
       this.connectionParams = connectionParams;
       this.remotingConnectionFactory = new RemotingConnectionFactoryImpl();

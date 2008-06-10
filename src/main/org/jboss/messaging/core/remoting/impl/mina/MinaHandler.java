@@ -36,8 +36,6 @@ public class MinaHandler extends IoHandlerAdapter implements
 
    private static final Logger log = Logger.getLogger(MinaHandler.class);
 
-   private static final AttributeKey BLOCKED = new AttributeKey(MinaHandler.class, "blocked");
-
    private static boolean trace = log.isTraceEnabled();
 
    // Attributes ----------------------------------------------------
@@ -53,16 +51,6 @@ public class MinaHandler extends IoHandlerAdapter implements
    // Note! must use ConcurrentMap here to avoid race condition
    private final ConcurrentMap<Long, Executor> executors = new ConcurrentHashMap<Long, Executor>();
 
-   private final long blockTimeout;
-
-   //TODO - this is screwed - I want this to be zero, but unfortunately in messageSent, the current
-   //messages bytes haven't been subtracted so this won't work!!
-   private final long bytesLow;
-
-   private final long bytesHigh;
-   
-   private boolean blocked;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -70,17 +58,10 @@ public class MinaHandler extends IoHandlerAdapter implements
                       final ExecutorService executorService,
                       final CleanUpNotifier failureNotifier,
                       final boolean closeSessionOnExceptionCaught,
-                      final boolean useExecutor,
-                      final long blockTimeout,
-                      final long bytesLow,
-                      final long bytesHigh)
+                      final boolean useExecutor)
    {
       assert dispatcher != null;
       assert executorService != null;
-
-      this.blockTimeout = blockTimeout;
-      this.bytesLow = bytesLow;
-      this.bytesHigh = bytesHigh;
 
       this.dispatcher = dispatcher;
       this.failureNotifier = failureNotifier;
@@ -134,7 +115,7 @@ public class MinaHandler extends IoHandlerAdapter implements
 
    @Override
    public void messageReceived(final IoSession session, final Object message)
-   throws Exception
+      throws Exception
    {
       final Packet packet = (Packet) message;
 
@@ -177,58 +158,6 @@ public class MinaHandler extends IoHandlerAdapter implements
       }
    }
 
-//   @Override
-//   public synchronized void messageSent(final IoSession session, final Object message) throws Exception
-//   {
-//      if (blocked)
-//      {
-//         long bytes = session.getScheduledWriteBytes();
-//
-//         if (bytes <= bytesLow)
-//         {
-//            blocked = false;
-//
-//            //Note that we need to notify all since there may be more than one thread waiting on this
-//            //E.g. the response from a blocking acknowledge and a delivery
-//            notifyAll();
-//         }
-//      }
-//   }
-//
-//   public synchronized void checkWrite(final IoSession session) throws Exception
-//   {
-//      while (session.getScheduledWriteBytes() >= bytesHigh)
-//      {
-//         blocked = true;
-//
-//         long start = System.currentTimeMillis();
-//
-//         long toWait = blockTimeout;
-//
-//         do
-//         {
-//            wait(toWait);
-//
-//            if (session.getScheduledWriteBytes() < bytesHigh)
-//            {
-//               break;
-//            }
-//
-//            long now = System.currentTimeMillis();
-//
-//            toWait -= now - start;
-//
-//            start = now;
-//         }
-//         while (toWait > 0);
-//
-//         if (toWait <= 0)
-//         {
-//            throw new IllegalStateException("Timed out waiting for MINA queue to free");
-//         }
-//      }
-//   }
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -246,15 +175,6 @@ public class MinaHandler extends IoHandlerAdapter implements
          {
             public void send(Packet p) throws Exception
             {
-//               try
-//               {
-//                  checkWrite(session);
-//               }
-//               catch (Exception e)
-//               {
-//                  log.error("Failed to acquire sem", e);
-//               }
-
                dispatcher.callFilters(p);
 
                session.write(p);
@@ -276,7 +196,8 @@ public class MinaHandler extends IoHandlerAdapter implements
          returner = null;
       }
 
-      if (trace) {
+      if (trace)
+      {
          log.trace("received packet " + packet);
       }
 

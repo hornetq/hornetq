@@ -17,7 +17,7 @@ import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
-import org.jboss.messaging.core.remoting.impl.mina.MinaService;
+import org.jboss.messaging.core.remoting.impl.mina.RemotingServiceImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 
 
@@ -28,7 +28,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
  */
 public abstract class MeasureBase extends TestCase
 {
-   protected MinaService service;
+   protected RemotingServiceImpl service;
    protected PacketDispatcher serverDispatcher;
 
    @Override
@@ -146,7 +146,7 @@ public abstract class MeasureBase extends TestCase
 
    protected void startServer() throws Exception
    {
-      service = new MinaService(createConfiguration());
+      service = new RemotingServiceImpl(createConfiguration());
       service.start();
       serverDispatcher = service.getDispatcher();
       System.out.println("Server Dispatcher = " + serverDispatcher);

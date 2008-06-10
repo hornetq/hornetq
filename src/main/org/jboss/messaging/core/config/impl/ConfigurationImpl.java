@@ -57,6 +57,8 @@ public class ConfigurationImpl implements Configuration, Serializable
    
    protected int scheduledThreadPoolMaxSize = 30;
    
+   protected int threadPoolMaxSize = 30;
+   
    protected long securityInvalidationInterval = 10000;
 
    protected boolean requireDestinations;
@@ -102,10 +104,7 @@ public class ConfigurationImpl implements Configuration, Serializable
    protected boolean invmDisabled = DEFAULT_INVM_DISABLED;
    protected boolean invmDisabledModified = false;
    protected boolean tcpNoDelay;
-   protected long writeQueueBlockTimeout = 5000;
-   protected long writeQueueMinBytes = 65536;
-   protected long writeQueueMaxBytes = 1048576;
-   
+
    protected int tcpReceiveBufferSize = -1;
    protected int tcpSendBufferSize = -1;
    protected boolean sslEnabled = DEFAULT_SSL_ENABLED;
@@ -128,6 +127,11 @@ public class ConfigurationImpl implements Configuration, Serializable
    public Integer getScheduledThreadPoolMaxSize()
    {
    	return scheduledThreadPoolMaxSize;
+   }
+   
+   public Integer getThreadPoolMaxSize()
+   {
+      return threadPoolMaxSize;
    }
       
    public long getSecurityInvalidationInterval()
@@ -320,37 +324,7 @@ public class ConfigurationImpl implements Configuration, Serializable
    {
       this.tcpSendBufferSize = size;
    }
-     
-   public long getWriteQueueBlockTimeout()
-   {
-      return writeQueueBlockTimeout;
-   }
-
-   public long getWriteQueueMaxBytes()
-   {
-      return writeQueueMaxBytes;
-   }
-
-   public long getWriteQueueMinBytes()
-   {
-      return writeQueueMinBytes;
-   }
-   
-   public void setWriteQueueBlockTimeout(final long timeout)
-   {
-      this.writeQueueBlockTimeout = timeout;
-   }
-
-   public void setWriteQueueMaxBytes(final long bytes)
-   {
-      this.writeQueueMaxBytes = bytes;
-   }
-
-   public void setWriteQueueMinBytes(final long bytes)
-   {
-      this.writeQueueMinBytes = bytes;
-   }
-
+  
    public String getURI()
    {
       StringBuffer buff = new StringBuffer();
@@ -461,9 +435,6 @@ public class ConfigurationImpl implements Configuration, Serializable
       connectionParams.setTcpReceiveBufferSize(tcpReceiveBufferSize);
       connectionParams.setTcpSendBufferSize(tcpSendBufferSize);
       connectionParams.setTimeout(timeout);
-      connectionParams.setWriteQueueBlockTimeout(writeQueueBlockTimeout);
-      connectionParams.setWriteQueueMinBytes(writeQueueMinBytes);
-      connectionParams.setWriteQueueMaxBytes(writeQueueMaxBytes);
       return connectionParams;
    }
   

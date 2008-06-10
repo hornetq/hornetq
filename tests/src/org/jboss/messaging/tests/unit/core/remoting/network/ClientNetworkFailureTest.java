@@ -32,7 +32,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.TransportType;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
-import org.jboss.messaging.core.remoting.impl.mina.MinaService;
+import org.jboss.messaging.core.remoting.impl.mina.RemotingServiceImpl;
 import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
@@ -53,7 +53,7 @@ public class ClientNetworkFailureTest extends TestCase
    // Constants -----------------------------------------------------
    Logger log = Logger.getLogger(ClientNetworkFailureTest.class);
    private MessagingServer server;
-   private MinaService minaService;
+   private RemotingServiceImpl minaService;
    private NetworkFailureFilter networkFailureFilter;
 
    // Static --------------------------------------------------------
@@ -80,7 +80,7 @@ public class ClientNetworkFailureTest extends TestCase
       newConfig.setKeepAliveTimeout(KEEP_ALIVE_TIMEOUT);
       server = new MessagingServerImpl(newConfig);
       server.start();
-      minaService = (MinaService) server.getRemotingService();
+      minaService = (RemotingServiceImpl) server.getRemotingService();
       networkFailureFilter = new NetworkFailureFilter();
       minaService.getFilterChain().addFirst("network-failure",
               networkFailureFilter);

@@ -3,7 +3,11 @@
 
       <clustered>false</clustered>
 
-      <scheduled-executor-max-pool-size>30</scheduled-executor-max-pool-size>
+      <!-- Maximum number of threads to use for scheduled deliveries -->
+      <scheduled-max-pool-size>30</scheduled-max-pool-size>
+
+      <!-- Maximum number of threads to use for sessions on the server side -->      
+      <max-pool-size>30</max-pool-size>
 
       <require-destinations>true</require-destinations>
 

@@ -22,8 +22,11 @@
 package org.jboss.messaging.core.server.impl;
 
 import java.util.HashSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -45,7 +48,7 @@ import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.mina.CleanUpNotifier;
-import org.jboss.messaging.core.remoting.impl.mina.MinaService;
+import org.jboss.messaging.core.remoting.impl.mina.RemotingServiceImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
@@ -62,7 +65,9 @@ import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.impl.ResourceManagerImpl;
 import org.jboss.messaging.core.version.Version;
+import org.jboss.messaging.util.OrderedExecutorFactory;
 import org.jboss.messaging.util.VersionLoader;
+
 
 /**
  * A Messaging Server
@@ -100,6 +105,8 @@ public class MessagingServerImpl implements MessagingServer
    private Deployer queueSettingsDeployer;
    private JBMSecurityManager securityManager = new JBMSecurityManagerImpl(true);
    private DeploymentManager deploymentManager = new FileDeploymentManager();
+   private OrderedExecutorFactory orderedExecutorFactory;
+   private ExecutorService threadPool;
 
    // plugins
 
@@ -115,7 +122,6 @@ public class MessagingServerImpl implements MessagingServer
    private ResourceManager resourceManager = new ResourceManagerImpl(0);
    private ScheduledExecutorService scheduledExecutor;
    private MessagingServerPacketHandler serverPacketHandler;
-   private CleanUpNotifier cleanUpNotifier = null;
 
    // Constructors ---------------------------------------------------------------------------------
    /**
@@ -140,11 +146,12 @@ public class MessagingServerImpl implements MessagingServer
       this();
       this.configuration = configuration;
       createTransport = true;
-      remotingService = new MinaService(configuration);
-      cleanUpNotifier = (CleanUpNotifier) remotingService;
+      remotingService = new RemotingServiceImpl(configuration);      
    }
    // lifecycle methods ----------------------------------------------------------------
 
+   
+   
    public synchronized void start() throws Exception
    {
       log.debug("starting MessagingServer");
@@ -164,12 +171,14 @@ public class MessagingServerImpl implements MessagingServer
       securityStore.setSecurityManager(securityManager);
       securityDeployer = new SecurityDeployer(securityRepository);
       queueSettingsRepository.setDefault(new QueueSettings());
-      scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize());
+      scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(), new JBMThreadFactory("JBM-scheduled-threads"));
       queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository);
       connectionManager = new ConnectionManagerImpl();
       memoryManager = new SimpleMemoryManager();
       postOffice = new PostOfficeImpl(storageManager, queueFactory, configuration.isRequireDestinations());
-      queueSettingsDeployer = new QueueSettingsDeployer(queueSettingsRepository);
+      queueSettingsDeployer = new QueueSettingsDeployer(queueSettingsRepository);      
+      threadPool = Executors.newFixedThreadPool(configuration.getThreadPoolMaxSize(), new JBMThreadFactory("JBM-session-threads"));
+      orderedExecutorFactory = new OrderedExecutorFactory(threadPool);
 
       if (createTransport)
       {
@@ -226,6 +235,9 @@ public class MessagingServerImpl implements MessagingServer
       postOffice = null;
       scheduledExecutor.shutdown();
       scheduledExecutor = null;
+      threadPool.shutdown();
+      threadPool = null;
+      orderedExecutorFactory = null;
       if (createTransport)
       {
          remotingService.stop();
@@ -285,11 +297,6 @@ public class MessagingServerImpl implements MessagingServer
       this.storageManager = storageManager;
    }
 
-   public void setCleanUpNotifier(CleanUpNotifier cleanUpNotifier)
-   {
-      this.cleanUpNotifier = cleanUpNotifier;
-   }
-
    public PostOffice getPostOffice()
    {
       return postOffice;
@@ -299,7 +306,6 @@ public class MessagingServerImpl implements MessagingServer
    {
       this.postOffice = postOffice;
    }
-
 
    public HierarchicalRepository<HashSet<Role>> getSecurityRepository()
    {
@@ -353,11 +359,16 @@ public class MessagingServerImpl implements MessagingServer
                       sender.getSessionID(), clientAddress,
                       remotingService.getDispatcher(), resourceManager, storageManager,
                       queueSettingsRepository,
-                      postOffice, securityStore, connectionManager);
+                      postOffice, securityStore, connectionManager, orderedExecutorFactory);
 
       remotingService.getDispatcher().register(new ServerConnectionPacketHandler(connection));
 
       return new CreateConnectionResponse(connection.getID(), version);
+   }
+   
+   public OrderedExecutorFactory getOrderedExecutorFactory()
+   {
+      return orderedExecutorFactory;
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -367,5 +378,22 @@ public class MessagingServerImpl implements MessagingServer
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
+   
+   // Inner classes --------------------------------------------------------------------------------
+   
+   private static class JBMThreadFactory implements ThreadFactory
+   {
+      private ThreadGroup group;
+      
+      JBMThreadFactory(final String groupName)
+      {
+         this.group = new ThreadGroup(groupName);         
+      }
+      
+      public Thread newThread(Runnable command)
+      {        
+         return new Thread(group, command);
+      }         
+   }
 
 }

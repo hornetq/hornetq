@@ -8,7 +8,7 @@ package org.jboss.messaging.core.remoting;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
-import org.jboss.messaging.core.remoting.impl.mina.MinaService;
+import org.jboss.messaging.core.remoting.impl.mina.RemotingServiceImpl;
 import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.ConnectionParams;
 
@@ -16,7 +16,7 @@ import org.jboss.messaging.core.client.ConnectionParams;
 /**
  * The ConnectorRegistry keeps track of Configurations and NIOConnectors.
  * 
- * When a {@link MinaService} is started, it register its {@link Configuration}.
+ * When a {@link RemotingServiceImpl} is started, it register its {@link Configuration}.
  * 
  * When a client is created, it gets its {@link NIOConnector} from the
  * ConnectorRegistry using the {@link Configuration} corresponding to the server

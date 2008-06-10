@@ -149,10 +149,7 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
       threadPool = Executors.newCachedThreadPool();
       //We don't order executions in the handler for messages received - this is done in the ClientConsumeImpl
       //since they are put on the queue in order
-      handler = new MinaHandler(dispatcher, threadPool, this, false, false,
-              connectionParams.getWriteQueueBlockTimeout(),
-              connectionParams.getWriteQueueMinBytes(),
-              connectionParams.getWriteQueueMaxBytes());
+      handler = new MinaHandler(dispatcher, threadPool, this, false, false);
       connector.setHandler(handler);
       InetSocketAddress address = new InetSocketAddress(location.getHost(), location.getPort());
       ConnectFuture future = connector.connect(address);

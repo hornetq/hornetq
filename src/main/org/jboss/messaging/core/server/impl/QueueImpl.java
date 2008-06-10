@@ -98,6 +98,8 @@ public class QueueImpl implements Queue
 
    private int pos;
    
+   private boolean locked;
+   
    private AtomicInteger sizeBytes = new AtomicInteger(0);
 
    private AtomicInteger messagesAdded = new AtomicInteger(0);
@@ -159,52 +161,56 @@ public class QueueImpl implements Queue
       return name;
    }
    
-   public HandleStatus addLast(final MessageReference ref)
+   public synchronized HandleStatus addLast(final MessageReference ref)
    {
-      lock.lock();
+      if (locked)
+      {
+         lock.lock();
+      }
       try
       {
          return add(ref, false);
       }
       finally
       {
-         lock.unlock();
+         if (locked)
+         {
+            lock.unlock();
+         }
       }
    }
 
-   public HandleStatus addFirst(final MessageReference ref)
+   public synchronized HandleStatus addFirst(final MessageReference ref)
    {
-      lock.lock();
+      if (locked)
+      {
+         lock.lock();
+      }      
       try
       {
          return add(ref, true);
       }
       finally
       {
-         lock.unlock();
+         if (locked)
+         {
+            lock.unlock();
+         }
       }
    }
 
    public void addListFirst(final LinkedList<MessageReference> list)
    {
-      lock.lock();
-      try
+      ListIterator<MessageReference> iter = list.listIterator(list.size());
+
+      while (iter.hasPrevious())
       {
-         ListIterator<MessageReference> iter = list.listIterator(list.size());
-   
-         while (iter.hasPrevious())
-         {
-            MessageReference ref = iter.previous();
-   
-            messageReferences.addFirst(ref, ref.getMessage().getPriority());
-         }
-   
-         deliver();
+         MessageReference ref = iter.previous();
+
+         messageReferences.addFirst(ref, ref.getMessage().getPriority());
       }
-      finally
-      {
-         lock.unlock();
-      }
+
+      deliver();
    }
  
    public void deliverAsync(final Executor executor)
@@ -222,74 +228,66 @@ public class QueueImpl implements Queue
     * 
     * @see org.jboss.messaging.newcore.intf.Queue#deliver()
     */
-   public void deliver()
+   public synchronized void deliver()
    {
-      lock.lock();
-      try
+      MessageReference reference;
+
+      ListIterator<MessageReference> iterator = null;
+
+      while (true)
       {
-         MessageReference reference;
-   
-         ListIterator<MessageReference> iterator = null;
-   
-         while (true)
+         if (iterator == null)
          {
-            if (iterator == null)
+            reference = messageReferences.peekFirst();
+         }
+         else
+         {
+            if (iterator.hasNext())
             {
-               reference = messageReferences.peekFirst();
+               reference = iterator.next();
             }
             else
             {
-               if (iterator.hasNext())
-               {
-                  reference = iterator.next();
-               }
-               else
-               {
-                  reference = null;
-               }
-            }
-   
-            if (reference == null)
-            {
-               if (iterator == null)
-               {
-                  // We delivered all the messages - go into direct delivery
-                  direct = true;
-                  
-                  promptDelivery = false;
-               }
-               return;
-            }
-   
-            HandleStatus status = deliver(reference);
-   
-            if (status == HandleStatus.HANDLED)
-            {
-               if (iterator == null)
-               {
-                  messageReferences.removeFirst();              
-               }
-               else
-               {
-                  iterator.remove();
-               }
-            }
-            else if (status == HandleStatus.BUSY)
-            {
-               // All consumers busy - give up
-               break;
-            }
-            else if (status == HandleStatus.NO_MATCH && iterator == null)
-            {
-               // Consumers not all busy - but filter not accepting - iterate back
-               // through the queue
-               iterator = messageReferences.iterator();
+               reference = null;
             }
          }
-      }
-      finally
-      {
-         lock.unlock();
+
+         if (reference == null)
+         {
+            if (iterator == null)
+            {
+               // We delivered all the messages - go into direct delivery
+               direct = true;
+               
+               promptDelivery = false;
+            }
+            return;
+         }
+
+         HandleStatus status = deliver(reference);
+
+         if (status == HandleStatus.HANDLED)
+         {
+            if (iterator == null)
+            {
+               messageReferences.removeFirst();              
+            }
+            else
+            {
+               iterator.remove();
+            }
+         }
+         else if (status == HandleStatus.BUSY)
+         {
+            // All consumers busy - give up
+            break;
+         }
+         else if (status == HandleStatus.NO_MATCH && iterator == null)
+         {
+            // Consumers not all busy - but filter not accepting - iterate back
+            // through the queue
+            iterator = messageReferences.iterator();
+         }
       }
    }
 
@@ -502,14 +500,18 @@ public class QueueImpl implements Queue
       tx.commit();
    }
    
-   public void lock()
+   public synchronized void lock()
    {
       lock.lock();
+      
+      locked = true;
    }
    
-   public void unlock()
-   {
-      lock.unlock();
+   public synchronized void unlock()
+   {            
+      lock.unlock();          
+      
+      locked = false;
    }
 
    // Public

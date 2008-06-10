@@ -41,6 +41,7 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.ConcurrentHashSet;
+import org.jboss.messaging.util.OrderedExecutorFactory;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -89,6 +90,8 @@ public class ServerConnectionImpl implements ServerConnection
    private final SecurityStore securityStore;
    
    private final ConnectionManager connectionManager;
+   
+   private final OrderedExecutorFactory orderedExecutorFactory;
 
    private final long createdTime;
          
@@ -111,7 +114,8 @@ public class ServerConnectionImpl implements ServerConnection
    		                      final StorageManager persistenceManager,
    		                      final HierarchicalRepository<QueueSettings> queueSettingsRepository,
    		                      final PostOffice postOffice, final SecurityStore securityStore,
-   		                      final ConnectionManager connectionManager)
+   		                      final ConnectionManager connectionManager,
+   		                      final OrderedExecutorFactory orderedExecutorFactory)
    {
    	this.id = id;
       
@@ -137,6 +141,8 @@ public class ServerConnectionImpl implements ServerConnection
       
       this.connectionManager = connectionManager;
       
+      this.orderedExecutorFactory = orderedExecutorFactory;
+      
       started = false;
       
       createdTime = System.currentTimeMillis();
@@ -158,7 +164,8 @@ public class ServerConnectionImpl implements ServerConnection
       long id = dispatcher.generateID();
       ServerSession session =
          new ServerSessionImpl(id, autoCommitSends, autoCommitAcks, xa, this, resourceManager,
-         		sender, dispatcher, persistenceManager, queueSettingsRepository, postOffice, securityStore);
+         		sender, dispatcher, persistenceManager, queueSettingsRepository, postOffice, securityStore,
+         		orderedExecutorFactory.getOrderedExecutor());
 
       sessions.add(session);
       

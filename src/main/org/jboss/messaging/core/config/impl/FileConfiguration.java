@@ -58,7 +58,9 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
 
       clustered = getBoolean(e, "clustered", clustered);
 
-      scheduledThreadPoolMaxSize = getInteger(e, "scheduled-executor-max-pool-size", scheduledThreadPoolMaxSize);
+      scheduledThreadPoolMaxSize = getInteger(e, "scheduled-max-pool-size", scheduledThreadPoolMaxSize);
+      
+      threadPoolMaxSize = getInteger(e, "max-pool-size", threadPoolMaxSize);
 
       transport = TransportType.valueOf(getString(e, "remoting-transport", TCP.name()));
 
@@ -82,12 +84,6 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
       keepAliveInterval = getInteger(e, "remoting-keep-alive-interval", ConnectionParams.DEFAULT_KEEP_ALIVE_INTERVAL);
 
       keepAliveTimeout = getInteger(e, "remoting-keep-alive-timeout", ConnectionParams.DEFAULT_KEEP_ALIVE_TIMEOUT);
-
-      writeQueueBlockTimeout = getLong(e, "remoting-writequeue-block-timeout", 10000L);
-
-      writeQueueMinBytes = getLong(e, "remoting-writequeue-minbytes", 32 * 1024L);
-
-      writeQueueMaxBytes = getLong(e, "remoting-writequeue-maxbytes", 64 * 1024L);
 
       sslEnabled = getBoolean(e, "remoting-enable-ssl", false);
 

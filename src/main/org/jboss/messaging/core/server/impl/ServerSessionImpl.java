@@ -27,8 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.transaction.xa.XAException;
@@ -131,11 +130,9 @@ public class ServerSessionImpl implements ServerSession
 
    private final AtomicLong deliveryIDSequence = new AtomicLong(0);
 
-   private final ExecutorService executor = Executors.newSingleThreadExecutor();
+   private final Executor executor;
 
    private Transaction tx;
-
-  // private final Object rollbackCancelLock = new Object();
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -146,7 +143,8 @@ public class ServerSessionImpl implements ServerSession
                             final ResourceManager resourceManager, final PacketReturner sender,
                             final PacketDispatcher dispatcher, final StorageManager persistenceManager,
                             final HierarchicalRepository<QueueSettings> queueSettingsRepository,
-                            final PostOffice postOffice, final SecurityStore securityStore) throws Exception
+                            final PostOffice postOffice, final SecurityStore securityStore,
+                            final Executor executor) throws Exception
    {
       this.id = id;
 
@@ -174,6 +172,8 @@ public class ServerSessionImpl implements ServerSession
       this.postOffice = postOffice;
 
       this.securityStore = securityStore;
+      
+      this.executor = executor;
 
       if (log.isTraceEnabled())
       {
@@ -277,8 +277,6 @@ public class ServerSessionImpl implements ServerSession
       producers.clear();
 
       rollback();
-
-      executor.shutdown();
 
       deliveries.clear();
 

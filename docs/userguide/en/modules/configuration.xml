@@ -867,7 +867,7 @@
             <programlisting>
                <![CDATA[
    <bean name="RemotingService"
-      class="org.jboss.messaging.core.remoting.impl.mina.MinaService">
+      class="org.jboss.messaging.core.remoting.impl.mina.RemotingServiceImpl">
       <constructor>
          <parameter>
             <inject bean="Configuration"/>

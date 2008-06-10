@@ -6,7 +6,30 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import org.apache.mina.common.*;
+import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGISTRY;
+import static org.jboss.messaging.core.remoting.TransportType.INVM;
+import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
+import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
+import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addSSLFilter;
+
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.mina.common.DefaultIoFilterChainBuilder;
+import org.apache.mina.common.IdleStatus;
+import org.apache.mina.common.IoService;
+import org.apache.mina.common.IoServiceListener;
+import org.apache.mina.common.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.jboss.beans.metadata.api.annotations.Install;
 import org.jboss.beans.metadata.api.annotations.Uninstall;
@@ -16,31 +39,20 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.ping.Pinger;
 import org.jboss.messaging.core.ping.impl.PingerImpl;
-import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGISTRY;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingService;
-import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
-import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addSSLFilter;
-
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.*;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @version <tt>$Revision$</tt>
  */
-public class MinaService implements RemotingService, CleanUpNotifier
+public class RemotingServiceImpl implements RemotingService, CleanUpNotifier
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(MinaService.class);
+   private static final Logger log = Logger.getLogger(RemotingServiceImpl.class);
 
    // Attributes ----------------------------------------------------
 
@@ -63,19 +75,19 @@ public class MinaService implements RemotingService, CleanUpNotifier
    private ServerKeepAliveFactory factory;
 
    private ScheduledExecutorService scheduledExecutor;
-   private Map<IoSession, ScheduledFuture> currentScheduledPingers;
+   private Map<IoSession, ScheduledFuture<?>> currentScheduledPingers;
    private Map<IoSession, Pinger> currentPingers;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public MinaService(Configuration config)
+   public RemotingServiceImpl(Configuration config)
    {
       this(config, new ServerKeepAliveFactory());
    }
 
-   public MinaService(Configuration config, ServerKeepAliveFactory factory)
+   public RemotingServiceImpl(Configuration config, ServerKeepAliveFactory factory)
    {
       assert config != null;
       assert factory != null;
@@ -87,7 +99,7 @@ public class MinaService implements RemotingService, CleanUpNotifier
       dispatcher = new PacketDispatcherImpl(filters);
 
       scheduledExecutor = new ScheduledThreadPoolExecutor(config.getScheduledThreadPoolMaxSize());
-      currentScheduledPingers = new ConcurrentHashMap<IoSession, ScheduledFuture>();
+      currentScheduledPingers = new ConcurrentHashMap<IoSession, ScheduledFuture<?>>();
       currentPingers = new ConcurrentHashMap<IoSession, Pinger>();
    }
 
@@ -123,7 +135,7 @@ public class MinaService implements RemotingService, CleanUpNotifier
    {
       if (log.isDebugEnabled())
       {
-         log.debug("Start MinaService with configuration:" + config);
+         log.debug("Start RemotingServiceImpl with configuration:" + config);
       }
 
       // if INVM transport is set, we bypass MINA setup
@@ -165,11 +177,7 @@ public class MinaService implements RemotingService, CleanUpNotifier
          acceptor.setCloseOnDeactivation(false);
 
          threadPool = Executors.newCachedThreadPool();
-         acceptor.setHandler(new MinaHandler(dispatcher, threadPool,
-                 this, true, true,
-                 config.getWriteQueueBlockTimeout(),
-                 config.getWriteQueueMinBytes(),
-                 config.getWriteQueueMaxBytes()));
+         acceptor.setHandler(new MinaHandler(dispatcher, threadPool, this, true, true));
          acceptor.bind();
          acceptorListener = new MinaSessionListener();
          acceptor.addListener(acceptorListener);
@@ -281,8 +289,8 @@ public class MinaService implements RemotingService, CleanUpNotifier
          //register pinger
          if (config.getKeepAliveInterval() > 0)
          {
-            Pinger pinger = new PingerImpl(getDispatcher(), new MinaSession(session, null), config.getKeepAliveTimeout(), MinaService.this);
-            ScheduledFuture future = scheduledExecutor.scheduleAtFixedRate(pinger, config.getKeepAliveInterval(), config.getKeepAliveInterval(), TimeUnit.MILLISECONDS);
+            Pinger pinger = new PingerImpl(getDispatcher(), new MinaSession(session, null), config.getKeepAliveTimeout(), RemotingServiceImpl.this);
+            ScheduledFuture<?> future = scheduledExecutor.scheduleAtFixedRate(pinger, config.getKeepAliveInterval(), config.getKeepAliveInterval(), TimeUnit.MILLISECONDS);
             currentScheduledPingers.put(session, future);
             currentPingers.put(session, pinger);
             factory.getSessions().add(session.getId());
@@ -296,7 +304,7 @@ public class MinaService implements RemotingService, CleanUpNotifier
        */
       public void sessionDestroyed(IoSession session)
       {
-         ScheduledFuture future = currentScheduledPingers.remove(session);
+         ScheduledFuture<?> future = currentScheduledPingers.remove(session);
          if (future != null)
          {
             future.cancel(true);

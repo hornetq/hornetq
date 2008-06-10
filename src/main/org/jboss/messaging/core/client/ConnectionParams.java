@@ -42,19 +42,7 @@ public interface ConnectionParams extends Serializable
 
    boolean isTcpNoDelay();
 
-   void setTcpNoDelay(boolean tcpNoDelay);
-   
-   long getWriteQueueMaxBytes();
-   
-   void setWriteQueueMaxBytes(long maxBytes);
-   
-   long getWriteQueueMinBytes();
-   
-   void setWriteQueueMinBytes(long minBytes);
-   
-   long getWriteQueueBlockTimeout();
-   
-   void setWriteQueueBlockTimeout(long timeout);
+   void setTcpNoDelay(boolean tcpNoDelay);   
 
    int getTcpReceiveBufferSize();
 

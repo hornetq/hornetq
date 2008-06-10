@@ -15,7 +15,7 @@ import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
-import org.jboss.messaging.core.remoting.impl.mina.MinaService;
+import org.jboss.messaging.core.remoting.impl.mina.RemotingServiceImpl;
 
 public class MinaServiceTest extends TestCase
 {
@@ -66,7 +66,7 @@ public class MinaServiceTest extends TestCase
 
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(INVM);
-      invmService = new MinaService(config);
+      invmService = new RemotingServiceImpl(config);
       invmService.start();
    }
 
