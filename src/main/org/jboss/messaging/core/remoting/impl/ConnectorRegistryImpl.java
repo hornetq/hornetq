@@ -6,29 +6,26 @@
  */
 package org.jboss.messaging.core.remoting.impl;
 
+import org.jboss.messaging.core.client.ConnectionParams;
+import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.ConnectorRegistry;
+import org.jboss.messaging.core.remoting.NIOConnector;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.TransportType;
 import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
+import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
+import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.ConnectorRegistry;
-import org.jboss.messaging.core.remoting.NIOConnector;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.TransportType;
-import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
-import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
-import org.jboss.messaging.core.client.Location;
-import org.jboss.messaging.core.client.ConnectionParams;
-
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
  * @version <tt>$Revision$</tt>
- * 
  */
 public class ConnectorRegistryImpl implements ConnectorRegistry
 {
@@ -40,11 +37,11 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
 
    // the String key corresponds to Configuration.getLocation()
    private Map<String, PacketDispatcher> localDispatchers = new HashMap<String, PacketDispatcher>();
-   
-   public Map<String, NIOConnectorHolder> connectors = new HashMap<String, NIOConnectorHolder>();
-   
+
+   private Map<String, NIOConnectorHolder> connectors = new HashMap<String, NIOConnectorHolder>();
+
    private final AtomicLong idCounter = new AtomicLong(0);
-   
+
    // Static --------------------------------------------------------
 
    /**
@@ -64,46 +61,46 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
       {
          log.debug("registered " + key + " for " + serverDispatcher);
       }
-      
+
       return (previousDispatcher == null);
    }
 
    /**
     * @return <code>true</code> if this Configuration was registered,
     *         <code>false</code> else
-    */  
+    */
    public boolean unregister(Location location)
-   {      
+   {
       PacketDispatcher dispatcher = localDispatchers.remove(location.getLocation());
 
-       if(log.isDebugEnabled())
-       {
-          log.debug("unregistered " + dispatcher);
-       }
+      if (log.isDebugEnabled())
+      {
+         log.debug("unregistered " + dispatcher);
+      }
 
-       return (dispatcher != null);
+      return (dispatcher != null);
    }
 
    public synchronized NIOConnector getConnector(Location location, ConnectionParams connectionParams)
    {
       assert location != null;
       String key = location.getLocation();
-      
+
       if (connectors.containsKey(key))
-      {         
+      {
          NIOConnectorHolder holder = connectors.get(key);
          holder.increment();
          NIOConnector connector = holder.getConnector();
 
          if (log.isDebugEnabled())
             log.debug("Reuse " + connector + " to connect to "
-                  + key + " [count=" + holder.getCount() + "]");
+                    + key + " [count=" + holder.getCount() + "]");
 
          return connector;
       }
 
       //TODO INVM optimisation is disabled for now
-      
+
       // check if the server is in the same vm than the client
 //      if (localDispatchers.containsKey(key))
 //      {
@@ -136,13 +133,13 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
       if (connector == null)
       {
          throw new IllegalArgumentException(
-               "no connector defined for transport " + transport);
+                 "no connector defined for transport " + transport);
       }
 
       if (log.isDebugEnabled())
          log.debug("Created " + connector + " to connect to "
-               + location);
-      
+                 + location);
+
       NIOConnectorHolder holder = new NIOConnectorHolder(connector);
       connectors.put(key, holder);
       return connector;
@@ -151,16 +148,14 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
    /**
     * Decrement the number of references on the NIOConnector corresponding to
     * the Configuration.
-    * 
+    * <p/>
     * If there is only one reference, remove it from the connectors Map and
     * returns it. Otherwise return null.
-    * 
-    * @param location
-    *           a Location
+    *
+    * @param location a Location
     * @return the NIOConnector if there is no longer any references to it or
     *         <code>null</code>
-    * @throws IllegalStateException
-    *            if no NIOConnector were created for the given Configuration
+    * @throws IllegalStateException if no NIOConnector were created for the given Configuration
     */
    public synchronized NIOConnector removeConnector(Location location)
    {
@@ -171,7 +166,7 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
       if (holder == null)
       {
          throw new IllegalStateException("No Connector were created for "
-               + key);
+                 + key);
       }
 
       if (holder.getCount() == 1)
@@ -180,12 +175,13 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
             log.debug("Removed connector for " + key);
          connectors.remove(key);
          return holder.getConnector();
-      } else
+      }
+      else
       {
          holder.decrement();
          if (log.isDebugEnabled())
             log.debug(holder.getCount() + " remaining references to "
-                  + key);
+                    + key);
          return null;
       }
    }

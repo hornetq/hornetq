@@ -6,30 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGISTRY;
-import static org.jboss.messaging.core.remoting.TransportType.INVM;
-import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addSSLFilter;
-
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.mina.common.DefaultIoFilterChainBuilder;
-import org.apache.mina.common.IdleStatus;
-import org.apache.mina.common.IoService;
-import org.apache.mina.common.IoServiceListener;
-import org.apache.mina.common.IoSession;
+import org.apache.mina.common.*;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.jboss.beans.metadata.api.annotations.Install;
 import org.jboss.beans.metadata.api.annotations.Uninstall;
@@ -39,10 +16,21 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.ping.Pinger;
 import org.jboss.messaging.core.ping.impl.PingerImpl;
+import org.jboss.messaging.core.remoting.ConnectorRegistryFactory;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingService;
+import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
+import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
+import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
+import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addSSLFilter;
+
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.*;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -190,7 +178,7 @@ public class RemotingServiceImpl implements RemotingService, CleanUpNotifier
       // if (!disableInvm)
 
       log.info("Registering:" + config.getLocation());
-      REGISTRY.register(config.getLocation(), dispatcher);
+      ConnectorRegistryFactory.getRegistry().register(config.getLocation(), dispatcher);
 
       started = true;
    }
@@ -208,7 +196,7 @@ public class RemotingServiceImpl implements RemotingService, CleanUpNotifier
          threadPool.shutdown();
       }
 
-      REGISTRY.unregister(config.getLocation());
+      ConnectorRegistryFactory.getRegistry().unregister(config.getLocation());
 
       started = false;
    }

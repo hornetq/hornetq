@@ -27,11 +27,11 @@ public class ClientKeepAliveFactory implements KeepAliveFactory
    // Public --------------------------------------------------------
 
    // KeepAliveFactory implementation -------------------------------
-   boolean isAlive = true;
+   private boolean isAlive = true;
 
    public Pong pong(long sessionID, Ping ping)
    {
-      Pong pong = new Pong(sessionID, !isAlive);
+      Pong pong = new Pong(sessionID, !isAlive());
       pong.setTargetID(ping.getResponseTargetID());
       return pong;
    }

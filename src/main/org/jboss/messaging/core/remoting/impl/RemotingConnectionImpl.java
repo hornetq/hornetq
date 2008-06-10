@@ -21,43 +21,27 @@
   */
 package org.jboss.messaging.core.remoting.impl;
 
-import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGISTRY;
-
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.NIOConnector;
-import org.jboss.messaging.core.remoting.NIOSession;
-import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.PacketHandler;
-import org.jboss.messaging.core.remoting.PacketReturner;
-import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.*;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 
 /**
- * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @version <tt>$Revision$</tt>
- * $Id$
+ *          $Id$
  */
 public class RemotingConnectionImpl implements RemotingConnection
 {
    // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(RemotingConnectionImpl.class);
-   
+
    // Static ---------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
@@ -67,9 +51,9 @@ public class RemotingConnectionImpl implements RemotingConnection
    private final ConnectionParams connectionParams;
 
    private NIOConnector connector;
-   
+
    private NIOSession session;
-   
+
    private RemotingSessionListener listener;
 
    // Constructors ---------------------------------------------------------------------------------
@@ -78,34 +62,25 @@ public class RemotingConnectionImpl implements RemotingConnection
    {
       assert location != null;
       assert connectionParams != null;
-      
+
       this.location = location;
       this.connectionParams = connectionParams;
-      
+
       log.trace(this + " created with configuration " + location);
-   }
-
-   public RemotingConnectionImpl(final Location location, ConnectionParams connectionParams, NIOConnector nioConnector) throws Exception
-   {
-      assert location != null;
-      assert connectionParams != null;
-
-      this.location = location;
-      this.connectionParams = connectionParams;
-      connector = nioConnector;
-      session = connector.connect();
-      log.trace(this + " created with connector " + nioConnector);
    }
 
    // Public ---------------------------------------------------------------------------------------
 
    // RemotingConnection implementation ------------------------------------------------------------
-   
+
    public void start() throws Throwable
    {
-      if (log.isTraceEnabled()) { log.trace(this + " started remoting connection"); }
+      if (log.isTraceEnabled())
+      {
+         log.trace(this + " started remoting connection");
+      }
 
-      connector = REGISTRY.getConnector(location, connectionParams);
+      connector = ConnectorRegistryFactory.getRegistry().getConnector(location, connectionParams);
       session = connector.connect();
 
       if (log.isDebugEnabled())
@@ -122,21 +97,20 @@ public class RemotingConnectionImpl implements RemotingConnection
       try
       {
          if (connector != null)
-         { 
+         {
             if (listener != null)
                connector.removeSessionListener(listener);
-            NIOConnector connectorFromRegistry = REGISTRY.removeConnector(location);
+            NIOConnector connectorFromRegistry = ConnectorRegistryFactory.getRegistry().removeConnector(location);
             if (connectorFromRegistry != null)
                connectorFromRegistry.disconnect();
          }
       }
       catch (Throwable ignore)
-      {        
+      {
          log.trace(this + " failed to disconnect the new client", ignore);
       }
-      
+
       connector = null;
-      
       log.trace(this + " closed");
    }
 
@@ -148,26 +122,26 @@ public class RemotingConnectionImpl implements RemotingConnection
       }
       return session.getID();
    }
-    
+
    /**
     * send the packet and block until a response is received (<code>oneWay</code> is set to <code>false</code>)
     */
    public Packet sendBlocking(final long targetID, final long executorID, final Packet packet) throws MessagingException
    {
       checkConnected();
-      
+
       long handlerID = connector.getDispatcher().generateID();
-      
+
       ResponseHandler handler = new ResponseHandler(handlerID);
-      
+
       connector.getDispatcher().register(handler);
-      
+
       try
-      {  
+      {
          packet.setTargetID(targetID);
          packet.setExecutorID(executorID);
          packet.setResponseTargetID(handlerID);
-            
+
          try
          {
             session.write(packet);
@@ -175,41 +149,41 @@ public class RemotingConnectionImpl implements RemotingConnection
          catch (Exception e)
          {
             log.error("Caught unexpected exception", e);
-            
+
             throw new MessagingException(MessagingException.INTERNAL_ERROR);
          }
-         
+
          Packet response = handler.waitForResponse(connectionParams.getTimeout());
-         
+
          if (response == null)
          {
             throw new IllegalStateException("No response received for " + packet);
          }
-         
+
          if (response instanceof MessagingExceptionMessage)
          {
             MessagingExceptionMessage message = (MessagingExceptionMessage) response;
-            
+
             throw message.getException();
          }
          else
          {
             return response;
-         } 
+         }
       }
       finally
       {
          connector.getDispatcher().unregister(handlerID);
-      }           
+      }
    }
-   
+
    public void sendOneWay(final long targetID, final long executorID, final Packet packet) throws MessagingException
    {
       assert packet != null;
 
       packet.setTargetID(targetID);
       packet.setExecutorID(executorID);
-      
+
       try
       {
          session.write(packet);
@@ -217,11 +191,11 @@ public class RemotingConnectionImpl implements RemotingConnection
       catch (Exception e)
       {
          log.error("Caught unexpected exception", e);
-         
+
          throw new MessagingException(MessagingException.INTERNAL_ERROR);
       }
    }
-   
+
    public synchronized void setRemotingSessionListener(final RemotingSessionListener newListener)
    {
       if (listener != null && newListener != null)
@@ -233,21 +207,21 @@ public class RemotingConnectionImpl implements RemotingConnection
       {
          connector.addSessionListener(newListener);
       }
-      else 
+      else
       {
          connector.removeSessionListener(listener);
       }
       this.listener = newListener;
    }
-   
+
    public PacketDispatcher getPacketDispatcher()
    {
       return connector.getDispatcher();
    }
-   
+
    public Location getLocation()
    {
-   	return location;
+      return location;
    }
 
    // Package protected ----------------------------------------------------------------------------
@@ -255,13 +229,13 @@ public class RemotingConnectionImpl implements RemotingConnection
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
-      
+
    private static class ResponseHandler implements PacketHandler
    {
       private long id;
-      
+
       private Packet response;
-      
+
       ResponseHandler(final long id)
       {
          this.id = id;
@@ -275,10 +249,10 @@ public class RemotingConnectionImpl implements RemotingConnection
       public synchronized void handle(final Packet packet, final PacketReturner sender)
       {
          this.response = packet;
-         
+
          notify();
       }
-      
+
       public synchronized Packet waitForResponse(final long timeout)
       {
          long toWait = timeout;
@@ -293,17 +267,17 @@ public class RemotingConnectionImpl implements RemotingConnection
             catch (InterruptedException e)
             {
             }
-            
+
             long now = System.currentTimeMillis();
-            
+
             toWait -= now - start;
-            
+
             start = now;
          }
-         
-         return response;         
+
+         return response;
       }
-      
+
    }
 
    private void checkConnected() throws MessagingException
@@ -311,7 +285,7 @@ public class RemotingConnectionImpl implements RemotingConnection
       if (session == null)
       {
          throw new IllegalStateException("Client " + this
-               + " is not connected.");
+                 + " is not connected.");
       }
       if (!session.isConnected())
       {

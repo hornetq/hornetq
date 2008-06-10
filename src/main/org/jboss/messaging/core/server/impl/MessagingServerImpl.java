@@ -21,13 +21,6 @@
   */
 package org.jboss.messaging.core.server.impl;
 
-import java.util.HashSet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.deployers.Deployer;
@@ -43,11 +36,10 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.persistence.impl.nullpm.NullStorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
-import org.jboss.messaging.core.remoting.ConnectorRegistrySingleton;
+import org.jboss.messaging.core.remoting.ConnectorRegistryFactory;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.RemotingService;
-import org.jboss.messaging.core.remoting.impl.mina.CleanUpNotifier;
 import org.jboss.messaging.core.remoting.impl.mina.RemotingServiceImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.security.JBMSecurityManager;
@@ -67,6 +59,9 @@ import org.jboss.messaging.core.transaction.impl.ResourceManagerImpl;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 import org.jboss.messaging.util.VersionLoader;
+
+import java.util.HashSet;
+import java.util.concurrent.*;
 
 
 /**
@@ -146,12 +141,11 @@ public class MessagingServerImpl implements MessagingServer
       this();
       this.configuration = configuration;
       createTransport = true;
-      remotingService = new RemotingServiceImpl(configuration);      
+      remotingService = new RemotingServiceImpl(configuration);
    }
    // lifecycle methods ----------------------------------------------------------------
 
-   
-   
+
    public synchronized void start() throws Exception
    {
       log.debug("starting MessagingServer");
@@ -176,7 +170,7 @@ public class MessagingServerImpl implements MessagingServer
       connectionManager = new ConnectionManagerImpl();
       memoryManager = new SimpleMemoryManager();
       postOffice = new PostOfficeImpl(storageManager, queueFactory, configuration.isRequireDestinations());
-      queueSettingsDeployer = new QueueSettingsDeployer(queueSettingsRepository);      
+      queueSettingsDeployer = new QueueSettingsDeployer(queueSettingsRepository);
       threadPool = Executors.newFixedThreadPool(configuration.getThreadPoolMaxSize(), new JBMThreadFactory("JBM-session-threads"));
       orderedExecutorFactory = new OrderedExecutorFactory(threadPool);
 
@@ -242,7 +236,7 @@ public class MessagingServerImpl implements MessagingServer
       {
          remotingService.stop();
       }
-      ConnectorRegistrySingleton.REGISTRY.clear();
+      ConnectorRegistryFactory.getRegistry().clear();
    }
 
    // MessagingServer implementation -----------------------------------------------------------
@@ -365,7 +359,7 @@ public class MessagingServerImpl implements MessagingServer
 
       return new CreateConnectionResponse(connection.getID(), version);
    }
-   
+
    public OrderedExecutorFactory getOrderedExecutorFactory()
    {
       return orderedExecutorFactory;
@@ -378,22 +372,22 @@ public class MessagingServerImpl implements MessagingServer
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
-   
+
    // Inner classes --------------------------------------------------------------------------------
-   
+
    private static class JBMThreadFactory implements ThreadFactory
    {
       private ThreadGroup group;
-      
+
       JBMThreadFactory(final String groupName)
       {
-         this.group = new ThreadGroup(groupName);         
+         this.group = new ThreadGroup(groupName);
       }
-      
+
       public Thread newThread(Runnable command)
-      {        
+      {
          return new Thread(group, command);
-      }         
+      }
    }
 
 }
