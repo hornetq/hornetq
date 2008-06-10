@@ -24,6 +24,7 @@ package org.jboss.messaging.core.client.impl;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -63,58 +64,27 @@ public class ClientConnectionImpl implements ClientConnectionInternal
 
    private final Set<ClientSession> sessions = new ConcurrentHashSet<ClientSession>();
 
-   private volatile boolean closed;
-   
-   private final int defaultConsumerWindowSize;
-   
-   private final int defaultConsumerMaxRate;
-   
-   private final int defaultProducerWindowSize;
-   
-   private final int defaultProducerMaxRate;
-   
-   private final boolean defaultBlockOnAcknowledge;
-   
-   private final boolean defaultSendNonPersistentMessagesBlocking;
-   
-   private final boolean defaultSendPersistentMessagesBlocking;
-
    private final Version serverVersion;
    
-
+   private final ClientConnectionFactory connectionFactory;
+   
+   private volatile boolean closed;
+      
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConnectionImpl(final long serverTargetID,
+   public ClientConnectionImpl(final ClientConnectionFactory connectionFactory,
+                               final long serverTargetID,
                                final RemotingConnection connection,
-                               final int defaultConsumerWindowSize,     
-                               final int defaultConsumerMaxRate,
-                               final int defaultProducerWindowSize,
-                               final int defaultProducerMaxRate,
-                               final boolean defaultBlockOnAcknowledge,
-                               final boolean defaultSendNonPersistentMessagesBlocking,
-                               final boolean defaultSendPersistentMessagesBlocking,
                                final Version serverVersion)
    {
+      this.connectionFactory = connectionFactory;
+      
       this.serverTargetID = serverTargetID;
       
       this.remotingConnection = connection;
       
-      this.defaultConsumerWindowSize = defaultConsumerWindowSize;
-      
-      this.defaultConsumerMaxRate = defaultConsumerMaxRate;
-      
-      this.defaultProducerWindowSize = defaultProducerWindowSize;
-      
-      this.defaultProducerMaxRate = defaultProducerMaxRate;
-      
-      this.defaultBlockOnAcknowledge = defaultBlockOnAcknowledge;
-      
-      this.defaultSendNonPersistentMessagesBlocking = defaultSendNonPersistentMessagesBlocking;
-      
-      this.defaultSendPersistentMessagesBlocking = defaultSendPersistentMessagesBlocking;
-
       this.serverVersion = serverVersion;
    }
    
@@ -132,11 +102,12 @@ public class ClientConnectionImpl implements ClientConnectionInternal
          (ConnectionCreateSessionResponseMessage)remotingConnection.sendBlocking(serverTargetID, serverTargetID, request);   
 
       ClientSession session =
-      	new ClientSessionImpl(this, response.getSessionID(), ackBatchSize, cacheProducers,
-      			autoCommitSends, autoCommitAcks, blockOnAcknowledge, defaultSendNonPersistentMessagesBlocking,
-      			defaultSendPersistentMessagesBlocking, 
-      			defaultConsumerWindowSize, defaultConsumerMaxRate, defaultProducerWindowSize,
-      			defaultProducerMaxRate);
+      	new ClientSessionImpl(this, response.getSessionID(), xa, ackBatchSize, cacheProducers,
+      			autoCommitSends, autoCommitAcks, blockOnAcknowledge, connectionFactory.isDefaultBlockOnNonPersistentSend(),
+      			connectionFactory.isDefaultBlockOnPersistentSend(), 
+      			connectionFactory.getDefaultConsumerWindowSize(), connectionFactory.getDefaultConsumerMaxRate(),
+      			connectionFactory.getDefaultProducerWindowSize(),
+      			connectionFactory.getDefaultProducerMaxRate());
 
       sessions.add(session);
 
@@ -144,10 +115,11 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    }
    
    public ClientSession createClientSession(final boolean xa, final boolean autoCommitSends,
-         final boolean autoCommitAcks,
-         final int ackBatchSize) throws MessagingException
+                                            final boolean autoCommitAcks,
+                                            final int ackBatchSize) throws MessagingException
    {
-      return createClientSession(xa, autoCommitSends, autoCommitAcks, ackBatchSize, defaultBlockOnAcknowledge, false);
+      return createClientSession(xa, autoCommitSends, autoCommitAcks, ackBatchSize,
+                                 connectionFactory.isDefaultBlockOnAcknowledge(), false);
    }
    
    public void start() throws MessagingException
@@ -209,6 +181,11 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    {
       sessions.remove(session);
    }
+   
+   public Set<ClientSession> getSessions()
+   {
+      return new HashSet<ClientSession>(this.sessions);
+   }
 
    public Version getServerVersion()
    {
@@ -236,7 +213,7 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       //We copy the set of sessions to prevent ConcurrentModificationException which would occur
       //when the child trues to remove itself from its parent
       Set<ClientSession> childrenClone = new HashSet<ClientSession>(sessions);
-      
+       
       for (ClientSession session: childrenClone)
       {
          session.close(); 

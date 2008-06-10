@@ -162,7 +162,7 @@ public class QueueImpl implements Queue
       return name;
    }
    
-   public synchronized HandleStatus addLast(final MessageReference ref)
+   public HandleStatus addLast(final MessageReference ref)
    {
       if (locked)
       {
@@ -181,7 +181,7 @@ public class QueueImpl implements Queue
       }
    }
 
-   public synchronized HandleStatus addFirst(final MessageReference ref)
+   public HandleStatus addFirst(final MessageReference ref)
    {
       if (locked)
       {
@@ -535,7 +535,7 @@ public class QueueImpl implements Queue
    // Private
    // ------------------------------------------------------------------------------
 
-   private HandleStatus add(final MessageReference ref, final boolean first)
+   private synchronized HandleStatus add(final MessageReference ref, final boolean first)
    {
       if (maxSizeBytes != -1 && sizeBytes.get() + ref.getMessage().encodeSize() >= maxSizeBytes)
       {

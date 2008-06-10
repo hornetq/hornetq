@@ -304,13 +304,13 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
    
    private void checkDefaults(final ClientConnectionFactory cf) throws Exception
    {
-      assertEquals(ClientConnectionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE, cf.getDefaultConsumerWindowSize());
-      assertEquals(ClientConnectionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE, cf.getDefaultConsumerMaxRate());
-      assertEquals(ClientConnectionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE, cf.getDefaultProducerWindowSize());
-      assertEquals(ClientConnectionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE, cf.getDefaultProducerMaxRate());
-      assertEquals(ClientConnectionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE, cf.isDefaultBlockOnAcknowledge());
-      assertEquals(ClientConnectionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND, cf.isDefaultBlockOnNonPersistentSend());
-      assertEquals(ClientConnectionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND, cf.isDefaultBlockOnPersistentSend());      
+      assertEquals(ClientConnectionFactoryImpl.DEFAULT_DEFAULT_CONSUMER_WINDOW_SIZE, cf.getDefaultConsumerWindowSize());
+      assertEquals(ClientConnectionFactoryImpl.DEFAULT_DEFAULT_CONSUMER_MAX_RATE, cf.getDefaultConsumerMaxRate());
+      assertEquals(ClientConnectionFactoryImpl.DEFAULT_DEFAULT_PRODUCER_WINDOW_SIZE, cf.getDefaultProducerWindowSize());
+      assertEquals(ClientConnectionFactoryImpl.DEFAULT_DEFAULT_PRODUCER_MAX_RATE, cf.getDefaultProducerMaxRate());
+      assertEquals(ClientConnectionFactoryImpl.DEFAULT_DEFAULT_BLOCK_ON_ACKNOWLEDGE, cf.isDefaultBlockOnAcknowledge());
+      assertEquals(ClientConnectionFactoryImpl.DEFAULT_DEFAULT_BLOCK_ON_PERSISTENT_SEND, cf.isDefaultBlockOnNonPersistentSend());
+      assertEquals(ClientConnectionFactoryImpl.DEFAULT_DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND, cf.isDefaultBlockOnPersistentSend());      
    }
    
    private void checkGetSetAttributes(ClientConnectionFactory cf,

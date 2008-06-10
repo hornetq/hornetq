@@ -97,6 +97,8 @@ public class ClientSessionImpl implements ClientSessionInternal
       
    private final long serverTargetID;
    
+   private final boolean xa;
+   
    private final int lazyAckBatchSize;
    
    private final boolean cacheProducers;
@@ -153,6 +155,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    // Constructors ---------------------------------------------------------------------------------
    
    public ClientSessionImpl(final ClientConnectionInternal connection, final long serverTargetID,
+                            final boolean xa,
                             final int lazyAckBatchSize, final boolean cacheProducers,                            
                             final boolean autoCommitSends, final boolean autoCommitAcks,
                             final boolean blockOnAcknowledge,
@@ -185,6 +188,8 @@ public class ClientSessionImpl implements ClientSessionInternal
       this.defaultProducerMaxRate = defaultProducerMaxRate;
       
       executor = Executors.newSingleThreadExecutor();
+      
+      this.xa = xa;
       
       this.lazyAckBatchSize = lazyAckBatchSize;
       
@@ -523,9 +528,24 @@ public class ClientSessionImpl implements ClientSessionInternal
    	return autoCommitAcks;   	   	
    }
    
+   public boolean isBlockOnAcknowledge()
+   {
+      return blockOnAcknowledge;
+   }
+   
+   public boolean isCacheProducers()
+   {
+      return cacheProducers;
+   }
+   
    public int getLazyAckBatchSize()
    {
    	return lazyAckBatchSize;
+   }
+   
+   public boolean isXA()
+   {
+      return xa;
    }
    
    // ClientSessionInternal implementation ------------------------------------------------------------

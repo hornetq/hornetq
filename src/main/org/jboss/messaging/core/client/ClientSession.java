@@ -65,5 +65,11 @@ public interface ClientSession extends XAResource
    
    boolean isAutoCommitAcks();
    
+   boolean isBlockOnAcknowledge();
+   
+   boolean isCacheProducers();
+   
    int getLazyAckBatchSize();
+   
+   boolean isXA();
 }

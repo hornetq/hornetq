@@ -76,6 +76,22 @@ public class ConnectionCreateSessionMessage extends EmptyPacket
       autoCommitSends = buffer.getBoolean();
       autoCommitAcks = buffer.getBoolean();
    }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof ConnectionCreateSessionMessage == false)
+      {
+         return false;
+      }
+            
+      ConnectionCreateSessionMessage r = (ConnectionCreateSessionMessage)other;
+      
+      boolean matches = this.xa == r.xa &&
+                        this.autoCommitSends == r.autoCommitSends &&
+                        this.autoCommitAcks == r.autoCommitAcks;
+      
+      return matches;
+   }
 
    // Package protected ---------------------------------------------
 

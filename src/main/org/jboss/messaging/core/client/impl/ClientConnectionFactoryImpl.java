@@ -64,38 +64,40 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
    private final RemotingConnectionFactory remotingConnectionFactory;
       
    private final Location location;
+   
+   //These attributes are mutable and can be updated by different threads so must be volatile
 
-   private ConnectionParams connectionParams;
+   private volatile ConnectionParams connectionParams;
  
-   private int defaultConsumerWindowSize;
+   private volatile int defaultConsumerWindowSize;
    
-   private int defaultConsumerMaxRate;
+   private volatile int defaultConsumerMaxRate;
 
-   private int defaultProducerWindowSize;
+   private volatile int defaultProducerWindowSize;
    
-   private int defaultProducerMaxRate;
+   private volatile int defaultProducerMaxRate;
    
-   private boolean defaultBlockOnAcknowledge;
+   private volatile boolean defaultBlockOnAcknowledge;
    
-   private boolean defaultBlockOnPersistentSend;
+   private volatile boolean defaultBlockOnPersistentSend;
    
-   private boolean defaultBlockOnNonPersistentSend;
+   private volatile boolean defaultBlockOnNonPersistentSend;
         
    // Static ---------------------------------------------------------------------------------------
    
-   public static final int DEFAULT_CONSUMER_WINDOW_SIZE = 1024 * 1024;
+   public static final int DEFAULT_DEFAULT_CONSUMER_WINDOW_SIZE = 1024 * 1024;
    
-   public static final int DEFAULT_CONSUMER_MAX_RATE = -1;
+   public static final int DEFAULT_DEFAULT_CONSUMER_MAX_RATE = -1;
    
-   public static final int DEFAULT_PRODUCER_WINDOW_SIZE = 1024 * 1024;
+   public static final int DEFAULT_DEFAULT_PRODUCER_WINDOW_SIZE = 1024 * 1024;
    
-   public static final int DEFAULT_PRODUCER_MAX_RATE = -1;
+   public static final int DEFAULT_DEFAULT_PRODUCER_MAX_RATE = -1;
    
-   public static final boolean DEFAULT_BLOCK_ON_ACKNOWLEDGE = false;
+   public static final boolean DEFAULT_DEFAULT_BLOCK_ON_ACKNOWLEDGE = false;
    
-   public static final boolean DEFAULT_BLOCK_ON_PERSISTENT_SEND = false;
+   public static final boolean DEFAULT_DEFAULT_BLOCK_ON_PERSISTENT_SEND = false;
    
-   public static final boolean DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND = false;
+   public static final boolean DEFAULT_DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND = false;
    
    // Constructors ---------------------------------------------------------------------------------
 
@@ -145,13 +147,13 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
    private ClientConnectionFactoryImpl(final Location location, final ConnectionParams connectionParams,
                                        final boolean dummy)
    {
-      defaultConsumerWindowSize = DEFAULT_CONSUMER_WINDOW_SIZE;
-      defaultConsumerMaxRate = DEFAULT_CONSUMER_MAX_RATE;
-      defaultProducerWindowSize = DEFAULT_PRODUCER_WINDOW_SIZE;
-      defaultProducerMaxRate = DEFAULT_PRODUCER_MAX_RATE;
-      defaultBlockOnAcknowledge = DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-      defaultBlockOnPersistentSend = DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-      defaultBlockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;      
+      defaultConsumerWindowSize = DEFAULT_DEFAULT_CONSUMER_WINDOW_SIZE;
+      defaultConsumerMaxRate = DEFAULT_DEFAULT_CONSUMER_MAX_RATE;
+      defaultProducerWindowSize = DEFAULT_DEFAULT_PRODUCER_WINDOW_SIZE;
+      defaultProducerMaxRate = DEFAULT_DEFAULT_PRODUCER_MAX_RATE;
+      defaultBlockOnAcknowledge = DEFAULT_DEFAULT_BLOCK_ON_ACKNOWLEDGE;
+      defaultBlockOnPersistentSend = DEFAULT_DEFAULT_BLOCK_ON_PERSISTENT_SEND;
+      defaultBlockOnNonPersistentSend = DEFAULT_DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;      
       this.location = location;
       this.connectionParams = connectionParams;
       this.remotingConnectionFactory = new RemotingConnectionFactoryImpl();
@@ -183,11 +185,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
          CreateConnectionResponse response =
             (CreateConnectionResponse)remotingConnection.sendBlocking(0, 0, request);
 
-         return new ClientConnectionImpl(response.getConnectionTargetID(), remotingConnection,
-               defaultConsumerWindowSize, defaultConsumerMaxRate,
-               defaultProducerWindowSize, defaultProducerMaxRate,
-               defaultBlockOnAcknowledge, defaultBlockOnNonPersistentSend,
-               defaultBlockOnPersistentSend, response.getServerVersion());
+         return new ClientConnectionImpl(this, response.getConnectionTargetID(), remotingConnection, response.getServerVersion());
       }
       catch (Throwable t)
       {

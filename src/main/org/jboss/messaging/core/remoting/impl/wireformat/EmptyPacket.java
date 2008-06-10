@@ -197,6 +197,18 @@ public class EmptyPacket implements Packet
       return getParentString() + "]";
    }
    
+   public boolean equals(Object other)
+   {
+      if (other instanceof EmptyPacket == false)
+      {
+         return false;
+      }
+            
+      EmptyPacket r = (EmptyPacket)other;
+      
+      return r.type == this.type;      
+   }
+   
    // Package protected ---------------------------------------------
 
    protected String getParentString()
