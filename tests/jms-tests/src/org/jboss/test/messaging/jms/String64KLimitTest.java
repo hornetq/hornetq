@@ -21,19 +21,12 @@
   */
 package org.jboss.test.messaging.jms;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-
 import javax.jms.Connection;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-
-import org.jboss.messaging.util.SafeUTF;
 
 /**
  * 
@@ -66,85 +59,6 @@ public class String64KLimitTest extends JMSTestCase
    // TestCase overrides -------------------------------------------
 
    // Public --------------------------------------------------------
-   
-   public void testSafeWriteReadUTFTest1() throws Exception
-   {
-      //Make sure we hit all the edge cases
-      doTest("a", 10);
-      doTest("ab", 10);
-      doTest("abc", 10);
-      doTest("abcd", 10);
-      doTest("abcde", 10);
-      doTest("abcdef", 10);
-      doTest("abcdefg", 10);
-      doTest("abcdefgh", 10);
-      doTest("abcdefghi", 10);
-      doTest("abcdefghij", 10);
-      doTest("abcdefghijk", 10);
-      doTest("abcdefghijkl", 10);
-      doTest("abcdefghijklm", 10);
-      doTest("abcdefghijklmn", 10);
-      doTest("abcdefghijklmno", 10);
-      doTest("abcdefghijklmnop", 10);
-      doTest("abcdefghijklmnopq", 10);
-      doTest("abcdefghijklmnopqr", 10);
-      doTest("abcdefghijklmnopqrs", 10);
-      doTest("abcdefghijklmnopqrst", 10);
-      doTest("abcdefghijklmnopqrstu", 10);
-      doTest("abcdefghijklmnopqrstuv", 10);
-      doTest("abcdefghijklmnopqrstuvw", 10);
-      doTest("abcdefghijklmnopqrstuvwx", 10);
-      doTest("abcdefghijklmnopqrstuvwxy", 10);
-      doTest("abcdefghijklmnopqrstuvwxyz", 10);
-      
-      //Need to work with null too
-      doTest(null, 10);
-              
-   }
-   
-   protected void doTest(String s, int chunkSize) throws Exception
-   {
-      ByteArrayOutputStream bos = new ByteArrayOutputStream();
-      
-      DataOutputStream dos = new DataOutputStream(bos);
-      
-      SafeUTF.safeWriteUTF(dos, s);
-      
-      dos.close();
-      
-      byte[] bytes = bos.toByteArray();
-      
-      ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-      
-      DataInputStream dis = new DataInputStream(bis);
-      
-      String s2 = SafeUTF.safeReadUTF(dis);
-      
-      assertEquals(s, s2);   
-   }
-   
-   public void testSafeWriteReadUTFTest2() throws Exception
-   {
-      ByteArrayOutputStream bos = new ByteArrayOutputStream();
-      
-      DataOutputStream dos = new DataOutputStream(bos);
-      
-      String s = "abcdefghijklmnopqrstuvwxyz";
-      
-      SafeUTF.safeWriteUTF(dos, s);
-      
-      dos.close();
-      
-      byte[] bytes = bos.toByteArray();
-      
-      ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-      
-      DataInputStream dis = new DataInputStream(bis);
-      
-      String s2 = SafeUTF.safeReadUTF(dis);
-      
-      assertEquals(s, s2); 
-   }
          
    protected String genString(int len)
    {
@@ -158,6 +72,10 @@ public class String64KLimitTest extends JMSTestCase
    
    //Tests commented out until message chunking is complete
    //See http://jira.jboss.org/jira/browse/JBMESSAGING-379
+
+   public void testFoo() throws Exception
+   {      
+   }
    
 //   public void test64KLimitWithTextMessage() throws Exception
 //   {            
