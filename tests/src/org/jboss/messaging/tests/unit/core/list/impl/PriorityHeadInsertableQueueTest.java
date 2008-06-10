@@ -602,6 +602,19 @@ public class PriorityHeadInsertableQueueTest extends UnitTestCase
       assertTrue(queue.getAll().isEmpty());
    }
    
+   public void testIsEmpty() throws Exception
+   {
+      assertTrue(queue.isEmpty());
+
+      queue.offerLast(a, 0);
+
+      assertFalse(queue.isEmpty());
+
+      Wibble w = queue.poll();
+      assertEquals(a, w);
+      assertTrue(queue.isEmpty());
+   }
+
    class Wibble
    {
       String s;

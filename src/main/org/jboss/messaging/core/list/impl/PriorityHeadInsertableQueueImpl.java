@@ -168,7 +168,7 @@ public class PriorityHeadInsertableQueueImpl<T> implements PriorityHeadInsertabl
       return new PriorityHeadInsertableQueueImplIterator();
    }
       
-   private class PriorityHeadInsertableQueueImplIterator implements ListIterator<T>
+   private class PriorityHeadInsertableQueueImplIterator implements Iterator<T>
    { 
       private int index;
       
@@ -179,11 +179,6 @@ public class PriorityHeadInsertableQueueImpl<T> implements PriorityHeadInsertabl
          index = queues.length - 1;
          
          currentIter = queues[index].iterator();
-      }
-
-      public void add(final Object obj)
-      {
-         throw new UnsupportedOperationException();
       }
 
       public boolean hasNext()
@@ -207,11 +202,6 @@ public class PriorityHeadInsertableQueueImpl<T> implements PriorityHeadInsertabl
          return currentIter.hasNext();      
       }
       
-      public boolean hasPrevious()
-      {
-         throw new UnsupportedOperationException();
-      }
-
       public T next()
       {
          if (!hasNext())
@@ -221,31 +211,11 @@ public class PriorityHeadInsertableQueueImpl<T> implements PriorityHeadInsertabl
          return currentIter.next();
       }
 
-      public int nextIndex()
-      {
-         throw new UnsupportedOperationException();
-      }
-
-      public T previous()
-      {
-         throw new UnsupportedOperationException();
-      }
-
-      public int previousIndex()
-      {
-         throw new UnsupportedOperationException();
-      }
-
       public void remove()
       {
          currentIter.remove();      
          
          size.decrementAndGet();
-      }
-
-      public void set(final Object obj)
-      {
-         throw new UnsupportedOperationException();
       }
    }   
 }

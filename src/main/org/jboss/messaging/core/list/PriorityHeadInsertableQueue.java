@@ -34,7 +34,7 @@ import java.util.List;
  *
  * $Id: PrioritizedDeque.java 1174 2006-08-02 14:14:32Z timfox $
  */
-public interface PriorityHeadInsertableQueue<T>
+public interface PriorityHeadInsertableQueue<T> extends Iterable<T>
 {
    void offerFirst(T t, int priority);
    
