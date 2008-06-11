@@ -4,21 +4,17 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.tests.unit.core.remoting;
+package org.jboss.messaging.tests.unit.core.remoting.impl;
 
-import static org.jboss.messaging.core.remoting.TransportType.INVM;
-import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
 import junit.framework.TestCase;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
+import static org.jboss.messaging.core.remoting.TransportType.INVM;
+import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
  * @version <tt>$Revision$</tt>
- *
  */
 public class RemotingConfigurationValidatorTest extends TestCase
 {
@@ -36,118 +32,125 @@ public class RemotingConfigurationValidatorTest extends TestCase
    {
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(INVM);
-      
+
       validate(config);
    }
 
    public void testNegativePort()
    {
-      Configuration config =  ConfigurationHelper.newTCPConfiguration("localhost", -1);
+      Configuration config = ConfigurationHelper.newTCPConfiguration("localhost", -1);
 
-      try 
+      try
       {
          validate(config);
          fail("can not set a negative port");
-      } catch (Exception e)
+      }
+      catch (Exception e)
       {
       }
    }
-   
+
    public void test_TcpReceiveBufferSize_to_0()
    {
-      ConfigurationImpl config =  ConfigurationHelper.newTCPConfiguration("localhost", 9000);
+      ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", 9000);
       config.setTcpReceiveBufferSize(0);
-      try 
+      try
       {
          validate(config);
          fail("can not set tcp receive buffer size to 0");
-      } catch (Exception e)
+      }
+      catch (Exception e)
       {
       }
    }
 
    public void test_TcpReceiveBufferSize_to_minusOne()
    {
-      ConfigurationImpl config =  ConfigurationHelper.newTCPConfiguration("localhost", 9000);
+      ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", 9000);
       config.setTcpReceiveBufferSize(-1);
       validate(config);
    }
 
    public void test_TcpReceiveBufferSize_to_NegativeNumber()
    {
-      ConfigurationImpl config =  ConfigurationHelper.newTCPConfiguration("localhost", 9000);
+      ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", 9000);
       config.setTcpReceiveBufferSize(-2);
-      try 
+      try
       {
          validate(config);
          fail("can not set tcp receive buffer size to a negative number other than -1");
-      } catch (Exception e)
+      }
+      catch (Exception e)
       {
       }
    }
-   
+
    public void test_TcpSendBufferSize_to_0()
    {
-      ConfigurationImpl config =  ConfigurationHelper.newTCPConfiguration("localhost", 9000);
+      ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", 9000);
       config.setTcpSendBufferSize(0);
-      try 
+      try
       {
          validate(config);
          fail("can not set tcp send buffer size to 0");
-      } catch (Exception e)
+      }
+      catch (Exception e)
       {
       }
    }
 
    public void test_TcpSendBufferSize_to_minusOne()
    {
-      ConfigurationImpl config =  ConfigurationHelper.newTCPConfiguration("localhost", 9000);
+      ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", 9000);
       config.setTcpSendBufferSize(-1);
       validate(config);
    }
 
    public void test_TcpSendBufferSize_to_NegativeNumber()
    {
-      ConfigurationImpl config =  ConfigurationHelper.newTCPConfiguration("localhost", 9000);
+      ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", 9000);
       config.setTcpSendBufferSize(-2);
-      try 
+      try
       {
          validate(config);
          fail("can not set tcp send buffer size to a negative number other than -1");
-      } catch (Exception e)
+      }
+      catch (Exception e)
       {
       }
    }
-   
+
    public void test_DisableINVM_With_INVMTransport()
    {
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(INVM);
       config.setInvmDisabled(true);
-      
-      try 
+
+      try
       {
          validate(config);
          fail("can not disable INVM when INVM transport is set");
-      } catch (Exception e)
+      }
+      catch (Exception e)
       {
-         
+
       }
    }
-   
+
    public void test_EnableSSL_With_INVMTransport()
    {
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(INVM);
       config.setSSLEnabled(true);
-      
-      try 
+
+      try
       {
          validate(config);
          fail("can not enable SSL when INVM transport is set");
-      } catch (Exception e)
+      }
+      catch (Exception e)
       {
-         
+
       }
    }
 

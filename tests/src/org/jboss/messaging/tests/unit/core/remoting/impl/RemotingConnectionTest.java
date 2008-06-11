@@ -21,7 +21,6 @@
    */
 package org.jboss.messaging.tests.unit.core.remoting.impl;
 
-import junit.framework.TestCase;
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.Location;
@@ -30,11 +29,12 @@ import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.*;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class RemotingConnectionTest extends TestCase
+public class RemotingConnectionTest extends UnitTestCase
 {
    protected void tearDown() throws Exception
    {

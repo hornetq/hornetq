@@ -19,25 +19,25 @@
    * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
    * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
    */
-package org.jboss.messaging.core.remoting.impl;
+package org.jboss.messaging.tests.unit.core.remoting.impl;
 
-import org.jboss.messaging.core.remoting.KeepAliveHandler;
-import org.jboss.messaging.core.remoting.NIOConnector;
-import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
-import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
+import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
+import org.jboss.messaging.core.client.impl.LocationImpl;
+import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.TransportType;
+import org.jboss.messaging.core.remoting.impl.RemotingConnectionFactoryImpl;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
- * pluggable component that defines how a client responds to a server ping command. This simple implementation returns a
- * valid pong
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class ClientKeepAliveHandler implements KeepAliveHandler
+public class RemotingConnectionFactoryImplTest extends UnitTestCase
 {
-
-   public Pong ping(Ping ping)
+   public void testCreateRemotingConnection() throws Exception
    {
-      Pong pong = new Pong(ping.getSessionID(), false);
-      pong.setTargetID(ping.getResponseTargetID());
-      return pong;
+      RemotingConnectionFactoryImpl remotingConnectionFactory = new RemotingConnectionFactoryImpl();
+      LocationImpl location = new LocationImpl(TransportType.TCP, "localhost");
+      RemotingConnection remotingConnection = remotingConnectionFactory.createRemotingConnection(location, new ConnectionParamsImpl());
+      assertEquals(location, remotingConnection.getLocation());
    }
 }

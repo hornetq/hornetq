@@ -6,12 +6,6 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-
-import org.apache.mina.common.AttributeKey;
 import org.apache.mina.common.IoHandlerAdapter;
 import org.apache.mina.common.IoSession;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -22,15 +16,18 @@ import org.jboss.messaging.core.remoting.PacketHandlerRegistrationListener;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  * @version <tt>$Revision$</tt>
- *
  */
 public class MinaHandler extends IoHandlerAdapter implements
-      PacketHandlerRegistrationListener
+        PacketHandlerRegistrationListener
 {
    // Constants -----------------------------------------------------
 
@@ -54,6 +51,7 @@ public class MinaHandler extends IoHandlerAdapter implements
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
+
    public MinaHandler(final PacketDispatcher dispatcher,
                       final ExecutorService executorService,
                       final CleanUpNotifier failureNotifier,
@@ -95,7 +93,7 @@ public class MinaHandler extends IoHandlerAdapter implements
 
    @Override
    public void exceptionCaught(final IoSession session, final Throwable cause)
-         throws Exception
+           throws Exception
    {
       log.error("caught exception " + cause + " for session " + session, cause);
 
@@ -103,7 +101,7 @@ public class MinaHandler extends IoHandlerAdapter implements
       {
          long serverSessionID = session.getId();
          MessagingException me = new MessagingException(
-               MessagingException.INTERNAL_ERROR, "unexpected exception");
+                 MessagingException.INTERNAL_ERROR, "unexpected exception");
          me.initCause(cause);
          failureNotifier.fireCleanup(serverSessionID, me);
       }
@@ -115,7 +113,7 @@ public class MinaHandler extends IoHandlerAdapter implements
 
    @Override
    public void messageReceived(final IoSession session, final Object message)
-      throws Exception
+           throws Exception
    {
       final Packet packet = (Packet) message;
 
@@ -165,7 +163,7 @@ public class MinaHandler extends IoHandlerAdapter implements
    // Private -------------------------------------------------------
 
    private void messageReceivedInternal(final IoSession session, Packet packet)
-         throws Exception
+           throws Exception
    {
       PacketReturner returner;
 
