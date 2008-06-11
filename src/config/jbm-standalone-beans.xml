@@ -45,9 +45,6 @@
       <property name="remotingService">
          <inject bean="RemotingService"/>
       </property>
-      <property name="cleanUpNotifier">
-         <inject bean="RemotingService"/>
-      </property>
       <property name="configuration">
          <inject bean="Configuration"/>
       </property>
