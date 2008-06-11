@@ -66,7 +66,7 @@ public class JBossConnection implements
 
    static final int TYPE_GENERIC_CONNECTION = 0;
    
-   static final int TYPE_QUEUE_CONNECTION = 1;
+   public static final int TYPE_QUEUE_CONNECTION = 1;
    
    static final int TYPE_TOPIC_CONNECTION = 2;
    
