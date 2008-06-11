@@ -31,7 +31,7 @@ public class PingerImpl implements Pinger
 
    private final NIOSession session;
 
-   private final PongHandler pongHandler;
+   private final ResponseHandler pongHandler;
 
    private final long pongTimeout;
 
@@ -39,20 +39,18 @@ public class PingerImpl implements Pinger
 
 
    public PingerImpl(final PacketDispatcher dispatcher, final NIOSession session, final long pongTimeout,
-                     final CleanUpNotifier failureHandler)
+                     final ResponseHandler pongHandler, final CleanUpNotifier failureHandler)
    {
       this.dispatcher = dispatcher;
 
       this.session = session;
 
-      long handlerID = dispatcher.generateID();
-
       this.pongTimeout = pongTimeout;
 
       this.failureHandler = failureHandler;
 
-      pongHandler = new PongHandler(handlerID);
-
+      this.pongHandler = pongHandler;
+      
       dispatcher.register(pongHandler);
    }
 
@@ -68,7 +66,7 @@ public class PingerImpl implements Pinger
       ping.setTargetID(0);
       ping.setExecutorID(session.getID());
       ping.setResponseTargetID(pongHandler.getID());
-      pongHandler.response = null;
+      pongHandler.reset();
       try
       {
          if (isTraceEnabled)
@@ -82,13 +80,16 @@ public class PingerImpl implements Pinger
          log.error("Caught unexpected exception", e);
 
          failureHandler.fireCleanup(session.getID(), new MessagingException(MessagingException.CONNECTION_TIMEDOUT, e.getMessage()));
+         return;
       }
+      
       //now we have sent a ping, wait for a pong
       Packet response = pongHandler.waitForResponse(pongTimeout);
 
       if (response == null)
       {
          failureHandler.fireCleanup(session.getID(), new MessagingException(MessagingException.CONNECTION_TIMEDOUT, "no pong received"));
+         return;
       }
       else
       {
@@ -106,80 +107,4 @@ public class PingerImpl implements Pinger
          }
       }
    }
-
-   //TODO - duplicated from RemotingConnectionImpl - TODO combine
-   private static class PongHandler implements PacketHandler
-   {
-      private long id;
-
-      private Packet response;
-
-      private boolean failed;
-
-      PongHandler(final long id)
-      {
-         this.id = id;
-      }
-
-      public long getID()
-      {
-         return id;
-      }
-
-      public synchronized void setFailed()
-      {
-         failed = true;
-      }
-
-      public synchronized void handle(final Packet packet, final PacketReturner sender)
-      {
-         if (failed)
-         {
-            //Ignore any responses that come back after we timed out
-            return;
-         }
-
-         this.response = packet;
-
-         notify();
-      }
-
-      public synchronized Packet waitForResponse(final long timeout)
-      {
-         if (failed)
-         {
-            throw new IllegalStateException("Cannot wait for response - pinger has failed");
-         }
-
-         long toWait = timeout;
-         long start = System.currentTimeMillis();
-
-         while (response == null && toWait > 0)
-         {
-            try
-            {
-               wait(toWait);
-            }
-            catch (InterruptedException e)
-            {
-            }
-
-            long now = System.currentTimeMillis();
-
-            toWait -= now - start;
-
-            start = now;
-         }
-
-         if (response == null)
-         {
-            failed = true;
-         }
-
-         return response;
-      }
-
-   }
-
-
 }

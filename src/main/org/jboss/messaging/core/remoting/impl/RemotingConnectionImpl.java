@@ -132,7 +132,7 @@ public class RemotingConnectionImpl implements RemotingConnection
 
       long handlerID = connector.getDispatcher().generateID();
 
-      ResponseHandler handler = new ResponseHandler(handlerID);
+      ResponseHandlerImpl handler = new ResponseHandlerImpl(handlerID);
 
       connector.getDispatcher().register(handler);
 
@@ -229,56 +229,6 @@ public class RemotingConnectionImpl implements RemotingConnection
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
-
-   private static class ResponseHandler implements PacketHandler
-   {
-      private long id;
-
-      private Packet response;
-
-      ResponseHandler(final long id)
-      {
-         this.id = id;
-      }
-
-      public long getID()
-      {
-         return id;
-      }
-
-      public synchronized void handle(final Packet packet, final PacketReturner sender)
-      {
-         this.response = packet;
-
-         notify();
-      }
-
-      public synchronized Packet waitForResponse(final long timeout)
-      {
-         long toWait = timeout;
-         long start = System.currentTimeMillis();
-
-         while (response == null && toWait > 0)
-         {
-            try
-            {
-               wait(toWait);
-            }
-            catch (InterruptedException e)
-            {
-            }
-
-            long now = System.currentTimeMillis();
-
-            toWait -= now - start;
-
-            start = now;
-         }
-
-         return response;
-      }
-
-   }
 
    private void checkConnected() throws MessagingException
    {

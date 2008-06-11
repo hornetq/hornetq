@@ -20,8 +20,13 @@ import org.jboss.messaging.core.remoting.ConnectorRegistryFactory;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingService;
+import org.jboss.messaging.core.remoting.ResponseHandler;
+
 import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
+import org.jboss.messaging.core.remoting.impl.ResponseHandlerImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
+
 import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addSSLFilter;
@@ -277,7 +282,8 @@ public class RemotingServiceImpl implements RemotingService, CleanUpNotifier
          //register pinger
          if (config.getKeepAliveInterval() > 0)
          {
-            Pinger pinger = new PingerImpl(getDispatcher(), new MinaSession(session, null), config.getKeepAliveTimeout(), RemotingServiceImpl.this);
+            ResponseHandler pongHandler = new ResponseHandlerImpl(dispatcher.generateID());
+            Pinger pinger = new PingerImpl(getDispatcher(), new MinaSession(session, null), config.getKeepAliveTimeout(), pongHandler, RemotingServiceImpl.this);
             ScheduledFuture<?> future = scheduledExecutor.scheduleAtFixedRate(pinger, config.getKeepAliveInterval(), config.getKeepAliveInterval(), TimeUnit.MILLISECONDS);
             currentScheduledPingers.put(session, future);
             currentPingers.put(session, pinger);
