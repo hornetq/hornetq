@@ -120,19 +120,19 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
          }
          // if we get here we're granted, add to the cache
    
-         switch (checkType.type)
+         switch (checkType)
          {
-            case CheckType.TYPE_READ:
+            case READ:
             {
                readCache.add(address);
                break;
             }
-            case CheckType.TYPE_WRITE:
+            case WRITE:
             {
                writeCache.add(address);
                break;
             }
-            case CheckType.TYPE_CREATE:
+            case CREATE:
             {
                createCache.add(address);
                break;
@@ -191,19 +191,19 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
       }
       else
       {
-         switch (checkType.type)
+         switch (checkType)
          {
-            case CheckType.TYPE_READ:
+            case READ:
             {
                granted = readCache.contains(dest);
                break;
             }
-            case CheckType.TYPE_WRITE:
+            case WRITE:
             {
                granted = writeCache.contains(dest);
                break;
             }
-            case CheckType.TYPE_CREATE:
+            case CREATE:
             {
                granted = createCache.contains(dest);
                break;

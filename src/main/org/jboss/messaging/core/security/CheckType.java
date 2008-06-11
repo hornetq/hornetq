@@ -25,31 +25,12 @@ package org.jboss.messaging.core.security;
  * 
  * @author Peter Antman
  * @author <a href="mailto:Scott.Stark@jboss.org">Scott Stark</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @version $Revision: 2925 $
  *
  * $Id: $
  */
-public class CheckType
+public enum CheckType
 {	
-   public final int type;
-   public CheckType(int type)
-   {
-      this.type = type;
-   }      
-   public static final int TYPE_READ = 0;
-   public static final int TYPE_WRITE = 1;
-   public static final int TYPE_CREATE = 2;
-   public static CheckType READ = new CheckType(TYPE_READ);
-   public static CheckType WRITE = new CheckType(TYPE_WRITE);
-   public static CheckType CREATE = new CheckType(TYPE_CREATE);      
-   public boolean equals(Object other)
-   {
-      if (!(other instanceof CheckType)) return false;
-      CheckType ct = (CheckType)other;
-      return ct.type == this.type;
-   }
-   public int hashCode() 
-   {
-      return type;
-   }
+   READ, WRITE, CREATE;   
 }

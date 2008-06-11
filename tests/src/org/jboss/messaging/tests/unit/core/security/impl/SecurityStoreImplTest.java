@@ -200,47 +200,4 @@ public class SecurityStoreImplTest extends TestCase
       securityStore.check(address, CheckType.CREATE, serverConnection);
 
    }
-
-   public void testInvalidCheckType() throws Exception
-   {
-
-      CheckType badCheckType = new CheckType(4);
-      JBMSecurityManager securityManager = EasyMock.createStrictMock(JBMSecurityManager.class);
-      securityStore.setSecurityManager(securityManager);
-      //noinspection unchecked
-      HierarchicalRepository<HashSet<Role>> repository = EasyMock.createStrictMock(HierarchicalRepository.class);
-
-      SimpleString address = new SimpleString("anaddress");
-      HashSet<Role> roles = new HashSet<Role>();
-      roles.add(new Role("user", false, false, true));
-      repository.registerListener(securityStore);
-      EasyMock.expect(repository.getMatch(address.toString())).andReturn(roles);
-      ServerConnection serverConnection = EasyMock.createNiceMock(ServerConnection.class);
-      EasyMock.expect(serverConnection.getUsername()).andReturn("user");
-      EasyMock.expect(serverConnection.getPassword()).andReturn("password");
-      EasyMock.expect(securityManager.validateUserAndRole("user", "password", roles, badCheckType)).andReturn(true);
-      EasyMock.replay(repository);
-      EasyMock.replay(securityManager);
-      EasyMock.replay(serverConnection);
-      securityStore.setSecurityRepository(repository);
-      try
-      {
-         securityStore.check(address, badCheckType, serverConnection);
-         fail("should throw exception");
-      }
-      catch (IllegalArgumentException e)
-      {
-         e.printStackTrace();
-      }
-      //now try cached
-      try
-      {
-         securityStore.check(address, badCheckType, serverConnection);
-         fail("should throw exception");
-      }
-      catch (IllegalArgumentException e)
-      {
-         e.printStackTrace();
-      }
-   }
 }
