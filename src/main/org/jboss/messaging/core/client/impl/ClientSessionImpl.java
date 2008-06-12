@@ -579,7 +579,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    public void removeConsumer(final ClientConsumerInternal consumer) throws MessagingException
    {
-      consumers.remove(consumer.getClientTargetID());
+      consumers.remove(consumer);
             
       //1. flush any unacked message to the server
       
@@ -603,6 +603,26 @@ public class ClientSessionImpl implements ClientSessionInternal
    public void removeBrowser(final ClientBrowser browser)
    {
       browsers.remove(browser);
+   }
+   
+   public Set<ClientProducerInternal> getProducers()
+   {
+      return new HashSet<ClientProducerInternal>(producers);
+   }
+   
+   public Set<ClientConsumerInternal> getConsumers()
+   {
+      return new HashSet<ClientConsumerInternal>(consumers);
+   }
+   
+   public Set<ClientBrowser> getBrowsers()
+   {
+      return new HashSet<ClientBrowser>(browsers);
+   }
+   
+   public Map<SimpleString, ClientProducerInternal> getProducerCache()
+   {
+      return new HashMap<SimpleString, ClientProducerInternal>(producerCache);
    }
    
    // XAResource implementation --------------------------------------------------------------------

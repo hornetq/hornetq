@@ -26,8 +26,6 @@ import javax.transaction.xa.XAResource;
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.client.ClientConnectionFactory;
-import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientConnectionInternal;
 import org.jboss.messaging.core.client.impl.ClientConsumerInternal;
@@ -46,8 +44,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMe
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCancelMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
@@ -452,24 +448,46 @@ public class ClientSessionImplTest extends UnitTestCase
       //Create three with address1 - only one should be actually created
       
       ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, true, false, false, false);
-
+      
+      assertEquals(0, session.getProducerCache().size());
+      
       ClientProducerInternal producer1 = (ClientProducerInternal)session.createProducer(address1, windowSize, maxRate,
                                                                                         false, false);
+      
+      assertEquals(0, session.getProducerCache().size());
+      
       session.removeProducer(producer1);  
+      
+      assertEquals(1, session.getProducerCache().size());
       
       ClientProducerInternal producer2 = (ClientProducerInternal)session.createProducer(address1, windowSize, maxRate,
                                                                                        false, false);      
+      
+      assertEquals(0, session.getProducerCache().size());
+      
       session.removeProducer(producer2);
+      
+      assertEquals(1, session.getProducerCache().size());
       
       ClientProducerInternal producer3 = (ClientProducerInternal)session.createProducer(address1, windowSize, maxRate,
                                                                                         false, false);
+      
+      assertEquals(0, session.getProducerCache().size());
+      
       session.removeProducer(producer3);
+      
+      assertEquals(1, session.getProducerCache().size());
       
       //Create another with a different address
       
       ClientProducerInternal producer4 = (ClientProducerInternal)session.createProducer(address2, windowSize, maxRate,
                                                                                         false, false);
+      
+      assertEquals(1, session.getProducerCache().size());
+      
       session.removeProducer(producer4); 
+      
+      assertEquals(2, session.getProducerCache().size());
             
       EasyMock.verify(conn, rc, pd);     
       
@@ -575,15 +593,26 @@ public class ClientSessionImplTest extends UnitTestCase
 
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.SESS_COMMIT))).andReturn(null);
       
+      //Create some consumers
+      
+      ClientConsumerInternal cons1 = EasyMock.createStrictMock(ClientConsumerInternal.class);
+      ClientConsumerInternal cons2 = EasyMock.createStrictMock(ClientConsumerInternal.class);
+      
+      cons1.recover(numMessages);
+      cons2.recover(numMessages);
+            
       SessionAcknowledgeMessage message2 = new SessionAcknowledgeMessage(numMessages * 2 - 1, true);
       
       rc.sendOneWay(sessionTargetID, sessionTargetID, message2);
 
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.SESS_ROLLBACK))).andReturn(null);
                   
-      EasyMock.replay(conn, rc, pd);
+      EasyMock.replay(conn, rc, pd, cons1, cons2);
       
       ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+      
+      session.addConsumer(cons1);
+      session.addConsumer(cons2);
       
       //Simulate some messages being delivered in a non broken sequence (i.e. what would happen with a single consumer
       //on the session)
@@ -607,7 +636,7 @@ public class ClientSessionImplTest extends UnitTestCase
       
       session.rollback();
       
-      EasyMock.verify(conn, rc, pd);
+      EasyMock.verify(conn, rc, pd, cons1, cons2);
    }
    
    public void testAutoCommitSessionAcknowledge() throws Exception
@@ -800,8 +829,158 @@ public class ClientSessionImplTest extends UnitTestCase
       assertTrue(session.isClosed());
    }
    
+   public void testAddRemoveConsumer() throws Exception
+   {
+      testAddRemoveConsumer(true);
+      testAddRemoveConsumer(false);
+   }
+   
+   public void testAddRemoveProducer() throws Exception
+   {
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+          
+      //In ClientSessionImpl constructor
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+        
+      final long sessionTargetID = 9121892;
+                  
+      EasyMock.replay(conn, rc);
+      
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+      
+      EasyMock.verify(conn, rc);
+      
+      EasyMock.reset(conn, rc);
+                                      
+      ClientProducerInternal prod1 = EasyMock.createStrictMock(ClientProducerInternal.class);
+      ClientProducerInternal prod2 = EasyMock.createStrictMock(ClientProducerInternal.class);
+      
+      session.addProducer(prod1);
+      session.addProducer(prod2);
+      
+      assertEquals(2, session.getProducers().size());
+      assertTrue(session.getProducers().contains(prod1));
+      assertTrue(session.getProducers().contains(prod2));
+       
+      session.removeProducer(prod1);
+      
+      assertEquals(1, session.getProducers().size());
+      assertTrue(session.getProducers().contains(prod2));   
+      
+      session.removeProducer(prod2);
+      
+      assertEquals(0, session.getProducers().size()); 
+   }
+   
+   public void testAddRemoveBrowser() throws Exception
+   {
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+          
+      //In ClientSessionImpl constructor
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+        
+      final long sessionTargetID = 9121892;
+                  
+      EasyMock.replay(conn, rc);
+      
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+      
+      EasyMock.verify(conn, rc);
+      
+      EasyMock.reset(conn, rc);
+                                      
+      ClientBrowser browser1 = EasyMock.createStrictMock(ClientBrowser.class);
+      ClientBrowser browser2 = EasyMock.createStrictMock(ClientBrowser.class);
+      
+      session.addBrowser(browser1);
+      session.addBrowser(browser2);
+      
+      assertEquals(2, session.getBrowsers().size());
+      assertTrue(session.getBrowsers().contains(browser1));
+      assertTrue(session.getBrowsers().contains(browser2));
+       
+      session.removeBrowser(browser1);
+      
+      assertEquals(1, session.getBrowsers().size());
+      assertTrue(session.getBrowsers().contains(browser2));   
+      
+      session.removeBrowser(browser2);
+      
+      assertEquals(0, session.getBrowsers().size()); 
+   }
+   
+   
    // Private -------------------------------------------------------------------------------------------
 
+   private void testAddRemoveConsumer(boolean delivered) throws Exception
+   {
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+          
+      //In ClientSessionImpl constructor
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+        
+      final long sessionTargetID = 9121892;
+                  
+      EasyMock.replay(conn, rc);
+      
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+      
+      EasyMock.verify(conn, rc);
+      
+      EasyMock.reset(conn, rc);
+         
+      final int numDeliveries = 10;
+      
+      if (delivered)
+      {
+         SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(numDeliveries - 1, true);
+         
+         rc.sendOneWay(sessionTargetID, sessionTargetID, message);
+      }
+            
+      rc.sendOneWay(sessionTargetID, sessionTargetID, new SessionCancelMessage(-1, false));
+      
+      rc.sendOneWay(sessionTargetID, sessionTargetID, new SessionCancelMessage(-1, false));
+                       
+      EasyMock.replay(conn, rc);
+                       
+      ClientConsumerInternal cons1 = EasyMock.createStrictMock(ClientConsumerInternal.class);
+      ClientConsumerInternal cons2 = EasyMock.createStrictMock(ClientConsumerInternal.class);
+      
+      session.addConsumer(cons1);
+      session.addConsumer(cons2);
+      
+      assertEquals(2, session.getConsumers().size());
+      assertTrue(session.getConsumers().contains(cons1));
+      assertTrue(session.getConsumers().contains(cons2));
+      
+      if (delivered)
+      {
+         //Simulate there being some undelivered messages
+         for (int i = 0; i < numDeliveries; i++)
+         {
+            session.delivered(i, false);
+            session.acknowledge();
+         }
+      }
+            
+      session.removeConsumer(cons1);
+      
+      assertEquals(1, session.getConsumers().size());
+      assertTrue(session.getConsumers().contains(cons2));  
+      
+      session.removeConsumer(cons2);
+      assertEquals(0, session.getConsumers().size());
+      
+      EasyMock.verify(conn, rc);          
+   }
+   
    private void testAutoCommitSessionAcknowledge(boolean blockOnAcknowledge) throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
@@ -834,12 +1013,35 @@ public class ClientSessionImplTest extends UnitTestCase
 
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.SESS_COMMIT))).andReturn(null);
       
-                    
-      EasyMock.replay(conn);
-      EasyMock.replay(rc);
-      EasyMock.replay(pd);
+      ClientConsumerInternal cons1 = EasyMock.createStrictMock(ClientConsumerInternal.class);
+      ClientConsumerInternal cons2 = EasyMock.createStrictMock(ClientConsumerInternal.class);
+      
+      for (int i = 0; i < numMessages / batchSize; i++)
+      {
+         SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(numMessages + (i + 1) * batchSize - 1, true);
+               
+         if (blockOnAcknowledge)
+         {
+            EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, message)).andReturn(null);
+         }
+         else
+         {
+            rc.sendOneWay(sessionTargetID, sessionTargetID, message);
+         }
+      }
+      
+      cons1.recover(numMessages * 2);
+      cons2.recover(numMessages * 2);
+            
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.SESS_ROLLBACK))).andReturn(null);
+                                     
+      EasyMock.replay(conn, rc, pd, cons1, cons2);
             
       ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, batchSize, false, false, true, blockOnAcknowledge);
+      
+      session.addConsumer(cons1);
+      
+      session.addConsumer(cons2);
       
       //Simulate some messages being delivered in a non broken sequence (i.e. what would happen with a single consumer
       //on the session)
@@ -854,10 +1056,16 @@ public class ClientSessionImplTest extends UnitTestCase
       //Then commit
       session.commit();
       
+      for (int i = numMessages; i < numMessages * 2; i++)
+      {
+         session.delivered(i, false);
+         
+         session.acknowledge();
+      }
       
-      EasyMock.verify(conn);
-      EasyMock.verify(rc);
-      EasyMock.verify(pd); 
+      session.rollback();
+      
+      EasyMock.verify(conn, rc, pd, cons1, cons2);
    }
    
    private void testTransactedSessionAcknowledgeBroken(boolean blockOnAcknowledge) throws Exception
@@ -889,12 +1097,38 @@ public class ClientSessionImplTest extends UnitTestCase
       }
       
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.SESS_COMMIT))).andReturn(null);
-                  
-      EasyMock.replay(conn);
-      EasyMock.replay(rc);
-      EasyMock.replay(pd);
+      
+      final int[] messages2 = new int[] { 43, 44, 50, 47, 48, 60, 45, 61, 62, 64 };
+      
+      ClientConsumerInternal cons1 = EasyMock.createStrictMock(ClientConsumerInternal.class);
+      ClientConsumerInternal cons2 = EasyMock.createStrictMock(ClientConsumerInternal.class);
+      
+      for (int i = 0; i < messages2.length; i++)
+      {
+         SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(messages2[i], false);
+         
+         if (blockOnAcknowledge)
+         {
+            EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, message)).andReturn(null);
+         }
+         else
+         {
+            rc.sendOneWay(sessionTargetID, sessionTargetID, message);
+         }
+      }
+      
+      //Recover back to the last committed
+      cons1.recover(36);
+      cons2.recover(36);
+            
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.SESS_ROLLBACK))).andReturn(null);
+                        
+      EasyMock.replay(conn, rc, pd, cons1, cons2);
       
       ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, blockOnAcknowledge);
+      
+      session.addConsumer(cons1);
+      session.addConsumer(cons2);
       
       //Simulate some messages being delivered in a broken sequence (i.e. what would happen with a single consumer
       //on the session)
@@ -909,9 +1143,16 @@ public class ClientSessionImplTest extends UnitTestCase
       //Then commit
       session.commit();
       
-      EasyMock.verify(conn);
-      EasyMock.verify(rc);
-      EasyMock.verify(pd); 
+      for (int i = 0; i < messages2.length; i++)
+      {
+         session.delivered(messages2[i], false);
+         
+         session.acknowledge();
+      }
+      
+      session.rollback();
+      
+      EasyMock.verify(conn, rc, pd, cons1, cons2); 
    }
    
    private void testCreateProducerWithWindowSizeMethod(final SimpleString address,

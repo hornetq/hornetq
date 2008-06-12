@@ -6,9 +6,13 @@
  */
 package org.jboss.messaging.core.client.impl;
 
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -36,4 +40,12 @@ public interface ClientSessionInternal extends ClientSession
    void removeProducer(ClientProducerInternal producer);
    
    void removeBrowser(ClientBrowser browser);  
+   
+   Set<ClientProducerInternal> getProducers();
+   
+   Set<ClientConsumerInternal> getConsumers();
+   
+   Set<ClientBrowser> getBrowsers();
+   
+   Map<SimpleString, ClientProducerInternal> getProducerCache();
 }

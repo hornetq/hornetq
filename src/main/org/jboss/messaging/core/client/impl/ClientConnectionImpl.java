@@ -222,7 +222,6 @@ public class ClientConnectionImpl implements ClientConnectionInternal
        
       for (ClientSession session: childrenClone)
       {
-         log.info("closing session");
          session.close(); 
       }
    }
