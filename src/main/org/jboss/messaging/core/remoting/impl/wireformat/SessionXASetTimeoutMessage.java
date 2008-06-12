@@ -56,6 +56,18 @@ public class SessionXASetTimeoutMessage extends EmptyPacket
    {
       timeoutSeconds = buffer.getInt();
    }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionXASetTimeoutMessage == false)
+      {
+         return false;
+      }
+            
+      SessionXASetTimeoutMessage r = (SessionXASetTimeoutMessage)other;
+      
+      return this.timeoutSeconds == r.timeoutSeconds;
+   }
 
    // Package protected ---------------------------------------------
 

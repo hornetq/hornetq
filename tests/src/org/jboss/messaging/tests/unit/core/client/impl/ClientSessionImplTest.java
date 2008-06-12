@@ -23,6 +23,8 @@ package org.jboss.messaging.tests.unit.core.client.impl;
 
 import static org.jboss.messaging.tests.util.RandomUtil.randomXid;
 
+import java.util.Arrays;
+
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
@@ -31,6 +33,7 @@ import org.easymock.EasyMock;
 import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.ClientConnectionInternal;
 import org.jboss.messaging.core.client.impl.ClientConsumerInternal;
 import org.jboss.messaging.core.client.impl.ClientConsumerPacketHandler;
@@ -38,11 +41,13 @@ import org.jboss.messaging.core.client.impl.ClientProducerInternal;
 import org.jboss.messaging.core.client.impl.ClientProducerPacketHandler;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionInternal;
+import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
@@ -50,6 +55,8 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMe
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCancelMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
@@ -62,7 +69,16 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinatio
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAForgetMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetInDoubtXidsResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetTimeoutResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAJoinMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAPrepareMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResumeMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
@@ -572,6 +588,14 @@ public class ClientSessionImplTest extends UnitTestCase
       assertFalse(producer1 == producer3);
    }
    
+   public void testCreateBrowser() throws Exception
+   {
+      testCreateBrowser(true);
+      testCreateBrowser(false);
+   }
+   
+   
+   
    public void testGetXAResource() throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
@@ -836,9 +860,190 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.verify(conn, rc, prod1, prod2, cons1, cons2, browser1, browser2);
       
-      assertTrue(session.isClosed());           
+      assertTrue(session.isClosed());      
+      
+      try
+      {
+         session.createQueue(new SimpleString("trtr"), new SimpleString("iuasij"), null, false, false);
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.deleteQueue(new SimpleString("trtr"));
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.addDestination(new SimpleString("trtr"), false);
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.removeDestination(new SimpleString("trtr"), false);
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.queueQuery(new SimpleString("trtr"));
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.bindingQuery(new SimpleString("trtr"));
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.createConsumer(new SimpleString("trtr"));
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.createConsumer(new SimpleString("iasjq"), null, false, false, false);
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.createConsumer(new SimpleString("husuhsuh"), null, false, false, false, 8787, 7162761);
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.createBrowser(new SimpleString("husuhsuh"));
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.createBrowser(new SimpleString("husuhsuh"), null);
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.createProducer(new SimpleString("husuhsuh"));
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.createProducer(new SimpleString("iashi"), 878778, 8778, false, false);
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.createRateLimitedProducer(new SimpleString("uhsuhs"), 78676);
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.createProducerWithWindowSize(new SimpleString("uhsuhs"), 78676);
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.commit();
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.rollback();
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.acknowledge();
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
    }
-   
+    
    public void testAddRemoveConsumer() throws Exception
    {
       testAddRemoveConsumer(true);
@@ -947,13 +1152,504 @@ public class ClientSessionImplTest extends UnitTestCase
       testXAForget(true);
    }
    
+   public void testGetTransactionTimeout() throws Exception
+   {
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+          
+      //In ClientSessionImpl constructor
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+        
+      final long sessionTargetID = 9121892;
+      
+      Packet packet = new EmptyPacket(EmptyPacket.SESS_XA_GET_TIMEOUT);
+
+      final int timeout = 1098289;
+      
+      SessionXAGetTimeoutResponseMessage resp = new SessionXAGetTimeoutResponseMessage(timeout);
+      
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, packet)).andReturn(resp);
+                       
+      EasyMock.replay(conn, rc);
+      
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, true, -1, false, false, false, false);
+      
+      int timeout2 = session.getTransactionTimeout();
+            
+      EasyMock.verify(conn, rc);  
+      
+      assertEquals(timeout, timeout2);
+   }
    
+   public void testIsSameRM() throws Exception
+   {
+      Location location1 = new LocationImpl(TransportType.TCP, "blah1");      
+      Location location2 = new LocationImpl(TransportType.TCP, "blah2");
+      
+      ClientConnectionInternal conn1 = EasyMock.createStrictMock(ClientConnectionInternal.class);      
+      RemotingConnection rc1 = EasyMock.createStrictMock(RemotingConnection.class);          
+      EasyMock.expect(conn1.getRemotingConnection()).andReturn(rc1);
+      
+      ClientConnectionInternal conn2 = EasyMock.createStrictMock(ClientConnectionInternal.class);      
+      RemotingConnection rc2 = EasyMock.createStrictMock(RemotingConnection.class);          
+      EasyMock.expect(conn2.getRemotingConnection()).andReturn(rc2);
+      
+      ClientConnectionInternal conn3 = EasyMock.createStrictMock(ClientConnectionInternal.class);      
+      RemotingConnection rc3 = EasyMock.createStrictMock(RemotingConnection.class);          
+      EasyMock.expect(conn3.getRemotingConnection()).andReturn(rc3);
+       
+      EasyMock.expect(conn1.getRemotingConnection()).andReturn(rc1);      
+      EasyMock.expect(rc1.getLocation()).andReturn(location1);      
+      EasyMock.expect(conn2.getRemotingConnection()).andReturn(rc2);      
+      EasyMock.expect(rc2.getLocation()).andReturn(location1);
+      
+      EasyMock.expect(conn2.getRemotingConnection()).andReturn(rc2);      
+      EasyMock.expect(rc2.getLocation()).andReturn(location1);
+      EasyMock.expect(conn1.getRemotingConnection()).andReturn(rc1);      
+      EasyMock.expect(rc1.getLocation()).andReturn(location1);      
+            
+      EasyMock.expect(conn1.getRemotingConnection()).andReturn(rc1);      
+      EasyMock.expect(rc1.getLocation()).andReturn(location1);      
+      EasyMock.expect(conn3.getRemotingConnection()).andReturn(rc3);      
+      EasyMock.expect(rc3.getLocation()).andReturn(location2);
+      
+      EasyMock.expect(conn3.getRemotingConnection()).andReturn(rc3);      
+      EasyMock.expect(rc3.getLocation()).andReturn(location2);
+      EasyMock.expect(conn1.getRemotingConnection()).andReturn(rc1);      
+      EasyMock.expect(rc1.getLocation()).andReturn(location1);      
+            
+      EasyMock.expect(conn2.getRemotingConnection()).andReturn(rc2);      
+      EasyMock.expect(rc2.getLocation()).andReturn(location1);      
+      EasyMock.expect(conn3.getRemotingConnection()).andReturn(rc3);      
+      EasyMock.expect(rc3.getLocation()).andReturn(location2);
+      
+      EasyMock.expect(conn3.getRemotingConnection()).andReturn(rc3);      
+      EasyMock.expect(rc3.getLocation()).andReturn(location2);
+      EasyMock.expect(conn2.getRemotingConnection()).andReturn(rc2);      
+      EasyMock.expect(rc2.getLocation()).andReturn(location1);      
+          
+      EasyMock.replay(conn1, conn2, conn3, rc1, rc2, rc3);
+      
+      ClientSessionInternal session1 = new ClientSessionImpl(conn1, 4343, true, -1, false, false, false, false);
+      
+      ClientSessionInternal session2 = new ClientSessionImpl(conn2, 4343, true, -1, false, false, false, false);
+      
+      ClientSessionInternal session3 = new ClientSessionImpl(conn3, 4343, true, -1, false, false, false, false);
+      
+      assertTrue(session1.isSameRM(session2));
+      assertTrue(session2.isSameRM(session1));
+      
+      assertFalse(session1.isSameRM(session3));
+      assertFalse(session3.isSameRM(session1));
+      
+      assertFalse(session2.isSameRM(session3));
+      assertFalse(session3.isSameRM(session2));
+      
+      EasyMock.verify(conn1, conn1, conn3, rc1, rc2, rc3);
+   }
    
+   public void testXAPrepare() throws Exception
+   {
+      testXAPrepare(false, false);
+      testXAPrepare(false, true);
+      testXAPrepare(true, false);
+      testXAPrepare(true, true);
+   }
    
+   public void testXARecover() throws Exception
+   {
+      testXARecover(XAResource.TMNOFLAGS);
+      testXARecover(XAResource.TMSTARTRSCAN);
+      testXARecover(XAResource.TMENDRSCAN);
+      testXARecover(XAResource.TMSTARTRSCAN | XAResource.TMENDRSCAN);
+   }
    
+   public void testXARollback() throws Exception
+   {
+      testXARollback(true);
+      testXARollback(false);
+   }
+   
+   public void testXASetTransactionTimeout() throws Exception
+   {
+      testXASetTransactionTimeout(false);
+      testXASetTransactionTimeout(true);
+   }
+   
+   public void testXAStart() throws Exception
+   {
+      testXAStart(XAResource.TMJOIN, false);
+      testXAStart(XAResource.TMRESUME, false);
+      testXAStart(XAResource.TMNOFLAGS, false);
+      testXAStart(XAResource.TMJOIN, true);
+      testXAStart(XAResource.TMRESUME, true);
+      testXAStart(XAResource.TMNOFLAGS, true);
+   }
+   
+   public void notXA() throws Exception
+   {
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+          
+      //In ClientSessionImpl constructor
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+              
+      final long sessionTargetID = 9121892;
+                  
+      EasyMock.replay(conn, rc);
+      
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+      
+      EasyMock.verify(conn, rc);
+      
+      EasyMock.reset(conn, rc);      
+      try
+      {
+         session.commit(randomXid(), false);
+         fail("Should throw exception");
+      }
+      catch (XAException e)
+      {
+         assertEquals(XAException.XAER_RMERR, e.errorCode);
+      }
+      
+      try
+      {
+         session.end(randomXid(), 8778);
+         fail("Should throw exception");
+      }
+      catch (XAException e)
+      {
+         assertEquals(XAException.XAER_RMERR, e.errorCode);
+      }
+      
+      try
+      {
+         session.forget(randomXid());
+         fail("Should throw exception");
+      }
+      catch (XAException e)
+      {
+         assertEquals(XAException.XAER_RMERR, e.errorCode);
+      }
+      
+      try
+      {
+         session.getTransactionTimeout();
+         fail("Should throw exception");
+      }
+      catch (XAException e)
+      {
+         assertEquals(XAException.XAER_RMERR, e.errorCode);
+      }
+      
+      try
+      {
+         session.isSameRM(session);
+         fail("Should throw exception");
+      }
+      catch (XAException e)
+      {
+         assertEquals(XAException.XAER_RMERR, e.errorCode);
+      }
+      
+      try
+      {
+         session.prepare(randomXid());
+         fail("Should throw exception");
+      }
+      catch (XAException e)
+      {
+         assertEquals(XAException.XAER_RMERR, e.errorCode);
+      }
+      
+      try
+      {
+         session.recover(89787);
+         fail("Should throw exception");
+      }
+      catch (XAException e)
+      {
+         assertEquals(XAException.XAER_RMERR, e.errorCode);
+      }
+      
+      try
+      {
+         session.rollback(randomXid());
+         fail("Should throw exception");
+      }
+      catch (XAException e)
+      {
+         assertEquals(XAException.XAER_RMERR, e.errorCode);
+      }
+      
+      try
+      {
+         session.setTransactionTimeout(767);
+         fail("Should throw exception");
+      }
+      catch (XAException e)
+      {
+         assertEquals(XAException.XAER_RMERR, e.errorCode);
+      }
+      
+      try
+      {
+         session.start(randomXid(), 8768);
+         fail("Should throw exception");
+      }
+      catch (XAException e)
+      {
+         assertEquals(XAException.XAER_RMERR, e.errorCode);
+      }
+   }
    
    // Private -------------------------------------------------------------------------------------------
 
+   private void testXAStart(int flags, boolean error) throws Exception
+   {
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+          
+      //In ClientSessionImpl constructor
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+        
+      final long sessionTargetID = 9121892;
+      
+      Xid xid = randomXid();
+      
+      Packet packet = null;
+      if (flags == XAResource.TMJOIN)
+      {
+         packet = new SessionXAJoinMessage(xid);           
+      }
+      else if (flags == XAResource.TMRESUME)
+      {
+         packet = new SessionXAResumeMessage(xid);
+      }
+      else if (flags == XAResource.TMNOFLAGS)
+      {
+         packet = new SessionXAStartMessage(xid);
+      }
+
+      final int numMessages = 10;
+      
+      if (flags != XAResource.TMNOFLAGS)
+      {      
+         SessionAcknowledgeMessage msg = new SessionAcknowledgeMessage(numMessages - 1, true);
+         
+         rc.sendOneWay(sessionTargetID, sessionTargetID, msg);
+      }
+      
+      SessionXAResponseMessage resp = new SessionXAResponseMessage(error, XAException.XAER_RMERR, "blah");
+      
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, packet)).andReturn(resp);
+                       
+      EasyMock.replay(conn, rc);
+      
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, true, -1, false, false, false, false);
+      
+      //Simulate some unflushed messages
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         session.delivered(i, false);
+         session.acknowledge();
+      }
+      
+      if (error)
+      {
+         try
+         {
+            session.start(xid, flags);
+            fail("Should throw exception");
+         }
+         catch (XAException e)
+         {
+            assertEquals(XAException.XAER_RMERR, e.errorCode);
+         }
+      }
+      else
+      {
+         session.start(xid, flags);
+      }
+      
+      EasyMock.verify(conn, rc);          
+   }
+   
+   private void testXASetTransactionTimeout(boolean error) throws Exception
+   {
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+          
+      //In ClientSessionImpl constructor
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+        
+      final long sessionTargetID = 9121892;
+      
+      final int timeout = 1897217;
+      
+      SessionXASetTimeoutMessage packet = new SessionXASetTimeoutMessage(timeout);
+      
+      SessionXASetTimeoutResponseMessage resp = new SessionXASetTimeoutResponseMessage(!error);
+      
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, packet)).andReturn(resp);
+                       
+      EasyMock.replay(conn, rc);
+      
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, true, -1, false, false, false, false);
+      
+      boolean ok = session.setTransactionTimeout(timeout);
+      
+      assertTrue(ok == !error);
+      
+      EasyMock.verify(conn, rc);  
+   }
+   
+   private void testXARollback(boolean error) throws Exception
+   {
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+          
+      //In ClientSessionImpl constructor
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+        
+      final long sessionTargetID = 9121892;
+      
+      Xid xid = randomXid();
+      
+      SessionXARollbackMessage packet = new SessionXARollbackMessage(xid);
+      
+      SessionXAResponseMessage resp = new SessionXAResponseMessage(error, XAException.XAER_RMERR, "blah");
+      
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, packet)).andReturn(resp);
+                       
+      EasyMock.replay(conn, rc);
+      
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, true, -1, false, false, false, false);
+      
+      if (error)
+      {
+         try
+         {
+            session.rollback(xid);
+            fail("Should throw exception");
+         }
+         catch (XAException e)
+         {
+            assertEquals(XAException.XAER_RMERR, e.errorCode);
+         }
+      }
+      else
+      {
+         session.rollback(xid);
+      }
+      
+      EasyMock.verify(conn, rc);  
+   }
+   
+   private void testXARecover(final int flags) throws Exception
+   {
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+          
+      //In ClientSessionImpl constructor
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+        
+      final long sessionTargetID = 9121892;
+      
+      final Xid[] xids = new Xid[] { randomXid(), randomXid(), randomXid() } ;
+                  
+      if ((flags & XAResource.TMSTARTRSCAN) == XAResource.TMSTARTRSCAN)
+      {
+         EmptyPacket packet = new EmptyPacket(EmptyPacket.SESS_XA_INDOUBT_XIDS);
+         
+         SessionXAGetInDoubtXidsResponseMessage resp = new SessionXAGetInDoubtXidsResponseMessage(Arrays.asList(xids));
+         
+         EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, packet)).andReturn(resp);
+      }
+                       
+      EasyMock.replay(conn, rc);
+      
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, true, -1, false, false, false, false);
+      
+      Xid[] xids2 = session.recover(flags);
+      
+      if ((flags & XAResource.TMSTARTRSCAN) == XAResource.TMSTARTRSCAN)
+      {
+         assertEquals(xids.length, xids2.length);
+         
+         for (int i = 0; i < xids.length; i++)
+         {
+            assertEquals(xids[i], xids2[i]);
+         }
+      }
+      else
+      {
+         assertTrue(xids2.length == 0);
+      }
+      
+      EasyMock.verify(conn, rc);  
+   }
+   
+   private void testXAPrepare(boolean error, boolean readOnly) throws Exception
+   {
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+          
+      //In ClientSessionImpl constructor
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+        
+      final long sessionTargetID = 9121892;
+      
+      Xid xid = randomXid();
+      
+      SessionXAPrepareMessage packet = new SessionXAPrepareMessage(xid);
+      
+      SessionXAResponseMessage resp = new SessionXAResponseMessage(error, error ? XAException.XAER_RMERR : readOnly ? XAResource.XA_RDONLY : XAResource.XA_OK, "blah");
+      
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, packet)).andReturn(resp);
+                       
+      EasyMock.replay(conn, rc);
+      
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, true, -1, false, false, false, false);
+      
+      if (error)
+      {
+         try
+         {
+            session.prepare(xid);
+            fail("Should throw exception");
+         }
+         catch (XAException e)
+         {
+            assertEquals(XAException.XAER_RMERR, e.errorCode);
+         }
+      }
+      else
+      {
+         int res = session.prepare(xid);
+         
+         if (readOnly)
+         {
+            assertEquals(XAResource.XA_RDONLY, res);
+         }
+         else
+         {
+            assertEquals(XAResource.XA_OK, res);
+         }
+      }
+      
+      EasyMock.verify(conn, rc);  
+   }
+   
    private void testXAForget(final boolean error) throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
@@ -1360,6 +2056,43 @@ public class ClientSessionImplTest extends UnitTestCase
       session.rollback();
       
       EasyMock.verify(conn, rc, pd, cons1, cons2); 
+   }
+   
+   private void testCreateBrowser(boolean filter) throws Exception
+   {
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+            
+      //In ClientSessionImpl constructor
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+          
+      final long sessionTargetID = 7617622;      
+      final SimpleString queueName = new SimpleString("gyugg");
+      final SimpleString sfilter = filter ? new SimpleString("ygyg") : null;
+      
+      SessionCreateBrowserMessage request =
+         new SessionCreateBrowserMessage(queueName, sfilter);             
+      
+      SessionCreateBrowserResponseMessage resp = 
+         new SessionCreateBrowserResponseMessage(76675765);
+      
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, request)).andReturn(resp);
+      
+      EasyMock.replay(conn, rc);
+      
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+      
+      if (filter)
+      {
+         ClientBrowser browser = session.createBrowser(queueName, sfilter);
+      }
+      else
+      {
+         ClientBrowser browser = session.createBrowser(queueName);
+      }
+      
+      EasyMock.verify(conn, rc);
    }
    
    private void testCreateProducerWithWindowSizeMethod(final SimpleString address,
@@ -1869,7 +2602,7 @@ public class ClientSessionImplTest extends UnitTestCase
       EasyMock.replay(conn);
       EasyMock.replay(rc);
 
-      ClientSession session = new ClientSessionImpl(conn, serverTargetID, xa,
+      ClientSessionInternal session = new ClientSessionImpl(conn, serverTargetID, xa,
             lazyAckBatchSize, cacheProducers, autoCommitSends, autoCommitAcks, blockOnAcknowledge);
 
       EasyMock.verify(conn);

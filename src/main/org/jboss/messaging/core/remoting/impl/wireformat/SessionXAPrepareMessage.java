@@ -56,6 +56,18 @@ public class SessionXAPrepareMessage extends EmptyPacket
    {
       xid = XidCodecSupport.decodeXid(buffer);
    }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionXAPrepareMessage == false)
+      {
+         return false;
+      }
+            
+      SessionXAPrepareMessage r = (SessionXAPrepareMessage)other;
+      
+      return this.xid.equals(r.xid);
+   }
 
    // Package protected ---------------------------------------------
 

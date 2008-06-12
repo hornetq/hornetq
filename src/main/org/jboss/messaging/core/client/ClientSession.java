@@ -78,7 +78,5 @@ public interface ClientSession extends XAResource
    
    int getLazyAckBatchSize();
    
-   boolean isXA();
-   
-   ClientConnection getConnection();
+   boolean isXA();   
 }

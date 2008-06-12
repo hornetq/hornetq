@@ -6,14 +6,10 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import static org.apache.mina.common.IdleStatus.BOTH_IDLE;
-import static org.apache.mina.filter.keepalive.KeepAliveRequestTimeoutHandler.EXCEPTION;
-
 import javax.net.ssl.SSLContext;
 
 import org.apache.mina.common.DefaultIoFilterChainBuilder;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
-import org.apache.mina.filter.keepalive.KeepAliveFilter;
 import org.apache.mina.filter.ssl.SslFilter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;

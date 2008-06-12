@@ -57,6 +57,18 @@ public class SessionXAJoinMessage extends EmptyPacket
       xid = XidCodecSupport.decodeXid(buffer);
    }
    
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionXAJoinMessage == false)
+      {
+         return false;
+      }
+            
+      SessionXAJoinMessage r = (SessionXAJoinMessage)other;
+      
+      return this.xid.equals(r.xid);
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

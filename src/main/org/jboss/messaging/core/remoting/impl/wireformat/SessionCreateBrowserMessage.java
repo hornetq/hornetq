@@ -73,6 +73,19 @@ public class SessionCreateBrowserMessage extends EmptyPacket
       return getParentString() + ", queueName=" + queueName + ", filterString="
             + filterString + "]";
    }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionCreateBrowserMessage == false)
+      {
+         return false;
+      }
+            
+      SessionCreateBrowserMessage r = (SessionCreateBrowserMessage)other;
+      
+      return this.queueName.equals(r.queueName) &&
+             this.filterString == null ? r.filterString == null : this.filterString.equals(r.filterString);
+   }
 
    // Package protected ---------------------------------------------
 

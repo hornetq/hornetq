@@ -75,6 +75,19 @@ public class SessionRemoveDestinationMessage extends EmptyPacket
       return getParentString() + ", address=" + address + ", temp=" + temporary + "]";
    }
    
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionRemoveDestinationMessage == false)
+      {
+         return false;
+      }
+            
+      SessionRemoveDestinationMessage r = (SessionRemoveDestinationMessage)other;
+      
+      return this.address.equals(r.address) &&
+             this.temporary == r.temporary;
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

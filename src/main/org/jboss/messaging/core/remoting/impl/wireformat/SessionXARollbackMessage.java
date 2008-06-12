@@ -57,6 +57,18 @@ public class SessionXARollbackMessage extends EmptyPacket
       xid = XidCodecSupport.decodeXid(buffer);
    }
    
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionXARollbackMessage == false)
+      {
+         return false;
+      }
+            
+      SessionXARollbackMessage r = (SessionXARollbackMessage)other;
+      
+      return this.xid.equals(r.xid);
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

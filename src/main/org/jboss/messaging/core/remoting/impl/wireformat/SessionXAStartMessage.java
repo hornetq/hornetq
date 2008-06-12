@@ -57,6 +57,17 @@ public class SessionXAStartMessage extends EmptyPacket
       xid = XidCodecSupport.decodeXid(buffer);
    }
    
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionXAStartMessage == false)
+      {
+         return false;
+      }
+            
+      SessionXAStartMessage r = (SessionXAStartMessage)other;
+      
+      return this.xid.equals(r.xid);
+   }
 
    // Package protected ---------------------------------------------
 

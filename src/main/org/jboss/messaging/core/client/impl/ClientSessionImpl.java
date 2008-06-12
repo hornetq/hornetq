@@ -139,8 +139,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    //For testing only
    private boolean forceNotSameRM;
-   
-   
+      
    // Constructors ---------------------------------------------------------------------------------
    
    public ClientSessionImpl(final ClientConnectionInternal connection, final long serverTargetID,
@@ -247,12 +246,16 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    public ClientConsumer createConsumer(final SimpleString queueName) throws MessagingException
    {
+      checkClosed();
+      
       return createConsumer(queueName, null, false, false, false);
    }
    
    public ClientConsumer createConsumer(final SimpleString queueName, final SimpleString filterString, final boolean noLocal,
                                         final boolean autoDeleteQueue, final boolean direct) throws MessagingException
    {
+      checkClosed();
+      
       return createConsumer(queueName, filterString, noLocal, autoDeleteQueue, direct,
                             connection.getConnectionFactory().getDefaultConsumerWindowSize(),
                             connection.getConnectionFactory().getDefaultConsumerMaxRate());
@@ -335,17 +338,23 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    public ClientProducer createProducer(final SimpleString address) throws MessagingException
    {
+      checkClosed();
+      
       return createProducer(address, connection.getConnectionFactory().getDefaultProducerWindowSize(),
                             connection.getConnectionFactory().getDefaultProducerMaxRate());
    }
       
    public ClientProducer createRateLimitedProducer(SimpleString address, int rate) throws MessagingException
    {
+      checkClosed();
+      
    	return createProducer(address, -1, rate);
    }
    
    public ClientProducer createProducerWithWindowSize(SimpleString address, int windowSize) throws MessagingException
    {
+      checkClosed();
+      
    	return createProducer(address, windowSize, -1);
    }
    
@@ -407,6 +416,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    {
       checkClosed();
         
+      //Flush any acks to the server
       acknowledgeInternal(false);
       
       remotingConnection.sendBlocking(serverTargetID, serverTargetID, new EmptyPacket(EmptyPacket.SESS_COMMIT));
@@ -431,8 +441,7 @@ public class ClientSessionImpl implements ClientSessionInternal
          consumer.recover(lastCommittedID + 1);
       }
       
-      //We flush any remaining acks
-      
+      //Flush any acks to the server
       acknowledgeInternal(false);      
 
       toAckCount = 0;
@@ -492,9 +501,8 @@ public class ClientSessionImpl implements ClientSessionInternal
             producerCache.clear();
          }
                   
-         //Make sure any remaining acks make it to the server
-         
-         acknowledgeInternal(false);   
+         //Flush any acks to the server
+         acknowledgeInternal(false);
          
          remotingConnection.sendBlocking(serverTargetID, serverTargetID, new EmptyPacket(EmptyPacket.CLOSE));
       }
@@ -632,6 +640,8 @@ public class ClientSessionImpl implements ClientSessionInternal
       checkXA();
       try
       { 
+         //Note - don't need to flush acks since the previous end would have done this
+         
          SessionXACommitMessage packet = new SessionXACommitMessage(xid, onePhase);
                   
          SessionXAResponseMessage response = (SessionXAResponseMessage)remotingConnection.sendBlocking(serverTargetID, serverTargetID, packet);
@@ -754,6 +764,8 @@ public class ClientSessionImpl implements ClientSessionInternal
       checkXA();
       try
       {
+         //Note - don't need to flush acks since the previous end would have done this
+         
          SessionXAPrepareMessage packet = new SessionXAPrepareMessage(xid);
          
          SessionXAResponseMessage response = (SessionXAResponseMessage)remotingConnection.sendBlocking(serverTargetID, serverTargetID, packet);
@@ -775,18 +787,25 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
    }
 
-   public Xid[] recover(final int flag) throws XAException
+   public Xid[] recover(final int flags) throws XAException
    {
       checkXA();
       try
       {
-         SessionXAGetInDoubtXidsResponseMessage response = (SessionXAGetInDoubtXidsResponseMessage)remotingConnection.sendBlocking(serverTargetID, serverTargetID, new EmptyPacket(EmptyPacket.SESS_XA_INDOUBT_XIDS));
-         
-         List<Xid> xids = response.getXids();
-         
-         Xid[] xidArray = xids.toArray(new Xid[xids.size()]);
-         
-         return xidArray;
+         if ((flags & XAResource.TMSTARTRSCAN) == XAResource.TMSTARTRSCAN)
+         {
+            SessionXAGetInDoubtXidsResponseMessage response = (SessionXAGetInDoubtXidsResponseMessage)remotingConnection.sendBlocking(serverTargetID, serverTargetID, new EmptyPacket(EmptyPacket.SESS_XA_INDOUBT_XIDS));
+            
+            List<Xid> xids = response.getXids();
+            
+            Xid[] xidArray = xids.toArray(new Xid[xids.size()]);
+            
+            return xidArray;
+         }
+         else
+         {
+            return new Xid[0];
+         }
       }
       catch (MessagingException e)
       {
@@ -800,6 +819,8 @@ public class ClientSessionImpl implements ClientSessionInternal
       checkXA();
       try
       {
+         //Note - don't need to flush acks since the previous end would have done this
+         
          SessionXARollbackMessage packet = new SessionXARollbackMessage(xid);
          
          SessionXAResponseMessage response = (SessionXAResponseMessage)remotingConnection.sendBlocking(serverTargetID, serverTargetID, packet);
@@ -857,6 +878,7 @@ public class ClientSessionImpl implements ClientSessionInternal
          }
          else if (flags == XAResource.TMNOFLAGS)
          {
+            //Don't need to flush since the previous end will have done this
             packet = new SessionXAStartMessage(xid);
          }
          else
