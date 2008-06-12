@@ -68,7 +68,7 @@ public class JBossConnection implements
    
    public static final int TYPE_QUEUE_CONNECTION = 1;
    
-   static final int TYPE_TOPIC_CONNECTION = 2;
+   public static final int TYPE_TOPIC_CONNECTION = 2;
    
    // Static ---------------------------------------------------------------------------------------
 
