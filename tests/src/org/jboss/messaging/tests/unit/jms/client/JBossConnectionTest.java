@@ -34,6 +34,7 @@ import org.easymock.EasyMock;
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.RemotingSessionListener;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.jms.client.JBossConnection;
 import org.jboss.messaging.tests.util.RandomUtil;
@@ -86,6 +87,28 @@ public class JBossConnectionTest extends TestCase
       verify(clientConn);
    }
 
+   public void testStartThrowsException() throws Exception
+   {
+      ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.start();
+      expectLastCall().andThrow(new MessagingException());
+
+      replay(clientConn);
+
+      JBossConnection connection = new JBossConnection(clientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+
+      try
+      {
+         connection.start();
+         fail("should throw a JMSException");
+      } catch(JMSException e)
+      {
+      }
+
+      verify(clientConn);
+   }
+   
    public void testStop() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
@@ -102,6 +125,50 @@ public class JBossConnectionTest extends TestCase
       verify(clientConn);
    }
 
+   public void testStopThrowsException() throws Exception
+   {
+      ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.stop();
+      expectLastCall().andThrow(new MessagingException());
+
+      replay(clientConn);
+
+      JBossConnection connection = new JBossConnection(clientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+
+      try
+      {
+         connection.stop();
+         fail("should throw a JMSException");
+      } catch(JMSException e)
+      {
+      }
+
+      verify(clientConn);
+   }
+   
+   public void testCloseThrowsException() throws Exception
+   {
+      ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.close();
+      expectLastCall().andThrow(new MessagingException());
+
+      replay(clientConn);
+
+      JBossConnection connection = new JBossConnection(clientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+
+      try
+      {
+         connection.close();
+         fail("should throw a JMSException");
+      } catch(JMSException e)
+      {
+      }
+
+      verify(clientConn);
+   }
+   
    public void testUsingClosedConnection() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
@@ -332,6 +399,27 @@ public class JBossConnectionTest extends TestCase
       }
 
       verify(clientConn, topic, sessionPool);
+   }
+   
+   public void testCreateSessionThrowsException() throws Exception
+   {
+      ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      ClientSession clientSession = createStrictMock(ClientSession.class);
+      expect(clientConn.createClientSession(false, false, false, -1, false, false)).andThrow(new MessagingException());
+      replay(clientConn, clientSession);
+
+      JBossConnection connection = new JBossConnection(clientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+
+      try
+      {
+         connection.createQueueSession(true, 0);
+         fail("should throw a JMSException");
+      } catch(JMSException e)
+      {
+      }
+
+      verify(clientConn, clientSession);
    }
    
    public void testCreateTransactedQueueSession() throws Exception
