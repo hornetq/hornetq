@@ -193,7 +193,6 @@
       <path refid="jboss.profiler.jvmti.classpath"/>
       <path refid="jboss.test14.classpath"/>
       <path refid="jboss.jboss.retro.classpath"/>
-      <pathelement location="${test.dir}/lib/easymock.jar"/>
    </path>
 
    <path id="jms.test.compilation.classpath">
@@ -204,7 +203,6 @@
       <path refid="jboss.profiler.jvmti.classpath"/>
       <path refid="jboss.test14.classpath"/>
       <path refid="jboss.jboss.retro.classpath"/>
-      <pathelement location="${test.dir}/lib/easymock.jar"/>
       <path refid="apache.ant.classpath"/>
    </path>
 

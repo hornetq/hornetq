@@ -116,6 +116,7 @@
       <!-- This is a non declared dependency of jboss/test14 -->
       <componentref name="jboss/backport-concurrent" version="2.1.0.GA"/>
       <componentref name="jboss/jnpserver" version="5.0.0.Beta3"/>
+      <componentref name="easymock" version="2.3"/>
 
 
    </build>
