@@ -93,7 +93,7 @@ public class ClientSessionImplTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(ClientSessionImplTest.class);
 
-   // Private -----------------------------------------------------------------------------------------------------------
+   // Public -----------------------------------------------------------------------------------------------------------
 
    public void testConstructor() throws Exception
    {            
@@ -446,6 +446,8 @@ public class ClientSessionImplTest extends UnitTestCase
          
          EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
          
+         EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+                  
          pd.register(new ClientProducerPacketHandler(null, clientTargetID));
       }
       
@@ -466,6 +468,8 @@ public class ClientSessionImplTest extends UnitTestCase
          
          EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
          
+         EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+                  
          pd.register(new ClientProducerPacketHandler(null, clientTargetID));
       }
       
@@ -561,8 +565,9 @@ public class ClientSessionImplTest extends UnitTestCase
          
          EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
          
-         pd.register(new ClientProducerPacketHandler(null, clientTargetID));
-      
+         EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+                  
+         pd.register(new ClientProducerPacketHandler(null, clientTargetID));      
       }
 
       EasyMock.replay(conn, rc, pd);
@@ -785,264 +790,7 @@ public class ClientSessionImplTest extends UnitTestCase
       testClose(false);
    }
    
-   private void testClose(boolean delivered) throws Exception
-   {
-      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-          
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-          
-      //In ClientSessionImpl constructor
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
-        
-      final long sessionTargetID = 9121892;
-                  
-      EasyMock.replay(conn, rc);
-      
-      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
-      
-      EasyMock.verify(conn, rc);
-      
-      EasyMock.reset(conn, rc);
-      
-      ClientProducerInternal prod1 = EasyMock.createStrictMock(ClientProducerInternal.class);
-      ClientProducerInternal prod2 = EasyMock.createStrictMock(ClientProducerInternal.class);
-      
-      ClientConsumerInternal cons1 = EasyMock.createStrictMock(ClientConsumerInternal.class);
-      ClientConsumerInternal cons2 = EasyMock.createStrictMock(ClientConsumerInternal.class);
-      
-      ClientBrowser browser1 = EasyMock.createStrictMock(ClientBrowser.class);
-      ClientBrowser browser2 = EasyMock.createStrictMock(ClientBrowser.class);
-                    
-      prod1.close();
-      prod2.close();
-      cons1.close();
-      cons2.close();
-      browser1.close();
-      browser2.close();
-      
-      final int numDeliveries = 10;
-      
-      if (delivered)
-      {
-         SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(numDeliveries - 1, true);
-         
-         rc.sendOneWay(sessionTargetID, sessionTargetID, message);
-      }
-            
-      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.CLOSE))).andReturn(null);
-      
-      conn.removeSession(session);      
-            
-      EasyMock.replay(conn, rc, prod1, prod2, cons1, cons2, browser1, browser2);
-                 
-      session.addProducer(prod1);
-      session.addProducer(prod2);
-      
-      session.addConsumer(cons1);
-      session.addConsumer(cons2);
-      
-      session.addBrowser(browser1);
-      session.addBrowser(browser2);
-      
-      assertFalse(session.isClosed());
-      
-      if (delivered)
-      {
-         //Simulate there being some undelivered messages
-         for (int i = 0; i < numDeliveries; i++)
-         {
-            session.delivered(i, false);
-            session.acknowledge();
-         }
-      }
-            
-      session.close();
-      
-      EasyMock.verify(conn, rc, prod1, prod2, cons1, cons2, browser1, browser2);
-      
-      assertTrue(session.isClosed());      
-      
-      try
-      {
-         session.createQueue(new SimpleString("trtr"), new SimpleString("iuasij"), null, false, false);
-         fail("Should throw exception");
-      }
-      catch (MessagingException e)
-      {
-         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
-      }
-      
-      try
-      {
-         session.deleteQueue(new SimpleString("trtr"));
-         fail("Should throw exception");
-      }
-      catch (MessagingException e)
-      {
-         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
-      }
-      
-      try
-      {
-         session.addDestination(new SimpleString("trtr"), false);
-         fail("Should throw exception");
-      }
-      catch (MessagingException e)
-      {
-         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
-      }
-      
-      try
-      {
-         session.removeDestination(new SimpleString("trtr"), false);
-         fail("Should throw exception");
-      }
-      catch (MessagingException e)
-      {
-         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
-      }
-      
-      try
-      {
-         session.queueQuery(new SimpleString("trtr"));
-         fail("Should throw exception");
-      }
-      catch (MessagingException e)
-      {
-         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
-      }
-      
-      try
-      {
-         session.bindingQuery(new SimpleString("trtr"));
-         fail("Should throw exception");
-      }
-      catch (MessagingException e)
-      {
-         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
-      }
-      
-      try
-      {
-         session.createConsumer(new SimpleString("trtr"));
-         fail("Should throw exception");
-      }
-      catch (MessagingException e)
-      {
-         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
-      }
-      
-      try
-      {
-         session.createConsumer(new SimpleString("iasjq"), null, false, false, false);
-         fail("Should throw exception");
-      }
-      catch (MessagingException e)
-      {
-         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
-      }
-      
-      try
-      {
-         session.createConsumer(new SimpleString("husuhsuh"), null, false, false, false, 8787, 7162761);
-         fail("Should throw exception");
-      }
-      catch (MessagingException e)
-      {
-         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
-      }
-      
-      try
-      {
-         session.createBrowser(new SimpleString("husuhsuh"));
-         fail("Should throw exception");
-      }
-      catch (MessagingException e)
-      {
-         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
-      }
-      
-      try
-      {
-         session.createBrowser(new SimpleString("husuhsuh"), null);
-         fail("Should throw exception");
-      }
-      catch (MessagingException e)
-      {
-         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
-      }
-      
-      try
-      {
-         session.createProducer(new SimpleString("husuhsuh"));
-         fail("Should throw exception");
-      }
-      catch (MessagingException e)
-      {
-         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
-      }
-      
-      try
-      {
-         session.createProducer(new SimpleString("iashi"), 878778, 8778, false, false);
-         fail("Should throw exception");
-      }
-      catch (MessagingException e)
-      {
-         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
-      }
-      
-      try
-      {
-         session.createRateLimitedProducer(new SimpleString("uhsuhs"), 78676);
-         fail("Should throw exception");
-      }
-      catch (MessagingException e)
-      {
-         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
-      }
-      
-      try
-      {
-         session.createProducerWithWindowSize(new SimpleString("uhsuhs"), 78676);
-         fail("Should throw exception");
-      }
-      catch (MessagingException e)
-      {
-         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
-      }
-      
-      try
-      {
-         session.commit();
-         fail("Should throw exception");
-      }
-      catch (MessagingException e)
-      {
-         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
-      }
-      
-      try
-      {
-         session.rollback();
-         fail("Should throw exception");
-      }
-      catch (MessagingException e)
-      {
-         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
-      }
-      
-      try
-      {
-         session.acknowledge();
-         fail("Should throw exception");
-      }
-      catch (MessagingException e)
-      {
-         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
-      }
-      
-   }
+   
     
    public void testAddRemoveConsumer() throws Exception
    {
@@ -1408,6 +1156,275 @@ public class ClientSessionImplTest extends UnitTestCase
    
    // Private -------------------------------------------------------------------------------------------
 
+   private void testClose(boolean delivered) throws Exception
+   {
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+          
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+          
+      //In ClientSessionImpl constructor
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+        
+      final long sessionTargetID = 9121892;
+                  
+      EasyMock.replay(conn, rc);
+      
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+      
+      EasyMock.verify(conn, rc);
+      
+      EasyMock.reset(conn, rc);
+      
+      ClientProducerInternal prod1 = EasyMock.createStrictMock(ClientProducerInternal.class);
+      ClientProducerInternal prod2 = EasyMock.createStrictMock(ClientProducerInternal.class);
+      
+      ClientConsumerInternal cons1 = EasyMock.createStrictMock(ClientConsumerInternal.class);
+      ClientConsumerInternal cons2 = EasyMock.createStrictMock(ClientConsumerInternal.class);
+      
+      ClientBrowser browser1 = EasyMock.createStrictMock(ClientBrowser.class);
+      ClientBrowser browser2 = EasyMock.createStrictMock(ClientBrowser.class);
+                    
+      prod1.close();
+      prod2.close();
+      cons1.close();
+      cons2.close();
+      browser1.close();
+      browser2.close();
+      
+      final int numDeliveries = 10;
+      
+      if (delivered)
+      {
+         SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(numDeliveries - 1, true);
+         
+         rc.sendOneWay(sessionTargetID, sessionTargetID, message);
+      }
+            
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.CLOSE))).andReturn(null);
+      
+      conn.removeSession(session);      
+            
+      EasyMock.replay(conn, rc, prod1, prod2, cons1, cons2, browser1, browser2);
+                 
+      session.addProducer(prod1);
+      session.addProducer(prod2);
+      
+      session.addConsumer(cons1);
+      session.addConsumer(cons2);
+      
+      session.addBrowser(browser1);
+      session.addBrowser(browser2);
+      
+      assertFalse(session.isClosed());
+      
+      if (delivered)
+      {
+         //Simulate there being some undelivered messages
+         for (int i = 0; i < numDeliveries; i++)
+         {
+            session.delivered(i, false);
+            session.acknowledge();
+         }
+      }
+            
+      session.close();
+      
+      EasyMock.verify(conn, rc, prod1, prod2, cons1, cons2, browser1, browser2);
+      
+      assertTrue(session.isClosed());  
+      
+      EasyMock.reset(conn, rc, prod1, prod2, cons1, cons2, browser1, browser2);
+      
+      EasyMock.replay(conn, rc, prod1, prod2, cons1, cons2, browser1, browser2);
+      
+      //Close again should do nothing
+      
+      session.close();
+      
+      EasyMock.verify(conn, rc, prod1, prod2, cons1, cons2, browser1, browser2);
+      
+      try
+      {
+         session.createQueue(new SimpleString("trtr"), new SimpleString("iuasij"), null, false, false);
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.deleteQueue(new SimpleString("trtr"));
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.addDestination(new SimpleString("trtr"), false);
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.removeDestination(new SimpleString("trtr"), false);
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.queueQuery(new SimpleString("trtr"));
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.bindingQuery(new SimpleString("trtr"));
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.createConsumer(new SimpleString("trtr"));
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.createConsumer(new SimpleString("iasjq"), null, false, false, false);
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.createConsumer(new SimpleString("husuhsuh"), null, false, false, false, 8787, 7162761);
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.createBrowser(new SimpleString("husuhsuh"));
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.createBrowser(new SimpleString("husuhsuh"), null);
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.createProducer(new SimpleString("husuhsuh"));
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.createProducer(new SimpleString("iashi"), 878778, 8778, false, false);
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.createRateLimitedProducer(new SimpleString("uhsuhs"), 78676);
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.createProducerWithWindowSize(new SimpleString("uhsuhs"), 78676);
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.commit();
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.rollback();
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+      try
+      {
+         session.acknowledge();
+         fail("Should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+      }
+      
+   }
+   
    private void testXAStart(int flags, boolean error) throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
@@ -2141,6 +2158,8 @@ public class ClientSessionImplTest extends UnitTestCase
 
       EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
 
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);      
+      
       pd.register(new ClientProducerPacketHandler(null, clientTargetID));
 
       EasyMock.replay(cf);
@@ -2210,6 +2229,8 @@ public class ClientSessionImplTest extends UnitTestCase
 
       EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
 
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+            
       pd.register(new ClientProducerPacketHandler(null, clientTargetID));
 
       EasyMock.replay(cf);
@@ -2286,7 +2307,9 @@ public class ClientSessionImplTest extends UnitTestCase
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, request)).andReturn(resp);
 
       EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
-
+      
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      
       pd.register(new ClientProducerPacketHandler(null, clientTargetID));
 
       EasyMock.replay(cf);
@@ -2345,6 +2368,8 @@ public class ClientSessionImplTest extends UnitTestCase
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, request)).andReturn(resp);
       
       EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
+      
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
       
       pd.register(new ClientProducerPacketHandler(null, clientTargetID));
       

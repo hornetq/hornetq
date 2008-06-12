@@ -38,6 +38,7 @@ import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.TokenBucketLimiter;
+import org.jboss.messaging.util.TokenBucketLimiterImpl;
 
 /**
  * Concrete implementation of a ClientConsumer. 
@@ -118,7 +119,7 @@ public class ServerConsumerImpl implements ServerConsumer
       
       if (maxRate != -1)
       {
-      	limiter = new TokenBucketLimiter(maxRate, false);
+      	limiter = new TokenBucketLimiterImpl(maxRate, false);
       }
       else
       {

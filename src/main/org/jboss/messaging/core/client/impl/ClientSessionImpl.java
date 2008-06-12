@@ -72,6 +72,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMess
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.TokenBucketLimiterImpl;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -392,9 +393,8 @@ public class ClientSessionImpl implements ClientSessionInternal
          // If the producer is not auto-commit sends then messages are never sent blocking - there is no point
          // since commit, prepare or rollback will flush any messages sent.
          
-         producer = new ClientProducerImpl(this, response.getProducerTargetID(), clientTargetID, address,
-               remotingConnection,
-               response.getMaxRate(),
+         producer = new ClientProducerImpl(this, response.getProducerTargetID(), clientTargetID, address, 
+               response.getMaxRate() == -1 ? null : new TokenBucketLimiterImpl(response.getMaxRate(), false),
                autoCommitSends && blockOnNonPersistentSend,                                                      
                autoCommitSends && blockOnPersistentSend,
                response.getInitialCredits());  

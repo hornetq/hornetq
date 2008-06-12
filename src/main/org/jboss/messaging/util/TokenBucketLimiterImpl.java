@@ -23,17 +23,12 @@ package org.jboss.messaging.util;
 
 /**
  * 
- * A TokenBucketLimiter
- * 
- * This class can throttle to a specfic rate, using an algorithm based on the Token Bucket metaphor
- * http://en.wikipedia.org/wiki/Token_bucket
- * 
- * The rate is specified in Hertz
+ * A TokenBucketLimiterImpl
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class TokenBucketLimiter
+public class TokenBucketLimiterImpl implements TokenBucketLimiter
 {
 	private final int rate;
 	
@@ -45,11 +40,21 @@ public class TokenBucketLimiter
 	
 	private volatile int tokensAdded;
 		
-	public TokenBucketLimiter(final int rate, final boolean spin)
+	public TokenBucketLimiterImpl(final int rate, final boolean spin)
 	{
 		this.rate = rate;
 		
 		this.spin = spin;
+	}
+	
+	public int getRate()
+	{
+	   return rate;
+	}
+	
+	public boolean isSpin()
+	{
+	   return spin;
 	}
 		
 	public void limit()

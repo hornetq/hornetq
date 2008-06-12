@@ -24,18 +24,18 @@ package org.jboss.messaging.tests.unit.core.util;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.util.TokenBucketLimiter;
+import org.jboss.messaging.util.TokenBucketLimiterImpl;
 
 /**
  * 
- * A TokenBucketLimiterTest
+ * A TokenBucketLimiterImplTest
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class TokenBucketLimiterTest extends TestCase
+public class TokenBucketLimiterImplTest extends TestCase
 {
-	private static final Logger log = Logger.getLogger(TokenBucketLimiterTest.class);
+	private static final Logger log = Logger.getLogger(TokenBucketLimiterImplTest.class);
 	
 	public void testRateWithSpin1() throws Exception
 	{
@@ -101,7 +101,7 @@ public class TokenBucketLimiterTest extends TestCase
 	{		
 		final double error = 0.05;    //Allow for 5% error
 		
-		TokenBucketLimiter tbl = new TokenBucketLimiter(rate, spin);
+		TokenBucketLimiterImpl tbl = new TokenBucketLimiterImpl(rate, spin);
 		
 		long start = System.currentTimeMillis();
 		

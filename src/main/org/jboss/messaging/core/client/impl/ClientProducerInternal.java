@@ -18,4 +18,6 @@ import org.jboss.messaging.core.client.ClientProducer;
 public interface ClientProducerInternal extends ClientProducer
 {
 	void receiveCredits(int credits) throws Exception;
+	
+	int getAvailableCredits();
 }

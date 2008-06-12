@@ -40,6 +40,7 @@ import javax.naming.InitialContext;
 import org.jboss.jms.util.PerfParams;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.util.TokenBucketLimiter;
+import org.jboss.messaging.util.TokenBucketLimiterImpl;
 
 /**
  * A simple example that can be used to gather basic performance measurements.
@@ -172,7 +173,7 @@ public class PerfExample
       
       final int modulo = 2000;
       
-      TokenBucketLimiter tbl = throttleRate != -1 ? new TokenBucketLimiter(throttleRate, false): null;
+      TokenBucketLimiter tbl = throttleRate != -1 ? new TokenBucketLimiterImpl(throttleRate, false): null;
 
       boolean committed = false;
       for (int i = 1; i <= numberOfMessages; i++)

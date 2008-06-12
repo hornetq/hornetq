@@ -79,18 +79,16 @@ public class ClientProducerImpl implements ClientProducerInternal
    private final boolean creditFlowControl;
    
    private final int initialWindowSize;
-   
-   private final int maxRate;
-   
+    
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
       
-   public ClientProducerImpl(final ClientSessionInternal session, final long serverTargetID,
+   public ClientProducerImpl(final ClientSessionInternal session,
+                             final long serverTargetID,
                              final long clientTargetID,
-   		                    final SimpleString address,
-   		                    final RemotingConnection remotingConnection,
-   		                    final int maxRate,
+   		                    final SimpleString address,   		                   
+   		                    final TokenBucketLimiter rateLimiter,
    		                    final boolean blockOnNonPersistentSend,
    		                    final boolean blockOnPersistentSend,
    		                    final int initialCredits)
@@ -103,17 +101,10 @@ public class ClientProducerImpl implements ClientProducerInternal
       
       this.address = address;
       
-      this.remotingConnection = remotingConnection;
+      this.remotingConnection = session.getConnection().getRemotingConnection();
       
-      if (maxRate != -1)
-      {
-      	this.rateLimiter = new TokenBucketLimiter(maxRate, false);
-      }
-      else
-      {
-      	this.rateLimiter = null;
-      }
-      
+      this.rateLimiter = rateLimiter;
+            
       this.blockOnNonPersistentSend = blockOnNonPersistentSend; 
       
       this.blockOnPersistentSend = blockOnPersistentSend;
@@ -123,8 +114,6 @@ public class ClientProducerImpl implements ClientProducerInternal
       this.creditFlowControl = initialCredits != -1;
       
       this.initialWindowSize = initialCredits;
-      
-      this.maxRate = maxRate;
    }
    
    // ClientProducer implementation ----------------------------------------------------------------
@@ -147,51 +136,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       
       doSend(address, msg);
    }
-   
-   private void doSend(final SimpleString address, final ClientMessage msg) throws MessagingException
-   {
-      if (address != null)
-      {
-         msg.setDestination(address);
-      }
-      else
-      {
-         msg.setDestination(this.address);
-      }
-         	   	
-   	if (rateLimiter != null)
-      {
-         // Rate flow control
-                  
-         rateLimiter.limit();
-      }
-   	
-   	boolean sendBlocking = msg.isDurable() ? blockOnPersistentSend : blockOnNonPersistentSend;
-   	
-      ProducerSendMessage message = new ProducerSendMessage(msg);
-         		
-   	if (sendBlocking)
-   	{   	   
-   	   remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), message);
-   	}
-   	else
-   	{
-   	   remotingConnection.sendOneWay(serverTargetID, session.getServerTargetID(), message);
-   	}   	 
-   	
-      //We only flow control with non-anonymous producers
-      if (address == null && creditFlowControl)
-      {
-         try
-         {
-            availableCredits.acquire(message.getClientMessage().encodeSize());
-         }
-         catch (InterruptedException e)
-         {           
-         }         
-      }
-   }
-            
+          
    public void registerAcknowledgementHandler(final AcknowledgementHandler handler)
    {
       // TODO      
@@ -238,7 +183,7 @@ public class ClientProducerImpl implements ClientProducerInternal
    
    public int getMaxRate()
    {
-      return maxRate;
+      return rateLimiter == null ? -1 : rateLimiter.getRate();
    }
    
    // ClientProducerInternal implementation --------------------------------------------------------
@@ -248,6 +193,11 @@ public class ClientProducerImpl implements ClientProducerInternal
       availableCredits.release(credits);
    }
    
+   public int getAvailableCredits()
+   {
+      return availableCredits.availablePermits();
+   }
+   
    // Public ---------------------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
@@ -255,6 +205,50 @@ public class ClientProducerImpl implements ClientProducerInternal
    // Package Private ------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
+   
+   private void doSend(final SimpleString address, final ClientMessage msg) throws MessagingException
+   {
+      if (address != null)
+      {
+         msg.setDestination(address);
+      }
+      else
+      {
+         msg.setDestination(this.address);
+      }
+                  
+      if (rateLimiter != null)
+      {
+         // Rate flow control
+                  
+         rateLimiter.limit();
+      }
+      
+      boolean sendBlocking = msg.isDurable() ? blockOnPersistentSend : blockOnNonPersistentSend;
+      
+      ProducerSendMessage message = new ProducerSendMessage(msg);
+               
+      if (sendBlocking)
+      {        
+         remotingConnection.sendBlocking(serverTargetID, serverTargetID, message);
+      }
+      else
+      {
+         remotingConnection.sendOneWay(serverTargetID, serverTargetID, message);
+      }      
+      
+      //We only flow control with non-anonymous producers
+      if (address == null && creditFlowControl)
+      {
+         try
+         {
+            availableCredits.acquire(message.getClientMessage().encodeSize());
+         }
+         catch (InterruptedException e)
+         {           
+         }         
+      }
+   }
 
    private void checkClosed() throws MessagingException
    {
