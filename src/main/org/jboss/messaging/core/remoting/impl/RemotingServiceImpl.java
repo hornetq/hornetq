@@ -16,7 +16,6 @@ import org.jboss.messaging.core.ping.Pinger;
 import org.jboss.messaging.core.ping.impl.PingerImpl;
 import org.jboss.messaging.core.remoting.*;
 import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
-import org.jboss.messaging.core.remoting.impl.mina.CleanUpNotifier;
 import org.jboss.messaging.core.remoting.impl.mina.ServerKeepAliveFactory;
 
 import java.util.ArrayList;

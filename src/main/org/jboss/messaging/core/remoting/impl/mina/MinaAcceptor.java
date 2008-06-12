@@ -24,6 +24,7 @@ package org.jboss.messaging.core.remoting.impl.mina;
 import org.apache.mina.common.*;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.jboss.messaging.core.remoting.Acceptor;
+import org.jboss.messaging.core.remoting.CleanUpNotifier;
 import org.jboss.messaging.core.remoting.RemotingService;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addSSLFilter;

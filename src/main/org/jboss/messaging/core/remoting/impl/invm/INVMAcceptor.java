@@ -23,9 +23,9 @@ package org.jboss.messaging.core.remoting.impl.invm;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Acceptor;
+import org.jboss.messaging.core.remoting.CleanUpNotifier;
 import org.jboss.messaging.core.remoting.ConnectorRegistryFactory;
 import org.jboss.messaging.core.remoting.RemotingService;
-import org.jboss.messaging.core.remoting.impl.mina.CleanUpNotifier;
 
 /**
  * An INVM Acceptor. This will allow connections from within the same VM via the ConnectorRegistry

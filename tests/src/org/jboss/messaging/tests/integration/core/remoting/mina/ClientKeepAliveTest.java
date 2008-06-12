@@ -14,11 +14,12 @@ import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.NIOSession;
+import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.PacketHandler;
+import org.jboss.messaging.core.remoting.PacketReturner;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
-import org.jboss.messaging.core.remoting.impl.mina.ClientKeepAliveFactory;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
-import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
@@ -65,13 +66,6 @@ public class ClientKeepAliveTest extends TestCase
 
    public void testKeepAliveWithClientOK() throws Exception
    {
-      ClientKeepAliveFactory factory = new ClientKeepAliveFactory();
-
-      // client never send ping
-      //expect(factory.pong(0, isA(Ping.class))).andStubReturn(new Pong());
-
-      ///replay(factory);
-
       final CountDownLatch latch = new CountDownLatch(1);
 
       RemotingSessionListener listener = new RemotingSessionListener()
@@ -85,7 +79,7 @@ public class ClientKeepAliveTest extends TestCase
       ConnectionParams connectionParams = new ConnectionParamsImpl();
       connectionParams.setKeepAliveInterval(TestSupport.KEEP_ALIVE_INTERVAL);
       connectionParams.setKeepAliveTimeout(TestSupport.KEEP_ALIVE_TIMEOUT);
-      MinaConnector connector = new MinaConnector(new LocationImpl(TCP, "localhost", TestSupport.PORT), connectionParams, new PacketDispatcherImpl(null), factory);
+      MinaConnector connector = new MinaConnector(new LocationImpl(TCP, "localhost", TestSupport.PORT), connectionParams, new PacketDispatcherImpl(null));
       connector.connect();
 
       boolean firedKeepAliveNotification = latch.await(TestSupport.KEEP_ALIVE_INTERVAL
@@ -100,7 +94,6 @@ public class ClientKeepAliveTest extends TestCase
 
    public void testKeepAliveWithClientNotResponding() throws Throwable
    {
-      final ClientKeepAliveFactory factory = new ClientKeepAliveFactoryNotResponding();
 
       final long[] clientSessionIDNotResponding = new long[1];
       final CountDownLatch latch = new CountDownLatch(1);
@@ -119,9 +112,10 @@ public class ClientKeepAliveTest extends TestCase
       connectionParams.setKeepAliveTimeout(TestSupport.KEEP_ALIVE_TIMEOUT);
 
       LocationImpl location = new LocationImpl(TCP, "localhost", TestSupport.PORT);
-      MinaConnector connector = new MinaConnector(location, connectionParams, new PacketDispatcherImpl(null), factory);
+      MinaConnector connector = new MinaConnector(location, connectionParams, new PacketDispatcherImpl(null));
 
       NIOSession session = connector.connect();
+      connector.getDispatcher().register(new NotRespondingPacketHandler());
       long clientSessionID = session.getID();
 
       boolean firedKeepAliveNotification = latch.await(TestSupport.KEEP_ALIVE_INTERVAL
@@ -136,10 +130,14 @@ public class ClientKeepAliveTest extends TestCase
 
    public void testKeepAliveWithClientTooLongToRespond() throws Throwable
    {
-      ClientKeepAliveFactory factory = new ClientKeepAliveFactory()
+      PacketHandler tooLongRespondHandler = new PacketHandler()
       {
+         public long getID()
+         {
+            return 0;
+         }
 
-         public Pong pong(long sessionID, Ping ping)
+         public void handle(Packet packet, PacketReturner sender)
          {
             try
             {
@@ -152,10 +150,16 @@ public class ClientKeepAliveTest extends TestCase
             {
                e.printStackTrace();
             }
-            return new Pong(randomLong(), false);
+            try
+            {
+               sender.send(new Pong(randomLong(), false));
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
          }
       };
-
       try
       {
          ConnectionParams connectionParams = new ConnectionParamsImpl();
@@ -163,9 +167,10 @@ public class ClientKeepAliveTest extends TestCase
          connectionParams.setKeepAliveTimeout(TestSupport.KEEP_ALIVE_TIMEOUT);
          LocationImpl location = new LocationImpl(TCP, "localhost", TestSupport.PORT);
          MinaConnector connector = new MinaConnector(location, connectionParams,
-                 new PacketDispatcherImpl(null), factory);
+                 new PacketDispatcherImpl(null));
 
          NIOSession session = connector.connect();
+         connector.getDispatcher().register(tooLongRespondHandler);
          long clientSessionID = session.getID();
 
          final AtomicLong clientSessionIDNotResponding = new AtomicLong(-1);
@@ -193,9 +198,9 @@ public class ClientKeepAliveTest extends TestCase
       finally
       {
          // test is done: wake up the factory
-         synchronized (factory)
+         synchronized (tooLongRespondHandler)
          {
-            factory.notify();
+            tooLongRespondHandler.notify();
          }
       }
    }
@@ -203,9 +208,6 @@ public class ClientKeepAliveTest extends TestCase
    public void testKeepAliveWithClientRespondingAndClientNotResponding()
            throws Throwable
    {
-      ClientKeepAliveFactory notRespondingfactory = new ClientKeepAliveFactoryNotResponding();
-      ClientKeepAliveFactory respondingfactory = new ClientKeepAliveFactory();
-
       final AtomicLong sessionIDNotResponding = new AtomicLong(-1);
       final CountDownLatch latch = new CountDownLatch(1);
 
@@ -217,15 +219,18 @@ public class ClientKeepAliveTest extends TestCase
             latch.countDown();
          }
       };
+      //assign this after we have connected to replace the pong handler
+      PacketHandler notRespondingPacketHandler = new NotRespondingPacketHandler();
       messagingServer.getRemotingService().addRemotingSessionListener(listener);
       ConnectionParams connectionParams = new ConnectionParamsImpl();
       connectionParams.setKeepAliveInterval(TestSupport.KEEP_ALIVE_INTERVAL);
       connectionParams.setKeepAliveTimeout(TestSupport.KEEP_ALIVE_TIMEOUT);
       LocationImpl location = new LocationImpl(TCP, "localhost", TestSupport.PORT);
-      MinaConnector connectorNotResponding = new MinaConnector(location, new PacketDispatcherImpl(null), notRespondingfactory);
-      MinaConnector connectorResponding = new MinaConnector(location, new PacketDispatcherImpl(null), respondingfactory);
+      MinaConnector connectorNotResponding = new MinaConnector(location, new PacketDispatcherImpl(null));
+      MinaConnector connectorResponding = new MinaConnector(location, new PacketDispatcherImpl(null));
 
       NIOSession sessionNotResponding = connectorNotResponding.connect();
+      connectorNotResponding.getDispatcher().register(notRespondingPacketHandler);
       long clientSessionIDNotResponding = sessionNotResponding.getID();
 
 
@@ -252,11 +257,17 @@ public class ClientKeepAliveTest extends TestCase
 
    // Inner classes -------------------------------------------------
 
-   private class ClientKeepAliveFactoryNotResponding extends ClientKeepAliveFactory
+
+   private static class NotRespondingPacketHandler implements PacketHandler
    {
-      public Pong pong(long sessionID, Ping ping)
-      {
-         return null;
-      }
+      public long getID()
+            {
+               return 0;
+            }
+
+      public void handle(Packet packet, PacketReturner sender)
+            {
+               //dont do anything. i.e no response ping
+            }
    }
 }
