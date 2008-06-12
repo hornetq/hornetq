@@ -6,28 +6,22 @@
  */
 package org.jboss.messaging.core.remoting.impl;
 
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.*;
 import static org.jboss.messaging.core.remoting.Packet.NO_ID_SET;
+import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
-
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.Interceptor;
-import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.PacketHandler;
-import org.jboss.messaging.core.remoting.PacketHandlerRegistrationListener;
-import org.jboss.messaging.core.remoting.PacketReturner;
-import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>.
- * 
  * @version <tt>$Revision$</tt>
  */
 public class PacketDispatcherImpl implements PacketDispatcher
@@ -38,17 +32,19 @@ public class PacketDispatcherImpl implements PacketDispatcher
    private static final long serialVersionUID = -4626926952268528384L;
 
    public static final Logger log = Logger
-         .getLogger(PacketDispatcherImpl.class);
+           .getLogger(PacketDispatcherImpl.class);
 
    private static boolean trace = log.isTraceEnabled();
 
    // Attributes ----------------------------------------------------
 
    private final Map<Long, PacketHandler> handlers;
-   public final List<Interceptor> filters;
+
    private transient PacketHandlerRegistrationListener listener;
 
    private final AtomicLong idSequence = new AtomicLong(0);
+
+   private List<Interceptor> filters = new CopyOnWriteArrayList<Interceptor>();
 
    // Static --------------------------------------------------------
 
@@ -57,7 +53,10 @@ public class PacketDispatcherImpl implements PacketDispatcher
    public PacketDispatcherImpl(final List<Interceptor> filters)
    {
       handlers = new ConcurrentHashMap<Long, PacketHandler>();
-      this.filters = filters;
+      if (filters != null)
+      {
+         this.filters.addAll(filters);
+      }
    }
 
    // Public --------------------------------------------------------
@@ -82,7 +81,7 @@ public class PacketDispatcherImpl implements PacketDispatcher
       if (trace)
       {
          log.trace("registered " + handler + " with ID " + handler.getID()
-               + " (" + this + ")");
+                 + " (" + this + ")");
       }
 
       if (listener != null)
@@ -120,14 +119,24 @@ public class PacketDispatcherImpl implements PacketDispatcher
       return handlers.get(handlerID);
    }
 
+   public void addInterceptor(Interceptor filter)
+   {
+      filters.add(filter);
+   }
+
+   public void removeInterceptor(Interceptor filter)
+   {
+      filters.remove(filter);
+   }
+
    public void dispatch(final Packet packet, final PacketReturner sender)
-         throws Exception
+           throws Exception
    {
       long targetID = packet.getTargetID();
       if (NO_ID_SET == targetID)
       {
          log.error("Packet is not handled, it has no targetID: " + packet
-               + ": " + System.identityHashCode(packet));
+                 + ": " + System.identityHashCode(packet));
          return;
       }
       PacketHandler handler = getHandler(targetID);
@@ -148,7 +157,9 @@ public class PacketDispatcherImpl implements PacketDispatcher
       }
    }
 
-   /** Call filters on a package */
+   /**
+    * Call filters on a package
+    */
    public void callFilters(Packet packet) throws Exception
    {
       if (filters != null)
@@ -171,13 +182,13 @@ public class PacketDispatcherImpl implements PacketDispatcher
       if (log.isDebugEnabled())
       {
          StringBuffer buf = new StringBuffer("Registered PacketHandlers ("
-               + this + "):\n");
+                 + this + "):\n");
          Iterator<Entry<Long, PacketHandler>> iterator = handlers.entrySet()
-               .iterator();
+                 .iterator();
          while (iterator.hasNext())
          {
             Map.Entry<java.lang.Long, org.jboss.messaging.core.remoting.PacketHandler> entry = (Map.Entry<java.lang.Long, org.jboss.messaging.core.remoting.PacketHandler>) iterator
-                  .next();
+                    .next();
             buf.append(entry.getKey() + " : " + entry.getValue() + "\n");
          }
          log.debug(buf.toString());

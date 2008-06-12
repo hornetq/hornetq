@@ -1,21 +1,19 @@
 package org.jboss.messaging.tests.integration.core.remoting.mina;
 
-import static org.jboss.messaging.core.remoting.TransportType.INVM;
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
-
-import java.io.IOException;
-
 import junit.framework.TestCase;
-
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.RemotingService;
+import static org.jboss.messaging.core.remoting.TransportType.INVM;
+import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
+import org.jboss.messaging.core.remoting.impl.RemotingServiceImpl;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
-import org.jboss.messaging.core.remoting.impl.mina.RemotingServiceImpl;
+
+import java.io.IOException;
 
 public class MinaServiceTest extends TestCase
 {
@@ -45,13 +43,14 @@ public class MinaServiceTest extends TestCase
    public void _testMinaConnector_Failure() throws Exception
    {
       NIOConnector connector = new MinaConnector(new LocationImpl(
-            TCP, "localhost", 9000), new PacketDispatcherImpl(null));
+              TCP, "localhost", 9000), new PacketDispatcherImpl(null));
 
       try
       {
          connector.connect();
          fail("MINA service started in invm: can not connect to it through TCP");
-      } catch (IOException e)
+      }
+      catch (IOException e)
       {
 
       }

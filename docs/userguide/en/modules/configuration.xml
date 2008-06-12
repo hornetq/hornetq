@@ -289,7 +289,8 @@
       <title>jbm-security.xml</title>
       <para>This configuration file is used to configure users and roles when JBM is running in standalone mode using
          the JBM Security Manager. The Security manager used is a pluggable component whose implementation can be
-         changed by  configuring the appropriate beans configuration file. Refer to the beans configuration section on how to do
+         changed by configuring the appropriate beans configuration file. Refer to the beans configuration section on
+         how to do
          this. A typical jbm-security.xml config looks like:
       </para>
       <programlisting>
@@ -493,7 +494,8 @@
    <section id="configuration.jms">
       <title>jbm-jndi.xml</title>
       <para>This configuration file is used to create destinations and Connection Factories and make them available in
-         JNDI. Note that this is the only configuration file that exposes JMS functionality, the rest of the configuration is 100% JMS agnostic.
+         JNDI. Note that this is the only configuration file that exposes JMS functionality, the rest of the
+         configuration is 100% JMS agnostic.
       </para>
       <para>
          A typical jbm-jndi.xml config looks like:
@@ -867,14 +869,14 @@
             <programlisting>
                <![CDATA[
    <bean name="RemotingService"
-      class="org.jboss.messaging.core.remoting.impl.mina.RemotingServiceImpl">
-      <constructor>
-         <parameter>
-            <inject bean="Configuration"/>
-         </parameter>
-      </constructor>
-   </bean>
-               ]]>
+                     class="org.jboss.messaging.core.remoting.impl.RemotingServiceImpl">
+                     <constructor>
+                        <parameter>
+                           <inject bean="Configuration"/>
+                        </parameter>
+                     </constructor>
+                  </bean>
+                              ]]>
             </programlisting>
             <para>To replace this pluggable component implement the following interface:</para>
             <programlisting>org.jboss.messaging.core.remoting.RemotingService</programlisting>

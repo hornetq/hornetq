@@ -50,6 +50,7 @@
       <excludeFolder url="file://$MODULE_DIR$/docs/examples/web-service/output" />
       <excludeFolder url="file://$MODULE_DIR$/examples/jms/build" />
       <excludeFolder url="file://$MODULE_DIR$/examples/messaging/build" />
+      <excludeFolder url="file://$MODULE_DIR$/journal-test" />
       <excludeFolder url="file://$MODULE_DIR$/output" />
       <excludeFolder url="file://$MODULE_DIR$/output/classes" />
       <excludeFolder url="file://$MODULE_DIR$/output/etc" />

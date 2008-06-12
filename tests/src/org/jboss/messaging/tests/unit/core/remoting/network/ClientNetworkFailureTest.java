@@ -30,9 +30,11 @@ import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.Acceptor;
 import org.jboss.messaging.core.remoting.TransportType;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
-import org.jboss.messaging.core.remoting.impl.mina.RemotingServiceImpl;
+import org.jboss.messaging.core.remoting.impl.RemotingServiceImpl;
+import org.jboss.messaging.core.remoting.impl.mina.MinaAcceptor;
 import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
@@ -40,6 +42,7 @@ import static org.jboss.messaging.tests.integration.core.remoting.mina.TestSuppo
 import static org.jboss.messaging.tests.integration.core.remoting.mina.TestSupport.KEEP_ALIVE_TIMEOUT;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -82,7 +85,9 @@ public class ClientNetworkFailureTest extends TestCase
       server.start();
       minaService = (RemotingServiceImpl) server.getRemotingService();
       networkFailureFilter = new NetworkFailureFilter();
-      minaService.getFilterChain().addFirst("network-failure",
+      List<Acceptor> acceptor = minaService.getAcceptors();
+      MinaAcceptor minaAcceptor = (MinaAcceptor) acceptor.get(0);
+      minaAcceptor.getFilterChain().addFirst("network-failure",
               networkFailureFilter);
 
       assertActiveConnectionsOnTheServer(0);

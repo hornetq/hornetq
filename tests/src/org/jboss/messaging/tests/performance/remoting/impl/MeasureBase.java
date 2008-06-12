@@ -8,7 +8,6 @@
 package org.jboss.messaging.tests.performance.remoting.impl;
 
 import junit.framework.TestCase;
-
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -17,14 +16,12 @@ import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
-import org.jboss.messaging.core.remoting.impl.mina.RemotingServiceImpl;
+import org.jboss.messaging.core.remoting.impl.RemotingServiceImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
 
 
 /**
- *
  * @author clebert suconic
- *
  */
 public abstract class MeasureBase extends TestCase
 {
@@ -55,16 +52,16 @@ public abstract class MeasureBase extends TestCase
 
       long start = System.currentTimeMillis();
 
-      for (int i=0; i<NUMBER_OF_MESSAGES; i++)
+      for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         if (i%2 == 0)
+         if (i % 2 == 0)
          {
             remoting.sendOneWay(10, 10, new EmptyPacket(EmptyPacket.CLOSE));
          }
          else
          {
             Object ret = remoting.sendBlocking(10, 0, new EmptyPacket(EmptyPacket.CLOSE));
-            assertTrue (ret instanceof EmptyPacket);
+            assertTrue(ret instanceof EmptyPacket);
             //assertEquals(EmptyPacket.EXCEPTION, ret.getType());
          }
       }
@@ -72,7 +69,7 @@ public abstract class MeasureBase extends TestCase
       long end = System.currentTimeMillis();
 
 
-      System.out.println("Messages / second = " + NUMBER_OF_MESSAGES * 1000 / (end-start));
+      System.out.println("Messages / second = " + NUMBER_OF_MESSAGES * 1000 / (end - start));
       Thread.sleep(1000);
 
       remoting.stop();
@@ -81,9 +78,8 @@ public abstract class MeasureBase extends TestCase
 
    public void testBlockSends() throws Throwable
    {
-       //NIOConnector connector = createNIOConnector(new PacketDispatcherImpl(null));
+      //NIOConnector connector = createNIOConnector(new PacketDispatcherImpl(null));
       //NIOSession session = connector.connect();
-
 
 
       RemotingConnectionImpl remoting = new RemotingConnectionImpl(getLocation(), createParameters());
@@ -93,16 +89,16 @@ public abstract class MeasureBase extends TestCase
 
       long start = System.currentTimeMillis();
 
-      for (int i=0; i<NUMBER_OF_MESSAGES; i++)
+      for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          Object ret = remoting.sendBlocking(10, 10, new EmptyPacket(EmptyPacket.CLOSE));
-         assertTrue (ret instanceof EmptyPacket);
+         assertTrue(ret instanceof EmptyPacket);
       }
 
       long end = System.currentTimeMillis();
 
 
-      System.out.println("Messages / second = " + NUMBER_OF_MESSAGES * 1000 / (end-start));
+      System.out.println("Messages / second = " + NUMBER_OF_MESSAGES * 1000 / (end - start));
       Thread.sleep(1000);
 
       remoting.stop();
@@ -111,7 +107,7 @@ public abstract class MeasureBase extends TestCase
 
    public void testOneWaySends() throws Throwable
    {
-       //NIOConnector connector = createNIOConnector(new PacketDispatcherImpl(null));
+      //NIOConnector connector = createNIOConnector(new PacketDispatcherImpl(null));
       //NIOSession session = connector.connect();
 
 
@@ -122,7 +118,7 @@ public abstract class MeasureBase extends TestCase
 
       long start = System.currentTimeMillis();
 
-      for (int i=0; i<NUMBER_OF_MESSAGES; i++)
+      for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          remoting.sendOneWay(10, 10, new EmptyPacket(EmptyPacket.CLOSE));
       }
@@ -132,7 +128,7 @@ public abstract class MeasureBase extends TestCase
       long end = System.currentTimeMillis();
 
 
-      System.out.println("Messages / second = " + NUMBER_OF_MESSAGES * 1000 / (end-start));
+      System.out.println("Messages / second = " + NUMBER_OF_MESSAGES * 1000 / (end - start));
 
       remoting.stop();
 
@@ -141,7 +137,6 @@ public abstract class MeasureBase extends TestCase
    protected abstract LocationImpl getLocation();
 
    protected abstract ConfigurationImpl createConfiguration();
-
 
 
    protected void startServer() throws Exception
@@ -161,8 +156,6 @@ public abstract class MeasureBase extends TestCase
       param.setTimeout(50000);
       return param;
    }
-
-
 
    // Inner Classes
 
@@ -184,7 +177,8 @@ public abstract class MeasureBase extends TestCase
                packet.setTargetID(packet.getResponseTargetID());
                sender.send(packet);
             }
-         } catch (Exception e)
+         }
+         catch (Exception e)
          {
             e.printStackTrace();
          }

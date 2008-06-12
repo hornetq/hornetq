@@ -6,7 +6,7 @@
 
    <bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JAASSecurityManager"/>
 
-  <!-- <bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl">
+   <!-- <bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl">
       <constructor>
          <parameter>false</parameter>
       </constructor>
@@ -21,8 +21,12 @@
       </property>
    </bean>-->
 
-   <bean name="MessagingServerManagement" class="org.jboss.messaging.core.management.impl.MessagingServerManagementImpl">
-      <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.messaging:service=MessagingServerManagement", exposedInterface=org.jboss.messaging.core.management.MessagingServerManagement.class)</annotation>
+   <bean name="MessagingServerManagement"
+         class="org.jboss.messaging.core.management.impl.MessagingServerManagementImpl">
+      <annotation>
+         @org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.messaging:service=MessagingServerManagement",
+         exposedInterface=org.jboss.messaging.core.management.MessagingServerManagement.class)
+      </annotation>
       <property name="messagingServer">
          <inject bean="MessagingServer"/>
       </property>
@@ -34,7 +38,7 @@
       </property>
       <property name="remotingService">
          <inject bean="RemotingService"/>
-      </property> 
+      </property>
       <property name="configuration">
          <inject bean="Configuration"/>
       </property>
@@ -50,17 +54,19 @@
          </parameter>
       </constructor>
    </bean>
-      
-   <bean name="RemotingService" class="org.jboss.messaging.core.remoting.impl.mina.RemotingServiceImpl">
+
+   <bean name="RemotingService" class="org.jboss.messaging.core.remoting.impl.RemotingServiceImpl">
       <constructor>
          <parameter>
             <inject bean="Configuration"/>
          </parameter>
       </constructor>
    </bean>
-      
+
    <bean name="JMSServerManager" class="org.jboss.messaging.jms.server.impl.JMSServerManagerImpl">
-      <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.messaging:service=JMSServerManager", exposedInterface=org.jboss.messaging.jms.server.JMSServerManager.class)</annotation>
+      <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.messaging:service=JMSServerManager",
+         exposedInterface=org.jboss.messaging.jms.server.JMSServerManager.class)
+      </annotation>
       <property name="messagingServerManagement">
          <inject bean="MessagingServerManagement"/>
       </property>
@@ -74,5 +80,5 @@
          <inject bean="MessagingServer"/>
       </property>
    </bean>
- 
+
 </deployment>

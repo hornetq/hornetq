@@ -512,6 +512,16 @@ public class RemotingConnectionTest extends UnitTestCase
          //todo
       }
 
+      public void addInterceptor(Interceptor filter)
+      {
+         //todo
+      }
+
+      public void removeInterceptor(Interceptor filter)
+      {
+         //todo
+      }
+
       public long generateID()
       {
          return 0;

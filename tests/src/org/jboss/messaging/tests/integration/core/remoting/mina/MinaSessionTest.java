@@ -6,22 +6,19 @@
  */
 package org.jboss.messaging.tests.integration.core.remoting.mina;
 
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
-
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
+import static org.jboss.messaging.core.remoting.TransportType.TCP;
+import org.jboss.messaging.core.remoting.impl.RemotingServiceImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
-import org.jboss.messaging.core.remoting.impl.mina.RemotingServiceImpl;
 import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.tests.unit.core.remoting.impl.SessionTestBase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
  * @version <tt>$Revision$</tt>
- *
  */
 public class MinaSessionTest extends SessionTestBase
 {
@@ -37,15 +34,15 @@ public class MinaSessionTest extends SessionTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
- 
+
    // ClientTestBase overrides --------------------------------------
-   
+
    @Override
    protected NIOConnector createNIOConnector(PacketDispatcher dispatcher)
    {
       return new MinaConnector(new LocationImpl(TCP, "localhost", TestSupport.PORT), dispatcher);
    }
-   
+
    @Override
    protected Configuration createRemotingConfiguration()
    {
@@ -65,7 +62,7 @@ public class MinaSessionTest extends SessionTestBase
    {
       service.stop();
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
