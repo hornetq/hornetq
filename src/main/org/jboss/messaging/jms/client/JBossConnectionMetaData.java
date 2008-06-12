@@ -41,6 +41,8 @@ public class JBossConnectionMetaData implements ConnectionMetaData
 {
    // Constants -----------------------------------------------------
 
+   public static final String JBOSS_MESSAGING = "JBoss Messaging";
+
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -76,7 +78,7 @@ public class JBossConnectionMetaData implements ConnectionMetaData
 
    public String getJMSProviderName() throws JMSException
    {
-      return "JBoss Messaging";
+      return JBOSS_MESSAGING;
    }
 
    public String getProviderVersion() throws JMSException
