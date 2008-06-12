@@ -230,11 +230,11 @@ public class ClientProducerImpl implements ClientProducerInternal
                
       if (sendBlocking)
       {        
-         remotingConnection.sendBlocking(serverTargetID, serverTargetID, message);
+         remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), message);
       }
       else
       {
-         remotingConnection.sendOneWay(serverTargetID, serverTargetID, message);
+         remotingConnection.sendOneWay(serverTargetID, session.getServerTargetID(), message);
       }      
       
       //We only flow control with non-anonymous producers

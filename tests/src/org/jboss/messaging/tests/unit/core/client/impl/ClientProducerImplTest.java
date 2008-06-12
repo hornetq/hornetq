@@ -61,38 +61,6 @@ public class ClientProducerImplTest extends UnitTestCase
       testConstructor(-1, true, true);
    }
    
-   private void testConstructor(final int maxRate, final boolean blockOnNP, final boolean blockOnP) throws Exception
-   {
-      ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);
-      ClientConnectionInternal connection = EasyMock.createStrictMock(ClientConnectionInternal.class);
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      
-      EasyMock.expect(session.getConnection()).andReturn(connection);
-      EasyMock.expect(connection.getRemotingConnection()).andReturn(rc);
-      
-      SimpleString address = new SimpleString("uhasuuhs");
-      
-      final int initialCredits = 7612672;
-
-      EasyMock.replay(session, connection, rc);
-      
-      TokenBucketLimiter limiter = maxRate != -1 ? new TokenBucketLimiterImpl(maxRate, false) : null;
-      
-      ClientProducerInternal producer =
-         new ClientProducerImpl(session, 7876L, 76767L, address, limiter,
-                                blockOnNP, blockOnP, initialCredits);
-      
-      EasyMock.verify(session, connection, rc);
-      
-      assertEquals(address, producer.getAddress());
-      assertEquals(initialCredits, producer.getInitialWindowSize());
-      assertEquals(maxRate, producer.getMaxRate());
-      assertEquals(blockOnNP, producer.isBlockOnNonPersistentSend());
-      assertEquals(blockOnP, producer.isBlockOnPersistentSend());
-      assertFalse(producer.isClosed());
-      
-   }
-   
    public void testSend() throws Exception
    {
       testSend(-1, 652652, new SimpleString("uyuyyu"), null, false, false, false);
@@ -233,6 +201,38 @@ public class ClientProducerImplTest extends UnitTestCase
    
    // Private ----------------------------------------------------------------------------------------
    
+   private void testConstructor(final int maxRate, final boolean blockOnNP, final boolean blockOnP) throws Exception
+   {
+      ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);
+      ClientConnectionInternal connection = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      
+      EasyMock.expect(session.getConnection()).andReturn(connection);
+      EasyMock.expect(connection.getRemotingConnection()).andReturn(rc);
+      
+      SimpleString address = new SimpleString("uhasuuhs");
+      
+      final int initialCredits = 7612672;
+
+      EasyMock.replay(session, connection, rc);
+      
+      TokenBucketLimiter limiter = maxRate != -1 ? new TokenBucketLimiterImpl(maxRate, false) : null;
+      
+      ClientProducerInternal producer =
+         new ClientProducerImpl(session, 7876L, 76767L, address, limiter,
+                                blockOnNP, blockOnP, initialCredits);
+      
+      EasyMock.verify(session, connection, rc);
+      
+      assertEquals(address, producer.getAddress());
+      assertEquals(initialCredits, producer.getInitialWindowSize());
+      assertEquals(maxRate, producer.getMaxRate());
+      assertEquals(blockOnNP, producer.isBlockOnNonPersistentSend());
+      assertEquals(blockOnP, producer.isBlockOnPersistentSend());
+      assertFalse(producer.isClosed());
+      
+   }
+   
    private void testSend(final int maxRate, final int windowSize,
                          final SimpleString prodAddress, final SimpleString sendAddress,
                          final boolean blockOnNonPersistentSend,
@@ -269,18 +269,20 @@ public class ClientProducerImplTest extends UnitTestCase
       
       boolean sendBlocking = durable ? blockOnPersistentSend : blockOnNonPersistentSend;
             
+      final long sessionTargetID = 18726178;
+      
+      EasyMock.expect(session.getServerTargetID()).andReturn(sessionTargetID);
+      
       if (sendBlocking)
       {
-         EasyMock.expect(rc.sendBlocking(targetID, targetID, new ProducerSendMessage(message))).andReturn(null);
+         EasyMock.expect(rc.sendBlocking(targetID, sessionTargetID, new ProducerSendMessage(message))).andReturn(null);
       }
       else
       {
-         rc.sendOneWay(targetID, targetID, new ProducerSendMessage(message));
+         rc.sendOneWay(targetID, sessionTargetID, new ProducerSendMessage(message));
       }
       
       final int messageSize = 123;
-      
-      log.info("prod address is " + prodAddress);
       
       if (sendAddress == null && windowSize != -1)
       {
@@ -293,7 +295,6 @@ public class ClientProducerImplTest extends UnitTestCase
          new ClientProducerImpl(session, targetID, 76767L, prodAddress, limiter, blockOnNonPersistentSend,
                blockOnPersistentSend, windowSize);
       
-      log.info("Send address is " + sendAddress);
       if (sendAddress != null)
       {
          producer.send(sendAddress, message);
@@ -303,8 +304,6 @@ public class ClientProducerImplTest extends UnitTestCase
          producer.send(message);
       }
       
-      log.info("Sent");
-       
       EasyMock.verify(session, connection, rc, message);
       
       if (sendAddress == null && windowSize != -1)
