@@ -629,6 +629,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    public void commit(final Xid xid, final boolean onePhase) throws XAException
    {
+      checkXA();
       try
       { 
          SessionXACommitMessage packet = new SessionXACommitMessage(xid, onePhase);
@@ -650,6 +651,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    public void end(final Xid xid, final int flags) throws XAException
    {
+      checkXA();
       try
       {
          Packet packet;
@@ -691,6 +693,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    public void forget(final Xid xid) throws XAException
    {
+      checkXA();
       try
       {                              
          //Need to flush any acks to server first
@@ -712,6 +715,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    public int getTransactionTimeout() throws XAException
    {
+      checkXA();
       try
       {                              
          SessionXAGetTimeoutResponseMessage response =
@@ -728,6 +732,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    public boolean isSameRM(final XAResource xares) throws XAException
    {
+      checkXA();
       if (!(xares instanceof ClientSessionImpl))
       {
          return false;
@@ -746,6 +751,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    public int prepare(final Xid xid) throws XAException
    {
+      checkXA();
       try
       {
          SessionXAPrepareMessage packet = new SessionXAPrepareMessage(xid);
@@ -771,6 +777,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    public Xid[] recover(final int flag) throws XAException
    {
+      checkXA();
       try
       {
          SessionXAGetInDoubtXidsResponseMessage response = (SessionXAGetInDoubtXidsResponseMessage)remotingConnection.sendBlocking(serverTargetID, serverTargetID, new EmptyPacket(EmptyPacket.SESS_XA_INDOUBT_XIDS));
@@ -790,6 +797,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    public void rollback(final Xid xid) throws XAException
    {
+      checkXA();
       try
       {
          SessionXARollbackMessage packet = new SessionXARollbackMessage(xid);
@@ -811,6 +819,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    public boolean setTransactionTimeout(final int seconds) throws XAException
    {
+      checkXA();
       try
       {                              
          SessionXASetTimeoutResponseMessage response =
@@ -827,6 +836,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    public void start(final Xid xid, final int flags) throws XAException
    {
+      checkXA();
       try
       {
          Packet packet;
@@ -882,6 +892,15 @@ public class ClientSessionImpl implements ClientSessionInternal
    // Package Private ------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
+   
+   private void checkXA() throws XAException
+   {
+      if (!xa)
+      {
+         log.error("Session is not XA");
+         throw new XAException(XAException.XAER_RMERR);
+      }
+   }
    
    private void acknowledgeInternal(final boolean block) throws MessagingException
    {

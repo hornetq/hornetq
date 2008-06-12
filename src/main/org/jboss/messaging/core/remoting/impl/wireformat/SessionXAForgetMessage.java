@@ -57,6 +57,18 @@ public class SessionXAForgetMessage extends EmptyPacket
       xid = XidCodecSupport.decodeXid(buffer);
    }
    
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionXAForgetMessage == false)
+      {
+         return false;
+      }
+            
+      SessionXAForgetMessage r = (SessionXAForgetMessage)other;
+      
+      return this.xid.equals(r.xid);
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

@@ -73,6 +73,19 @@ public class SessionXAEndMessage extends EmptyPacket
    {
       return getParentString() + ", xid=" + xid + ", failed=" + failed + "]";
    }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionXAEndMessage == false)
+      {
+         return false;
+      }
+            
+      SessionXAEndMessage r = (SessionXAEndMessage)other;
+      
+      return this.xid.equals(r.xid) &&
+             this.failed == r.failed;
+   }
 
    // Package protected ---------------------------------------------
 

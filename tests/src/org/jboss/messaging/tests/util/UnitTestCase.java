@@ -263,6 +263,4 @@ public class UnitTestCase extends TestCase
       return ((size / alignment) + (size % alignment != 0 ? 1 : 0)) * alignment;
    }
 
-   
-
 }

@@ -73,6 +73,19 @@ public class SessionXACommitMessage extends EmptyPacket
       return getParentString() + ", xid=" + xid + ", onePhase=" + onePhase + "]";
    }
    
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionXACommitMessage == false)
+      {
+         return false;
+      }
+            
+      SessionXACommitMessage r = (SessionXACommitMessage)other;
+      
+      return this.xid.equals(r.xid) &&
+             this.onePhase == r.onePhase;
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
