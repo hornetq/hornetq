@@ -716,7 +716,13 @@ public class ClientSessionImplTest extends UnitTestCase
       EasyMock.verify(pd); 
    }
    
-   public void testClose() throws Exception
+   public void testClose() throws Exception   
+   {
+      testClose(true);
+      testClose(false);
+   }
+   
+   private void testClose(boolean delivered) throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
           
@@ -726,6 +732,14 @@ public class ClientSessionImplTest extends UnitTestCase
       EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
         
       final long sessionTargetID = 9121892;
+                  
+      EasyMock.replay(conn, rc);
+      
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+      
+      EasyMock.verify(conn, rc);
+      
+      EasyMock.reset(conn, rc);
       
       ClientProducerInternal prod1 = EasyMock.createStrictMock(ClientProducerInternal.class);
       ClientProducerInternal prod2 = EasyMock.createStrictMock(ClientProducerInternal.class);
@@ -735,9 +749,7 @@ public class ClientSessionImplTest extends UnitTestCase
       
       ClientBrowser browser1 = EasyMock.createStrictMock(ClientBrowser.class);
       ClientBrowser browser2 = EasyMock.createStrictMock(ClientBrowser.class);
-      
-      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
-                  
+                    
       prod1.close();
       prod2.close();
       cons1.close();
@@ -745,16 +757,21 @@ public class ClientSessionImplTest extends UnitTestCase
       browser1.close();
       browser2.close();
       
-      SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(0, true);
+      final int numDeliveries = 10;
       
-      rc.sendOneWay(sessionTargetID, sessionTargetID, message);
-      
+      if (delivered)
+      {
+         SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(numDeliveries - 1, true);
+         
+         rc.sendOneWay(sessionTargetID, sessionTargetID, message);
+      }
+            
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.CLOSE))).andReturn(null);
       
       conn.removeSession(session);      
-      
+            
       EasyMock.replay(conn, rc, prod1, prod2, cons1, cons2, browser1, browser2);
-      
+                 
       session.addProducer(prod1);
       session.addProducer(prod2);
       
@@ -765,6 +782,16 @@ public class ClientSessionImplTest extends UnitTestCase
       session.addBrowser(browser2);
       
       assertFalse(session.isClosed());
+      
+      if (delivered)
+      {
+         //Simulate there being some undelivered messages
+         for (int i = 0; i < numDeliveries; i++)
+         {
+            session.delivered(i, false);
+            session.acknowledge();
+         }
+      }
             
       session.close();
       

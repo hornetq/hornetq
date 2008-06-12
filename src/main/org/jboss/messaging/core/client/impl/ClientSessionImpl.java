@@ -486,22 +486,17 @@ public class ClientSessionImpl implements ClientSessionInternal
       try
       {
          closeChildren();
-         
+          
          if (cacheProducers)
          {
-         	for (ClientProducer producer: producerCache.values())
-         	{
-         		producer.close();
-         	}
-         	
-         	producerCache.clear();
+            producerCache.clear();
          }
-         
+                  
          //Make sure any remaining acks make it to the server
          
-         acknowledgeInternal(false);      
+         acknowledgeInternal(false);   
          
-         remotingConnection.sendBlocking(serverTargetID, serverTargetID, new EmptyPacket(EmptyPacket.CLOSE));            
+         remotingConnection.sendBlocking(serverTargetID, serverTargetID, new EmptyPacket(EmptyPacket.CLOSE));
       }
       finally
       {
@@ -592,8 +587,6 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       //2. cancel all deliveries on server but not in tx
             
-      log.info("Removing consumer");
-      
       remotingConnection.sendOneWay(serverTargetID, serverTargetID, new SessionCancelMessage(-1, false));
    }
    
@@ -873,7 +866,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    private void acknowledgeInternal(final boolean block) throws MessagingException
    {
       if (acked)
-      {
+      {         
          return;
       }
       
