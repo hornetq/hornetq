@@ -84,11 +84,11 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 {   
    // Constants -----------------------------------------------------
    
-   static final int TYPE_GENERIC_SESSION = 0;
+   public static final int TYPE_GENERIC_SESSION = 0;
    
-   static final int TYPE_QUEUE_SESSION = 1;
+   public static final int TYPE_QUEUE_SESSION = 1;
    
-   static final int TYPE_TOPIC_SESSION = 2;
+   public static final int TYPE_TOPIC_SESSION = 2;
 
    // Static --------------------------------------------------------
    
