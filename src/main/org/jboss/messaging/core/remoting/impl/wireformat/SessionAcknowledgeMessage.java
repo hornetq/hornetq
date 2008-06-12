@@ -71,6 +71,19 @@ public class SessionAcknowledgeMessage extends EmptyPacket
    {
       return getParentString() + ", deliveryID=" + deliveryID + ", allUpTo=" + allUpTo + "]";
    }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionAcknowledgeMessage == false)
+      {
+         return false;
+      }
+            
+      SessionAcknowledgeMessage r = (SessionAcknowledgeMessage)other;
+      
+      return this.deliveryID == r.deliveryID &&
+             this.allUpTo == r.allUpTo;
+   }
 
    // Package protected ---------------------------------------------
 

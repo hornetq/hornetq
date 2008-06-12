@@ -32,6 +32,7 @@ import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientConnectionImpl;
 import org.jboss.messaging.core.client.impl.ClientConnectionInternal;
+import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -155,71 +156,40 @@ public class ClientConnectionImplTest extends UnitTestCase
     
       //Create some sessions
       
-      ConnectionCreateSessionMessage request = new ConnectionCreateSessionMessage(false, false, false);
-
-      ConnectionCreateSessionResponseMessage response = new ConnectionCreateSessionResponseMessage(1);
-
-      EasyMock.expect(rc.sendBlocking(serverTargetID, serverTargetID, request)).andReturn(response);
+      ClientSessionInternal sess1 = EasyMock.createStrictMock(ClientSessionInternal.class);
       
-      request = new ConnectionCreateSessionMessage(false, false, false);
-
-      response = new ConnectionCreateSessionResponseMessage(2);
-
-      EasyMock.expect(rc.sendBlocking(serverTargetID, serverTargetID, request)).andReturn(response);
+      ClientSessionInternal sess2 = EasyMock.createStrictMock(ClientSessionInternal.class);
       
-      request = new ConnectionCreateSessionMessage(false, false, false);
-
-      response = new ConnectionCreateSessionResponseMessage(3);
-
-      EasyMock.expect(rc.sendBlocking(serverTargetID, serverTargetID, request)).andReturn(response);
+      ClientSessionInternal sess3 = EasyMock.createStrictMock(ClientSessionInternal.class);
       
-      EasyMock.replay(rc);
+      conn.addSession(sess1);
+      conn.addSession(sess2);
+      conn.addSession(sess3);
       
-      ClientSession sess1 = conn.createClientSession(false, false, false, 23234);
-      
-      ClientSession sess2 = conn.createClientSession(false, false, false, 23234);
-      
-      ClientSession sess3 = conn.createClientSession(false, false, false, 23234);
-      
-      assertFalse(sess1.isClosed());
-      assertFalse(sess2.isClosed());
-      assertFalse(sess3.isClosed());
-      
-      EasyMock.verify(rc);
-      
-      EasyMock.reset(rc);
-            
-      //And the closes of the sessions - this can be in a different order
-      EasyMock.checkOrder(rc, false);
-      EasyMock.expect(rc.sendBlocking(1, 1, new EmptyPacket(EmptyPacket.CLOSE))).andReturn(null);
-      EasyMock.expect(rc.sendBlocking(2, 2, new EmptyPacket(EmptyPacket.CLOSE))).andReturn(null);
-      EasyMock.expect(rc.sendBlocking(3, 3, new EmptyPacket(EmptyPacket.CLOSE))).andReturn(null);
-      EasyMock.checkOrder(rc, true);
+      sess1.close();
+      sess2.close();
+      sess3.close();
       
       EasyMock.expect(rc.sendBlocking(serverTargetID, serverTargetID, new EmptyPacket(EmptyPacket.CLOSE))).andReturn(null);
             
       rc.stop();      
       
-      EasyMock.replay(rc);
+      EasyMock.replay(rc, sess1, sess2, sess3);
       
       conn.close();
       
-      EasyMock.verify(rc);
-      
-      assertTrue(sess1.isClosed());
-      assertTrue(sess2.isClosed());
-      assertTrue(sess3.isClosed());
+      EasyMock.verify(rc, sess1, sess2, sess3);
       
       assertTrue(conn.isClosed());
       
       //Close again should do nothing
-      EasyMock.reset(rc);
+      EasyMock.reset(rc, sess1, sess2, sess3);
       
-      EasyMock.replay(rc);
+      EasyMock.replay(rc, sess1, sess2, sess3);
       
       conn.close();
       
-      EasyMock.verify(rc);
+      EasyMock.verify(rc, sess1, sess2, sess3);
       
       try
       {
@@ -291,49 +261,23 @@ public class ClientConnectionImplTest extends UnitTestCase
       
       ClientConnectionInternal conn = new ClientConnectionImpl(cf, serverTargetID, rc, version);
       
-      assertFalse(conn.isClosed());
-    
       //Create some sessions
       
-      ConnectionCreateSessionMessage request = new ConnectionCreateSessionMessage(false, false, false);
-
-      ConnectionCreateSessionResponseMessage response = new ConnectionCreateSessionResponseMessage(1);
-
-      EasyMock.expect(rc.sendBlocking(serverTargetID, serverTargetID, request)).andReturn(response);
+      ClientSessionInternal sess1 = EasyMock.createStrictMock(ClientSessionInternal.class);
       
-      request = new ConnectionCreateSessionMessage(false, false, false);
-
-      response = new ConnectionCreateSessionResponseMessage(2);
-
-      EasyMock.expect(rc.sendBlocking(serverTargetID, serverTargetID, request)).andReturn(response);
+      ClientSessionInternal sess2 = EasyMock.createStrictMock(ClientSessionInternal.class);
       
-      request = new ConnectionCreateSessionMessage(false, false, false);
-
-      response = new ConnectionCreateSessionResponseMessage(3);
-
-      EasyMock.expect(rc.sendBlocking(serverTargetID, serverTargetID, request)).andReturn(response);
+      ClientSessionInternal sess3 = EasyMock.createStrictMock(ClientSessionInternal.class);
       
-      EasyMock.replay(rc);
-      
-      ClientSession sess1 = conn.createClientSession(false, false, false, 23234);
-      
-      ClientSession sess2 = conn.createClientSession(false, false, false, 23234);
-      
-      ClientSession sess3 = conn.createClientSession(false, false, false, 23234);
-      
-      assertFalse(sess1.isClosed());
-      assertFalse(sess2.isClosed());
-      assertFalse(sess3.isClosed());
+      conn.addSession(sess1);
+      conn.addSession(sess2);
+      conn.addSession(sess3);
             
       Set<ClientSession> sessions = conn.getSessions();
       assertEquals(3, sessions.size());
       assertTrue(sessions.contains(sess1));
       assertTrue(sessions.contains(sess2));
       assertTrue(sessions.contains(sess3));
-      
-      EasyMock.verify(rc);
-      
-      EasyMock.reset(rc);
       
       conn.removeSession(sess2);
       
@@ -347,6 +291,11 @@ public class ClientConnectionImplTest extends UnitTestCase
       sessions = conn.getSessions();
       assertEquals(1, sessions.size());   
       assertTrue(sessions.contains(sess3));
+      
+      conn.removeSession(sess3);
+      
+      sessions = conn.getSessions();
+      assertEquals(0, sessions.size());   
    }
                
    // Private -----------------------------------------------------------------------------------------------------------
@@ -398,7 +347,6 @@ public class ClientConnectionImplTest extends UnitTestCase
          session = conn.createClientSession(xa, autoCommitSends, autoCommitAcks, ackBatchSize, blockOnAcknowledge,
                cacheProducers);
       }
-
 
       assertEquals(ackBatchSize, session.getLazyAckBatchSize());
       assertEquals(xa, session.isXA());

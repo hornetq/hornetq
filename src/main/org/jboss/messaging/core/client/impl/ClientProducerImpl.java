@@ -72,12 +72,16 @@ public class ClientProducerImpl implements ClientProducerInternal
      
    private final TokenBucketLimiter rateLimiter;
    
-   private final boolean sendNonPersistentMessagesSynchronously;
+   private final boolean blockOnNonPersistentSend;
    
-   private final boolean sendPersistentMessagesSynchronously;
+   private final boolean blockOnPersistentSend;
    
    private final boolean creditFlowControl;
-     
+   
+   private final int initialWindowSize;
+   
+   private final int maxRate;
+   
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
@@ -87,8 +91,8 @@ public class ClientProducerImpl implements ClientProducerInternal
    		                    final SimpleString address,
    		                    final RemotingConnection remotingConnection,
    		                    final int maxRate,
-   		                    final boolean sendNonPersistentMessagesSynchronously,
-   		                    final boolean sendPersistentMessagesSynchronously,
+   		                    final boolean blockOnNonPersistentSend,
+   		                    final boolean blockOnPersistentSend,
    		                    final int initialCredits)
    {   	
       this.session = session;
@@ -110,13 +114,17 @@ public class ClientProducerImpl implements ClientProducerInternal
       	this.rateLimiter = null;
       }
       
-      this.sendNonPersistentMessagesSynchronously = sendNonPersistentMessagesSynchronously; 
+      this.blockOnNonPersistentSend = blockOnNonPersistentSend; 
       
-      this.sendPersistentMessagesSynchronously = sendPersistentMessagesSynchronously;
+      this.blockOnPersistentSend = blockOnPersistentSend;
       
       this.availableCredits = new Semaphore(initialCredits);
       
       this.creditFlowControl = initialCredits != -1;
+      
+      this.initialWindowSize = initialCredits;
+      
+      this.maxRate = maxRate;
    }
    
    // ClientProducer implementation ----------------------------------------------------------------
@@ -158,7 +166,7 @@ public class ClientProducerImpl implements ClientProducerInternal
          rateLimiter.limit();
       }
    	
-   	boolean sendBlocking = msg.isDurable() ? sendPersistentMessagesSynchronously : sendNonPersistentMessagesSynchronously;
+   	boolean sendBlocking = msg.isDurable() ? blockOnPersistentSend : blockOnNonPersistentSend;
    	
       ProducerSendMessage message = new ProducerSendMessage(msg);
          		
@@ -211,6 +219,26 @@ public class ClientProducerImpl implements ClientProducerInternal
    public boolean isClosed()
    {
       return closed;
+   }
+   
+   public boolean isBlockOnPersistentSend()
+   {
+      return blockOnPersistentSend;
+   }
+   
+   public boolean isBlockOnNonPersistentSend()
+   {
+      return blockOnNonPersistentSend;
+   }
+   
+   public int getInitialWindowSize()
+   {
+      return initialWindowSize;
+   }
+   
+   public int getMaxRate()
+   {
+      return maxRate;
    }
    
    // ClientProducerInternal implementation --------------------------------------------------------

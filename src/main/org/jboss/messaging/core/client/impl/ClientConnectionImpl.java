@@ -62,7 +62,7 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    
    private final RemotingConnection remotingConnection;
 
-   private final Set<ClientSession> sessions = new ConcurrentHashSet<ClientSession>();
+   private final Set<ClientSessionInternal> sessions = new ConcurrentHashSet<ClientSessionInternal>();
 
    private final Version serverVersion;
    
@@ -101,11 +101,11 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       ConnectionCreateSessionResponseMessage response =
          (ConnectionCreateSessionResponseMessage)remotingConnection.sendBlocking(serverTargetID, serverTargetID, request);   
 
-      ClientSession session =
+      ClientSessionInternal session =
       	new ClientSessionImpl(this, response.getSessionID(), xa, ackBatchSize, cacheProducers,
       			                autoCommitSends, autoCommitAcks, blockOnAcknowledge);
 
-      sessions.add(session);
+      addSession(session);
 
       return session;
    }
@@ -173,7 +173,12 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       return remotingConnection;
    }
    
-   public void removeSession(final ClientSession session)
+   public void addSession(final ClientSessionInternal session)
+   {
+      sessions.add(session);
+   }
+   
+   public void removeSession(final ClientSessionInternal session)
    {
       sessions.remove(session);
    }
@@ -217,6 +222,7 @@ public class ClientConnectionImpl implements ClientConnectionInternal
        
       for (ClientSession session: childrenClone)
       {
+         log.info("closing session");
          session.close(); 
       }
    }

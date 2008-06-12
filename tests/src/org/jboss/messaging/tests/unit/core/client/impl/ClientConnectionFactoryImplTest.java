@@ -144,9 +144,7 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
       
       rc.stop();
       
-      EasyMock.replay(rcf);
-      
-      EasyMock.replay(rc);
+      EasyMock.replay(rcf, rc);
       
       try
       {
@@ -159,9 +157,7 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
          assertEquals(me.getMessage(), e.getMessage());
       }
       
-      EasyMock.verify(rcf);
-      
-      EasyMock.verify(rc);
+      EasyMock.verify(rcf, rc);
    }
    
    public void testThrowableOnStart() throws Throwable
@@ -193,9 +189,7 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
       
       rc.stop();
       
-      EasyMock.replay(rcf);
-      
-      EasyMock.replay(rc);
+      EasyMock.replay(rcf, rc);
       
       try
       {
@@ -210,9 +204,7 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
          assertEquals(MessagingException.INTERNAL_ERROR, e.getCode());
       }
       
-      EasyMock.verify(rcf);
-      
-      EasyMock.verify(rc);
+      EasyMock.verify(rcf, rc);
    }
    
    // Private -----------------------------------------------------------------------------------------------------------
@@ -255,10 +247,8 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(0, 0, request)).andReturn(response);
       
-      EasyMock.replay(rcf);
+      EasyMock.replay(rcf, rc);
       
-      EasyMock.replay(rc);
-          
       ClientConnection conn;
       
       if (username == null)         
@@ -270,9 +260,7 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
          conn = cf.createConnection(username, password);
       }
          
-      EasyMock.verify(rcf);
-      
-      EasyMock.verify(rc);
+      EasyMock.verify(rcf, rc);
       
       assertTrue(conn instanceof ClientConnectionImpl);
       

@@ -49,6 +49,9 @@ public interface ClientSession extends XAResource
    
    ClientProducer createProducer(SimpleString address) throws MessagingException;
    
+   ClientProducer createProducer(SimpleString address, int windowSize, int maxRate,
+                                 boolean blockOnNonPersistentSend, boolean blockOnPersistentSend) throws MessagingException;
+   
    ClientProducer createRateLimitedProducer(SimpleString address, int rate) throws MessagingException;
    
    ClientProducer createProducerWithWindowSize(SimpleString address, int windowSize) throws MessagingException;

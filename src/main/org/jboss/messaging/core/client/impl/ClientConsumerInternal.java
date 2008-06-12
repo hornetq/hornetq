@@ -26,4 +26,8 @@ public interface ClientConsumerInternal extends ClientConsumer
    void recover(long lastDeliveryID) throws MessagingException;
    
    int getClientWindowSize();
+   
+   long getIgnoreDeliveryMark();
+   
+   int getBufferSize();
 }

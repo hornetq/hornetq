@@ -28,4 +28,12 @@ public interface ClientProducer
    void close() throws MessagingException;
    
    boolean isClosed();   
+   
+   boolean isBlockOnPersistentSend();
+   
+   boolean isBlockOnNonPersistentSend();
+   
+   int getMaxRate();
+   
+   int getInitialWindowSize();
 }

@@ -21,23 +21,37 @@
  */
 package org.jboss.messaging.tests.unit.core.client.impl;
 
+import javax.transaction.xa.XAResource;
+
 import org.easymock.EasyMock;
+import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.client.ClientConnectionFactory;
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientConnectionInternal;
 import org.jboss.messaging.core.client.impl.ClientConsumerInternal;
 import org.jboss.messaging.core.client.impl.ClientConsumerPacketHandler;
+import org.jboss.messaging.core.client.impl.ClientProducerInternal;
+import org.jboss.messaging.core.client.impl.ClientProducerPacketHandler;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCancelMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
@@ -115,15 +129,13 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(targetID, targetID, request)).andReturn(null);
       
-      EasyMock.replay(conn);
-      EasyMock.replay(rc);
-                  
+      EasyMock.replay(conn, rc);
+
       ClientSession session = new ClientSessionImpl(conn, targetID, false, -1, false, false, false, false);
                   
       session.createQueue(request.getAddress(), request.getQueueName(), request.getFilterString(), request.isDurable(), request.isTemporary());
       
-      EasyMock.verify(conn);
-      EasyMock.verify(rc);      
+      EasyMock.verify(conn, rc);     
    }
    
    public void testDeleteQueue() throws Exception
@@ -140,15 +152,13 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(targetID, targetID, request)).andReturn(null);
       
-      EasyMock.replay(conn);
-      EasyMock.replay(rc);
+      EasyMock.replay(conn, rc);
                   
       ClientSession session = new ClientSessionImpl(conn, targetID, false, -1, false, false, false, false);
                   
       session.deleteQueue(request.getQueueName());
       
-      EasyMock.verify(conn);
-      EasyMock.verify(rc);      
+      EasyMock.verify(conn, rc);     
    }
    
    public void testQueueQuery() throws Exception
@@ -167,15 +177,13 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(targetID, targetID, request)).andReturn(resp);
       
-      EasyMock.replay(conn);
-      EasyMock.replay(rc);
+      EasyMock.replay(conn, rc);
                   
       ClientSession session = new ClientSessionImpl(conn, targetID, false, -1, false, false, false, false);
                   
       SessionQueueQueryResponseMessage resp2 = session.queueQuery(request.getQueueName());
       
-      EasyMock.verify(conn);
-      EasyMock.verify(rc);  
+      EasyMock.verify(conn, rc);
       
       assertTrue(resp == resp2);
    }
@@ -196,15 +204,13 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(targetID, targetID, request)).andReturn(resp);
       
-      EasyMock.replay(conn);
-      EasyMock.replay(rc);
+      EasyMock.replay(conn, rc);
                   
       ClientSession session = new ClientSessionImpl(conn, targetID, false, -1, false, false, false, false);
                   
       SessionBindingQueryResponseMessage resp2 = session.bindingQuery(request.getAddress());
       
-      EasyMock.verify(conn);
-      EasyMock.verify(rc);  
+      EasyMock.verify(conn, rc); 
       
       assertTrue(resp == resp2);
    }
@@ -223,15 +229,13 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(targetID, targetID, request)).andReturn(null);
       
-      EasyMock.replay(conn);
-      EasyMock.replay(rc);
-                  
+      EasyMock.replay(conn, rc);
+      
       ClientSession session = new ClientSessionImpl(conn, targetID, false, -1, false, false, false, false);
                   
       session.addDestination(request.getAddress(), request.isTemporary());
       
-      EasyMock.verify(conn);
-      EasyMock.verify(rc);  
+      EasyMock.verify(conn, rc); 
    }
    
    public void testRemoveDestination() throws Exception
@@ -248,15 +252,13 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(targetID, targetID, request)).andReturn(null);
       
-      EasyMock.replay(conn);
-      EasyMock.replay(rc);
+      EasyMock.replay(conn, rc);
                   
       ClientSession session = new ClientSessionImpl(conn, targetID, false, -1, false, false, false, false);
                   
       session.removeDestination(request.getAddress(), true);
       
-      EasyMock.verify(conn);
-      EasyMock.verify(rc);  
+      EasyMock.verify(conn, rc); 
    }
    
    public void testCreateConsumer() throws Exception
@@ -302,8 +304,863 @@ public class ClientSessionImplTest extends UnitTestCase
       testCreateConsumerBasicMethod(new SimpleString("usahduiahs"), 121455, 76556, -1);
    }
    
+   public void testCreateProducer() throws Exception
+   {
+      //test with the wide method
+      
+      testCreateProducerWideMethod(new SimpleString("yugygugy"), 545454, 5454, 545454, 5454, false, false, false);
+      testCreateProducerWideMethod(new SimpleString("yugygugy"), 545454, 5454, 545454, 5454, false, false, true);
+      testCreateProducerWideMethod(new SimpleString("yugygugy"), 545454, 5454, 545454, 5454, false, true, false);
+      testCreateProducerWideMethod(new SimpleString("yugygugy"), 545454, 5454, 545454, 5454, false, true, true);
+      testCreateProducerWideMethod(new SimpleString("yugygugy"), 545454, 5454, 545454, 5454, true, false, false);
+      testCreateProducerWideMethod(new SimpleString("yugygugy"), 545454, 5454, 545454, 5454, true, false, true);
+      testCreateProducerWideMethod(new SimpleString("yugygugy"), 545454, 5454, 545454, 5454, true, true, false);
+      testCreateProducerWideMethod(new SimpleString("yugygugy"), 545454, 5454, 545454, 5454, true, true, true);
+      
+      testCreateProducerWideMethod(new SimpleString("yugygugy"), 545454, 5454, 675765, 3232, false, false, false);
+      testCreateProducerWideMethod(new SimpleString("yugygugy"), 545454, 5454, 675765, 3232, false, false, true);
+      testCreateProducerWideMethod(new SimpleString("yugygugy"), 545454, 5454, 675765, 3232, false, true, false);
+      testCreateProducerWideMethod(new SimpleString("yugygugy"), 545454, 5454, 675765, 3232, false, true, true);
+      testCreateProducerWideMethod(new SimpleString("yugygugy"), 545454, 5454, 675765, 3232, true, false, false);
+      testCreateProducerWideMethod(new SimpleString("yugygugy"), 545454, 5454, 675765, 3232, true, false, true);
+      testCreateProducerWideMethod(new SimpleString("yugygugy"), 545454, 5454, 675765, 3232, true, true, false);
+      testCreateProducerWideMethod(new SimpleString("yugygugy"), 545454, 5454, 675765, 3232, true, true, true);
+      
+      //Test with the basic method
+      
+      testCreateProducerBasicMethod(new SimpleString("yugygugy"), 545454, 5454, 545454, 5454, false, false, false);
+      testCreateProducerBasicMethod(new SimpleString("yugygugy"), 545454, 5454, 545454, 5454, false, false, true);
+      testCreateProducerBasicMethod(new SimpleString("yugygugy"), 545454, 5454, 545454, 5454, false, true, false);
+      testCreateProducerBasicMethod(new SimpleString("yugygugy"), 545454, 5454, 545454, 5454, false, true, true);
+      testCreateProducerBasicMethod(new SimpleString("yugygugy"), 545454, 5454, 545454, 5454, true, false, false);
+      testCreateProducerBasicMethod(new SimpleString("yugygugy"), 545454, 5454, 545454, 5454, true, false, true);
+      testCreateProducerBasicMethod(new SimpleString("yugygugy"), 545454, 5454, 545454, 5454, true, true, false);
+      testCreateProducerBasicMethod(new SimpleString("yugygugy"), 545454, 5454, 545454, 5454, true, true, true);
+      
+      testCreateProducerBasicMethod(new SimpleString("yugygugy"), 545454, 5454, 675765, 3232, false, false, false);
+      testCreateProducerBasicMethod(new SimpleString("yugygugy"), 545454, 5454, 675765, 3232, false, false, true);
+      testCreateProducerBasicMethod(new SimpleString("yugygugy"), 545454, 5454, 675765, 3232, false, true, false);
+      testCreateProducerBasicMethod(new SimpleString("yugygugy"), 545454, 5454, 675765, 3232, false, true, true);
+      testCreateProducerBasicMethod(new SimpleString("yugygugy"), 545454, 5454, 675765, 3232, true, false, false);
+      testCreateProducerBasicMethod(new SimpleString("yugygugy"), 545454, 5454, 675765, 3232, true, false, true);
+      testCreateProducerBasicMethod(new SimpleString("yugygugy"), 545454, 5454, 675765, 3232, true, true, false);
+      testCreateProducerBasicMethod(new SimpleString("yugygugy"), 545454, 5454, 675765, 3232, true, true, true);
+
+      //Test with the rate limited method
+      
+      testCreateProducerRateLimitedMethod(new SimpleString("yugygugy"), 5454, -1, 5454, false, false, false);
+      testCreateProducerRateLimitedMethod(new SimpleString("yugygugy"), 5454, -1, 5454, false, false, true);
+      testCreateProducerRateLimitedMethod(new SimpleString("yugygugy"), 5454, -1, 5454, false, true, false);
+      testCreateProducerRateLimitedMethod(new SimpleString("yugygugy"), 5454, -1, 5454, false, true, true);
+      testCreateProducerRateLimitedMethod(new SimpleString("yugygugy"), 5454, -1, 5454, true, false, false);
+      testCreateProducerRateLimitedMethod(new SimpleString("yugygugy"), 5454, -1, 5454, true, false, true);
+      testCreateProducerRateLimitedMethod(new SimpleString("yugygugy"), 5454, -1, 5454, true, true, false);
+      testCreateProducerRateLimitedMethod(new SimpleString("yugygugy"), 5454, -1, 5454, true, true, true);
+      
+      testCreateProducerRateLimitedMethod(new SimpleString("yugygugy"), 5454, 675765, 3232, false, false, false);
+      testCreateProducerRateLimitedMethod(new SimpleString("yugygugy"), 5454, 675765, 3232, false, false, true);
+      testCreateProducerRateLimitedMethod(new SimpleString("yugygugy"), 5454, 675765, 3232, false, true, false);
+      testCreateProducerRateLimitedMethod(new SimpleString("yugygugy"), 5454, 675765, 3232, false, true, true);
+      testCreateProducerRateLimitedMethod(new SimpleString("yugygugy"), 5454, 675765, 3232, true, false, false);
+      testCreateProducerRateLimitedMethod(new SimpleString("yugygugy"), 5454, 675765, 3232, true, false, true);
+      testCreateProducerRateLimitedMethod(new SimpleString("yugygugy"), 5454, 675765, 3232, true, true, false);
+      testCreateProducerRateLimitedMethod(new SimpleString("yugygugy"), 5454, 675765, 3232, true, true, true);
+      
+      //Test with the create producer with window size method
+      
+      testCreateProducerWithWindowSizeMethod(new SimpleString("yugygugy"), 5454, 545454, -1, false, false, false);
+      testCreateProducerWithWindowSizeMethod(new SimpleString("yugygugy"), 5454, 545454, -1, false, false, true);
+      testCreateProducerWithWindowSizeMethod(new SimpleString("yugygugy"), 5454, 545454, -1, false, true, false);
+      testCreateProducerWithWindowSizeMethod(new SimpleString("yugygugy"), 5454, 545454, -1, false, true, true);
+      testCreateProducerWithWindowSizeMethod(new SimpleString("yugygugy"), 5454, 545454, -1, true, false, false);
+      testCreateProducerWithWindowSizeMethod(new SimpleString("yugygugy"), 5454, 545454, -1, true, false, true);
+      testCreateProducerWithWindowSizeMethod(new SimpleString("yugygugy"), 5454, 545454, -1, true, true, false);
+      testCreateProducerWithWindowSizeMethod(new SimpleString("yugygugy"), 5454, 545454, -1, true, true, true);
+      
+      testCreateProducerWithWindowSizeMethod(new SimpleString("yugygugy"), 5454, 675765, 3232, false, false, false);
+      testCreateProducerWithWindowSizeMethod(new SimpleString("yugygugy"), 5454, 675765, 3232, false, false, true);
+      testCreateProducerWithWindowSizeMethod(new SimpleString("yugygugy"), 5454, 675765, 3232, false, true, false);
+      testCreateProducerWithWindowSizeMethod(new SimpleString("yugygugy"), 5454, 675765, 3232, false, true, true);
+      testCreateProducerWithWindowSizeMethod(new SimpleString("yugygugy"), 5454, 675765, 3232, true, false, false);
+      testCreateProducerWithWindowSizeMethod(new SimpleString("yugygugy"), 5454, 675765, 3232, true, false, true);
+      testCreateProducerWithWindowSizeMethod(new SimpleString("yugygugy"), 5454, 675765, 3232, true, true, false);
+      testCreateProducerWithWindowSizeMethod(new SimpleString("yugygugy"), 5454, 675765, 3232, true, true, true);      
+   }
+   
+   public void testProducerCaching() throws Exception
+   {
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+           
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
+           
+      //In ClientSessionImpl constructor
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+        
+      final long sessionTargetID = 9121892;
+      
+      final SimpleString address1 = new SimpleString("gyugg");
+      final SimpleString address2 = new SimpleString("g237429834");
+      final int windowSize = 72887827;
+      final int maxRate = -1;
+      
+      //In create producer method
+            
+      {
+         EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
+         
+         final long clientTargetID = 7676876;
+         
+         EasyMock.expect(pd.generateID()).andReturn(clientTargetID);
+                  
+         SessionCreateProducerMessage request =
+            new SessionCreateProducerMessage(clientTargetID, address1, windowSize, maxRate);             
+         
+         SessionCreateProducerResponseMessage resp = 
+            new SessionCreateProducerResponseMessage(67765765, windowSize, maxRate);
+         
+         EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, request)).andReturn(resp);
+         
+         EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
+         
+         pd.register(new ClientProducerPacketHandler(null, clientTargetID));
+      }
+      
+      {
+         EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
+         
+         final long clientTargetID = 54654654;
+         
+         EasyMock.expect(pd.generateID()).andReturn(clientTargetID);
+         
+         SessionCreateProducerMessage request =
+            new SessionCreateProducerMessage(clientTargetID, address2, windowSize, maxRate);             
+         
+         SessionCreateProducerResponseMessage resp = 
+            new SessionCreateProducerResponseMessage(7676876, windowSize, maxRate);
+         
+         EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, request)).andReturn(resp);
+         
+         EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
+         
+         pd.register(new ClientProducerPacketHandler(null, clientTargetID));
+      }
+      
+      EasyMock.replay(conn, rc, pd);
+      
+      //Create three with address1 - only one should be actually created
+      
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, true, false, false, false);
+
+      ClientProducerInternal producer1 = (ClientProducerInternal)session.createProducer(address1, windowSize, maxRate,
+                                                                                        false, false);
+      session.removeProducer(producer1);  
+      
+      ClientProducerInternal producer2 = (ClientProducerInternal)session.createProducer(address1, windowSize, maxRate,
+                                                                                       false, false);      
+      session.removeProducer(producer2);
+      
+      ClientProducerInternal producer3 = (ClientProducerInternal)session.createProducer(address1, windowSize, maxRate,
+                                                                                        false, false);
+      session.removeProducer(producer3);
+      
+      //Create another with a different address
+      
+      ClientProducerInternal producer4 = (ClientProducerInternal)session.createProducer(address2, windowSize, maxRate,
+                                                                                        false, false);
+      session.removeProducer(producer4); 
+            
+      EasyMock.verify(conn, rc, pd);     
+      
+      assertTrue(producer1 == producer2);
+      assertTrue(producer2 == producer3);
+      assertFalse(producer1 == producer4);
+      assertFalse(producer2 == producer4);
+      assertFalse(producer3 == producer4);
+   }
+   
+   public void testProducerNoCaching() throws Exception
+   { 
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+           
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
+           
+      //In ClientSessionImpl constructor
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+          
+      final long sessionTargetID = 7617622;      
+      final SimpleString address = new SimpleString("gyugg");
+      final int windowSize = 72887827;
+      final int maxRate = -1;
+
+      for (int i = 0; i < 3; i++)
+      {
+         //In create producer method
+         
+         EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
+         
+         final long clientTargetID = i + 65655;
+         
+         EasyMock.expect(pd.generateID()).andReturn(clientTargetID);
+         
+         
+         SessionCreateProducerMessage request =
+            new SessionCreateProducerMessage(clientTargetID, address, windowSize, maxRate);             
+         
+         SessionCreateProducerResponseMessage resp = 
+            new SessionCreateProducerResponseMessage(i + 273263, windowSize, maxRate);
+         
+         EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, request)).andReturn(resp);
+         
+         EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
+         
+         pd.register(new ClientProducerPacketHandler(null, clientTargetID));
+      
+      }
+
+      EasyMock.replay(conn, rc, pd);
+      
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+
+      ClientProducerInternal producer1 = (ClientProducerInternal)session.createProducer(address, windowSize, maxRate,
+                                                                                        false, false);
+      session.removeProducer(producer1);  
+      
+      ClientProducerInternal producer2 = (ClientProducerInternal)session.createProducer(address, windowSize, maxRate,
+                                                                                       false, false);      
+      session.removeProducer(producer2);
+      
+      ClientProducerInternal producer3 = (ClientProducerInternal)session.createProducer(address, windowSize, maxRate,
+                                                                                        false, false);
+      session.removeProducer(producer3);
+      
+      EasyMock.verify(conn, rc, pd);
+      
+      assertFalse(producer1 == producer2);
+      assertFalse(producer2 == producer3);
+      assertFalse(producer1 == producer3);
+   }
+   
+   public void testGetXAResource() throws Exception
+   {
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      
+      ClientSession session = new ClientSessionImpl(conn, 5465, false, -1, false, false, false, false);
+      
+      XAResource res = session.getXAResource();
+      
+      assertTrue(res == session);
+   }
+   
+   public void testTransactedSessionAcknowledgeNotBroken() throws Exception
+   {
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+           
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
+           
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      
+      final int numMessages = 100;
+      
+      final int sessionTargetID = 71267162;
+            
+      SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(numMessages - 1, true);
+            
+      rc.sendOneWay(sessionTargetID, sessionTargetID, message);
+
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.SESS_COMMIT))).andReturn(null);
+      
+      SessionAcknowledgeMessage message2 = new SessionAcknowledgeMessage(numMessages * 2 - 1, true);
+      
+      rc.sendOneWay(sessionTargetID, sessionTargetID, message2);
+
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.SESS_ROLLBACK))).andReturn(null);
+                  
+      EasyMock.replay(conn, rc, pd);
+      
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+      
+      //Simulate some messages being delivered in a non broken sequence (i.e. what would happen with a single consumer
+      //on the session)
+            
+      for (int i = 0; i < numMessages; i++)
+      {
+         session.delivered(i, false);
+         
+         session.acknowledge();
+      }
+      
+      //Then commit
+      session.commit();
+      
+      for (int i = numMessages; i < numMessages * 2; i++)
+      {
+         session.delivered(i, false);
+         
+         session.acknowledge();
+      }
+      
+      session.rollback();
+      
+      EasyMock.verify(conn, rc, pd);
+   }
+   
+   public void testAutoCommitSessionAcknowledge() throws Exception
+   {
+      testAutoCommitSessionAcknowledge(true);
+      testAutoCommitSessionAcknowledge(false);
+   }
+            
+   public void testTransactedSessionAcknowledgeBroken() throws Exception
+   {
+      testTransactedSessionAcknowledgeBroken(true);
+      testTransactedSessionAcknowledgeBroken(false);
+   }
+         
+   public void testTransactedSessionAcknowledgeNotBrokenExpired() throws Exception
+   {
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
+           
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      
+      final int[] messages = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+      
+      final int sessionTargetID = 71267162;
+         
+      for (int i = 0; i < messages.length; i++)
+      {
+         SessionCancelMessage message = new SessionCancelMessage(messages[i], true);
+         
+         rc.sendOneWay(sessionTargetID, sessionTargetID, message);
+      }
+      
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.SESS_COMMIT))).andReturn(null);
+                  
+      EasyMock.replay(conn);
+      EasyMock.replay(rc);
+      EasyMock.replay(pd);
+      
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+      
+      //Simulate some messages being delivered in a non broken sequence (i.e. what would happen with a single consumer
+      //on the session)
+            
+      for (int i = 0; i < messages.length; i++)
+      {
+         session.delivered(messages[i], true);
+         
+         session.acknowledge();
+      }
+      
+      //Then commit
+      session.commit();
+      
+      EasyMock.verify(conn);
+      EasyMock.verify(rc);
+      EasyMock.verify(pd); 
+   }
+   
+   public void testTransactedSessionAcknowledgeBrokenExpired() throws Exception
+   {
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+           
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
+           
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      
+      final int[] messages = new int[] { 1, 3, 5, 7, 9, 2, 4, 10, 20, 21, 22, 23, 19, 18, 15, 30, 31, 32, 40, 35 };
+      
+      final int sessionTargetID = 71267162;
+         
+      for (int i = 0; i < messages.length; i++)
+      {
+         SessionCancelMessage message = new SessionCancelMessage(messages[i], true);
+         
+         rc.sendOneWay(sessionTargetID, sessionTargetID, message);
+      }
+      
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.SESS_COMMIT))).andReturn(null);
+                  
+      EasyMock.replay(conn);
+      EasyMock.replay(rc);
+      EasyMock.replay(pd);
+      
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+      
+      //Simulate some messages being delivered in a broken sequence (i.e. what would happen with a single consumer
+      //on the session)
+            
+      for (int i = 0; i < messages.length; i++)
+      {
+         session.delivered(messages[i], true);
+         
+         session.acknowledge();
+      }
+      
+      //Then commit
+      session.commit();
+      
+      EasyMock.verify(conn);
+      EasyMock.verify(rc);
+      EasyMock.verify(pd); 
+   }
+   
+   public void testClose() throws Exception
+   {
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+          
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+          
+      //In ClientSessionImpl constructor
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+        
+      final long sessionTargetID = 9121892;
+      
+      ClientProducerInternal prod1 = EasyMock.createStrictMock(ClientProducerInternal.class);
+      ClientProducerInternal prod2 = EasyMock.createStrictMock(ClientProducerInternal.class);
+      
+      ClientConsumerInternal cons1 = EasyMock.createStrictMock(ClientConsumerInternal.class);
+      ClientConsumerInternal cons2 = EasyMock.createStrictMock(ClientConsumerInternal.class);
+      
+      ClientBrowser browser1 = EasyMock.createStrictMock(ClientBrowser.class);
+      ClientBrowser browser2 = EasyMock.createStrictMock(ClientBrowser.class);
+      
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+                  
+      prod1.close();
+      prod2.close();
+      cons1.close();
+      cons2.close();
+      browser1.close();
+      browser2.close();
+      
+      SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(0, true);
+      
+      rc.sendOneWay(sessionTargetID, sessionTargetID, message);
+      
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.CLOSE))).andReturn(null);
+      
+      conn.removeSession(session);      
+      
+      EasyMock.replay(conn, rc, prod1, prod2, cons1, cons2, browser1, browser2);
+      
+      session.addProducer(prod1);
+      session.addProducer(prod2);
+      
+      session.addConsumer(cons1);
+      session.addConsumer(cons2);
+      
+      session.addBrowser(browser1);
+      session.addBrowser(browser2);
+      
+      assertFalse(session.isClosed());
+            
+      session.close();
+      
+      EasyMock.verify(conn, rc, prod1, prod2, cons1, cons2, browser1, browser2);
+      
+      assertTrue(session.isClosed());
+   }
+   
    // Private -------------------------------------------------------------------------------------------
 
+   private void testAutoCommitSessionAcknowledge(boolean blockOnAcknowledge) throws Exception
+   {
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+           
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
+           
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      
+      final int numMessages = 100;
+      
+      final int batchSize = 10;
+            
+      final int sessionTargetID = 71267162;
+            
+      for (int i = 0; i < numMessages / batchSize; i++)
+      {
+         SessionAcknowledgeMessage message = new SessionAcknowledgeMessage((i + 1) * batchSize - 1, true);
+               
+         if (blockOnAcknowledge)
+         {
+            EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, message)).andReturn(null);
+         }
+         else
+         {
+            rc.sendOneWay(sessionTargetID, sessionTargetID, message);
+         }
+      }
+
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.SESS_COMMIT))).andReturn(null);
+      
+                    
+      EasyMock.replay(conn);
+      EasyMock.replay(rc);
+      EasyMock.replay(pd);
+            
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, batchSize, false, false, true, blockOnAcknowledge);
+      
+      //Simulate some messages being delivered in a non broken sequence (i.e. what would happen with a single consumer
+      //on the session)
+            
+      for (int i = 0; i < numMessages; i++)
+      {
+         session.delivered(i, false);
+         
+         session.acknowledge();
+      }
+      
+      //Then commit
+      session.commit();
+      
+      
+      EasyMock.verify(conn);
+      EasyMock.verify(rc);
+      EasyMock.verify(pd); 
+   }
+   
+   private void testTransactedSessionAcknowledgeBroken(boolean blockOnAcknowledge) throws Exception
+   {
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+           
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
+           
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      
+      final int[] messages = new int[] { 1, 3, 5, 7, 9, 2, 4, 10, 20, 21, 22, 23, 19, 18, 15, 30, 31, 32, 40, 35 };
+      
+      final int sessionTargetID = 71267162;
+         
+      for (int i = 0; i < messages.length; i++)
+      {
+         SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(messages[i], false);
+         
+         if (blockOnAcknowledge)
+         {
+            EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, message)).andReturn(null);
+         }
+         else
+         {
+            rc.sendOneWay(sessionTargetID, sessionTargetID, message);
+         }
+      }
+      
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.SESS_COMMIT))).andReturn(null);
+                  
+      EasyMock.replay(conn);
+      EasyMock.replay(rc);
+      EasyMock.replay(pd);
+      
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, blockOnAcknowledge);
+      
+      //Simulate some messages being delivered in a broken sequence (i.e. what would happen with a single consumer
+      //on the session)
+            
+      for (int i = 0; i < messages.length; i++)
+      {
+         session.delivered(messages[i], false);
+         
+         session.acknowledge();
+      }
+      
+      //Then commit
+      session.commit();
+      
+      EasyMock.verify(conn);
+      EasyMock.verify(rc);
+      EasyMock.verify(pd); 
+   }
+   
+   private void testCreateProducerWithWindowSizeMethod(final SimpleString address,
+         final int windowSize, final int initialCredits,
+         final int serverMaxRate,
+         final boolean blockOnNPSend,
+         final boolean blockOnPSend,
+         final boolean autoCommitSends) throws Exception
+   {
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
+
+      // In ClientSessionImpl constructor
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+
+      EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
+
+      // Defaults from cf
+
+      EasyMock.expect(conn.getConnectionFactory()).andReturn(cf);
+
+      EasyMock.expect(cf.isDefaultBlockOnNonPersistentSend()).andReturn(blockOnNPSend);
+
+      EasyMock.expect(conn.getConnectionFactory()).andReturn(cf);
+
+      EasyMock.expect(cf.isDefaultBlockOnPersistentSend()).andReturn(blockOnPSend);   
+
+      final long clientTargetID = 7676876;
+
+      EasyMock.expect(pd.generateID()).andReturn(clientTargetID);
+
+      final long sessionTargetID = 9121892;
+
+      SessionCreateProducerMessage request =
+         new SessionCreateProducerMessage(clientTargetID, address, windowSize, -1);             
+
+      SessionCreateProducerResponseMessage resp = 
+         new SessionCreateProducerResponseMessage(67765765, initialCredits, serverMaxRate);
+
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, request)).andReturn(resp);
+
+      EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
+
+      pd.register(new ClientProducerPacketHandler(null, clientTargetID));
+
+      EasyMock.replay(cf);
+      EasyMock.replay(conn);
+      EasyMock.replay(rc);
+      EasyMock.replay(pd);
+
+      ClientSession session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, autoCommitSends, false, false);
+
+      ClientProducerInternal producer = (ClientProducerInternal)session.createProducerWithWindowSize(address, windowSize);
+
+      EasyMock.verify(cf);
+      EasyMock.verify(conn);
+      EasyMock.verify(rc);
+      EasyMock.verify(pd);
+
+      assertEquals(address, producer.getAddress());
+      assertEquals(autoCommitSends && blockOnNPSend, producer.isBlockOnNonPersistentSend());
+      assertEquals(autoCommitSends && blockOnPSend, producer.isBlockOnPersistentSend());
+      assertEquals(initialCredits, producer.getInitialWindowSize());
+      assertEquals(serverMaxRate, producer.getMaxRate());
+   }
+   
+   private void testCreateProducerRateLimitedMethod(final SimpleString address,
+                                                    final int maxRate, final int initialCredits,
+                                                    final int serverMaxRate,
+                                                    final boolean blockOnNPSend,
+                                                    final boolean blockOnPSend,
+                                                    final boolean autoCommitSends) throws Exception
+   {
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
+
+      // In ClientSessionImpl constructor
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+
+      EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
+      
+      // Defaults from cf
+        
+      EasyMock.expect(conn.getConnectionFactory()).andReturn(cf);
+      
+      EasyMock.expect(cf.isDefaultBlockOnNonPersistentSend()).andReturn(blockOnNPSend);
+      
+      EasyMock.expect(conn.getConnectionFactory()).andReturn(cf);
+      
+      EasyMock.expect(cf.isDefaultBlockOnPersistentSend()).andReturn(blockOnPSend);   
+
+      final long clientTargetID = 7676876;
+
+      EasyMock.expect(pd.generateID()).andReturn(clientTargetID);
+
+      final long sessionTargetID = 9121892;
+
+      SessionCreateProducerMessage request =
+         new SessionCreateProducerMessage(clientTargetID, address, -1, maxRate);             
+
+      SessionCreateProducerResponseMessage resp = 
+         new SessionCreateProducerResponseMessage(67765765, initialCredits, serverMaxRate);
+
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, request)).andReturn(resp);
+
+      EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
+
+      pd.register(new ClientProducerPacketHandler(null, clientTargetID));
+
+      EasyMock.replay(cf);
+      EasyMock.replay(conn);
+      EasyMock.replay(rc);
+      EasyMock.replay(pd);
+
+      ClientSession session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, autoCommitSends, false, false);
+
+      ClientProducerInternal producer = (ClientProducerInternal)session.createRateLimitedProducer(address, maxRate);
+
+      EasyMock.verify(cf);
+      EasyMock.verify(conn);
+      EasyMock.verify(rc);
+      EasyMock.verify(pd);
+
+      assertEquals(address, producer.getAddress());
+      assertEquals(autoCommitSends && blockOnNPSend, producer.isBlockOnNonPersistentSend());
+      assertEquals(autoCommitSends && blockOnPSend, producer.isBlockOnPersistentSend());
+      assertEquals(initialCredits, producer.getInitialWindowSize());
+      assertEquals(serverMaxRate, producer.getMaxRate());
+   }
+   
+   private void testCreateProducerBasicMethod(final SimpleString address, final int windowSize,
+         final int maxRate, final int initialCredits,
+         final int serverMaxRate,
+         final boolean blockOnNPSend,
+         final boolean blockOnPSend,
+         final boolean autoCommitSends) throws Exception
+   {
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
+
+      // In ClientSessionImpl constructor
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+
+      EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
+      
+      // Defaults from cf
+      
+      EasyMock.expect(conn.getConnectionFactory()).andReturn(cf);
+      
+      EasyMock.expect(cf.getDefaultProducerWindowSize()).andReturn(windowSize);
+      
+      EasyMock.expect(conn.getConnectionFactory()).andReturn(cf);
+      
+      EasyMock.expect(cf.getDefaultProducerMaxRate()).andReturn(maxRate);   
+      
+      EasyMock.expect(conn.getConnectionFactory()).andReturn(cf);
+      
+      EasyMock.expect(cf.isDefaultBlockOnNonPersistentSend()).andReturn(blockOnNPSend);
+      
+      EasyMock.expect(conn.getConnectionFactory()).andReturn(cf);
+      
+      EasyMock.expect(cf.isDefaultBlockOnPersistentSend()).andReturn(blockOnPSend);   
+
+      final long clientTargetID = 7676876;
+
+      EasyMock.expect(pd.generateID()).andReturn(clientTargetID);
+
+      final long sessionTargetID = 9121892;
+
+      SessionCreateProducerMessage request =
+         new SessionCreateProducerMessage(clientTargetID, address, windowSize, maxRate);             
+
+      SessionCreateProducerResponseMessage resp = 
+         new SessionCreateProducerResponseMessage(67765765, initialCredits, serverMaxRate);
+
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, request)).andReturn(resp);
+
+      EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
+
+      pd.register(new ClientProducerPacketHandler(null, clientTargetID));
+
+      EasyMock.replay(cf);
+      EasyMock.replay(conn);
+      EasyMock.replay(rc);
+      EasyMock.replay(pd);
+
+      ClientSession session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, autoCommitSends, false, false);
+
+      ClientProducerInternal producer = (ClientProducerInternal)session.createProducer(address);
+
+      EasyMock.verify(cf);
+      EasyMock.verify(conn);
+      EasyMock.verify(rc);
+      EasyMock.verify(pd);
+
+      assertEquals(address, producer.getAddress());
+      assertEquals(autoCommitSends && blockOnNPSend, producer.isBlockOnNonPersistentSend());
+      assertEquals(autoCommitSends && blockOnPSend, producer.isBlockOnPersistentSend());
+      assertEquals(initialCredits, producer.getInitialWindowSize());
+      assertEquals(serverMaxRate, producer.getMaxRate());
+   }
+   
+   private void testCreateProducerWideMethod(final SimpleString address, final int windowSize,
+                                             final int maxRate, final int initialCredits,
+                                             final int serverMaxRate,
+                                             final boolean blockOnNPSend,
+                                             final boolean blockOnPSend,
+                                             final boolean autoCommitSends) throws Exception
+   {
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+           
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
+           
+      //In ClientSessionImpl constructor
+      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+                        
+      EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
+      
+      final long clientTargetID = 7676876;
+      
+      EasyMock.expect(pd.generateID()).andReturn(clientTargetID);
+      
+      final long sessionTargetID = 9121892;
+      
+      SessionCreateProducerMessage request =
+         new SessionCreateProducerMessage(clientTargetID, address, windowSize, maxRate);             
+      
+      SessionCreateProducerResponseMessage resp = 
+         new SessionCreateProducerResponseMessage(67765765, initialCredits, serverMaxRate);
+      
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, request)).andReturn(resp);
+      
+      EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
+      
+      pd.register(new ClientProducerPacketHandler(null, clientTargetID));
+      
+      EasyMock.replay(cf);
+      EasyMock.replay(conn);
+      EasyMock.replay(rc);
+      EasyMock.replay(pd);
+      
+      ClientSession session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, autoCommitSends, false, false);
+
+      ClientProducerInternal producer = (ClientProducerInternal)session.createProducer(address, windowSize, maxRate, blockOnNPSend, blockOnPSend);
+      
+      EasyMock.verify(cf);
+      EasyMock.verify(conn);
+      EasyMock.verify(rc);
+      EasyMock.verify(pd);
+      
+      assertEquals(address, producer.getAddress());
+      assertEquals(autoCommitSends && blockOnNPSend, producer.isBlockOnNonPersistentSend());
+      assertEquals(autoCommitSends && blockOnPSend, producer.isBlockOnPersistentSend());
+      assertEquals(initialCredits, producer.getInitialWindowSize());
+      assertEquals(serverMaxRate, producer.getMaxRate());
+   }
+   
    private void testCreateConsumerDefaultsMethod(final SimpleString queueName, final SimpleString filterString, final boolean noLocal,
          final boolean autoDeleteQueue, final boolean direct,
          final int windowSize, final int maxRate, final int serverWindowSize) throws Exception

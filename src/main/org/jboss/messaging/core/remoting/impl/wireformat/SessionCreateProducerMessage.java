@@ -99,6 +99,21 @@ public class SessionCreateProducerMessage extends EmptyPacket
       windowSize = buffer.getInt();      
       maxRate = buffer.getInt();
    }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionCreateProducerMessage == false)
+      {
+         return false;
+      }
+            
+      SessionCreateProducerMessage r = (SessionCreateProducerMessage)other;
+      
+      return this.clientTargetID == r.clientTargetID &&
+             this.address == null ? r.address == null : this.address.equals(r.address) &&
+             this.windowSize == r.windowSize &&
+             this.maxRate == r.maxRate;                  
+   }
 
    // Package protected ---------------------------------------------
 

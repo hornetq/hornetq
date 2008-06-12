@@ -132,6 +132,24 @@ public class SessionCreateConsumerMessage extends EmptyPacket
       maxRate = buffer.getInt();
    }
 
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionCreateConsumerMessage == false)
+      {
+         return false;
+      }
+            
+      SessionCreateConsumerMessage r = (SessionCreateConsumerMessage)other;
+      
+      return this.clientTargetID == r.clientTargetID &&
+             this.queueName.equals(r.queueName) &&
+             this.filterString == null ? r.filterString == null : this.filterString.equals(r.filterString) &&
+             this.noLocal == r.noLocal &&
+             this.autoDeleteQueue == r.autoDeleteQueue &&
+             this.windowSize == r.windowSize &&
+             this.maxRate == r.maxRate;                  
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

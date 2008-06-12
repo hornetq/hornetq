@@ -25,6 +25,12 @@ public interface ClientSessionInternal extends ClientSession
       
    void delivered(long deliveryID, boolean expired);
    
+   void addConsumer(ClientConsumerInternal consumer);
+   
+   void addProducer(ClientProducerInternal producer);
+   
+   void addBrowser(ClientBrowser browser);
+   
    void removeConsumer(ClientConsumerInternal consumer) throws MessagingException;
    
    void removeProducer(ClientProducerInternal producer);

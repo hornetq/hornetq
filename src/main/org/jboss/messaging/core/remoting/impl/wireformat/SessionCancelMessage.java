@@ -72,6 +72,19 @@ public class SessionCancelMessage extends EmptyPacket
       return getParentString() + ", deliveryID=" + deliveryID + ", expired=" + expired + "]";
    }
    
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionCancelMessage == false)
+      {
+         return false;
+      }
+            
+      SessionCancelMessage r = (SessionCancelMessage)other;
+      
+      return this.deliveryID == r.deliveryID &&
+             this.expired == r.expired;
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

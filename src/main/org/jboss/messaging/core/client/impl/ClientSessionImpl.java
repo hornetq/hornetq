@@ -109,9 +109,9 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    private final Set<ClientBrowser> browsers = new HashSet<ClientBrowser>();
    
-   private final Set<ClientProducer> producers = new HashSet<ClientProducer>();
+   private final Set<ClientProducerInternal> producers = new HashSet<ClientProducerInternal>();
    
-   private final Map<Long, ClientConsumerInternal> consumers = new HashMap<Long, ClientConsumerInternal>();
+   private final Set<ClientConsumerInternal> consumers = new HashSet<ClientConsumerInternal>();
    
    private final Map<SimpleString, ClientProducerInternal> producerCache;
    
@@ -300,7 +300,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       ClientConsumerInternal consumer =
          new ClientConsumerImpl(this, response.getConsumerTargetID(), clientTargetID, executor, remotingConnection, clientWindowSize, direct);
 
-      consumers.put(response.getConsumerTargetID(), consumer);
+      addConsumer(consumer);
       
       remotingConnection.getPacketDispatcher().register(new ClientConsumerPacketHandler(consumer, clientTargetID));
       
@@ -328,7 +328,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       ClientBrowser browser = new ClientBrowserImpl(response.getBrowserTargetID(), this, remotingConnection);  
 
-      browsers.add(browser);
+      addBrowser(browser);
 
       return browser;
    }
@@ -339,43 +339,6 @@ public class ClientSessionImpl implements ClientSessionInternal
                             connection.getConnectionFactory().getDefaultProducerMaxRate());
    }
       
-   public ClientProducer createProducer(final SimpleString address, final int windowSize, final int maxRate) throws MessagingException
-   {
-      checkClosed();
-      
-      ClientProducerInternal producer = null;
-      
-      if (cacheProducers)
-      {
-      	producer = producerCache.remove(address);
-      }
-
-      if (producer == null)
-      {
-         long clientTargetID = remotingConnection.getPacketDispatcher().generateID();
-         
-      	SessionCreateProducerMessage request = new SessionCreateProducerMessage(clientTargetID, address, windowSize, maxRate);
-      	
-      	SessionCreateProducerResponseMessage response =
-      		(SessionCreateProducerResponseMessage)remotingConnection.sendBlocking(serverTargetID, serverTargetID, request);
-      	
-      	//maxRate and windowSize can be overridden by the server
-      	
-      	producer = new ClientProducerImpl(this, response.getProducerTargetID(), clientTargetID, address,
-      			                            remotingConnection,
-      			                            response.getMaxRate(),
-      			                            connection.getConnectionFactory().isDefaultBlockOnNonPersistentSend(),      			      			                          
-      			                            autoCommitSends && connection.getConnectionFactory().isDefaultBlockOnPersistentSend(),
-      			                            response.getInitialCredits());  
-      	
-      	remotingConnection.getPacketDispatcher().register(new ClientProducerPacketHandler(producer, clientTargetID));      	
-      }
-
-      producers.add(producer);
-
-      return producer;
-   }
-   
    public ClientProducer createRateLimitedProducer(SimpleString address, int rate) throws MessagingException
    {
    	return createProducer(address, -1, rate);
@@ -383,7 +346,56 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    public ClientProducer createProducerWithWindowSize(SimpleString address, int windowSize) throws MessagingException
    {
-   	return createProducer(address, windowSize, 0);
+   	return createProducer(address, windowSize, -1);
+   }
+   
+   private ClientProducer createProducer(final SimpleString address, final int windowSize, final int maxRate) throws MessagingException
+   {
+      return createProducer(address, windowSize, maxRate,
+                            connection.getConnectionFactory().isDefaultBlockOnNonPersistentSend(),
+                            connection.getConnectionFactory().isDefaultBlockOnPersistentSend());
+   }
+   
+   public ClientProducer createProducer(final SimpleString address, final int windowSize, final int maxRate,
+                                        final boolean blockOnNonPersistentSend,
+                                        final boolean blockOnPersistentSend) throws MessagingException
+   {
+      checkClosed();
+
+      ClientProducerInternal producer = null;
+
+      if (cacheProducers)
+      {
+         producer = producerCache.remove(address);
+      }
+
+      if (producer == null)
+      {
+         long clientTargetID = remotingConnection.getPacketDispatcher().generateID();
+
+         SessionCreateProducerMessage request = new SessionCreateProducerMessage(clientTargetID, address, windowSize, maxRate);
+
+         SessionCreateProducerResponseMessage response =
+            (SessionCreateProducerResponseMessage)remotingConnection.sendBlocking(serverTargetID, serverTargetID, request);
+
+         // maxRate and windowSize can be overridden by the server
+                  
+         // If the producer is not auto-commit sends then messages are never sent blocking - there is no point
+         // since commit, prepare or rollback will flush any messages sent.
+         
+         producer = new ClientProducerImpl(this, response.getProducerTargetID(), clientTargetID, address,
+               remotingConnection,
+               response.getMaxRate(),
+               autoCommitSends && blockOnNonPersistentSend,                                                      
+               autoCommitSends && blockOnPersistentSend,
+               response.getInitialCredits());  
+
+         remotingConnection.getPacketDispatcher().register(new ClientProducerPacketHandler(producer, clientTargetID));        
+      }
+
+      addProducer(producer);
+
+      return producer;
    }
    
    public XAResource getXAResource()
@@ -414,7 +426,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       	lastCommittedID = lastID;
       }
       
-      for (ClientConsumerInternal consumer: consumers.values())
+      for (ClientConsumerInternal consumer: consumers)
       {
          consumer.recover(lastCommittedID + 1);
       }
@@ -430,6 +442,8 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    public void acknowledge() throws MessagingException
    {                        
+      checkClosed();
+      
       if (lastID + 1 != deliverID)
       {
          broken = true;
@@ -442,13 +456,15 @@ public class ClientSessionImpl implements ClientSessionInternal
       acked = false;
       
       if (deliveryExpired)
-      {
+      {         
          remotingConnection.sendOneWay(serverTargetID, serverTargetID, new SessionCancelMessage(lastID, true));
          
          toAckCount = 0;
+         
+         acked = true;
       }
       else if (broken || toAckCount == lazyAckBatchSize)
-      {
+      {         
          acknowledgeInternal(blockOnAcknowledge);
          
          toAckCount = 0;
@@ -551,6 +567,21 @@ public class ClientSessionImpl implements ClientSessionInternal
       this.deliveryExpired = expired;
    }
    
+   public void addConsumer(final ClientConsumerInternal consumer)
+   {
+      consumers.add(consumer);
+   }
+   
+   public void addProducer(final ClientProducerInternal producer)
+   {
+      producers.add(producer);
+   }
+   
+   public void addBrowser(final ClientBrowser browser)
+   {
+      browsers.add(browser);
+   }
+   
    public void removeConsumer(final ClientConsumerInternal consumer) throws MessagingException
    {
       consumers.remove(consumer.getClientTargetID());
@@ -561,7 +592,9 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       //2. cancel all deliveries on server but not in tx
             
-      remotingConnection.sendBlocking(serverTargetID, serverTargetID, new SessionCancelMessage(-1, false));
+      log.info("Removing consumer");
+      
+      remotingConnection.sendOneWay(serverTargetID, serverTargetID, new SessionCancelMessage(-1, false));
    }
    
    public void removeProducer(final ClientProducerInternal producer)
@@ -836,7 +869,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    // Package Private ------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
-
+   
    private void acknowledgeInternal(final boolean block) throws MessagingException
    {
       if (acked)
@@ -868,7 +901,7 @@ public class ClientSessionImpl implements ClientSessionInternal
         
    private void closeChildren() throws MessagingException
    {
-      Set<ClientConsumer> consumersClone = new HashSet<ClientConsumer>(consumers.values());
+      Set<ClientConsumer> consumersClone = new HashSet<ClientConsumer>(consumers);
       
       for (ClientConsumer consumer: consumersClone)
       {

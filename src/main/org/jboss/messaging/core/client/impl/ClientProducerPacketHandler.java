@@ -62,4 +62,16 @@ public class ClientProducerPacketHandler implements PacketHandler
    {
       return "ClientProducerPacketHandler[id=" + producerID + "]";
    }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof ClientProducerPacketHandler == false)
+      {
+         return false;
+      }
+            
+      ClientProducerPacketHandler r = (ClientProducerPacketHandler)other;
+      
+      return r.producerID == this.producerID;     
+   }
 }

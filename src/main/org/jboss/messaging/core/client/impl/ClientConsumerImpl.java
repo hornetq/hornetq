@@ -367,6 +367,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    public void recover(final long lastDeliveryID)
    {
+      log.info("Calling recover with " + lastDeliveryID);
+      
       ignoreDeliveryMark = lastDeliveryID;
 
       buffer.clear();      
@@ -375,6 +377,16 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    public int getClientWindowSize()
    {
       return clientWindowSize;
+   }
+   
+   public long getIgnoreDeliveryMark()
+   {
+      return ignoreDeliveryMark;
+   }
+   
+   public int getBufferSize()
+   {
+      return buffer.size();
    }
 
    // Public
