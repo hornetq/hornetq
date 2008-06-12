@@ -193,6 +193,7 @@
       <path refid="jboss.profiler.jvmti.classpath"/>
       <path refid="jboss.test14.classpath"/>
       <path refid="jboss.jboss.retro.classpath"/>
+   	  <path refid="easymock.easymock.classpath" />
    </path>
 
    <path id="jms.test.compilation.classpath">
@@ -204,6 +205,7 @@
       <path refid="jboss.test14.classpath"/>
       <path refid="jboss.jboss.retro.classpath"/>
       <path refid="apache.ant.classpath"/>
+      <path refid="easymock.easymock.classpath" />
    </path>
 
    <path id="unit.test.execution.classpath">
