@@ -716,7 +716,7 @@ public class JBossSessionTest extends TestCase
 
       EasyMock.verify(clientConn, clientSession, clientBrowser);
    }
-   
+
    public void testCreateBrowserThrowsException() throws Exception
    {
       JBossQueue queue = new JBossQueue(randomString());
@@ -725,7 +725,7 @@ public class JBossSessionTest extends TestCase
       ClientBrowser clientBrowser = createStrictMock(ClientBrowser.class);
       expect(clientSession.createBrowser(queue.getSimpleAddress(), null))
             .andThrow(new MessagingException());
-      
+
       replay(clientConn, clientSession, clientBrowser);
 
       JBossConnection connection = new JBossConnection(clientConn,
@@ -869,15 +869,16 @@ public class JBossSessionTest extends TestCase
 
    public void testCreateQueue() throws Exception
    {
-      // FIXME need to clean up use of queue address/simple address/name
-      JBossQueue tempQueue = new JBossQueue(randomString());
+      String queueName = randomString();
+      SimpleString queueAddress = new SimpleString(
+            JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + queueName);
+
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       // isExists() will return true
       SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage(
-            false, false, -1, -1, 1, null, tempQueue.getSimpleAddress());
-      expect(clientSession.queueQuery(tempQueue.getSimpleAddress())).andReturn(
-            resp);
+            false, false, -1, -1, 1, null, queueAddress);
+      expect(clientSession.queueQuery(queueAddress)).andReturn(resp);
 
       replay(clientConn, clientSession);
 
@@ -887,7 +888,7 @@ public class JBossSessionTest extends TestCase
             Session.AUTO_ACKNOWLEDGE, clientSession,
             JBossSession.TYPE_QUEUE_SESSION);
 
-      Queue queue = session.createQueue(tempQueue.getName());
+      Queue queue = session.createQueue(queueName);
       assertNotNull(queue);
 
       EasyMock.verify(clientConn, clientSession);
@@ -895,12 +896,15 @@ public class JBossSessionTest extends TestCase
 
    public void testCreateQueueThrowsException() throws Exception
    {
-      // FIXME need to clean up use of queue address/simple address/name
-      JBossQueue tempQueue = new JBossQueue(randomString());
+      String queueName = randomString();
+      SimpleString queueAddress = new SimpleString(
+            JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + queueName);
+
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
       ClientSession clientSession = createStrictMock(ClientSession.class);
-      expect(clientSession.queueQuery(tempQueue.getSimpleAddress())).andThrow(new MessagingException());
-      
+      expect(clientSession.queueQuery(queueAddress)).andThrow(
+            new MessagingException());
+
       replay(clientConn, clientSession);
 
       JBossConnection connection = new JBossConnection(clientConn,
@@ -911,7 +915,7 @@ public class JBossSessionTest extends TestCase
 
       try
       {
-         session.createQueue(tempQueue.getName());
+         session.createQueue(queueName);
          fail("should throw a JMSException");
       } catch (JMSException e)
       {
@@ -919,16 +923,18 @@ public class JBossSessionTest extends TestCase
 
       EasyMock.verify(clientConn, clientSession);
    }
+
    public void testCreateQueueWithUnknownName() throws Exception
    {
-      // FIXME need to clean up use of queue address/simple address/name
-      JBossQueue tempQueue = new JBossQueue(randomString());
+      String queueName = randomString();
+      SimpleString queueAddress = new SimpleString(
+            JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + queueName);
+
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       // isExists() will return false
       SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage();
-      expect(clientSession.queueQuery(tempQueue.getSimpleAddress())).andReturn(
-            resp);
+      expect(clientSession.queueQuery(queueAddress)).andReturn(resp);
 
       replay(clientConn, clientSession);
 
@@ -940,7 +946,7 @@ public class JBossSessionTest extends TestCase
 
       try
       {
-         session.createQueue(tempQueue.getName());
+         session.createQueue(queueName);
          fail("creating a queue with an unknown name must throw a JMSException");
       } catch (JMSException e)
       {
@@ -975,14 +981,15 @@ public class JBossSessionTest extends TestCase
 
    public void testCreateTopic() throws Exception
    {
-      // FIXME need to clean up use of topic address/simple address/name
-      JBossTopic tempTopic = new JBossTopic(randomString());
+      String topicName = randomString();
+      SimpleString topicAddress = new SimpleString(
+            JBossTopic.JMS_TOPIC_ADDRESS_PREFIX + topicName);
+
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       SessionBindingQueryResponseMessage resp = new SessionBindingQueryResponseMessage(
             true, new ArrayList<SimpleString>());
-      expect(clientSession.bindingQuery(tempTopic.getSimpleAddress()))
-            .andReturn(resp);
+      expect(clientSession.bindingQuery(topicAddress)).andReturn(resp);
 
       replay(clientConn, clientSession);
 
@@ -992,20 +999,22 @@ public class JBossSessionTest extends TestCase
             Session.AUTO_ACKNOWLEDGE, clientSession,
             JBossSession.TYPE_TOPIC_SESSION);
 
-      Topic topic = session.createTopic(tempTopic.getName());
+      Topic topic = session.createTopic(topicName);
       assertNotNull(topic);
-      
+
       EasyMock.verify(clientConn, clientSession);
    }
-   
+
    public void testCreateTopicThrowsException() throws Exception
    {
-      // FIXME need to clean up use of topic address/simple address/name
-      JBossTopic tempTopic = new JBossTopic(randomString());
+      String topicName = randomString();
+      SimpleString topicAddress = new SimpleString(
+            JBossTopic.JMS_TOPIC_ADDRESS_PREFIX + topicName);
+
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
       ClientSession clientSession = createStrictMock(ClientSession.class);
-      expect(clientSession.bindingQuery(tempTopic.getSimpleAddress()))
-            .andThrow(new MessagingException());
+      expect(clientSession.bindingQuery(topicAddress)).andThrow(
+            new MessagingException());
 
       replay(clientConn, clientSession);
 
@@ -1017,7 +1026,7 @@ public class JBossSessionTest extends TestCase
 
       try
       {
-         session.createTopic(tempTopic.getName());
+         session.createTopic(topicName);
          fail("should throw a JMSException");
       } catch (JMSException e)
       {
@@ -1026,17 +1035,17 @@ public class JBossSessionTest extends TestCase
       EasyMock.verify(clientConn, clientSession);
    }
 
-
    public void testCreateTopicWithUnknownName() throws Exception
    {
-      // FIXME need to clean up use of topic address/simple address/name
-      JBossTopic tempTopic = new JBossTopic(randomString());
+      String topicName = randomString();
+      SimpleString topicAddress = new SimpleString(
+            JBossTopic.JMS_TOPIC_ADDRESS_PREFIX + topicName);
+
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       SessionBindingQueryResponseMessage resp = new SessionBindingQueryResponseMessage(
             false, new ArrayList<SimpleString>());
-      expect(clientSession.bindingQuery(tempTopic.getSimpleAddress()))
-            .andReturn(resp);
+      expect(clientSession.bindingQuery(topicAddress)).andReturn(resp);
 
       replay(clientConn, clientSession);
 
@@ -1048,7 +1057,7 @@ public class JBossSessionTest extends TestCase
 
       try
       {
-         session.createTopic(tempTopic.getName());
+         session.createTopic(topicName);
          fail("creating a topic with an unknown name must throw a JMSException");
       } catch (JMSException e)
       {
