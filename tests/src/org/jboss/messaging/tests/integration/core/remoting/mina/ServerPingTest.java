@@ -31,7 +31,7 @@ import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @version <tt>$Revision$</tt>
  */
-public class ServerKeepAliveTest extends TestCase
+public class ServerPingTest extends TestCase
 {
    // Constants -----------------------------------------------------
 

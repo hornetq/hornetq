@@ -85,7 +85,7 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
 
       port = getInteger(e, "remoting-bind-address", port);
 
-      int blockingCallTimeout = getInteger(e, "remoting-timeout", ConnectionParamsImpl.DEFAULT_BLOCKING_CALL_TIMEOUT);
+      int blockingCallTimeout = getInteger(e, "remoting-call-timeout", ConnectionParamsImpl.DEFAULT_BLOCKING_CALL_TIMEOUT);
 
       boolean invmDisabled = getBoolean(e, "remoting-disable-invm", ConnectionParamsImpl.DEFAULT_INVM_DISABLED);
 
@@ -95,9 +95,9 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
 
       int tcpSendBufferSize = getInteger(e, "remoting-tcp-send-buffer-size", ConnectionParamsImpl.DEFAULT_TCP_SEND_BUFFER_SIZE);
 
-      int pingInterval = getInteger(e, "remoting-keep-alive-interval", ConnectionParamsImpl.DEFAULT_PING_INTERVAL);
+      int pingInterval = getInteger(e, "remoting-ping-interval", ConnectionParamsImpl.DEFAULT_PING_INTERVAL);
 
-      int pingTimeout = getInteger(e, "remoting-keep-alive-timeout", ConnectionParamsImpl.DEFAULT_PING_TIMEOUT);
+      int pingTimeout = getInteger(e, "remoting-ping-timeout", ConnectionParamsImpl.DEFAULT_PING_TIMEOUT);
 
       sslEnabled = getBoolean(e, "remoting-enable-ssl", ConnectionParamsImpl.DEFAULT_SSL_ENABLED);
 

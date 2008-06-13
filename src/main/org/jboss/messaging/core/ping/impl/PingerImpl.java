@@ -14,7 +14,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
 
 /**
- * A PingerImpl.Pings the Client or SErver and waits for the KeepAliveTimeout for a response. If none occurs clean up is
+ * A PingerImpl.Pings the Client or SErver and waits for the PingTimeout for a response. If none occurs clean up is
  * carried out.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

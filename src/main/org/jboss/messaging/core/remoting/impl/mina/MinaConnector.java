@@ -124,8 +124,6 @@ public class MinaConnector implements RemotingConnector, CleanUpNotifier
          }
       }
       addCodecFilter(filterChain);
-//     addKeepAliveFilter(filterChain, keepAliveFactory, connectionParams.getKeepAliveInterval(),
-//            connectionParams.getKeepAliveTimeout(), this);
       connector.getSessionConfig().setTcpNoDelay(connectionParams.isTcpNoDelay());
       int receiveBufferSize = connectionParams.getTcpReceiveBufferSize();
       if (receiveBufferSize != -1)
