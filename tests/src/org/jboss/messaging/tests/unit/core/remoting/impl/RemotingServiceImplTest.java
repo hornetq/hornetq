@@ -28,7 +28,6 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.*;
 import org.jboss.messaging.core.remoting.impl.RemotingServiceImpl;
-import org.jboss.messaging.core.remoting.impl.mina.ServerKeepAliveFactory;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -46,7 +45,7 @@ public class RemotingServiceImplTest extends UnitTestCase
       final Acceptor acceptor = EasyMock.createStrictMock(Acceptor.class);
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.INVM);
-      RemotingServiceImpl remotingService = new RemotingServiceImpl(config, null);
+      RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
       remotingService.setAcceptorFactory(new AcceptorFactory()
       {
          public List<Acceptor> createAcceptors(Configuration configuration)
@@ -69,7 +68,7 @@ public class RemotingServiceImplTest extends UnitTestCase
       final Acceptor acceptor = EasyMock.createStrictMock(Acceptor.class);
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.INVM);
-      RemotingServiceImpl remotingService = new RemotingServiceImpl(config, null);
+      RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
       remotingService.setAcceptorFactory(new AcceptorFactory()
       {
          public List<Acceptor> createAcceptors(Configuration configuration)
@@ -93,7 +92,7 @@ public class RemotingServiceImplTest extends UnitTestCase
       final Acceptor acceptor = EasyMock.createStrictMock(Acceptor.class);
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.INVM);
-      RemotingServiceImpl remotingService = new RemotingServiceImpl(config, null);
+      RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
       remotingService.setAcceptorFactory(new AcceptorFactory()
       {
          public List<Acceptor> createAcceptors(Configuration configuration)
@@ -120,7 +119,7 @@ public class RemotingServiceImplTest extends UnitTestCase
       final Acceptor acceptor3 = EasyMock.createStrictMock(Acceptor.class);
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.INVM);
-      RemotingServiceImpl remotingService = new RemotingServiceImpl(config, null);
+      RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
       remotingService.setAcceptorFactory(new AcceptorFactory()
       {
          public List<Acceptor> createAcceptors(Configuration configuration)
@@ -149,7 +148,7 @@ public class RemotingServiceImplTest extends UnitTestCase
       final Acceptor acceptor3 = EasyMock.createStrictMock(Acceptor.class);
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.INVM);
-      RemotingServiceImpl remotingService = new RemotingServiceImpl(config, null);
+      RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
       remotingService.setAcceptorFactory(new AcceptorFactory()
       {
          public List<Acceptor> createAcceptors(Configuration configuration)
@@ -179,29 +178,17 @@ public class RemotingServiceImplTest extends UnitTestCase
    {
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.INVM);
-      RemotingServiceImpl remotingService = new RemotingServiceImpl(config, null);
+      RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
       assertNotNull(remotingService.getDispatcher());
       remotingService = new RemotingServiceImpl(config);
       assertNotNull(remotingService.getDispatcher());
-   }
-
-   public void testKeepAliveFactoryNotNull() throws Exception
-   {
-      ConfigurationImpl config = new ConfigurationImpl();
-      config.setTransport(TransportType.INVM);
-      RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
-      assertNotNull(remotingService.getKeepAliveFactory());
-      ServerKeepAliveFactory keepAliveFactory = new ServerKeepAliveFactory();
-      remotingService = new RemotingServiceImpl(config, keepAliveFactory);
-      assertNotNull(remotingService.getKeepAliveFactory());
-      assertEquals(keepAliveFactory, remotingService.getKeepAliveFactory());
    }
 
    public void testInterceptorsAddedToDispatcher() throws Exception
    {
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.INVM);
-      RemotingServiceImpl remotingService = new RemotingServiceImpl(config, null);
+      RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
       assertNotNull(remotingService.getDispatcher());
       remotingService = new RemotingServiceImpl(config);
       assertNotNull(remotingService.getDispatcher());
@@ -219,7 +206,7 @@ public class RemotingServiceImplTest extends UnitTestCase
    {
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.INVM);
-      RemotingServiceImpl remotingService = new RemotingServiceImpl(config, null);
+      RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
       assertNotNull(remotingService.getDispatcher());
       remotingService = new RemotingServiceImpl(config);
       assertNotNull(remotingService.getDispatcher());
@@ -243,7 +230,7 @@ public class RemotingServiceImplTest extends UnitTestCase
    {
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.INVM);
-      RemotingServiceImpl remotingService = new RemotingServiceImpl(config, null);
+      RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
       assertNotNull(remotingService.getDispatcher());
       remotingService = new RemotingServiceImpl(config);
       assertNotNull(remotingService.getDispatcher());
@@ -261,7 +248,7 @@ public class RemotingServiceImplTest extends UnitTestCase
    {
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.INVM);
-      RemotingServiceImpl remotingService = new RemotingServiceImpl(config, null);
+      RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
       assertNotNull(remotingService.getDispatcher());
       remotingService = new RemotingServiceImpl(config);
       assertNotNull(remotingService.getDispatcher());
@@ -336,9 +323,9 @@ public class RemotingServiceImplTest extends UnitTestCase
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.INVM);
       config.setKeepAliveInterval(100);
-      ServerKeepAliveFactory factory = new ServerKeepAliveFactory();
-      factory.getSessions().add(1l);
-      RemotingServiceImpl remotingService = new RemotingServiceImpl(config, factory);
+
+      RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
+      remotingService.getSessions().add(1l);
       MessagingException me = new MessagingException();
       listener.sessionDestroyed(1l, me);
       EasyMock.replay(listener);
@@ -355,11 +342,11 @@ public class RemotingServiceImplTest extends UnitTestCase
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.INVM);
       config.setKeepAliveInterval(100);
-      ServerKeepAliveFactory factory = new ServerKeepAliveFactory();
-      factory.getSessions().add(1l);
-      factory.getSessions().add(2l);
-      factory.getSessions().add(3l);
-      RemotingServiceImpl remotingService = new RemotingServiceImpl(config, factory);
+
+      RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
+      remotingService.getSessions().add(1l);
+      remotingService.getSessions().add(2l);
+      remotingService.getSessions().add(3l);
       MessagingException me = new MessagingException();
       listener.sessionDestroyed(1l, me);
       listener2.sessionDestroyed(1l, me);
@@ -378,9 +365,9 @@ public class RemotingServiceImplTest extends UnitTestCase
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.INVM);
       config.setKeepAliveInterval(100);
-      ServerKeepAliveFactory factory = new ServerKeepAliveFactory();
-      factory.getSessions().add(1l);
-      RemotingServiceImpl remotingService = new RemotingServiceImpl(config, factory);
+
+      RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
+      remotingService.getSessions().add(1l);
       MessagingException me = new MessagingException();
       EasyMock.replay(listener);
       remotingService.addRemotingSessionListener(listener);
@@ -397,11 +384,11 @@ public class RemotingServiceImplTest extends UnitTestCase
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.INVM);
       config.setKeepAliveInterval(100);
-      ServerKeepAliveFactory factory = new ServerKeepAliveFactory();
-      factory.getSessions().add(1l);
-      factory.getSessions().add(1l);
-      factory.getSessions().add(1l);
-      RemotingServiceImpl remotingService = new RemotingServiceImpl(config, factory);
+
+      RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
+      remotingService.getSessions().add(1l);
+      remotingService.getSessions().add(1l);
+      remotingService.getSessions().add(1l);
       MessagingException me = new MessagingException();
       listener3.sessionDestroyed(1l, me);
       EasyMock.replay(listener, listener2, listener3);

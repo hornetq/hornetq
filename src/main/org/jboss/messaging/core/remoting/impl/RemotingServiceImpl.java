@@ -16,7 +16,6 @@ import org.jboss.messaging.core.ping.Pinger;
 import org.jboss.messaging.core.ping.impl.PingerImpl;
 import org.jboss.messaging.core.remoting.*;
 import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
-import org.jboss.messaging.core.remoting.impl.mina.ServerKeepAliveFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,8 +45,6 @@ public class RemotingServiceImpl implements RemotingService, CleanUpNotifier
 
    private List<RemotingSessionListener> listeners = new ArrayList<RemotingSessionListener>();
 
-   private ServerKeepAliveFactory factory;
-
    private ScheduledExecutorService scheduledExecutor;
 
    private Map<Long, ScheduledFuture<?>> currentScheduledPingers;
@@ -56,30 +53,26 @@ public class RemotingServiceImpl implements RemotingService, CleanUpNotifier
 
    private AcceptorFactory acceptorFactory = new AcceptorFactoryImpl();
 
+   private List<Long> sessions = new ArrayList<Long>();
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    public RemotingServiceImpl(Configuration config)
    {
-      this(config, new ServerKeepAliveFactory());
-   }
-
-   public RemotingServiceImpl(Configuration config, ServerKeepAliveFactory factory)
-   {
       assert config != null;
-      assert factory != null;
 
       validate(config);
 
       this.config = config;
-      this.factory = factory;
       dispatcher = new PacketDispatcherImpl(null);
 
       scheduledExecutor = new ScheduledThreadPoolExecutor(config.getScheduledThreadPoolMaxSize());
       currentScheduledPingers = new ConcurrentHashMap<Long, ScheduledFuture<?>>();
       currentPingers = new ConcurrentHashMap<Long, Pinger>();
    }
+
 
    @Install
    public void addInterceptor(Interceptor filter)
@@ -151,11 +144,6 @@ public class RemotingServiceImpl implements RemotingService, CleanUpNotifier
       return config;
    }
 
-   public ServerKeepAliveFactory getKeepAliveFactory()
-   {
-      return factory;
-   }
-
    public List<Acceptor> getAcceptors()
    {
       return acceptors;
@@ -174,7 +162,7 @@ public class RemotingServiceImpl implements RemotingService, CleanUpNotifier
       ScheduledFuture<?> future = scheduledExecutor.scheduleAtFixedRate(pinger, config.getKeepAliveInterval(), config.getKeepAliveInterval(), TimeUnit.MILLISECONDS);
       currentScheduledPingers.put(session.getID(), future);
       currentPingers.put(session.getID(), pinger);
-      factory.getSessions().add(session.getID());
+      sessions.add(session.getID());
    }
 
    public void unregisterPinger(Long id)
@@ -191,20 +179,29 @@ public class RemotingServiceImpl implements RemotingService, CleanUpNotifier
       }
    }
 
+   public boolean isSession(Long sessionID)
+   {
+      return sessions.contains(sessionID);
+   }
    // FailureNotifier implementation -------------------------------
    public void fireCleanup(long sessionID, MessagingException me)
    {
-      if (factory.getSessions().contains(sessionID))
+      if (sessions.contains(sessionID))
       {
          for (RemotingSessionListener listener : listeners)
          {
             listener.sessionDestroyed(sessionID, me);
          }
-         factory.getSessions().remove(sessionID);
+         sessions.remove(sessionID);
       }
    }
 
    // Public --------------------------------------------------------
+
+   public List<Long> getSessions()
+   {
+      return sessions;
+   }
 
    // Package protected ---------------------------------------------
 

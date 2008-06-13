@@ -11,12 +11,14 @@ import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.NIOSession;
+import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.RemotingServiceImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
-import org.jboss.messaging.core.remoting.impl.mina.ServerKeepAliveFactory;
-import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
-import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
+import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
+import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CREATECONNECTION;
+import org.jboss.messaging.core.server.impl.ServerPacketHandlerSupport;
 import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 
 import java.util.concurrent.CountDownLatch;
@@ -64,9 +66,9 @@ public class ServerKeepAliveTest extends TestCase
               "localhost", TestSupport.PORT);
       clientConfig.setKeepAliveInterval(TestSupport.KEEP_ALIVE_INTERVAL);
       clientConfig.setKeepAliveTimeout(TestSupport.KEEP_ALIVE_TIMEOUT);
-      service = new RemotingServiceImpl(config, new DummyServerKeepAliveFactory());
+      service = new RemotingServiceImpl(config);
       service.start();
-
+      service.getDispatcher().register(new DummyServePacketHandler());
       MinaConnector connector = new MinaConnector(clientConfig.getLocation(), clientConfig.getConnectionParams(), new PacketDispatcherImpl(null));
 
       final AtomicLong sessionIDNotResponding = new AtomicLong(-1);
@@ -92,11 +94,38 @@ public class ServerKeepAliveTest extends TestCase
       connector.disconnect();
    }
 
-   class DummyServerKeepAliveFactory extends ServerKeepAliveFactory
+   class DummyServePacketHandler extends ServerPacketHandlerSupport
    {
-      public Pong pong(long sessionID, Ping ping)
+      public long getID()
       {
-         return null;
+         //0 is reserved for this handler
+         return 0;
+      }
+
+      public Packet doHandle(final Packet packet, final PacketReturner sender) throws Exception
+      {
+         Packet response = null;
+
+         byte type = packet.getType();
+
+         if (type == CREATECONNECTION)
+         {
+            /*CreateConnectionRequest request = (CreateConnectionRequest) packet;
+
+            CreateConnectionResponse createConnectionResponse = server.createConnection(request.getUsername(), request.getPassword(),
+                    request.getRemotingSessionID(),
+                    sender.getRemoteAddress(),
+                    request.getVersion(),
+                    sender);
+            response = createConnectionResponse;*/
+
+         }
+         else if (type == EmptyPacket.PING)
+         {
+            //do nothing
+         }
+
+         return response;
       }
    }
    // Package protected ---------------------------------------------

@@ -8,7 +8,6 @@ package org.jboss.messaging.core.remoting;
 
 import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.remoting.impl.mina.ServerKeepAliveFactory;
 import org.jboss.messaging.core.server.MessagingComponent;
 
 import java.util.List;
@@ -23,8 +22,6 @@ public interface RemotingService extends MessagingComponent
    PacketDispatcher getDispatcher();
 
    Configuration getConfiguration();
-
-   ServerKeepAliveFactory getKeepAliveFactory();
 
    List<Acceptor> getAcceptors();
 
@@ -41,4 +38,6 @@ public interface RemotingService extends MessagingComponent
    void registerPinger(NIOSession session);
 
    void unregisterPinger(Long id);
+
+   boolean isSession(Long sessionID);
 }

@@ -21,20 +21,12 @@
    */
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CREATECONNECTION;
-
-import java.util.concurrent.ScheduledExecutorService;
-
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.KeepAliveFactory;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketReturner;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
-import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
-import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
-import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
+import org.jboss.messaging.core.remoting.impl.wireformat.*;
+import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CREATECONNECTION;
 import org.jboss.messaging.core.server.MessagingServer;
 
 /**
@@ -50,8 +42,6 @@ public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
 
    private final MessagingServer server;
 
-
-   private ScheduledExecutorService scheduledExecutor;
 
    public MessagingServerPacketHandler(final MessagingServer server)
    {
@@ -94,8 +84,8 @@ public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
       else if (type == EmptyPacket.PING)
       {
          Ping decodedPing = (Ping) packet;
-         KeepAliveFactory keepAliveFactory = server.getRemotingService().getKeepAliveFactory();
-         Pong pong = keepAliveFactory.pong(sender.getSessionID(), decodedPing);
+         Pong pong = new Pong(decodedPing.getSessionID(), !server.getRemotingService().isSession(sender.getSessionID()));
+         pong.setTargetID(decodedPing.getResponseTargetID());
          sender.send(pong);
       }
       else
