@@ -3,9 +3,9 @@ package org.jboss.messaging.tests.integration.core.remoting.mina;
 import junit.framework.TestCase;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.remoting.NIOConnector;
-import org.jboss.messaging.core.remoting.NIOSession;
+import org.jboss.messaging.core.remoting.RemotingConnector;
 import org.jboss.messaging.core.remoting.RemotingService;
+import org.jboss.messaging.core.remoting.RemotingSession;
 import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
@@ -31,8 +31,8 @@ public class MinaServiceTest extends TestCase
 
    public void testINVMConnector_OK() throws Exception
    {
-      NIOConnector connector = new INVMConnector(1, new PacketDispatcherImpl(null), invmService.getDispatcher());
-      NIOSession session = connector.connect();
+      RemotingConnector connector = new INVMConnector(1, new PacketDispatcherImpl(null), invmService.getDispatcher());
+      RemotingSession session = connector.connect();
 
       assertTrue(session.isConnected());
       assertTrue(connector.disconnect());
@@ -42,7 +42,7 @@ public class MinaServiceTest extends TestCase
    // disabled test since INVM transport is disabled for JBM2 alpha: JBMESSAGING-1348
    public void _testMinaConnector_Failure() throws Exception
    {
-      NIOConnector connector = new MinaConnector(new LocationImpl(
+      RemotingConnector connector = new MinaConnector(new LocationImpl(
               TCP, "localhost", 9000), new PacketDispatcherImpl(null));
 
       try

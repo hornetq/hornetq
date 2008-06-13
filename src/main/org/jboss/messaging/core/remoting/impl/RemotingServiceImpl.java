@@ -155,7 +155,7 @@ public class RemotingServiceImpl implements RemotingService, CleanUpNotifier
    }
 
 
-   public void registerPinger(NIOSession session)
+   public void registerPinger(RemotingSession session)
    {
       ResponseHandler pongHandler = new ResponseHandlerImpl(dispatcher.generateID());
       Pinger pinger = new PingerImpl(getDispatcher(), session, config.getKeepAliveTimeout(), pongHandler, RemotingServiceImpl.this);

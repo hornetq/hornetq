@@ -8,8 +8,8 @@ package org.jboss.messaging.tests.integration.core.remoting.mina;
 
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.RemotingConnector;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import org.jboss.messaging.core.remoting.impl.RemotingServiceImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
@@ -38,7 +38,7 @@ public class MinaSessionTest extends SessionTestBase
    // ClientTestBase overrides --------------------------------------
 
    @Override
-   protected NIOConnector createNIOConnector(PacketDispatcher dispatcher)
+   protected RemotingConnector createNIOConnector(PacketDispatcher dispatcher)
    {
       return new MinaConnector(new LocationImpl(TCP, "localhost", TestSupport.PORT), dispatcher);
    }

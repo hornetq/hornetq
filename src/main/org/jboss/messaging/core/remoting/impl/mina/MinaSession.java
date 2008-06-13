@@ -7,10 +7,9 @@
 package org.jboss.messaging.core.remoting.impl.mina;
 
 import org.apache.mina.common.IoSession;
-import org.apache.mina.common.WriteFuture;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.RemotingSession;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -18,7 +17,7 @@ import org.jboss.messaging.core.remoting.Packet;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class MinaSession implements NIOSession
+public class MinaSession implements RemotingSession
 {
    // Constants -----------------------------------------------------
 

@@ -38,7 +38,7 @@ public class PingerImplTest extends TestCase
    {
       long timeout = 500;
  
-      NIOSession session = createMock(NIOSession.class);
+      RemotingSession session = createMock(RemotingSession.class);
       
       ResponseHandler pongHandler = createMock(ResponseHandler.class);
       long handlerID = randomLong();
@@ -64,7 +64,7 @@ public class PingerImplTest extends TestCase
       long timeout = 500;
       
       long sessionID = randomLong();
-      NIOSession session = createMock(NIOSession.class);
+      RemotingSession session = createMock(RemotingSession.class);
       expect(session.getID()).andStubReturn(sessionID);
       
       Ping ping = new Ping(sessionID);
@@ -98,7 +98,7 @@ public class PingerImplTest extends TestCase
       long timeout = 500;
       
       long sessionID = randomLong();
-      NIOSession session = createMock(NIOSession.class);
+      RemotingSession session = createMock(RemotingSession.class);
       expect(session.getID()).andStubReturn(sessionID);
       
       Ping ping = new Ping(sessionID);
@@ -136,7 +136,7 @@ public class PingerImplTest extends TestCase
       long timeout = 500;
       
       long sessionID = randomLong();
-      NIOSession session = createMock(NIOSession.class);
+      RemotingSession session = createMock(RemotingSession.class);
       expect(session.getID()).andStubReturn(sessionID);
       
       session.write((Packet) anyObject());
@@ -169,7 +169,7 @@ public class PingerImplTest extends TestCase
       long timeout = 500;
       
       long sessionID = randomLong();
-      NIOSession session = createMock(NIOSession.class);
+      RemotingSession session = createMock(RemotingSession.class);
       expect(session.getID()).andStubReturn(sessionID);
       
       Ping ping = new Ping(sessionID);

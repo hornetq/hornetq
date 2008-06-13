@@ -401,7 +401,7 @@ public class RemotingServiceImplTest extends UnitTestCase
       EasyMock.verify(listener, listener2, listener3);
    }
 
-   class DummySession implements NIOSession
+   class DummySession implements RemotingSession
    {
       PacketDispatcher dispatcher;
       int count = 0;

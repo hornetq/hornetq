@@ -28,7 +28,7 @@ public class PingerImpl implements Pinger
 
    private final PacketDispatcher dispatcher;
 
-   private final NIOSession session;
+   private final RemotingSession session;
 
    private final ResponseHandler pongHandler;
 
@@ -37,7 +37,7 @@ public class PingerImpl implements Pinger
    private CleanUpNotifier failureHandler;
 
 
-   public PingerImpl(final PacketDispatcher dispatcher, final NIOSession session, final long pongTimeout,
+   public PingerImpl(final PacketDispatcher dispatcher, final RemotingSession session, final long pongTimeout,
                      final ResponseHandler pongHandler, final CleanUpNotifier failureHandler)
    {
       this.dispatcher = dispatcher;

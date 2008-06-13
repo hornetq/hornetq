@@ -10,9 +10,9 @@ import junit.framework.TestCase;
 import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.RemotingSession;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.RemotingServiceImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
@@ -84,7 +84,7 @@ public class ServerKeepAliveTest extends TestCase
       };
       connector.addSessionListener(listener);
 
-      NIOSession session = connector.connect();
+      RemotingSession session = connector.connect();
       boolean firedKeepAliveNotification = latch.await(TestSupport.KEEP_ALIVE_INTERVAL
               + TestSupport.KEEP_ALIVE_TIMEOUT + 2000, MILLISECONDS);
       assertTrue(firedKeepAliveNotification);

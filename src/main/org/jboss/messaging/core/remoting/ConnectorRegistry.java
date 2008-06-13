@@ -17,7 +17,7 @@ import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
  * <p/>
  * When a {@link org.jboss.messaging.core.remoting.impl.RemotingServiceImpl} is started, it register its {@link Configuration}.
  * <p/>
- * When a client is created, it gets its {@link NIOConnector} from the
+ * When a client is created, it gets its {@link RemotingConnector} from the
  * ConnectorRegistry using the {@link Configuration} corresponding to the server
  * it wants to connect to. If the ConnectionRegistry contains this Configuration, it
  * implies that the Client is in the same VM than the server. In that case, we
@@ -42,7 +42,7 @@ public interface ConnectorRegistry
     */
    boolean unregister(Location location);
 
-   NIOConnector getConnector(Location location, ConnectionParams connectionParams);
+   RemotingConnector getConnector(Location location, ConnectionParams connectionParams);
 
    /**
     * Decrement the number of references on the NIOConnector corresponding to
@@ -56,7 +56,7 @@ public interface ConnectorRegistry
     *         <code>null</code>
     * @throws IllegalStateException if no NIOConnector were created for the given Configuration
     */
-   NIOConnector removeConnector(Location location);
+   RemotingConnector removeConnector(Location location);
 
    int getRegisteredConfigurationSize();
 

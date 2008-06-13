@@ -35,7 +35,7 @@ public interface RemotingService extends MessagingComponent
 
    void removeRemotingSessionListener(RemotingSessionListener listener);
 
-   void registerPinger(NIOSession session);
+   void registerPinger(RemotingSession session);
 
    void unregisterPinger(Long id);
 

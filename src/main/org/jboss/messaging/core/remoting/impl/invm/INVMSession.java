@@ -6,14 +6,14 @@
  */
 package org.jboss.messaging.core.remoting.impl.invm;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.RemotingSession;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -21,7 +21,7 @@ import org.jboss.messaging.core.remoting.PacketReturner;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class INVMSession implements NIOSession
+public class INVMSession implements RemotingSession
 {
    // Constants -----------------------------------------------------
 

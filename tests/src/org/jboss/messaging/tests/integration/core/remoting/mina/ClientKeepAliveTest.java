@@ -13,10 +13,10 @@ import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.RemotingSession;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
@@ -114,7 +114,7 @@ public class ClientKeepAliveTest extends TestCase
       LocationImpl location = new LocationImpl(TCP, "localhost", TestSupport.PORT);
       MinaConnector connector = new MinaConnector(location, connectionParams, new PacketDispatcherImpl(null));
 
-      NIOSession session = connector.connect();
+      RemotingSession session = connector.connect();
       connector.getDispatcher().register(new NotRespondingPacketHandler());
       long clientSessionID = session.getID();
 
@@ -169,7 +169,7 @@ public class ClientKeepAliveTest extends TestCase
          MinaConnector connector = new MinaConnector(location, connectionParams,
                  new PacketDispatcherImpl(null));
 
-         NIOSession session = connector.connect();
+         RemotingSession session = connector.connect();
          connector.getDispatcher().register(tooLongRespondHandler);
          long clientSessionID = session.getID();
 
@@ -229,12 +229,12 @@ public class ClientKeepAliveTest extends TestCase
       MinaConnector connectorNotResponding = new MinaConnector(location, new PacketDispatcherImpl(null));
       MinaConnector connectorResponding = new MinaConnector(location, new PacketDispatcherImpl(null));
 
-      NIOSession sessionNotResponding = connectorNotResponding.connect();
+      RemotingSession sessionNotResponding = connectorNotResponding.connect();
       connectorNotResponding.getDispatcher().register(notRespondingPacketHandler);
       long clientSessionIDNotResponding = sessionNotResponding.getID();
 
 
-      NIOSession sessionResponding = connectorResponding.connect();
+      RemotingSession sessionResponding = connectorResponding.connect();
       long clientSessionIDResponding = sessionResponding.getID();
 
       boolean firedKeepAliveNotification = latch.await(TestSupport.KEEP_ALIVE_INTERVAL

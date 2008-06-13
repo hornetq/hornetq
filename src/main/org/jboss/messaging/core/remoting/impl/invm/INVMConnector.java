@@ -6,14 +6,13 @@
  */
 package org.jboss.messaging.core.remoting.impl.invm;
 
+import org.jboss.messaging.core.client.RemotingSessionListener;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.RemotingConnector;
+import org.jboss.messaging.core.remoting.RemotingSession;
 import static org.jboss.messaging.core.remoting.TransportType.INVM;
 
 import java.io.IOException;
-
-import org.jboss.messaging.core.client.RemotingSessionListener;
-import org.jboss.messaging.core.remoting.NIOConnector;
-import org.jboss.messaging.core.remoting.NIOSession;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -21,7 +20,7 @@ import org.jboss.messaging.core.remoting.PacketDispatcher;
  * @version <tt>$Revision$</tt>
  *
  */
-public class INVMConnector implements NIOConnector
+public class INVMConnector implements RemotingConnector
 {
    // Constants -----------------------------------------------------
 
@@ -49,7 +48,7 @@ public class INVMConnector implements NIOConnector
 
    // NIOConnector implementation -----------------------------------
 
-   public NIOSession connect()
+   public RemotingSession connect()
          throws IOException
    {
       this.session = new INVMSession(id, clientDispatcher, serverDispatcher);

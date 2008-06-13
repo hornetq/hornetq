@@ -12,8 +12,8 @@ import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.remoting.ConnectorRegistry;
-import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.RemotingConnector;
 import org.jboss.messaging.core.remoting.TransportType;
 import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import org.jboss.messaging.core.remoting.impl.ConnectorRegistryImpl;
@@ -90,7 +90,7 @@ public class ConnectorRegistryImplTest extends TestCase
       // config is registered -> client and server are in the same vm
       assertTrue(registry.register(config.getLocation(), dispatcher));
 
-      NIOConnector connector = registry.getConnector(config.getLocation(), new ConnectionParamsImpl());
+      RemotingConnector connector = registry.getConnector(config.getLocation(), new ConnectionParamsImpl());
 
       assertTrue(connector.getServerURI().startsWith(INVM.toString()));
 
@@ -105,7 +105,7 @@ public class ConnectorRegistryImplTest extends TestCase
       Configuration config = ConfigurationHelper.newTCPConfiguration("localhost", PORT);
       // config is not registered -> client and server are not in the same vm
 
-      NIOConnector connector = registry.getConnector(config.getLocation(), config.getConnectionParams());
+      RemotingConnector connector = registry.getConnector(config.getLocation(), config.getConnectionParams());
 
       assertNotNull(connector);
       assertEquals(config.getURI(), connector.getServerURI());
@@ -118,10 +118,10 @@ public class ConnectorRegistryImplTest extends TestCase
       Configuration config = ConfigurationHelper.newTCPConfiguration("localhost", PORT);
       assertEquals(0, registry.getConnectorCount(config.getLocation()));
 
-      NIOConnector connector1 = registry.getConnector(config.getLocation(), new ConnectionParamsImpl());
+      RemotingConnector connector1 = registry.getConnector(config.getLocation(), new ConnectionParamsImpl());
       assertEquals(1, registry.getConnectorCount(config.getLocation()));
 
-      NIOConnector connector2 = registry.getConnector(config.getLocation(), new ConnectionParamsImpl());
+      RemotingConnector connector2 = registry.getConnector(config.getLocation(), new ConnectionParamsImpl());
       assertEquals(2, registry.getConnectorCount(config.getLocation()));
 
       assertSame(connector1, connector2);
@@ -129,7 +129,7 @@ public class ConnectorRegistryImplTest extends TestCase
       assertNull(registry.removeConnector(config.getLocation()));
       assertEquals(1, registry.getConnectorCount(config.getLocation()));
 
-      NIOConnector connector3 = registry.getConnector(config.getLocation(), new ConnectionParamsImpl());
+      RemotingConnector connector3 = registry.getConnector(config.getLocation(), new ConnectionParamsImpl());
       assertEquals(2, registry.getConnectorCount(config.getLocation()));
 
       assertSame(connector1, connector3);
@@ -149,10 +149,10 @@ public class ConnectorRegistryImplTest extends TestCase
       assertEquals(0, registry.getConnectorCount(config1.getLocation()));
       assertEquals(0, registry.getConnectorCount(config2.getLocation()));
 
-      NIOConnector connector1 = registry.getConnector(config1.getLocation(), new ConnectionParamsImpl());
+      RemotingConnector connector1 = registry.getConnector(config1.getLocation(), new ConnectionParamsImpl());
       assertEquals(1, registry.getConnectorCount(config1.getLocation()));
 
-      NIOConnector connector2 = registry.getConnector(config2.getLocation(), new ConnectionParamsImpl());
+      RemotingConnector connector2 = registry.getConnector(config2.getLocation(), new ConnectionParamsImpl());
       assertEquals(1, registry.getConnectorCount(config2.getLocation()));
 
       assertNotSame(connector1, connector2);
@@ -171,10 +171,10 @@ public class ConnectorRegistryImplTest extends TestCase
       assertEquals(0, registry.getConnectorCount(config1.getLocation()));
       assertEquals(0, registry.getConnectorCount(config2.getLocation()));
 
-      NIOConnector connector1 = registry.getConnector(config1.getLocation(), new ConnectionParamsImpl());
+      RemotingConnector connector1 = registry.getConnector(config1.getLocation(), new ConnectionParamsImpl());
       assertEquals(1, registry.getConnectorCount(config1.getLocation()));
 
-      NIOConnector connector2 = registry.getConnector(config2.getLocation(), new ConnectionParamsImpl());
+      RemotingConnector connector2 = registry.getConnector(config2.getLocation(), new ConnectionParamsImpl());
       assertEquals(1, registry.getConnectorCount(config2.getLocation()));
 
       assertNotSame(connector1, connector2);
@@ -199,10 +199,10 @@ public class ConnectorRegistryImplTest extends TestCase
 
       assertNotSame(config1, config2);
 
-      NIOConnector connector1 = registry.getConnector(config1.getLocation(), new ConnectionParamsImpl());
+      RemotingConnector connector1 = registry.getConnector(config1.getLocation(), new ConnectionParamsImpl());
       assertEquals(1, registry.getConnectorCount(config1.getLocation()));
 
-      NIOConnector connector2 = registry.getConnector(config2.getLocation(), new ConnectionParamsImpl());
+      RemotingConnector connector2 = registry.getConnector(config2.getLocation(), new ConnectionParamsImpl());
       assertEquals(2, registry.getConnectorCount(config2.getLocation()));
 
       assertSame(connector1, connector2);

@@ -6,27 +6,20 @@
  */
 package org.jboss.messaging.tests.unit.core.remoting.impl;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
+import junit.framework.TestCase;
+import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.*;
+import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
+import org.jboss.messaging.tests.integration.core.remoting.mina.Handler;
 import static org.jboss.messaging.tests.integration.core.remoting.mina.TestSupport.MANY_MESSAGES;
+import org.jboss.messaging.tests.unit.core.remoting.TestPacketHandler;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 
 import java.util.List;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import java.util.concurrent.atomic.AtomicLong;
-
-import junit.framework.TestCase;
-
-import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.NIOConnector;
-import org.jboss.messaging.core.remoting.NIOSession;
-import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.PacketReturner;
-import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
-import org.jboss.messaging.tests.integration.core.remoting.mina.Handler;
-import org.jboss.messaging.tests.unit.core.remoting.TestPacketHandler;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -46,9 +39,9 @@ public abstract class SessionTestBase extends TestCase
    protected PacketDispatcher serverDispatcher;
    protected PacketDispatcher clientDispatcher;
 
-   protected NIOConnector connector;
+   protected RemotingConnector connector;
 
-   protected NIOSession session;
+   protected RemotingSession session;
 
    // Static --------------------------------------------------------
 
@@ -58,8 +51,8 @@ public abstract class SessionTestBase extends TestCase
 
    public void testConnected() throws Exception
    {
-      NIOConnector connector = createNIOConnector(new PacketDispatcherImpl(null));
-      NIOSession session = connector.connect();
+      RemotingConnector connector = createNIOConnector(new PacketDispatcherImpl(null));
+      RemotingSession session = connector.connect();
 
       assertTrue(session.isConnected());
       
@@ -172,7 +165,7 @@ public abstract class SessionTestBase extends TestCase
    
    protected abstract Configuration createRemotingConfiguration();
    
-   protected abstract NIOConnector createNIOConnector(PacketDispatcher dispatcher);
+   protected abstract RemotingConnector createNIOConnector(PacketDispatcher dispatcher);
 
    protected abstract PacketDispatcher startServer() throws Exception;
    

@@ -10,8 +10,8 @@ import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.ConnectorRegistry;
-import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.RemotingConnector;
 import org.jboss.messaging.core.remoting.TransportType;
 import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
@@ -81,7 +81,7 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
       return (dispatcher != null);
    }
 
-   public synchronized NIOConnector getConnector(Location location, ConnectionParams connectionParams)
+   public synchronized RemotingConnector getConnector(Location location, ConnectionParams connectionParams)
    {
       assert location != null;
       String key = location.getLocation();
@@ -90,7 +90,7 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
       {
          NIOConnectorHolder holder = connectors.get(key);
          holder.increment();
-         NIOConnector connector = holder.getConnector();
+         RemotingConnector connector = holder.getConnector();
 
          if (log.isDebugEnabled())
             log.debug("Reuse " + connector + " to connect to "
@@ -116,7 +116,7 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
 //         return connector;
 //      }
 
-      NIOConnector connector = null;
+      RemotingConnector connector = null;
 
       TransportType transport = location.getTransport();
 
@@ -157,7 +157,7 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
     *         <code>null</code>
     * @throws IllegalStateException if no NIOConnector were created for the given Configuration
     */
-   public synchronized NIOConnector removeConnector(Location location)
+   public synchronized RemotingConnector removeConnector(Location location)
    {
       assert location != null;
       String key = location.getLocation();
@@ -222,10 +222,10 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
 
    static class NIOConnectorHolder
    {
-      private final NIOConnector connector;
+      private final RemotingConnector connector;
       private int count;
 
-      public NIOConnectorHolder(NIOConnector connector)
+      public NIOConnectorHolder(RemotingConnector connector)
       {
          assert connector != null;
 
@@ -252,7 +252,7 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
          return count;
       }
 
-      public NIOConnector getConnector()
+      public RemotingConnector getConnector()
       {
          return connector;
       }

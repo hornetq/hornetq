@@ -6,12 +6,11 @@
  */
 package org.jboss.messaging.tests.unit.core.remoting.impl.invm;
 
-import static org.jboss.messaging.core.remoting.TransportType.INVM;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.RemotingConnector;
+import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
 import org.jboss.messaging.tests.unit.core.remoting.impl.SessionTestBase;
@@ -39,7 +38,7 @@ public class INVMSessionTest extends SessionTestBase
    // ClientTestBase overrides --------------------------------------
    
    @Override
-   protected NIOConnector createNIOConnector(PacketDispatcher dispatcher)
+   protected RemotingConnector createNIOConnector(PacketDispatcher dispatcher)
    {
       return new INVMConnector(1, dispatcher, serverDispatcher);
    }

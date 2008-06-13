@@ -34,7 +34,7 @@ import java.util.concurrent.*;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @version <tt>$Revision$</tt>
  */
-public class MinaConnector implements NIOConnector, CleanUpNotifier
+public class MinaConnector implements RemotingConnector, CleanUpNotifier
 {
    // Constants -----------------------------------------------------
 
@@ -126,7 +126,7 @@ public class MinaConnector implements NIOConnector, CleanUpNotifier
 
    // NIOConnector implementation -----------------------------------
 
-   public NIOSession connect() throws IOException
+   public RemotingSession connect() throws IOException
    {
       if (session != null && session.isConnected())
       {

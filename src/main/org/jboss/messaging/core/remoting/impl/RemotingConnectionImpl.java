@@ -50,9 +50,9 @@ public class RemotingConnectionImpl implements RemotingConnection
 
    private final ConnectionParams connectionParams;
 
-   private NIOConnector connector;
+   private RemotingConnector connector;
 
-   private NIOSession session;
+   private RemotingSession session;
 
    private RemotingSessionListener listener;
 
@@ -100,7 +100,7 @@ public class RemotingConnectionImpl implements RemotingConnection
          {
             if (listener != null)
                connector.removeSessionListener(listener);
-            NIOConnector connectorFromRegistry = ConnectorRegistryFactory.getRegistry().removeConnector(location);
+            RemotingConnector connectorFromRegistry = ConnectorRegistryFactory.getRegistry().removeConnector(location);
             if (connectorFromRegistry != null)
                connectorFromRegistry.disconnect();
          }
