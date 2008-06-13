@@ -49,6 +49,13 @@ public class ReceiveMessage extends EmptyPacket
       this.deliveryID = deliveryID;
    }
    
+   public ReceiveMessage(final ClientMessage message)
+   {
+      super(RECEIVE_MSG);
+
+      this.clientMessage = message;
+   }
+   
    public ReceiveMessage()
    {
       super(RECEIVE_MSG);
