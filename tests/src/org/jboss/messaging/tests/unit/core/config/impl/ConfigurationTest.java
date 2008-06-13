@@ -49,7 +49,7 @@ public class ConfigurationTest extends TestCase
 
    public void testSetClustered() throws Exception
    {
-      assertEquals("failed to set clustered", Boolean.TRUE, configuration.isClustered());
+      assertEquals("failed to set clustered", Boolean.TRUE.booleanValue(), configuration.isClustered());
    }
 
    public void testSetTransport() throws Exception
@@ -68,35 +68,6 @@ public class ConfigurationTest extends TestCase
 
    }
 
-   public void testSetRemotingTimeout() throws Exception
-   {
-      assertEquals(100, configuration.getTimeout());
-   }
-
-   public void testRemotingTcpNodelay() throws Exception
-   {
-      assertEquals(true, configuration.isTcpNoDelay());
-   }
-
-   public void testRemotingTcpReceiveBufferSize() throws Exception
-   {
-      assertEquals(8192, configuration.getTcpReceiveBufferSize());
-   }
-
-   public void testRemotingTcpSendBufferSize() throws Exception
-   {
-      assertEquals(1024, configuration.getTcpSendBufferSize());
-   }
-
-   public void testRemotingKeepAliveInterval() throws Exception
-   {
-      assertEquals(1234, configuration.getKeepAliveInterval());
-   }
-
-   public void testRemotingKeepAliveTimeout() throws Exception
-   {
-      assertEquals(5678, configuration.getKeepAliveTimeout());
-   }
 
    public void testRemotingEnableSSL() throws Exception
    {

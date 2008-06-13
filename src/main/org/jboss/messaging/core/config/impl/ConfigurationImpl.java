@@ -21,7 +21,6 @@
  */
 package org.jboss.messaging.core.config.impl;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,101 +36,175 @@ import org.jboss.messaging.core.server.JournalType;
  * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class ConfigurationImpl implements Configuration, Serializable
+public class ConfigurationImpl implements Configuration
 {
-   private static final long serialVersionUID = 4077088945050267843L;
-
+   // Constants ------------------------------------------------------------------------------
+   
    public static final String REMOTING_DISABLE_INVM_SYSPROP_KEY = "jbm.remoting.disable.invm";
 
    public static final String REMOTING_ENABLE_SSL_SYSPROP_KEY = "jbm.remoting.enable.ssl";
 
+   public static final boolean DEFAULT_CLUSTERED = false;
+   
+   public static final int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 30;
+   
+   public static final int DEFAULT_THREAD_POOL_MAX_SIZE = 30;
+   
+   public static final String DEFAULT_HOST = "localhost";
+   
+   public static final TransportType DEFAULT_TRANSPORT = TransportType.TCP;
+   
    public static final int DEFAULT_REMOTING_PORT = 5400;
+   
+   public static final long DEFAULT_SECURITY_INVALIDATION_INTERVAL = 10000;
+   
+   public static final boolean DEFAULT_REQUIRE_DESTINATIONS = false;
+   
+   public static final boolean DEFAULT_SECURITY_ENABLED = true;
+   
    public static final boolean DEFAULT_INVM_DISABLED = false;
+   
    public static final boolean DEFAULT_SSL_ENABLED = false;
-   public static final int DEFAULT_MAX_AIO = 3000;
-   public static final long DEFAULT_AIO_TIMEOUT = 90000; // in ms
+   
+   public static final String DEFAULT_KEYSTORE_PATH = "messaging.keystore";
+   
+   public static final String DEFAULT_KEYSTORE_PASSWORD = "secureexample";
+   
+   public static final String DEFAULT_TRUSTSTORE_PATH = "messaging.truststore";
+   
+   public static final String DEFAULT_TRUSTSTORE_PASSWORD = "secureexample";
+      
+   public static final String DEFAULT_BINDINGS_DIRECTORY = "data/bindings";
+   
+   public static final boolean DEFAULT_CREATE_BINDINGS_DIR = true;
+   
+   public static final String DEFAULT_JOURNAL_DIR = "data/journal";
+   
+   public static final boolean DEFAULT_CREATE_JOURNAL_DIR = true;
+   
+   public static final JournalType DEFAULT_JOURNAL_TYPE = JournalType.ASYNCIO;
+   
+   public static final boolean DEFAULT_JOURNAL_SYNC_TRANSACTIONAL = true;
+   
+   public static final boolean DEFAULT_JOURNAL_SYNC_NON_TRANSACTIONAL = false;
+   
+   public static final int DEFAULT_JOURNAL_FILE_SIZE = 10485760;
+   
+   public static final int DEFAULT_JOURNAL_MIN_FILES = 10;
+   
+   public static final int DEFAULT_MAX_AIO = 5000;
+   
+   public static final long DEFAULT_AIO_TIMEOUT = 60000; // in ms
+   
+   public static final long DEFAULT_JOURNAL_TASK_PERIOD = 5000;
+   
+   
+   
+   private static final long serialVersionUID = 4077088945050267843L;
+
+   
+   // Attributes -----------------------------------------------------------------------------
    
    protected List<String> defaultInterceptors = new ArrayList<String>();
 
-   protected boolean clustered = false;
+   protected boolean clustered = DEFAULT_CLUSTERED;
    
-   protected int scheduledThreadPoolMaxSize = 30;
+   protected int scheduledThreadPoolMaxSize = DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
    
-   protected int threadPoolMaxSize = 30;
+   protected int threadPoolMaxSize = DEFAULT_THREAD_POOL_MAX_SIZE;
    
-   protected long securityInvalidationInterval = 10000;
+   protected long securityInvalidationInterval = DEFAULT_SECURITY_INVALIDATION_INTERVAL;
 
-   protected boolean requireDestinations;
+   protected boolean requireDestinations = DEFAULT_REQUIRE_DESTINATIONS;
    
-   //Persistence config
-   
-   protected String bindingsDirectory;
-   
-   protected boolean createBindingsDir;
-   
-   protected String journalDirectory;
-   
-   protected boolean createJournalDir;
-   
-   public JournalType journalType;
-   
-   protected boolean journalSyncTransactional = true;
-   
-   protected boolean journalSyncNonTransactional = false;
-   
-   protected int journalFileSize;
-   
-   protected int journalMinFiles;
-   
-   protected int journalMaxAIO;
-   
-   protected long journalAIOTimeout;
-   
-   protected long journalTaskPeriod;
-   
-   protected boolean securityEnabled = true;
+   protected boolean securityEnabled = DEFAULT_SECURITY_ENABLED;
 
+   
+   // Journal related attributes
+   
+   protected String bindingsDirectory = DEFAULT_BINDINGS_DIRECTORY;
+   
+   protected boolean createBindingsDir = DEFAULT_CREATE_BINDINGS_DIR;
+   
+   protected String journalDirectory = DEFAULT_JOURNAL_DIR;
+   
+   protected boolean createJournalDir = DEFAULT_CREATE_JOURNAL_DIR;
+   
+   public JournalType journalType = DEFAULT_JOURNAL_TYPE;
+   
+   protected boolean journalSyncTransactional = DEFAULT_JOURNAL_SYNC_TRANSACTIONAL;
+   
+   protected boolean journalSyncNonTransactional = DEFAULT_JOURNAL_SYNC_NON_TRANSACTIONAL;
+   
+   protected int journalFileSize = DEFAULT_JOURNAL_FILE_SIZE;
+   
+   protected int journalMinFiles = DEFAULT_JOURNAL_MIN_FILES;
+   
+   protected int journalMaxAIO = DEFAULT_MAX_AIO;
+   
+   protected long journalAIOTimeout = DEFAULT_AIO_TIMEOUT;
+   
+   protected long journalTaskPeriod = DEFAULT_JOURNAL_TASK_PERIOD;
+   
    // remoting config
    
-   protected TransportType transport;
-   protected String host;
-   protected int port = DEFAULT_REMOTING_PORT;
+   //TODO  - do we really need this sever id??? I don't see why
    protected int serverID = 0;
+         
+   protected TransportType transport = DEFAULT_TRANSPORT;
    
-   protected long timeout = ConnectionParams.DEFAULT_REQRES_TIMEOUT;
-   protected long keepAliveInterval = ConnectionParams.DEFAULT_KEEP_ALIVE_INTERVAL;
-   protected long keepAliveTimeout = ConnectionParams.DEFAULT_KEEP_ALIVE_TIMEOUT;
-   protected boolean invmDisabled = DEFAULT_INVM_DISABLED;
-   protected boolean invmDisabledModified = false;
-   protected boolean tcpNoDelay;
+   protected String host = DEFAULT_HOST;
+   
+   protected int port = DEFAULT_REMOTING_PORT;
+   
+   protected boolean inVMDisabled = DEFAULT_INVM_DISABLED;
 
-   protected int tcpReceiveBufferSize = -1;
-   protected int tcpSendBufferSize = -1;
+   protected final ConnectionParams defaultConnectionParams = new ConnectionParamsImpl();
+   
    protected boolean sslEnabled = DEFAULT_SSL_ENABLED;
-   protected boolean sslEnabledModified = false;
-   protected String keyStorePath;
-   protected String keyStorePassword;
-   protected String trustStorePath;
-   protected String trustStorePassword;
-
+      
+   protected String keyStorePath = DEFAULT_KEYSTORE_PATH;
+   
+   protected String keyStorePassword = DEFAULT_KEYSTORE_PASSWORD;
+   
+   protected String trustStorePath = DEFAULT_TRUSTSTORE_PATH;
+   
+   protected String trustStorePassword = DEFAULT_TRUSTSTORE_PASSWORD;
+   
+   
    public List<String> getDefaultInterceptors()
    {
       return defaultInterceptors;
    }
 
-   public Boolean isClustered()
+   public boolean isClustered()
    {
       return clustered;
    }
    
-   public Integer getScheduledThreadPoolMaxSize()
+   public void setClustered(boolean clustered)
+   {
+      this.clustered = clustered;
+   }
+   
+   public int getScheduledThreadPoolMaxSize()
    {
    	return scheduledThreadPoolMaxSize;
    }
    
-   public Integer getThreadPoolMaxSize()
+   public void setScheduledThreadPoolMaxSize(int maxSize)
+   {
+      this.scheduledThreadPoolMaxSize = maxSize;
+   }
+   
+   public int getThreadPoolMaxSize()
    {
       return threadPoolMaxSize;
+   }
+   
+   public void setThreadPoolMaxSize(int maxSize)
+   {
+      this.threadPoolMaxSize = maxSize;
    }
       
    public long getSecurityInvalidationInterval()
@@ -139,11 +212,36 @@ public class ConfigurationImpl implements Configuration, Serializable
    	return this.securityInvalidationInterval;
    }
    
+   public void setSecurityInvalidationInterval(long interval)
+   {
+      this.securityInvalidationInterval = interval;
+   }
+   
+   public boolean isRequireDestinations()
+   {
+      return requireDestinations;
+   }
+   
+   public void setRequireDestinations(boolean require)
+   {
+      this.requireDestinations = require;
+   }
+   
+   public int getServerID()
+   {
+      return serverID;
+   }
+
+   public void setServerID(int id)
+   {
+      this.serverID = id;
+   }
+   
    public TransportType getTransport()
    {
       return transport;
    }
-
+   
    public void setTransport(TransportType transport)
    {
       this.transport = transport;
@@ -156,11 +254,9 @@ public class ConfigurationImpl implements Configuration, Serializable
    
    public void setHost(String host)
    {
-      assert host != null;
-      
       this.host = host;
    }
-
+   
    public int getPort()
    {
       return port;
@@ -170,116 +266,79 @@ public class ConfigurationImpl implements Configuration, Serializable
    {
       this.port = port;
    }
-
+   
    public Location getLocation()
    {
       if (transport == TransportType.INVM)
+      {
          return new LocationImpl(serverID);
+      }
       else
+      {
          return new LocationImpl(transport, host, port);
+      }
    }
    
-   public int getServerID()
-   {
-      return serverID;
-   }
-   
-   public void setServerID(int serverID)
-   {
-      this.serverID = serverID;
-   }
-   
-   public long getKeepAliveInterval()
-   {
-      return keepAliveInterval;
-   }
-   
-   public void setKeepAliveInterval(long keepAliveInterval)
-   {
-      this.keepAliveInterval = keepAliveInterval;
-   }
-
-   public long getKeepAliveTimeout()
-   {
-      return keepAliveTimeout;
-   }
-
-   public void setKeepAliveTimeout(long keepAliveTimeout)
-   {
-      this.keepAliveTimeout = keepAliveTimeout;
-   }
-   
-   public long getTimeout()
-   {
-      return timeout;
-   }
-
    public String getKeyStorePath()
    {
       return keyStorePath;
    }
-
-   public void setKeyStorePath(String keyStorePath)
-   {
-      this.keyStorePath = keyStorePath;
-   }
    
+   public void setKeyStorePath(String path)
+   {
+      this.keyStorePath = path;
+   }
+
    public String getKeyStorePassword()
    {
       return keyStorePassword;
    }
    
-   public void setKeyStorePassword(String keyStorePassword)
+   public void setKeyStorePassword(String password)
    {
-      this.keyStorePassword = keyStorePassword;
+      this.keyStorePassword = password;
    }
 
    public String getTrustStorePath()
    {
       return trustStorePath;
    }
-
-   public void setTrustStorePath(String trustStorePath)
-   {
-      this.trustStorePath = trustStorePath;
-   }
    
+   public void setTrustStorePath(String path)
+   {
+      this.trustStorePath = path;
+   }
+
    public String getTrustStorePassword()
    {
       return trustStorePassword;
    }
    
-   public void setTrustStorePassword(String trustStorePassword)
+   public void setTrustStorePassword(String password)
    {
-      this.trustStorePassword = trustStorePassword;
+      this.trustStorePassword = password;
    }
-   
-   public boolean isInvmDisabled()
+
+   public boolean isInVMDisabled()
    {
-       if (System.getProperty(REMOTING_DISABLE_INVM_SYSPROP_KEY) != null && !invmDisabledModified)
+      if (System.getProperty(REMOTING_DISABLE_INVM_SYSPROP_KEY) != null)
       {
          return Boolean.parseBoolean(System.getProperty(REMOTING_DISABLE_INVM_SYSPROP_KEY));
       }
       else 
       {
-         return invmDisabled;
+         return inVMDisabled;
       }
    }
    
-   public void setInvmDisabled(boolean invmDisabled)
+   public void setInVMDisabled(boolean disabled)
    {
-      this.invmDisabled = invmDisabled;
-      this.invmDisabledModified = true;
-   }
-   
-   public void setSecurityEnabled(final boolean enabled)
-   {
-      this.securityEnabled = enabled;
+      this.inVMDisabled = disabled;
    }
    
    public boolean isSSLEnabled()
    {
-      if (System.getProperty(REMOTING_ENABLE_SSL_SYSPROP_KEY) != null && !sslEnabledModified)
+      if (System.getProperty(REMOTING_ENABLE_SSL_SYSPROP_KEY) != null)
       {
          return Boolean.parseBoolean(System.getProperty(REMOTING_ENABLE_SSL_SYSPROP_KEY));
       }
@@ -289,68 +348,30 @@ public class ConfigurationImpl implements Configuration, Serializable
       }
    }
    
-   public void setSSLEnabled(boolean sslEnabled)
+   public void setSSLEnabled(boolean enabled)
    {
-      this.sslEnabled = sslEnabled;
-      this.sslEnabledModified = true;
-   }
-
-   public boolean isTcpNoDelay()
-   {
-      return this.tcpNoDelay;
-   }
-
-   public void setTcpNoDelay(boolean tcpNoDelay)
-   {
-      this.tcpNoDelay = tcpNoDelay;
-   }
-
-   public int getTcpReceiveBufferSize()
-   {
-      return this.tcpReceiveBufferSize;
-   }
-   
-   public void setTcpReceiveBufferSize(int size)
-   {
-      this.tcpReceiveBufferSize = size;
-   }
-   
-   public int getTcpSendBufferSize()
-   {
-      return this.tcpSendBufferSize;
-   }
-   
-   public void setTcpSendBufferSize(int size)
-   {
-      this.tcpSendBufferSize = size;
+      this.sslEnabled = enabled;
    }
   
-   public String getURI()
-   {
-      StringBuffer buff = new StringBuffer();
-      buff.append(transport + "://" + host + ":" + port);
-      buff.append("?").append("timeout=").append(timeout);
-      buff.append("&").append("keepAliveInterval=").append(keepAliveInterval);
-      buff.append("&").append("keepAliveTimeout=").append(keepAliveTimeout);
-      buff.append("&").append("invmDisabled=").append(invmDisabled);
-      buff.append("&").append("tcpNoDelay=").append(tcpNoDelay);
-      buff.append("&").append("tcpReceiveBufferSize=").append(tcpReceiveBufferSize);
-      buff.append("&").append("tcpSendBufferSize=").append(tcpSendBufferSize);
-      buff.append("&").append("sslEnabled=").append(sslEnabled);
-      buff.append("&").append("keyStorePath=").append(keyStorePath);
-      buff.append("&").append("trustStorePath=").append(trustStorePath);
-      return buff.toString();
-   }
-   
 	public String getBindingsDirectory()
 	{
 		return bindingsDirectory;
 	}
+	
+	public void setBindingsDirectory(String dir)
+   {
+      this.bindingsDirectory = dir;
+   }
 
 	public String getJournalDirectory()
 	{
 		return journalDirectory;
 	}
+	
+	public void setJournalDirectory(String dir)
+   {
+      this.journalDirectory = dir;
+   }
 
 	public JournalType getJournalType()
 	{
@@ -358,85 +379,114 @@ public class ConfigurationImpl implements Configuration, Serializable
 	}
 	
 	public void setJournalType(JournalType type)
-	{
-	   this.journalType = type;
-	}
-
+   {
+      this.journalType = type;
+   }
+	
 	public boolean isJournalSyncTransactional()
 	{
 		return journalSyncTransactional;
 	}
 	
+	public void setJournalSyncTransactional(boolean sync)
+   {
+      this.journalSyncTransactional = sync;
+   }
+	
 	public boolean isJournalSyncNonTransactional()
    {
       return journalSyncNonTransactional;
+   }
+	
+	public void setJournalSyncNonTransactional(boolean sync)
+   {
+      this.journalSyncNonTransactional = sync;
    }
 
 	public int getJournalFileSize()
 	{
 		return journalFileSize;
 	}
+	
+	public void setJournalFileSize(int size)
+   {
+      this.journalFileSize = size;
+   }
 
 	public int getJournalMaxAIO()
 	{
 	   return journalMaxAIO;
 	}
 	
-	public void setJournalMaxAIO(int max)
-	{
-	   this.journalMaxAIO = max;
-	}
+	public void setJournalMaxAIO(int maxAIO)
+   {
+      this.journalMaxAIO = maxAIO;
+   }
 	
 	public long getJournalAIOTimeout()
    {
       return journalAIOTimeout;
+   }
+	
+	public void setJournalAIOTimeout(long timeout)
+   {
+      this.journalAIOTimeout = timeout;
    }
 
    public int getJournalMinFiles()
 	{
 		return journalMinFiles;
 	}
+   
+   public void setJournalMinFiles(int files)
+   {
+      this.journalMinFiles = files;
+   }
 
 	public long getJournalTaskPeriod()
 	{
 		return journalTaskPeriod;
 	}
+	
+	public void setJournalTaskPeriod(long period)
+   {
+      this.journalTaskPeriod = period;
+   }
 
 	public boolean isCreateBindingsDir()
 	{
 		return createBindingsDir;
 	}
 
+	public void setCreateBindingsDir(boolean create)
+	{
+	   this.createBindingsDir = create;
+	}
+
 	public boolean isCreateJournalDir()
 	{
 		return createJournalDir;
 	}
-
-	public boolean isRequireDestinations()
-	{
-		return requireDestinations;
-	}
+	
+	public void setCreateJournalDir(boolean create)
+   {
+      this.createJournalDir = create;
+   }
 
 	public boolean isSecurityEnabled()
 	{
 	   return securityEnabled;
 	}
+	
+	public void setSecurityEnabled(boolean enabled)
+   {
+      this.securityEnabled = enabled;
+   }
 
    public ConnectionParams getConnectionParams()
    {
-      ConnectionParams connectionParams = new ConnectionParamsImpl();
-      connectionParams.setInvmDisabled(invmDisabled);
-      connectionParams.setInvmDisabledModified(invmDisabledModified);
-      connectionParams.setKeepAliveInterval(keepAliveInterval);
-      connectionParams.setKeepAliveTimeout(keepAliveTimeout);
-      connectionParams.setSSLEnabled(sslEnabled);
-      connectionParams.setSSLEnabledModified(sslEnabledModified);
-      connectionParams.setTcpNoDelay(tcpNoDelay);
-      connectionParams.setTcpReceiveBufferSize(tcpReceiveBufferSize);
-      connectionParams.setTcpSendBufferSize(tcpSendBufferSize);
-      connectionParams.setTimeout(timeout);
-      return connectionParams;
+      return this.defaultConnectionParams;
    }
-  
+
 }
  

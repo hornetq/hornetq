@@ -163,7 +163,7 @@ public class ServerConsumerImpl implements ServerConsumer
    }
    
    public HandleStatus handle(MessageReference ref) throws Exception
-   {      
+   {                  
       if (availableCredits != null && availableCredits.get() <= 0)
       {
          return HandleStatus.BUSY;
@@ -214,7 +214,7 @@ public class ServerConsumerImpl implements ServerConsumer
          }
                    
          try
-         {
+         {            
          	sessionEndpoint.handleDelivery(ref, this);
          }
          catch (Exception e)

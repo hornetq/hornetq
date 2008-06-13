@@ -34,6 +34,7 @@ import org.apache.mina.common.IoService;
 import org.apache.mina.common.IoServiceListener;
 import org.apache.mina.common.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Acceptor;
 import org.jboss.messaging.core.remoting.CleanUpNotifier;
 import org.jboss.messaging.core.remoting.RemotingService;
@@ -45,6 +46,8 @@ import org.jboss.messaging.core.remoting.RemotingService;
  */
 public class MinaAcceptor implements Acceptor
 {
+   private static final Logger log = Logger.getLogger(MinaAcceptor.class);
+
    private ExecutorService threadPool;
    private NioSocketAcceptor acceptor;
    private IoServiceListener acceptorListener;
@@ -60,6 +63,8 @@ public class MinaAcceptor implements Acceptor
       acceptor.setSessionDataStructureFactory(new MessagingIOSessionDataStructureFactory());
 
       DefaultIoFilterChainBuilder filterChain = acceptor.getFilterChain();
+      
+      log.info(remotingService.getConfiguration().getHost());
 
       // addMDCFilter(filterChain);
       if (remotingService.getConfiguration().isSSLEnabled())
@@ -73,13 +78,13 @@ public class MinaAcceptor implements Acceptor
 
       // Bind
       acceptor.setDefaultLocalAddress(new InetSocketAddress(remotingService.getConfiguration().getHost(), remotingService.getConfiguration().getPort()));
-      acceptor.getSessionConfig().setTcpNoDelay(remotingService.getConfiguration().isTcpNoDelay());
-      int receiveBufferSize = remotingService.getConfiguration().getTcpReceiveBufferSize();
+      acceptor.getSessionConfig().setTcpNoDelay(remotingService.getConfiguration().getConnectionParams().isTcpNoDelay());
+      int receiveBufferSize = remotingService.getConfiguration().getConnectionParams().getTcpReceiveBufferSize();
       if (receiveBufferSize != -1)
       {
          acceptor.getSessionConfig().setReceiveBufferSize(receiveBufferSize);
       }
-      int sendBufferSize = remotingService.getConfiguration().getTcpSendBufferSize();
+      int sendBufferSize = remotingService.getConfiguration().getConnectionParams().getTcpSendBufferSize();
       if (sendBufferSize != -1)
       {
          acceptor.getSessionConfig().setSendBufferSize(sendBufferSize);
@@ -144,7 +149,7 @@ public class MinaAcceptor implements Acceptor
       public void sessionCreated(IoSession session)
       {
          //register pinger
-         if (remotingService.getConfiguration().getKeepAliveInterval() > 0)
+         if (remotingService.getConfiguration().getConnectionParams().getPingInterval() > 0)
          {
             remotingService.registerPinger(new MinaSession(session));
          }

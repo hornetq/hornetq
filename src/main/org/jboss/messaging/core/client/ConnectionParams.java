@@ -1,3 +1,24 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2005, JBoss Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.messaging.core.client;
 
 import java.io.Serializable;
@@ -5,40 +26,27 @@ import java.io.Serializable;
 /**
  * A set of connection params used by the client connection.
  * 
- * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
  */
 public interface ConnectionParams extends Serializable
-{
-   int DEFAULT_KEEP_ALIVE_INTERVAL = 10000; // in ms
-   int DEFAULT_KEEP_ALIVE_TIMEOUT = 5000; // ms
-   int DEFAULT_REQRES_TIMEOUT = 5000; // in ms
-   boolean DEFAULT_INVM_DISABLED = false;
-   boolean DEFAULT_SSL_ENABLED = false;
-   public final static String REMOTING_SSL_KEYSTORE_PATH = "remoting.ssl.keystore.path";
-   public final static String REMOTING_SSL_KEYSTORE_PASSWORD = "remoting.ssl.keystore.password";
-   public final static String REMOTING_SSL_TRUSTSTORE_PATH = "remoting.ssl.truststore.path";
-   public final static String REMOTING_SSL_TRUSTSTORE_PASSWORD = "remoting.ssl.truststore.password";
-   public final static String REMOTING_ENABLE_SSL = "remoting.enable.ssl";
+{   
+   long getBlockingCallTimeout();
 
-   long getTimeout();
+   void setBlockingCallTimeout(long timeout);
 
-   void setTimeout(long timeout);
+   long getPingInterval();
 
-   long getKeepAliveInterval();
+   void setPingInterval(long pingInterval);
 
-   void setKeepAliveInterval(long keepAliveInterval);
+   long getPingTimeout();
 
-   long getKeepAliveTimeout();
-
-   void setKeepAliveTimeout(long keepAliveTimeout);
+   void setPingTimeout(long pingTimeout);
 
    boolean isInvmDisabled();
 
    void setInvmDisabled(boolean invmDisabled);
-
-   boolean isInvmDisabledModified();
-
-   void setInvmDisabledModified(boolean invmDisabledModified);
 
    boolean isTcpNoDelay();
 
@@ -55,10 +63,6 @@ public interface ConnectionParams extends Serializable
    boolean isSSLEnabled();
 
    void setSSLEnabled(boolean sslEnabled);
-
-   boolean isSSLEnabledModified();
-
-   void setSSLEnabledModified(boolean sslEnabledModified);
 
    String getKeyStorePath();
 

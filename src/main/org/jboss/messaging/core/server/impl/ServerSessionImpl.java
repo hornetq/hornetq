@@ -314,12 +314,12 @@ public class ServerSessionImpl implements ServerSession
       }
 
       msg.setMessageID(persistenceManager.generateMessageID());
-
+      
       // This allows the no-local consumers to filter out the messages that come
       // from the same connection.
 
       msg.setConnectionID(connection.getID());
-
+      
       if (autoCommitSends)
       {
          List<MessageReference> refs = postOffice.route(msg);
@@ -328,7 +328,7 @@ public class ServerSessionImpl implements ServerSession
          {
             persistenceManager.storeMessage(msg);
          }
-
+         
          for (MessageReference ref : refs)
          {
             ref.getQueue().addLast(ref);

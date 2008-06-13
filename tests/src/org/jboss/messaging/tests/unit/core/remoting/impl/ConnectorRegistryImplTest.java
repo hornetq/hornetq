@@ -108,7 +108,9 @@ public class ConnectorRegistryImplTest extends TestCase
       RemotingConnector connector = registry.getConnector(config.getLocation(), config.getConnectionParams());
 
       assertNotNull(connector);
-      assertEquals(config.getURI(), connector.getServerURI());
+      
+      assertEquals(config.getTransport() + "://" + config.getHost() +
+                   ":" + config.getPort() + config.getConnectionParams().getURI(), connector.getServerURI());
 
       assertNotNull(registry.removeConnector(config.getLocation()));
    }

@@ -197,11 +197,11 @@ public class MinaConnector implements RemotingConnector, CleanUpNotifier
       /**
        * if we are a TCP transport start pinging the server
        */
-      if (connectionParams.getKeepAliveInterval() > 0 && location.getTransport() == TransportType.TCP)
+      if (connectionParams.getPingInterval() > 0 && location.getTransport() == TransportType.TCP)
       {
          ResponseHandler pongHandler = new ResponseHandlerImpl(dispatcher.generateID());
-         Pinger pinger = new PingerImpl(dispatcher, minaSession, connectionParams.getKeepAliveTimeout(), pongHandler, this);
-         scheduledExecutor.scheduleAtFixedRate(pinger, connectionParams.getKeepAliveInterval(), connectionParams.getKeepAliveInterval(), TimeUnit.MILLISECONDS);
+         Pinger pinger = new PingerImpl(dispatcher, minaSession, connectionParams.getPingTimeout(), pongHandler, this);
+         scheduledExecutor.scheduleAtFixedRate(pinger, connectionParams.getPingInterval(), connectionParams.getPingInterval(), TimeUnit.MILLISECONDS);
       }
       return minaSession;
    }

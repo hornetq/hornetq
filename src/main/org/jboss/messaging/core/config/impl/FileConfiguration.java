@@ -21,19 +21,18 @@
    */
 package org.jboss.messaging.core.config.impl;
 
-import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.remoting.TransportType;
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
-import org.jboss.messaging.core.server.JournalType;
-import org.jboss.messaging.util.XMLUtil;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
+
+import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
+import org.jboss.messaging.core.remoting.TransportType;
+import org.jboss.messaging.core.server.JournalType;
+import org.jboss.messaging.util.XMLUtil;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  * ConfigurationImpl
@@ -45,9 +44,16 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
 {
    private static final long serialVersionUID = -4766689627675039596L;
 
-   //default config file location
-   private String configurationUrl = "jbm-configuration.xml";
+   // Constants ------------------------------------------------------------------------
+   
+   private static final String DEFAULT_CONFIGURATION_URL = "jbm-configuration.xml";
+   
+   // Attributes ----------------------------------------------------------------------    
+      
+   private String configurationUrl = DEFAULT_CONFIGURATION_URL;
 
+   // Public -------------------------------------------------------------------------
+   
    public void start() throws Exception
    {
       URL url = getClass().getClassLoader().getResource(configurationUrl);
@@ -58,34 +64,42 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
 
       clustered = getBoolean(e, "clustered", clustered);
 
+      //NOTE! All the defaults come from the super class
+      
       scheduledThreadPoolMaxSize = getInteger(e, "scheduled-max-pool-size", scheduledThreadPoolMaxSize);
       
       threadPoolMaxSize = getInteger(e, "max-pool-size", threadPoolMaxSize);
+      
+      requireDestinations = getBoolean(e, "require-destinations", requireDestinations);
+      
+      securityEnabled = getBoolean(e, "security-enabled", securityEnabled);
+      
+      transport = TransportType.valueOf(getString(e, "remoting-transport", TransportType.TCP.toString()));
 
-      transport = TransportType.valueOf(getString(e, "remoting-transport", TCP.name()));
-
-      host = getString(e, "remoting-host", "localhost");
+      // Remoting config
+      
+      host = getString(e, "remoting-host", host);
 
       if (System.getProperty("java.rmi.server.hostname") == null)
          System.setProperty("java.rmi.server.hostname", host);
 
-      port = getInteger(e, "remoting-bind-address", DEFAULT_REMOTING_PORT);
+      port = getInteger(e, "remoting-bind-address", port);
 
-      timeout = getInteger(e, "remoting-timeout", ConnectionParams.DEFAULT_REQRES_TIMEOUT);
+      int blockingCallTimeout = getInteger(e, "remoting-timeout", ConnectionParamsImpl.DEFAULT_BLOCKING_CALL_TIMEOUT);
 
-      invmDisabled = getBoolean(e, "remoting-disable-invm", false);
+      boolean invmDisabled = getBoolean(e, "remoting-disable-invm", ConnectionParamsImpl.DEFAULT_INVM_DISABLED);
 
-      tcpNoDelay = getBoolean(e, "remoting-tcp-nodelay", false);
+      boolean tcpNoDelay = getBoolean(e, "remoting-tcp-nodelay", ConnectionParamsImpl.DEFAULT_TCP_NODELAY);
 
-      tcpReceiveBufferSize = getInteger(e, "remoting-tcp-receive-buffer-size", -1);
+      int tcpReceiveBufferSize = getInteger(e, "remoting-tcp-receive-buffer-size", ConnectionParamsImpl.DEFAULT_TCP_RECEIVE_BUFFER_SIZE);
 
-      tcpSendBufferSize = getInteger(e, "remoting-tcp-send-buffer-size", -1);
+      int tcpSendBufferSize = getInteger(e, "remoting-tcp-send-buffer-size", ConnectionParamsImpl.DEFAULT_TCP_SEND_BUFFER_SIZE);
 
-      keepAliveInterval = getInteger(e, "remoting-keep-alive-interval", ConnectionParams.DEFAULT_KEEP_ALIVE_INTERVAL);
+      int pingInterval = getInteger(e, "remoting-keep-alive-interval", ConnectionParamsImpl.DEFAULT_PING_INTERVAL);
 
-      keepAliveTimeout = getInteger(e, "remoting-keep-alive-timeout", ConnectionParams.DEFAULT_KEEP_ALIVE_TIMEOUT);
+      int pingTimeout = getInteger(e, "remoting-keep-alive-timeout", ConnectionParamsImpl.DEFAULT_PING_TIMEOUT);
 
-      sslEnabled = getBoolean(e, "remoting-enable-ssl", false);
+      sslEnabled = getBoolean(e, "remoting-enable-ssl", ConnectionParamsImpl.DEFAULT_SSL_ENABLED);
 
       keyStorePath = getString(e, "remoting-ssl-keystore-path", null);
 
@@ -95,54 +109,66 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
 
       trustStorePassword = getString(e, "remoting-ssl-truststore-password", null);
 
-      requireDestinations = getBoolean(e, "require-destinations", requireDestinations);
+      defaultConnectionParams.setBlockingCallTimeout(blockingCallTimeout);
+      
+      defaultConnectionParams.setInvmDisabled(invmDisabled);
+      
+      defaultConnectionParams.setTcpNoDelay(tcpNoDelay);
+      
+      defaultConnectionParams.setTcpReceiveBufferSize(tcpReceiveBufferSize);
+      
+      defaultConnectionParams.setTcpSendBufferSize(tcpSendBufferSize);
+      
+      defaultConnectionParams.setPingInterval(pingInterval);
+      
+      defaultConnectionParams.setPingTimeout(pingTimeout);
+      
+      defaultConnectionParams.setSSLEnabled(sslEnabled);
+      
+      // Persistence config
 
-      //Persistence config
+      bindingsDirectory = getString(e, "bindings-directory", bindingsDirectory);
 
-      this.bindingsDirectory = getString(e, "bindings-directory", bindingsDirectory);
+      createBindingsDir = getBoolean(e, "create-bindings-dir", createBindingsDir);
 
-      this.createBindingsDir = getBoolean(e, "create-bindings-dir", createBindingsDir);
+      journalDirectory = getString(e, "journal-directory", journalDirectory);
 
-      this.journalDirectory = getString(e, "journal-directory", journalDirectory);
+      createJournalDir = getBoolean(e, "create-journal-dir", createJournalDir);
 
-      this.createJournalDir = getBoolean(e, "create-journal-dir", createJournalDir);
+      String s = getString(e, "journal-type", journalType.toString());
 
-      String s = getString(e, "journal-type", "nio");
-
-      if (s == null || (!s.equals("nio") && !s.equals("asyncio") && !s.equals("jdbc")))
+      if (s == null || (!s.equals(JournalType.NIO.toString()) && !s.equals(JournalType.ASYNCIO.toString()) && !s.equals(JournalType.JDBC.toString())))
       {
          throw new IllegalArgumentException("Invalid journal type " + s);
       }
 
-      if (s.equals("nio"))
+      if (s.equals(JournalType.NIO.toString()))
       {
          journalType = JournalType.NIO;
       }
-      else if (s.equals("asyncio"))
+      else if (s.equals(JournalType.ASYNCIO.toString()))
       {
          journalType = JournalType.ASYNCIO;
       }
-      else if (s.equals("jdbc"))
+      else if (s.equals(JournalType.JDBC.toString()))
       {
          journalType = JournalType.JDBC;
       }
 
-      this.journalSyncTransactional = getBoolean(e, "journal-sync-transactional", true);
+      journalSyncTransactional = getBoolean(e, "journal-sync-transactional", journalSyncTransactional);
       
-      this.journalSyncNonTransactional = getBoolean(e, "journal-sync-non-transactional", false);
+      journalSyncNonTransactional = getBoolean(e, "journal-sync-non-transactional", journalSyncNonTransactional);
 
-      this.journalFileSize = getInteger(e, "journal-file-size", 10 * 1024 * 1024);
+      journalFileSize = getInteger(e, "journal-file-size", journalFileSize);
 
-      this.journalMinFiles = getInteger(e, "journal-min-files", 10);
+      journalMinFiles = getInteger(e, "journal-min-files", journalMinFiles);
 
-      this.journalTaskPeriod = getLong(e, "journal-task-period", 5000L);
+      journalTaskPeriod = getLong(e, "journal-task-period", journalTaskPeriod);
 
-      this.journalMaxAIO = getInteger(e, "journal-max-aio", DEFAULT_MAX_AIO);
+      journalMaxAIO = getInteger(e, "journal-max-aio", journalMaxAIO);
 
-      this.journalAIOTimeout = getLong(e, "journal-aio-timeout", DEFAULT_AIO_TIMEOUT);
-
-      this.securityEnabled = getBoolean(e, "security-enabled", true);
-
+      journalAIOTimeout = getLong(e, "journal-aio-timeout", journalAIOTimeout);
+      
       NodeList defaultInterceptors = e.getElementsByTagName("default-interceptors-config");
 
       ArrayList<String> interceptorList = new ArrayList<String>();
@@ -172,6 +198,8 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
    {
       this.configurationUrl = configurationUrl;
    }
+   
+   // Private -------------------------------------------------------------------------
 
    private Boolean getBoolean(Element e, String name, Boolean def)
    {

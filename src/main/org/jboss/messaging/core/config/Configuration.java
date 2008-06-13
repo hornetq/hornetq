@@ -21,12 +21,13 @@
  */
 package org.jboss.messaging.core.config;
 
+import java.io.Serializable;
 import java.util.List;
 
+import org.jboss.messaging.core.client.ConnectionParams;
+import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.server.JournalType;
-import org.jboss.messaging.core.client.Location;
-import org.jboss.messaging.core.client.ConnectionParams;
 
 /**
  * 
@@ -35,87 +36,135 @@ import org.jboss.messaging.core.client.ConnectionParams;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface Configuration
+public interface Configuration extends Serializable
 {
+   // General attributes -------------------------------------------------------------------
+   
    List<String> getDefaultInterceptors();
 
-   Boolean isClustered();
-
-   Integer getScheduledThreadPoolMaxSize();
+   boolean isClustered();
    
-   Integer getThreadPoolMaxSize();
+   void setClustered(boolean clustered);
+
+   int getScheduledThreadPoolMaxSize();
+   
+   void setScheduledThreadPoolMaxSize(int maxSize);
+   
+   int getThreadPoolMaxSize();
+   
+   void setThreadPoolMaxSize(int maxSize);
 
    long getSecurityInvalidationInterval();
+   
+   void setSecurityInvalidationInterval(long interval);
+   
+   boolean isSecurityEnabled();
+   
+   void setSecurityEnabled(boolean enabled);
+   
+   boolean isRequireDestinations();
+   
+   void setRequireDestinations(boolean require);
 
+   // Remoting related attributes ----------------------------------------------------------
+   
+   int getServerID();
+   
+   void setServerID(int id);
+   
+   ConnectionParams getConnectionParams();
+   
    TransportType getTransport();
+   
+   void setTransport(TransportType transport);
 
    String getHost();
+   
+   void setHost(String host);
 
    int getPort();
+   
+   void setPort(int port);
 
    Location getLocation();
+         
+   String getKeyStorePath();
+   
+   void setKeyStorePath(String path);
+
+   String getKeyStorePassword();
+   
+   void setKeyStorePassword(String password);
+
+   String getTrustStorePath();
+   
+   void setTrustStorePath(String path);
+
+   String getTrustStorePassword();
+   
+   void setTrustStorePassword(String password);
+   
+   boolean isSSLEnabled();
+   
+   void setSSLEnabled(boolean enabled);
+   
+   boolean isInVMDisabled();
+   
+   void setInVMDisabled(boolean disabled);
 
    /**
     * The server ID is used only when the messaging server
     * is started in INVM transport. 
     */
-   int getServerID();
+  // int getServerID();
    
-   boolean isTcpNoDelay();
+   // Journal related attributes
    
-   int getTcpReceiveBufferSize();
-
-   int getTcpSendBufferSize();
-
-   long getKeepAliveInterval();
-
-   long getKeepAliveTimeout();
-
-   long getTimeout();
-   
-   boolean isSecurityEnabled();
-
-   String getKeyStorePath();
-
-   String getKeyStorePassword();
-
-   String getTrustStorePath();
-
-   String getTrustStorePassword();
-
-   boolean isInvmDisabled();
-
-   boolean isSSLEnabled();
-
-   String getURI();
-
    String getBindingsDirectory();
+   
+   void setBindingsDirectory(String dir);
 
    String getJournalDirectory();
+   
+   void setJournalDirectory(String dir);
 
    JournalType getJournalType();
+   
+   void setJournalType(JournalType type);
 
    boolean isJournalSyncTransactional();
    
+   void setJournalSyncTransactional(boolean sync);
+   
    boolean isJournalSyncNonTransactional();
+   
+   void setJournalSyncNonTransactional(boolean sync);
 
    int getJournalFileSize();
+   
+   void setJournalFileSize(int size);
 
    int getJournalMinFiles();
    
+   void setJournalMinFiles(int files);
+   
    int getJournalMaxAIO();
+   
+   void setJournalMaxAIO(int maxAIO);
    
    long getJournalAIOTimeout();
    
-   void setJournalMaxAIO(int max);
-
+   void setJournalAIOTimeout(long timeout);
+   
    long getJournalTaskPeriod();
+   
+   void setJournalTaskPeriod(long period);
 
    boolean isCreateBindingsDir();
+   
+   void setCreateBindingsDir(boolean create);
 
    boolean isCreateJournalDir();
-
-   boolean isRequireDestinations();
-
-   ConnectionParams getConnectionParams();
+   
+   void setCreateJournalDir(boolean create);
 }

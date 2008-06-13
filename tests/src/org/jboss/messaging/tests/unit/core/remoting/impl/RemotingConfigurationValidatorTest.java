@@ -53,7 +53,7 @@ public class RemotingConfigurationValidatorTest extends TestCase
    public void test_TcpReceiveBufferSize_to_0()
    {
       ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", 9000);
-      config.setTcpReceiveBufferSize(0);
+      config.getConnectionParams().setTcpReceiveBufferSize(0);
       try
       {
          validate(config);
@@ -67,14 +67,14 @@ public class RemotingConfigurationValidatorTest extends TestCase
    public void test_TcpReceiveBufferSize_to_minusOne()
    {
       ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", 9000);
-      config.setTcpReceiveBufferSize(-1);
+      config.getConnectionParams().setTcpReceiveBufferSize(-1);
       validate(config);
    }
 
    public void test_TcpReceiveBufferSize_to_NegativeNumber()
    {
       ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", 9000);
-      config.setTcpReceiveBufferSize(-2);
+      config.getConnectionParams().setTcpReceiveBufferSize(-2);
       try
       {
          validate(config);
@@ -88,7 +88,7 @@ public class RemotingConfigurationValidatorTest extends TestCase
    public void test_TcpSendBufferSize_to_0()
    {
       ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", 9000);
-      config.setTcpSendBufferSize(0);
+      config.getConnectionParams().setTcpSendBufferSize(0);
       try
       {
          validate(config);
@@ -102,14 +102,14 @@ public class RemotingConfigurationValidatorTest extends TestCase
    public void test_TcpSendBufferSize_to_minusOne()
    {
       ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", 9000);
-      config.setTcpSendBufferSize(-1);
+      config.getConnectionParams().setTcpSendBufferSize(-1);
       validate(config);
    }
 
    public void test_TcpSendBufferSize_to_NegativeNumber()
    {
       ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", 9000);
-      config.setTcpSendBufferSize(-2);
+      config.getConnectionParams().setTcpSendBufferSize(-2);
       try
       {
          validate(config);
@@ -124,7 +124,7 @@ public class RemotingConfigurationValidatorTest extends TestCase
    {
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(INVM);
-      config.setInvmDisabled(true);
+      config.setInVMDisabled(true);
 
       try
       {

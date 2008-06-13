@@ -6,7 +6,14 @@
  */
 package org.jboss.messaging.tests.integration.core.remoting.mina;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CREATECONNECTION;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicLong;
+
 import junit.framework.TestCase;
+
 import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -17,13 +24,8 @@ import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.RemotingServiceImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CREATECONNECTION;
 import org.jboss.messaging.core.server.impl.ServerPacketHandlerSupport;
 import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
-
-import java.util.concurrent.CountDownLatch;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -60,12 +62,12 @@ public class ServerKeepAliveTest extends TestCase
       //set the server timeouts to be twice that of the server to force failure
       ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration(
               "localhost", TestSupport.PORT);
-      config.setKeepAliveInterval(TestSupport.KEEP_ALIVE_INTERVAL * 2);
-      config.setKeepAliveTimeout(TestSupport.KEEP_ALIVE_TIMEOUT * 2);
+      config.getConnectionParams().setPingInterval(TestSupport.PING_INTERVAL * 2);
+      config.getConnectionParams().setPingTimeout(TestSupport.PING_TIMEOUT * 2);
       ConfigurationImpl clientConfig = ConfigurationHelper.newTCPConfiguration(
               "localhost", TestSupport.PORT);
-      clientConfig.setKeepAliveInterval(TestSupport.KEEP_ALIVE_INTERVAL);
-      clientConfig.setKeepAliveTimeout(TestSupport.KEEP_ALIVE_TIMEOUT);
+      clientConfig.getConnectionParams().setPingInterval(TestSupport.PING_INTERVAL);
+      clientConfig.getConnectionParams().setPingTimeout(TestSupport.PING_TIMEOUT);
       service = new RemotingServiceImpl(config);
       service.start();
       service.getDispatcher().register(new DummyServePacketHandler());
@@ -85,8 +87,8 @@ public class ServerKeepAliveTest extends TestCase
       connector.addSessionListener(listener);
 
       RemotingSession session = connector.connect();
-      boolean firedKeepAliveNotification = latch.await(TestSupport.KEEP_ALIVE_INTERVAL
-              + TestSupport.KEEP_ALIVE_TIMEOUT + 2000, MILLISECONDS);
+      boolean firedKeepAliveNotification = latch.await(TestSupport.PING_INTERVAL
+              + TestSupport.PING_TIMEOUT + 2000, MILLISECONDS);
       assertTrue(firedKeepAliveNotification);
       assertEquals(session.getID(), sessionIDNotResponding.longValue());
 

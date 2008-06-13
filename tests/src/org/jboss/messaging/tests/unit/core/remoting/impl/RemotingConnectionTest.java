@@ -209,7 +209,7 @@ public class RemotingConnectionTest extends UnitTestCase
       });
       Location location = EasyMock.createNiceMock(Location.class);
       ConnectionParams connectionParams = new ConnectionParamsImpl();
-      connectionParams.setTimeout(1000);
+      connectionParams.setBlockingCallTimeout(1000);
       DummyDispatcher dispatcher = new DummyDispatcher();
       DummySession nioSession = new DummySession(dispatcher, 0, null, false);
       PacketHandler handler = null;
@@ -251,7 +251,7 @@ public class RemotingConnectionTest extends UnitTestCase
       });
       Location location = EasyMock.createNiceMock(Location.class);
       ConnectionParams connectionParams = new ConnectionParamsImpl();
-      connectionParams.setTimeout(1000);
+      connectionParams.setBlockingCallTimeout(1000);
       DummyDispatcher dispatcher = new DummyDispatcher();
       DummySession nioSession = new DummySession(dispatcher, 2000, null, false);
       PacketHandler handler = null;
@@ -300,7 +300,7 @@ public class RemotingConnectionTest extends UnitTestCase
       });
       Location location = EasyMock.createNiceMock(Location.class);
       ConnectionParams connectionParams = new ConnectionParamsImpl();
-      connectionParams.setTimeout(1000);
+      connectionParams.setBlockingCallTimeout(1000);
       DummyDispatcher dispatcher = new DummyDispatcher();
       DummySession nioSession = new DummySession(dispatcher, 0, new Exception(), false);
       PacketHandler handler = null;
@@ -350,7 +350,7 @@ public class RemotingConnectionTest extends UnitTestCase
       });
       Location location = EasyMock.createNiceMock(Location.class);
       ConnectionParams connectionParams = new ConnectionParamsImpl();
-      connectionParams.setTimeout(1000);
+      connectionParams.setBlockingCallTimeout(1000);
       DummyDispatcher dispatcher = new DummyDispatcher();
       DummySession nioSession = new DummySession(dispatcher, 0, null, true);
       PacketHandler handler = null;
@@ -388,7 +388,7 @@ public class RemotingConnectionTest extends UnitTestCase
       });
       Location location = EasyMock.createNiceMock(Location.class);
       ConnectionParams connectionParams = new ConnectionParamsImpl();
-      connectionParams.setTimeout(1000);
+      connectionParams.setBlockingCallTimeout(1000);
       DummyDispatcher dispatcher = new DummyDispatcher();
       DummySession nioSession = new DummySession(dispatcher, 0, new Exception(), true);
       PacketHandler handler = null;

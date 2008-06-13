@@ -36,25 +36,24 @@ public class ClientConsumerPacketHandler implements PacketHandler
 
    public void handle(final Packet packet, final PacketReturner sender)
    {
-      try
+      byte type = packet.getType();
+      
+      if (type == EmptyPacket.RECEIVE_MSG)
       {
-         byte type = packet.getType();
+         ReceiveMessage message = (ReceiveMessage) packet;
          
-         if (type == EmptyPacket.RECEIVE_MSG)
+         try
          {
-            ReceiveMessage message = (ReceiveMessage) packet;
-            
             clientConsumer.handleMessage(message.getClientMessage());
          }
-         else
+         catch (Exception e)
          {
-         	throw new IllegalStateException("Invalid packet: " + type);
+            log.error("Failed to handle packet " + packet);
          }
-         	
       }
-      catch (Exception e)
+      else
       {
-         log.error("Failed to handle message", e);
+      	throw new IllegalStateException("Invalid packet: " + type);
       }
    }
 

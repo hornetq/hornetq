@@ -38,8 +38,8 @@ import org.jboss.messaging.core.remoting.impl.mina.MinaAcceptor;
 import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
-import static org.jboss.messaging.tests.integration.core.remoting.mina.TestSupport.KEEP_ALIVE_INTERVAL;
-import static org.jboss.messaging.tests.integration.core.remoting.mina.TestSupport.KEEP_ALIVE_TIMEOUT;
+import static org.jboss.messaging.tests.integration.core.remoting.mina.TestSupport.PING_INTERVAL;
+import static org.jboss.messaging.tests.integration.core.remoting.mina.TestSupport.PING_TIMEOUT;
 
 import java.io.IOException;
 import java.util.List;
@@ -75,12 +75,12 @@ public class ClientNetworkFailureTest extends TestCase
    {
       super.setUp();
       ConfigurationImpl newConfig = new ConfigurationImpl();
-      newConfig.setInvmDisabled(true);
+      newConfig.setInVMDisabled(true);
       newConfig.setHost("localhost");
       newConfig.setPort(5400);
       newConfig.setTransport(TransportType.TCP);
-      newConfig.setKeepAliveInterval(KEEP_ALIVE_INTERVAL);
-      newConfig.setKeepAliveTimeout(KEEP_ALIVE_TIMEOUT);
+      newConfig.getConnectionParams().setPingInterval(PING_INTERVAL);
+      newConfig.getConnectionParams().setPingTimeout(PING_TIMEOUT);
       server = new MessagingServerImpl(newConfig);
       server.start();
       minaService = (RemotingServiceImpl) server.getRemotingService();
@@ -130,10 +130,10 @@ public class ClientNetworkFailureTest extends TestCase
       networkFailureFilter.messageReceivedDropsPacket = true;
 
       boolean gotExceptionsOnTheServerAndTheClient = exceptionLatch.await(
-              KEEP_ALIVE_INTERVAL + KEEP_ALIVE_TIMEOUT + 5000, MILLISECONDS);
+              PING_INTERVAL + PING_TIMEOUT + 5000, MILLISECONDS);
       assertTrue(gotExceptionsOnTheServerAndTheClient);
       //now we  need to wait for the server to detect the client failover
-      //Thread.sleep((KEEP_ALIVE_INTERVAL + KEEP_ALIVE_TIMEOUT) * 1000);
+      //Thread.sleep((PING_INTERVAL + PING_TIMEOUT) * 1000);
       assertActiveConnectionsOnTheServer(0);
 
       try
@@ -166,10 +166,10 @@ public class ClientNetworkFailureTest extends TestCase
       networkFailureFilter.messageReceivedDropsPacket = true;
 
       boolean gotExceptionOnTheServer = exceptionLatch.await(
-              KEEP_ALIVE_INTERVAL + KEEP_ALIVE_TIMEOUT + 5000, MILLISECONDS);
+              PING_INTERVAL + PING_TIMEOUT + 5000, MILLISECONDS);
       assertTrue(gotExceptionOnTheServer);
       //now we  need to wait for the server to detect the client failover
-      //Thread.sleep((KEEP_ALIVE_INTERVAL + KEEP_ALIVE_TIMEOUT) * 1000);
+      //Thread.sleep((PING_INTERVAL + PING_TIMEOUT) * 1000);
       assertActiveConnectionsOnTheServer(0);
 
       try

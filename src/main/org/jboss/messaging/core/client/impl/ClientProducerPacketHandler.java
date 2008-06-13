@@ -35,26 +35,26 @@ public class ClientProducerPacketHandler implements PacketHandler
    }
 
    public void handle(final Packet packet, final PacketReturner sender)
-   {
-      try
+   {    
+      byte type = packet.getType();
+      
+      if (type == EmptyPacket.PROD_RECEIVETOKENS)
       {
-         byte type = packet.getType();
+         ProducerFlowCreditMessage message = (ProducerFlowCreditMessage) packet;
          
-         if (type == EmptyPacket.PROD_RECEIVETOKENS)
+         try
          {
-            ProducerFlowCreditMessage message = (ProducerFlowCreditMessage) packet;
-            
             clientProducer.receiveCredits(message.getTokens());
          }
-         else
+         catch (Exception e)
          {
-         	throw new IllegalStateException("Invalid packet: " + type);
+            log.error("Failed to handle packet " + packet, e);
          }
       }
-      catch (Exception e)
+      else
       {
-         log.error("Failed to handle packet", e);
-      }
+      	throw new IllegalStateException("Invalid packet: " + type);
+      }      
    }
 
    @Override

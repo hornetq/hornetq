@@ -58,7 +58,7 @@ public class JMSServerManagerimplTest extends TestCase
       jmsServerManager = new JMSServerManagerImpl();
       MessagingServerManagementImpl messagingServerManagement = new MessagingServerManagementImpl();
       ConfigurationImpl conf = new ConfigurationImpl();
-      conf.setInvmDisabled(false);
+      conf.setInVMDisabled(false);
       conf.setTransport(INVM);
       messagingServer = new MessagingServerImpl(conf);
       messagingServer.start();

@@ -25,54 +25,96 @@ import org.jboss.messaging.core.client.ConnectionParams;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class ConnectionParamsImpl implements ConnectionParams
 {
+   //Constants ---------------------------------------------------------------------------------------
+      
+   public static final int DEFAULT_PING_INTERVAL = 10000; // in ms
+   
+   public static final int DEFAULT_PING_TIMEOUT = 5000; // ms
+   
+   public static final int DEFAULT_BLOCKING_CALL_TIMEOUT = 5000; // in ms
+   
+   public static final boolean DEFAULT_INVM_DISABLED = false;
+   
+   public static final boolean DEFAULT_TCP_NODELAY = true;
+   
+   public static final int DEFAULT_TCP_RECEIVE_BUFFER_SIZE = 32 * 1024; // in bytes
+   
+   public static final int DEFAULT_TCP_SEND_BUFFER_SIZE = 32 * 1024; // in bytes
+   
+   public static final boolean DEFAULT_SSL_ENABLED = false;
+   
+   public static final String REMOTING_SSL_KEYSTORE_PATH_PROPERTY_NAME = "remoting.ssl.keystore.path";
+   
+   public static final String REMOTING_SSL_KEYSTORE_PASSWORD_PROPERTY_NAME = "remoting.ssl.keystore.password";
+   
+   public static final String REMOTING_SSL_TRUSTSTORE_PATH_PROPERTY_NAME = "remoting.ssl.truststore.path";
+   
+   public static final String REMOTING_SSL_TRUSTSTORE_PASSWORD_PROPERTY_NAME = "remoting.ssl.truststore.password";
+   
+   public static final String REMOTING_ENABLE_SSL_PROPERTY_NAME = "remoting.enable.ssl";
+   
+   
+   
    private static final long serialVersionUID = 1662480686951551534L;
    
-   protected long timeout = DEFAULT_REQRES_TIMEOUT;
-   protected long keepAliveInterval = DEFAULT_KEEP_ALIVE_INTERVAL;
-   protected long keepAliveTimeout = DEFAULT_KEEP_ALIVE_TIMEOUT;
-   protected boolean invmDisabled = DEFAULT_INVM_DISABLED;
-   protected boolean invmDisabledModified = false;
-   protected boolean tcpNoDelay;
-   protected int tcpReceiveBufferSize = -1;
-   protected int tcpSendBufferSize = -1;
-   protected boolean sslEnabled = DEFAULT_SSL_ENABLED;
-   protected boolean sslEnabledModified = false;
-   protected String keyStorePath;
-   protected String keyStorePassword;
-   protected String trustStorePath;
-   protected String trustStorePassword;
+   // Attributes -------------------------------------------------------------------------------------
    
-   public long getTimeout()
+   private long blockingCallTimeout = DEFAULT_BLOCKING_CALL_TIMEOUT;
+   
+   private long pingInterval = DEFAULT_PING_INTERVAL;
+   
+   private long pingTimeout = DEFAULT_PING_TIMEOUT;
+   
+   private boolean invmDisabled = DEFAULT_INVM_DISABLED;
+   
+   private boolean tcpNoDelay = DEFAULT_TCP_NODELAY;
+   
+   private int tcpReceiveBufferSize = DEFAULT_TCP_RECEIVE_BUFFER_SIZE;
+   
+   private int tcpSendBufferSize = DEFAULT_TCP_SEND_BUFFER_SIZE;
+   
+   private boolean sslEnabled = DEFAULT_SSL_ENABLED;
+   
+   private String keyStorePath;
+   
+   private String keyStorePassword;
+   
+   private String trustStorePath;
+   
+   private String trustStorePassword;
+   
+   public long getBlockingCallTimeout()
    {
-      return timeout;
+      return blockingCallTimeout;
    }
 
-   public void setTimeout(long timeout)
+   public void setBlockingCallTimeout(final long timeout)
    {
-      this.timeout = timeout;
+      this.blockingCallTimeout = timeout;
    }
 
-   public long getKeepAliveInterval()
+   public long getPingInterval()
    {
-      return keepAliveInterval;
+      return pingInterval;
    }
 
-   public void setKeepAliveInterval(long keepAliveInterval)
+   public void setPingInterval(final long pingInterval)
    {
-      this.keepAliveInterval = keepAliveInterval;
+      this.pingInterval = pingInterval;
    }
 
-   public long getKeepAliveTimeout()
+   public long getPingTimeout()
    {
-      return keepAliveTimeout;
+      return pingTimeout;
    }
 
-   public void setKeepAliveTimeout(long keepAliveTimeout)
+   public void setPingTimeout(final long pingTimeout)
    {
-      this.keepAliveTimeout = keepAliveTimeout;
+      this.pingTimeout = pingTimeout;
    }
 
    public boolean isInvmDisabled()
@@ -80,19 +122,9 @@ public class ConnectionParamsImpl implements ConnectionParams
       return invmDisabled;
    }
 
-   public void setInvmDisabled(boolean invmDisabled)
+   public void setInvmDisabled(final boolean invmDisabled)
    {
       this.invmDisabled = invmDisabled;
-   }
-
-   public boolean isInvmDisabledModified()
-   {
-      return invmDisabledModified;
-   }
-
-   public void setInvmDisabledModified(boolean invmDisabledModified)
-   {
-      this.invmDisabledModified = invmDisabledModified;
    }
 
    public boolean isTcpNoDelay()
@@ -100,7 +132,7 @@ public class ConnectionParamsImpl implements ConnectionParams
       return tcpNoDelay;
    }
 
-   public void setTcpNoDelay(boolean tcpNoDelay)
+   public void setTcpNoDelay(final boolean tcpNoDelay)
    {
       this.tcpNoDelay = tcpNoDelay;
    }
@@ -110,7 +142,7 @@ public class ConnectionParamsImpl implements ConnectionParams
       return tcpReceiveBufferSize;
    }
 
-   public void setTcpReceiveBufferSize(int tcpReceiveBufferSize)
+   public void setTcpReceiveBufferSize(final int tcpReceiveBufferSize)
    {
       this.tcpReceiveBufferSize = tcpReceiveBufferSize;
    }
@@ -120,83 +152,77 @@ public class ConnectionParamsImpl implements ConnectionParams
       return tcpSendBufferSize;
    }
 
-   public void setTcpSendBufferSize(int tcpSendBufferSize)
+   public void setTcpSendBufferSize(final int tcpSendBufferSize)
    {
       this.tcpSendBufferSize = tcpSendBufferSize;
    }
 
    public boolean isSSLEnabled()
    {
-      String sslEnabledProperty = System.getProperty(REMOTING_ENABLE_SSL);
-      return sslEnabledProperty==null?sslEnabled:sslEnabledProperty.equalsIgnoreCase("true");
+      String sslEnabledProperty = System.getProperty(REMOTING_ENABLE_SSL_PROPERTY_NAME);
+      
+      return sslEnabledProperty == null ? sslEnabled : sslEnabledProperty.equalsIgnoreCase("true");
    }
 
-   public void setSSLEnabled(boolean sslEnabled)
+   public void setSSLEnabled(final boolean sslEnabled)
    {
       this.sslEnabled = sslEnabled;
    }
 
-   public boolean isSSLEnabledModified()
-   {
-      return sslEnabledModified;
-   }
-
-   public void setSSLEnabledModified(boolean sslEnabledModified)
-   {
-      this.sslEnabledModified = sslEnabledModified;
-   }
-
    public String getKeyStorePath()
    {
-      String sslKeystorePath = System.getProperty(REMOTING_SSL_KEYSTORE_PATH);
-      return sslKeystorePath == null?keyStorePath:sslKeystorePath;
+      String sslKeystorePath = System.getProperty(REMOTING_SSL_KEYSTORE_PATH_PROPERTY_NAME);
+      
+      return sslKeystorePath == null ? keyStorePath : sslKeystorePath;
    }
 
-   public void setKeyStorePath(String keyStorePath)
+   public void setKeyStorePath(final String keyStorePath)
    {
       this.keyStorePath = keyStorePath;
    }
 
    public String getKeyStorePassword()
    {
-      String keyStorePass = System.getProperty(REMOTING_SSL_KEYSTORE_PASSWORD);
-      return keyStorePass == null?keyStorePassword:keyStorePass;
+      String keyStorePass = System.getProperty(REMOTING_SSL_KEYSTORE_PASSWORD_PROPERTY_NAME);
+      
+      return keyStorePass == null ? keyStorePassword : keyStorePass;
    }
 
-   public void setKeyStorePassword(String keyStorePassword)
+   public void setKeyStorePassword(final String keyStorePassword)
    {
       this.keyStorePassword = keyStorePassword;
    }
 
    public String getTrustStorePath()
    {
-      String sslTruststorePath = System.getProperty(REMOTING_SSL_TRUSTSTORE_PATH);
-      return sslTruststorePath==null?trustStorePath:sslTruststorePath;
+      String sslTruststorePath = System.getProperty(REMOTING_SSL_TRUSTSTORE_PATH_PROPERTY_NAME);
+      
+      return sslTruststorePath == null ? trustStorePath : sslTruststorePath;
    }
 
-   public void setTrustStorePath(String trustStorePath)
+   public void setTrustStorePath(final String trustStorePath)
    {
       this.trustStorePath = trustStorePath;
    }
 
    public String getTrustStorePassword()
    {
-      String trustStorePass = System.getProperty(REMOTING_SSL_TRUSTSTORE_PASSWORD);
-      return trustStorePass==null?trustStorePassword:trustStorePass;
+      String trustStorePass = System.getProperty(REMOTING_SSL_TRUSTSTORE_PASSWORD_PROPERTY_NAME);
+      
+      return trustStorePass == null ? trustStorePassword : trustStorePass;
    }
 
-   public void setTrustStorePassword(String trustStorePassword)
+   public void setTrustStorePassword(final String trustStorePassword)
    {
       this.trustStorePassword = trustStorePassword;
    }
-
+     
    public String getURI()
    {
       StringBuffer buff = new StringBuffer();
-      //buff.append(transport + "://" + host + ":" + port);
-      buff.append("?").append("timeout=").append(timeout);
-      buff.append("&").append("keepAliveInterval=").append(keepAliveInterval);
-      buff.append("&").append("keepAliveTimeout=").append(keepAliveTimeout);
+      buff.append("?").append("blockingCallTimeout=").append(blockingCallTimeout);
+      buff.append("&").append("pingInterval=").append(pingInterval);
+      buff.append("&").append("pingTimeout=").append(pingTimeout);
       buff.append("&").append("invmDisabled=").append(invmDisabled);
       buff.append("&").append("tcpNoDelay=").append(tcpNoDelay);
       buff.append("&").append("tcpReceiveBufferSize=").append(tcpReceiveBufferSize);
@@ -205,6 +231,11 @@ public class ConnectionParamsImpl implements ConnectionParams
       buff.append("&").append("keyStorePath=").append(keyStorePath);
       buff.append("&").append("trustStorePath=").append(trustStorePath);
       return buff.toString();
+   }
+   
+   public String toString()
+   {
+      return "ConnectionParamsImpl:" + System.identityHashCode(this) + ":" + getURI();
    }
    
    public boolean equals(Object other)
@@ -216,15 +247,13 @@ public class ConnectionParamsImpl implements ConnectionParams
       
       ConnectionParams cp = (ConnectionParams)other;
       
-      return cp.getTimeout() == timeout &&
-             cp.getKeepAliveTimeout() == this.keepAliveTimeout &&
-             cp.getKeepAliveInterval() == this.keepAliveInterval &&
+      return cp.getBlockingCallTimeout() == blockingCallTimeout &&
+             cp.getPingTimeout() == this.pingTimeout &&
+             cp.getPingInterval() == this.pingInterval &&
              cp.isInvmDisabled() == this.isInvmDisabled() &&
-             cp.isInvmDisabledModified() == this.isInvmDisabledModified() &&
              cp.isTcpNoDelay() == this.isTcpNoDelay() &&
              cp.getTcpReceiveBufferSize() == this.getTcpReceiveBufferSize() &&
              cp.getTcpSendBufferSize() == this.getTcpSendBufferSize() &&
-             cp.isSSLEnabled() == this.isSSLEnabled() &&
-             cp.isSSLEnabledModified() == this.isSSLEnabledModified();
+             cp.isSSLEnabled() == this.isSSLEnabled();
    }
 }

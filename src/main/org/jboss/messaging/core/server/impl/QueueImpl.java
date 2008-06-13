@@ -169,7 +169,7 @@ public class QueueImpl implements Queue
          lock.lock();
       }
       try
-      {
+      {         
          return add(ref, false);
       }
       finally

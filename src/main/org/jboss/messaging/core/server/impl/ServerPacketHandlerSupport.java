@@ -51,14 +51,14 @@ public abstract class ServerPacketHandlerSupport implements PacketHandler
       {
          MessagingException me;
          
+         log.error("Caught unexpected exception", e);         
+         
          if (e instanceof MessagingException)
          {
             me = (MessagingException)e;
          }
          else
-         {
-            log.error("Caught unexpected exception", e);
-            
+         {            
             me = new MessagingException(MessagingException.INTERNAL_ERROR);
          }
                   

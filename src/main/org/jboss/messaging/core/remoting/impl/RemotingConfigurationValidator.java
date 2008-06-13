@@ -29,13 +29,8 @@ public class RemotingConfigurationValidator
 
    public static void validate(Configuration configuration)
    {
-      assert configuration != null;
-      
-      if (log.isDebugEnabled())
-         log.debug("validating " + configuration.getURI());
-      
       if (configuration.getTransport() == INVM
-            && configuration.isInvmDisabled())
+            && configuration.isInVMDisabled())
       {
          throw new IllegalStateException(
                "It is not allowed to disable invm communication when the transport is set to invm.");
@@ -52,7 +47,7 @@ public class RemotingConfigurationValidator
          throw new IllegalStateException("Remoting port can not be negative when transport is not INVM");
       }
       
-      int receiveBufferSize = configuration.getTcpReceiveBufferSize();
+      int receiveBufferSize = configuration.getConnectionParams().getTcpReceiveBufferSize();
       if (receiveBufferSize != -1 && receiveBufferSize <= 0)
       {
          String message = "Invalid value for TCP receive buffer size: " + receiveBufferSize;
@@ -60,7 +55,7 @@ public class RemotingConfigurationValidator
          throw new IllegalStateException(message);
       }
 
-      int sendBufferSize = configuration.getTcpSendBufferSize();
+      int sendBufferSize = configuration.getConnectionParams().getTcpSendBufferSize();
       if (sendBufferSize != -1 && sendBufferSize <= 0)
       {
          String message = "Invalid value for TCP send buffer size: " + sendBufferSize;

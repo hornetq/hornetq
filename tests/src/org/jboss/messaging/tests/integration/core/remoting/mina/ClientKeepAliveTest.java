@@ -52,8 +52,8 @@ public class ClientKeepAliveTest extends TestCase
    protected void setUp() throws Exception
    {
       ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", TestSupport.PORT);
-      config.setKeepAliveInterval(TestSupport.KEEP_ALIVE_INTERVAL);
-      config.setKeepAliveTimeout(TestSupport.KEEP_ALIVE_TIMEOUT);
+      config.getConnectionParams().setPingInterval(TestSupport.PING_INTERVAL);
+      config.getConnectionParams().setPingTimeout(TestSupport.PING_TIMEOUT);
       messagingServer = new MessagingServerImpl(config);
       messagingServer.start();
    }
@@ -77,13 +77,13 @@ public class ClientKeepAliveTest extends TestCase
       };
       messagingServer.getRemotingService().addRemotingSessionListener(listener);
       ConnectionParams connectionParams = new ConnectionParamsImpl();
-      connectionParams.setKeepAliveInterval(TestSupport.KEEP_ALIVE_INTERVAL);
-      connectionParams.setKeepAliveTimeout(TestSupport.KEEP_ALIVE_TIMEOUT);
+      connectionParams.setPingInterval(TestSupport.PING_INTERVAL);
+      connectionParams.setPingTimeout(TestSupport.PING_TIMEOUT);
       MinaConnector connector = new MinaConnector(new LocationImpl(TCP, "localhost", TestSupport.PORT), connectionParams, new PacketDispatcherImpl(null));
       connector.connect();
 
-      boolean firedKeepAliveNotification = latch.await(TestSupport.KEEP_ALIVE_INTERVAL
-              + TestSupport.KEEP_ALIVE_TIMEOUT + 2000, MILLISECONDS);
+      boolean firedKeepAliveNotification = latch.await(TestSupport.PING_INTERVAL
+              + TestSupport.PING_TIMEOUT + 2000, MILLISECONDS);
       assertFalse(firedKeepAliveNotification);
 
       messagingServer.getRemotingService().removeRemotingSessionListener(listener);
@@ -108,8 +108,8 @@ public class ClientKeepAliveTest extends TestCase
       };
       messagingServer.getRemotingService().addRemotingSessionListener(listener);
       ConnectionParams connectionParams = new ConnectionParamsImpl();
-      connectionParams.setKeepAliveInterval(TestSupport.KEEP_ALIVE_INTERVAL);
-      connectionParams.setKeepAliveTimeout(TestSupport.KEEP_ALIVE_TIMEOUT);
+      connectionParams.setPingInterval(TestSupport.PING_INTERVAL);
+      connectionParams.setPingTimeout(TestSupport.PING_TIMEOUT);
 
       LocationImpl location = new LocationImpl(TCP, "localhost", TestSupport.PORT);
       MinaConnector connector = new MinaConnector(location, connectionParams, new PacketDispatcherImpl(null));
@@ -118,8 +118,8 @@ public class ClientKeepAliveTest extends TestCase
       connector.getDispatcher().register(new NotRespondingPacketHandler());
       long clientSessionID = session.getID();
 
-      boolean firedKeepAliveNotification = latch.await(TestSupport.KEEP_ALIVE_INTERVAL
-              + TestSupport.KEEP_ALIVE_TIMEOUT + 2000, MILLISECONDS);
+      boolean firedKeepAliveNotification = latch.await(TestSupport.PING_INTERVAL
+              + TestSupport.PING_TIMEOUT + 2000, MILLISECONDS);
       assertTrue("notification has not been received", firedKeepAliveNotification);
       assertNotNull(clientSessionIDNotResponding[0]);
       //assertEquals(clientSessionID, clientSessionIDNotResponding[0]);
@@ -163,8 +163,8 @@ public class ClientKeepAliveTest extends TestCase
       try
       {
          ConnectionParams connectionParams = new ConnectionParamsImpl();
-         connectionParams.setKeepAliveInterval(TestSupport.KEEP_ALIVE_INTERVAL);
-         connectionParams.setKeepAliveTimeout(TestSupport.KEEP_ALIVE_TIMEOUT);
+         connectionParams.setPingInterval(TestSupport.PING_INTERVAL);
+         connectionParams.setPingTimeout(TestSupport.PING_TIMEOUT);
          LocationImpl location = new LocationImpl(TCP, "localhost", TestSupport.PORT);
          MinaConnector connector = new MinaConnector(location, connectionParams,
                  new PacketDispatcherImpl(null));
@@ -186,8 +186,8 @@ public class ClientKeepAliveTest extends TestCase
          };
          messagingServer.getRemotingService().addRemotingSessionListener(listener);
 
-         boolean firedKeepAliveNotification = latch.await(TestSupport.KEEP_ALIVE_INTERVAL
-                 + TestSupport.KEEP_ALIVE_TIMEOUT + 2000, MILLISECONDS);
+         boolean firedKeepAliveNotification = latch.await(TestSupport.PING_INTERVAL
+                 + TestSupport.PING_TIMEOUT + 2000, MILLISECONDS);
          assertTrue("notification has not been received", firedKeepAliveNotification);
          //assertEquals(clientSessionID, clientSessionIDNotResponding.longValue());
 
@@ -223,8 +223,8 @@ public class ClientKeepAliveTest extends TestCase
       PacketHandler notRespondingPacketHandler = new NotRespondingPacketHandler();
       messagingServer.getRemotingService().addRemotingSessionListener(listener);
       ConnectionParams connectionParams = new ConnectionParamsImpl();
-      connectionParams.setKeepAliveInterval(TestSupport.KEEP_ALIVE_INTERVAL);
-      connectionParams.setKeepAliveTimeout(TestSupport.KEEP_ALIVE_TIMEOUT);
+      connectionParams.setPingInterval(TestSupport.PING_INTERVAL);
+      connectionParams.setPingTimeout(TestSupport.PING_TIMEOUT);
       LocationImpl location = new LocationImpl(TCP, "localhost", TestSupport.PORT);
       MinaConnector connectorNotResponding = new MinaConnector(location, new PacketDispatcherImpl(null));
       MinaConnector connectorResponding = new MinaConnector(location, new PacketDispatcherImpl(null));
@@ -237,8 +237,8 @@ public class ClientKeepAliveTest extends TestCase
       RemotingSession sessionResponding = connectorResponding.connect();
       long clientSessionIDResponding = sessionResponding.getID();
 
-      boolean firedKeepAliveNotification = latch.await(TestSupport.KEEP_ALIVE_INTERVAL
-              + TestSupport.KEEP_ALIVE_TIMEOUT + 2000, MILLISECONDS);
+      boolean firedKeepAliveNotification = latch.await(TestSupport.PING_INTERVAL
+              + TestSupport.PING_TIMEOUT + 2000, MILLISECONDS);
       assertTrue("notification has not been received", firedKeepAliveNotification);
 
       //assertEquals(clientSessionIDNotResponding, sessionIDNotResponding.longValue());

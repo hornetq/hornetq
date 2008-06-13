@@ -272,7 +272,7 @@ public class RemotingServiceImplTest extends UnitTestCase
    {
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.INVM);
-      config.setKeepAliveInterval(100);
+      config.getConnectionParams().setPingInterval(100);
       RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
       DummySession dummySession = new DummySession(remotingService.getDispatcher());
       remotingService.registerPinger(dummySession);
@@ -292,7 +292,7 @@ public class RemotingServiceImplTest extends UnitTestCase
    {
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.INVM);
-      config.setKeepAliveInterval(100);
+      config.getConnectionParams().setPingInterval(100);
       RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
       DummySession dummySession = new DummySession(remotingService.getDispatcher());
       remotingService.registerPinger(dummySession);
@@ -308,7 +308,7 @@ public class RemotingServiceImplTest extends UnitTestCase
       int count = dummySession.count;
       try
       {
-         Thread.sleep(config.getKeepAliveInterval() + 2);
+         Thread.sleep(config.getConnectionParams().getPingInterval() + 2);
       }
       catch (InterruptedException e)
       {
@@ -322,7 +322,7 @@ public class RemotingServiceImplTest extends UnitTestCase
       RemotingSessionListener listener = EasyMock.createStrictMock(RemotingSessionListener.class);
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.INVM);
-      config.setKeepAliveInterval(100);
+      config.getConnectionParams().setPingInterval(100);
 
       RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
       remotingService.getSessions().add(1l);
@@ -341,7 +341,7 @@ public class RemotingServiceImplTest extends UnitTestCase
       RemotingSessionListener listener3 = EasyMock.createStrictMock(RemotingSessionListener.class);
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.INVM);
-      config.setKeepAliveInterval(100);
+      config.getConnectionParams().setPingInterval(100);
 
       RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
       remotingService.getSessions().add(1l);
@@ -364,7 +364,7 @@ public class RemotingServiceImplTest extends UnitTestCase
       RemotingSessionListener listener = EasyMock.createStrictMock(RemotingSessionListener.class);
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.INVM);
-      config.setKeepAliveInterval(100);
+      config.getConnectionParams().setPingInterval(100);
 
       RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
       remotingService.getSessions().add(1l);
@@ -383,7 +383,7 @@ public class RemotingServiceImplTest extends UnitTestCase
       RemotingSessionListener listener3 = EasyMock.createStrictMock(RemotingSessionListener.class);
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.INVM);
-      config.setKeepAliveInterval(100);
+      config.getConnectionParams().setPingInterval(100);
 
       RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
       remotingService.getSessions().add(1l);

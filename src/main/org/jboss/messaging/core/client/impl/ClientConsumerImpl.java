@@ -230,8 +230,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          throw new MessagingException(MessagingException.ILLEGAL_STATE,"Cannot set MessageHandler - consumer is in receive(...)");
       }
         
-      log.info("Setting handler");
-      
    	waitForOnMessageToComplete();   	
    	
       this.handler = handler;
@@ -374,8 +372,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    public void recover(final long lastDeliveryID)
    {
-      log.info("Calling recover with " + lastDeliveryID);
-      
       ignoreDeliveryMark = lastDeliveryID;
 
       buffer.clear();      

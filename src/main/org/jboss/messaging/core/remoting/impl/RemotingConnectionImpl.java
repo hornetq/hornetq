@@ -81,6 +81,7 @@ public class RemotingConnectionImpl implements RemotingConnection
       }
 
       connector = ConnectorRegistryFactory.getRegistry().getConnector(location, connectionParams);
+      
       session = connector.connect();
 
       if (log.isDebugEnabled())
@@ -99,10 +100,16 @@ public class RemotingConnectionImpl implements RemotingConnection
          if (connector != null)
          {
             if (listener != null)
+            {
                connector.removeSessionListener(listener);
+            }
+            
             RemotingConnector connectorFromRegistry = ConnectorRegistryFactory.getRegistry().removeConnector(location);
+            
             if (connectorFromRegistry != null)
+            {
                connectorFromRegistry.disconnect();
+            }
          }
       }
       catch (Throwable ignore)
@@ -153,7 +160,7 @@ public class RemotingConnectionImpl implements RemotingConnection
             throw new MessagingException(MessagingException.INTERNAL_ERROR);
          }
 
-         Packet response = handler.waitForResponse(connectionParams.getTimeout());
+         Packet response = handler.waitForResponse(connectionParams.getBlockingCallTimeout());
 
          if (response == null)
          {

@@ -154,12 +154,14 @@ public class RemotingServiceImpl implements RemotingService, CleanUpNotifier
       this.acceptorFactory = acceptorFactory;
    }
 
-
    public void registerPinger(RemotingSession session)
    {
       ResponseHandler pongHandler = new ResponseHandlerImpl(dispatcher.generateID());
-      Pinger pinger = new PingerImpl(getDispatcher(), session, config.getKeepAliveTimeout(), pongHandler, RemotingServiceImpl.this);
-      ScheduledFuture<?> future = scheduledExecutor.scheduleAtFixedRate(pinger, config.getKeepAliveInterval(), config.getKeepAliveInterval(), TimeUnit.MILLISECONDS);
+      Pinger pinger = new PingerImpl(getDispatcher(), session, config.getConnectionParams().getPingTimeout(), pongHandler, RemotingServiceImpl.this);
+      ScheduledFuture<?> future =
+         scheduledExecutor.scheduleAtFixedRate(pinger, config.getConnectionParams().getPingInterval(),
+                                                       config.getConnectionParams().getPingInterval(),
+                                                       TimeUnit.MILLISECONDS);
       currentScheduledPingers.put(session.getID(), future);
       currentPingers.put(session.getID(), pinger);
       sessions.add(session.getID());
@@ -183,7 +185,10 @@ public class RemotingServiceImpl implements RemotingService, CleanUpNotifier
    {
       return sessions.contains(sessionID);
    }
+   
+   
    // FailureNotifier implementation -------------------------------
+      
    public void fireCleanup(long sessionID, MessagingException me)
    {
       if (sessions.contains(sessionID))

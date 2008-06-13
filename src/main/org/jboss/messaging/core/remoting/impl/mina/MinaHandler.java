@@ -113,7 +113,7 @@ public class MinaHandler extends IoHandlerAdapter implements
            throws Exception
    {
       final Packet packet = (Packet) message;
-
+      
       if (executorFactory != null)
       {
          long executorID = packet.getExecutorID();

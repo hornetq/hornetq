@@ -78,7 +78,7 @@
 
       <create-journal-dir>true</create-journal-dir>
 
-      <journal-type>asyncio</journal-type>
+      <journal-type>ASYNCIO</journal-type>
 
       <!-- Does the journal sync to disk on each transaction commit, prepare or rollback? -->
       <journal-sync-transactional>true</journal-sync-transactional>
@@ -89,7 +89,7 @@
       <!-- 10 MB journal file size -->
       <journal-file-size>10485760</journal-file-size>
 
-      <journal-min-files>40</journal-min-files>
+      <journal-min-files>10</journal-min-files>
 
       <!-- Maximum simultaneous asynchronous writes accepted by the native layer.
       (parameter ignored on NIO)

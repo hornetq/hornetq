@@ -45,7 +45,7 @@ import org.jboss.messaging.util.VersionLoader;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  *
  * @version <tt>$Revision: 3602 $</tt>
  *
