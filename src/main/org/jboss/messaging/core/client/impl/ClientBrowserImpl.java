@@ -56,10 +56,9 @@ public class ClientBrowserImpl implements ClientBrowser
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientBrowserImpl(final long serverTargetID, final ClientSessionInternal session,
-   		                   final RemotingConnection remotingConnection)
+   public ClientBrowserImpl(final ClientSessionInternal session, final long serverTargetID)
    {
-      this.remotingConnection = remotingConnection;
+      this.remotingConnection = session.getConnection().getRemotingConnection();
       
       this.serverTargetID = serverTargetID;
       

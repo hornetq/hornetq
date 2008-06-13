@@ -104,7 +104,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    private final boolean cacheProducers;
    
-   private final ExecutorService executor;
+   private final ExecutorService executorService;
    
    private final RemotingConnection remotingConnection;         
    
@@ -163,7 +163,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       this.cacheProducers = cacheProducers;
       
       //TODO - we should use OrderedExecutorFactory and a pool here
-      executor = Executors.newSingleThreadExecutor();
+      executorService = Executors.newSingleThreadExecutor();
       
       this.xa = xa;
       
@@ -302,7 +302,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
       
       ClientConsumerInternal consumer =
-         new ClientConsumerImpl(this, response.getConsumerTargetID(), clientTargetID, executor, remotingConnection, clientWindowSize, direct);
+         new ClientConsumerImpl(this, response.getConsumerTargetID(), clientTargetID, clientWindowSize, direct);
 
       addConsumer(consumer);
       
@@ -330,7 +330,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       SessionCreateBrowserResponseMessage response = (SessionCreateBrowserResponseMessage)remotingConnection.sendBlocking(serverTargetID, serverTargetID, request);
 
-      ClientBrowser browser = new ClientBrowserImpl(response.getBrowserTargetID(), this, remotingConnection);  
+      ClientBrowser browser = new ClientBrowserImpl(this, response.getBrowserTargetID());  
 
       addBrowser(browser);
 
@@ -508,7 +508,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
       finally
       {
-      	executor.shutdown();
+      	executorService.shutdown();
       	
          connection.removeSession(this);
          
@@ -631,6 +631,11 @@ public class ClientSessionImpl implements ClientSessionInternal
    public Map<SimpleString, ClientProducerInternal> getProducerCache()
    {
       return new HashMap<SimpleString, ClientProducerInternal>(producerCache);
+   }
+   
+   public ExecutorService getExecutorService()
+   {
+      return executorService;
    }
    
    // XAResource implementation --------------------------------------------------------------------

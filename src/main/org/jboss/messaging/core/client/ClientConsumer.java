@@ -27,5 +27,7 @@ public interface ClientConsumer
    
    void close() throws MessagingException;
    
-   boolean isClosed();      
+   boolean isClosed();   
+   
+   boolean isDirect();
 }

@@ -30,4 +30,6 @@ public interface ClientConsumerInternal extends ClientConsumer
    long getIgnoreDeliveryMark();
    
    int getBufferSize();
+   
+   int getCreditsToSend();
 }

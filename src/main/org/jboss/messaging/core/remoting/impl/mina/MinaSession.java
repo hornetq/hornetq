@@ -22,25 +22,20 @@ public class MinaSession implements RemotingSession
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(MinaConnector.class);
-   
-   
+      
    // Attributes ----------------------------------------------------
 
    private final IoSession session;
 
-   private MinaHandler handler;
-   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public MinaSession(IoSession session, MinaHandler handler)
+   public MinaSession(IoSession session)
    {
       assert session != null;
 
       this.session = session;
-  
-      this.handler = handler;
    }
 
    // Public --------------------------------------------------------
@@ -53,15 +48,6 @@ public class MinaSession implements RemotingSession
    
    public void write(Packet packet)
    {     
-//      try
-//      {
-//         handler.checkWrite(session);
-//      }
-//      catch (Exception e)
-//      {
-//         log.error("Failed to acquire sem", e);
-//      }
-      
       session.write(packet);
    }
 

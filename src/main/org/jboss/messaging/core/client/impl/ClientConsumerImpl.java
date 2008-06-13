@@ -75,6 +75,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    
    private final boolean direct;
    
+   private final Runner runner = new Runner();
+      
    private volatile Thread receiverThread;
    
    private volatile Thread onMessageThread;
@@ -101,9 +103,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
     * (and its PacketDispatcher) to a single server.
     */
    public ClientConsumerImpl(final ClientSessionInternal session, final long targetID,
-                             final long clientTargetID,
-                             final ExecutorService sessionExecutor,
-                             final RemotingConnection remotingConnection,
+                             final long clientTargetID,                                                   
                              final int clientWindowSize,
                              final boolean direct)
    {
@@ -113,9 +113,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       
       this.session = session;
       
-      this.sessionExecutor = sessionExecutor;
+      this.sessionExecutor = session.getExecutorService();
       
-      this.remotingConnection = remotingConnection;
+      this.remotingConnection = session.getConnection().getRemotingConnection();
       
       this.clientWindowSize = clientWindowSize;
       
@@ -230,6 +230,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          throw new MessagingException(MessagingException.ILLEGAL_STATE,"Cannot set MessageHandler - consumer is in receive(...)");
       }
         
+      log.info("Setting handler");
+      
    	waitForOnMessageToComplete();   	
    	
       this.handler = handler;
@@ -284,6 +286,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    public boolean isClosed()
    {
       return closed;
+   }
+   
+   public boolean isDirect()
+   {
+      return direct;
    }
 
    // ClientConsumerInternal implementation
@@ -388,6 +395,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       return buffer.size();
    }
+   
+   public int getCreditsToSend()
+   {
+      return creditsToSend;
+   }
 
    // Public
    // ---------------------------------------------------------------------------------------
@@ -403,7 +415,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private void queueExecutor()
    {
-      sessionExecutor.execute(new Runnable() { public void run() { callOnMessage(); } } );
+      sessionExecutor.execute(runner);
    }
    
    private void flowControl(final int messageBytes) throws MessagingException
@@ -509,5 +521,14 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    
    // Inner classes
    // --------------------------------------------------------------------------------
+   
+   private class Runner implements Runnable
+   {
+      public void run()
+      {
+         callOnMessage();
+      } 
+   }
+   
 
 }

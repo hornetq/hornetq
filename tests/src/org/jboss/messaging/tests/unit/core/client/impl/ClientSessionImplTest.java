@@ -2082,7 +2082,7 @@ public class ClientSessionImplTest extends UnitTestCase
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
             
       //In ClientSessionImpl constructor
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      EasyMock.expect(conn.getRemotingConnection()).andStubReturn(rc);
           
       final long sessionTargetID = 7617622;      
       final SimpleString queueName = new SimpleString("gyugg");
@@ -2406,7 +2406,7 @@ public class ClientSessionImplTest extends UnitTestCase
       
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
            
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      EasyMock.expect(conn.getRemotingConnection()).andStubReturn(rc);
       
       EasyMock.expect(conn.getConnectionFactory()).andReturn(cf);
          
@@ -2482,7 +2482,7 @@ public class ClientSessionImplTest extends UnitTestCase
       
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
            
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      EasyMock.expect(conn.getRemotingConnection()).andStubReturn(rc);
        
       EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
       
@@ -2500,6 +2500,8 @@ public class ClientSessionImplTest extends UnitTestCase
          new SessionCreateConsumerResponseMessage(656652, serverWindowSize);
       
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, request)).andReturn(resp);
+      
+      //EasyMock.expect(conn.getRemotingConnection()).andReturn(value)
       
       EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
       
@@ -2549,7 +2551,7 @@ public class ClientSessionImplTest extends UnitTestCase
       
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
            
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      EasyMock.expect(conn.getRemotingConnection()).andStubReturn(rc);
       
       EasyMock.expect(conn.getConnectionFactory()).andReturn(cf);
       
