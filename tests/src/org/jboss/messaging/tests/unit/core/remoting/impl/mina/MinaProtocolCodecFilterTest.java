@@ -4,74 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.tests.unit.core.remoting.impl.wireformat;
-
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CLOSE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CONN_CREATESESSION;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CONN_CREATESESSION_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CONN_START;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CONN_STOP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CONS_FLOWTOKEN;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CREATECONNECTION;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CREATECONNECTION_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.EXCEPTION;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.NULL;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.PING;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.PONG;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.PROD_RECEIVETOKENS;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_ACKNOWLEDGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_ADD_DESTINATION;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_BINDINGQUERY;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_BINDINGQUERY_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_BROWSER_HASNEXTMESSAGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_BROWSER_HASNEXTMESSAGE_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_BROWSER_NEXTMESSAGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_BROWSER_RESET;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_CANCEL;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_COMMIT;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_CREATEBROWSER;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_CREATEBROWSER_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_CREATECONSUMER;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_CREATECONSUMER_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_CREATEPRODUCER;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_CREATEPRODUCER_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_CREATEQUEUE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_DELETE_QUEUE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_QUEUEQUERY;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_QUEUEQUERY_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_RECOVER;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_REMOVE_DESTINATION;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_ROLLBACK;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_XA_COMMIT;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_XA_END;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_XA_FORGET;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_XA_GET_TIMEOUT;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_XA_GET_TIMEOUT_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_XA_INDOUBT_XIDS;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_XA_INDOUBT_XIDS_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_XA_JOIN;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_XA_PREPARE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_XA_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_XA_RESUME;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_XA_ROLLBACK;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_XA_SET_TIMEOUT;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_XA_SET_TIMEOUT_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_XA_START;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_XA_SUSPEND;
-import static org.jboss.messaging.tests.unit.core.remoting.impl.wireformat.CodecAssert.assertEqualsByteArrays;
-import static org.jboss.messaging.tests.unit.core.remoting.impl.wireformat.CodecAssert.assertSameXids;
-import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
-import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
-import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-import static org.jboss.messaging.tests.util.RandomUtil.randomXid;
-import static org.jboss.messaging.util.DataConstants.SIZE_BYTE;
-import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.transaction.xa.Xid;
+package org.jboss.messaging.tests.unit.core.remoting.impl.mina;
 
 import org.apache.mina.common.IoBuffer;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
@@ -79,52 +12,22 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
-import org.jboss.messaging.core.remoting.impl.mina.MessagingCodec;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
-import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
-import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
-import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
-import org.jboss.messaging.core.remoting.impl.wireformat.ProducerFlowCreditMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCancelMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAForgetMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetInDoubtXidsResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetTimeoutResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAJoinMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAPrepareMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResumeMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.XidCodecSupport;
+import org.jboss.messaging.core.remoting.impl.mina.MinaProtocolCodecFilter;
+import org.jboss.messaging.core.remoting.impl.wireformat.*;
+import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.*;
 import org.jboss.messaging.core.version.impl.VersionImpl;
+import org.jboss.messaging.tests.unit.core.remoting.impl.CodecAssert;
+import static org.jboss.messaging.tests.unit.core.remoting.impl.CodecAssert.assertSameXids;
+import static org.jboss.messaging.tests.util.RandomUtil.*;
 import org.jboss.messaging.tests.util.UnitTestCase;
+import static org.jboss.messaging.util.DataConstants.SIZE_BYTE;
+import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
 import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
+
+import javax.transaction.xa.Xid;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -134,12 +37,12 @@ import org.jboss.messaging.util.SimpleString;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class PacketTypeTest extends UnitTestCase
+public class MinaProtocolCodecFilterTest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(PacketTypeTest.class);
+   private static final Logger log = Logger.getLogger(MinaProtocolCodecFilterTest.class);
 
    // Attributes ----------------------------------------------------
 
@@ -234,7 +137,7 @@ public class PacketTypeTest extends UnitTestCase
       byte[] actualBody = new byte[bodyLength];
       buffer.getBytes(actualBody);
       MessagingBuffer expectedBody = encode(actualBody.length, bodyObjects);
-      assertEqualsByteArrays(bodyLength, expectedBody.array(), actualBody);
+      CodecAssert.assertEqualsByteArrays(bodyLength, expectedBody.array(), actualBody);
       // check the buffer has been wholly read
       assertEquals(0, buffer.remaining());
    }
@@ -250,7 +153,7 @@ public class PacketTypeTest extends UnitTestCase
       buffer.rewind();
       
       SimpleProtocolDecoderOutput out = new SimpleProtocolDecoderOutput();
-      MessagingCodec codec = new MessagingCodec();
+      MinaProtocolCodecFilter codec = new MinaProtocolCodecFilter();
       codec.doDecode(null, IoBuffer.wrap(buffer.array()), out);
       Object message = out.getMessage();
       assertTrue(message instanceof Packet);

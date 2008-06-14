@@ -6,13 +6,13 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import javax.net.ssl.SSLContext;
-
 import org.apache.mina.common.DefaultIoFilterChainBuilder;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.ssl.SslFilter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
+
+import javax.net.ssl.SSLContext;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -39,7 +39,7 @@ public class FilterChainSupport
    {
       assert filterChain != null;
 
-      filterChain.addLast("codec", new ProtocolCodecFilter(new MessagingCodec()));
+      filterChain.addLast("codec", new ProtocolCodecFilter(new MinaProtocolCodecFilter()));
    }
 
    public static void addSSLFilter(

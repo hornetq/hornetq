@@ -33,6 +33,7 @@
       <excludeFolder url="file://$MODULE_DIR$/build/jars" />
       <excludeFolder url="file://$MODULE_DIR$/build/messaging-2.0.0.alpha1" />
       <excludeFolder url="file://$MODULE_DIR$/classes" />
+      <excludeFolder url="file://$MODULE_DIR$/data" />
       <excludeFolder url="file://$MODULE_DIR$/docs/examples/bridge/output" />
       <excludeFolder url="file://$MODULE_DIR$/docs/examples/common/output" />
       <excludeFolder url="file://$MODULE_DIR$/docs/examples/distributed-queue/output" />

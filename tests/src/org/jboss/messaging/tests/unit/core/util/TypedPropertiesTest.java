@@ -6,27 +6,16 @@
  */
 package org.jboss.messaging.tests.unit.core.util;
 
-import static org.jboss.messaging.tests.unit.core.remoting.impl.wireformat.CodecAssert.assertEqualsByteArrays;
-import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
-import static org.jboss.messaging.tests.util.RandomUtil.randomByte;
-import static org.jboss.messaging.tests.util.RandomUtil.randomBytes;
-import static org.jboss.messaging.tests.util.RandomUtil.randomChar;
-import static org.jboss.messaging.tests.util.RandomUtil.randomDouble;
-import static org.jboss.messaging.tests.util.RandomUtil.randomFloat;
-import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
-import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
-import static org.jboss.messaging.tests.util.RandomUtil.randomShort;
-import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
-
-import java.util.Iterator;
-
 import junit.framework.TestCase;
-
 import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
+import static org.jboss.messaging.tests.unit.core.remoting.impl.CodecAssert.assertEqualsByteArrays;
 import org.jboss.messaging.tests.util.RandomUtil;
+import static org.jboss.messaging.tests.util.RandomUtil.*;
 import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TypedProperties;
+
+import java.util.Iterator;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

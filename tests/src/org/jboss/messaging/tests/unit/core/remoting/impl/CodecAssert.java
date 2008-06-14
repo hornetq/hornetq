@@ -4,13 +4,12 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.tests.unit.core.remoting.impl.wireformat;
-
-import java.util.List;
-
-import javax.transaction.xa.Xid;
+package org.jboss.messaging.tests.unit.core.remoting.impl;
 
 import junit.framework.Assert;
+
+import javax.transaction.xa.Xid;
+import java.util.List;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -26,7 +25,7 @@ public class CodecAssert extends Assert
 
    // Static --------------------------------------------------------
 
-   static void assertSameXids(List<Xid> expected, List<Xid> actual)
+   public static void assertSameXids(List<Xid> expected, List<Xid> actual)
    {
       assertNotNull(expected);
       assertNotNull(actual);
@@ -53,7 +52,7 @@ public class CodecAssert extends Assert
       }
    }
 
-   static void assertEqualsByteArrays(int length, byte[] expected, byte[] actual)
+   public static void assertEqualsByteArrays(int length, byte[] expected, byte[] actual)
    {
       // we check only for the given length (the arrays might be
       // larger)
