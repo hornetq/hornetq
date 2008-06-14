@@ -34,8 +34,11 @@ public class LocationImpl implements Location
 	private static final long serialVersionUID = -1101852656621257742L;
 	
 	private TransportType transport;
+	
    private String host;
+   
    private int port = ConfigurationImpl.DEFAULT_REMOTING_PORT;
+   
    private int serverID;
    
    public LocationImpl(final int serverID)
@@ -46,10 +49,10 @@ public class LocationImpl implements Location
 
    public LocationImpl(final TransportType transport, final String host, final int port)
    {
-      assert host != null;
-      assert port > 0;
       if (transport != TransportType.TCP && transport != TransportType.HTTP)
+      {
          throw new IllegalArgumentException("only HTTP and TCP transports are allowed for remote location");
+      }
       
       this.transport = transport;
       this.host = host;
@@ -64,9 +67,13 @@ public class LocationImpl implements Location
    public String getLocation()
    {
       if (transport == TransportType.INVM)
+      {
          return "invm://" + serverID;
+      }
       else
+      {
          return transport +  "://" + host + ":" + port;
+      }
    }
 
    public TransportType getTransport()
@@ -104,13 +111,19 @@ public class LocationImpl implements Location
    	Location lother = (Location)other;
    	
    	if (transport != lother.getTransport())
+   	{
    	   return false;
+   	}
    	
    	if (transport == TransportType.INVM)
+   	{
    	   return serverID == lother.getServerID();
+   	}
    	else
+   	{
    	   return this.transport.equals(lother.getTransport()) &&
-   	       this.host.equals(lother.getHost()) &&
-   	       this.port == lother.getPort();
+   	          this.host.equals(lother.getHost()) &&
+   	          this.port == lother.getPort();
+   	}
    }
 }
