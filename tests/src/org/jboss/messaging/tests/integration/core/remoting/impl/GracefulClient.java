@@ -60,7 +60,7 @@ public class GracefulClient
    {
       try
       {
-         Location config = new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
+         Location config = new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_PORT);
 
          ClientConnectionFactory cf = new ClientConnectionFactoryImpl(config);
          ClientConnection conn = cf.createConnection(null, null);

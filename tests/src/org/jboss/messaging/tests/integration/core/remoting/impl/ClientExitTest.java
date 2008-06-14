@@ -101,11 +101,11 @@ public class ClientExitTest extends TestCase
    protected void setUp() throws Exception
    {
       ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration(
-            "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
+            "localhost", ConfigurationImpl.DEFAULT_PORT);
       server = new MessagingServerImpl(config);
       server.start();
 
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT));
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_PORT));
       connection = cf.createConnection(null, null);
       ClientSession session = connection.createClientSession(false, true, true, -1, false, false);
       session.createQueue(QUEUE, QUEUE, null, false, false);

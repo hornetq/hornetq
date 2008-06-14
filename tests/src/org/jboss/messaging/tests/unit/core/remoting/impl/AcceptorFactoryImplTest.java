@@ -41,7 +41,7 @@ public class AcceptorFactoryImplTest extends UnitTestCase
       AcceptorFactoryImpl acceptorFactory = new AcceptorFactoryImpl();
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.TCP);
-      config.setInVMDisabled(false);
+      config.getConnectionParams().setInVMDisabled(false);
       List<Acceptor> acceptors = acceptorFactory.createAcceptors(config);
       assertEquals(2, acceptors.size());
       assertEquals(MinaAcceptor.class, acceptors.get(0).getClass());
@@ -53,7 +53,7 @@ public class AcceptorFactoryImplTest extends UnitTestCase
       AcceptorFactoryImpl acceptorFactory = new AcceptorFactoryImpl();
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.TCP);
-      config.setInVMDisabled(true);
+      config.getConnectionParams().setInVMDisabled(true);
       List<Acceptor> acceptors = acceptorFactory.createAcceptors(config);
       assertEquals(1, acceptors.size());
       assertEquals(MinaAcceptor.class, acceptors.get(0).getClass());
@@ -64,7 +64,7 @@ public class AcceptorFactoryImplTest extends UnitTestCase
       AcceptorFactoryImpl acceptorFactory = new AcceptorFactoryImpl();
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.INVM);
-      config.setInVMDisabled(false);
+      config.getConnectionParams().setInVMDisabled(false);
       List<Acceptor> acceptors = acceptorFactory.createAcceptors(config);
       assertEquals(1, acceptors.size());
       assertEquals(INVMAcceptor.class, acceptors.get(0).getClass());

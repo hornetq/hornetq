@@ -124,7 +124,7 @@ public class RemotingConfigurationValidatorTest extends TestCase
    {
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(INVM);
-      config.setInVMDisabled(true);
+      config.getConnectionParams().setInVMDisabled(true);
 
       try
       {

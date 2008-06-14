@@ -54,15 +54,13 @@ public class ConfigurationImpl implements Configuration
    
    public static final TransportType DEFAULT_TRANSPORT = TransportType.TCP;
    
-   public static final int DEFAULT_REMOTING_PORT = 5400;
+   public static final int DEFAULT_PORT = 5400;
    
    public static final long DEFAULT_SECURITY_INVALIDATION_INTERVAL = 10000;
    
    public static final boolean DEFAULT_REQUIRE_DESTINATIONS = false;
    
    public static final boolean DEFAULT_SECURITY_ENABLED = true;
-   
-   public static final boolean DEFAULT_INVM_DISABLED = false;
    
    public static final boolean DEFAULT_SSL_ENABLED = false;
    
@@ -105,7 +103,7 @@ public class ConfigurationImpl implements Configuration
    
    // Attributes -----------------------------------------------------------------------------
    
-   protected List<String> defaultInterceptors = new ArrayList<String>();
+   protected List<String> interceptorClassNames = new ArrayList<String>();
 
    protected boolean clustered = DEFAULT_CLUSTERED;
    
@@ -155,10 +153,8 @@ public class ConfigurationImpl implements Configuration
    
    protected String host = DEFAULT_HOST;
    
-   protected int port = DEFAULT_REMOTING_PORT;
+   protected int port = DEFAULT_PORT;
    
-   protected boolean inVMDisabled = DEFAULT_INVM_DISABLED;
-
    protected final ConnectionParams defaultConnectionParams = new ConnectionParamsImpl();
    
    protected boolean sslEnabled = DEFAULT_SSL_ENABLED;
@@ -172,9 +168,9 @@ public class ConfigurationImpl implements Configuration
    protected String trustStorePassword = DEFAULT_TRUSTSTORE_PASSWORD;
    
    
-   public List<String> getDefaultInterceptors()
+   public List<String> getInterceptorClassNames()
    {
-      return defaultInterceptors;
+      return interceptorClassNames;
    }
 
    public boolean isClustered()
@@ -319,23 +315,6 @@ public class ConfigurationImpl implements Configuration
       this.trustStorePassword = password;
    }
 
-   public boolean isInVMDisabled()
-   {
-      if (System.getProperty(REMOTING_DISABLE_INVM_SYSPROP_KEY) != null)
-      {
-         return Boolean.parseBoolean(System.getProperty(REMOTING_DISABLE_INVM_SYSPROP_KEY));
-      }
-      else 
-      {
-         return inVMDisabled;
-      }
-   }
-   
-   public void setInVMDisabled(boolean disabled)
-   {
-      this.inVMDisabled = disabled;
-   }
-   
    public boolean isSSLEnabled()
    {
       if (System.getProperty(REMOTING_ENABLE_SSL_SYSPROP_KEY) != null)

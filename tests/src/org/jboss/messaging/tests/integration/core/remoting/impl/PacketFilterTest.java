@@ -66,7 +66,7 @@ public class PacketFilterTest  extends TestCase
       DummyInterceptor interceptorA = null;
       DummyInterceptorB interceptorB = null;
 
-      Location location = new LocationImpl(TransportType.TCP, "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
+      Location location = new LocationImpl(TransportType.TCP, "localhost", ConfigurationImpl.DEFAULT_PORT);
       
       ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location);
       ClientConnection conn = null;
@@ -174,7 +174,7 @@ public class PacketFilterTest  extends TestCase
          
          interceptor.sendException=false;
 
-         Location location = new LocationImpl(TransportType.TCP, "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
+         Location location = new LocationImpl(TransportType.TCP, "localhost", ConfigurationImpl.DEFAULT_PORT);
          
          ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location);
          conn = cf.createConnection();

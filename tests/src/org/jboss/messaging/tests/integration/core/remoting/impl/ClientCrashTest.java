@@ -154,13 +154,13 @@ public class ClientCrashTest extends TestCase
    {
       super.setUp();
 
-      ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
+      ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", ConfigurationImpl.DEFAULT_PORT);
       config.getConnectionParams().setPingInterval(2000);
       config.getConnectionParams().setPingTimeout(1000);
       server = new MessagingServerImpl(config);
       server.start();
 
-      cf = new ClientConnectionFactoryImpl(new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT));
+      cf = new ClientConnectionFactoryImpl(new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_PORT));
    }
 
    @Override

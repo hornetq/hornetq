@@ -21,27 +21,24 @@
    */
 package org.jboss.messaging.tests.integration.jms.server.impl;
 
+import static org.jboss.messaging.core.remoting.TransportType.INVM;
+
+import java.util.ArrayList;
+import java.util.Hashtable;
+
+import javax.jms.Queue;
+import javax.jms.Topic;
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+
 import junit.framework.TestCase;
-import org.jboss.messaging.jms.server.JMSServerManager;
-import org.jboss.messaging.jms.server.ConnectionInfo;
-import org.jboss.messaging.jms.server.SubscriptionInfo;
-import org.jboss.messaging.jms.server.MessageStatistics;
-import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
+
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.management.impl.MessagingServerManagementImpl;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
-import org.jboss.messaging.core.management.impl.MessagingServerManagementImpl;
-import static org.jboss.messaging.core.remoting.TransportType.INVM;
-import org.jboss.messaging.core.security.JBMUpdateableSecurityManager;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-
-import javax.jms.*;
-import javax.naming.NameNotFoundException;
-import javax.naming.InitialContext;
-import java.util.Hashtable;
-import java.util.Set;
-import java.util.ArrayList;
-import java.util.List;
+import org.jboss.messaging.jms.client.JBossConnectionFactory;
+import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 
 /**
  * JMSServerManagerImpl tests
@@ -58,7 +55,7 @@ public class JMSServerManagerimplTest extends TestCase
       jmsServerManager = new JMSServerManagerImpl();
       MessagingServerManagementImpl messagingServerManagement = new MessagingServerManagementImpl();
       ConfigurationImpl conf = new ConfigurationImpl();
-      conf.setInVMDisabled(false);
+      conf.getConnectionParams().setInVMDisabled(false);
       conf.setTransport(INVM);
       messagingServer = new MessagingServerImpl(conf);
       messagingServer.start();

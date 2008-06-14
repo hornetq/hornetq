@@ -190,7 +190,7 @@ public class MessagingServerImpl implements MessagingServer
       serverPacketHandler = new MessagingServerPacketHandler(this);
       getRemotingService().getDispatcher().register(serverPacketHandler);
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
-      for (String interceptorClass : configuration.getDefaultInterceptors())
+      for (String interceptorClass : configuration.getInterceptorClassNames())
       {
          try
          {

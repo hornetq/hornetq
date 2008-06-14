@@ -37,7 +37,7 @@ public class LocationImpl implements Location
 	
    private String host;
    
-   private int port = ConfigurationImpl.DEFAULT_REMOTING_PORT;
+   private int port = ConfigurationImpl.DEFAULT_PORT;
    
    private int serverID;
    
@@ -61,7 +61,7 @@ public class LocationImpl implements Location
    
    public LocationImpl(final TransportType transport, final String host)
    {
-      this(transport, host, ConfigurationImpl.DEFAULT_REMOTING_PORT);
+      this(transport, host, ConfigurationImpl.DEFAULT_PORT);
    }
 
    public String getLocation()

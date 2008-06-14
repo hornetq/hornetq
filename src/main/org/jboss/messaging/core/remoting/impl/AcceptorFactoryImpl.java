@@ -42,7 +42,7 @@ public class AcceptorFactoryImpl implements AcceptorFactory
       if (TransportType.TCP.equals(configuration.getTransport()))
       {
          acceptors.add(new MinaAcceptor());
-         if (!configuration.isInVMDisabled())
+         if (!configuration.getConnectionParams().isInVMDisabled())
          {
             acceptors.add(new INVMAcceptor());
          }

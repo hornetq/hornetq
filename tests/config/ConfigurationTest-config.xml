@@ -1,62 +1,39 @@
 <deployment>
    <configuration>
-      <server-peer-id>10</server-peer-id>
-      <default-queue-jndi-context>/queuetest</default-queue-jndi-context>
-      <default-topic-jndi-context>/topictest</default-topic-jndi-context>
-      <security-domain>java:/jaas/messagingtest</security-domain>
-      <default-interceptors-config>
-         <interceptor class="org.jboss.tst"/>
-         <interceptor class="org.jboss.tst2"/>
-      </default-interceptors-config>
-      <default-security-config>
-         <role name="guest1" read="true" write="true" create="true"/>
-         <role name="guest2" read="true" write="true" create="false"/>
-         <role name="guest3" read="true" write="false" create="false"/>
-         <role name="guest4" read="false" write="false" create="false"/>
-      </default-security-config>
-      <default-dlq>DLQtest</default-dlq>
-      <default-max-delivery-attempts>100</default-max-delivery-attempts>
-      <default-expiry-queue>ExpiryQueuetest</default-expiry-queue>
-      <default-redelivery-delay>10</default-redelivery-delay>
-      <message-counter-sample-period>50000</message-counter-sample-period>
-      <failover-start-timeout>600000</failover-start-timeout>
-      <failover-complete-timeout>900000</failover-complete-timeout>
-      <default-message-counter-history-day-limit>21</default-message-counter-history-day-limit>
-      <cluster-pull-connection-factory-name>jboss.messaging.connectionfactory:service=ClusterPullConnectionFactorytest
-      </cluster-pull-connection-factory-name>
-      <use-xa-for-message-pull>false</use-xa-for-message-pull>
-      <default-preserve-ordering>true</default-preserve-ordering>
-      <recover-deliveries-timeout>600000</recover-deliveries-timeout>
-      <sucker-password>suckaaa</sucker-password>
-      <strict-tck>true</strict-tck>
-      <post-office-name>JMS post office</post-office-name>
       <clustered>true</clustered>
-      <group-name>MessagingPostOfficetest</group-name>
-      <state-timeout>10000</state-timeout>
-      <cast-timeout>10000</cast-timeout>
-      <control-channel-name>udp-synctest</control-channel-name>
-      <data-channel-name>udptest</data-channel-name>
-      <channel-partition-name>JMStest</channel-partition-name>
-
-      <remoting-transport>TCP</remoting-transport>
-      <remoting-bind-address>10000</remoting-bind-address>
-      <remoting-host>localhost</remoting-host>
-      <remoting-timeout>100</remoting-timeout>
+      <scheduled-max-pool-size>12345</scheduled-max-pool-size>    
+      <max-pool-size>54321</max-pool-size>
+      <require-destinations>false</require-destinations>
+      <security-enabled>false</security-enabled>
+      <security-invalidation-interval>5423</security-invalidation-interval>
+      <remoting-transport>HTTP</remoting-transport>
+      <remoting-bind-address>5431</remoting-bind-address>
+      <remoting-host>blahhost</remoting-host>
+      <remoting-port>6540</remoting-port>
+      <remoting-call-timeout>7654</remoting-call-timeout>
       <remoting-disable-invm>true</remoting-disable-invm>
-      <remoting-tcp-nodelay>true</remoting-tcp-nodelay>
-      <remoting-tcp-receive-buffer-size>8192</remoting-tcp-receive-buffer-size>
-      <remoting-tcp-send-buffer-size>1024</remoting-tcp-send-buffer-size>
+      <remoting-tcp-nodelay>false</remoting-tcp-nodelay>
+      <remoting-tcp-receive-buffer-size>987654</remoting-tcp-receive-buffer-size>
+      <remoting-tcp-send-buffer-size>2345676</remoting-tcp-send-buffer-size>
+      <remoting-ping-interval>123123</remoting-ping-interval>
+      <remoting-ping-timeout>321321</remoting-ping-timeout>->
       <remoting-enable-ssl>true</remoting-enable-ssl>
-      <remoting-keep-alive-interval>1234</remoting-keep-alive-interval>
-      <remoting-keep-alive-timeout>5678</remoting-keep-alive-timeout>
-      <remoting-ssl-keystore-path>messaging.keystore</remoting-ssl-keystore-path>
-      <remoting-ssl-keystore-password>secureexample keystore</remoting-ssl-keystore-password>
-      <remoting-ssl-truststore-path>messaging.truststore</remoting-ssl-truststore-path>
-      <remoting-ssl-truststore-password>secureexample truststore</remoting-ssl-truststore-password>
-
-      <journal-max-aio>123</journal-max-aio>
-      <journal-aio-timeout>123</journal-aio-timeout>
-
+      <remoting-ssl-keystore-path>blahstore</remoting-ssl-keystore-path>
+      <remoting-ssl-keystore-password>wibble123</remoting-ssl-keystore-password>
+      <remoting-ssl-truststore-path>blahtruststore</remoting-ssl-truststore-path>
+      <remoting-ssl-truststore-password>eek123</remoting-ssl-truststore-password>
+      <bindings-directory>somedir</bindings-directory>
+      <create-bindings-dir>false</create-bindings-dir>
+      <journal-directory>somedir2</journal-directory>
+      <create-journal-dir>false</create-journal-dir>
+      <journal-type>NIO</journal-type>
+      <journal-sync-transactional>false</journal-sync-transactional>      
+      <journal-sync-non-transactional>true</journal-sync-non-transactional>
+      <journal-file-size>12345678</journal-file-size>
+      <journal-min-files>100</journal-min-files>
+      <journal-max-aio>56546</journal-max-aio>
+      <journal-aio-timeout>432323</journal-aio-timeout>
+      <journal-task-period>6544</journal-task-period>      
    </configuration>
 
 </deployment>

@@ -40,7 +40,7 @@ public interface Configuration extends Serializable
 {
    // General attributes -------------------------------------------------------------------
    
-   List<String> getDefaultInterceptors();
+   List<String> getInterceptorClassNames();
 
    boolean isClustered();
    
@@ -107,16 +107,6 @@ public interface Configuration extends Serializable
    boolean isSSLEnabled();
    
    void setSSLEnabled(boolean enabled);
-   
-   boolean isInVMDisabled();
-   
-   void setInVMDisabled(boolean disabled);
-
-   /**
-    * The server ID is used only when the messaging server
-    * is started in INVM transport. 
-    */
-  // int getServerID();
    
    // Journal related attributes
    

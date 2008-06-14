@@ -10,7 +10,11 @@
       <max-pool-size>30</max-pool-size>
 
       <require-destinations>true</require-destinations>
-
+      
+      <security-enabled>true</security-enabled>
+      
+      <security-invalidation-interval>10000</security-invalidation-interval>
+      
       <!-- Remoting configuration -->
 
       <!-- one of: TCP, INVM                                                                     -->
@@ -20,6 +24,8 @@
       <remoting-bind-address>5400</remoting-bind-address>
 
       <remoting-host>localhost</remoting-host>
+      
+      <remoting-port>5400</remoting-port>
 
       <!--  call timeout in milliseconds -->
       <remoting-call-timeout>5000</remoting-call-timeout>
@@ -49,14 +55,7 @@
       <!--How long to wait for a returning pong after sending a ping message to a client/server.-->
       <!-- If no pong is received after this time resources are cleaned up-->
       <remoting-ping-timeout>5000</remoting-ping-timeout>
-
-      <remoting-writequeue-block-timeout>10000</remoting-writequeue-block-timeout>
-
-      <remoting-writequeue-minbytes>0</remoting-writequeue-minbytes>
-
-      <!-- Effectively disable this since we're using producer and consumer flow control -->
-      <remoting-writequeue-maxbytes>100000000</remoting-writequeue-maxbytes>
-
+     
       <!--  if ssl is enabled, all remoting-ssl-* properties must be set -->
       <remoting-enable-ssl>false</remoting-enable-ssl>
 
@@ -107,9 +106,7 @@
       <journal-aio-timeout>60000</journal-aio-timeout>
 
       <journal-task-period>5000</journal-task-period>
-
-      <security-enabled>true</security-enabled>
-
+      
    </configuration>
 
 </deployment>

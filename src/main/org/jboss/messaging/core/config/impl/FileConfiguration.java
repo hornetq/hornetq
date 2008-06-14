@@ -28,6 +28,7 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.util.XMLUtil;
@@ -43,6 +44,8 @@ import org.w3c.dom.NodeList;
 public class FileConfiguration extends ConfigurationImpl implements Serializable
 {
    private static final long serialVersionUID = -4766689627675039596L;
+   
+   private static final Logger log = Logger.getLogger(FileConfiguration.class);
 
    // Constants ------------------------------------------------------------------------
    
@@ -74,6 +77,8 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
       
       securityEnabled = getBoolean(e, "security-enabled", securityEnabled);
       
+      securityInvalidationInterval = getLong(e, "security-invalidation-interval", securityInvalidationInterval);
+      
       transport = TransportType.valueOf(getString(e, "remoting-transport", TransportType.TCP.toString()));
 
       // Remoting config
@@ -83,11 +88,11 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
       if (System.getProperty("java.rmi.server.hostname") == null)
          System.setProperty("java.rmi.server.hostname", host);
 
-      port = getInteger(e, "remoting-bind-address", port);
+      port = getInteger(e, "remoting-port", port);
 
       int callTimeout = getInteger(e, "remoting-call-timeout", ConnectionParamsImpl.DEFAULT_CALL_TIMEOUT);
 
-      boolean invmDisabled = getBoolean(e, "remoting-disable-invm", ConnectionParamsImpl.DEFAULT_INVM_DISABLED);
+      boolean inVMDisabled = getBoolean(e, "remoting-disable-invm", ConnectionParamsImpl.DEFAULT_INVM_DISABLED);
 
       boolean tcpNoDelay = getBoolean(e, "remoting-tcp-nodelay", ConnectionParamsImpl.DEFAULT_TCP_NODELAY);
 
@@ -111,7 +116,7 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
 
       defaultConnectionParams.setCallTimeout(callTimeout);
       
-      defaultConnectionParams.setInVMDisabled(invmDisabled);
+      defaultConnectionParams.setInVMDisabled(inVMDisabled);
       
       defaultConnectionParams.setTcpNoDelay(tcpNoDelay);
       
@@ -186,7 +191,7 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
             }
          }
       }
-      this.defaultInterceptors = interceptorList;
+      this.interceptorClassNames = interceptorList;
    }
 
    public String getConfigurationUrl()
@@ -205,8 +210,10 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
    {
       NodeList nl = e.getElementsByTagName(name);
       if (nl.getLength() > 0)
-      {
-         return Boolean.valueOf(nl.item(0).getTextContent().trim());
+      {         
+         boolean b = Boolean.valueOf(nl.item(0).getTextContent().trim());
+         log.info(name + ": found boolean: " + b);
+         return b;
       }
       return def;
    }

@@ -115,7 +115,7 @@ public class LocationImplTest extends TestCase
       Location location = new LocationImpl(transport, host);
       assertEquals(transport, location.getTransport());
       assertEquals(host, location.getHost());
-      assertEquals(ConfigurationImpl.DEFAULT_REMOTING_PORT, location.getPort());
+      assertEquals(ConfigurationImpl.DEFAULT_PORT, location.getPort());
    }
    
    // Inner classes -------------------------------------------------

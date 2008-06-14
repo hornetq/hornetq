@@ -55,7 +55,7 @@ public class CoreClientTest extends TestCase
    
    public void testCoreClient() throws Exception
    {
-      Location location = new LocationImpl(TransportType.TCP, "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
+      Location location = new LocationImpl(TransportType.TCP, "localhost", ConfigurationImpl.DEFAULT_PORT);
             
       ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location);
       ClientConnection conn = cf.createConnection();
@@ -82,7 +82,7 @@ public class CoreClientTest extends TestCase
 
    public void testCoreClientMultipleConnections() throws Exception
    {
-      Location location = new LocationImpl(TransportType.TCP, "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
+      Location location = new LocationImpl(TransportType.TCP, "localhost", ConfigurationImpl.DEFAULT_PORT);
       ConnectionParams connectionParams = new ConnectionParamsImpl();
       connectionParams.setCallTimeout(500000);
       ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location, connectionParams);
