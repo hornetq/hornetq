@@ -85,7 +85,7 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
 
       port = getInteger(e, "remoting-bind-address", port);
 
-      int blockingCallTimeout = getInteger(e, "remoting-call-timeout", ConnectionParamsImpl.DEFAULT_BLOCKING_CALL_TIMEOUT);
+      int callTimeout = getInteger(e, "remoting-call-timeout", ConnectionParamsImpl.DEFAULT_CALL_TIMEOUT);
 
       boolean invmDisabled = getBoolean(e, "remoting-disable-invm", ConnectionParamsImpl.DEFAULT_INVM_DISABLED);
 
@@ -109,9 +109,9 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
 
       trustStorePassword = getString(e, "remoting-ssl-truststore-password", null);
 
-      defaultConnectionParams.setBlockingCallTimeout(blockingCallTimeout);
+      defaultConnectionParams.setCallTimeout(callTimeout);
       
-      defaultConnectionParams.setInvmDisabled(invmDisabled);
+      defaultConnectionParams.setInVMDisabled(invmDisabled);
       
       defaultConnectionParams.setTcpNoDelay(tcpNoDelay);
       

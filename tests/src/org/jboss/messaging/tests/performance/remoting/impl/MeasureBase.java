@@ -153,7 +153,7 @@ public abstract class MeasureBase extends TestCase
    {
       ConnectionParamsImpl param = new ConnectionParamsImpl();
       param.setTcpNoDelay(true);
-      param.setBlockingCallTimeout(50000);
+      param.setCallTimeout(50000);
       return param;
    }
 

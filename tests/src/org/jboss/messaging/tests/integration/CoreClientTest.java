@@ -84,7 +84,7 @@ public class CoreClientTest extends TestCase
    {
       Location location = new LocationImpl(TransportType.TCP, "localhost", ConfigurationImpl.DEFAULT_REMOTING_PORT);
       ConnectionParams connectionParams = new ConnectionParamsImpl();
-      connectionParams.setBlockingCallTimeout(500000);
+      connectionParams.setCallTimeout(500000);
       ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location, connectionParams);
       ClientConnection conn = cf.createConnection();
 

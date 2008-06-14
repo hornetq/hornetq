@@ -160,7 +160,7 @@ public class RemotingConnectionImpl implements RemotingConnection
             throw new MessagingException(MessagingException.INTERNAL_ERROR);
          }
 
-         Packet response = handler.waitForResponse(connectionParams.getBlockingCallTimeout());
+         Packet response = handler.waitForResponse(connectionParams.getCallTimeout());
 
          if (response == null)
          {

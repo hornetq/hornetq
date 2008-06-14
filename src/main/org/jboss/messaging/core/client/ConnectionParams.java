@@ -32,9 +32,9 @@ import java.io.Serializable;
  */
 public interface ConnectionParams extends Serializable
 {   
-   long getBlockingCallTimeout();
+   long getCallTimeout();
 
-   void setBlockingCallTimeout(long timeout);
+   void setCallTimeout(long timeout);
 
    long getPingInterval();
 
@@ -44,9 +44,9 @@ public interface ConnectionParams extends Serializable
 
    void setPingTimeout(long pingTimeout);
 
-   boolean isInvmDisabled();
+   boolean isInVMDisabled();
 
-   void setInvmDisabled(boolean invmDisabled);
+   void setInVMDisabled(boolean invmDisabled);
 
    boolean isTcpNoDelay();
 
