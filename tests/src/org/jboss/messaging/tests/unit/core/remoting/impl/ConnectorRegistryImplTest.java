@@ -92,7 +92,7 @@ public class ConnectorRegistryImplTest extends TestCase
 
       RemotingConnector connector = registry.getConnector(config.getLocation(), new ConnectionParamsImpl());
 
-      assertTrue(connector.getServerURI().startsWith(INVM.toString()));
+      assertTrue(connector.getLocation().getTransport().equals(TransportType.INVM));
 
       assertTrue(registry.unregister(config.getLocation()));
 
@@ -109,8 +109,8 @@ public class ConnectorRegistryImplTest extends TestCase
 
       assertNotNull(connector);
       
-      assertEquals(config.getTransport() + "://" + config.getHost() +
-                   ":" + config.getPort() + config.getConnectionParams().getURI(), connector.getServerURI());
+      assertEquals(config.getLocation(), connector.getLocation());
+      assertEquals(config.getConnectionParams(), connector.getConnectionParams());
 
       assertNotNull(registry.removeConnector(config.getLocation()));
    }

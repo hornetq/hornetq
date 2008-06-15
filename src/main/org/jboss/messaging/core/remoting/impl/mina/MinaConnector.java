@@ -268,9 +268,14 @@ public class MinaConnector implements RemotingConnector, CleanUpNotifier
       }
    }
 
-   public String getServerURI()
+   public Location getLocation()
    {
-      return location.getLocation() + connectionParams.getURI();
+      return location;
+   }
+   
+   public ConnectionParams getConnectionParams()
+   {
+      return connectionParams;
    }
 
    public PacketDispatcher getDispatcher()

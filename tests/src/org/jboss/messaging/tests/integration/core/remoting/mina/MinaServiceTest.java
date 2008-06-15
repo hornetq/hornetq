@@ -31,7 +31,7 @@ public class MinaServiceTest extends TestCase
 
    public void testINVMConnector_OK() throws Exception
    {
-      RemotingConnector connector = new INVMConnector(1, new PacketDispatcherImpl(null), invmService.getDispatcher());
+      RemotingConnector connector = new INVMConnector(null, null, 1, new PacketDispatcherImpl(null), invmService.getDispatcher());
       RemotingSession session = connector.connect();
 
       assertTrue(session.isConnected());

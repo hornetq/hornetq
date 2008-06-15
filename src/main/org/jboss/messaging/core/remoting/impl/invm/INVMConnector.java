@@ -6,13 +6,15 @@
  */
 package org.jboss.messaging.core.remoting.impl.invm;
 
+import java.io.IOException;
+
+import org.jboss.messaging.core.client.ConnectionParams;
+import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.RemotingSessionListener;
+import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnector;
 import org.jboss.messaging.core.remoting.RemotingSession;
-import static org.jboss.messaging.core.remoting.TransportType.INVM;
-
-import java.io.IOException;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -32,16 +34,22 @@ public class INVMConnector implements RemotingConnector
       
    private final PacketDispatcher clientDispatcher;
    private final PacketDispatcher serverDispatcher;
+   
+   private final Location location;
+   private final ConnectionParams connectionParams;
      
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public INVMConnector(final long id, final PacketDispatcher clientDispatcher, final PacketDispatcher serverDispatcher)
+   public INVMConnector(final Location location, final ConnectionParams params,
+                        final long id, final PacketDispatcher clientDispatcher, final PacketDispatcher serverDispatcher)
    {
    	this.id = id;
       this.clientDispatcher = clientDispatcher;
       this.serverDispatcher = serverDispatcher;
+      this.location = location;
+      this.connectionParams = params;
    }
 
    // Public --------------------------------------------------------
@@ -60,7 +68,8 @@ public class INVMConnector implements RemotingConnector
       if (session == null)
       {
          return false;
-      } else
+      }
+      else
       {
          boolean closed = session.close();
          session = null;
@@ -68,9 +77,14 @@ public class INVMConnector implements RemotingConnector
       }
    }
 
-   public String getServerURI()
+   public Location getLocation()
    {
-      return INVM + "://localhost";
+      return location;
+   }
+   
+   public ConnectionParams getConnectionParams()
+   {
+      return connectionParams;
    }
 
    public PacketDispatcher getDispatcher()

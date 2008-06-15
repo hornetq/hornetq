@@ -79,6 +79,4 @@ public interface ConnectionParams extends Serializable
    String getTrustStorePassword();
 
    void setTrustStorePassword(String trustStorePassword);
-
-   String getURI();
 }

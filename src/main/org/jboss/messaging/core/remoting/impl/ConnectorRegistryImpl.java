@@ -127,7 +127,7 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
       else if (transport == INVM)
       {
          PacketDispatcher localDispatcher = localDispatchers.get(key);
-         connector = new INVMConnector(idCounter.getAndIncrement(), new PacketDispatcherImpl(null), localDispatcher);
+         connector = new INVMConnector(location, connectionParams, idCounter.getAndIncrement(), new PacketDispatcherImpl(null), localDispatcher);
       }
 
       if (connector == null)

@@ -6,9 +6,11 @@
  */
 package org.jboss.messaging.core.remoting;
 
-import org.jboss.messaging.core.client.RemotingSessionListener;
-
 import java.io.IOException;
+
+import org.jboss.messaging.core.client.ConnectionParams;
+import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.client.RemotingSessionListener;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -26,7 +28,9 @@ public interface RemotingConnector
 
    void removeSessionListener(RemotingSessionListener listener);
 
-   String getServerURI();
-
    PacketDispatcher getDispatcher();
+   
+   Location getLocation();
+   
+   ConnectionParams getConnectionParams();
 }

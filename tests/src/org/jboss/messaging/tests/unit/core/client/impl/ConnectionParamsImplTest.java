@@ -53,26 +53,7 @@ public class ConnectionParamsImplTest extends UnitTestCase
       assertEquals(null, cp.getTrustStorePath());
       assertEquals(null, cp.getTrustStorePassword());
    }
-   
-   public void testURI()
-   {
-      ConnectionParams cp = new ConnectionParamsImpl();
       
-      StringBuffer buff = new StringBuffer();
-      buff.append("?").append("callTimeout=").append(ConnectionParamsImpl.DEFAULT_CALL_TIMEOUT);
-      buff.append("&").append("pingInterval=").append(ConnectionParamsImpl.DEFAULT_PING_INTERVAL);
-      buff.append("&").append("pingTimeout=").append(ConnectionParamsImpl.DEFAULT_PING_TIMEOUT);
-      buff.append("&").append("inVMDisabled=").append(ConnectionParamsImpl.DEFAULT_INVM_OPTIMISATION_ENABLED);
-      buff.append("&").append("tcpNoDelay=").append(ConnectionParamsImpl.DEFAULT_TCP_NODELAY);
-      buff.append("&").append("tcpReceiveBufferSize=").append(ConnectionParamsImpl.DEFAULT_TCP_RECEIVE_BUFFER_SIZE);
-      buff.append("&").append("tcpSendBufferSize=").append(ConnectionParamsImpl.DEFAULT_TCP_SEND_BUFFER_SIZE);
-      buff.append("&").append("sslEnabled=").append(ConnectionParamsImpl.DEFAULT_SSL_ENABLED);
-      buff.append("&").append("keyStorePath=").append((String)null);
-      buff.append("&").append("trustStorePath=").append((String)null);
-      
-      assertEquals(buff.toString(), cp.getURI());
-   }
-   
    public void testSetAndGetAttributes()
    {
       for (int j = 0; j < 100; j++)

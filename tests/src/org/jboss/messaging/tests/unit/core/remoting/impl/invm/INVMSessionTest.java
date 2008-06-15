@@ -40,7 +40,7 @@ public class INVMSessionTest extends SessionTestBase
    @Override
    protected RemotingConnector createNIOConnector(PacketDispatcher dispatcher)
    {
-      return new INVMConnector(1, dispatcher, serverDispatcher);
+      return new INVMConnector(null, null, 1, dispatcher, serverDispatcher);
    }
    
    @Override

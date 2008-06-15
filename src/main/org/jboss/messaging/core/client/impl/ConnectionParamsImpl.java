@@ -216,28 +216,7 @@ public class ConnectionParamsImpl implements ConnectionParams
    {
       this.trustStorePassword = trustStorePassword;
    }
-     
-   public String getURI()
-   {
-      StringBuffer buff = new StringBuffer();
-      buff.append("?").append("callTimeout=").append(callTimeout);
-      buff.append("&").append("pingInterval=").append(pingInterval);
-      buff.append("&").append("pingTimeout=").append(pingTimeout);
-      buff.append("&").append("inVMDisabled=").append(inVMOptimisationEnabled);
-      buff.append("&").append("tcpNoDelay=").append(tcpNoDelay);
-      buff.append("&").append("tcpReceiveBufferSize=").append(tcpReceiveBufferSize);
-      buff.append("&").append("tcpSendBufferSize=").append(tcpSendBufferSize);
-      buff.append("&").append("sslEnabled=").append(sslEnabled);
-      buff.append("&").append("keyStorePath=").append(keyStorePath);
-      buff.append("&").append("trustStorePath=").append(trustStorePath);
-      return buff.toString();
-   }
-   
-   public String toString()
-   {
-      return "ConnectionParamsImpl:" + System.identityHashCode(this) + ":" + getURI();
-   }
-   
+        
    public boolean equals(Object other)
    {
       if (other instanceof ConnectionParams == false)
