@@ -92,7 +92,7 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
 
       int callTimeout = getInteger(e, "remoting-call-timeout", ConnectionParamsImpl.DEFAULT_CALL_TIMEOUT);
 
-      boolean inVMDisabled = getBoolean(e, "remoting-disable-invm", ConnectionParamsImpl.DEFAULT_INVM_DISABLED);
+      boolean inVMOptimisationEnabled = getBoolean(e, "remoting-enable-invm-optimisation", ConnectionParamsImpl.DEFAULT_INVM_OPTIMISATION_ENABLED);
 
       boolean tcpNoDelay = getBoolean(e, "remoting-tcp-nodelay", ConnectionParamsImpl.DEFAULT_TCP_NODELAY);
 
@@ -116,7 +116,7 @@ public class FileConfiguration extends ConfigurationImpl implements Serializable
 
       defaultConnectionParams.setCallTimeout(callTimeout);
       
-      defaultConnectionParams.setInVMDisabled(inVMDisabled);
+      defaultConnectionParams.setInVMOptimisationEnabled(inVMOptimisationEnabled);
       
       defaultConnectionParams.setTcpNoDelay(tcpNoDelay);
       

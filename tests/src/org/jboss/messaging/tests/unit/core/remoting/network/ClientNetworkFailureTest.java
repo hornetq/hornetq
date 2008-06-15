@@ -75,7 +75,7 @@ public class ClientNetworkFailureTest extends TestCase
    {
       super.setUp();
       ConfigurationImpl newConfig = new ConfigurationImpl();
-      newConfig.getConnectionParams().setInVMDisabled(true);
+      newConfig.getConnectionParams().setInVMOptimisationEnabled(false);
       newConfig.setHost("localhost");
       newConfig.setPort(5400);
       newConfig.setTransport(TransportType.TCP);

@@ -11,7 +11,7 @@
       <remoting-host>blahhost</remoting-host>
       <remoting-port>6540</remoting-port>
       <remoting-call-timeout>7654</remoting-call-timeout>
-      <remoting-disable-invm>true</remoting-disable-invm>
+      <remoting-enable-invm-optimisation>false</remoting-enable-invm-optimisation>
       <remoting-tcp-nodelay>false</remoting-tcp-nodelay>
       <remoting-tcp-receive-buffer-size>987654</remoting-tcp-receive-buffer-size>
       <remoting-tcp-send-buffer-size>2345676</remoting-tcp-send-buffer-size>

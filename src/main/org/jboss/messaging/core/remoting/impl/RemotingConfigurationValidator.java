@@ -30,7 +30,7 @@ public class RemotingConfigurationValidator
    public static void validate(Configuration configuration)
    {
       if (configuration.getTransport() == INVM
-            && configuration.getConnectionParams().isInVMDisabled())
+            && !configuration.getConnectionParams().isInVMOptimisationEnabled())
       {
          throw new IllegalStateException(
                "It is not allowed to disable invm communication when the transport is set to invm.");

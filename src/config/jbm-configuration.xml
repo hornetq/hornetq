@@ -30,9 +30,8 @@
       <!--  call timeout in milliseconds -->
       <remoting-call-timeout>5000</remoting-call-timeout>
 
-      <!-- true to disable invm communication when the client and the server are in the same JVM.     -->
-      <!-- it is not allowed to disable invm communication when the remoting-transport is set to INVM -->
-      <remoting-disable-invm>false</remoting-disable-invm>
+      <!-- true to enable invm communication when the client and the server are in the same JVM.     -->
+      <remoting-enable-invm-optimisation>true</remoting-enable-invm-optimisation>
 
       <!-- Enable/Disable Nagle's Algorithm (resp. true/false)                           -->
       <!-- This setting is taken into account only when remoting-transport is set to TCP -->

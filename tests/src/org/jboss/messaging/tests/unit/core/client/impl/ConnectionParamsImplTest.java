@@ -40,7 +40,7 @@ public class ConnectionParamsImplTest extends UnitTestCase
    {
       ConnectionParams cp = new ConnectionParamsImpl();
       
-      assertEquals(ConnectionParamsImpl.DEFAULT_INVM_DISABLED, cp.isInVMDisabled());
+      assertEquals(ConnectionParamsImpl.DEFAULT_INVM_OPTIMISATION_ENABLED, cp.isInVMOptimisationEnabled());
       assertEquals(ConnectionParamsImpl.DEFAULT_SSL_ENABLED, cp.isSSLEnabled());
       assertEquals(ConnectionParamsImpl.DEFAULT_TCP_NODELAY, cp.isTcpNoDelay());
       assertEquals(ConnectionParamsImpl.DEFAULT_CALL_TIMEOUT, cp.getCallTimeout());
@@ -62,7 +62,7 @@ public class ConnectionParamsImplTest extends UnitTestCase
       buff.append("?").append("callTimeout=").append(ConnectionParamsImpl.DEFAULT_CALL_TIMEOUT);
       buff.append("&").append("pingInterval=").append(ConnectionParamsImpl.DEFAULT_PING_INTERVAL);
       buff.append("&").append("pingTimeout=").append(ConnectionParamsImpl.DEFAULT_PING_TIMEOUT);
-      buff.append("&").append("inVMDisabled=").append(ConnectionParamsImpl.DEFAULT_INVM_DISABLED);
+      buff.append("&").append("inVMDisabled=").append(ConnectionParamsImpl.DEFAULT_INVM_OPTIMISATION_ENABLED);
       buff.append("&").append("tcpNoDelay=").append(ConnectionParamsImpl.DEFAULT_TCP_NODELAY);
       buff.append("&").append("tcpReceiveBufferSize=").append(ConnectionParamsImpl.DEFAULT_TCP_RECEIVE_BUFFER_SIZE);
       buff.append("&").append("tcpSendBufferSize=").append(ConnectionParamsImpl.DEFAULT_TCP_SEND_BUFFER_SIZE);
@@ -80,8 +80,8 @@ public class ConnectionParamsImplTest extends UnitTestCase
          ConnectionParams cp = new ConnectionParamsImpl();
          
          boolean b = RandomUtil.randomBoolean();
-         cp.setInVMDisabled(b);
-         assertEquals(b, cp.isInVMDisabled());
+         cp.setInVMOptimisationEnabled(b);
+         assertEquals(b, cp.isInVMOptimisationEnabled());
          
          b = RandomUtil.randomBoolean();
          cp.setSSLEnabled(b);
@@ -127,6 +127,46 @@ public class ConnectionParamsImplTest extends UnitTestCase
          cp.setTrustStorePassword(s);
          assertEquals(s, cp.getTrustStorePassword());   
       }      
+   }
+   
+   public void testOverrideWithSystemProperties()
+   {
+      ConnectionParams cp = new ConnectionParamsImpl();
+      
+      try
+      {      
+         assertEquals(ConnectionParamsImpl.DEFAULT_SSL_ENABLED, cp.isSSLEnabled());     
+         System.setProperty(ConnectionParamsImpl.ENABLE_SSL_PROPERTY_NAME, String.valueOf(!ConnectionParamsImpl.DEFAULT_SSL_ENABLED));      
+         assertEquals(!ConnectionParamsImpl.DEFAULT_SSL_ENABLED, cp.isSSLEnabled());     
+         
+         assertEquals(null, cp.getKeyStorePath());      
+         final String path = "somepath";
+         System.setProperty(ConnectionParamsImpl.SSL_KEYSTORE_PATH_PROPERTY_NAME, path);
+         assertEquals(path, cp.getKeyStorePath());
+         
+         assertEquals(null, cp.getKeyStorePassword());      
+         final String password = "somepassword";
+         System.setProperty(ConnectionParamsImpl.SSL_KEYSTORE_PASSWORD_PROPERTY_NAME, password);
+         assertEquals(password, cp.getKeyStorePassword());
+         
+         assertEquals(null, cp.getTrustStorePath());      
+         final String trustpath = "sometrustpath";
+         System.setProperty(ConnectionParamsImpl.SSL_TRUSTSTORE_PATH_PROPERTY_NAME, trustpath);
+         assertEquals(trustpath, cp.getTrustStorePath());
+         
+         assertEquals(null, cp.getTrustStorePassword());      
+         final String trustpassword = "sometrustpassword";
+         System.setProperty(ConnectionParamsImpl.SSL_TRUSTSTORE_PASSWORD_PROPERTY_NAME, trustpassword);
+         assertEquals(trustpassword, cp.getTrustStorePassword());
+      }
+      finally
+      {
+         System.clearProperty(ConnectionParamsImpl.ENABLE_SSL_PROPERTY_NAME);
+         System.clearProperty(ConnectionParamsImpl.SSL_KEYSTORE_PATH_PROPERTY_NAME);
+         System.clearProperty(ConnectionParamsImpl.SSL_KEYSTORE_PASSWORD_PROPERTY_NAME);
+         System.clearProperty(ConnectionParamsImpl.SSL_TRUSTSTORE_PATH_PROPERTY_NAME);
+         System.clearProperty(ConnectionParamsImpl.SSL_TRUSTSTORE_PASSWORD_PROPERTY_NAME);
+      }
    }
    
    // Private -----------------------------------------------------------------------------------------------------------

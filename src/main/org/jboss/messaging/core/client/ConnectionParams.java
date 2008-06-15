@@ -44,9 +44,9 @@ public interface ConnectionParams extends Serializable
 
    void setPingTimeout(long pingTimeout);
 
-   boolean isInVMDisabled();
+   boolean isInVMOptimisationEnabled();
 
-   void setInVMDisabled(boolean invmDisabled);
+   void setInVMOptimisationEnabled(boolean enabled);
 
    boolean isTcpNoDelay();
 

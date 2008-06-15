@@ -40,9 +40,7 @@ public class ConfigurationImpl implements Configuration
 {
    // Constants ------------------------------------------------------------------------------
    
-   public static final String REMOTING_DISABLE_INVM_SYSPROP_KEY = "jbm.remoting.disable.invm";
-
-   public static final String REMOTING_ENABLE_SSL_SYSPROP_KEY = "jbm.remoting.enable.ssl";
+   public static final String ENABLE_SSL_PROPERTY_NAME = "jbm.remoting.ssl.enable";
 
    public static final boolean DEFAULT_CLUSTERED = false;
    
@@ -317,9 +315,9 @@ public class ConfigurationImpl implements Configuration
 
    public boolean isSSLEnabled()
    {
-      if (System.getProperty(REMOTING_ENABLE_SSL_SYSPROP_KEY) != null)
+      if (System.getProperty(ENABLE_SSL_PROPERTY_NAME) != null)
       {
-         return Boolean.parseBoolean(System.getProperty(REMOTING_ENABLE_SSL_SYSPROP_KEY));
+         return Boolean.parseBoolean(System.getProperty(ENABLE_SSL_PROPERTY_NAME));
       }
       else 
       {

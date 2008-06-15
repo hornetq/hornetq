@@ -37,7 +37,7 @@ public class ConnectionParamsImpl implements ConnectionParams
    
    public static final int DEFAULT_CALL_TIMEOUT = 5000; // in ms
    
-   public static final boolean DEFAULT_INVM_DISABLED = false;
+   public static final boolean DEFAULT_INVM_OPTIMISATION_ENABLED = true;
    
    public static final boolean DEFAULT_TCP_NODELAY = true;
    
@@ -47,15 +47,15 @@ public class ConnectionParamsImpl implements ConnectionParams
    
    public static final boolean DEFAULT_SSL_ENABLED = false;
    
-   public static final String SSL_KEYSTORE_PATH_PROPERTY_NAME = "remoting.ssl.keystore.path";
+   public static final String SSL_KEYSTORE_PATH_PROPERTY_NAME = "jbm.remoting.ssl.keystore.path";
    
-   public static final String SSL_KEYSTORE_PASSWORD_PROPERTY_NAME = "remoting.ssl.keystore.password";
+   public static final String SSL_KEYSTORE_PASSWORD_PROPERTY_NAME = "jbm.remoting.ssl.keystore.password";
    
-   public static final String SSL_TRUSTSTORE_PATH_PROPERTY_NAME = "remoting.ssl.truststore.path";
+   public static final String SSL_TRUSTSTORE_PATH_PROPERTY_NAME = "jbm.remoting.ssl.truststore.path";
    
-   public static final String SSL_TRUSTSTORE_PASSWORD_PROPERTY_NAME = "remoting.ssl.truststore.password";
+   public static final String SSL_TRUSTSTORE_PASSWORD_PROPERTY_NAME = "jbm.remoting.ssl.truststore.password";
    
-   public static final String ENABLE_SSL_PROPERTY_NAME = "remoting.enable.ssl";
+   public static final String ENABLE_SSL_PROPERTY_NAME = "jbm.remoting.enable.ssl";
    
    
    
@@ -69,7 +69,7 @@ public class ConnectionParamsImpl implements ConnectionParams
    
    private long pingTimeout = DEFAULT_PING_TIMEOUT;
    
-   private boolean invmDisabled = DEFAULT_INVM_DISABLED;
+   private boolean inVMOptimisationEnabled = DEFAULT_INVM_OPTIMISATION_ENABLED;
    
    private boolean tcpNoDelay = DEFAULT_TCP_NODELAY;
    
@@ -117,14 +117,14 @@ public class ConnectionParamsImpl implements ConnectionParams
       this.pingTimeout = pingTimeout;
    }
 
-   public boolean isInVMDisabled()
+   public boolean isInVMOptimisationEnabled()
    {
-      return invmDisabled;
+      return inVMOptimisationEnabled;
    }
 
-   public void setInVMDisabled(final boolean invmDisabled)
+   public void setInVMOptimisationEnabled(final boolean enabled)
    {
-      this.invmDisabled = invmDisabled;
+      this.inVMOptimisationEnabled = enabled;
    }
 
    public boolean isTcpNoDelay()
@@ -223,7 +223,7 @@ public class ConnectionParamsImpl implements ConnectionParams
       buff.append("?").append("callTimeout=").append(callTimeout);
       buff.append("&").append("pingInterval=").append(pingInterval);
       buff.append("&").append("pingTimeout=").append(pingTimeout);
-      buff.append("&").append("inVMDisabled=").append(invmDisabled);
+      buff.append("&").append("inVMDisabled=").append(inVMOptimisationEnabled);
       buff.append("&").append("tcpNoDelay=").append(tcpNoDelay);
       buff.append("&").append("tcpReceiveBufferSize=").append(tcpReceiveBufferSize);
       buff.append("&").append("tcpSendBufferSize=").append(tcpSendBufferSize);
@@ -250,7 +250,7 @@ public class ConnectionParamsImpl implements ConnectionParams
       return cp.getCallTimeout() == callTimeout &&
              cp.getPingTimeout() == this.pingTimeout &&
              cp.getPingInterval() == this.pingInterval &&
-             cp.isInVMDisabled() == this.isInVMDisabled() &&
+             cp.isInVMOptimisationEnabled() == this.isInVMOptimisationEnabled() &&
              cp.isTcpNoDelay() == this.isTcpNoDelay() &&
              cp.getTcpReceiveBufferSize() == this.getTcpReceiveBufferSize() &&
              cp.getTcpSendBufferSize() == this.getTcpSendBufferSize() &&
