@@ -42,7 +42,7 @@ import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
 public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
 {
 
-   protected String journalDir = System.getProperty("user.home") + "/journal-test";
+   protected String journalDir = "/tmp/journal-test";
    
    protected void setUp() throws Exception
    {
@@ -53,6 +53,13 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
       deleteDirectory(file);
       
       file.mkdir();     
+   }
+
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();
+
+      deleteDirectory(new File(journalDir));
    }
 
    protected SequentialFileFactory createFactory()

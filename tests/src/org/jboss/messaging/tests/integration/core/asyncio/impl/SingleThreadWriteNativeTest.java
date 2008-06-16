@@ -528,7 +528,7 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          long timeTotal = System.currentTimeMillis() - valueInitial;
          log.info("After completions time = " + timeTotal + " for "
                + numberOfLines + " registers " + " size each line = " + size
-               + " Records/Sec=" + (numberOfLines * 1000 / timeTotal)
+               + ", Records/Sec=" + (numberOfLines * 1000 / timeTotal)
                + " (Assynchronous)");
          
          for (CountDownCallback tmp : list)
@@ -595,42 +595,41 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
       
    }
  
-//   disabled until http://jira.jboss.com/jira/browse/JBMESSAGING-1334 is done
-//   public void testInvalidWrite() throws Exception
-//   {
-//      final AsynchronousFileImpl controller = new AsynchronousFileImpl();
-//      controller.open(FILE_NAME, 2000, 120);
-//      
-//      try
-//      {
-//         
-//         final int SIZE = 512;
-//         
-//         ByteBuffer block = controller.newBuffer(SIZE);
-//         encodeBufer(block);
-//         
-//         preAlloc(controller, 1000 * 512);
-//         
-//         CountDownLatch latchDone = new CountDownLatch(1);
-//         
-//         CountDownCallback aioBlock = new CountDownCallback(latchDone);
-//         controller.write(11, 512, block, aioBlock);
-//         
-//         latchDone.await();
-//         
-//         assertTrue(aioBlock.errorCalled);
-//         assertFalse(aioBlock.doneCalled);
-//         
-//         controller.destroyBuffer(block);
-//      } catch (Exception e)
-//      {
-//         throw e;
-//      } finally
-//      {
-//         controller.close();
-//      }
-//      
-//   }
+   public void testInvalidWrite() throws Exception
+   {
+      final AsynchronousFileImpl controller = new AsynchronousFileImpl();
+      controller.open(FILE_NAME, 2000, 120);
+      
+      try
+      {
+         
+         final int SIZE = 512;
+         
+         ByteBuffer block = controller.newBuffer(SIZE);
+         encodeBufer(block);
+         
+         preAlloc(controller, 10 * 512);
+         
+         CountDownLatch latchDone = new CountDownLatch(1);
+         
+         CountDownCallback aioBlock = new CountDownCallback(latchDone);
+         controller.write(11, 512, block, aioBlock);
+         
+         latchDone.await();
+         
+         assertTrue(aioBlock.errorCalled);
+         assertFalse(aioBlock.doneCalled);
+         
+         controller.destroyBuffer(block);
+      } catch (Exception e)
+      {
+         throw e;
+      } finally
+      {
+         controller.close();
+      }
+      
+   }
    
    public void testInvalidAlloc() throws Exception
    {

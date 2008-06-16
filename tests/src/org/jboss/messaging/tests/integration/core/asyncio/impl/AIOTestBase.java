@@ -38,7 +38,8 @@ import org.jboss.messaging.tests.util.UnitTestCase;
  */
 public abstract class AIOTestBase extends UnitTestCase
 {
-   protected String fileDir = System.getProperty("user.home") + "/journal-test";
+   // The AIO Test must use a local filesystem. Sometimes $HOME is on a NFS on most enterprise systems
+   protected String fileDir = "/tmp/journal-test";
    protected String FILE_NAME = fileDir + "/fileUsedOnNativeTests.log";
    
    protected void setUp() throws Exception
@@ -63,6 +64,7 @@ public abstract class AIOTestBase extends UnitTestCase
    {
       super.tearDown();
       assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
+      //deleteDirectory(new File(fileDir));
    }
    
    protected void encodeBufer(ByteBuffer buffer)

@@ -39,13 +39,15 @@ import org.jboss.messaging.core.logging.Logger;
  *   III - Add -Djava.library.path=<your project place>/native/src/.libs
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
 public class RealAIOJournalImplTest extends JournalImplTestUnit
 {
    private static final Logger log = Logger.getLogger(RealAIOJournalImplTest.class);
    
-   protected String journalDir = System.getProperty("user.home") + "/journal-test";
+   // Need to run the test over a local disk (no NFS)
+   protected String journalDir = "/tmp/journal-test";
      
    @Override
    protected void setUp() throws Exception
@@ -58,6 +60,12 @@ public class RealAIOJournalImplTest extends JournalImplTestUnit
                System.getProperty("os.arch"), 
                System.getProperty("os.version")));
       }
+   }
+   
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();
+      deleteDirectory(new File(journalDir));
    }
    
    protected SequentialFileFactory getFileFactory() throws Exception
