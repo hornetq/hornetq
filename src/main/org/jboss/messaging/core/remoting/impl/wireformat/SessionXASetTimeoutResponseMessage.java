@@ -14,7 +14,7 @@ import org.jboss.messaging.util.MessagingBuffer;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionXASetTimeoutResponseMessage extends EmptyPacket
+public class SessionXASetTimeoutResponseMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

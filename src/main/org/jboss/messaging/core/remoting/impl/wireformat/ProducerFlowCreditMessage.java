@@ -15,7 +15,7 @@ import org.jboss.messaging.util.MessagingBuffer;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class ProducerFlowCreditMessage extends EmptyPacket
+public class ProducerFlowCreditMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

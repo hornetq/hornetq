@@ -16,7 +16,7 @@ import org.jboss.messaging.util.MessagingBuffer;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionXAJoinMessage extends EmptyPacket
+public class SessionXAJoinMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

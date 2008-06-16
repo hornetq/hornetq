@@ -19,7 +19,7 @@ import org.jboss.messaging.util.MessagingBuffer;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionXAGetInDoubtXidsResponseMessage extends EmptyPacket
+public class SessionXAGetInDoubtXidsResponseMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

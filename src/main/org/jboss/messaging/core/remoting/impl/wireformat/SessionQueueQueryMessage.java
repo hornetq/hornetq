@@ -17,7 +17,7 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SessionQueueQueryMessage extends EmptyPacket
+public class SessionQueueQueryMessage extends PacketImpl
 {
    private SimpleString queueName;
 

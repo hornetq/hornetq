@@ -40,7 +40,7 @@ import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.core.version.impl.VersionImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -95,9 +95,9 @@ public class ClientConnectionImplTest extends UnitTestCase
       
       ClientConnectionInternal conn = new ClientConnectionImpl(cf, serverTargetID, rc, version);
       
-      rc.sendOneWay(serverTargetID, serverTargetID, new EmptyPacket(EmptyPacket.CONN_START));
+      rc.sendOneWay(serverTargetID, serverTargetID, new PacketImpl(PacketImpl.CONN_START));
       
-      EasyMock.expect(rc.sendBlocking(serverTargetID, serverTargetID, new EmptyPacket(EmptyPacket.CONN_STOP))).andReturn(null);
+      EasyMock.expect(rc.sendBlocking(serverTargetID, serverTargetID, new PacketImpl(PacketImpl.CONN_STOP))).andReturn(null);
       
       EasyMock.replay(rc);
       
@@ -170,7 +170,7 @@ public class ClientConnectionImplTest extends UnitTestCase
       sess2.close();
       sess3.close();
       
-      EasyMock.expect(rc.sendBlocking(serverTargetID, serverTargetID, new EmptyPacket(EmptyPacket.CLOSE))).andReturn(null);
+      EasyMock.expect(rc.sendBlocking(serverTargetID, serverTargetID, new PacketImpl(PacketImpl.CLOSE))).andReturn(null);
             
       rc.stop();      
       

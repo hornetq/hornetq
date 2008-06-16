@@ -15,7 +15,7 @@ import org.jboss.messaging.util.MessagingBuffer;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class SessionBrowserHasNextMessageResponseMessage extends EmptyPacket
+public class SessionBrowserHasNextMessageResponseMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

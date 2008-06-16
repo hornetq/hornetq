@@ -7,7 +7,7 @@
 package org.jboss.messaging.tests.integration.core.remoting.mina;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CREATECONNECTION;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATECONNECTION;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
@@ -23,7 +23,7 @@ import org.jboss.messaging.core.remoting.RemotingSession;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.RemotingServiceImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
-import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.server.impl.ServerPacketHandlerSupport;
 import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 
@@ -122,7 +122,7 @@ public class ServerPingTest extends TestCase
             response = createConnectionResponse;*/
 
          }
-         else if (type == EmptyPacket.PING)
+         else if (type == PacketImpl.PING)
          {
             //do nothing
          }

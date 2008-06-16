@@ -40,9 +40,7 @@ import org.jboss.messaging.util.SimpleString;
  *
  */
 public interface Queue
-{
-   public static final int NUM_PRIORITIES = 10;
-      
+{     
    HandleStatus addLast(MessageReference ref);
    
    HandleStatus addFirst(MessageReference ref);

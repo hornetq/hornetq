@@ -4,7 +4,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketReturner;
-import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerFlowCreditMessage;
 
 /**
@@ -38,7 +38,7 @@ public class ClientProducerPacketHandler implements PacketHandler
    {    
       byte type = packet.getType();
       
-      if (type == EmptyPacket.PROD_RECEIVETOKENS)
+      if (type == PacketImpl.PROD_RECEIVETOKENS)
       {
          ProducerFlowCreditMessage message = (ProducerFlowCreditMessage) packet;
          

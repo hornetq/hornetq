@@ -21,11 +21,12 @@
  */
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CLOSE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.NULL;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_BROWSER_HASNEXTMESSAGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_BROWSER_NEXTMESSAGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.SESS_BROWSER_RESET;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CLOSE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NO_ID_SET;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NULL;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_HASNEXTMESSAGE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_NEXTMESSAGE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_RESET;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -39,7 +40,7 @@ import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketReturner;
-import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
 import org.jboss.messaging.core.server.MessageReference;
@@ -233,9 +234,9 @@ public class ServerBrowserImpl
          }
 
          // reply if necessary
-         if (response == null && packet.getResponseTargetID() != Packet.NO_ID_SET)
+         if (response == null && packet.getResponseTargetID() != NO_ID_SET)
          {
-            response = new EmptyPacket(NULL);               
+            response = new PacketImpl(NULL);               
          }            
          
          return response;

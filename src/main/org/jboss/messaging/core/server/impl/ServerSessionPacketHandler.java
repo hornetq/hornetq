@@ -21,6 +21,8 @@
   */
 package org.jboss.messaging.core.server.impl;
 
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NO_ID_SET;
+
 import java.util.List;
 
 import javax.transaction.xa.Xid;
@@ -29,7 +31,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketReturner;
-import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
@@ -87,7 +89,7 @@ public class ServerSessionPacketHandler extends ServerPacketHandlerSupport
       
       switch (type)
       {
-      case EmptyPacket.SESS_CREATECONSUMER:
+      case PacketImpl.SESS_CREATECONSUMER:
       {
          SessionCreateConsumerMessage request = (SessionCreateConsumerMessage) packet;
          
@@ -96,7 +98,7 @@ public class ServerSessionPacketHandler extends ServerPacketHandlerSupport
          		                            request.getWindowSize(), request.getMaxRate());
          break;
       }
-      case EmptyPacket.SESS_CREATEQUEUE:
+      case PacketImpl.SESS_CREATEQUEUE:
       {
          SessionCreateQueueMessage request = (SessionCreateQueueMessage) packet;
          session.createQueue(request.getAddress(), request.getQueueName(), request
@@ -104,138 +106,138 @@ public class ServerSessionPacketHandler extends ServerPacketHandlerSupport
                .isTemporary());
          break;
       }
-      case EmptyPacket.SESS_DELETE_QUEUE:
+      case PacketImpl.SESS_DELETE_QUEUE:
       {
          SessionDeleteQueueMessage request = (SessionDeleteQueueMessage) packet;
          session.deleteQueue(request.getQueueName());
          break;
       }
-      case EmptyPacket.SESS_QUEUEQUERY:
+      case PacketImpl.SESS_QUEUEQUERY:
       {
          SessionQueueQueryMessage request = (SessionQueueQueryMessage) packet;
          response = session.executeQueueQuery(request);
          break;
       }
-      case EmptyPacket.SESS_BINDINGQUERY:
+      case PacketImpl.SESS_BINDINGQUERY:
       {
          SessionBindingQueryMessage request = (SessionBindingQueryMessage)packet;
          response = session.executeBindingQuery(request);
          break;
       }
-      case EmptyPacket.SESS_CREATEBROWSER:
+      case PacketImpl.SESS_CREATEBROWSER:
       {
          SessionCreateBrowserMessage request = (SessionCreateBrowserMessage) packet;
          response = session.createBrowser(request.getQueueName(), request
                .getFilterString());
          break;
       }
-      case EmptyPacket.SESS_CREATEPRODUCER:
+      case PacketImpl.SESS_CREATEPRODUCER:
       {
          SessionCreateProducerMessage request = (SessionCreateProducerMessage) packet;
          response = session.createProducer(request.getClientTargetID(), request.getAddress(), request.getWindowSize(), request.getMaxRate());
          break;
       }
-      case EmptyPacket.CLOSE:
+      case PacketImpl.CLOSE:
       {
          session.close();
          break;
       }
-      case EmptyPacket.SESS_ACKNOWLEDGE:
+      case PacketImpl.SESS_ACKNOWLEDGE:
       {
          SessionAcknowledgeMessage message = (SessionAcknowledgeMessage) packet;
          session.acknowledge(message.getDeliveryID(), message.isAllUpTo());
          break;
       }
-      case EmptyPacket.SESS_COMMIT:
+      case PacketImpl.SESS_COMMIT:
          session.commit();
          break;
-      case EmptyPacket.SESS_ROLLBACK:
+      case PacketImpl.SESS_ROLLBACK:
          session.rollback();
          break;
-      case EmptyPacket.SESS_CANCEL:
+      case PacketImpl.SESS_CANCEL:
       {
          SessionCancelMessage message = (SessionCancelMessage) packet;
          session.cancel(message.getDeliveryID(), message.isExpired());
          break;
       }
-      case EmptyPacket.SESS_XA_COMMIT:
+      case PacketImpl.SESS_XA_COMMIT:
       {
          SessionXACommitMessage message = (SessionXACommitMessage) packet;
          response = session.XACommit(message.isOnePhase(), message.getXid());
          break;
       }
-      case EmptyPacket.SESS_XA_END:
+      case PacketImpl.SESS_XA_END:
       {
          SessionXAEndMessage message = (SessionXAEndMessage) packet;
          response = session.XAEnd(message.getXid(), message.isFailed());
          break;
       }
-      case EmptyPacket.SESS_XA_FORGET:
+      case PacketImpl.SESS_XA_FORGET:
       {
          SessionXAForgetMessage message = (SessionXAForgetMessage) packet;
          response = session.XAForget(message.getXid());
          break;
       }
-      case EmptyPacket.SESS_XA_JOIN:
+      case PacketImpl.SESS_XA_JOIN:
       {
          SessionXAJoinMessage message = (SessionXAJoinMessage) packet;
          response = session.XAJoin(message.getXid());
          break;
       }
-      case EmptyPacket.SESS_XA_RESUME:
+      case PacketImpl.SESS_XA_RESUME:
       {
          SessionXAResumeMessage message = (SessionXAResumeMessage) packet;
          response = session.XAResume(message.getXid());
          break;
       }
-      case EmptyPacket.SESS_XA_ROLLBACK:
+      case PacketImpl.SESS_XA_ROLLBACK:
       {
          SessionXARollbackMessage message = (SessionXARollbackMessage) packet;
          response = session.XARollback(message.getXid());
          break;
       }
-      case EmptyPacket.SESS_XA_START:
+      case PacketImpl.SESS_XA_START:
       {
          SessionXAStartMessage message = (SessionXAStartMessage) packet;
          response = session.XAStart(message.getXid());
          break;
       }
-      case EmptyPacket.SESS_XA_SUSPEND:
+      case PacketImpl.SESS_XA_SUSPEND:
       {
          response = session.XASuspend();
          break;
       }
-      case EmptyPacket.SESS_XA_PREPARE:
+      case PacketImpl.SESS_XA_PREPARE:
       {
          SessionXAPrepareMessage message = (SessionXAPrepareMessage) packet;
          response = session.XAPrepare(message.getXid());
          break;
       }
-      case EmptyPacket.SESS_XA_INDOUBT_XIDS:
+      case PacketImpl.SESS_XA_INDOUBT_XIDS:
       {
          List<Xid> xids = session.getInDoubtXids();
          response = new SessionXAGetInDoubtXidsResponseMessage(xids);
          break;
       }
-      case EmptyPacket.SESS_XA_GET_TIMEOUT:
+      case PacketImpl.SESS_XA_GET_TIMEOUT:
       {
          response = new SessionXAGetTimeoutResponseMessage(session.getXATimeout());
          break;
       }
-      case EmptyPacket.SESS_XA_SET_TIMEOUT:
+      case PacketImpl.SESS_XA_SET_TIMEOUT:
       {
          SessionXASetTimeoutMessage message = (SessionXASetTimeoutMessage) packet;
          response = new SessionXASetTimeoutResponseMessage(session.setXATimeout(message
                .getTimeoutSeconds()));
          break;
       }
-      case EmptyPacket.SESS_ADD_DESTINATION:
+      case PacketImpl.SESS_ADD_DESTINATION:
       {
          SessionAddDestinationMessage message = (SessionAddDestinationMessage) packet;
          session.addDestination(message.getAddress(), message.isTemporary());
          break;
       }
-      case EmptyPacket.SESS_REMOVE_DESTINATION:
+      case PacketImpl.SESS_REMOVE_DESTINATION:
       {
          SessionRemoveDestinationMessage message = (SessionRemoveDestinationMessage) packet;
          session.removeDestination(message.getAddress(), message.isTemporary());
@@ -246,9 +248,9 @@ public class ServerSessionPacketHandler extends ServerPacketHandlerSupport
       }
       
       // reply if necessary
-      if (response == null && packet.getResponseTargetID() != Packet.NO_ID_SET)
+      if (response == null && packet.getResponseTargetID() != NO_ID_SET)
       {
-         response = new EmptyPacket(EmptyPacket.NULL);               
+         response = new PacketImpl(PacketImpl.NULL);               
       }
 
       return response;

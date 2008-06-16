@@ -10,7 +10,7 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SessionQueueQueryResponseMessage extends EmptyPacket
+public class SessionQueueQueryResponseMessage extends PacketImpl
 {
    private boolean exists;
    

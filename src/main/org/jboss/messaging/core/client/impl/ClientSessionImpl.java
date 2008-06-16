@@ -41,7 +41,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
@@ -419,7 +419,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       //Flush any acks to the server
       acknowledgeInternal(false);
       
-      remotingConnection.sendBlocking(serverTargetID, serverTargetID, new EmptyPacket(EmptyPacket.SESS_COMMIT));
+      remotingConnection.sendBlocking(serverTargetID, serverTargetID, new PacketImpl(PacketImpl.SESS_COMMIT));
       
       lastCommittedID = lastID;
    }
@@ -446,7 +446,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       toAckCount = 0;
 
-      remotingConnection.sendBlocking(serverTargetID, serverTargetID, new EmptyPacket(EmptyPacket.SESS_ROLLBACK));   
+      remotingConnection.sendBlocking(serverTargetID, serverTargetID, new PacketImpl(PacketImpl.SESS_ROLLBACK));   
    }
    
    public void acknowledge() throws MessagingException
@@ -504,7 +504,7 @@ public class ClientSessionImpl implements ClientSessionInternal
          //Flush any acks to the server
          acknowledgeInternal(false);
          
-         remotingConnection.sendBlocking(serverTargetID, serverTargetID, new EmptyPacket(EmptyPacket.CLOSE));
+         remotingConnection.sendBlocking(serverTargetID, serverTargetID, new PacketImpl(PacketImpl.CLOSE));
       }
       finally
       {
@@ -673,7 +673,7 @@ public class ClientSessionImpl implements ClientSessionInternal
          
          if (flags == XAResource.TMSUSPEND)
          {
-            packet = new EmptyPacket(EmptyPacket.SESS_XA_SUSPEND);                  
+            packet = new PacketImpl(PacketImpl.SESS_XA_SUSPEND);                  
          }
          else if (flags == XAResource.TMSUCCESS)
          {
@@ -734,7 +734,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       try
       {                              
          SessionXAGetTimeoutResponseMessage response =
-            (SessionXAGetTimeoutResponseMessage)remotingConnection.sendBlocking(serverTargetID, serverTargetID, new EmptyPacket(EmptyPacket.SESS_XA_GET_TIMEOUT));
+            (SessionXAGetTimeoutResponseMessage)remotingConnection.sendBlocking(serverTargetID, serverTargetID, new PacketImpl(PacketImpl.SESS_XA_GET_TIMEOUT));
          
          return response.getTimeoutSeconds();
       }
@@ -799,7 +799,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       {
          if ((flags & XAResource.TMSTARTRSCAN) == XAResource.TMSTARTRSCAN)
          {
-            SessionXAGetInDoubtXidsResponseMessage response = (SessionXAGetInDoubtXidsResponseMessage)remotingConnection.sendBlocking(serverTargetID, serverTargetID, new EmptyPacket(EmptyPacket.SESS_XA_INDOUBT_XIDS));
+            SessionXAGetInDoubtXidsResponseMessage response = (SessionXAGetInDoubtXidsResponseMessage)remotingConnection.sendBlocking(serverTargetID, serverTargetID, new PacketImpl(PacketImpl.SESS_XA_INDOUBT_XIDS));
             
             List<Xid> xids = response.getXids();
             

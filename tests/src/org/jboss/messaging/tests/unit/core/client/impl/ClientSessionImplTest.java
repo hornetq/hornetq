@@ -49,7 +49,7 @@ import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
@@ -630,7 +630,7 @@ public class ClientSessionImplTest extends UnitTestCase
             
       rc.sendOneWay(sessionTargetID, sessionTargetID, message);
 
-      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.SESS_COMMIT))).andReturn(null);
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_COMMIT))).andReturn(null);
       
       //Create some consumers
       
@@ -644,7 +644,7 @@ public class ClientSessionImplTest extends UnitTestCase
       
       rc.sendOneWay(sessionTargetID, sessionTargetID, message2);
 
-      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.SESS_ROLLBACK))).andReturn(null);
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_ROLLBACK))).andReturn(null);
                   
       EasyMock.replay(conn, rc, pd, cons1, cons2);
       
@@ -711,7 +711,7 @@ public class ClientSessionImplTest extends UnitTestCase
          rc.sendOneWay(sessionTargetID, sessionTargetID, message);
       }
       
-      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.SESS_COMMIT))).andReturn(null);
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_COMMIT))).andReturn(null);
                   
       EasyMock.replay(conn);
       EasyMock.replay(rc);
@@ -758,7 +758,7 @@ public class ClientSessionImplTest extends UnitTestCase
          rc.sendOneWay(sessionTargetID, sessionTargetID, message);
       }
       
-      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.SESS_COMMIT))).andReturn(null);
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_COMMIT))).andReturn(null);
                   
       EasyMock.replay(conn);
       EasyMock.replay(rc);
@@ -911,7 +911,7 @@ public class ClientSessionImplTest extends UnitTestCase
         
       final long sessionTargetID = 9121892;
       
-      Packet packet = new EmptyPacket(EmptyPacket.SESS_XA_GET_TIMEOUT);
+      Packet packet = new PacketImpl(PacketImpl.SESS_XA_GET_TIMEOUT);
 
       final int timeout = 1098289;
       
@@ -1200,7 +1200,7 @@ public class ClientSessionImplTest extends UnitTestCase
          rc.sendOneWay(sessionTargetID, sessionTargetID, message);
       }
             
-      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.CLOSE))).andReturn(null);
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new PacketImpl(PacketImpl.CLOSE))).andReturn(null);
       
       conn.removeSession(session);      
             
@@ -1585,7 +1585,7 @@ public class ClientSessionImplTest extends UnitTestCase
                   
       if ((flags & XAResource.TMSTARTRSCAN) == XAResource.TMSTARTRSCAN)
       {
-         EmptyPacket packet = new EmptyPacket(EmptyPacket.SESS_XA_INDOUBT_XIDS);
+         PacketImpl packet = new PacketImpl(PacketImpl.SESS_XA_INDOUBT_XIDS);
          
          SessionXAGetInDoubtXidsResponseMessage resp = new SessionXAGetInDoubtXidsResponseMessage(Arrays.asList(xids));
          
@@ -1740,7 +1740,7 @@ public class ClientSessionImplTest extends UnitTestCase
       Packet packet = null;
       if (flags == XAResource.TMSUSPEND)
       {
-         packet = new EmptyPacket(EmptyPacket.SESS_XA_SUSPEND);                  
+         packet = new PacketImpl(PacketImpl.SESS_XA_SUSPEND);                  
       }
       else if (flags == XAResource.TMSUCCESS)
       {
@@ -1931,7 +1931,7 @@ public class ClientSessionImplTest extends UnitTestCase
          }
       }
 
-      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.SESS_COMMIT))).andReturn(null);
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_COMMIT))).andReturn(null);
       
       ClientConsumerInternal cons1 = EasyMock.createStrictMock(ClientConsumerInternal.class);
       ClientConsumerInternal cons2 = EasyMock.createStrictMock(ClientConsumerInternal.class);
@@ -1953,7 +1953,7 @@ public class ClientSessionImplTest extends UnitTestCase
       cons1.recover(numMessages * 2);
       cons2.recover(numMessages * 2);
             
-      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.SESS_ROLLBACK))).andReturn(null);
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_ROLLBACK))).andReturn(null);
                                      
       EasyMock.replay(conn, rc, pd, cons1, cons2);
             
@@ -2016,7 +2016,7 @@ public class ClientSessionImplTest extends UnitTestCase
          }
       }
       
-      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.SESS_COMMIT))).andReturn(null);
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_COMMIT))).andReturn(null);
       
       final int[] messages2 = new int[] { 43, 44, 50, 47, 48, 60, 45, 61, 62, 64 };
       
@@ -2041,7 +2041,7 @@ public class ClientSessionImplTest extends UnitTestCase
       cons1.recover(36);
       cons2.recover(36);
             
-      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new EmptyPacket(EmptyPacket.SESS_ROLLBACK))).andReturn(null);
+      EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_ROLLBACK))).andReturn(null);
                         
       EasyMock.replay(conn, rc, pd, cons1, cons2);
       

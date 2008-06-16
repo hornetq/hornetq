@@ -18,7 +18,7 @@ import org.jboss.messaging.util.MessagingBuffer;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class ProducerSendMessage extends EmptyPacket
+public class ProducerSendMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

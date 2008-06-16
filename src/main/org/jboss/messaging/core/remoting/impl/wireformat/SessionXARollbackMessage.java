@@ -16,7 +16,7 @@ import org.jboss.messaging.util.MessagingBuffer;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionXARollbackMessage extends EmptyPacket
+public class SessionXARollbackMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

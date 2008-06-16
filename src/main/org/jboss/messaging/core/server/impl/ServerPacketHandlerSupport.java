@@ -21,11 +21,14 @@
   */
 package org.jboss.messaging.core.server.impl;
 
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NO_ID_SET;
+
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 
 /**
@@ -66,7 +69,7 @@ public abstract class ServerPacketHandlerSupport implements PacketHandler
       }
       
       // reply if necessary
-      if (response != null && packet.getResponseTargetID() != Packet.NO_ID_SET)
+      if (response != null && packet.getResponseTargetID() != NO_ID_SET)
       {
          response.normalize(packet);
          

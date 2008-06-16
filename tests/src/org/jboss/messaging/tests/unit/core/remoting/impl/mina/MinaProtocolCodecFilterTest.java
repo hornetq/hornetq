@@ -14,7 +14,7 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.mina.MinaProtocolCodecFilter;
 import org.jboss.messaging.core.remoting.impl.wireformat.*;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.*;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.*;
 import org.jboss.messaging.core.version.impl.VersionImpl;
 import org.jboss.messaging.tests.unit.core.remoting.impl.CodecAssert;
 import static org.jboss.messaging.tests.unit.core.remoting.impl.CodecAssert.assertSameXids;
@@ -179,14 +179,14 @@ public class MinaProtocolCodecFilterTest extends UnitTestCase
 
    public void testNullPacket() throws Exception
    {
-      Packet packet = new EmptyPacket(NULL);
+      Packet packet = new PacketImpl(NULL);
       packet.setResponseTargetID(randomLong());
       packet.setTargetID(randomLong());
       packet.setExecutorID(randomLong());
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(packet);
 
-      assertTrue(decodedPacket instanceof EmptyPacket);
+      assertTrue(decodedPacket instanceof PacketImpl);
       assertEquals(NULL, decodedPacket.getType());
       assertEquals(packet.getResponseTargetID(), decodedPacket
             .getResponseTargetID());
@@ -425,7 +425,7 @@ public class MinaProtocolCodecFilterTest extends UnitTestCase
 
    public void testStartConnectionMessage() throws Exception
    {
-      Packet packet = new EmptyPacket(CONN_START);
+      Packet packet = new PacketImpl(CONN_START);
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(packet);
 
@@ -434,7 +434,7 @@ public class MinaProtocolCodecFilterTest extends UnitTestCase
 
    public void testStopConnectionMessage() throws Exception
    {
-      Packet packet = new EmptyPacket(CONN_STOP);
+      Packet packet = new PacketImpl(CONN_STOP);
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(packet);
 
@@ -518,7 +518,7 @@ public class MinaProtocolCodecFilterTest extends UnitTestCase
 
    public void testSessionCommitMessage() throws Exception
    {
-      Packet message = new EmptyPacket(SESS_COMMIT);
+      Packet message = new PacketImpl(SESS_COMMIT);
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(message);
 
@@ -527,7 +527,7 @@ public class MinaProtocolCodecFilterTest extends UnitTestCase
 
    public void testSessionRollbackMessage() throws Exception
    {
-      Packet message = new EmptyPacket(SESS_ROLLBACK);
+      Packet message = new PacketImpl(SESS_ROLLBACK);
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(message);
 
@@ -536,7 +536,7 @@ public class MinaProtocolCodecFilterTest extends UnitTestCase
 
    public void testSessionRecoverMessage() throws Exception
    {
-      Packet message = new EmptyPacket(SESS_RECOVER);
+      Packet message = new PacketImpl(SESS_RECOVER);
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(message);
 
@@ -545,7 +545,7 @@ public class MinaProtocolCodecFilterTest extends UnitTestCase
 
    public void testCloseMessage() throws Exception
    {
-      Packet message = new EmptyPacket(CLOSE);
+      Packet message = new PacketImpl(CLOSE);
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(message);
 
@@ -587,7 +587,7 @@ public class MinaProtocolCodecFilterTest extends UnitTestCase
 
    public void testBrowserResetMessage() throws Exception
    {
-      Packet message = new EmptyPacket(SESS_BROWSER_RESET);
+      Packet message = new PacketImpl(SESS_BROWSER_RESET);
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(message);
 
@@ -596,7 +596,7 @@ public class MinaProtocolCodecFilterTest extends UnitTestCase
 
    public void testBrowserHasNextMessageRequest() throws Exception
    {
-      Packet request = new EmptyPacket(SESS_BROWSER_HASNEXTMESSAGE);
+      Packet request = new PacketImpl(SESS_BROWSER_HASNEXTMESSAGE);
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(request);
 
@@ -620,7 +620,7 @@ public class MinaProtocolCodecFilterTest extends UnitTestCase
 
    public void testBrowserNextMessageRequest() throws Exception
    {
-      Packet request = new EmptyPacket(SESS_BROWSER_NEXTMESSAGE);
+      Packet request = new PacketImpl(SESS_BROWSER_NEXTMESSAGE);
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(request);
 
@@ -672,7 +672,7 @@ public class MinaProtocolCodecFilterTest extends UnitTestCase
 
    public void testSessionXAGetInDoubtXidsMessage() throws Exception
    {
-      Packet request = new EmptyPacket(SESS_XA_INDOUBT_XIDS);
+      Packet request = new PacketImpl(SESS_XA_INDOUBT_XIDS);
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(request);
 
@@ -701,7 +701,7 @@ public class MinaProtocolCodecFilterTest extends UnitTestCase
 
    public void testSessionXAGetTimeoutMessage() throws Exception
    {
-      Packet message = new EmptyPacket(SESS_XA_GET_TIMEOUT);
+      Packet message = new PacketImpl(SESS_XA_GET_TIMEOUT);
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(message);
 
@@ -836,7 +836,7 @@ public class MinaProtocolCodecFilterTest extends UnitTestCase
 
    public void testSessionXASuspendMessage() throws Exception
    {
-      Packet message = new EmptyPacket(SESS_XA_SUSPEND);
+      Packet message = new PacketImpl(SESS_XA_SUSPEND);
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(message);
 

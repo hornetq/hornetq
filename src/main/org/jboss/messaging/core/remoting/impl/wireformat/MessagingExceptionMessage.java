@@ -16,7 +16,7 @@ import org.jboss.messaging.util.MessagingBuffer;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class MessagingExceptionMessage extends EmptyPacket
+public class MessagingExceptionMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

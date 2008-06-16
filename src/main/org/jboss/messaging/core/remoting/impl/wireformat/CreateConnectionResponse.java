@@ -16,7 +16,7 @@ import org.jboss.messaging.util.MessagingBuffer;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class CreateConnectionResponse extends EmptyPacket
+public class CreateConnectionResponse extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

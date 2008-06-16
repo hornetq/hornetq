@@ -20,9 +20,7 @@ import org.jboss.messaging.util.MessagingBuffer;
 public interface Packet
 {
    // Public --------------------------------------------------------
-
-   public static final long NO_ID_SET = -1L;
-
+   
    void setResponseTargetID(long responseTargetID);
 
    long getResponseTargetID();

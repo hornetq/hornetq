@@ -17,7 +17,7 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SessionRemoveDestinationMessage extends EmptyPacket
+public class SessionRemoveDestinationMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

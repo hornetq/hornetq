@@ -21,11 +21,13 @@
   */
 package org.jboss.messaging.core.server.impl;
 
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NO_ID_SET;
+
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.server.ServerConnection;
 
 /**
@@ -56,17 +58,17 @@ public class ServerConnectionPacketHandler extends ServerPacketHandlerSupport
 
       switch (type)
       {
-         case EmptyPacket.CONN_CREATESESSION:
+         case PacketImpl.CONN_CREATESESSION:
             ConnectionCreateSessionMessage request = (ConnectionCreateSessionMessage) packet;
             response = connection.createSession(request.isXA(), request.isAutoCommitSends(), request.isAutoCommitAcks(), sender);
             break;
-         case EmptyPacket.CONN_START:
+         case PacketImpl.CONN_START:
             connection.start();
             break;
-         case EmptyPacket.CONN_STOP:
+         case PacketImpl.CONN_STOP:
             connection.stop();
             break;
-         case EmptyPacket.CLOSE:
+         case PacketImpl.CLOSE:
             //clientPinger.unregister(connection.getRemotingClientSessionID());
             connection.close();
             break;
@@ -76,9 +78,9 @@ public class ServerConnectionPacketHandler extends ServerPacketHandlerSupport
       }
 
       // reply if necessary
-      if (response == null && packet.getResponseTargetID() != Packet.NO_ID_SET)
+      if (response == null && packet.getResponseTargetID() != NO_ID_SET)
       {
-         response = new EmptyPacket(EmptyPacket.NULL);
+         response = new PacketImpl(PacketImpl.NULL);
       }
 
       return response;

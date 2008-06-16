@@ -14,7 +14,7 @@ import org.jboss.messaging.util.MessagingBuffer;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class Pong extends EmptyPacket
+public class Pong extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

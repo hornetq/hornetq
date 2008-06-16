@@ -17,7 +17,7 @@ import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.RemotingServiceImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 
 
 /**
@@ -56,13 +56,13 @@ public abstract class MeasureBase extends TestCase
       {
          if (i % 2 == 0)
          {
-            remoting.sendOneWay(10, 10, new EmptyPacket(EmptyPacket.CLOSE));
+            remoting.sendOneWay(10, 10, new PacketImpl(PacketImpl.CLOSE));
          }
          else
          {
-            Object ret = remoting.sendBlocking(10, 0, new EmptyPacket(EmptyPacket.CLOSE));
-            assertTrue(ret instanceof EmptyPacket);
-            //assertEquals(EmptyPacket.EXCEPTION, ret.getType());
+            Object ret = remoting.sendBlocking(10, 0, new PacketImpl(PacketImpl.CLOSE));
+            assertTrue(ret instanceof PacketImpl);
+            //assertEquals(PacketImpl.EXCEPTION, ret.getType());
          }
       }
 
@@ -91,8 +91,8 @@ public abstract class MeasureBase extends TestCase
 
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         Object ret = remoting.sendBlocking(10, 10, new EmptyPacket(EmptyPacket.CLOSE));
-         assertTrue(ret instanceof EmptyPacket);
+         Object ret = remoting.sendBlocking(10, 10, new PacketImpl(PacketImpl.CLOSE));
+         assertTrue(ret instanceof PacketImpl);
       }
 
       long end = System.currentTimeMillis();
@@ -120,10 +120,10 @@ public abstract class MeasureBase extends TestCase
 
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         remoting.sendOneWay(10, 10, new EmptyPacket(EmptyPacket.CLOSE));
+         remoting.sendOneWay(10, 10, new PacketImpl(PacketImpl.CLOSE));
       }
 
-      remoting.sendBlocking(10, 10, new EmptyPacket(EmptyPacket.CLOSE));
+      remoting.sendBlocking(10, 10, new PacketImpl(PacketImpl.CLOSE));
 
       long end = System.currentTimeMillis();
 

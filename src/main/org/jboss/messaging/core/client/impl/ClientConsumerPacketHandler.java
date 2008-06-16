@@ -4,7 +4,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketReturner;
-import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 
 /**
@@ -38,7 +38,7 @@ public class ClientConsumerPacketHandler implements PacketHandler
    {
       byte type = packet.getType();
       
-      if (type == EmptyPacket.RECEIVE_MSG)
+      if (type == PacketImpl.RECEIVE_MSG)
       {
          ReceiveMessage message = (ReceiveMessage) packet;
          

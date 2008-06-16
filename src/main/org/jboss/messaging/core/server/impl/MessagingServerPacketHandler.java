@@ -26,7 +26,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.*;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.CREATECONNECTION;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATECONNECTION;
 import org.jboss.messaging.core.server.MessagingServer;
 
 /**
@@ -81,7 +81,7 @@ public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
          response = createConnectionResponse;
 
       }
-      else if (type == EmptyPacket.PING)
+      else if (type == PacketImpl.PING)
       {
          Ping decodedPing = (Ping) packet;
          Pong pong = new Pong(decodedPing.getSessionID(), !server.getRemotingService().isSession(sender.getSessionID()));

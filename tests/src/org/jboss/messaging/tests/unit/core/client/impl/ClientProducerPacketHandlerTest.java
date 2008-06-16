@@ -26,7 +26,7 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.impl.ClientProducerInternal;
 import org.jboss.messaging.core.client.impl.ClientProducerPacketHandler;
 import org.jboss.messaging.core.remoting.PacketReturner;
-import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerFlowCreditMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
@@ -63,7 +63,7 @@ public class ClientProducerPacketHandlerTest extends UnitTestCase
       
       try
       {
-         handler.handle(new EmptyPacket(EmptyPacket.CONN_START), EasyMock.createStrictMock(PacketReturner.class));
+         handler.handle(new PacketImpl(PacketImpl.CONN_START), EasyMock.createStrictMock(PacketReturner.class));
          fail("Should throw Exception");
       }
       catch (IllegalStateException e)

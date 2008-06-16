@@ -15,7 +15,7 @@ import org.jboss.messaging.util.SimpleString;
  *
  * @version <tt>$Revision$</tt>
  */
-public class SessionCreateProducerMessage extends EmptyPacket
+public class SessionCreateProducerMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

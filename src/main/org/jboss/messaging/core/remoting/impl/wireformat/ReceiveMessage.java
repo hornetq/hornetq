@@ -18,7 +18,7 @@ import org.jboss.messaging.util.MessagingBuffer;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class ReceiveMessage extends EmptyPacket
+public class ReceiveMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

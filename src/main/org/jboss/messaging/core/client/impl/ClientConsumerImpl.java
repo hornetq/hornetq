@@ -33,7 +33,7 @@ import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -271,7 +271,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          
          receiverThread = null;
 
-         remotingConnection.sendBlocking(targetID, session.getServerTargetID(), new EmptyPacket(EmptyPacket.CLOSE));
+         remotingConnection.sendBlocking(targetID, session.getServerTargetID(), new PacketImpl(PacketImpl.CLOSE));
 
          remotingConnection.getPacketDispatcher().unregister(clientTargetID);
       }

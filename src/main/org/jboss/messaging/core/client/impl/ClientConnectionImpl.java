@@ -32,7 +32,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.ConcurrentHashSet;
 
@@ -122,14 +122,14 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    {
       checkClosed();
        
-      remotingConnection.sendOneWay(serverTargetID, serverTargetID, new EmptyPacket(EmptyPacket.CONN_START));
+      remotingConnection.sendOneWay(serverTargetID, serverTargetID, new PacketImpl(PacketImpl.CONN_START));
    }
    
    public void stop() throws MessagingException
    {
       checkClosed();
       
-      remotingConnection.sendBlocking(serverTargetID, serverTargetID, new EmptyPacket(EmptyPacket.CONN_STOP));
+      remotingConnection.sendBlocking(serverTargetID, serverTargetID, new PacketImpl(PacketImpl.CONN_STOP));
    }
 
    public void setRemotingSessionListener(final RemotingSessionListener listener) throws MessagingException
@@ -150,7 +150,7 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       {
          closeChildren();
          
-         remotingConnection.sendBlocking(serverTargetID, serverTargetID, new EmptyPacket(EmptyPacket.CLOSE));
+         remotingConnection.sendBlocking(serverTargetID, serverTargetID, new PacketImpl(PacketImpl.CLOSE));
       }
       finally
       {

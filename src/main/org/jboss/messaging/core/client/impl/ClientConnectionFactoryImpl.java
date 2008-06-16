@@ -58,6 +58,20 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
    private static final long serialVersionUID = 2512460695662741413L;
    
    private static final Logger log = Logger.getLogger(ClientConnectionFactoryImpl.class);
+   
+   public static final int DEFAULT_DEFAULT_CONSUMER_WINDOW_SIZE = 1024 * 1024;
+   
+   public static final int DEFAULT_DEFAULT_CONSUMER_MAX_RATE = -1;
+   
+   public static final int DEFAULT_DEFAULT_PRODUCER_WINDOW_SIZE = 1024 * 1024;
+   
+   public static final int DEFAULT_DEFAULT_PRODUCER_MAX_RATE = -1;
+   
+   public static final boolean DEFAULT_DEFAULT_BLOCK_ON_ACKNOWLEDGE = false;
+   
+   public static final boolean DEFAULT_DEFAULT_BLOCK_ON_PERSISTENT_SEND = false;
+   
+   public static final boolean DEFAULT_DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND = false;
 
    // Attributes -----------------------------------------------------------------------------------
    
@@ -85,19 +99,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
         
    // Static ---------------------------------------------------------------------------------------
    
-   public static final int DEFAULT_DEFAULT_CONSUMER_WINDOW_SIZE = 1024 * 1024;
-   
-   public static final int DEFAULT_DEFAULT_CONSUMER_MAX_RATE = -1;
-   
-   public static final int DEFAULT_DEFAULT_PRODUCER_WINDOW_SIZE = 1024 * 1024;
-   
-   public static final int DEFAULT_DEFAULT_PRODUCER_MAX_RATE = -1;
-   
-   public static final boolean DEFAULT_DEFAULT_BLOCK_ON_ACKNOWLEDGE = false;
-   
-   public static final boolean DEFAULT_DEFAULT_BLOCK_ON_PERSISTENT_SEND = false;
-   
-   public static final boolean DEFAULT_DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND = false;
+  
    
    // Constructors ---------------------------------------------------------------------------------
 

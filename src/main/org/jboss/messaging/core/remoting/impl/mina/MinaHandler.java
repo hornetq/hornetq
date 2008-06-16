@@ -6,17 +6,23 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import org.apache.mina.common.IoHandlerAdapter;
-import org.apache.mina.common.IoSession;
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.*;
-import org.jboss.messaging.util.OrderedExecutorFactory;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NO_ID_SET;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+
+import org.apache.mina.common.IoHandlerAdapter;
+import org.apache.mina.common.IoSession;
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.CleanUpNotifier;
+import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.PacketHandlerRegistrationListener;
+import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.util.OrderedExecutorFactory;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -164,7 +170,7 @@ public class MinaHandler extends IoHandlerAdapter implements
    {
       PacketReturner returner;
 
-      if (packet.getResponseTargetID() != Packet.NO_ID_SET)
+      if (packet.getResponseTargetID() != NO_ID_SET)
       {
          returner = new PacketReturner()
          {

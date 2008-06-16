@@ -67,7 +67,9 @@ public class QueueImpl implements Queue
    private static final Logger log = Logger.getLogger(QueueImpl.class);
 
    private static final boolean trace = log.isTraceEnabled();
-
+   
+   public static final int NUM_PRIORITIES = 10;
+   
    private volatile long persistenceID = -1;
 
    private final SimpleString name;

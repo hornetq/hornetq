@@ -6,10 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl;
 
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.*;
-import static org.jboss.messaging.core.remoting.Packet.NO_ID_SET;
-import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NO_ID_SET;
 
 import java.util.Iterator;
 import java.util.List;
@@ -18,6 +15,15 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.Interceptor;
+import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.PacketHandler;
+import org.jboss.messaging.core.remoting.PacketHandlerRegistrationListener;
+import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -31,8 +37,7 @@ public class PacketDispatcherImpl implements PacketDispatcher
 
    private static final long serialVersionUID = -4626926952268528384L;
 
-   public static final Logger log = Logger
-           .getLogger(PacketDispatcherImpl.class);
+   public static final Logger log = Logger.getLogger(PacketDispatcherImpl.class);
 
    private static boolean trace = log.isTraceEnabled();
 
@@ -150,7 +155,7 @@ public class PacketDispatcherImpl implements PacketDispatcher
       else
       {
          //Producer tokens can arrive after producer is closed - this is ok
-         if (packet.getType() != EmptyPacket.PROD_RECEIVETOKENS)
+         if (packet.getType() != PacketImpl.PROD_RECEIVETOKENS)
          {
             log.error("Unhandled packet " + packet);
          }

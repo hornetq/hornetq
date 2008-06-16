@@ -29,7 +29,7 @@ import org.jboss.messaging.core.client.impl.ClientConnectionInternal;
 import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -85,7 +85,7 @@ public class ClientBrowserImplTest extends UnitTestCase
       
       EasyMock.expect(session.getServerTargetID()).andReturn(sessionTargetID);
       
-      EasyMock.expect(rc.sendBlocking(targetID, sessionTargetID, new EmptyPacket(EmptyPacket.SESS_BROWSER_NEXTMESSAGE))).andReturn(resp);
+      EasyMock.expect(rc.sendBlocking(targetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_BROWSER_NEXTMESSAGE))).andReturn(resp);
       
       EasyMock.replay(session, connection, rc);
       
@@ -114,7 +114,7 @@ public class ClientBrowserImplTest extends UnitTestCase
       
       EasyMock.expect(session.getServerTargetID()).andReturn(sessionTargetID);
       
-      EasyMock.expect(rc.sendBlocking(targetID, sessionTargetID, new EmptyPacket(EmptyPacket.SESS_BROWSER_RESET))).andReturn(null);
+      EasyMock.expect(rc.sendBlocking(targetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_BROWSER_RESET))).andReturn(null);
       
       EasyMock.replay(session, connection, rc);
       
@@ -150,7 +150,7 @@ public class ClientBrowserImplTest extends UnitTestCase
       
       EasyMock.expect(session.getServerTargetID()).andReturn(sessionTargetID);
       
-      EasyMock.expect(rc.sendBlocking(targetID, sessionTargetID, new EmptyPacket(EmptyPacket.CLOSE))).andReturn(null);
+      EasyMock.expect(rc.sendBlocking(targetID, sessionTargetID, new PacketImpl(PacketImpl.CLOSE))).andReturn(null);
       
       session.removeBrowser(browser);
       
@@ -194,7 +194,7 @@ public class ClientBrowserImplTest extends UnitTestCase
       
       EasyMock.expect(session.getServerTargetID()).andReturn(sessionTargetID);
       
-      EasyMock.expect(rc.sendBlocking(targetID, sessionTargetID, new EmptyPacket(EmptyPacket.SESS_BROWSER_HASNEXTMESSAGE))).andReturn(resp);
+      EasyMock.expect(rc.sendBlocking(targetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_BROWSER_HASNEXTMESSAGE))).andReturn(resp);
       
       EasyMock.replay(session, connection, rc);
       

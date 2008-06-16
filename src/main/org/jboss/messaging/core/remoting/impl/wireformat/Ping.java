@@ -14,7 +14,7 @@ import org.jboss.messaging.util.MessagingBuffer;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class Ping extends EmptyPacket
+public class Ping extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

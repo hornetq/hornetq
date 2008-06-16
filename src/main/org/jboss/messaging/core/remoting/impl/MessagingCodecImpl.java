@@ -10,7 +10,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.MessagingCodec;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.*;
-import static org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket.*;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.*;
 import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 import org.jboss.messaging.util.MessagingBuffer;
 
@@ -60,7 +60,7 @@ public class MessagingCodecImpl implements MessagingCodec
       {
          case NULL:
          {
-            packet = new EmptyPacket(EmptyPacket.NULL);
+            packet = new PacketImpl(PacketImpl.NULL);
             break;
          }
          case PING:
@@ -80,7 +80,7 @@ public class MessagingCodecImpl implements MessagingCodec
          }
          case CLOSE:
          {
-            packet = new EmptyPacket(EmptyPacket.CLOSE);
+            packet = new PacketImpl(PacketImpl.CLOSE);
             break;
          }
          case CREATECONNECTION:
@@ -93,237 +93,237 @@ public class MessagingCodecImpl implements MessagingCodec
             packet = new CreateConnectionResponse();
             break;
          }
-         case EmptyPacket.CONN_CREATESESSION:
+         case PacketImpl.CONN_CREATESESSION:
          {
             packet = new ConnectionCreateSessionMessage();
             break;
          }
-         case EmptyPacket.CONN_CREATESESSION_RESP:
+         case PacketImpl.CONN_CREATESESSION_RESP:
          {
             packet = new ConnectionCreateSessionResponseMessage();
             break;
          }
-         case EmptyPacket.CONN_START:
+         case PacketImpl.CONN_START:
          {
-            packet = new EmptyPacket(EmptyPacket.CONN_START);
+            packet = new PacketImpl(PacketImpl.CONN_START);
             break;
          }
-         case EmptyPacket.CONN_STOP:
+         case PacketImpl.CONN_STOP:
          {
-            packet = new EmptyPacket(EmptyPacket.CONN_STOP);
+            packet = new PacketImpl(PacketImpl.CONN_STOP);
             break;
          }
-         case EmptyPacket.SESS_CREATECONSUMER:
+         case PacketImpl.SESS_CREATECONSUMER:
          {
             packet = new SessionCreateConsumerMessage();
             break;
          }
-         case EmptyPacket.SESS_CREATECONSUMER_RESP:
+         case PacketImpl.SESS_CREATECONSUMER_RESP:
          {
             packet = new SessionCreateConsumerResponseMessage();
             break;
          }
-         case EmptyPacket.SESS_CREATEPRODUCER:
+         case PacketImpl.SESS_CREATEPRODUCER:
          {
             packet = new SessionCreateProducerMessage();
             break;
          }
-         case EmptyPacket.SESS_CREATEPRODUCER_RESP:
+         case PacketImpl.SESS_CREATEPRODUCER_RESP:
          {
             packet = new SessionCreateProducerResponseMessage();
             break;
          }
-         case EmptyPacket.SESS_CREATEBROWSER:
+         case PacketImpl.SESS_CREATEBROWSER:
          {
             packet = new SessionCreateBrowserMessage();
             break;
          }
-         case EmptyPacket.SESS_CREATEBROWSER_RESP:
+         case PacketImpl.SESS_CREATEBROWSER_RESP:
          {
             packet = new SessionCreateBrowserResponseMessage();
             break;
          }
-         case EmptyPacket.SESS_ACKNOWLEDGE:
+         case PacketImpl.SESS_ACKNOWLEDGE:
          {
             packet = new SessionAcknowledgeMessage();
             break;
          }
-         case EmptyPacket.SESS_RECOVER:
+         case PacketImpl.SESS_RECOVER:
          {
-            packet = new EmptyPacket(EmptyPacket.SESS_RECOVER);
+            packet = new PacketImpl(PacketImpl.SESS_RECOVER);
             break;
          }
-         case EmptyPacket.SESS_COMMIT:
+         case PacketImpl.SESS_COMMIT:
          {
-            packet = new EmptyPacket(EmptyPacket.SESS_COMMIT);
+            packet = new PacketImpl(PacketImpl.SESS_COMMIT);
             break;
          }
-         case EmptyPacket.SESS_ROLLBACK:
+         case PacketImpl.SESS_ROLLBACK:
          {
-            packet = new EmptyPacket(EmptyPacket.SESS_ROLLBACK);
+            packet = new PacketImpl(PacketImpl.SESS_ROLLBACK);
             break;
          }
-         case EmptyPacket.SESS_CANCEL:
+         case PacketImpl.SESS_CANCEL:
          {
             packet = new SessionCancelMessage();
             break;
          }
-         case EmptyPacket.SESS_QUEUEQUERY:
+         case PacketImpl.SESS_QUEUEQUERY:
          {
             packet = new SessionQueueQueryMessage();
             break;
          }
-         case EmptyPacket.SESS_QUEUEQUERY_RESP:
+         case PacketImpl.SESS_QUEUEQUERY_RESP:
          {
             packet = new SessionQueueQueryResponseMessage();
             break;
          }
-         case EmptyPacket.SESS_CREATEQUEUE:
+         case PacketImpl.SESS_CREATEQUEUE:
          {
             packet = new SessionCreateQueueMessage();
             break;
          }
-         case EmptyPacket.SESS_DELETE_QUEUE:
+         case PacketImpl.SESS_DELETE_QUEUE:
          {
             packet = new SessionDeleteQueueMessage();
             break;
          }
-         case EmptyPacket.SESS_ADD_DESTINATION:
+         case PacketImpl.SESS_ADD_DESTINATION:
          {
             packet = new SessionAddDestinationMessage();
             break;
          }
-         case EmptyPacket.SESS_REMOVE_DESTINATION:
+         case PacketImpl.SESS_REMOVE_DESTINATION:
          {
             packet = new SessionRemoveDestinationMessage();
             break;
          }
-         case EmptyPacket.SESS_BINDINGQUERY:
+         case PacketImpl.SESS_BINDINGQUERY:
          {
             packet = new SessionBindingQueryMessage();
             break;
          }
-         case EmptyPacket.SESS_BINDINGQUERY_RESP:
+         case PacketImpl.SESS_BINDINGQUERY_RESP:
          {
             packet = new SessionBindingQueryResponseMessage();
             break;
          }
-         case EmptyPacket.SESS_BROWSER_RESET:
+         case PacketImpl.SESS_BROWSER_RESET:
          {
-            packet = new EmptyPacket(EmptyPacket.SESS_BROWSER_RESET);
+            packet = new PacketImpl(PacketImpl.SESS_BROWSER_RESET);
             break;
          }
-         case EmptyPacket.SESS_BROWSER_HASNEXTMESSAGE:
+         case PacketImpl.SESS_BROWSER_HASNEXTMESSAGE:
          {
-            packet = new EmptyPacket(EmptyPacket.SESS_BROWSER_HASNEXTMESSAGE);
+            packet = new PacketImpl(PacketImpl.SESS_BROWSER_HASNEXTMESSAGE);
             break;
          }
-         case EmptyPacket.SESS_BROWSER_HASNEXTMESSAGE_RESP:
+         case PacketImpl.SESS_BROWSER_HASNEXTMESSAGE_RESP:
          {
             packet = new SessionBrowserHasNextMessageResponseMessage();
             break;
          }
-         case EmptyPacket.SESS_BROWSER_NEXTMESSAGE:
+         case PacketImpl.SESS_BROWSER_NEXTMESSAGE:
          {
-            packet = new EmptyPacket(EmptyPacket.SESS_BROWSER_NEXTMESSAGE);
+            packet = new PacketImpl(PacketImpl.SESS_BROWSER_NEXTMESSAGE);
             break;
          }
-         case EmptyPacket.SESS_XA_START:
+         case PacketImpl.SESS_XA_START:
          {
             packet = new SessionXAStartMessage();
             break;
          }
-         case EmptyPacket.SESS_XA_END:
+         case PacketImpl.SESS_XA_END:
          {
             packet = new SessionXAEndMessage();
             break;
          }
-         case EmptyPacket.SESS_XA_COMMIT:
+         case PacketImpl.SESS_XA_COMMIT:
          {
             packet = new SessionXACommitMessage();
             break;
          }
-         case EmptyPacket.SESS_XA_PREPARE:
+         case PacketImpl.SESS_XA_PREPARE:
          {
             packet = new SessionXAPrepareMessage();
             break;
          }
-         case EmptyPacket.SESS_XA_RESP:
+         case PacketImpl.SESS_XA_RESP:
          {
             packet = new SessionXAResponseMessage();
             break;
          }
-         case EmptyPacket.SESS_XA_ROLLBACK:
+         case PacketImpl.SESS_XA_ROLLBACK:
          {
             packet = new SessionXARollbackMessage();
             break;
          }
-         case EmptyPacket.SESS_XA_JOIN:
+         case PacketImpl.SESS_XA_JOIN:
          {
             packet = new SessionXAJoinMessage();
             break;
          }
-         case EmptyPacket.SESS_XA_SUSPEND:
+         case PacketImpl.SESS_XA_SUSPEND:
          {
-            packet = new EmptyPacket(EmptyPacket.SESS_XA_SUSPEND);
+            packet = new PacketImpl(PacketImpl.SESS_XA_SUSPEND);
             break;
          }
-         case EmptyPacket.SESS_XA_RESUME:
+         case PacketImpl.SESS_XA_RESUME:
          {
             packet = new SessionXAResumeMessage();
             break;
          }
-         case EmptyPacket.SESS_XA_FORGET:
+         case PacketImpl.SESS_XA_FORGET:
          {
             packet = new SessionXAForgetMessage();
             break;
          }
-         case EmptyPacket.SESS_XA_INDOUBT_XIDS:
+         case PacketImpl.SESS_XA_INDOUBT_XIDS:
          {
-            packet = new EmptyPacket(EmptyPacket.SESS_XA_INDOUBT_XIDS);
+            packet = new PacketImpl(PacketImpl.SESS_XA_INDOUBT_XIDS);
             break;
          }
-         case EmptyPacket.SESS_XA_INDOUBT_XIDS_RESP:
+         case PacketImpl.SESS_XA_INDOUBT_XIDS_RESP:
          {
             packet = new SessionXAGetInDoubtXidsResponseMessage();
             break;
          }
-         case EmptyPacket.SESS_XA_SET_TIMEOUT:
+         case PacketImpl.SESS_XA_SET_TIMEOUT:
          {
             packet = new SessionXASetTimeoutMessage();
             break;
          }
-         case EmptyPacket.SESS_XA_SET_TIMEOUT_RESP:
+         case PacketImpl.SESS_XA_SET_TIMEOUT_RESP:
          {
             packet = new SessionXASetTimeoutResponseMessage();
             break;
          }
-         case EmptyPacket.SESS_XA_GET_TIMEOUT:
+         case PacketImpl.SESS_XA_GET_TIMEOUT:
          {
-            packet = new EmptyPacket(EmptyPacket.SESS_XA_GET_TIMEOUT);
+            packet = new PacketImpl(PacketImpl.SESS_XA_GET_TIMEOUT);
             break;
          }
-         case EmptyPacket.SESS_XA_GET_TIMEOUT_RESP:
+         case PacketImpl.SESS_XA_GET_TIMEOUT_RESP:
          {
             packet = new SessionXAGetTimeoutResponseMessage();
             break;
          }
-         case EmptyPacket.CONS_FLOWTOKEN:
+         case PacketImpl.CONS_FLOWTOKEN:
          {
             packet = new ConsumerFlowCreditMessage();
             break;
          }
-         case EmptyPacket.PROD_SEND:
+         case PacketImpl.PROD_SEND:
          {
             packet = new ProducerSendMessage();
             break;
          }
-         case EmptyPacket.PROD_RECEIVETOKENS:
+         case PacketImpl.PROD_RECEIVETOKENS:
          {
             packet = new ProducerFlowCreditMessage();
             break;
          }
-         case EmptyPacket.RECEIVE_MSG:
+         case PacketImpl.RECEIVE_MSG:
          {
             packet = new ReceiveMessage();
             break;

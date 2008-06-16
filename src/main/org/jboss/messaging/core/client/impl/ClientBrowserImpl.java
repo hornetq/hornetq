@@ -25,7 +25,7 @@ import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
 
@@ -76,7 +76,7 @@ public class ClientBrowserImpl implements ClientBrowser
       
       try
       {
-         remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), new EmptyPacket(EmptyPacket.CLOSE));
+         remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), new PacketImpl(PacketImpl.CLOSE));
       }
       finally
       {
@@ -95,7 +95,7 @@ public class ClientBrowserImpl implements ClientBrowser
    {
       checkClosed();
       
-      remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), new EmptyPacket(EmptyPacket.SESS_BROWSER_RESET));
+      remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), new PacketImpl(PacketImpl.SESS_BROWSER_RESET));
    }
 
    public boolean hasNextMessage() throws MessagingException
@@ -103,7 +103,7 @@ public class ClientBrowserImpl implements ClientBrowser
       checkClosed();
       
       SessionBrowserHasNextMessageResponseMessage response =
-         (SessionBrowserHasNextMessageResponseMessage)remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), new EmptyPacket(EmptyPacket.SESS_BROWSER_HASNEXTMESSAGE));
+         (SessionBrowserHasNextMessageResponseMessage)remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), new PacketImpl(PacketImpl.SESS_BROWSER_HASNEXTMESSAGE));
       
       return response.hasNext();
    }
@@ -113,7 +113,7 @@ public class ClientBrowserImpl implements ClientBrowser
       checkClosed();
       
       ReceiveMessage response =
-         (ReceiveMessage)remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), new EmptyPacket(EmptyPacket.SESS_BROWSER_NEXTMESSAGE));
+         (ReceiveMessage)remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), new PacketImpl(PacketImpl.SESS_BROWSER_NEXTMESSAGE));
       
       return response.getClientMessage();
    }

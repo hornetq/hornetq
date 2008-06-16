@@ -22,7 +22,7 @@
 package org.jboss.messaging.core.server.impl;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -246,7 +246,7 @@ public class MessageReferenceImpl implements MessageReference
       {
          long actualExpiryTime = System.currentTimeMillis();
       
-         copy.putLongProperty(Message.HDR_ACTUAL_EXPIRY_TIME, actualExpiryTime);
+         copy.putLongProperty(MessageImpl.HDR_ACTUAL_EXPIRY_TIME, actualExpiryTime);
       }
       
       return copy;

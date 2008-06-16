@@ -18,12 +18,13 @@ import org.jboss.messaging.util.MessagingBuffer;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class EmptyPacket implements Packet
+public class PacketImpl implements Packet
 {
    // Constants -----------------------------------------------------
    
-   private static final Logger log = Logger.getLogger(EmptyPacket.class);
+   private static final Logger log = Logger.getLogger(PacketImpl.class);
 
+   public static final long NO_ID_SET = -1L;
 
    private long responseTargetID = NO_ID_SET;
 
@@ -77,23 +78,23 @@ public class EmptyPacket implements Packet
    public static final byte SESS_BROWSER_RESET = 59;
    public static final byte SESS_BROWSER_HASNEXTMESSAGE = 60;
    public static final byte SESS_BROWSER_HASNEXTMESSAGE_RESP = 61;
-   public static final byte SESS_BROWSER_NEXTMESSAGE = 64; 
-   public static final byte SESS_XA_START = 66;
-   public static final byte SESS_XA_END = 67;
-   public static final byte SESS_XA_COMMIT = 68;
-   public static final byte SESS_XA_PREPARE = 69;
-   public static final byte SESS_XA_RESP = 70;
-   public static final byte SESS_XA_ROLLBACK = 71;
-   public static final byte SESS_XA_JOIN = 72;
-   public static final byte SESS_XA_SUSPEND = 73;
-   public static final byte SESS_XA_RESUME = 74;
-   public static final byte SESS_XA_FORGET = 75;
-   public static final byte SESS_XA_INDOUBT_XIDS = 76;
-   public static final byte SESS_XA_INDOUBT_XIDS_RESP = 77;
-   public static final byte SESS_XA_SET_TIMEOUT = 78;
-   public static final byte SESS_XA_SET_TIMEOUT_RESP = 79;
-   public static final byte SESS_XA_GET_TIMEOUT = 80;
-   public static final byte SESS_XA_GET_TIMEOUT_RESP = 81;
+   public static final byte SESS_BROWSER_NEXTMESSAGE = 62; 
+   public static final byte SESS_XA_START = 63;
+   public static final byte SESS_XA_END = 64;
+   public static final byte SESS_XA_COMMIT = 65;
+   public static final byte SESS_XA_PREPARE = 66;
+   public static final byte SESS_XA_RESP = 67;
+   public static final byte SESS_XA_ROLLBACK = 68;
+   public static final byte SESS_XA_JOIN = 69;
+   public static final byte SESS_XA_SUSPEND = 70;
+   public static final byte SESS_XA_RESUME = 71;
+   public static final byte SESS_XA_FORGET = 72;
+   public static final byte SESS_XA_INDOUBT_XIDS = 73;
+   public static final byte SESS_XA_INDOUBT_XIDS_RESP = 74;
+   public static final byte SESS_XA_SET_TIMEOUT = 75;
+   public static final byte SESS_XA_SET_TIMEOUT_RESP = 76;
+   public static final byte SESS_XA_GET_TIMEOUT = 77;
+   public static final byte SESS_XA_GET_TIMEOUT_RESP = 78;
        
    // Consumer 
    public static final byte CONS_FLOWTOKEN = 90;   
@@ -106,7 +107,7 @@ public class EmptyPacket implements Packet
 
    // Static --------------------------------------------------------
 
-   public EmptyPacket(final byte type)
+   public PacketImpl(final byte type)
    {
       this.type = type;
    }
@@ -199,12 +200,12 @@ public class EmptyPacket implements Packet
    
    public boolean equals(Object other)
    {
-      if (other instanceof EmptyPacket == false)
+      if (other instanceof PacketImpl == false)
       {
          return false;
       }
             
-      EmptyPacket r = (EmptyPacket)other;
+      PacketImpl r = (PacketImpl)other;
       
       return r.type == this.type;      
    }

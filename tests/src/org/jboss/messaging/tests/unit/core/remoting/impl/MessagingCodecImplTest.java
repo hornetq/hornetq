@@ -60,11 +60,11 @@ public class MessagingCodecImplTest extends UnitTestCase
    }
    public void testEmptyPacket() throws Exception
    {
-      EmptyPacket message = new EmptyPacket(EmptyPacket.NULL);
+      PacketImpl message = new PacketImpl(PacketImpl.NULL);
       setHeaders(message);
       codec.encode(buff, message);
       buff.rewind();
-      EmptyPacket copy = (EmptyPacket) codec.decode(buff);
+      PacketImpl copy = (PacketImpl) codec.decode(buff);
       checkHeaders(message, copy);
    }
 
@@ -585,14 +585,14 @@ public class MessagingCodecImplTest extends UnitTestCase
       assertByteArraysEquivalent(message.getXid().getGlobalTransactionId(), copy.getXid().getGlobalTransactionId());
    }
 
-   private void setHeaders(EmptyPacket packet)
+   private void setHeaders(PacketImpl packet)
    {
       packet.setExecutorID(RandomUtil.randomLong());
       packet.setResponseTargetID(RandomUtil.randomLong());
       packet.setTargetID(RandomUtil.randomLong());
    }
 
-   private void checkHeaders(EmptyPacket emptyPacket, EmptyPacket emptyPacket2)
+   private void checkHeaders(PacketImpl emptyPacket, PacketImpl emptyPacket2)
    {
       assertEquals(emptyPacket.getExecutorID(), emptyPacket2.getExecutorID());
       assertEquals(emptyPacket.getResponseTargetID(), emptyPacket2.getResponseTargetID());

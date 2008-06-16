@@ -54,7 +54,9 @@ public abstract class MessageImpl implements Message
    // Constants -----------------------------------------------------
    
    private static final Logger log = Logger.getLogger(MessageImpl.class);
-
+   
+   public static final SimpleString HDR_ACTUAL_EXPIRY_TIME = new SimpleString("JBMActualExpiryTime");
+   
    // Attributes ----------------------------------------------------
 
    private SimpleString destination;

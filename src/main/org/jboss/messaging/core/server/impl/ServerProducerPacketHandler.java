@@ -21,10 +21,12 @@
   */
 package org.jboss.messaging.core.server.impl;
 
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NO_ID_SET;
+
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketReturner;
-import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
 import org.jboss.messaging.core.server.ServerProducer;
 
@@ -56,11 +58,11 @@ public class ServerProducerPacketHandler extends ServerPacketHandlerSupport
       byte type = packet.getType();
       switch (type)
       {
-      case EmptyPacket.PROD_SEND:
+      case PacketImpl.PROD_SEND:
          ProducerSendMessage message = (ProducerSendMessage) packet;
          producer.send(message.getServerMessage());
          break;
-      case EmptyPacket.CLOSE:
+      case PacketImpl.CLOSE:
          producer.close();
          break;
       default:
@@ -69,9 +71,9 @@ public class ServerProducerPacketHandler extends ServerPacketHandlerSupport
       }
 
       // reply if necessary
-      if (response == null && packet.getResponseTargetID() != Packet.NO_ID_SET)
+      if (response == null && packet.getResponseTargetID() != NO_ID_SET)
       {
-         response = new EmptyPacket(EmptyPacket.NULL);               
+         response = new PacketImpl(PacketImpl.NULL);               
       }
       
       return response;

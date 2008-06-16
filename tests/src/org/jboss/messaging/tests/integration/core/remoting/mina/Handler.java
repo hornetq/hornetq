@@ -17,7 +17,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
 import org.jboss.messaging.tests.unit.core.remoting.TestPacketHandler;
 
@@ -66,7 +66,7 @@ public class Handler extends TestPacketHandler
    
    protected boolean isRequest(final Packet packet)
    {
-      return packet.getTargetID() != EmptyPacket.NO_ID_SET && packet.getResponseTargetID() != EmptyPacket.NO_ID_SET;
+      return packet.getTargetID() != PacketImpl.NO_ID_SET && packet.getResponseTargetID() != PacketImpl.NO_ID_SET;
    }
    
    @Override

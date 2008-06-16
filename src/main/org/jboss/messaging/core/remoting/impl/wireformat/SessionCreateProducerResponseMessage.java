@@ -13,7 +13,7 @@ import org.jboss.messaging.util.MessagingBuffer;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionCreateProducerResponseMessage extends EmptyPacket
+public class SessionCreateProducerResponseMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 

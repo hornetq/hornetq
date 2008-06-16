@@ -21,12 +21,14 @@
   */
 package org.jboss.messaging.core.server.impl;
 
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NO_ID_SET;
+
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.EmptyPacket;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.server.ServerConsumer;
 
 /**
@@ -60,11 +62,11 @@ public class ServerConsumerPacketHandler extends ServerPacketHandlerSupport
       byte type = packet.getType();
       switch (type)
       {
-      case EmptyPacket.CONS_FLOWTOKEN:
+      case PacketImpl.CONS_FLOWTOKEN:
          ConsumerFlowCreditMessage message = (ConsumerFlowCreditMessage) packet;
          consumer.receiveCredits(message.getTokens());
          break;
-      case EmptyPacket.CLOSE:
+      case PacketImpl.CLOSE:
          consumer.close();
          break;
       default:
@@ -73,9 +75,9 @@ public class ServerConsumerPacketHandler extends ServerPacketHandlerSupport
       }
 
       // reply if necessary
-      if (response == null && packet.getResponseTargetID() != Packet.NO_ID_SET)
+      if (response == null && packet.getResponseTargetID() != NO_ID_SET)
       {
-         response = new EmptyPacket(EmptyPacket.NULL);               
+         response = new PacketImpl(PacketImpl.NULL);               
       }
       
       return response;
