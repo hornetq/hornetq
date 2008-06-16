@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([jboss-profiler-jvmti], [1.0.Alpha],[clebert.suconic@jboss.org])
+AC_INIT([jboss-messaging-native], [1.0.Alpha],[clebert.suconic@jboss.org])
 AC_CONFIG_AUX_DIR([build-aux])
 
 AM_INIT_AUTOMAKE([dist-bzip2])
