@@ -7,21 +7,28 @@
 package org.jboss.messaging.tests.unit.jms.client;
 
 import static org.easymock.EasyMock.createStrictMock;
+import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.EasyMock.isA;
+import static org.easymock.EasyMock.isNull;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
+import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.IllegalStateException;
+import javax.jms.InvalidClientIDException;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
+import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
@@ -31,6 +38,8 @@ import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.StreamMessage;
+import javax.jms.TemporaryQueue;
+import javax.jms.TemporaryTopic;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicPublisher;
@@ -39,9 +48,9 @@ import javax.jms.TransactionInProgressException;
 
 import junit.framework.TestCase;
 
-import org.easymock.EasyMock;
 import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.client.ClientConnection;
+import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -49,9 +58,12 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResp
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.jms.JBossQueue;
+import org.jboss.messaging.jms.JBossTemporaryQueue;
+import org.jboss.messaging.jms.JBossTemporaryTopic;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnection;
 import org.jboss.messaging.jms.client.JBossSession;
+import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -72,37 +84,51 @@ public class JBossSessionTest extends TestCase
 
    // Public --------------------------------------------------------
 
+   private ClientConnection mockClientConn;
+   private ClientSession mockClientSession;
+
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+
+      mockClientConn = createStrictMock(ClientConnection.class);
+      mockClientSession = createStrictMock(ClientSession.class);
+   }
+
+   @Override
+   protected void tearDown() throws Exception
+   {
+      verify(mockClientConn, mockClientSession);
+
+      super.tearDown();
+   }
+
    public void testClose() throws Exception
    {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
-      clientSession.close();
+      mockClientSession.close();
 
-      replay(clientConn, clientSession);
+      replay(mockClientConn, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       Session session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
 
       session.close();
-
-      verify(clientConn, clientSession);
    }
 
    public void testCloseThrowsException() throws Exception
    {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
-      clientSession.close();
+      mockClientSession.close();
       expectLastCall().andThrow(new MessagingException());
-      replay(clientConn, clientSession);
+      replay(mockClientConn, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       Session session = new JBossSession(connection, true, false,
-            Session.DUPS_OK_ACKNOWLEDGE, clientSession,
+            Session.DUPS_OK_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
 
       try
@@ -112,23 +138,19 @@ public class JBossSessionTest extends TestCase
       } catch (JMSException e)
       {
       }
-
-      verify(clientConn, clientSession);
    }
 
    public void testClosedSession() throws Exception
    {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
-      clientSession.close();
-      expect(clientSession.isClosed()).andReturn(true);
+      mockClientSession.close();
+      expect(mockClientSession.isClosed()).andReturn(true);
 
-      replay(clientConn, clientSession);
+      replay(mockClientConn, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       Session session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
 
       session.close();
@@ -140,78 +162,62 @@ public class JBossSessionTest extends TestCase
       } catch (IllegalStateException e)
       {
       }
-
-      verify(clientConn, clientSession);
    }
 
    public void testGetTransacted() throws Exception
    {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
-      expect(clientSession.isClosed()).andReturn(false);
+      expect(mockClientSession.isClosed()).andReturn(false);
 
-      replay(clientConn, clientSession);
+      replay(mockClientConn, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       Session session = new JBossSession(connection, true, false, 0,
-            clientSession, JBossSession.TYPE_GENERIC_SESSION);
+            mockClientSession, JBossSession.TYPE_GENERIC_SESSION);
 
       assertEquals(true, session.getTransacted());
-
-      verify(clientConn, clientSession);
    }
 
    public void testGetAcknowledgeMode() throws Exception
    {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
-      expect(clientSession.isClosed()).andReturn(false);
+      expect(mockClientSession.isClosed()).andReturn(false);
 
-      replay(clientConn, clientSession);
+      replay(mockClientConn, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       Session session = new JBossSession(connection, false, false,
-            Session.DUPS_OK_ACKNOWLEDGE, clientSession,
+            Session.DUPS_OK_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
 
       assertEquals(Session.DUPS_OK_ACKNOWLEDGE, session.getAcknowledgeMode());
-
-      verify(clientConn, clientSession);
    }
 
    public void testCommitOnTransactedSession() throws Exception
    {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
-      clientSession.commit();
+      mockClientSession.commit();
 
-      replay(clientConn, clientSession);
+      replay(mockClientConn, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       Session session = new JBossSession(connection, true, false,
-            Session.DUPS_OK_ACKNOWLEDGE, clientSession,
+            Session.DUPS_OK_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
 
       session.commit();
-
-      verify(clientConn, clientSession);
    }
 
    public void testCommitThrowsException() throws Exception
    {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
-      clientSession.commit();
+      mockClientSession.commit();
       expectLastCall().andThrow(new MessagingException());
-      replay(clientConn, clientSession);
+      replay(mockClientConn, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       Session session = new JBossSession(connection, true, false,
-            Session.DUPS_OK_ACKNOWLEDGE, clientSession,
+            Session.DUPS_OK_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
 
       try
@@ -221,21 +227,16 @@ public class JBossSessionTest extends TestCase
       } catch (JMSException e)
       {
       }
-
-      verify(clientConn, clientSession);
    }
 
    public void testCommitOnNonTransactedSession() throws Exception
    {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
+      replay(mockClientConn, mockClientSession);
 
-      replay(clientConn, clientSession);
-
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       Session session = new JBossSession(connection, false, false,
-            Session.DUPS_OK_ACKNOWLEDGE, clientSession,
+            Session.DUPS_OK_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
 
       try
@@ -245,21 +246,16 @@ public class JBossSessionTest extends TestCase
       } catch (IllegalStateException e)
       {
       }
-
-      verify(clientConn, clientSession);
    }
 
    public void testCommitOnXASession() throws Exception
    {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
+      replay(mockClientConn, mockClientSession);
 
-      replay(clientConn, clientSession);
-
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       Session session = new JBossSession(connection, true, true, 0,
-            clientSession, JBossSession.TYPE_GENERIC_SESSION);
+            mockClientSession, JBossSession.TYPE_GENERIC_SESSION);
 
       try
       {
@@ -268,41 +264,33 @@ public class JBossSessionTest extends TestCase
       } catch (TransactionInProgressException e)
       {
       }
-
-      verify(clientConn, clientSession);
    }
 
    public void testRollbackOnTransactedSession() throws Exception
    {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
-      clientSession.rollback();
+      mockClientSession.rollback();
 
-      replay(clientConn, clientSession);
+      replay(mockClientConn, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       Session session = new JBossSession(connection, true, false,
-            Session.DUPS_OK_ACKNOWLEDGE, clientSession,
+            Session.DUPS_OK_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
 
       session.rollback();
-
-      verify(clientConn, clientSession);
    }
 
    public void testRollbackThrowsException() throws Exception
    {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
-      clientSession.rollback();
+      mockClientSession.rollback();
       expectLastCall().andThrow(new MessagingException());
-      replay(clientConn, clientSession);
+      replay(mockClientConn, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       Session session = new JBossSession(connection, true, false,
-            Session.DUPS_OK_ACKNOWLEDGE, clientSession,
+            Session.DUPS_OK_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
 
       try
@@ -312,21 +300,16 @@ public class JBossSessionTest extends TestCase
       } catch (JMSException e)
       {
       }
-
-      verify(clientConn, clientSession);
    }
 
    public void testRollbackOnNonTransactedSession() throws Exception
    {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
+      replay(mockClientConn, mockClientSession);
 
-      replay(clientConn, clientSession);
-
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       Session session = new JBossSession(connection, false, false,
-            Session.DUPS_OK_ACKNOWLEDGE, clientSession,
+            Session.DUPS_OK_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
 
       try
@@ -336,21 +319,16 @@ public class JBossSessionTest extends TestCase
       } catch (IllegalStateException e)
       {
       }
-
-      verify(clientConn, clientSession);
    }
 
    public void testRollbackOnXASession() throws Exception
    {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
+      replay(mockClientConn, mockClientSession);
 
-      replay(clientConn, clientSession);
-
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       Session session = new JBossSession(connection, true, true, 0,
-            clientSession, JBossSession.TYPE_GENERIC_SESSION);
+            mockClientSession, JBossSession.TYPE_GENERIC_SESSION);
 
       try
       {
@@ -359,20 +337,16 @@ public class JBossSessionTest extends TestCase
       } catch (TransactionInProgressException e)
       {
       }
-
-      verify(clientConn, clientSession);
    }
 
    public void testRecoverOnTransactedSession() throws Exception
    {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
-      replay(clientConn, clientSession);
+      replay(mockClientConn, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       Session session = new JBossSession(connection, true, false,
-            Session.DUPS_OK_ACKNOWLEDGE, clientSession,
+            Session.DUPS_OK_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
 
       try
@@ -382,40 +356,32 @@ public class JBossSessionTest extends TestCase
       } catch (IllegalStateException e)
       {
       }
-
-      verify(clientConn, clientSession);
    }
 
    public void testRecoverOnNonTransactedSession() throws Exception
    {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
-      clientSession.rollback();
-      replay(clientConn, clientSession);
+      mockClientSession.rollback();
+      replay(mockClientConn, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       Session session = new JBossSession(connection, false, false,
-            Session.DUPS_OK_ACKNOWLEDGE, clientSession,
+            Session.DUPS_OK_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
 
       session.recover();
-
-      verify(clientConn, clientSession);
    }
 
    public void testRecoverThrowsException() throws Exception
    {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
-      clientSession.rollback();
+      mockClientSession.rollback();
       expectLastCall().andThrow(new MessagingException());
-      replay(clientConn, clientSession);
+      replay(mockClientConn, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       Session session = new JBossSession(connection, false, false,
-            Session.DUPS_OK_ACKNOWLEDGE, clientSession,
+            Session.DUPS_OK_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
 
       try
@@ -425,28 +391,24 @@ public class JBossSessionTest extends TestCase
       } catch (JMSException e)
       {
       }
-
-      verify(clientConn, clientSession);
    }
 
    public void testMessageListener() throws Exception
    {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
-      expect(clientSession.isClosed()).andStubReturn(false);
+      expect(mockClientSession.isClosed()).andStubReturn(false);
       MessageListener listener = createStrictMock(MessageListener.class);
-      replay(clientConn, clientSession, listener);
+      replay(mockClientConn, mockClientSession, listener);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       Session session = new JBossSession(connection, false, false,
-            Session.DUPS_OK_ACKNOWLEDGE, clientSession,
+            Session.DUPS_OK_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
       assertNull(session.getMessageListener());
       session.setMessageListener(listener);
       assertSame(listener, session.getMessageListener());
 
-      verify(clientConn, clientSession, listener);
+      verify(listener);
    }
 
    public void testCreateMessage() throws Exception
@@ -555,41 +517,37 @@ public class JBossSessionTest extends TestCase
    public void testCreateProducer() throws Exception
    {
       JBossDestination destination = new JBossQueue(randomString());
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
       ClientProducer clientProducer = createStrictMock(ClientProducer.class);
-      expect(clientSession.createProducer(destination.getSimpleAddress()))
+      expect(mockClientSession.createProducer(destination.getSimpleAddress()))
             .andReturn(clientProducer);
 
-      replay(clientConn, clientSession, clientProducer);
+      replay(mockClientConn, mockClientSession, clientProducer);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       Session session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
 
       MessageProducer producer = session.createProducer(destination);
       assertNotNull(producer);
 
-      EasyMock.verify(clientConn, clientSession, clientProducer);
+      verify(clientProducer);
    }
 
    public void testCreateProducerThrowsException() throws Exception
    {
       JBossDestination destination = new JBossQueue(randomString());
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
       ClientProducer clientProducer = createStrictMock(ClientProducer.class);
-      expect(clientSession.createProducer(destination.getSimpleAddress()))
+      expect(mockClientSession.createProducer(destination.getSimpleAddress()))
             .andThrow(new MessagingException());
 
-      replay(clientConn, clientSession, clientProducer);
+      replay(mockClientConn, mockClientSession, clientProducer);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       Session session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
 
       try
@@ -600,21 +558,19 @@ public class JBossSessionTest extends TestCase
       {
       }
 
-      EasyMock.verify(clientConn, clientSession, clientProducer);
+      verify(clientProducer);
    }
 
    public void testCreateProducerWithInvalidDestination() throws Exception
    {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
       Destination destination = createStrictMock(Destination.class);
 
-      replay(clientConn, clientSession, destination);
+      replay(mockClientConn, mockClientSession, destination);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       Session session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
 
       try
@@ -625,113 +581,651 @@ public class JBossSessionTest extends TestCase
       {
       }
 
-      EasyMock.verify(clientConn, clientSession, destination);
+      verify(destination);
    }
 
    public void testCreateProducerWithNullDestination() throws Exception
    {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
       ClientProducer clientProducer = createStrictMock(ClientProducer.class);
-      expect(clientSession.createProducer(null)).andReturn(clientProducer);
+      expect(mockClientSession.createProducer(null)).andReturn(clientProducer);
 
-      replay(clientConn, clientSession, clientProducer);
+      replay(mockClientConn, mockClientSession, clientProducer);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       Session session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
 
       session.createProducer(null);
 
-      EasyMock.verify(clientConn, clientSession, clientProducer);
+      verify(clientProducer);
    }
 
    public void testCreatePublisher() throws Exception
    {
       JBossTopic topic = new JBossTopic(randomString());
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
       ClientProducer clientProducer = createStrictMock(ClientProducer.class);
-      expect(clientSession.createProducer(topic.getSimpleAddress())).andReturn(
-            clientProducer);
+      expect(mockClientSession.createProducer(topic.getSimpleAddress()))
+            .andReturn(clientProducer);
 
-      replay(clientConn, clientSession, clientProducer);
+      replay(mockClientConn, mockClientSession, clientProducer);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_TOPIC_CONNECTION, null, -1);
       TopicSession session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
 
       TopicPublisher publisher = session.createPublisher(topic);
       assertNotNull(publisher);
 
-      EasyMock.verify(clientConn, clientSession, clientProducer);
+      verify(clientProducer);
    }
 
    public void testCreateSender() throws Exception
    {
       JBossQueue queue = new JBossQueue(randomString());
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
       ClientProducer clientProducer = createStrictMock(ClientProducer.class);
-      expect(clientSession.createProducer(queue.getSimpleAddress())).andReturn(
-            clientProducer);
+      expect(mockClientSession.createProducer(queue.getSimpleAddress()))
+            .andReturn(clientProducer);
 
-      replay(clientConn, clientSession, clientProducer);
+      replay(mockClientConn, mockClientSession, clientProducer);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       QueueSession session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
 
       QueueSender sender = session.createSender(queue);
       assertNotNull(sender);
 
-      EasyMock.verify(clientConn, clientSession, clientProducer);
+      verify(clientProducer);
    }
 
+   public void testCreateConsumer() throws Exception
+   {
+      JBossDestination destination = new JBossQueue(randomString());
+      ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
+
+      // isExists() will return true
+      SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage(
+            false, false, -1, -1, 1, null, destination.getSimpleAddress());
+      expect(mockClientSession.queueQuery(destination.getSimpleAddress()))
+            .andReturn(resp);
+      expect(
+            mockClientSession.createConsumer(destination.getSimpleAddress(),
+                  null, false, false, false)).andReturn(clientConsumer);
+      expect(mockClientSession.isClosed()).andReturn(false);
+
+      replay(mockClientConn, mockClientSession, clientConsumer);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      Session session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_GENERIC_SESSION);
+
+      MessageConsumer consumer = session.createConsumer(destination);
+      assertNotNull(consumer);
+
+      verify(clientConsumer);
+   }
+
+   public void testCreateConsumerWithMessageSelector() throws Exception
+   {
+      String selector = "color = 'red";
+      doTestCreateConsumerWithSelector(selector, new SimpleString(selector));
+   }
+
+   public void testCreateConsumerWithEmptyMessageSelector() throws Exception
+   {
+      doTestCreateConsumerWithSelector("", null);
+   }
+
+   public void testCreateConsumerThrowsException() throws Exception
+   {
+      JBossDestination destination = new JBossQueue(randomString());
+      expect(mockClientSession.queueQuery(destination.getSimpleAddress())).andThrow(new MessagingException());
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      Session session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_GENERIC_SESSION);
+
+      try
+      {
+         session.createConsumer(destination);
+         fail("must throw an JMSException");
+      } catch (JMSException e)
+      {
+      }
+   }
+   
+   public void testCreateConsumerWithNullDestination() throws Exception
+   {
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      Session session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_GENERIC_SESSION);
+
+      try
+      {
+         session.createConsumer(null);
+         fail("must throw an InvalidDestinationException");
+      } catch (InvalidDestinationException e)
+      {
+      }
+   }
+
+   public void testCreateConsumerWithInvalidDestination() throws Exception
+   {
+      Destination invalidDestination = createStrictMock(Destination.class);
+      replay(mockClientConn, mockClientSession, invalidDestination);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      Session session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_GENERIC_SESSION);
+
+      try
+      {
+         session.createConsumer(invalidDestination);
+         fail("only instances of JBossDestination are allowed");
+      } catch (InvalidDestinationException e)
+      {
+      }
+
+      verify(invalidDestination);
+   }
+
+   public void testCreateConsumerWithUnknownQueue() throws Exception
+   {
+      JBossDestination destination = new JBossQueue(randomString());
+
+      // isExists() will return false
+      SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage();
+      expect(mockClientSession.queueQuery(destination.getSimpleAddress()))
+            .andReturn(resp);
+
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      Session session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_GENERIC_SESSION);
+
+      try
+      {
+         session.createConsumer(destination);
+         fail("should throw an InvalidDestinationException");
+      } catch (InvalidDestinationException e)
+      {
+      }
+   }
+
+   public void testCreateConsumerWithUnknownTopic() throws Exception
+   {
+      JBossDestination destination = new JBossTopic(randomString());
+
+      // isExists() will return false
+      SessionBindingQueryResponseMessage resp = new SessionBindingQueryResponseMessage();
+      expect(mockClientSession.bindingQuery(destination.getSimpleAddress()))
+      .andReturn(resp);
+
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1);
+      Session session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_TOPIC_SESSION);
+
+      try
+      {
+         session.createConsumer(destination);
+         fail("should throw an InvalidDestinationException");
+      } catch (InvalidDestinationException e)
+      {
+      }
+   }
+   
+   public void testCreateConsumerForTopic() throws Exception
+   {
+      JBossDestination destination = new JBossTopic(randomString());
+      ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
+
+      // isExists() will return true
+      SessionBindingQueryResponseMessage resp = new SessionBindingQueryResponseMessage(
+            true, new ArrayList<SimpleString>());
+      expect(mockClientSession.bindingQuery(destination.getSimpleAddress()))
+            .andReturn(resp);
+      mockClientSession.createQueue(eq(destination.getSimpleAddress()),
+            isA(SimpleString.class), (SimpleString) isNull(), eq(false),
+            eq(false));
+      expect(
+            mockClientSession.createConsumer(isA(SimpleString.class),
+                  (SimpleString) isNull(), eq(false), eq(true), eq(false)))
+            .andReturn(clientConsumer);
+      expect(mockClientSession.isClosed()).andReturn(false);
+
+      replay(mockClientConn, mockClientSession, clientConsumer);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1);
+      Session session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_TOPIC_SESSION);
+
+      MessageConsumer consumer = session.createConsumer(destination);
+      assertNotNull(consumer);
+
+      verify(clientConsumer);
+   }
+
+
+   public void testCreateDurableSubscriberFromQueueSession() throws Exception
+   {
+      JBossTopic topic = new JBossTopic(randomString());
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1);
+      Session session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_QUEUE_SESSION);
+
+      try
+      {
+         session.createDurableSubscriber(topic, randomString());
+         fail("cannot create a durable subscriber on a QueueSession");
+      } catch (IllegalStateException e)
+      {
+      }
+   }
+   
+   public void testCreateDurableSubscriberForNullTopic() throws Exception
+   {
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1);
+      Session session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_TOPIC_SESSION);
+
+      try
+      {
+         session.createDurableSubscriber(null, randomString());
+         fail("cannot create a durable subscriber on a null topict");
+      } catch (InvalidDestinationException e)
+      {
+      }
+   }
+   
+   public void testCreateDurableSubscriberForInvalidTopic() throws Exception
+   {
+      Topic invalidTopic = createStrictMock(Topic.class);
+      replay(mockClientConn, mockClientSession, invalidTopic);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1);
+      Session session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_TOPIC_SESSION);
+
+      try
+      {
+         session.createDurableSubscriber(invalidTopic, randomString());
+         fail("only instances of JBossTopic are allowed");
+      } catch (InvalidDestinationException e)
+      {
+      }
+      
+      verify(invalidTopic);
+   }
+   
+   public void testCreateDurableSubscriber() throws Exception
+   {
+      String subscriptionName = randomString();
+      String clientID = randomString();
+      JBossTopic topic = new JBossTopic(randomString());
+      ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
+
+      expect(mockClientConn.isClosed()).andStubReturn(false);
+      expect(mockClientSession.isClosed()).andStubReturn(false);
+
+      // isExists() will return true
+      SessionBindingQueryResponseMessage bindingResp = new SessionBindingQueryResponseMessage(
+            true, new ArrayList<SimpleString>());
+      expect(mockClientSession.bindingQuery(topic.getSimpleAddress()))
+            .andReturn(bindingResp);
+      SessionQueueQueryResponseMessage queryResp = new SessionQueueQueryResponseMessage();
+      expect(mockClientSession.queueQuery(isA(SimpleString.class))).andReturn(queryResp);
+      mockClientSession.createQueue(eq(topic.getSimpleAddress()),
+            isA(SimpleString.class), (SimpleString) isNull(), eq(true),
+            eq(false));
+      expect(
+            mockClientSession.createConsumer(isA(SimpleString.class),
+                  (SimpleString) isNull(), eq(false), eq(false), eq(false)))
+            .andReturn(clientConsumer);
+
+      replay(mockClientConn, mockClientSession, clientConsumer);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1);
+      Session session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_TOPIC_SESSION);
+
+      MessageConsumer consumer = session.createDurableSubscriber(topic, subscriptionName);
+      assertNotNull(consumer);
+
+      verify(clientConsumer);
+   }
+   
+   public void testCreateDurableSubscriberWithNullClientID() throws Exception
+   {
+      String subscriptionName = randomString();
+      String clientID = null;
+      JBossTopic topic = new JBossTopic(randomString());
+
+      expect(mockClientConn.isClosed()).andStubReturn(false);
+      expect(mockClientSession.isClosed()).andStubReturn(false);
+
+      // isExists() will return true
+      SessionBindingQueryResponseMessage bindingResp = new SessionBindingQueryResponseMessage(
+            true, new ArrayList<SimpleString>());
+      expect(mockClientSession.bindingQuery(topic.getSimpleAddress()))
+            .andReturn(bindingResp);
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1);
+      Session session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_TOPIC_SESSION);
+
+      try {
+         session.createDurableSubscriber(topic, subscriptionName);
+         fail("clientID must be set to create a durable subscriber");
+      } catch (InvalidClientIDException e)
+      {
+      }
+   }
+   
+   public void testCreateDurableSubscriberWithTemporaryTopic() throws Exception
+   {
+      String topicName = randomString();
+      SimpleString topicAddress = new SimpleString(
+            JBossTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX + topicName);
+      
+      String subscriptionName = randomString();
+      String clientID = randomString();
+      expect(mockClientConn.isClosed()).andStubReturn(false);
+      expect(mockClientSession.isClosed()).andStubReturn(false);
+
+      // isExists() will return true
+      SessionBindingQueryResponseMessage bindingResp = new SessionBindingQueryResponseMessage(
+            true, new ArrayList<SimpleString>());
+      expect(mockClientSession.bindingQuery(topicAddress))
+            .andReturn(bindingResp);
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1);
+      JBossSession session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_TOPIC_SESSION);
+      JBossTopic tempTopic = new JBossTemporaryTopic(session, topicName);
+
+
+      try {
+         session.createDurableSubscriber(tempTopic, subscriptionName);
+         fail("can not create a durable subscriber for a temporary topic");
+      } catch (InvalidDestinationException e)
+      {
+      }
+   }
+   
+   public void testCreateDurableSubscriberWithAlreadyReigsteredSubscriber() throws Exception
+   {
+      String subscriptionName = randomString();
+      String clientID = randomString();
+      JBossTopic topic = new JBossTopic(randomString());
+
+      expect(mockClientConn.isClosed()).andStubReturn(false);
+      expect(mockClientSession.isClosed()).andStubReturn(false);
+
+      // isExists() will return true
+      SessionBindingQueryResponseMessage bindingResp = new SessionBindingQueryResponseMessage(
+            true, new ArrayList<SimpleString>());
+      expect(mockClientSession.bindingQuery(topic.getSimpleAddress()))
+            .andReturn(bindingResp);
+      // already 1 durable subscriber
+      SessionQueueQueryResponseMessage queryResp = new SessionQueueQueryResponseMessage(true, false, -1, 1, 0, null, topic.getSimpleAddress());
+      expect(mockClientSession.queueQuery(isA(SimpleString.class))).andReturn(queryResp);
+
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1);
+      Session session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_TOPIC_SESSION);
+
+      try
+      {
+         session.createDurableSubscriber(topic, subscriptionName);         
+         fail("can not create a durable subscriber when another is already registered");
+      } catch (IllegalStateException e)
+      {
+      }
+   }
+   
+   public void testCreateDurableSubscriberWithEmptyMessageSelector() throws Exception
+   {
+      String subscriptionName = randomString();
+      String clientID = randomString();
+      String selector = "";
+      JBossTopic topic = new JBossTopic(randomString());
+      ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
+
+      expect(mockClientConn.isClosed()).andStubReturn(false);
+      expect(mockClientSession.isClosed()).andStubReturn(false);
+
+      // isExists() will return true
+      SessionBindingQueryResponseMessage bindingResp = new SessionBindingQueryResponseMessage(
+            true, new ArrayList<SimpleString>());
+      expect(mockClientSession.bindingQuery(topic.getSimpleAddress()))
+            .andReturn(bindingResp);
+      SessionQueueQueryResponseMessage queryResp = new SessionQueueQueryResponseMessage();
+      expect(mockClientSession.queueQuery(isA(SimpleString.class))).andReturn(queryResp);
+      mockClientSession.createQueue(eq(topic.getSimpleAddress()),
+            isA(SimpleString.class), (SimpleString) isNull(), eq(true),
+            eq(false));
+      expect(
+            mockClientSession.createConsumer(isA(SimpleString.class),
+                  (SimpleString) isNull(), eq(false), eq(false), eq(false)))
+            .andReturn(clientConsumer);
+
+      replay(mockClientConn, mockClientSession, clientConsumer);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1);
+      Session session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_TOPIC_SESSION);
+
+      MessageConsumer consumer = session.createDurableSubscriber(topic, subscriptionName, selector, false);
+      assertNotNull(consumer);
+
+      verify(clientConsumer);
+   }
+   
+   public void testCreateDurableSubscriberWhichWasAlreadyRegistered() throws Exception
+   {
+      String subscriptionName = randomString();
+      String clientID = randomString();
+      JBossTopic topic = new JBossTopic(randomString());
+      ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
+
+      expect(mockClientConn.isClosed()).andStubReturn(false);
+      expect(mockClientSession.isClosed()).andStubReturn(false);
+
+      // isExists() will return true
+      SessionBindingQueryResponseMessage bindingResp = new SessionBindingQueryResponseMessage(
+            true, new ArrayList<SimpleString>());
+      expect(mockClientSession.bindingQuery(topic.getSimpleAddress()))
+            .andReturn(bindingResp);
+      // isExists will return true
+      SessionQueueQueryResponseMessage queryResp = new SessionQueueQueryResponseMessage(true, false, -1, 0, 0, null, topic.getSimpleAddress());
+      expect(mockClientSession.queueQuery(isA(SimpleString.class))).andReturn(queryResp);
+      expect(
+            mockClientSession.createConsumer(isA(SimpleString.class),
+                  (SimpleString) isNull(), eq(false), eq(false), eq(false)))
+            .andReturn(clientConsumer);
+
+      replay(mockClientConn, mockClientSession, clientConsumer);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1);
+      Session session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_TOPIC_SESSION);
+
+      MessageConsumer consumer = session.createDurableSubscriber(topic, subscriptionName);
+      assertNotNull(consumer);
+
+      verify(clientConsumer);
+   }
+   
+   public void testCreateDurableSubscriberWhichWasAlreadyRegisteredWithAnotherTopic() throws Exception
+   {
+      String subscriptionName = randomString();
+      String clientID = randomString();
+      JBossTopic oldTopic = new JBossTopic(randomString());
+      JBossTopic newTopic = new JBossTopic(randomString());
+      ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
+
+      expect(mockClientConn.isClosed()).andStubReturn(false);
+      expect(mockClientSession.isClosed()).andStubReturn(false);
+
+      // isExists() will return true
+      SessionBindingQueryResponseMessage bindingResp = new SessionBindingQueryResponseMessage(
+            true, new ArrayList<SimpleString>());
+      expect(mockClientSession.bindingQuery(newTopic.getSimpleAddress()))
+            .andReturn(bindingResp);
+      // isExists will return true
+      SessionQueueQueryResponseMessage queryResp = new SessionQueueQueryResponseMessage(true, false, -1, 0, 0, null, oldTopic.getSimpleAddress());
+      expect(mockClientSession.queueQuery(isA(SimpleString.class))).andReturn(queryResp);
+      // queue address of the old topic
+      mockClientSession.deleteQueue(isA(SimpleString.class));
+      mockClientSession.createQueue(eq(newTopic.getSimpleAddress()), isA(SimpleString.class), (SimpleString) isNull(), eq(true), eq(false));
+      expect(
+            mockClientSession.createConsumer(isA(SimpleString.class),
+                  (SimpleString) isNull(), eq(false), eq(false), eq(false)))
+            .andReturn(clientConsumer);
+
+      replay(mockClientConn, mockClientSession, clientConsumer);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1);
+      Session session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_TOPIC_SESSION);
+
+      MessageConsumer consumer = session.createDurableSubscriber(newTopic, subscriptionName);
+      assertNotNull(consumer);
+
+      verify(clientConsumer);
+   }
+   
+   public void testCreateDurableSubscriberWhichWasAlreadyRegisteredWithAnotherMessageSelector() throws Exception
+   {
+      String subscriptionName = randomString();
+      String clientID = randomString();
+      JBossTopic topic = new JBossTopic(randomString());
+      SimpleString oldSelector = new SimpleString("color = 'red'");
+      SimpleString newSelector = new SimpleString("color = 'blue'");
+      ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
+
+      expect(mockClientConn.isClosed()).andStubReturn(false);
+      expect(mockClientSession.isClosed()).andStubReturn(false);
+
+      // isExists() will return true
+      SessionBindingQueryResponseMessage bindingResp = new SessionBindingQueryResponseMessage(
+            true, new ArrayList<SimpleString>());
+      expect(mockClientSession.bindingQuery(topic.getSimpleAddress()))
+            .andReturn(bindingResp);
+      // isExists will return true
+      SessionQueueQueryResponseMessage queryResp = new SessionQueueQueryResponseMessage(true, false, -1, 0, 0, oldSelector, topic.getSimpleAddress());
+      expect(mockClientSession.queueQuery(isA(SimpleString.class))).andReturn(queryResp);
+      // queue address of the old topic
+      mockClientSession.deleteQueue(isA(SimpleString.class));
+      mockClientSession.createQueue(eq(topic.getSimpleAddress()), isA(SimpleString.class), eq(newSelector), eq(true), eq(false));
+      expect(
+            mockClientSession.createConsumer(isA(SimpleString.class),
+                  (SimpleString) isNull(), eq(false), eq(false), eq(false)))
+            .andReturn(clientConsumer);
+
+      replay(mockClientConn, mockClientSession, clientConsumer);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1);
+      Session session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_TOPIC_SESSION);
+
+      MessageConsumer consumer = session.createDurableSubscriber(topic, subscriptionName, newSelector.toString(), false);
+      assertNotNull(consumer);
+
+      verify(clientConsumer);
+   }
+   
+   
    public void testCreateBrowser() throws Exception
    {
       JBossQueue queue = new JBossQueue(randomString());
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
       ClientBrowser clientBrowser = createStrictMock(ClientBrowser.class);
-      expect(clientSession.createBrowser(queue.getSimpleAddress(), null))
+      expect(mockClientSession.createBrowser(queue.getSimpleAddress(), null))
             .andReturn(clientBrowser);
 
-      replay(clientConn, clientSession, clientBrowser);
+      replay(mockClientConn, mockClientSession, clientBrowser);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       QueueSession session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
 
       QueueBrowser browser = session.createBrowser(queue);
       assertNotNull(browser);
 
-      EasyMock.verify(clientConn, clientSession, clientBrowser);
+      verify(clientBrowser);
    }
 
    public void testCreateBrowserThrowsException() throws Exception
    {
       JBossQueue queue = new JBossQueue(randomString());
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
       ClientBrowser clientBrowser = createStrictMock(ClientBrowser.class);
-      expect(clientSession.createBrowser(queue.getSimpleAddress(), null))
+      expect(mockClientSession.createBrowser(queue.getSimpleAddress(), null))
             .andThrow(new MessagingException());
 
-      replay(clientConn, clientSession, clientBrowser);
+      replay(mockClientConn, mockClientSession, clientBrowser);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       QueueSession session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
 
       try
@@ -742,69 +1236,63 @@ public class JBossSessionTest extends TestCase
       {
       }
 
-      EasyMock.verify(clientConn, clientSession, clientBrowser);
+      verify(clientBrowser);
    }
 
    public void testCreateBrowserWithEmptyFilter() throws Exception
    {
       JBossQueue queue = new JBossQueue(randomString());
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
       ClientBrowser clientBrowser = createStrictMock(ClientBrowser.class);
-      expect(clientSession.createBrowser(queue.getSimpleAddress(), null))
+      expect(mockClientSession.createBrowser(queue.getSimpleAddress(), null))
             .andReturn(clientBrowser);
 
-      replay(clientConn, clientSession, clientBrowser);
+      replay(mockClientConn, mockClientSession, clientBrowser);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       QueueSession session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
 
       QueueBrowser browser = session.createBrowser(queue, "");
       assertNotNull(browser);
 
-      EasyMock.verify(clientConn, clientSession, clientBrowser);
+      verify(clientBrowser);
    }
 
    public void testCreateBrowserWithFilter() throws Exception
    {
       String filter = "color = 'red'";
       JBossQueue queue = new JBossQueue(randomString());
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
       ClientBrowser clientBrowser = createStrictMock(ClientBrowser.class);
       expect(
-            clientSession.createBrowser(queue.getSimpleAddress(),
+            mockClientSession.createBrowser(queue.getSimpleAddress(),
                   new SimpleString(filter))).andReturn(clientBrowser);
 
-      replay(clientConn, clientSession, clientBrowser);
+      replay(mockClientConn, mockClientSession, clientBrowser);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       QueueSession session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
 
       QueueBrowser browser = session.createBrowser(queue, filter);
       assertNotNull(browser);
 
-      EasyMock.verify(clientConn, clientSession, clientBrowser);
+      verify(clientBrowser);
    }
 
    public void testCreateBrowserFromTopicSession() throws Exception
    {
       Queue queue = new JBossQueue(randomString());
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
 
-      replay(clientConn, clientSession);
+      replay(mockClientConn, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       QueueSession session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
 
       try
@@ -814,21 +1302,16 @@ public class JBossSessionTest extends TestCase
       } catch (IllegalStateException e)
       {
       }
-
-      EasyMock.verify(clientConn, clientSession);
    }
 
    public void testCreateBrowserForNullQueue() throws Exception
    {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
+      replay(mockClientConn, mockClientSession);
 
-      replay(clientConn, clientSession);
-
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       QueueSession session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
 
       try
@@ -838,22 +1321,17 @@ public class JBossSessionTest extends TestCase
       } catch (InvalidDestinationException e)
       {
       }
-
-      EasyMock.verify(clientConn, clientSession);
    }
 
    public void testCreateBrowserForInvalidQueue() throws Exception
    {
       Queue queue = createStrictMock(Queue.class);
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
+      replay(mockClientConn, mockClientSession, queue);
 
-      replay(clientConn, clientSession, queue);
-
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       QueueSession session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
 
       try
@@ -864,7 +1342,7 @@ public class JBossSessionTest extends TestCase
       {
       }
 
-      EasyMock.verify(clientConn, clientSession, queue);
+      verify(queue);
    }
 
    public void testCreateQueue() throws Exception
@@ -873,25 +1351,21 @@ public class JBossSessionTest extends TestCase
       SimpleString queueAddress = new SimpleString(
             JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + queueName);
 
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
       // isExists() will return true
       SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage(
             false, false, -1, -1, 1, null, queueAddress);
-      expect(clientSession.queueQuery(queueAddress)).andReturn(resp);
+      expect(mockClientSession.queueQuery(queueAddress)).andReturn(resp);
 
-      replay(clientConn, clientSession);
+      replay(mockClientConn, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       QueueSession session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
 
       Queue queue = session.createQueue(queueName);
       assertNotNull(queue);
-
-      EasyMock.verify(clientConn, clientSession);
    }
 
    public void testCreateQueueThrowsException() throws Exception
@@ -900,17 +1374,15 @@ public class JBossSessionTest extends TestCase
       SimpleString queueAddress = new SimpleString(
             JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + queueName);
 
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
-      expect(clientSession.queueQuery(queueAddress)).andThrow(
+      expect(mockClientSession.queueQuery(queueAddress)).andThrow(
             new MessagingException());
 
-      replay(clientConn, clientSession);
+      replay(mockClientConn, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       QueueSession session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
 
       try
@@ -920,8 +1392,6 @@ public class JBossSessionTest extends TestCase
       } catch (JMSException e)
       {
       }
-
-      EasyMock.verify(clientConn, clientSession);
    }
 
    public void testCreateQueueWithUnknownName() throws Exception
@@ -930,18 +1400,16 @@ public class JBossSessionTest extends TestCase
       SimpleString queueAddress = new SimpleString(
             JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + queueName);
 
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
       // isExists() will return false
       SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage();
-      expect(clientSession.queueQuery(queueAddress)).andReturn(resp);
+      expect(mockClientSession.queueQuery(queueAddress)).andReturn(resp);
 
-      replay(clientConn, clientSession);
+      replay(mockClientConn, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       QueueSession session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
 
       try
@@ -951,21 +1419,16 @@ public class JBossSessionTest extends TestCase
       } catch (JMSException e)
       {
       }
-
-      EasyMock.verify(clientConn, clientSession);
    }
 
    public void testCreateQueueFromTopicSession() throws Exception
    {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
+      replay(mockClientConn, mockClientSession);
 
-      replay(clientConn, clientSession);
-
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       QueueSession session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
 
       try
@@ -975,8 +1438,6 @@ public class JBossSessionTest extends TestCase
       } catch (IllegalStateException e)
       {
       }
-
-      EasyMock.verify(clientConn, clientSession);
    }
 
    public void testCreateTopic() throws Exception
@@ -985,24 +1446,20 @@ public class JBossSessionTest extends TestCase
       SimpleString topicAddress = new SimpleString(
             JBossTopic.JMS_TOPIC_ADDRESS_PREFIX + topicName);
 
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
       SessionBindingQueryResponseMessage resp = new SessionBindingQueryResponseMessage(
             true, new ArrayList<SimpleString>());
-      expect(clientSession.bindingQuery(topicAddress)).andReturn(resp);
+      expect(mockClientSession.bindingQuery(topicAddress)).andReturn(resp);
 
-      replay(clientConn, clientSession);
+      replay(mockClientConn, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       QueueSession session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
 
       Topic topic = session.createTopic(topicName);
       assertNotNull(topic);
-
-      EasyMock.verify(clientConn, clientSession);
    }
 
    public void testCreateTopicThrowsException() throws Exception
@@ -1011,17 +1468,15 @@ public class JBossSessionTest extends TestCase
       SimpleString topicAddress = new SimpleString(
             JBossTopic.JMS_TOPIC_ADDRESS_PREFIX + topicName);
 
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
-      expect(clientSession.bindingQuery(topicAddress)).andThrow(
+      expect(mockClientSession.bindingQuery(topicAddress)).andThrow(
             new MessagingException());
 
-      replay(clientConn, clientSession);
+      replay(mockClientConn, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       QueueSession session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
 
       try
@@ -1031,8 +1486,6 @@ public class JBossSessionTest extends TestCase
       } catch (JMSException e)
       {
       }
-
-      EasyMock.verify(clientConn, clientSession);
    }
 
    public void testCreateTopicWithUnknownName() throws Exception
@@ -1041,18 +1494,16 @@ public class JBossSessionTest extends TestCase
       SimpleString topicAddress = new SimpleString(
             JBossTopic.JMS_TOPIC_ADDRESS_PREFIX + topicName);
 
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
       SessionBindingQueryResponseMessage resp = new SessionBindingQueryResponseMessage(
             false, new ArrayList<SimpleString>());
-      expect(clientSession.bindingQuery(topicAddress)).andReturn(resp);
+      expect(mockClientSession.bindingQuery(topicAddress)).andReturn(resp);
 
-      replay(clientConn, clientSession);
+      replay(mockClientConn, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       QueueSession session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
 
       try
@@ -1062,21 +1513,16 @@ public class JBossSessionTest extends TestCase
       } catch (JMSException e)
       {
       }
-
-      EasyMock.verify(clientConn, clientSession);
    }
 
    public void testCreateTopicFromQueueSession() throws Exception
    {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
+      replay(mockClientConn, mockClientSession);
 
-      replay(clientConn, clientSession);
-
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       QueueSession session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
 
       try
@@ -1086,11 +1532,458 @@ public class JBossSessionTest extends TestCase
       } catch (IllegalStateException e)
       {
       }
+   }
+   
+   public void testCreateTemporaryQueue() throws Exception
+   {
+      mockClientSession.createQueue(isA(SimpleString.class), isA(SimpleString.class), (SimpleString) isNull(), eq(false), eq(true));
+      mockClientSession.addDestination(isA(SimpleString.class), eq(true));
+      replay(mockClientConn, mockClientSession);
 
-      EasyMock.verify(clientConn, clientSession);
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      QueueSession session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_QUEUE_SESSION);
+
+      TemporaryQueue topic = session.createTemporaryQueue();
+      assertNotNull(topic);
+   }
+   
+   public void testCreateTemporaryQueueThrowsException() throws Exception
+   {
+      mockClientSession.createQueue(isA(SimpleString.class), isA(SimpleString.class), (SimpleString) isNull(), eq(false), eq(true));
+      expectLastCall().andThrow(new MessagingException());
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      QueueSession session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_QUEUE_SESSION);
+      try
+      {
+         session.createTemporaryQueue();
+         fail("must throw a JMSException");
+      } catch (JMSException e)
+      {
+      }
+   }
+   
+   public void testCreateTemporaryQueueFromTopicSession() throws Exception
+   {
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1);
+      QueueSession session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_TOPIC_SESSION);
+      try
+      {
+         session.createTemporaryQueue();
+         fail("must throw a JMSException");
+      } catch (JMSException e)
+      {
+      }
+   }
+   
+   public void testCreateTemporaryTopic() throws Exception
+   {
+      mockClientSession.addDestination(isA(SimpleString.class), eq(true));
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1);
+      QueueSession session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_TOPIC_SESSION);
+
+      TemporaryTopic topic = session.createTemporaryTopic();
+      assertNotNull(topic);
+   }
+   
+   public void testCreateTemporaryTopicThrowsException() throws Exception
+   {
+      mockClientSession.addDestination(isA(SimpleString.class), eq(true));
+      expectLastCall().andThrow(new MessagingException());
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1);
+      QueueSession session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_TOPIC_SESSION);
+
+      try
+      {
+         session.createTemporaryTopic();
+         fail("must throw a JMSException");
+      } catch (JMSException e)
+      {
+      }
    }
 
-   // Package protected ---------------------------------------------
+   public void testCreateTemporaryTopicFromQueueSession() throws Exception
+   {
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      QueueSession session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_QUEUE_SESSION);
+
+      try
+      {
+         session.createTemporaryTopic();
+         fail("must throw a JMSException");
+      } catch (JMSException e)
+      {
+      }
+   }
+   
+   public void testDeleteTemporaryQueue() throws Exception
+   {
+      String queueName = randomString();
+      SimpleString queueAddress = new SimpleString(JBossTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX + queueName);
+      
+      // isExists() will return true
+      SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage(
+            false, false, -1, -1, 1, null, queueAddress);
+      expect(mockClientSession.queueQuery(queueAddress)).andReturn(resp);
+      mockClientSession.removeDestination(queueAddress, true);
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossSession session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_QUEUE_SESSION);
+      JBossTemporaryQueue tempQueue = new JBossTemporaryQueue(session, queueName);
+
+      session.deleteTemporaryQueue(tempQueue);
+   }
+   
+   public void testDeleteTemporaryQueueWithUnknownQueue() throws Exception
+   {
+      String queueName = randomString();
+      SimpleString queueAddress = new SimpleString(JBossTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX + queueName);
+      
+      // isExists() will return false
+      SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage();
+      expect(mockClientSession.queueQuery(queueAddress)).andReturn(resp);
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossSession session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_QUEUE_SESSION);
+      JBossTemporaryQueue tempQueue = new JBossTemporaryQueue(session, queueName);
+
+      try
+      {
+         session.deleteTemporaryQueue(tempQueue);   
+         fail("can not delete a temp queue which does not exist");
+      } catch (InvalidDestinationException e)
+      {
+      }
+   }
+   
+   public void testDeleteTemporaryQueueWithConsumers() throws Exception
+   {
+      String queueName = randomString();
+      int consumerCount = 1;
+      SimpleString queueAddress = new SimpleString(JBossTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX + queueName);
+      
+      
+      SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage(false, true, 0, consumerCount, 0, null, queueAddress);
+      expect(mockClientSession.queueQuery(queueAddress)).andReturn(resp);
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossSession session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_QUEUE_SESSION);
+      JBossTemporaryQueue tempQueue = new JBossTemporaryQueue(session, queueName);
+
+      try
+      {
+         session.deleteTemporaryQueue(tempQueue);   
+         fail("can not delete a temp queue which has consumers");
+      } catch (IllegalStateException e)
+      {
+      }
+   }
+   
+   public void testDeleteTemporaryQueueThrowsException() throws Exception
+   {
+      expect(mockClientSession.queueQuery(isA(SimpleString.class))).andThrow(new MessagingException());
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossSession session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_QUEUE_SESSION);
+      JBossTemporaryQueue tempQueue = new JBossTemporaryQueue(session, randomString());
+
+      try
+      {
+         session.deleteTemporaryQueue(tempQueue);   
+         fail("must throw a JMSException");
+      } catch (JMSException e)
+      {
+      }
+   } 
+   
+   public void testDeleteTemporaryTopic() throws Exception
+   {
+      String topicName = randomString();
+      SimpleString topicAddress = new SimpleString(JBossTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX + topicName);
+      
+      SessionBindingQueryResponseMessage resp = new SessionBindingQueryResponseMessage(true, new ArrayList<SimpleString>());
+      expect(mockClientSession.bindingQuery(topicAddress)).andReturn(resp);
+      mockClientSession.removeDestination(topicAddress, true);
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossSession session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_QUEUE_SESSION);
+      JBossTemporaryTopic tempTopic = new JBossTemporaryTopic(session, topicName);
+
+      session.deleteTemporaryTopic(tempTopic);
+   }
+ 
+   public void testDeleteTemporaryTopicWithUnknownTopic() throws Exception
+   {
+      String topicName = randomString();
+      SimpleString topicAddress = new SimpleString(JBossTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX + topicName);
+      
+      SessionBindingQueryResponseMessage resp = new SessionBindingQueryResponseMessage(false, new ArrayList<SimpleString>());
+      expect(mockClientSession.bindingQuery(topicAddress)).andReturn(resp);
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossSession session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_QUEUE_SESSION);
+      JBossTemporaryTopic tempTopic = new JBossTemporaryTopic(session, topicName);
+
+      try
+      {
+         session.deleteTemporaryTopic(tempTopic);
+         fail("can not delete a temp topic which does not exist");
+      } catch (InvalidDestinationException e)
+      {
+      }
+   }
+   
+   public void testDeleteTemporaryTopicWhichHasSubscribers() throws Exception
+   {
+      String topicName = randomString();
+      SimpleString topicAddress = new SimpleString(JBossTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX + topicName);
+      List<SimpleString> queueNames = new ArrayList<SimpleString>();
+      queueNames.add(randomSimpleString());
+      
+      SessionBindingQueryResponseMessage resp = new SessionBindingQueryResponseMessage(true, queueNames);
+      expect(mockClientSession.bindingQuery(topicAddress)).andReturn(resp);
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossSession session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_QUEUE_SESSION);
+      JBossTemporaryTopic tempTopic = new JBossTemporaryTopic(session, topicName);
+
+      try
+      {
+         session.deleteTemporaryTopic(tempTopic);
+         fail("can not delete a temp topic which has subscribers");
+      } catch (IllegalStateException e)
+      {
+      }
+   }
+   
+   public void testDeleteTemporaryTopicWhichThrowsException() throws Exception
+   {
+      String topicName = randomString();
+
+      expect(mockClientSession.bindingQuery(isA(SimpleString.class))).andThrow(new MessagingException());
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossSession session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_QUEUE_SESSION);
+      JBossTemporaryTopic tempTopic = new JBossTemporaryTopic(session, topicName);
+
+      try
+      {
+         session.deleteTemporaryTopic(tempTopic);
+         fail("must throw a JMSException");
+      } catch (JMSException e)
+      {
+      }
+   }
+   
+   public void testGetSessionOnXASession() throws Exception
+   {
+      boolean isXA = true;
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossSession session = new JBossSession(connection, false, isXA,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_QUEUE_SESSION);
+
+      Session sess = session.getSession();
+      assertNotNull(sess);
+   }
+
+   public void testGetSessionOnNonXASession() throws Exception
+   {
+      boolean isXA = false;
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossSession session = new JBossSession(connection, false, isXA,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_QUEUE_SESSION);
+
+      try
+      {
+         session.getSession();
+         fail("can not get the session on a non-XA session");
+      } catch (IllegalStateException e)
+      {
+      }
+   }
+   
+   public void testUnsubscribe() throws Exception
+   {
+      String subName = randomString();
+      String clientID = randomString();
+      SimpleString queueAddres = new SimpleString(JBossTopic.createQueueNameForDurableSubscription(clientID, subName));
+      expect(mockClientConn.isClosed()).andReturn(false);
+      SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage(false, true, 0, 0, 0, null, queueAddres);
+      expect(mockClientSession.queueQuery(queueAddres)).andReturn(resp );
+      mockClientSession.deleteQueue(queueAddres);
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1);
+      JBossSession session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_TOPIC_SESSION);
+
+      session.unsubscribe(subName);
+   }
+   
+   public void testUnsubscribeWithUnknownSubscription() throws Exception
+   {
+      String clientID = randomString();
+      expect(mockClientConn.isClosed()).andReturn(false);
+      // isExists() will return false
+      SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage();
+      expect(mockClientSession.queueQuery(isA(SimpleString.class))).andReturn(resp );
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1);
+      JBossSession session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_TOPIC_SESSION);
+
+      try
+      {
+         session.unsubscribe(randomString());
+         fail("can not unsubscribe from an unknown subscription");
+      } catch (InvalidDestinationException e)
+      {
+      }
+   }
+   
+   public void testUnsubscribeWithActiveSubscribers() throws Exception
+   {
+      String clientID = randomString();
+      String subName = randomString();
+      SimpleString queueAddres = new SimpleString(JBossTopic.createQueueNameForDurableSubscription(clientID, subName));
+      int consumerCount = 1;
+      expect(mockClientConn.isClosed()).andReturn(false);
+
+      SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage(true, false, 0, consumerCount, 0, null, queueAddres);
+      expect(mockClientSession.queueQuery(isA(SimpleString.class))).andReturn(resp );
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1);
+      JBossSession session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_TOPIC_SESSION);
+
+      try
+      {
+         session.unsubscribe(randomString());
+         fail("can not unsubscribe when there are active subscribers");
+      } catch (IllegalStateException e)
+      {
+      }
+   }
+   
+   public void testUnsubscribeThrowsException() throws Exception
+   {
+      String clientID = randomString();
+      expect(mockClientConn.isClosed()).andReturn(false);
+
+      expect(mockClientSession.queueQuery(isA(SimpleString.class))).andThrow(new MessagingException());
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1);
+      JBossSession session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_TOPIC_SESSION);
+
+      try
+      {
+         session.unsubscribe(randomString());
+         fail("must throw a JMSException");
+      } catch (JMSException e)
+      {
+      }
+   }
+   
+   public void testUnsubscribeFromQueueSession() throws Exception
+   {
+      String subName = randomString();
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossSession session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_QUEUE_SESSION);
+
+      try
+      {
+         session.unsubscribe(subName);
+         fail("can not unsubscribe from a queue session");
+      } catch (IllegalStateException e)
+      {
+      }
+   }
+
+      // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
@@ -1099,20 +1992,47 @@ public class JBossSessionTest extends TestCase
    private void doTestCreateMessage(MessageCreation creation)
          throws JMSException
    {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      ClientSession clientSession = createStrictMock(ClientSession.class);
-      expect(clientSession.isClosed()).andReturn(false);
-      replay(clientConn, clientSession);
+      expect(mockClientSession.isClosed()).andReturn(false);
+      replay(mockClientConn, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(clientConn,
+      JBossConnection connection = new JBossConnection(mockClientConn,
             JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
       Session session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
       Message message = creation.createMessage(session);
       assertNotNull(message);
+   }
 
-      EasyMock.verify(clientConn, clientSession);
+   private void doTestCreateConsumerWithSelector(String selector,
+         SimpleString expectedSelector) throws Exception
+   {
+      JBossDestination destination = new JBossQueue(randomString());
+      ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
+
+      // isExists() will return true
+      SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage(
+            false, false, -1, -1, 1, null, destination.getSimpleAddress());
+      expect(mockClientSession.queueQuery(destination.getSimpleAddress()))
+            .andReturn(resp);
+      expect(
+            mockClientSession.createConsumer(destination.getSimpleAddress(),
+                  expectedSelector, false, false, false)).andReturn(
+            clientConsumer);
+      expect(mockClientSession.isClosed()).andReturn(false);
+
+      replay(mockClientConn, mockClientSession, clientConsumer);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      Session session = new JBossSession(connection, false, false,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_GENERIC_SESSION);
+
+      MessageConsumer consumer = session.createConsumer(destination, selector);
+      assertNotNull(consumer);
+
+      verify(clientConsumer);
    }
 
    // Inner classes -------------------------------------------------

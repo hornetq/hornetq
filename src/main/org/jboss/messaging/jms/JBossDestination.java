@@ -46,6 +46,10 @@ public abstract class JBossDestination implements Destination, Serializable/*, R
       
 	protected static String escape(final String input)
    {
+	   if (input == null)
+	   {
+	      return "";
+	   }
       return input.replace("\\", "\\\\").replace(".", "\\.");
    }
 	

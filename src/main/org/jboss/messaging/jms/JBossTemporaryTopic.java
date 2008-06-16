@@ -55,11 +55,11 @@ public class JBossTemporaryTopic extends JBossTopic implements TemporaryTopic
       this.session = session;
    }
    
-   // TemporaryQueue implementation ------------------------------------------
+   // TemporaryTopic implementation ------------------------------------------
 
    public void delete() throws JMSException
    {      
-      session.deleteTemporaryDestination(this);
+      session.deleteTemporaryTopic(this);
    }
 
    // Public --------------------------------------------------------

@@ -439,7 +439,14 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
    public TopicSubscriber createDurableSubscriber(final Topic topic, final String name) throws JMSException
    {
-      //As per spec. section 4.11
+      return createDurableSubscriber(topic, name, null, false);
+   }
+   
+   public TopicSubscriber createDurableSubscriber(final Topic topic, final String name,
+         String messageSelector, final boolean noLocal)
+   throws JMSException
+   {
+      //    As per spec. section 4.11
       if (sessionType == TYPE_QUEUE_SESSION)
       {
          throw new IllegalStateException("Cannot create a durable subscriber on a QueueSession");
@@ -452,14 +459,18 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
       {
          throw new InvalidDestinationException("Not a JBossTopic:" + topic);
       }
-            
-      JBossDestination jbdest = (JBossDestination)topic;
-            
-      ClientConsumer cd = createConsumer(jbdest, name, null, false);
+      if ("".equals(messageSelector))
+      {
+         messageSelector = null;
+      }
 
-      return new JBossMessageConsumer(this, cd, false, topic, null, false);
+      JBossDestination jbdest = (JBossDestination)topic;
+
+      ClientConsumer cd = createConsumer(jbdest, name, messageSelector, noLocal);
+
+      return new JBossMessageConsumer(this, cd, noLocal, topic, messageSelector, false);
    }
-   
+
    private ClientConsumer createConsumer(final JBossDestination dest,
                                          final String subscriptionName, String selectorString,
                                          final boolean noLocal)
@@ -580,35 +591,6 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
       {
          throw JMSExceptionHelper.convertFromMessagingException(e);     
       }      
-   }
-
-   public TopicSubscriber createDurableSubscriber(final Topic topic, final String name,
-                                                  String messageSelector, final boolean noLocal)
-         throws JMSException
-   {
-      //As per spec. section 4.11
-      if (sessionType == TYPE_QUEUE_SESSION)
-      {
-         throw new IllegalStateException("Cannot create a durable subscriber on a QueueSession");
-      }
-      if (topic == null)
-      {
-         throw new InvalidDestinationException("Cannot create a durable subscriber on a null topic");
-      }
-      if (!(topic instanceof JBossTopic))
-      {
-         throw new InvalidDestinationException("Not a JBossTopic:" + topic);
-      }
-      if ("".equals(messageSelector))
-      {
-         messageSelector = null;
-      }
-
-      JBossDestination jbdest = (JBossDestination)topic;
-
-      ClientConsumer cd = createConsumer(jbdest, name, messageSelector, noLocal);
-
-      return new JBossMessageConsumer(this, cd, noLocal, topic, messageSelector, false);
    }
 
    public QueueBrowser createBrowser(final Queue queue) throws JMSException
@@ -823,43 +805,49 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
       this.recoverCalled = recoverCalled;
    }
    
-   public void deleteTemporaryDestination(final JBossDestination destination) throws JMSException
+   public void deleteTemporaryTopic(final JBossTemporaryTopic tempTopic) throws JMSException
    {
       try
       {
-         if (destination instanceof Topic)
+         SessionBindingQueryResponseMessage response = session.bindingQuery(tempTopic.getSimpleAddress());
+
+         if (!response.isExists())
          {
-            SessionBindingQueryResponseMessage response = session.bindingQuery(destination.getSimpleAddress());
-            
-            if (!response.isExists())
-            {
-               throw new InvalidDestinationException("Cannot delete temporary topic " +
-                                                      destination.getName() + " does not exist");
-            }
-            
-            if (!response.getQueueNames().isEmpty())
-            {
-               throw new IllegalStateException("Cannot delete temporary topic " +
-                                               destination.getName() + " since it has subscribers");
-            }        
+            throw new InvalidDestinationException("Cannot delete temporary topic " +
+                  tempTopic.getName() + " does not exist");
          }
-         else
+
+         if (!response.getQueueNames().isEmpty())
          {
-            SessionQueueQueryResponseMessage response = session.queueQuery(destination.getSimpleAddress());
-            
-            if (!response.isExists())
-            {
-               throw new InvalidDestinationException("Cannot delete temporary queue " +
-                                                      destination.getName() + " does not exist");
-            }
-            
-            if (response.getConsumerCount() > 0)
-            {
-               throw new IllegalStateException("Cannot delete temporary queue " +
-                                               destination.getName() + " since it has subscribers");
-            }
-         }   
-         session.removeDestination(destination.getSimpleAddress(), true);
+            throw new IllegalStateException("Cannot delete temporary topic " +
+                  tempTopic.getName() + " since it has subscribers");
+         }     
+         session.removeDestination(tempTopic.getSimpleAddress(), true);
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);     
+      }      
+   }
+
+   public void deleteTemporaryQueue(final JBossTemporaryQueue tempQueue) throws JMSException
+   {
+      try
+      {
+         SessionQueueQueryResponseMessage response = session.queueQuery(tempQueue.getSimpleAddress());
+
+         if (!response.isExists())
+         {
+            throw new InvalidDestinationException("Cannot delete temporary queue " +
+                  tempQueue.getName() + " does not exist");
+         }
+
+         if (response.getConsumerCount() > 0)
+         {
+            throw new IllegalStateException("Cannot delete temporary queue " +
+                  tempQueue.getName() + " since it has subscribers");
+         }
+         session.removeDestination(tempQueue.getSimpleAddress(), true);
       }
       catch (MessagingException e)
       {

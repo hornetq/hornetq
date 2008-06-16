@@ -59,7 +59,7 @@ public class JBossTemporaryQueue extends JBossQueue implements TemporaryQueue
 
    public void delete() throws JMSException
    {      
-      session.deleteTemporaryDestination(this);
+      session.deleteTemporaryQueue(this);
    }
 
    // Public --------------------------------------------------------
