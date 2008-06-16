@@ -308,20 +308,20 @@ public class MessageTest extends UnitTestCase
       ByteBuffer bf = ByteBuffer.allocateDirect(1024);
       ByteBufferWrapper buffer = new ByteBufferWrapper(bf);
       obj.encode(buffer);
-      assertEquals (buffer.position(), obj.encodeSize());
+      assertEquals (buffer.position(), obj.getEncodeSize());
       int originalSize = buffer.position();
       
       bf.rewind();
       newObject.decode(buffer);
       
-      log.info("Obj.size = " + obj.encodeSize() + " newObject.size = " + newObject.encodeSize());
+      log.info("Obj.size = " + obj.getEncodeSize() + " newObject.size = " + newObject.getEncodeSize());
       
       bf = ByteBuffer.allocateDirect(1024 * 10);
       buffer = new ByteBufferWrapper(bf);
       
       newObject.encode(buffer);
       
-      assertEquals(newObject.encodeSize(), bf.position());
+      assertEquals(newObject.getEncodeSize(), bf.position());
       assertEquals(originalSize, bf.position());
       
       

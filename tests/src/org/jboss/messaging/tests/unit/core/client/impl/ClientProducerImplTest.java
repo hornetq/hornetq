@@ -286,7 +286,7 @@ public class ClientProducerImplTest extends UnitTestCase
       
       if (sendAddress == null && windowSize != -1)
       {
-         EasyMock.expect(message.encodeSize()).andReturn(messageSize);
+         EasyMock.expect(message.getEncodeSize()).andReturn(messageSize);
       }
       
       EasyMock.replay(session, connection, rc, message);

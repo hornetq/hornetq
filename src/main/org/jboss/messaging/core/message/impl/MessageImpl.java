@@ -126,7 +126,7 @@ public abstract class MessageImpl implements Message
       buff.putBytes(body.array(), 0, body.limit());   
    }
    
-   public int encodeSize()
+   public int getEncodeSize()
    {
       return /* Destination */ SimpleString.sizeofString(destination) + 
       /* Type */ SIZE_BYTE + 
@@ -134,7 +134,7 @@ public abstract class MessageImpl implements Message
       /* Expiration */ SIZE_LONG + 
       /* Timestamp */ SIZE_LONG + 
       /* Priority */ SIZE_BYTE + 
-      /* PropertySize and Properties */ properties.encodeSize() + 
+      /* PropertySize and Properties */ properties.getEncodeSize() + 
       /* BodySize and Body */ SIZE_INT + body.limit();      
    }
    

@@ -2500,9 +2500,7 @@ public class ClientSessionImplTest extends UnitTestCase
          new SessionCreateConsumerResponseMessage(656652, serverWindowSize);
       
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, request)).andReturn(resp);
-      
-      //EasyMock.expect(conn.getRemotingConnection()).andReturn(value)
-      
+          
       EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
       
       pd.register(new ClientConsumerPacketHandler(null, clientTargetID));

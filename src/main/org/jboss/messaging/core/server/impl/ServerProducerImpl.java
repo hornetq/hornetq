@@ -105,7 +105,7 @@ public class ServerProducerImpl implements ServerProducer
 		   
 			if (flowController != null)
 		   {
-			   int creds = creditsToSend.addAndGet(message.encodeSize());
+			   int creds = creditsToSend.addAndGet(message.getEncodeSize());
 			   
 			   if (creds >= windowSize)
 			   {

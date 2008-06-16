@@ -34,7 +34,7 @@ import org.jboss.messaging.util.MessagingBuffer;
  */
 public interface EncodingSupport
 {
-   int encodeSize();
+   int getEncodeSize();
    
    void encode(MessagingBuffer buffer);
    

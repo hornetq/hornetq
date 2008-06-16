@@ -1,8 +1,6 @@
 package org.jboss.messaging.core.security;
 
-import org.jboss.messaging.core.exception.MessagingException;
-
-import java.util.HashSet;
+import java.util.Set;
 
 /**
  * USe to validate whether a user has is valid to connect to the server and perform certain functions
@@ -27,5 +25,5 @@ public interface JBMSecurityManager
     * @param checkType the type of check to perform
     * @return true if the user is valid and they have the correct roles
     */
-   boolean validateUserAndRole(String user, String password,HashSet<Role> roles, CheckType checkType);
+   boolean validateUserAndRole(String user, String password, Set<Role> roles, CheckType checkType);
 }

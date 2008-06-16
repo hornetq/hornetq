@@ -37,7 +37,7 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.version.Version;
-import org.jboss.messaging.util.OrderedExecutorFactory;
+import org.jboss.messaging.util.ExecutorFactory;
 
 /**
  * This interface defines the internal interface of the Messaging Server exposed
@@ -53,53 +53,47 @@ import org.jboss.messaging.util.OrderedExecutorFactory;
  */
 public interface MessagingServer extends MessagingComponent
 {  
-   /**
-    * @return The configuration for this server
-    */
-   Configuration getConfiguration(); 
-   
-   /**
-    * 
-    * @return The server version
-    */
-   Version getVersion();
-   
-   boolean isStarted();
-   
-   void setConfiguration(Configuration configuration);
-   
    void setRemotingService(RemotingService remotingService);
    
    RemotingService getRemotingService();
-  
-   ConnectionManager getConnectionManager();
-
+   
+   void setStorageManager(StorageManager storageManager);
+      
    StorageManager getStorageManager();
 
-   void setStorageManager(StorageManager storageManager);
-   
+   public JBMSecurityManager getSecurityManager();
+      
+   void setSecurityManager(JBMSecurityManager securityManager);
+
+   void setPostOffice(PostOffice postOffice);
+      
    PostOffice getPostOffice();
+   
+   void setConfiguration(Configuration configuration);
+            
+   Configuration getConfiguration(); 
+   
+   Version getVersion();
+   
+   boolean isStarted();
+       
+   ConnectionManager getConnectionManager();
    
    HierarchicalRepository<HashSet<Role>> getSecurityRepository();
    
    SecurityStore getSecurityStore();
 
-   void setSecurityManager(JBMSecurityManager securityManager);
-
-   public JBMSecurityManager getSecurityManager();
-
    HierarchicalRepository<QueueSettings> getQueueSettingsRepository();
-
-   void setPostOffice(PostOffice postOffice);
    
+   DeploymentManager getDeploymentManager();
+   
+   ExecutorFactory getExecutorFactory();
+   
+   ResourceManager getResourceManager();
+  
    CreateConnectionResponse createConnection(String username, String password,
                                              long remotingClientSessionID, String clientAddress,
                                              int incrementVersion,
                                              PacketReturner sender) throws Exception;
-
-   DeploymentManager getDeploymentManager();
    
-   OrderedExecutorFactory getOrderedExecutorFactory();
-   
-   ResourceManager getResourceManager();
 }

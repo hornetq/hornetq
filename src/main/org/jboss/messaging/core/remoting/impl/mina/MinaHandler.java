@@ -22,6 +22,7 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandlerRegistrationListener;
 import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.util.ExecutorFactory;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 
 /**
@@ -46,7 +47,7 @@ public class MinaHandler extends IoHandlerAdapter implements
 
    private final boolean closeSessionOnExceptionCaught;
 
-   private final OrderedExecutorFactory executorFactory;
+   private final ExecutorFactory executorFactory;
 
    // Note! must use ConcurrentMap here to avoid race condition
    private final ConcurrentMap<Long, Executor> executors = new ConcurrentHashMap<Long, Executor>();
@@ -127,7 +128,7 @@ public class MinaHandler extends IoHandlerAdapter implements
          Executor executor = executors.get(executorID);
          if (executor == null)
          {
-            executor = executorFactory.getOrderedExecutor();
+            executor = executorFactory.getExecutor();
 
             Executor oldExecutor = executors.putIfAbsent(executorID, executor);
 

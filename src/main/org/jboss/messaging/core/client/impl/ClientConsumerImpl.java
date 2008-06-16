@@ -176,7 +176,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                
                session.delivered(m.getDeliveryID(), expired);
                
-               flowControl(m.encodeSize());
+               flowControl(m.getEncodeSize());
                                  
                if (expired)
                {
@@ -339,7 +339,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
             session.delivered(message.getDeliveryID(), expired);
             
-            flowControl(message.encodeSize());
+            flowControl(message.getEncodeSize());
 
             if (!expired)
             {
@@ -495,7 +495,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    
             session.delivered(message.getDeliveryID(), expired);
             
-            flowControl(message.encodeSize());
+            flowControl(message.getEncodeSize());
    
             if (!expired)
             {

@@ -22,7 +22,7 @@ import java.util.concurrent.Executor;
  * @version <tt>$Revision$</tt>
  * 
  */
-public final class OrderedExecutorFactory
+public final class OrderedExecutorFactory implements ExecutorFactory
 {
    private final Executor parent;
    private final Set<ChildExecutor> runningChildren = Collections.synchronizedSet(new HashSet<ChildExecutor>());
@@ -32,7 +32,7 @@ public final class OrderedExecutorFactory
       this.parent = parent;
    }
 
-   public Executor getOrderedExecutor()
+   public Executor getExecutor()
    {
       return new ChildExecutor();
    }

@@ -23,7 +23,6 @@ package org.jboss.messaging.tests.unit.core.client.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 import org.easymock.EasyMock;
@@ -41,6 +40,12 @@ import org.jboss.messaging.tests.util.UnitTestCase;
  * 
  * A ClientConsumerImplTest
  * 
+ * TODO - still need to test:
+ * priority
+ * flow control
+ * closing
+ * waiting for message listener to complete etc
+ * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -56,22 +61,6 @@ public class ClientConsumerImplTest extends UnitTestCase
       testConstructor(6565, 71627162, -1, true);
    }
    
-   /*
-    * Test handleMessage with:
-    * 
-    * handler
-    * nohandler
-    * handler direct
-    * add handler after
-    * 
-    * 
-    * priorities
-    * closed
-    * after recovery
-    * expired messages
-    * 
-    * flowcontrol
-    */
    
    public void testHandleMessageNoHandler() throws Exception
    {
@@ -194,7 +183,7 @@ public class ClientConsumerImplTest extends UnitTestCase
          
          session.delivered((long)i, false);
          
-         EasyMock.expect(msg.encodeSize()).andReturn(1);
+         EasyMock.expect(msg.getEncodeSize()).andReturn(1);
          
          handler.onMessage(msg);
       }
@@ -217,42 +206,7 @@ public class ClientConsumerImplTest extends UnitTestCase
       
       assertEquals(0, consumer.getBufferSize());         
    }
-   
-//   public void testSetGetHandler() throws Exception
-//   {
-//      ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);
-//      ClientConnectionInternal connection = EasyMock.createStrictMock(ClientConnectionInternal.class);
-//      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-//      ExecutorService executor = EasyMock.createStrictMock(ExecutorService.class);
-//      
-//      EasyMock.expect(session.getExecutorService()).andReturn(executor);
-//      EasyMock.expect(session.getConnection()).andReturn(connection);
-//      EasyMock.expect(connection.getRemotingConnection()).andReturn(rc);
-//       
-//      EasyMock.replay(session, connection, rc, executor);
-//
-//      ClientConsumerInternal consumer =
-//         new ClientConsumerImpl(session, 54545, 54544, 545454, false);
-//      
-//      EasyMock.verify(session, connection, rc, executor);      
-//      
-//      MessageHandler handler = new MessageHandler()
-//      {
-//         public void onMessage(final ClientMessage msg)
-//         {            
-//         }
-//      };
-//      
-//      consumer.setMessageHandler(handler);
-//      
-//      assertTrue(handler == consumer.getMessageHandler());
-//      
-//      consumer.setMessageHandler(null);
-//      
-//      assertNull(consumer.getMessageHandler());
-//   }
-      
-      
+     
    public void testSetGetHandlerWithMessagesAlreadyInBuffer() throws Exception
    {
       ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);
@@ -311,7 +265,223 @@ public class ClientConsumerImplTest extends UnitTestCase
       EasyMock.verify(session, connection, rc, executor);
       EasyMock.verify(msgs.toArray());   
    }
-               
+   
+   public void testReceiveNoTimeout() throws Exception
+   {
+      ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);
+      ClientConnectionInternal connection = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      ExecutorService executor = EasyMock.createStrictMock(ExecutorService.class);
+      
+      EasyMock.expect(session.getExecutorService()).andStubReturn(executor);
+      EasyMock.expect(session.getConnection()).andStubReturn(connection);
+      EasyMock.expect(connection.getRemotingConnection()).andStubReturn(rc);
+      
+      
+      final int numMessages = 10;
+      
+      List<ClientMessage> msgs = new ArrayList<ClientMessage>();
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage msg = EasyMock.createStrictMock(ClientMessage.class);
+         
+         msgs.add(msg);
+         
+         EasyMock.expect(msg.getPriority()).andStubReturn((byte)4); //default priority
+         
+         EasyMock.expect(msg.isExpired()).andStubReturn(false);
+         
+         EasyMock.expect(msg.getDeliveryID()).andStubReturn((long)i);
+         
+         session.delivered((long)i, false);
+         
+         EasyMock.expect(msg.getEncodeSize()).andReturn(1);
+      }
+      
+      EasyMock.replay(session, connection, rc, executor);
+      EasyMock.replay(msgs.toArray());
+            
+      ClientConsumerInternal consumer =
+         new ClientConsumerImpl(session, 54545, 54544, 545454, false);
+      
+      for (ClientMessage msg: msgs)
+      {
+         consumer.handleMessage(msg);
+      }
+
+      assertEquals(numMessages, consumer.getBufferSize());         
+
+      for (int i = 0; i < numMessages; i++)
+      {      
+         ClientMessage msg = consumer.receive();
+   
+         assertTrue(msg == msgs.get(i));
+      }
+
+      assertNull(consumer.receiveImmediate());      
+   }
+   
+   public void testReceiveWithTimeout() throws Exception
+   {
+      ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);
+      ClientConnectionInternal connection = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      ExecutorService executor = EasyMock.createStrictMock(ExecutorService.class);
+      
+      EasyMock.expect(session.getExecutorService()).andStubReturn(executor);
+      EasyMock.expect(session.getConnection()).andStubReturn(connection);
+      EasyMock.expect(connection.getRemotingConnection()).andStubReturn(rc);
+      
+      
+      final int numMessages = 10;
+      
+      List<ClientMessage> msgs = new ArrayList<ClientMessage>();
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage msg = EasyMock.createStrictMock(ClientMessage.class);
+         
+         msgs.add(msg);
+         
+         EasyMock.expect(msg.getPriority()).andStubReturn((byte)4); //default priority
+         
+         EasyMock.expect(msg.isExpired()).andStubReturn(false);
+         
+         EasyMock.expect(msg.getDeliveryID()).andStubReturn((long)i);
+         
+         session.delivered((long)i, false);
+         
+         EasyMock.expect(msg.getEncodeSize()).andReturn(1);
+      }
+      
+      EasyMock.replay(session, connection, rc, executor);
+      EasyMock.replay(msgs.toArray());
+            
+      ClientConsumerInternal consumer =
+         new ClientConsumerImpl(session, 54545, 54544, 545454, false);
+      
+      for (ClientMessage msg: msgs)
+      {
+         consumer.handleMessage(msg);
+      }
+
+      assertEquals(numMessages, consumer.getBufferSize());         
+
+      for (int i = 0; i < numMessages; i++)
+      {      
+         ClientMessage msg = consumer.receive(1000);
+   
+         assertTrue(msg == msgs.get(i));
+      }
+
+      assertNull(consumer.receiveImmediate());           
+   }
+   
+   public void testReceiveImmediate() throws Exception
+   {
+      ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);
+      ClientConnectionInternal connection = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      ExecutorService executor = EasyMock.createStrictMock(ExecutorService.class);
+      
+      EasyMock.expect(session.getExecutorService()).andStubReturn(executor);
+      EasyMock.expect(session.getConnection()).andStubReturn(connection);
+      EasyMock.expect(connection.getRemotingConnection()).andStubReturn(rc);
+      
+      
+      final int numMessages = 10;
+      
+      List<ClientMessage> msgs = new ArrayList<ClientMessage>();
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage msg = EasyMock.createStrictMock(ClientMessage.class);
+         
+         msgs.add(msg);
+         
+         EasyMock.expect(msg.getPriority()).andStubReturn((byte)4); //default priority
+         
+         EasyMock.expect(msg.isExpired()).andStubReturn(false);
+         
+         EasyMock.expect(msg.getDeliveryID()).andStubReturn((long)i);
+         
+         session.delivered((long)i, false);
+         
+         EasyMock.expect(msg.getEncodeSize()).andReturn(1);
+      }
+      
+      EasyMock.replay(session, connection, rc, executor);
+      EasyMock.replay(msgs.toArray());
+            
+      ClientConsumerInternal consumer =
+         new ClientConsumerImpl(session, 54545, 54544, 545454, false);
+      
+      for (ClientMessage msg: msgs)
+      {
+         consumer.handleMessage(msg);
+      }
+
+      assertEquals(numMessages, consumer.getBufferSize());         
+
+      for (int i = 0; i < numMessages; i++)
+      {      
+         ClientMessage msg = consumer.receiveImmediate();
+   
+         assertTrue(msg == msgs.get(i));
+      }
+
+      assertNull(consumer.receiveImmediate());           
+   }
+   
+   public void testReceiveExpired() throws Exception
+   {
+      ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);
+      ClientConnectionInternal connection = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      ExecutorService executor = EasyMock.createStrictMock(ExecutorService.class);
+      
+      EasyMock.expect(session.getExecutorService()).andStubReturn(executor);
+      EasyMock.expect(session.getConnection()).andStubReturn(connection);
+      EasyMock.expect(connection.getRemotingConnection()).andStubReturn(rc);
+            
+      final int numMessages = 10;
+      
+      List<ClientMessage> msgs = new ArrayList<ClientMessage>();
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage msg = EasyMock.createStrictMock(ClientMessage.class);
+         
+         msgs.add(msg);
+         
+         EasyMock.expect(msg.getPriority()).andStubReturn((byte)4); //default priority
+         
+         EasyMock.expect(msg.isExpired()).andStubReturn(true);
+         
+         EasyMock.expect(msg.getDeliveryID()).andStubReturn((long)i);
+         
+         session.delivered((long)i, true);
+         
+         EasyMock.expect(msg.getEncodeSize()).andReturn(1);
+      }
+      
+      EasyMock.replay(session, connection, rc, executor);
+      EasyMock.replay(msgs.toArray());
+            
+      ClientConsumerInternal consumer =
+         new ClientConsumerImpl(session, 54545, 54544, 545454, false);
+      
+      for (ClientMessage msg: msgs)
+      {
+         consumer.handleMessage(msg);
+      }
+
+      assertEquals(numMessages, consumer.getBufferSize());         
+
+      assertNull(consumer.receiveImmediate());           
+   }
+   
    // Private -----------------------------------------------------------------------------------------------------------
 
    

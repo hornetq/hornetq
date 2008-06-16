@@ -21,7 +21,7 @@
    */
 package org.jboss.messaging.example;
 
-import java.util.HashSet;
+import java.util.Set;
 
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientConnectionFactory;
@@ -75,7 +75,7 @@ public class SimpleExample
                return true;
             }
 
-            public boolean validateUserAndRole(String user, String password, HashSet<Role> roles, CheckType checkType)
+            public boolean validateUserAndRole(String user, String password, Set<Role> roles, CheckType checkType)
             {
                return true;
             }

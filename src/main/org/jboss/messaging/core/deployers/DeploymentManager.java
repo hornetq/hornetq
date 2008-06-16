@@ -21,7 +21,6 @@
    */
 package org.jboss.messaging.core.deployers;
 
-import org.jboss.messaging.core.server.MessagingComponent;
 
 /**
  * This class manages any configuration files available. It will notify any deployers registered with it on changes.

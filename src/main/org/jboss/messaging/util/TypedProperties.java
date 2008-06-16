@@ -290,7 +290,7 @@ public class TypedProperties implements EncodingSupport
 		}
 	}
 	
-	public int encodeSize()
+	public int getEncodeSize()
 	{
 	   if (properties == null)
 	   {

@@ -199,7 +199,7 @@ public class ServerConsumerImpl implements ServerConsumer
                          
          if (availableCredits != null)
          {
-            availableCredits.addAndGet(-message.encodeSize());
+            availableCredits.addAndGet(-message.getEncodeSize());
          }
                    
          try

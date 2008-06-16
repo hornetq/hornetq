@@ -65,7 +65,7 @@ public interface Message extends EncodingSupport
    
    void setPriority(byte priority);
    
-   int encodeSize();
+   int getEncodeSize();
 
    void encode(MessagingBuffer buffer);
    

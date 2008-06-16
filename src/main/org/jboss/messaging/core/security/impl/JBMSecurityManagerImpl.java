@@ -21,15 +21,16 @@
    */
 package org.jboss.messaging.core.security.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.JBMUpdateableSecurityManager;
 import org.jboss.messaging.core.security.Role;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 
 /**
  * A basic implementation of the JBMUpdateableSecurityManager. This can be used within an appserver and be deployed by
@@ -45,19 +46,17 @@ public class JBMSecurityManagerImpl implements JBMUpdateableSecurityManager
 
    // Attributes ----------------------------------------------------
 
-   private boolean trace = log.isTraceEnabled();
-
    /**
     * the current valid users
     */
-   HashMap<String, User> users = new HashMap<String, User>();
+   private Map<String, User> users = new HashMap<String, User>();
 
    /**
     * the roles for the users
     */
-   HashMap<String, List<String>> roles = new HashMap<String, List<String>>();
+   private Map<String, List<String>> roles = new HashMap<String, List<String>>();
 
-   public JBMSecurityManagerImpl(boolean addGuestRole)
+   public JBMSecurityManagerImpl(final boolean addGuestRole)
    {
       if (addGuestRole)
       {
@@ -69,13 +68,13 @@ public class JBMSecurityManagerImpl implements JBMUpdateableSecurityManager
       }
    }
 
-   public boolean validateUser(String user, String password)
+   public boolean validateUser(final String user, final String password)
    {
       User theUser = users.get(user == null ? "guest" : user);
       return theUser != null && theUser.isValid(user == null ? "guest" : user, password == null ? "guest" : password);
    }
 
-   public boolean validateUserAndRole(String user, String password, HashSet<Role> roles, CheckType checkType)
+   public boolean validateUserAndRole(final String user, final String password, final Set<Role> roles, final CheckType checkType)
    {
       if (validateUser(user, password))
       {
@@ -97,7 +96,7 @@ public class JBMSecurityManagerImpl implements JBMUpdateableSecurityManager
       return false;
    }
 
-   public void addUser(String user, String password)
+   public void addUser(final String user, final String password)
    {
       if (user == null)
       {
@@ -110,13 +109,13 @@ public class JBMSecurityManagerImpl implements JBMUpdateableSecurityManager
       users.put(user, new User(user, password));
    }
 
-   public void removeUser(String user)
+   public void removeUser(final String user)
    {
       users.remove(user);
       roles.remove(user);
    }
 
-   public void addRole(String user, String role)
+   public void addRole(final String user, final String role)
    {
       if (roles.get(user) == null)
       {
@@ -125,7 +124,7 @@ public class JBMSecurityManagerImpl implements JBMUpdateableSecurityManager
       roles.get(user).add(role);
    }
 
-   public void removeRole(String user, String role)
+   public void removeRole(final String user, final String role)
    {
       if (roles.get(user) == null)
       {
@@ -134,12 +133,12 @@ public class JBMSecurityManagerImpl implements JBMUpdateableSecurityManager
       roles.get(user).remove(role);
    }
 
-   class User
+   static class User
    {
-      String user;
-      String password;
+      final String user;
+      final String password;
 
-      User(String user, String password)
+      User(final String user, final String password)
       {
          this.user = user;
          this.password = password;
@@ -162,7 +161,7 @@ public class JBMSecurityManagerImpl implements JBMUpdateableSecurityManager
          return user.hashCode();
       }
 
-      public boolean isValid(String user, String password)
+      public boolean isValid(final String user, final String password)
       {
          if (user == null)
          {

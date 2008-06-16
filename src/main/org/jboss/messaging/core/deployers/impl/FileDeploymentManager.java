@@ -53,13 +53,13 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
    private static ArrayList<URL> toUndeploy = new ArrayList<URL>();
    //the list of URL's to redeploy if changed
    private static ArrayList<URL> toRedeploy = new ArrayList<URL>();
+   
    private static ScheduledExecutorService scheduler;
 
    int currentWeight = 0;
 
-   public void start(int weight) throws Exception
+   public void start(final int weight) throws Exception
    {
-
       Collection<ConfigurationURL> configurations = getUnstartedConfigurations(weight);
       for (ConfigurationURL configuration : configurations)
       {
@@ -94,7 +94,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
     * @param Deployer The Deployer object
     * @throws Exception .
     */
-   public void registerDeployer(Deployer Deployer) throws Exception
+   public void registerDeployer(final Deployer Deployer) throws Exception
    {
       synchronized (this)
       {
@@ -124,7 +124,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
       }
    }
 
-   public void unregisterDeployer(Deployer Deployer)
+   public void unregisterDeployer(final Deployer Deployer)
    {
       deployers.remove(Deployer);
       if (deployers.size() == 0)
@@ -161,7 +161,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
     * @return a set of configurationUrls
     * @throws java.io.IOException .
     */
-   private Collection<ConfigurationURL> getUnstartedConfigurations(int weight) throws IOException
+   private Collection<ConfigurationURL> getUnstartedConfigurations(final int weight) throws IOException
    {
       HashMap<String, ConfigurationURL> configurations = new HashMap<String, ConfigurationURL>();
       for (Deployer deployer : deployers)
@@ -185,27 +185,27 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
    }
 
    private Collection<ConfigurationURL> getStartedConfigurations() throws IOException
+   {
+      HashMap<String, ConfigurationURL> configurations = new HashMap<String, ConfigurationURL>();
+      for (Deployer deployer : deployers)
       {
-         HashMap<String, ConfigurationURL> configurations = new HashMap<String, ConfigurationURL>();
-         for (Deployer deployer : deployers)
+         if (deployer.getWeight() <= currentWeight)
          {
-            if (deployer.getWeight() <= currentWeight)
-            {
-               Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(deployer.getConfigFileName());
+            Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(deployer.getConfigFileName());
 
-               if (!configurations.keySet().contains(deployer.getConfigFileName()))
-               {
-                  ConfigurationURL conf = new ConfigurationURL(urls, deployer.getConfigFileName());
-                  configurations.put(deployer.getConfigFileName(), conf);
-               }
-               else
-               {
-                  configurations.get(deployer.getConfigFileName()).add(urls);
-               }
+            if (!configurations.keySet().contains(deployer.getConfigFileName()))
+            {
+               ConfigurationURL conf = new ConfigurationURL(urls, deployer.getConfigFileName());
+               configurations.put(deployer.getConfigFileName(), conf);
+            }
+            else
+            {
+               configurations.get(deployer.getConfigFileName()).add(urls);
             }
          }
-         return configurations.values();
       }
+      return configurations.values();
+   }
 
 
    /**
@@ -265,7 +265,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
     *
     * @param url the url to undeploy
     */
-   private void undeploy(URL url)
+   private void undeploy(final URL url)
    {
       deployed.remove(url);
 
@@ -288,7 +288,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
     *
     * @param url the url to redeploy
     */
-   private void redeploy(URL url)
+   private void redeploy(final URL url)
    {
       deployed.put(url, new File(url.getFile()).lastModified());
       for (Deployer Deployer : deployers)
@@ -311,7 +311,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
     * @param url the url to deploy
     * @throws Exception .
     */
-   private void deploy(URL url)
+   private void deploy(final URL url)
            throws Exception
    {
       deployed.put(url, new File(url.getFile()).lastModified());
@@ -334,7 +334,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
       private ArrayList<URL> urls = new ArrayList<URL>();
       private String configFileName;
 
-      public ConfigurationURL(Enumeration<URL> urls, String configFileName)
+      public ConfigurationURL(final Enumeration<URL> urls, final String configFileName)
       {
          while (urls.hasMoreElements())
          {
@@ -354,7 +354,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
          return configFileName;
       }
 
-      public void add(Enumeration<URL> urls)
+      public void add(final Enumeration<URL> urls)
       {
          while (urls.hasMoreElements())
          {

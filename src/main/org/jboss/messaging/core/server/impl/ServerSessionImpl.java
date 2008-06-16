@@ -162,7 +162,7 @@ public class ServerSessionImpl implements ServerSession
       this.securityStore = server.getSecurityStore();
       this.dispatcher = server.getRemotingService().getDispatcher();
       this.id = dispatcher.generateID();      
-      this.executor = server.getOrderedExecutorFactory().getOrderedExecutor();
+      this.executor = server.getExecutorFactory().getExecutor();
 
       if (!xa)
       {

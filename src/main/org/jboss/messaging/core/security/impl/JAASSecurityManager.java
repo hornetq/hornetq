@@ -21,6 +21,12 @@
    */
 package org.jboss.messaging.core.security.impl;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.naming.InitialContext;
+import javax.security.auth.Subject;
+
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.JBMSecurityManager;
@@ -28,11 +34,6 @@ import org.jboss.messaging.core.security.Role;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.RealmMapping;
 import org.jboss.security.SimplePrincipal;
-
-import javax.naming.InitialContext;
-import javax.security.auth.Subject;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * This implementation delegates to the a real JAAS Authentication Manager and will typically be used within an appserver
@@ -53,19 +54,19 @@ public class JAASSecurityManager implements JBMSecurityManager
    /**
     * the realmmapping
     */
-   RealmMapping realmMapping;
+   private RealmMapping realmMapping;
 
    /**
     * the JAAS Authentication Manager
     */
-   AuthenticationManager authenticationManager;
+   private AuthenticationManager authenticationManager;
 
    /**
     * The JNDI name of the AuthenticationManager(and RealmMapping since they are the same object).
     */
    private String securityDomainName = "java:/jaas/messaging";
 
-   public boolean validateUser(String user, String password)
+   public boolean validateUser(final String user, final String password)
    {
       SimplePrincipal principal = new SimplePrincipal(user);
 
@@ -81,7 +82,7 @@ public class JAASSecurityManager implements JBMSecurityManager
       return authenticationManager.isValid(principal, passwordChars, subject);
    }
 
-   public boolean validateUserAndRole(String user, String password, HashSet<Role> roles, CheckType checkType)
+   public boolean validateUserAndRole(final String user, final String password, final Set<Role> roles, final CheckType checkType)
    {
       SimplePrincipal principal = user == null ? null : new SimplePrincipal(user);
 
@@ -102,7 +103,7 @@ public class JAASSecurityManager implements JBMSecurityManager
       if (authenticated)
       {
          SecurityActions.pushSubjectContext(principal, passwordChars, subject);
-         Set rolePrincipals = getRolePrincipals(checkType, roles);
+         Set<SimplePrincipal> rolePrincipals = getRolePrincipals(checkType, roles);
 
          authenticated = realmMapping.doesUserHaveRole(principal, rolePrincipals);
 
@@ -115,7 +116,7 @@ public class JAASSecurityManager implements JBMSecurityManager
       return authenticated;
    }
 
-   private Set getRolePrincipals(CheckType checkType, HashSet<Role> roles)
+   private Set<SimplePrincipal> getRolePrincipals(final CheckType checkType, final Set<Role> roles)
    {
       Set<SimplePrincipal> principals = new HashSet<SimplePrincipal>();
       for (Role role : roles)
@@ -130,12 +131,12 @@ public class JAASSecurityManager implements JBMSecurityManager
       return principals;
    }
 
-   public void setRealmMapping(RealmMapping realmMapping)
+   public void setRealmMapping(final RealmMapping realmMapping)
    {
       this.realmMapping = realmMapping;
    }
 
-   public void setAuthenticationManager(AuthenticationManager authenticationManager)
+   public void setAuthenticationManager(final AuthenticationManager authenticationManager)
    {
       this.authenticationManager = authenticationManager;
    }

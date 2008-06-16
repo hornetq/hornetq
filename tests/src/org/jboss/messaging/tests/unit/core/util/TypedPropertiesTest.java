@@ -36,7 +36,7 @@ public class TypedPropertiesTest extends TestCase
    {
       assertNotNull(expected);
       assertNotNull(actual);
-      assertEquals(expected.encodeSize(), actual.encodeSize());
+      assertEquals(expected.getEncodeSize(), actual.getEncodeSize());
       assertEquals(expected.getPropertyNames(), actual.getPropertyNames());
       Iterator<SimpleString> iterator = actual.getPropertyNames().iterator();
       while (iterator.hasNext())
@@ -70,7 +70,7 @@ public class TypedPropertiesTest extends TestCase
 
       TypedProperties copy = new TypedProperties(props);
 
-      assertEquals(props.encodeSize(), copy.encodeSize());
+      assertEquals(props.getEncodeSize(), copy.getEncodeSize());
       assertEquals(props.getPropertyNames(), copy.getPropertyNames());
 
       assertTrue(copy.containsProperty(key));

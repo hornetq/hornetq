@@ -242,7 +242,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       {
          try
          {
-            availableCredits.acquire(message.getClientMessage().encodeSize());
+            availableCredits.acquire(message.getClientMessage().getEncodeSize());
          }
          catch (InterruptedException e)
          {           

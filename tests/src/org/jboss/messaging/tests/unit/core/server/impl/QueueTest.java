@@ -833,12 +833,12 @@ public class QueueTest extends UnitTestCase
       {
          MessageReference ref = generateReference(queue, i++);
                            
-         if (size + ref.getMessage().encodeSize() > maxSize)
+         if (size + ref.getMessage().getEncodeSize() > maxSize)
          {
             break;
          }
          
-         size += ref.getMessage().encodeSize();
+         size += ref.getMessage().getEncodeSize();
          
          refs.add(ref);
          

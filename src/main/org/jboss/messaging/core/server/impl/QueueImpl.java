@@ -421,7 +421,7 @@ public class QueueImpl implements Queue
    {
       deliveringCount.decrementAndGet();
       
-      sizeBytes.addAndGet(-ref.getMessage().encodeSize());
+      sizeBytes.addAndGet(-ref.getMessage().getEncodeSize());
 
 //      if (flowController != null)
 //      {
@@ -539,7 +539,7 @@ public class QueueImpl implements Queue
 
    private synchronized HandleStatus add(final MessageReference ref, final boolean first)
    {
-      if (maxSizeBytes != -1 && sizeBytes.get() + ref.getMessage().encodeSize() >= maxSizeBytes)
+      if (maxSizeBytes != -1 && sizeBytes.get() + ref.getMessage().getEncodeSize() >= maxSizeBytes)
       {
          return HandleStatus.BUSY;              
       }
@@ -548,7 +548,7 @@ public class QueueImpl implements Queue
       {
          messagesAdded.incrementAndGet();
          
-         sizeBytes.addAndGet(ref.getMessage().encodeSize());
+         sizeBytes.addAndGet(ref.getMessage().getEncodeSize());
       }
       
       if (checkAndSchedule(ref))
