@@ -37,7 +37,6 @@ import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeQueueFactory;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.ByteBufferWrapper;
 import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.TypedProperties;
 
 /**
  * 
@@ -251,29 +250,6 @@ public class MessageTest extends UnitTestCase
       messageDurable.incrementDurableRefCount();
       
       assertEquals(1, messageDurable.getDurableRefCount());                 
-   }
-
-   public void testEncodingMessageProperties()
-   {
-
-      TypedProperties properties = new TypedProperties();
-      properties.putStringProperty(new SimpleString("str"), new SimpleString("Str2"));
-      properties.putStringProperty(new SimpleString("str2"), new SimpleString("Str2"));
-      properties.putBooleanProperty(new SimpleString("str3"), true );
-      properties.putByteProperty(new SimpleString("str4"), (byte)1);
-      properties.putBytesProperty(new SimpleString("str5"), new byte[]{1,2,3,4,5});
-      properties.putShortProperty(new SimpleString("str6"),(short)1);
-      properties.putIntProperty(new SimpleString("str7"), (int)1);
-      properties.putLongProperty(new SimpleString("str8"), (long)1);
-      properties.putFloatProperty(new SimpleString("str9"),(float) 1);
-      properties.putDoubleProperty(new SimpleString("str10"), (double) 1);
-      properties.putCharProperty(new SimpleString("str11"), 'a');
-      
-      checkSizes(properties, new TypedProperties());
-      
-      properties.removeProperty(new SimpleString("str"));
-      checkSizes(properties, new TypedProperties());
-      
    }
 
    public void testEncodingMessage() throws Exception

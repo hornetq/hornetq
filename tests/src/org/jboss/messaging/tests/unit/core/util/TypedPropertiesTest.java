@@ -231,6 +231,8 @@ public class TypedPropertiesTest extends TestCase
       props.putCharProperty(randomSimpleString(), randomChar());
       props.putStringProperty(randomSimpleString(), randomSimpleString());
       props.putStringProperty(randomSimpleString(), null);
+      SimpleString keyToRemove = randomSimpleString();
+      props.putStringProperty(keyToRemove, randomSimpleString());
 
       MessagingBuffer buffer = new IoBufferWrapper(1024);
       props.encode(buffer);
@@ -243,6 +245,14 @@ public class TypedPropertiesTest extends TestCase
       decodedProps.decode(buffer);
 
       assertEqualsTypeProperties(props, decodedProps);
+      
+      buffer.flip();
+      
+      // After removing a property, you should still be able to encode the Property
+      props.removeProperty(keyToRemove);
+      props.encode(buffer);
+      
+      assertEquals(props.getEncodeSize(), buffer.position());
    }
    
    public void testEncodeDecodeEmpty() throws Exception
@@ -251,6 +261,8 @@ public class TypedPropertiesTest extends TestCase
 
       MessagingBuffer buffer = new IoBufferWrapper(1024);
       emptyProps.encode(buffer);
+      
+      assertEquals(props.getEncodeSize(), buffer.position());
 
       buffer.flip();
 
