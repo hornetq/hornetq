@@ -42,7 +42,7 @@ import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
 public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
 {
 
-   protected String journalDir = "/tmp/journal-test";
+   protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/journal-test";
    
    protected void setUp() throws Exception
    {

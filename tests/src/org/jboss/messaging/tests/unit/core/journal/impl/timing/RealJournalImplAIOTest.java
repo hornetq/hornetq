@@ -39,7 +39,7 @@ public class RealJournalImplAIOTest extends JournalImplTestUnit
    private static final Logger log = Logger.getLogger(RealJournalImplAIOTest.class);
    
    // Need to run the test over a local disk (no NFS)
-   protected String journalDir = "/tmp/journal-test";
+   protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/journal-test";
    
    protected void tearDown() throws Exception
    {

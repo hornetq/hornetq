@@ -39,7 +39,7 @@ import org.jboss.messaging.tests.util.UnitTestCase;
 public abstract class AIOTestBase extends UnitTestCase
 {
    // The AIO Test must use a local filesystem. Sometimes $HOME is on a NFS on most enterprise systems
-   protected String fileDir = "/tmp/journal-test";
+   protected String fileDir = System.getProperty("java.io.tmpdir", "/tmp") +  "/journal-test";
    protected String FILE_NAME = fileDir + "/fileUsedOnNativeTests.log";
    
    protected void setUp() throws Exception

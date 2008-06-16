@@ -47,7 +47,7 @@ public class RealAIOJournalImplTest extends JournalImplTestUnit
    private static final Logger log = Logger.getLogger(RealAIOJournalImplTest.class);
    
    // Need to run the test over a local disk (no NFS)
-   protected String journalDir = "/tmp/journal-test";
+   protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") +  "/journal-test";
      
    @Override
    protected void setUp() throws Exception
