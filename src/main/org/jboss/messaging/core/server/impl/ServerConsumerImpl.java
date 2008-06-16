@@ -29,6 +29,7 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConsumer;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -37,8 +38,6 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
-import org.jboss.messaging.util.TokenBucketLimiter;
-import org.jboss.messaging.util.TokenBucketLimiterImpl;
 
 /**
  * Concrete implementation of a ClientConsumer. 
@@ -77,17 +76,9 @@ public class ServerConsumerImpl implements ServerConsumer
    
    private final boolean autoDeleteQueue;
    
-   private final TokenBucketLimiter limiter;
-   
    private final long connectionID;   
    
-   private final ServerSession sessionEndpoint;
-
-   private final StorageManager persistenceManager;
-   
-   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
-   
-   private final PostOffice postOffice;
+   private final ServerSession session;
          
    private final Object startStopLock = new Object();
 
@@ -95,18 +86,21 @@ public class ServerConsumerImpl implements ServerConsumer
    
    private boolean started;
    
+   //We cache some of the service locally
+   private final StorageManager storageManager;
+   
+   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
+   
+   private final PostOffice postOffice;
+   
    // Constructors ---------------------------------------------------------------------------------
  
-   ServerConsumerImpl(final long id, final long clientTargetID, final Queue messageQueue, final boolean noLocal, final Filter filter,
+   ServerConsumerImpl(final ServerSession session, final long clientTargetID,
+                      final Queue messageQueue, final boolean noLocal, final Filter filter,
    		             final boolean autoDeleteQueue, final boolean enableFlowControl, final int maxRate,
-   		             final long connectionID, final ServerSession sessionEndpoint,
-					       final StorageManager persistenceManager,
-					       final HierarchicalRepository<QueueSettings> queueSettingsRepository,
-					       final PostOffice postOffice,
+   		             final long connectionID, 
 					       final boolean started)
    {
-   	this.id = id;
-   	
    	this.clientTargetID = clientTargetID;
       
       this.messageQueue = messageQueue;
@@ -117,25 +111,12 @@ public class ServerConsumerImpl implements ServerConsumer
       
       this.autoDeleteQueue = autoDeleteQueue;
       
-      if (maxRate != -1)
-      {
-      	limiter = new TokenBucketLimiterImpl(maxRate, false);
-      }
-      else
-      {
-      	limiter = null;
-      }
-
       this.connectionID = connectionID;
 
-      this.sessionEndpoint = sessionEndpoint;
+      this.session = session;
+      
+      MessagingServer server = session.getConnection().getServer();
 
-      this.persistenceManager = persistenceManager;
-      
-      this.queueSettingsRepository = queueSettingsRepository;
-      
-      this.postOffice = postOffice;
-      
       this.started = started;
       
       if (enableFlowControl)
@@ -147,6 +128,14 @@ public class ServerConsumerImpl implements ServerConsumer
       	availableCredits = null;
       }
       
+      this.storageManager = server.getStorageManager();
+      
+      this.queueSettingsRepository = server.getQueueSettingsRepository();
+      
+      this.postOffice = server.getPostOffice();
+      
+      this.id = server.getRemotingService().getDispatcher().generateID();
+            
       messageQueue.addConsumer(this);
    }
 
@@ -171,7 +160,7 @@ public class ServerConsumerImpl implements ServerConsumer
       
       if (ref.getMessage().isExpired())
       {         
-         ref.expire(persistenceManager, postOffice, queueSettingsRepository);
+         ref.expire(storageManager, postOffice, queueSettingsRepository);
          
          return HandleStatus.HANDLED;
       }
@@ -198,7 +187,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
             if (connectionID == conId)
             {	            	
-            	Transaction tx = new TransactionImpl(persistenceManager, postOffice);
+            	Transaction tx = new TransactionImpl(storageManager, postOffice);
             	
             	tx.addAcknowledgement(ref);
             	
@@ -215,7 +204,7 @@ public class ServerConsumerImpl implements ServerConsumer
                    
          try
          {            
-         	sessionEndpoint.handleDelivery(ref, this);
+         	session.handleDelivery(ref, this);
          }
          catch (Exception e)
          {
@@ -247,12 +236,12 @@ public class ServerConsumerImpl implements ServerConsumer
             
             if (messageQueue.isDurable())
             {
-               messageQueue.deleteAllReferences(persistenceManager);
+               messageQueue.deleteAllReferences(storageManager);
             }
          }
       }
       
-      sessionEndpoint.removeConsumer(this);           
+      session.removeConsumer(this);           
    }
    
    public void setStarted(final boolean started)
@@ -302,6 +291,6 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private void promptDelivery()
    {
-      sessionEndpoint.promptDelivery(messageQueue);
+      session.promptDelivery(messageQueue);
    } 
 }

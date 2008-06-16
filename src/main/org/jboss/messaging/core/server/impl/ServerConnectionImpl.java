@@ -26,22 +26,17 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
-import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.server.ConnectionManager;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.server.ServerSession;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
-import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.ConcurrentHashSet;
-import org.jboss.messaging.util.OrderedExecutorFactory;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -63,8 +58,6 @@ public class ServerConnectionImpl implements ServerConnection
 
    // Static ---------------------------------------------------------------------------------------
 
-   private static boolean trace = log.isTraceEnabled();
-
    // Attributes -----------------------------------------------------------------------------------
 
    private final long id;
@@ -76,23 +69,7 @@ public class ServerConnectionImpl implements ServerConnection
    private final long remotingClientSessionID;
    
    private final String clientAddress;
-      
-   private final PacketDispatcher dispatcher;
-   
-   private final ResourceManager resourceManager;
-   
-   private final StorageManager persistenceManager;  
-   
-   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
-      
-   private final PostOffice postOffice;
-   
-   private final SecurityStore securityStore;
-   
-   private final ConnectionManager connectionManager;
-   
-   private final OrderedExecutorFactory orderedExecutorFactory;
-
+         
    private final long createdTime;
          
    private final Set<ServerSession> sessions = new ConcurrentHashSet<ServerSession>();
@@ -100,24 +77,27 @@ public class ServerConnectionImpl implements ServerConnection
    private final Set<Queue> temporaryQueues = new ConcurrentHashSet<Queue>();
    
    private final Set<SimpleString> temporaryDestinations = new ConcurrentHashSet<SimpleString>();
+   
+   private final MessagingServer server;
       
    private volatile boolean started;
+   
+   //We cache some of the service locally
+   
+   private final PostOffice postOffice;
 
+   private final ConnectionManager connectionManager;
+
+   private final PacketDispatcher dispatcher;
 
    // Constructors ---------------------------------------------------------------------------------
       
-   public ServerConnectionImpl(final long id, final String username, final String password,
+   public ServerConnectionImpl(final MessagingServer server,
+                               final String username, final String password,
    		                      final long remotingClientSessionID,
-   		                      final String clientAddress,
-   		                      final PacketDispatcher dispatcher,
-   		                      final ResourceManager resourceManager,
-   		                      final StorageManager persistenceManager,
-   		                      final HierarchicalRepository<QueueSettings> queueSettingsRepository,
-   		                      final PostOffice postOffice, final SecurityStore securityStore,
-   		                      final ConnectionManager connectionManager,
-   		                      final OrderedExecutorFactory orderedExecutorFactory)
+   		                      final String clientAddress)
    {
-   	this.id = id;
+   	this.id = server.getRemotingService().getDispatcher().generateID();
       
    	this.username = username;
       
@@ -127,27 +107,19 @@ public class ServerConnectionImpl implements ServerConnection
 
       this.clientAddress = clientAddress;
 
-      this.dispatcher = dispatcher;
-      
-      this.resourceManager = resourceManager;
-      
-      this.persistenceManager = persistenceManager;
-      
-      this.queueSettingsRepository = queueSettingsRepository;      
-      
-      this.postOffice = postOffice;
-      
-      this.securityStore = securityStore;
-      
-      this.connectionManager = connectionManager;
-      
-      this.orderedExecutorFactory = orderedExecutorFactory;
-      
       started = false;
       
       createdTime = System.currentTimeMillis();
 
-      connectionManager.registerConnection(remotingClientSessionID, this);
+      server.getConnectionManager().registerConnection(remotingClientSessionID, this);
+      
+      this.server = server;
+      
+      this.dispatcher = server.getRemotingService().getDispatcher();
+      
+      this.postOffice = server.getPostOffice();
+      
+      this.connectionManager = server.getConnectionManager();
    }
 
    // ServerConnection implementation ------------------------------------------------------------
@@ -157,15 +129,17 @@ public class ServerConnectionImpl implements ServerConnection
    	return id;
    }
    
+   public MessagingServer getServer()
+   {
+      return server;
+   }
+   
    public ConnectionCreateSessionResponseMessage createSession(final boolean xa, final boolean autoCommitSends,
    		                                                      final boolean autoCommitAcks,
                                                                final PacketReturner sender) throws Exception
-   {           
-      long id = dispatcher.generateID();
+   {            
       ServerSession session =
-         new ServerSessionImpl(id, autoCommitSends, autoCommitAcks, xa, this, resourceManager,
-         		sender, dispatcher, persistenceManager, queueSettingsRepository, postOffice, securityStore,
-         		orderedExecutorFactory.getOrderedExecutor());
+         new ServerSessionImpl(this, autoCommitSends, autoCommitAcks, xa, sender);
 
       sessions.add(session);
       
@@ -223,11 +197,6 @@ public class ServerConnectionImpl implements ServerConnection
       connectionManager.unregisterConnection(remotingClientSessionID, this);
 
       dispatcher.unregister(id);
-   }
-   
-   public SecurityStore getSecurityStore()
-   {
-      return securityStore;
    }
    
    public String getUsername()

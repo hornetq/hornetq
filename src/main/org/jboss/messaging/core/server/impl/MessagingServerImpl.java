@@ -21,6 +21,13 @@
   */
 package org.jboss.messaging.core.server.impl;
 
+import java.util.HashSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.deployers.Deployer;
@@ -59,9 +66,6 @@ import org.jboss.messaging.core.transaction.impl.ResourceManagerImpl;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 import org.jboss.messaging.util.VersionLoader;
-
-import java.util.HashSet;
-import java.util.concurrent.*;
 
 
 /**
@@ -346,14 +350,9 @@ public class MessagingServerImpl implements MessagingServer
 
       securityStore.authenticate(username, password);
 
-      long id = remotingService.getDispatcher().generateID();
-
       final ServerConnection connection =
-              new ServerConnectionImpl(id, username, password,
-                      sender.getSessionID(), clientAddress,
-                      remotingService.getDispatcher(), resourceManager, storageManager,
-                      queueSettingsRepository,
-                      postOffice, securityStore, connectionManager, orderedExecutorFactory);
+              new ServerConnectionImpl(this, username, password,
+                      sender.getSessionID(), clientAddress);
 
       remotingService.getDispatcher().register(new ServerConnectionPacketHandler(connection));
 
@@ -365,6 +364,11 @@ public class MessagingServerImpl implements MessagingServer
       return orderedExecutorFactory;
    }
 
+   public ResourceManager getResourceManager()
+   {
+      return resourceManager;
+   }
+   
    // Public ---------------------------------------------------------------------------------------
 
    // Package protected ----------------------------------------------------------------------------

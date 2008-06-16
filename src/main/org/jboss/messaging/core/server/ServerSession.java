@@ -47,6 +47,8 @@ public interface ServerSession
 {
 	long getID();
 	
+	ServerConnection getConnection();
+	
 	void removeBrowser(ServerBrowserImpl browser) throws Exception;
 	
 	void removeConsumer(ServerConsumer consumer) throws Exception;

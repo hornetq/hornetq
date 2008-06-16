@@ -56,6 +56,7 @@ import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.server.Delivery;
 import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.server.ServerConsumer;
@@ -105,20 +106,8 @@ public class ServerSessionImpl implements ServerSession
    private final boolean autoCommitAcks;
 
    private final ServerConnection connection;
-
-   private final ResourceManager resourceManager;
-
+  
    private final PacketReturner sender;
-
-   private final PacketDispatcher dispatcher;
-
-   private final StorageManager persistenceManager;
-
-   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
-
-   private final PostOffice postOffice;
-
-   private final SecurityStore securityStore;
 
    private final Set<ServerConsumer> consumers = new ConcurrentHashSet<ServerConsumer>();
 
@@ -133,51 +122,51 @@ public class ServerSessionImpl implements ServerSession
    private final Executor executor;
 
    private Transaction tx;
+   
+   //We cache some of the services locally
+   
+   private final StorageManager storageManager;
 
+   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
+
+   private final ResourceManager resourceManager;
+   
+   private final PostOffice postOffice;
+
+   private final SecurityStore securityStore;
+   
+   private final PacketDispatcher dispatcher;
+   
    // Constructors
    // ---------------------------------------------------------------------------------
 
-   public ServerSessionImpl(final long id, final boolean autoCommitSends,
+   public ServerSessionImpl(final ServerConnection connection, final boolean autoCommitSends,
                             final boolean autoCommitAcks,
-                            final boolean xa, final ServerConnection connection,
-                            final ResourceManager resourceManager, final PacketReturner sender,
-                            final PacketDispatcher dispatcher, final StorageManager persistenceManager,
-                            final HierarchicalRepository<QueueSettings> queueSettingsRepository,
-                            final PostOffice postOffice, final SecurityStore securityStore,
-                            final Executor executor) throws Exception
+                            final boolean xa, 
+                            final PacketReturner sender) throws Exception
    {
-      this.id = id;
-
       this.autoCommitSends = autoCommitSends;
 
       this.autoCommitAcks = autoCommitAcks;
+      
+      this.connection = connection;
+      
+      this.sender = sender;
+      
+      MessagingServer server = connection.getServer();
+            
+      this.storageManager = server.getStorageManager();
+      this.postOffice = server.getPostOffice();
+      this.queueSettingsRepository = server.getQueueSettingsRepository();
+      this.resourceManager = server.getResourceManager();
+      this.securityStore = server.getSecurityStore();
+      this.dispatcher = server.getRemotingService().getDispatcher();
+      this.id = dispatcher.generateID();      
+      this.executor = server.getOrderedExecutorFactory().getOrderedExecutor();
 
       if (!xa)
       {
-         tx = new TransactionImpl(persistenceManager, postOffice);
-      }
-
-      this.connection = connection;
-
-      this.resourceManager = resourceManager;
-
-      this.sender = sender;
-
-      this.dispatcher = dispatcher;
-
-      this.persistenceManager = persistenceManager;
-
-      this.queueSettingsRepository = queueSettingsRepository;
-
-      this.postOffice = postOffice;
-
-      this.securityStore = securityStore;
-      
-      this.executor = executor;
-
-      if (log.isTraceEnabled())
-      {
-         log.trace("created server session endpoint for " + sender.getRemoteAddress());
+         tx = new TransactionImpl(storageManager, postOffice);
       }
    }
 
@@ -300,6 +289,7 @@ public class ServerSessionImpl implements ServerSession
          if (!autoCommitSends)
          {
             MessagingException messagingException;
+            
             if (e instanceof MessagingException)
             {
                messagingException = (MessagingException) e;
@@ -308,12 +298,13 @@ public class ServerSessionImpl implements ServerSession
             {
                messagingException = new MessagingException(MessagingException.INTERNAL_ERROR, e.getMessage());
             }
+            
             tx.markAsRollbackOnly(messagingException);
          }
          throw e;         
       }
 
-      msg.setMessageID(persistenceManager.generateMessageID());
+      msg.setMessageID(storageManager.generateMessageID());
       
       // This allows the no-local consumers to filter out the messages that come
       // from the same connection.
@@ -326,7 +317,7 @@ public class ServerSessionImpl implements ServerSession
 
          if (msg.getDurableRefCount() != 0)
          {
-            persistenceManager.storeMessage(msg);
+            storageManager.storeMessage(msg);
          }
          
          for (MessageReference ref : refs)
@@ -433,7 +424,7 @@ public class ServerSessionImpl implements ServerSession
       {
          // Might be null if XA
 
-         tx = new TransactionImpl(persistenceManager, postOffice);
+         tx = new TransactionImpl(storageManager, postOffice);
       }
       
       //We need to lock all the queues while we're rolling back, to prevent any deliveries occurring during this
@@ -475,7 +466,7 @@ public class ServerSessionImpl implements ServerSession
          }
       }
       
-      tx = new TransactionImpl(persistenceManager, postOffice);
+      tx = new TransactionImpl(storageManager, postOffice);
    }
 
    public void cancel(final long deliveryID, final boolean expired) throws Exception
@@ -498,7 +489,7 @@ public class ServerSessionImpl implements ServerSession
          
          try
          {
-            Transaction cancelTx = new TransactionImpl(persistenceManager, postOffice);
+            Transaction cancelTx = new TransactionImpl(storageManager, postOffice);
    
             for (Delivery del : deliveries)
             {
@@ -534,7 +525,7 @@ public class ServerSessionImpl implements ServerSession
 
             if (delivery.getDeliveryID() == deliveryID)
             {
-               delivery.getReference().expire(persistenceManager, postOffice, queueSettingsRepository);
+               delivery.getReference().expire(storageManager, postOffice, queueSettingsRepository);
 
                iter.remove();
 
@@ -556,7 +547,7 @@ public class ServerSessionImpl implements ServerSession
       }
       finally
       {
-         tx = new TransactionImpl(persistenceManager, postOffice);
+         tx = new TransactionImpl(storageManager, postOffice);
       }
 
 
@@ -566,7 +557,7 @@ public class ServerSessionImpl implements ServerSession
    {
       if (tx != null)
       {
-         final String msg = "Cannot commit, session is currently doing work in a transaction "
+         final String msg = "Cannot commit, session is currently doing work in transaction "
                  + tx.getXid();
 
          return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
@@ -806,7 +797,7 @@ public class ServerSessionImpl implements ServerSession
          return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
       }
 
-      tx = new TransactionImpl(xid, persistenceManager, postOffice);
+      tx = new TransactionImpl(xid, storageManager, postOffice);
 
       boolean added = resourceManager.putTransaction(xid, tx);
 
@@ -958,7 +949,7 @@ public class ServerSessionImpl implements ServerSession
 
       if (queue.isDurable())
       {
-         binding.getQueue().deleteAllReferences(persistenceManager);
+         binding.getQueue().deleteAllReferences(storageManager);
       }
 
       if (queue.isTemporary())
@@ -997,11 +988,10 @@ public class ServerSessionImpl implements ServerSession
 
       maxRate = queueMaxRate != null ? queueMaxRate : maxRate;
 
-      long id = dispatcher.generateID();
-
       ServerConsumer consumer =
-              new ServerConsumerImpl(id, clientTargetID, binding.getQueue(), noLocal, filter, autoDeleteQueue, windowSize != -1, maxRate, connection.getID(),
-                      this, persistenceManager, queueSettingsRepository, postOffice, connection.isStarted());
+              new ServerConsumerImpl(this, clientTargetID, binding.getQueue(), noLocal, filter,
+                                     autoDeleteQueue, windowSize != -1, maxRate, connection.getID(),
+                                     connection.isStarted());
 
       dispatcher.register(new ServerConsumerPacketHandler(consumer));
 
@@ -1080,9 +1070,7 @@ public class ServerSessionImpl implements ServerSession
 
       securityStore.check(binding.getAddress(), CheckType.READ, connection);
 
-      long id = dispatcher.generateID();
-
-      ServerBrowserImpl browser = new ServerBrowserImpl(id, this, binding.getQueue(), filterString == null ? null : filterString.toString());
+      ServerBrowserImpl browser = new ServerBrowserImpl(this, binding.getQueue(), filterString == null ? null : filterString.toString());
 
       browsers.add(browser);
 
@@ -1112,8 +1100,6 @@ public class ServerSessionImpl implements ServerSession
    		flowController = windowSize == -1 ? null : postOffice.getFlowController(address);
    	}
 
-      long id = dispatcher.generateID();
-      
       final int windowToUse = flowController == null ? -1 : windowSize;
       
       //Server window size is 0.75 client window size for producer flow control (other way round to consumer flow control)
@@ -1121,7 +1107,7 @@ public class ServerSessionImpl implements ServerSession
       final int serverWindowSize = windowToUse == -1 ? -1 : (int)(windowToUse * 0.75);            
       
       ServerProducerImpl producer 
-         = new ServerProducerImpl(id, clientTargetID, this, address, sender, flowController, serverWindowSize);
+         = new ServerProducerImpl(this, clientTargetID, address, sender, flowController, serverWindowSize);
 
       producers.add(producer);
 
@@ -1155,11 +1141,11 @@ public class ServerSessionImpl implements ServerSession
 
          if (count == 0)
          {
-            persistenceManager.storeDelete(message.getMessageID());
+            storageManager.storeDelete(message.getMessageID());
          }
          else
          {
-            persistenceManager.storeAcknowledge(queue.getPersistenceID(), message.getMessageID());
+            storageManager.storeAcknowledge(queue.getPersistenceID(), message.getMessageID());
          }
       }
 

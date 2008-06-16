@@ -40,6 +40,8 @@ public interface ServerConnection
 {
 	long getID();
 	
+	MessagingServer getServer();
+	
 	ConnectionCreateSessionResponseMessage createSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks,
                                                         PacketReturner sender) throws Exception;
 	
@@ -48,8 +50,6 @@ public interface ServerConnection
 	void stop() throws Exception;
 	
 	void close() throws Exception;
-	
-	SecurityStore getSecurityStore();
 	
 	String getUsername();
 	

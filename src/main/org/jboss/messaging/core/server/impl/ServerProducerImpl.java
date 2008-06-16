@@ -64,13 +64,13 @@ public class ServerProducerImpl implements ServerProducer
      	
 	// Constructors ----------------------------------------------------------------
 	
-	public ServerProducerImpl(final long id, final long clientTargetID, final ServerSession session,
+	public ServerProducerImpl(final ServerSession session, final long clientTargetID,
 	                          final SimpleString address, 
 			                    final PacketReturner sender,
 			                    final FlowController flowController,
 			                    final int windowSize) throws Exception
 	{
-		this.id = id;
+		this.id = session.getConnection().getServer().getRemotingService().getDispatcher().generateID();
 		
 		this.clientTargetID = clientTargetID;
       
@@ -97,7 +97,6 @@ public class ServerProducerImpl implements ServerProducer
 		session.removeProducer(this);
 	}
 	
-
 	public void send(final ServerMessage message) throws Exception
 	{		
 		if (this.address != null)

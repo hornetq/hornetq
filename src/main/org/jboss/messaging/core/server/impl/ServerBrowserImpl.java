@@ -65,8 +65,6 @@ public class ServerBrowserImpl
 
    // Static ---------------------------------------------------------------------------------------
 
-   private static boolean trace = log.isTraceEnabled();
-
    // Attributes -----------------------------------------------------------------------------------
 
    private final long id;
@@ -77,11 +75,12 @@ public class ServerBrowserImpl
 
    // Constructors ---------------------------------------------------------------------------------
 
-   ServerBrowserImpl(final long id, final ServerSession session,
-                     final Queue destination, final String messageFilter) throws Exception
+   public ServerBrowserImpl(final ServerSession session,
+                            final Queue destination, final String messageFilter) throws Exception
    {     
       this.session = session;
-      this.id = id;
+      
+      this.id = session.getConnection().getServer().getRemotingService().getDispatcher().generateID();
       
       this.destination = destination;
 
