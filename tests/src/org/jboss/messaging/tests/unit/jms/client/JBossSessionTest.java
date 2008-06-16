@@ -45,6 +45,7 @@ import javax.jms.Topic;
 import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 import javax.jms.TransactionInProgressException;
+import javax.transaction.xa.XAResource;
 
 import junit.framework.TestCase;
 
@@ -1867,6 +1868,52 @@ public class JBossSessionTest extends TestCase
       } catch (IllegalStateException e)
       {
       }
+   }
+   
+   public void testGetXAResource() throws Exception
+   {
+      expect(mockClientSession.getXAResource()).andReturn(mockClientSession);
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossSession session = new JBossSession(connection, false, true,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_QUEUE_SESSION);
+
+      XAResource xares = session.getXAResource();
+      assertNotNull(xares);
+      assertSame(mockClientSession, xares);
+   }
+   
+   public void testGetQueueSession() throws Exception
+   {
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossSession session = new JBossSession(connection, false, true,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_QUEUE_SESSION);
+
+      QueueSession queueSess = session.getQueueSession();
+      assertNotNull(queueSess);
+      assertSame(session, queueSess);
+   }
+   
+   public void testGetCoreSession() throws Exception
+   {
+      replay(mockClientConn, mockClientSession);
+
+      JBossConnection connection = new JBossConnection(mockClientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossSession session = new JBossSession(connection, false, true,
+            Session.AUTO_ACKNOWLEDGE, mockClientSession,
+            JBossSession.TYPE_QUEUE_SESSION);
+
+      ClientSession clientSession = session.getCoreSession();
+      assertNotNull(clientSession);
+      assertSame(mockClientSession, clientSession);
    }
    
    public void testUnsubscribe() throws Exception
