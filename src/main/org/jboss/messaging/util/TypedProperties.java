@@ -57,6 +57,7 @@ import org.jboss.messaging.core.logging.Logger;
  * TODO - should have typed property getters and do conversions herein
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
 public class TypedProperties implements EncodingSupport

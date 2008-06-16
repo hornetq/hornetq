@@ -234,6 +234,8 @@ public class TypedPropertiesTest extends TestCase
 
       MessagingBuffer buffer = new IoBufferWrapper(1024);
       props.encode(buffer);
+      
+      assertEquals(props.getEncodeSize(), buffer.position());
 
       buffer.flip();
 
