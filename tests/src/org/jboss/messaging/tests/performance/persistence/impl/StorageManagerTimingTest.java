@@ -173,7 +173,7 @@ public class StorageManagerTimingTest extends UnitTestCase
                   final SimpleString address = new SimpleString("Destination " + i);
 
                   
-                  ServerMessageImpl implMsg = new ServerMessageImpl(/* type */ 1, /* durable */ true, /* expiration */ 0,
+                  ServerMessageImpl implMsg = new ServerMessageImpl(/* type */ (byte)1, /* durable */ true, /* expiration */ 0,
                         /* timestamp */ 0, /* priority */(byte)0);
                   
                   implMsg.putStringProperty(new SimpleString("Key"), new SimpleString("This String is worthless!"));

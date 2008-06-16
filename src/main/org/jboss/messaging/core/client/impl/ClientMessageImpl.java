@@ -52,20 +52,20 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessage
    /*
     * Construct messages before sending
     */
-   public ClientMessageImpl(final int type, final boolean durable, final long expiration,
+   public ClientMessageImpl(final byte type, final boolean durable, final long expiration,
                             final long timestamp, final byte priority)
    {
       super(type, durable, expiration, timestamp, priority);
    }
    
-   public ClientMessageImpl(final int type, final boolean durable)
+   public ClientMessageImpl(final byte type, final boolean durable)
    {
       super(type, durable, 0, System.currentTimeMillis(), (byte)4);
    }
    
    public ClientMessageImpl(final boolean durable)
    {
-      super(0, durable, 0, System.currentTimeMillis(), (byte)4);
+      super((byte) 0, durable, 0, System.currentTimeMillis(), (byte)4);
    }
    
    public void setDeliveryCount(final int deliveryCount)

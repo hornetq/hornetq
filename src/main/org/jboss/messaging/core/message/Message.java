@@ -45,7 +45,7 @@ public interface Message extends EncodingSupport
    
    void setDestination(SimpleString destination);
    
-   int getType();   
+   byte getType();   
       
    boolean isDurable();
    

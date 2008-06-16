@@ -75,7 +75,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    /**
     * Only used in testing
     */
-   public ServerMessageImpl(final int type, final boolean durable, final long expiration,
+   public ServerMessageImpl(final byte type, final boolean durable, final long expiration,
                             final long timestamp, final byte priority)
    {
       super(type, durable, expiration, timestamp, priority);

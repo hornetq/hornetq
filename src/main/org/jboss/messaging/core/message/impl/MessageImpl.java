@@ -61,7 +61,7 @@ public abstract class MessageImpl implements Message
 
    private SimpleString destination;
    
-   private int type;
+   private byte type;
    
    protected boolean durable;
 
@@ -84,7 +84,7 @@ public abstract class MessageImpl implements Message
       this.properties = new TypedProperties();
    }
    
-   protected MessageImpl(final int type, final boolean durable, final long expiration,
+   protected MessageImpl(final byte type, final boolean durable, final long expiration,
                       final long timestamp, final byte priority)
    {
       this();
@@ -116,7 +116,7 @@ public abstract class MessageImpl implements Message
    public void encode(MessagingBuffer buff)
    {
       buff.putSimpleString(destination);
-      buff.putInt(type);
+      buff.putByte(type);
       buff.putBoolean(durable);
       buff.putLong(expiration);
       buff.putLong(timestamp);
@@ -129,7 +129,7 @@ public abstract class MessageImpl implements Message
    public int encodeSize()
    {
       return /* Destination */ SimpleString.sizeofString(destination) + 
-      /* Type */ SIZE_INT + 
+      /* Type */ SIZE_BYTE + 
       /* Durable */ SIZE_BOOLEAN + 
       /* Expiration */ SIZE_LONG + 
       /* Timestamp */ SIZE_LONG + 
@@ -141,7 +141,7 @@ public abstract class MessageImpl implements Message
    public void decode(final MessagingBuffer buffer)
    {
       destination = buffer.getSimpleString();
-      type = buffer.getInt();
+      type = buffer.getByte();
       durable = buffer.getBoolean();
       expiration = buffer.getLong();
       timestamp = buffer.getLong();
@@ -167,7 +167,7 @@ public abstract class MessageImpl implements Message
       this.destination = destination;
    }
    
-   public int getType()
+   public byte getType()
    {
       return type;
    }

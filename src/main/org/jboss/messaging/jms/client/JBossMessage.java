@@ -86,7 +86,7 @@ public class JBossMessage implements javax.jms.Message
    //Used when bridging a message
    public static final String JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST = "JBM_BRIDGE_MSG_ID_LIST";
    
-   private static final int TYPE = 0;
+   public static final byte TYPE = 0;
    
    // Static --------------------------------------------------------
 
@@ -173,7 +173,7 @@ public class JBossMessage implements javax.jms.Message
    /*
     * Create a new message prior to sending
     */
-   protected JBossMessage(final int type)
+   protected JBossMessage(final byte type)
    {
       message = new ClientMessageImpl(type, true, 0, System.currentTimeMillis(), (byte)4);
       
@@ -208,7 +208,7 @@ public class JBossMessage implements javax.jms.Message
       this(foreign, JBossMessage.TYPE);
    }
       
-   protected JBossMessage(final Message foreign, final int type) throws JMSException
+   protected JBossMessage(final Message foreign, final byte type) throws JMSException
    {
       this(type);
 

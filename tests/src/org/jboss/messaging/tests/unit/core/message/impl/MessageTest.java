@@ -57,7 +57,7 @@ public class MessageTest extends UnitTestCase
    public void testCreateMessageBeforeSending()
    {
       long id = 56465;
-      int type = 655;
+      byte type = (byte) 655;
       boolean reliable = true;
       long expiration = 6712671;
       long timestamp = 82798172;
@@ -285,7 +285,7 @@ public class MessageTest extends UnitTestCase
       
       SimpleString address = new SimpleString("Simple Destination ");
       
-      ServerMessageImpl implMsg = new ServerMessageImpl(/* type */ 1, /* durable */ true, /* expiration */ 0,
+      ServerMessageImpl implMsg = new ServerMessageImpl(/* type */ (byte)1, /* durable */ true, /* expiration */ 0,
             /* timestamp */ 0, /* priority */(byte)0);
       
       implMsg.setDestination(address);

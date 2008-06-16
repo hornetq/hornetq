@@ -199,7 +199,7 @@ public class UnitTestCase extends TestCase
          
    protected ServerMessage generateMessage(long id)
    {
-      ServerMessage message = new ServerMessageImpl(0, true, 0, System.currentTimeMillis(), (byte)4);
+      ServerMessage message = new ServerMessageImpl((byte)0, true, 0, System.currentTimeMillis(), (byte)4);
       
       message.setMessageID(id);
       
