@@ -106,6 +106,8 @@ public class MinaAcceptorTest extends UnitTestCase
          MinaConnector minaConnector = new MinaConnector(conf.getLocation(), connectionParams, new PacketDispatcherImpl(null));
          minaConnector.connect();
          minaConnector.getDispatcher().dispatch(new Ping(), null);
+         // TODO investigate why we need to wait a little bit before disconnecting to avoid a SSL exception
+         Thread.sleep(500);
          minaConnector.disconnect();
          EasyMock.verify(remotingService, cleanUpNotifier);
       }
