@@ -1,3 +1,24 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2005, JBoss Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.messaging.tests.performance.persistence.fakes;
 
 import java.util.List;
@@ -16,18 +37,22 @@ import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeQueueFactory;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.SimpleString;
 
-
-
-/** Maybe this Fake should be moved to postoffice.fakes, but since this 
- *  Fake only has the basic needed for StorageManagerTest, I have left it here for now */
+/**
+ * 
+ * A FakePostOffice
+ * 
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ *
+ */
 public class FakePostOffice implements PostOffice
 {
-
-   ConcurrentHashMap<SimpleString, Binding> bindings = new ConcurrentHashMap<SimpleString, Binding>();
+   private ConcurrentHashMap<SimpleString, Binding> bindings = new ConcurrentHashMap<SimpleString, Binding>();
    
-   QueueFactory queueFactory = new FakeQueueFactory();
+   private QueueFactory queueFactory = new FakeQueueFactory();
    
-   ConcurrentHashSet<SimpleString> addresses = new ConcurrentHashSet<SimpleString>();
+   private ConcurrentHashSet<SimpleString> addresses = new ConcurrentHashSet<SimpleString>();
+   
+   private volatile boolean started;
    
    public Binding addBinding(SimpleString address, SimpleString queueName,
          Filter filter, boolean durable, boolean temporary) throws Exception
@@ -89,14 +114,17 @@ public class FakePostOffice implements PostOffice
 
    public void start() throws Exception
    {
-      // TODO Auto-generated method stub
-      
+      started = true;
    }
 
    public void stop() throws Exception
    {
-      // TODO Auto-generated method stub
-      
+      started = false;
+   }
+   
+   public boolean isStarted()
+   {
+      return started;
    }
 
    public List<org.jboss.messaging.core.server.MessageReference> route(

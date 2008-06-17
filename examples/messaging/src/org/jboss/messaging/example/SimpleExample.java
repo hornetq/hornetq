@@ -42,8 +42,9 @@ import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
+import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
 
@@ -56,7 +57,7 @@ public class SimpleExample
 {
    public static void main(final String[] args) throws Exception
    {
-      MessagingServer messagingServer = null;
+      MessagingService messagingService = null;
       ClientConnection clientConnection = null;
 
       try
@@ -65,28 +66,14 @@ public class SimpleExample
          ConfigurationImpl configuration = new ConfigurationImpl();
          configuration.setTransport(TransportType.TCP);
          configuration.setHost("localhost");
-         messagingServer = new MessagingServerImpl(configuration);
-         //lets use our own security manager, we could use the default if needed but we would need to make sure that
-         // jbm-security.xml and queues.xml are in the classpath
-         messagingServer.setSecurityManager(new JBMSecurityManager()
-         {
-            public boolean validateUser(String user, String password)
-            {
-               return true;
-            }
-
-            public boolean validateUserAndRole(String user, String password, Set<Role> roles, CheckType checkType)
-            {
-               return true;
-            }
-         });
+         messagingService = MessagingServiceImpl.newNullStorageMessagingServer(configuration);
          //start the server
-         messagingServer.start();
+         messagingService.start();
          //add a new binding
          
          SimpleString atestq = new SimpleString("atestq");
          
-         messagingServer.getPostOffice().addBinding(atestq, atestq, null, false, false);
+         messagingService.getServer().getPostOffice().addBinding(atestq, atestq, null, false, false);
 
          //then we create a client as normal
          Location location = new LocationImpl(TransportType.TCP, "localhost", 5400);
@@ -122,11 +109,11 @@ public class SimpleExample
                //
             }
          }
-         if (messagingServer != null && messagingServer.isStarted())
+         if (messagingService != null && messagingService.isStarted())
          {
             try
             {
-               messagingServer.stop();
+               messagingService.stop();
             }
             catch (Exception e1)
             {

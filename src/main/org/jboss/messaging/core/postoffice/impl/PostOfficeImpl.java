@@ -73,6 +73,8 @@ public class PostOfficeImpl implements PostOffice
    private final boolean checkAllowable;
    
    private final StorageManager storageManager;
+   
+   private volatile boolean started;
     
    public PostOfficeImpl(final StorageManager storageManager,
    		                final QueueFactory queueFactory, final boolean checkAllowable)
@@ -89,6 +91,8 @@ public class PostOfficeImpl implements PostOffice
    public void start() throws Exception
    {
       loadBindings();
+      
+      started = true;
    }
 
    public void stop() throws Exception
@@ -96,6 +100,13 @@ public class PostOfficeImpl implements PostOffice
       mappings.clear();
       
       destinations.clear();
+      
+      started = false;
+   }
+   
+   public boolean isStarted()
+   {
+      return started;
    }
    
    // PostOffice implementation -----------------------------------------------

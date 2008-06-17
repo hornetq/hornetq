@@ -35,7 +35,7 @@ public class RemotingServiceImpl implements RemotingService, CleanUpNotifier
 
    // Attributes ----------------------------------------------------
 
-   private boolean started = false;
+   private volatile boolean started = false;
 
    private Configuration config;
 
@@ -132,6 +132,11 @@ public class RemotingServiceImpl implements RemotingService, CleanUpNotifier
       ConnectorRegistryFactory.getRegistry().unregister(config.getLocation());
 
       started = false;
+   }
+   
+   public boolean isStarted()
+   {
+      return started;
    }
 
    public PacketDispatcher getDispatcher()

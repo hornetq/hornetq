@@ -111,6 +111,11 @@ public class SimpleMemoryManager implements MemoryManager
       }
    }
    
+   public synchronized boolean isStarted()
+   {
+      return started;
+   }
+   
    private class MemoryRunnable implements Runnable
    {
       public void run()

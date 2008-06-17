@@ -29,7 +29,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.core.config.impl.FileConfiguration;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager;
 import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
 import org.jboss.messaging.core.server.JournalType;
@@ -41,7 +40,6 @@ import org.jboss.messaging.util.SimpleString;
 
 public class StorageManagerTimingTest extends UnitTestCase
 {
-
    private static final Logger log = Logger.getLogger(StorageManagerTimingTest.class);
    
    protected void tearDown() throws Exception
@@ -49,7 +47,6 @@ public class StorageManagerTimingTest extends UnitTestCase
       super.tearDown();
       assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
    }
-
 
    public void testAIO() throws Exception
    {
@@ -107,8 +104,7 @@ public class StorageManagerTimingTest extends UnitTestCase
       rates = internalTestStorage(JournalType.NIO, 5000, 1, 5);
 
       printRates("Rate of NIO, 5000 inserts / commit on every insert", rates);
-      
-
+     
    }
 
    public double[] internalTestStorage(final JournalType journalType, 
@@ -216,8 +212,7 @@ public class StorageManagerTimingTest extends UnitTestCase
       try
       {
          LocalThread[] threads = new LocalThread[numberOfThreads];
-         
-   
+            
          for (int i = 0; i < numberOfThreads; i++)
          {
             threads[i] = new LocalThread(i);
@@ -256,12 +251,12 @@ public class StorageManagerTimingTest extends UnitTestCase
       }
       
    }
-
    
    private void printRates(String msg, double rate)
    {
       printRates(msg, new double[] { rate });
    }
+      
    private void printRates(String msg, double[] rates)
    {
       double rate = 0;
@@ -283,6 +278,4 @@ public class StorageManagerTimingTest extends UnitTestCase
       log.info( " Total rate     : = " + totalRate + " inserts/sec (including commits)");
       log.info("*************************************************************************");
    }
-   
-   
 }

@@ -80,7 +80,7 @@
          </parameter>
       </constructor>
    </bean>
-
+   
    <bean name="JMSServerManager" class="org.jboss.messaging.jms.server.impl.JMSServerManagerImpl">
       <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.messaging:service=JMSServerManager",exposedInterface=org.jboss.messaging.jms.server.JMSServerManager.class)</annotation>
       <property name="messagingServerManagement">

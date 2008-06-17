@@ -21,18 +21,24 @@
  */
 package org.jboss.messaging.tests.integration.core.remoting.impl;
 
+import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import junit.framework.TestCase;
-import org.jboss.messaging.core.client.*;
+
+import org.jboss.messaging.core.client.ClientConnection;
+import org.jboss.messaging.core.client.ClientConnectionFactory;
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import org.jboss.messaging.core.server.ConnectionManager;
-import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.impl.MessagingServerImpl;
+import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.tests.util.SpawnedVMSupport;
@@ -60,7 +66,7 @@ public class ClientCrashTest extends TestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer server;
+   private MessagingService messagingService;
    private ClientConnectionFactory cf;
 
    // Constructors --------------------------------------------------
@@ -158,8 +164,8 @@ public class ClientCrashTest extends TestCase
       config.getConnectionParams().setPingInterval(2000);
       config.getConnectionParams().setPingTimeout(1000);
       config.setSecurityEnabled(false);
-      server = new MessagingServerImpl(config);
-      server.start();
+      messagingService = MessagingServiceImpl.newNullStorageMessagingServer(config);
+      messagingService.start();
 
       cf = new ClientConnectionFactoryImpl(new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_PORT));
    }
@@ -167,7 +173,7 @@ public class ClientCrashTest extends TestCase
    @Override
    protected void tearDown() throws Exception
    {
-      server.stop();
+      messagingService.stop();
 
       super.tearDown();
    }
@@ -179,7 +185,7 @@ public class ClientCrashTest extends TestCase
    private void assertActiveConnections(int expectedActiveConnections)
            throws Exception
    {
-      ConnectionManager cm = server.getConnectionManager();
+      ConnectionManager cm = messagingService.getServer().getConnectionManager();
       assertEquals(expectedActiveConnections, cm.getActiveConnections().size());
    }
 

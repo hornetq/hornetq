@@ -7,8 +7,17 @@
 
 package org.jboss.messaging.tests.integration.core.remoting.impl;
 
+import java.util.UUID;
+
 import junit.framework.TestCase;
-import org.jboss.messaging.core.client.*;
+
+import org.jboss.messaging.core.client.ClientConnection;
+import org.jboss.messaging.core.client.ClientConnectionFactory;
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
@@ -16,17 +25,16 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.remoting.TransportType;
-import org.jboss.messaging.core.server.impl.MessagingServerImpl;
+import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
-
-import java.util.UUID;
 
 public class PacketFilterTest  extends TestCase
 {
    Logger log = Logger.getLogger(PacketFilterTest.class);
 
-   private MessagingServerImpl server;
+   private MessagingService messagingService;
    
    private static final SimpleString QUEUE1 = new SimpleString("queue1");
 
@@ -42,16 +50,16 @@ public class PacketFilterTest  extends TestCase
       config.setTransport(TransportType.TCP);
       config.setHost("localhost");
       config.setSecurityEnabled(false);
-      server = new MessagingServerImpl(config);
-      server.start();
+      messagingService = MessagingServiceImpl.newNullStorageMessagingServer(config);
+      messagingService.start();
    }
 
    protected void tearDown() throws Exception
    {
-      if(server != null)
+      if (messagingService != null)
       {
-         server.stop();
-         server = null;
+         messagingService.stop();
+         messagingService = null;
       }
    }
 
@@ -69,7 +77,7 @@ public class PacketFilterTest  extends TestCase
          
          // Deploy using the API
          interceptorA = new DummyInterceptor();
-         server.getRemotingService().addInterceptor(interceptorA);
+         messagingService.getServer().getRemotingService().addInterceptor(interceptorA);
          
          
          interceptorA.sendException=true;
@@ -97,7 +105,7 @@ public class PacketFilterTest  extends TestCase
          interceptorA.clearCounter();
          DummyInterceptorB.clearCounter();
          interceptorB = new DummyInterceptorB();
-         server.getRemotingService().addInterceptor(interceptorB);
+         messagingService.getServer().getRemotingService().addInterceptor(interceptorB);
          conn = cf.createConnection();
          conn.createClientSession(false, true, true, -1, false, false);
          conn.close();
@@ -109,7 +117,7 @@ public class PacketFilterTest  extends TestCase
          interceptorA.clearCounter();
          DummyInterceptorB.clearCounter();
    
-         server.getRemotingService().removeInterceptor(interceptorA);
+         messagingService.getServer().getRemotingService().removeInterceptor(interceptorA);
    
          conn = cf.createConnection();
          conn.createClientSession(false, true, true, -1, false, false);
@@ -121,7 +129,7 @@ public class PacketFilterTest  extends TestCase
 
          
          log.info("Undeploying server");
-         server.getRemotingService().removeInterceptor(interceptorB);
+         messagingService.getServer().getRemotingService().removeInterceptor(interceptorB);
          interceptorB = null;
          interceptorA.clearCounter();
          DummyInterceptorB.clearCounter();
@@ -144,11 +152,11 @@ public class PacketFilterTest  extends TestCase
          }
          if (interceptorA != null)
          {
-            server.getRemotingService().removeInterceptor(interceptorA);
+            messagingService.getServer().getRemotingService().removeInterceptor(interceptorA);
          }
          if (interceptorB != null)
          {
-            try{server.getRemotingService().removeInterceptor(interceptorB);} catch (Exception ignored){}
+            try{messagingService.getServer().getRemotingService().removeInterceptor(interceptorB);} catch (Exception ignored){}
          }
       }
    }
@@ -163,8 +171,8 @@ public class PacketFilterTest  extends TestCase
       {
          
          interceptor = new DummyInterceptor();
-         server.getRemotingService().addInterceptor(interceptor);
-         server.getPostOffice().addBinding(QUEUE1, QUEUE1, null, false, false);
+         messagingService.getServer().getRemotingService().addInterceptor(interceptor);
+         messagingService.getServer().getPostOffice().addBinding(QUEUE1, QUEUE1, null, false, false);
          
          interceptor.sendException=false;
 
@@ -208,7 +216,7 @@ public class PacketFilterTest  extends TestCase
          {
             if (interceptor != null)
             {
-               server.getRemotingService().removeInterceptor(interceptor);
+               messagingService.getServer().getRemotingService().removeInterceptor(interceptor);
             }
          }
          catch (Exception ignored)

@@ -21,7 +21,9 @@
 */
 package org.jboss.messaging.tests.integration.core.remoting.impl;
 
+import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import junit.framework.TestCase;
+
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientConsumer;
@@ -31,9 +33,9 @@ import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
-import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
+import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.tests.util.SpawnedVMSupport;
 import org.jboss.messaging.util.SimpleString;
@@ -64,7 +66,7 @@ public class ClientExitTest extends TestCase
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private MessagingServer server;
+   private MessagingService messagingService;
 
    private ClientConnection connection;
 
@@ -102,8 +104,8 @@ public class ClientExitTest extends TestCase
       ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration(
             "localhost", ConfigurationImpl.DEFAULT_PORT);
       config.setSecurityEnabled(false);
-      server = new MessagingServerImpl(config);
-      server.start();
+      messagingService = MessagingServiceImpl.newNullStorageMessagingServer(config);
+      messagingService.start();
 
       ClientConnectionFactory cf = new ClientConnectionFactoryImpl(new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_PORT));
       connection = cf.createConnection(null, null);
@@ -119,7 +121,7 @@ public class ClientExitTest extends TestCase
       consumer.close();
       connection.close();
 
-      server.stop();
+      messagingService.stop();
 
       super.tearDown();
    }

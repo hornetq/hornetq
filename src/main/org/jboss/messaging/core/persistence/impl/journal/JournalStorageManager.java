@@ -552,6 +552,11 @@ public class JournalStorageManager implements StorageManager
 		started = false;
 	}
 	
+	public synchronized boolean isStarted()
+	{
+	   return started;
+	}
+	
 	// Private ----------------------------------------------------------------------------------
 	
 	private byte[] ackBytes(final long queueID, final long messageID)

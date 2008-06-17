@@ -35,8 +35,8 @@ import junit.framework.TestCase;
 
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.impl.MessagingServerManagementImpl;
-import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.impl.MessagingServerImpl;
+import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 
@@ -48,7 +48,7 @@ public class JMSServerManagerimplTest extends TestCase
 {
    private JMSServerManagerImpl jmsServerManager;
    private InitialContext initialContext;
-   private MessagingServer messagingServer;
+   private MessagingService messagingService;
 
    protected void setUp() throws Exception
    {
@@ -57,10 +57,10 @@ public class JMSServerManagerimplTest extends TestCase
       ConfigurationImpl conf = new ConfigurationImpl();
       conf.getConnectionParams().setInVMOptimisationEnabled(true);
       conf.setTransport(INVM);
-      messagingServer = new MessagingServerImpl(conf);
-      messagingServer.start();
+      messagingService = MessagingServiceImpl.newNullStorageMessagingServer(conf);
+      messagingService.start();
       jmsServerManager.setMessagingServerManagement(messagingServerManagement);
-      messagingServerManagement.setMessagingServer(messagingServer);
+      messagingServerManagement.setMessagingServer(messagingService.getServer());
       Hashtable env = new Hashtable();
       env.put("java.naming.factory.initial",
               "org.jboss.messaging.tests.util.InVMSingleInitialContextFactory");
@@ -71,9 +71,9 @@ public class JMSServerManagerimplTest extends TestCase
    protected void tearDown() throws Exception
    {
       //InVMInitialContextFactory.reset();
-      messagingServer.stop();
+      messagingService.stop();
       jmsServerManager = null;
-      messagingServer = null;
+      messagingService = null;
    }
 
    public void testIsStarted()

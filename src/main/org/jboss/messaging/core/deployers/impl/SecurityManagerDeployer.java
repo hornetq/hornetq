@@ -27,13 +27,16 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
+ * 
+ * TODO should rename this to security deployer rather than security manager deployer since doesn't deploy
+ * security managers
+ * 
  * deployer for adding security loaded from the file "jbm-security.xml"
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public class SecurityManagerDeployer extends XmlDeployer
 {
    private JBMUpdateableSecurityManager jbmSecurityManager;
-   private DeploymentManager deploymentManager;
    private static final String PASSWORD_ATTRIBUTE = "password";
    private static final String ROLES_NODE = "role";
    private static final String ROLE_ATTR_NAME = "name";

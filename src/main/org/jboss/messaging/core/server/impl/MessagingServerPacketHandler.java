@@ -74,8 +74,7 @@ public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
          CreateConnectionRequest request = (CreateConnectionRequest) packet;
 
          CreateConnectionResponse createConnectionResponse = server.createConnection(request.getUsername(), request.getPassword(),
-                 request.getRemotingSessionID(),
-                 sender.getRemoteAddress(),
+                 request.getRemotingSessionID(),                
                  request.getVersion(),
                  sender);
          response = createConnectionResponse;

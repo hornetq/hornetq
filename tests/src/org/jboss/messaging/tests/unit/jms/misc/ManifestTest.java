@@ -82,8 +82,7 @@ public class ManifestTest extends TestCase
       {
          ConfigurationImpl config = new ConfigurationImpl();
          config.setTransport(INVM);
-         MessagingServer server = new MessagingServerImpl(config);
-         //server.getVersion()
+         MessagingServer server = new MessagingServerImpl();
 
 	      ConnectionMetaData meta = new JBossConnectionMetaData(server.getVersion());
 

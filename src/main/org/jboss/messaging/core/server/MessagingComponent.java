@@ -35,4 +35,6 @@ public interface MessagingComponent
    void start() throws Exception;
    
    void stop() throws Exception;
+   
+   boolean isStarted();
 }

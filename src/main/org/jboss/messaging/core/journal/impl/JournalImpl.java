@@ -1354,6 +1354,11 @@ public class JournalImpl implements TestableJournal
 	
 	// MessagingComponent implementation ---------------------------------------------------
 	
+	public synchronized boolean isStarted()
+	{
+	   return state != STATE_STOPPED;
+	}
+	
 	public synchronized void start()
 	{
 		if (state != STATE_STOPPED)

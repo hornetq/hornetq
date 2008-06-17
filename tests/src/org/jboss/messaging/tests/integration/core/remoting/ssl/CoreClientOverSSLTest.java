@@ -21,20 +21,24 @@
  */
 package org.jboss.messaging.tests.integration.core.remoting.ssl;
 
+import static java.lang.Boolean.FALSE;
 import junit.framework.TestCase;
-import org.jboss.messaging.core.client.*;
+
+import org.jboss.messaging.core.client.ClientConnection;
+import org.jboss.messaging.core.client.ClientConnectionFactory;
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.impl.MessagingServerImpl;
+import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.tests.util.SpawnedVMSupport;
 import org.jboss.messaging.util.SimpleString;
-
-import static java.lang.Boolean.FALSE;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -57,7 +61,7 @@ public class CoreClientOverSSLTest extends TestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer server;
+   private MessagingService messagingService;
 
    private ClientConnection connection;
 
@@ -125,8 +129,8 @@ public class CoreClientOverSSLTest extends TestCase
       config.setTrustStorePath("messaging.truststore");
       config.setTrustStorePassword("secureexample");
 
-      server = new MessagingServerImpl(config);
-      server.start();
+      messagingService = MessagingServiceImpl.newNullStorageMessagingServer(config);
+      messagingService.start();
       ConnectionParams connectionParams = new ConnectionParamsImpl();
       connectionParams.setSSLEnabled(true);
       connectionParams.setKeyStorePath("messaging.keystore");
@@ -147,7 +151,7 @@ public class CoreClientOverSSLTest extends TestCase
       consumer.close();
       connection.close();
 
-      server.stop();
+      messagingService.stop();
 
       super.tearDown();
    }

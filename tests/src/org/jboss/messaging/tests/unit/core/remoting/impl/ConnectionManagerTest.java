@@ -22,18 +22,18 @@
 package org.jboss.messaging.tests.unit.core.remoting.impl;
 
 
-import org.jboss.messaging.core.remoting.TransportType;
-import org.jboss.messaging.core.server.ConnectionManager;
-import org.jboss.messaging.core.server.impl.MessagingServerImpl;
-import static org.jboss.messaging.core.remoting.TransportType.INVM;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
+import junit.framework.TestCase;
+
 import org.jboss.messaging.core.client.ClientConnection;
+import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
-import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-
-import junit.framework.TestCase;
+import org.jboss.messaging.core.remoting.TransportType;
+import org.jboss.messaging.core.server.ConnectionManager;
+import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.impl.MessagingServerImpl;
+import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -48,7 +48,7 @@ public class ConnectionManagerTest extends TestCase
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   private MessagingServerImpl server;
+   private MessagingService messagingService;
    // Constructors --------------------------------------------------
 
    public ConnectionManagerTest(String name)
@@ -60,16 +60,16 @@ public class ConnectionManagerTest extends TestCase
    {
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.INVM);
-      server = new MessagingServerImpl(config);
-      server.start();
+      messagingService = MessagingServiceImpl.newNullStorageMessagingServer(config);
+      messagingService.start();
    }
 
    protected void tearDown() throws Exception
    {
-      if(server != null)
+      if (messagingService != null)
       {
-         server.stop();
-         server = null;
+         messagingService.stop();
+         messagingService = null;
       }
    }
 
@@ -107,8 +107,7 @@ public class ConnectionManagerTest extends TestCase
    private void assertActiveConnectionsOnTheServer(int expectedSize)
    throws Exception
    {
-      ConnectionManager cm = server
-      .getConnectionManager();
+      ConnectionManager cm = messagingService.getServer().getConnectionManager();
       assertEquals(expectedSize, cm.getActiveConnections().size());
    }
 

@@ -80,6 +80,18 @@ public class ServerSessionPacketHandler extends ServerPacketHandlerSupport
    {
       return session.getID();
    }
+   
+   public boolean equals(ServerSessionPacketHandler other)
+   {
+      if (other instanceof ServerSessionPacketHandler == false)
+      {
+         return false;
+      }
+      
+      ServerSessionPacketHandler sother = (ServerSessionPacketHandler)other;
+      
+      return sother.session.getID() == session.getID();
+   }
 
    public Packet doHandle(final Packet packet, final PacketReturner sender) throws Exception
    {

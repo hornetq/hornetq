@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -64,7 +63,7 @@ public class ConnectionManagerImpl implements ConnectionManager, RemotingSession
    // ConnectionManager implementation -------------------------------------------------------------
 
    public synchronized void registerConnection(long remotingClientSessionID,
-         ServerConnection endpoint)
+                                               ServerConnection endpoint)
    {    
       List<ServerConnection> connectionEndpoints = endpoints.get(remotingClientSessionID);
 
@@ -170,33 +169,33 @@ public class ConnectionManagerImpl implements ConnectionManager, RemotingSession
          }          
       }
       
-      dump();
+      //dump();
    }
    
-   private void dump()
-   {
-      if (log.isDebugEnabled())
-      {
-         StringBuffer buff = new StringBuffer("*********** Dumping connections\n");
-         buff.append("remoting session ID -----> server connection endpoints:\n");
-         if (endpoints.size() == 0)
-         {
-            buff.append("    No registered endpoints\n");
-         }
-         for (Entry<Long, List<ServerConnection>> entry : endpoints.entrySet())
-         {
-            List<ServerConnection> connectionEndpoints = entry.getValue();
-            buff.append("    "  + entry.getKey() + "----->\n");
-            for (ServerConnection sce : connectionEndpoints)
-            {
-               buff.append("        " + sce + " (" + System.identityHashCode(sce) + ") " + sce.getClientAddress() + "\n");
-            }
-         }
-         buff.append("*** Dumped connections");
-         
-         log.debug(buff);
-      }
-   }
+//   private void dump()
+//   {
+//      if (log.isDebugEnabled())
+//      {
+//         StringBuffer buff = new StringBuffer("*********** Dumping connections\n");
+//         buff.append("remoting session ID -----> server connection endpoints:\n");
+//         if (endpoints.size() == 0)
+//         {
+//            buff.append("    No registered endpoints\n");
+//         }
+//         for (Entry<Long, List<ServerConnection>> entry : endpoints.entrySet())
+//         {
+//            List<ServerConnection> connectionEndpoints = entry.getValue();
+//            buff.append("    "  + entry.getKey() + "----->\n");
+//            for (ServerConnection sce : connectionEndpoints)
+//            {
+//               buff.append("        " + sce + " (" + System.identityHashCode(sce) + ") " + sce.getClientAddress() + "\n");
+//            }
+//         }
+//         buff.append("*** Dumped connections");
+//         
+//         log.debug(buff);
+//      }
+//   }
    
    // Inner classes --------------------------------------------------------------------------------
 

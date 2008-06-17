@@ -46,10 +46,11 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
    private static Logger log = Logger.getLogger(XmlDeployer.class);
    protected static final String NAME_ATTR = "name";
 
-   private HashMap<URL, HashMap<String, Node>> configuration = new HashMap<URL, HashMap<String, Node>>();
+   private final HashMap<URL, HashMap<String, Node>> configuration = new HashMap<URL, HashMap<String, Node>>();
 
-
-   protected DeploymentManager deploymentManager;
+   private final DeploymentManager deploymentManager;
+   
+   private volatile boolean started;
 
    public XmlDeployer(final DeploymentManager deploymentManager)
    {
@@ -195,6 +196,8 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
    public void start() throws Exception
    {
       deploymentManager.registerDeployer(this);
+      
+      started = true;
    }
 
    //undeploy everything
@@ -216,6 +219,13 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
          }
       }
       deploymentManager.unregisterDeployer(this);
+      
+      started = false;
+   }
+   
+   public boolean isStarted()
+   {
+      return started;
    }
 
    /**

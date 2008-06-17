@@ -1,17 +1,15 @@
 package org.jboss.messaging.tests.unit.core.remoting.impl;
 
-import org.jboss.messaging.core.client.ClientConnection;
+import junit.framework.TestCase;
+
 import org.jboss.messaging.core.client.ClientConnectionFactory;
-import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientConnectionInternal;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.TransportType;
-import org.jboss.messaging.core.server.impl.MessagingServerImpl;
-import org.jboss.messaging.jms.client.JBossConnection;
-
-import junit.framework.TestCase;
+import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 
 public class INVMServerTest extends TestCase
 {
@@ -19,8 +17,8 @@ public class INVMServerTest extends TestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServerImpl server_1;
-   private MessagingServerImpl server_2;
+   private MessagingService service_1;
+   private MessagingService service_2;
 
    // Static --------------------------------------------------------
 
@@ -54,21 +52,21 @@ public class INVMServerTest extends TestCase
       ConfigurationImpl config = new ConfigurationImpl();
       config.setServerID(0);
       config.setTransport(TransportType.INVM);
-      server_1 = new MessagingServerImpl(config);
-      server_1.start();
+      service_1 = MessagingServiceImpl.newNullStorageMessagingServer(config);
+      service_1.start();
 
       config = new ConfigurationImpl();
       config.setServerID(1);
       config.setTransport(TransportType.INVM);
-      server_2 = new MessagingServerImpl(config);
-      server_2.start();
+      service_2 = MessagingServiceImpl.newNullStorageMessagingServer(config);
+      service_2.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      server_1.stop();
-      server_2.stop();
+      service_1.stop();
+      service_2.stop();
 
       super.tearDown();
    }

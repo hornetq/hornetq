@@ -6,7 +6,15 @@
  */
 package org.jboss.messaging.tests.integration.core.remoting.mina;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.jboss.messaging.core.remoting.TransportType.TCP;
+import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicLong;
+
 import junit.framework.TestCase;
+
 import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
@@ -17,18 +25,13 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.RemotingSession;
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
-import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
+import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
-import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
-
-import java.util.concurrent.CountDownLatch;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -40,7 +43,7 @@ public class ClientPingTest extends TestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer messagingServer;
+   private MessagingService messagingService;
 
    // Static --------------------------------------------------------
 
@@ -54,14 +57,14 @@ public class ClientPingTest extends TestCase
       ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", TestSupport.PORT);
       config.getConnectionParams().setPingInterval(TestSupport.PING_INTERVAL);
       config.getConnectionParams().setPingTimeout(TestSupport.PING_TIMEOUT);
-      messagingServer = new MessagingServerImpl(config);
-      messagingServer.start();
+      messagingService = MessagingServiceImpl.newNullStorageMessagingServer(config);
+      messagingService.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      messagingServer.stop();
+      messagingService.stop();
    }
 
    public void testKeepAliveWithClientOK() throws Exception
@@ -75,7 +78,7 @@ public class ClientPingTest extends TestCase
             latch.countDown();
          }
       };
-      messagingServer.getRemotingService().addRemotingSessionListener(listener);
+      messagingService.getServer().getRemotingService().addRemotingSessionListener(listener);
       ConnectionParams connectionParams = new ConnectionParamsImpl();
       connectionParams.setPingInterval(TestSupport.PING_INTERVAL);
       connectionParams.setPingTimeout(TestSupport.PING_TIMEOUT);
@@ -86,7 +89,7 @@ public class ClientPingTest extends TestCase
               + TestSupport.PING_TIMEOUT + 2000, MILLISECONDS);
       assertFalse(firedKeepAliveNotification);
 
-      messagingServer.getRemotingService().removeRemotingSessionListener(listener);
+      messagingService.getServer().getRemotingService().removeRemotingSessionListener(listener);
       //connector.disconnect();
 
       // verify(factory);
@@ -106,7 +109,7 @@ public class ClientPingTest extends TestCase
             latch.countDown();
          }
       };
-      messagingServer.getRemotingService().addRemotingSessionListener(listener);
+      messagingService.getServer().getRemotingService().addRemotingSessionListener(listener);
       ConnectionParams connectionParams = new ConnectionParamsImpl();
       connectionParams.setPingInterval(TestSupport.PING_INTERVAL);
       connectionParams.setPingTimeout(TestSupport.PING_TIMEOUT);
@@ -124,7 +127,7 @@ public class ClientPingTest extends TestCase
       assertNotNull(clientSessionIDNotResponding[0]);
       //assertEquals(clientSessionID, clientSessionIDNotResponding[0]);
 
-      messagingServer.getRemotingService().removeRemotingSessionListener(listener);
+      messagingService.getServer().getRemotingService().removeRemotingSessionListener(listener);
       connector.disconnect();
    }
 
@@ -184,14 +187,14 @@ public class ClientPingTest extends TestCase
                latch.countDown();
             }
          };
-         messagingServer.getRemotingService().addRemotingSessionListener(listener);
+         messagingService.getServer().getRemotingService().addRemotingSessionListener(listener);
 
          boolean firedKeepAliveNotification = latch.await(TestSupport.PING_INTERVAL
                  + TestSupport.PING_TIMEOUT + 2000, MILLISECONDS);
          assertTrue("notification has not been received", firedKeepAliveNotification);
          //assertEquals(clientSessionID, clientSessionIDNotResponding.longValue());
 
-         messagingServer.getRemotingService().removeRemotingSessionListener(listener);
+         messagingService.getServer().getRemotingService().removeRemotingSessionListener(listener);
          connector.disconnect();
 
       }
@@ -221,7 +224,7 @@ public class ClientPingTest extends TestCase
       };
       //assign this after we have connected to replace the pong handler
       PacketHandler notRespondingPacketHandler = new NotRespondingPacketHandler();
-      messagingServer.getRemotingService().addRemotingSessionListener(listener);
+      messagingService.getServer().getRemotingService().addRemotingSessionListener(listener);
       ConnectionParams connectionParams = new ConnectionParamsImpl();
       connectionParams.setPingInterval(TestSupport.PING_INTERVAL);
       connectionParams.setPingTimeout(TestSupport.PING_TIMEOUT);
@@ -244,7 +247,7 @@ public class ClientPingTest extends TestCase
       //assertEquals(clientSessionIDNotResponding, sessionIDNotResponding.longValue());
       assertNotSame(clientSessionIDResponding, sessionIDNotResponding.longValue());
 
-      messagingServer.getRemotingService().removeRemotingSessionListener(listener);
+      messagingService.getServer().getRemotingService().removeRemotingSessionListener(listener);
       connectorNotResponding.disconnect();
       connectorResponding.disconnect();
    }

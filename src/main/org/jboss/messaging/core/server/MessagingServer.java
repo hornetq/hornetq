@@ -52,6 +52,12 @@ import java.util.Set;
  */
 public interface MessagingServer extends MessagingComponent
 {  
+   //The pluggable components
+   
+   void setConfiguration(Configuration configuration);
+   
+   Configuration getConfiguration(); 
+   
    void setRemotingService(RemotingService remotingService);
    
    RemotingService getRemotingService();
@@ -64,18 +70,11 @@ public interface MessagingServer extends MessagingComponent
       
    void setSecurityManager(JBMSecurityManager securityManager);
 
-   void setPostOffice(PostOffice postOffice);
+   
+   //Access to hard wired components
       
    PostOffice getPostOffice();
    
-   void setConfiguration(Configuration configuration);
-            
-   Configuration getConfiguration(); 
-   
-   Version getVersion();
-   
-   boolean isStarted();
-       
    ConnectionManager getConnectionManager();
    
    HierarchicalRepository<Set<Role>> getSecurityRepository();
@@ -87,10 +86,17 @@ public interface MessagingServer extends MessagingComponent
    ExecutorFactory getExecutorFactory();
    
    ResourceManager getResourceManager();
+   
+   Version getVersion();
   
+   //Operations
+   
    CreateConnectionResponse createConnection(String username, String password,
-                                             long remotingClientSessionID, String clientAddress,
-                                             int incrementVersion,
+                                             long remotingClientSessionID,
+                                             int incrementingVersion,
                                              PacketReturner sender) throws Exception;
+   
+      
+   boolean isStarted();
    
 }

@@ -21,48 +21,18 @@
   */
 package org.jboss.messaging.core.server;
 
-import org.jboss.messaging.core.remoting.PacketReturner;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
-import org.jboss.messaging.util.SimpleString;
-
 /**
  * 
- * A ServerConnection
+ * MessagingServiceImpl is a convenience class typically used when you are embedding JBM into your own application
+ * It provides various convenient static methods for creating different kinds of Messaging servers
+ * And has convenience start and stop methods that handle starting stopping of the dependent components.
+ * This would not normally be used when using JBM inside a dependency injection framework such as Spring
+ * or JBoss MC, since that would be handle dependency injection in that case
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  *
  */
-public interface ServerConnection
+public interface MessagingService extends MessagingComponent
 {
-	long getID();
-	
-	MessagingServer getServer();
-	
-	ConnectionCreateSessionResponseMessage createSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks,
-                                                        PacketReturner returner) throws Exception;
-	
-	void start() throws Exception;
-	
-	void stop() throws Exception;
-	
-	void close() throws Exception;
-	
-	String getUsername();
-	
-	String getPassword();
-		
-	void removeSession(ServerSession session) throws Exception;
-	
-	void addTemporaryQueue(Queue queue);
-	
-	void removeTemporaryQueue(Queue queue);
-	
-	void addTemporaryDestination(SimpleString destination);
-	
-	void removeTemporaryDestination(SimpleString destination);
-	
-	boolean isStarted();
-	
-	long getClientSessionID();
+   public MessagingServer getServer();
 }

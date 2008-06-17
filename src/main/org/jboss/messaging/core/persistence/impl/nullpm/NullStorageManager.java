@@ -149,5 +149,10 @@ public class NullStorageManager implements StorageManager
 		
 		started = false;
 	}
+	
+	public synchronized boolean isStarted()
+	{
+	   return started;
+	}
   
 }

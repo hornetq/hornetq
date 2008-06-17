@@ -21,7 +21,6 @@
   */
 package org.jboss.messaging.core.server.impl;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -30,6 +29,7 @@ import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.MessagingServer;
@@ -40,9 +40,7 @@ import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.SimpleString;
 
 /**
- * Concrete implementation of ConnectionEndpoint.
- *
- * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
+ * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -68,10 +66,6 @@ public class ServerConnectionImpl implements ServerConnection
 
    private final long remotingClientSessionID;
    
-   private final String clientAddress;
-         
-   private final long createdTime;
-         
    private final Set<ServerSession> sessions = new ConcurrentHashSet<ServerSession>();
 
    private final Set<Queue> temporaryQueues = new ConcurrentHashSet<Queue>();
@@ -79,7 +73,7 @@ public class ServerConnectionImpl implements ServerConnection
    private final Set<SimpleString> temporaryDestinations = new ConcurrentHashSet<SimpleString>();
    
    private final MessagingServer server;
-      
+   
    private volatile boolean started;
    
    //We cache some of the service locally
@@ -94,10 +88,13 @@ public class ServerConnectionImpl implements ServerConnection
       
    public ServerConnectionImpl(final MessagingServer server,
                                final String username, final String password,
-   		                      final long remotingClientSessionID,
-   		                      final String clientAddress)
+   		                      final long remotingClientSessionID)
    {
-   	this.id = server.getRemotingService().getDispatcher().generateID();
+      RemotingService rs = server.getRemotingService();
+      
+      this.dispatcher = rs.getDispatcher();
+ 
+   	this.id = dispatcher.generateID();
       
    	this.username = username;
       
@@ -105,17 +102,9 @@ public class ServerConnectionImpl implements ServerConnection
       
       this.remotingClientSessionID = remotingClientSessionID;
 
-      this.clientAddress = clientAddress;
-
       started = false;
       
-      createdTime = System.currentTimeMillis();
-
-      server.getConnectionManager().registerConnection(remotingClientSessionID, this);
-      
       this.server = server;
-      
-      this.dispatcher = server.getRemotingService().getDispatcher();
       
       this.postOffice = server.getPostOffice();
       
@@ -136,10 +125,10 @@ public class ServerConnectionImpl implements ServerConnection
    
    public ConnectionCreateSessionResponseMessage createSession(final boolean xa, final boolean autoCommitSends,
    		                                                      final boolean autoCommitAcks,
-                                                               final PacketReturner sender) throws Exception
+                                                               final PacketReturner returner) throws Exception
    {            
       ServerSession session =
-         new ServerSessionImpl(this, autoCommitSends, autoCommitAcks, xa, sender);
+         new ServerSessionImpl(this, autoCommitSends, autoCommitAcks, xa, returner);
 
       sessions.add(session);
       
@@ -221,22 +210,36 @@ public class ServerConnectionImpl implements ServerConnection
 
    public void addTemporaryQueue(final Queue queue)
    {
+      if (temporaryQueues.contains(queue))
+      {
+         throw new IllegalStateException("Connection already has temporary queue " + queue);
+      }
       temporaryQueues.add(queue);      
    }
    
    public void removeTemporaryQueue(final Queue queue)
    {
-      temporaryQueues.remove(queue);      
+      if (!temporaryQueues.remove(queue))
+      {
+         throw new IllegalStateException("Cannot find temporary queue to remove " + queue);
+      }
    }
    
    public void addTemporaryDestination(final SimpleString address)
    {
+      if (temporaryDestinations.contains(address))
+      {
+         throw new IllegalStateException("Connection already has temporary destination " + address);
+      }
       temporaryDestinations.add(address);     
    }
    
    public void removeTemporaryDestination(final SimpleString address)
    {
-      temporaryDestinations.remove(address);
+      if (!temporaryDestinations.remove(address))
+      {
+         throw new IllegalStateException("Cannot find temporary destination to remove " + address);
+      }
    }
    
    public boolean isStarted()
@@ -244,31 +247,26 @@ public class ServerConnectionImpl implements ServerConnection
       return started;
    }
    
-   public long getCreatedTime()
-   {
-      return createdTime;
-   }
-
-   public String getClientAddress()
-   {
-      return clientAddress;
-   }
-
-   public long getCreated()
-   {
-      return createdTime;
-   }
-
-   public long getRemotingClientSessionID()
+   public long getClientSessionID()
    {
       return remotingClientSessionID;
    }
-
-   public Collection<ServerSession> getSessions()
+   
+   public Set<Queue> getTemporaryQueues()
    {
-      return sessions;
+      return new HashSet<Queue>(temporaryQueues);
    }
-
+   
+   public Set<SimpleString> getTemporaryDestinations()
+   {
+      return new HashSet<SimpleString>(temporaryDestinations);
+   }
+   
+   public Set<ServerSession> getSessions()
+   {
+      return new HashSet<ServerSession>(sessions);
+   }
+   
    // Public ---------------------------------------------------------------------------------------
     
    public String toString()
