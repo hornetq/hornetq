@@ -13,6 +13,7 @@ import org.jboss.messaging.core.version.Version;
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  */
 public interface ClientConnection
 {    
@@ -36,4 +37,6 @@ public interface ClientConnection
    Version getServerVersion();
       
    ClientConnectionFactory getConnectionFactory();
+
+   void cleanUp();
 }

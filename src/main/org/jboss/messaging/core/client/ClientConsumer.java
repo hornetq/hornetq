@@ -12,6 +12,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  */
 public interface ClientConsumer
 {      
@@ -30,4 +31,6 @@ public interface ClientConsumer
    boolean isClosed();   
    
    boolean isDirect();
+
+   void cleanUp();
 }

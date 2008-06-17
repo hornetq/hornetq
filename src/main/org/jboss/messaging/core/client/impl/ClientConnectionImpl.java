@@ -21,9 +21,6 @@
   */
 package org.jboss.messaging.core.client.impl;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.RemotingSessionListener;
@@ -36,6 +33,9 @@ import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.ConcurrentHashSet;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * The client-side Connection connectionFactory class.
  *
@@ -43,6 +43,7 @@ import org.jboss.messaging.util.ConcurrentHashSet;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  *
  * @version <tt>$Revision: 3602 $</tt>
  *
@@ -161,6 +162,12 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       }
    }
 
+   public synchronized void cleanUp()
+   {
+      cleanUpChildren();
+      closed = true;
+   }
+
    public boolean isClosed()
    {
       return closed;
@@ -223,6 +230,18 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       for (ClientSession session: childrenClone)
       {
          session.close(); 
+      }
+   }
+
+   private void cleanUpChildren()
+   {
+      //We copy the set of sessions to prevent ConcurrentModificationException which would occur
+      //when the child trues to remove itself from its parent
+      Set<ClientSession> childrenClone = new HashSet<ClientSession>(sessions);
+
+      for (ClientSession session: childrenClone)
+      {
+         session.cleanUp();
       }
    }
 

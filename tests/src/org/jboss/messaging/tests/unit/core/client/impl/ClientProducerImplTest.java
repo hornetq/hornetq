@@ -198,6 +198,36 @@ public class ClientProducerImplTest extends UnitTestCase
       
       EasyMock.verify(session, connection, rc, pd);      
    }
+
+   public void testCleanUp() throws Exception
+   {
+      ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);
+      ClientConnectionInternal connection = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+
+      EasyMock.expect(session.getConnection()).andReturn(connection);
+      EasyMock.expect(connection.getRemotingConnection()).andReturn(rc);
+
+      SimpleString address = new SimpleString("uhasuuhs");
+
+      EasyMock.replay(session, connection, rc);
+
+      ClientProducerInternal producer =
+         new ClientProducerImpl(session, 7876L, 76767L, address, null,
+                                true, true, 1);
+
+      EasyMock.verify(session, connection, rc);
+
+      EasyMock.reset(session, connection, rc);
+      PacketDispatcher packetDispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
+      session.removeProducer(producer);
+      EasyMock.expect(rc.getPacketDispatcher()).andReturn(packetDispatcher);
+      packetDispatcher.unregister(76767L);
+      EasyMock.replay(session, connection, rc, packetDispatcher);
+      producer.cleanUp();
+
+      EasyMock.verify(session, connection, rc, packetDispatcher);
+   }
    
    // Private ----------------------------------------------------------------------------------------
    

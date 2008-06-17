@@ -6,31 +6,10 @@
  */
 package org.jboss.messaging.tests.unit.jms.client;
 
-import static org.easymock.EasyMock.createStrictMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.expectLastCall;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-
-import javax.jms.ConnectionConsumer;
-import javax.jms.ConnectionMetaData;
-import javax.jms.Destination;
-import javax.jms.ExceptionListener;
-import javax.jms.JMSException;
-import javax.jms.Queue;
-import javax.jms.QueueSession;
-import javax.jms.ServerSessionPool;
-import javax.jms.Session;
-import javax.jms.Topic;
-import javax.jms.TopicSession;
-import javax.jms.XAQueueSession;
-import javax.jms.XASession;
-import javax.jms.XATopicSession;
-
 import junit.framework.TestCase;
-
 import org.easymock.EasyMock;
+import static org.easymock.EasyMock.*;
+import org.easymock.IArgumentMatcher;
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.RemotingSessionListener;
@@ -38,6 +17,9 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.jms.client.JBossConnection;
 import org.jboss.messaging.tests.util.RandomUtil;
+import static org.jboss.messaging.tests.util.RandomUtil.randomString;
+
+import javax.jms.*;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -60,7 +42,7 @@ public class JBossConnectionTest extends TestCase
    public void testGetClientConnection() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
-
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       replay(clientConn);
 
       JBossConnection connection = new JBossConnection(clientConn,
@@ -74,6 +56,7 @@ public class JBossConnectionTest extends TestCase
    public void testStart() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       clientConn.start();
       expectLastCall().once();
 
@@ -90,6 +73,7 @@ public class JBossConnectionTest extends TestCase
    public void testStartThrowsException() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       clientConn.start();
       expectLastCall().andThrow(new MessagingException());
 
@@ -112,6 +96,7 @@ public class JBossConnectionTest extends TestCase
    public void testStop() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       clientConn.stop();
       expectLastCall().once();
 
@@ -128,6 +113,7 @@ public class JBossConnectionTest extends TestCase
    public void testStopThrowsException() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       clientConn.stop();
       expectLastCall().andThrow(new MessagingException());
 
@@ -150,6 +136,7 @@ public class JBossConnectionTest extends TestCase
    public void testCloseThrowsException() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       clientConn.close();
       expectLastCall().andThrow(new MessagingException());
 
@@ -172,6 +159,7 @@ public class JBossConnectionTest extends TestCase
    public void testUsingClosedConnection() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       clientConn.close();
       expectLastCall().once();
       expect(clientConn.isClosed()).andReturn(true);
@@ -197,6 +185,7 @@ public class JBossConnectionTest extends TestCase
    {
       String clientID = randomString();
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       expect(clientConn.isClosed()).andReturn(false);
       replay(clientConn);
 
@@ -211,6 +200,7 @@ public class JBossConnectionTest extends TestCase
    public void testSetClientID() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       expect(clientConn.isClosed()).andStubReturn(false);
 
       replay(clientConn);
@@ -228,6 +218,7 @@ public class JBossConnectionTest extends TestCase
    public void testSetClientIDFailsIfClientIDAlreadyExists() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       expect(clientConn.isClosed()).andStubReturn(false);
 
       replay(clientConn);
@@ -253,6 +244,7 @@ public class JBossConnectionTest extends TestCase
    public void testSetClientIDFailsIfConnectionAlreadyUsed() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       expect(clientConn.isClosed()).andStubReturn(false);
       clientConn.start();
       expectLastCall().once();
@@ -277,6 +269,7 @@ public class JBossConnectionTest extends TestCase
    public void testGetMetaData() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       expect(clientConn.isClosed()).andStubReturn(false);
       Version version = createStrictMock(Version.class);
       expect(clientConn.getServerVersion()).andReturn(version);
@@ -312,7 +305,7 @@ public class JBossConnectionTest extends TestCase
    public void testSetNullExceptionListener() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      clientConn.setRemotingSessionListener(null);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       expectLastCall().once();
       ExceptionListener listener = createStrictMock(ExceptionListener.class);
       replay(clientConn, listener);
@@ -330,6 +323,7 @@ public class JBossConnectionTest extends TestCase
    public void testCreateConnectionConsumerFromDestination() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       Destination destination = createStrictMock(Destination.class);
       ServerSessionPool sessionPool = createStrictMock(ServerSessionPool.class);
 
@@ -347,6 +341,7 @@ public class JBossConnectionTest extends TestCase
    public void testCreateConnectionConsumerFromQueue() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       Queue queue = createStrictMock(Queue.class);
       ServerSessionPool sessionPool = createStrictMock(ServerSessionPool.class);
 
@@ -364,6 +359,7 @@ public class JBossConnectionTest extends TestCase
    public void testCreateConnectionConsumerFromTopic() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       Topic topic = createStrictMock(Topic.class);
       ServerSessionPool sessionPool = createStrictMock(ServerSessionPool.class);
 
@@ -381,6 +377,7 @@ public class JBossConnectionTest extends TestCase
    public void testCreateDurableConnectionConsumerFromQueueConnection() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       Topic topic = createStrictMock(Topic.class);
       ServerSessionPool sessionPool = createStrictMock(ServerSessionPool.class);
 
@@ -404,6 +401,7 @@ public class JBossConnectionTest extends TestCase
    public void testCreateSessionThrowsException() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(clientConn.createClientSession(false, false, false, -1, false, false)).andThrow(new MessagingException());
       replay(clientConn, clientSession);
@@ -425,6 +423,7 @@ public class JBossConnectionTest extends TestCase
    public void testCreateTransactedQueueSession() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(clientConn.createClientSession(false, false, false, -1, false, false)).andReturn(clientSession);
       replay(clientConn, clientSession);
@@ -441,6 +440,7 @@ public class JBossConnectionTest extends TestCase
    public void testCreateAutoAckQueueSession() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(clientConn.createClientSession(false, true, true, 1)).andReturn(clientSession);
       replay(clientConn, clientSession);
@@ -457,6 +457,7 @@ public class JBossConnectionTest extends TestCase
    public void testCreateDupsOKQueueSession() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(clientConn.createClientSession(false, true, true, -1)).andReturn(clientSession);
       replay(clientConn, clientSession);
@@ -473,6 +474,7 @@ public class JBossConnectionTest extends TestCase
    public void testCreateClientAckQueueSession() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(clientConn.createClientSession(false, true, false, -1, false, false)).andReturn(clientSession);
       replay(clientConn, clientSession);
@@ -489,6 +491,7 @@ public class JBossConnectionTest extends TestCase
    public void testCreateQueueSessionWithInvalidAckMode() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       ClientSession clientSession = createStrictMock(ClientSession.class);
       replay(clientConn, clientSession);
 
@@ -509,6 +512,7 @@ public class JBossConnectionTest extends TestCase
    public void testCreateTopicSession() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(clientConn.createClientSession(false, true, true, 1)).andReturn(clientSession);
       replay(clientConn, clientSession);
@@ -525,6 +529,7 @@ public class JBossConnectionTest extends TestCase
    public void testCreateTopicSessionWithCachedProducers() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(clientConn.createClientSession(false, true, true, 1)).andReturn(clientSession);
       replay(clientConn, clientSession);
@@ -541,6 +546,7 @@ public class JBossConnectionTest extends TestCase
    public void testCreateSession() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(clientConn.createClientSession(false, true, true, 1)).andReturn(clientSession);
       replay(clientConn, clientSession);
@@ -557,6 +563,7 @@ public class JBossConnectionTest extends TestCase
    public void testCreateSessionWithCachedProducers() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(clientConn.createClientSession(false, true, true, 1)).andReturn(clientSession);
       replay(clientConn, clientSession);
@@ -573,6 +580,7 @@ public class JBossConnectionTest extends TestCase
    public void testCreateXASession() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(clientConn.createClientSession(true,false, false, -1, false, false)).andReturn(clientSession);
       replay(clientConn, clientSession);
@@ -589,6 +597,7 @@ public class JBossConnectionTest extends TestCase
    public void testCreateXASessionWithCachedProducers() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(clientConn.createClientSession(true,false, false, -1, false, true)).andReturn(clientSession);
       replay(clientConn, clientSession);
@@ -605,6 +614,7 @@ public class JBossConnectionTest extends TestCase
    public void testCreateXAQueueSession() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(clientConn.createClientSession(true,false, false, -1, false, false)).andReturn(clientSession);
       replay(clientConn, clientSession);
@@ -621,6 +631,7 @@ public class JBossConnectionTest extends TestCase
    public void testCreateXAQueueSessionWithCachedProducers() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(clientConn.createClientSession(true,false, false, -1, false, true)).andReturn(clientSession);
       replay(clientConn, clientSession);
@@ -637,6 +648,7 @@ public class JBossConnectionTest extends TestCase
    public void testCreateXATopicSession() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(clientConn.createClientSession(true,false, false, -1, false, false)).andReturn(clientSession);
       replay(clientConn, clientSession);
@@ -653,6 +665,7 @@ public class JBossConnectionTest extends TestCase
    public void testCreateXATopicSessionWithCachedProducers() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(clientConn.createClientSession(true,false, false, -1, false, true)).andReturn(clientSession);
       replay(clientConn, clientSession);
@@ -665,6 +678,22 @@ public class JBossConnectionTest extends TestCase
 
       verify(clientConn, clientSession);
    }
+
+   public void testResourcesCleanedUp() throws Exception
+   {
+      ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      FailureListenerMatcher failureListenerMatcher = new FailureListenerMatcher();
+      EasyMock.reportMatcher(failureListenerMatcher);
+      clientConn.setRemotingSessionListener(null);
+      clientConn.cleanUp();
+      replay(clientConn);
+
+      JBossConnection connection = new JBossConnection(clientConn,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      failureListenerMatcher.listener.sessionDestroyed(0, new MessagingException());
+
+      verify(clientConn);
+   }
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -672,4 +701,18 @@ public class JBossConnectionTest extends TestCase
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
+   class FailureListenerMatcher implements IArgumentMatcher
+   {
+      RemotingSessionListener listener = null;
+      public boolean matches(Object o)
+      {
+         listener = (RemotingSessionListener) o;
+         return true;
+      }
+
+      public void appendTo(StringBuffer stringBuffer)
+      {
+         //we dont need this
+      }
+   }
 }

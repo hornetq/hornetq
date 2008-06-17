@@ -21,37 +21,19 @@
   */
 package org.jboss.messaging.jms.client;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionConsumer;
-import javax.jms.ConnectionMetaData;
-import javax.jms.Destination;
-import javax.jms.ExceptionListener;
-import javax.jms.IllegalStateException;
-import javax.jms.JMSException;
-import javax.jms.Queue;
-import javax.jms.QueueConnection;
-import javax.jms.QueueSession;
-import javax.jms.ServerSessionPool;
-import javax.jms.Session;
-import javax.jms.Topic;
-import javax.jms.TopicConnection;
-import javax.jms.TopicSession;
-import javax.jms.XAConnection;
-import javax.jms.XAQueueConnection;
-import javax.jms.XAQueueSession;
-import javax.jms.XASession;
-import javax.jms.XATopicConnection;
-import javax.jms.XATopicSession;
-
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 
+import javax.jms.*;
+import javax.jms.IllegalStateException;
+
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -100,6 +82,16 @@ public class JBossConnection implements
       this.clientID = clientID;
       
       this.dupsOKBatchSize = dupsOKBatchSize;
+
+      try
+      {
+         connection.setRemotingSessionListener(new JMSFailureListener());
+      }
+      catch (MessagingException e)
+      {
+         log.warn("Unable to set remoting session listener");
+      }
+
    }
 
    // Connection implementation --------------------------------------------------------------------
@@ -160,24 +152,7 @@ public class JBossConnection implements
 
    public void setExceptionListener(final ExceptionListener listener) throws JMSException
    {
-      try
-      {
-         if (listener == null)
-         {
-            connection.setRemotingSessionListener(null);                 
-         }
-         else
-         {
-            connection.setRemotingSessionListener(new JMSFailureListener());
-         }
-         
-         exceptionListener = listener;
-      }
-      catch (MessagingException e)
-      {
-         throw JMSExceptionHelper.convertFromMessagingException(e);     
-      }
-      
+      exceptionListener = listener;
       justCreated = false;
    }
 
@@ -191,7 +166,6 @@ public class JBossConnection implements
       {
          throw JMSExceptionHelper.convertFromMessagingException(e);     
       }
-      
       justCreated = false;
    }
 
@@ -424,12 +398,17 @@ public class JBossConnection implements
       {
          if (me == null)
             return;
-         
-         JMSException je = new JMSException(me.toString());
-         
-         je.initCause(me);
-         
-         exceptionListener.onException(je);
+
+         if (exceptionListener != null)
+         {
+            JMSException je = new JMSException(me.toString());
+
+            je.initCause(me);
+
+            exceptionListener.onException(je);
+         }
+
+         connection.cleanUp();
       }
       
    }

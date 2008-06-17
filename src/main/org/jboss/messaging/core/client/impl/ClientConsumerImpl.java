@@ -21,10 +21,6 @@
  */
 package org.jboss.messaging.core.client.impl;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -35,11 +31,16 @@ import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * 
  * @version <tt>$Revision: 3603 $</tt>
  * 
@@ -280,6 +281,45 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          session.removeConsumer(this);
       }   	
    }
+
+   public synchronized void cleanUp()
+   {
+     try
+      {
+         // Now we wait for any current handler runners to run.
+         waitForOnMessageToComplete();
+
+         closed = true;
+
+         if (receiverThread != null)
+         {
+            synchronized (this)
+            {
+               // Wake up any receive() thread that might be waiting
+               notify();
+            }
+         }
+
+         handler = null;
+
+         receiverThread = null;
+
+         remotingConnection.getPacketDispatcher().unregister(clientTargetID);
+      }
+      finally
+      {
+         try
+         {
+            session.removeConsumer(this);
+         }
+         catch (MessagingException e)
+         {
+            log.warn("Unable to clean up consumer:" + this);
+         }
+      }
+   }
+
+
 
    public boolean isClosed()
    {

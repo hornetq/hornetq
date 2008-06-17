@@ -21,8 +21,6 @@
   */
 package org.jboss.messaging.core.client.impl;
 
-import java.util.concurrent.Semaphore;
-
 import org.jboss.messaging.core.client.AcknowledgementHandler;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -32,11 +30,14 @@ import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TokenBucketLimiter;
 
+import java.util.concurrent.Semaphore;
+
 /**
  * The client-side Producer connectionFactory class.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  *
  * @version <tt>$Revision$</tt>
  *
@@ -158,6 +159,15 @@ public class ClientProducerImpl implements ClientProducerInternal
       
       remotingConnection.getPacketDispatcher().unregister(clientTargetID);
       
+      closed = true;
+   }
+
+   public void cleanUp()
+   {
+      session.removeProducer(this);
+
+      remotingConnection.getPacketDispatcher().unregister(clientTargetID);
+
       closed = true;
    }
 

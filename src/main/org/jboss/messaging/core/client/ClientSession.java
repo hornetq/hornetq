@@ -7,17 +7,18 @@
 
 package org.jboss.messaging.core.client;
 
-import javax.transaction.xa.XAResource;
-
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.util.SimpleString;
 
+import javax.transaction.xa.XAResource;
+
 /**
  *  
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  */
 public interface ClientSession extends XAResource
 {   
@@ -78,5 +79,7 @@ public interface ClientSession extends XAResource
    
    int getLazyAckBatchSize();
    
-   boolean isXA();   
+   boolean isXA();
+
+   void cleanUp();
 }

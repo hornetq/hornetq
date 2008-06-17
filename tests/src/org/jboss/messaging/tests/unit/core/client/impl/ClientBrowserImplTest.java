@@ -206,5 +206,27 @@ public class ClientBrowserImplTest extends UnitTestCase
       assertEquals(has, hasNext);
       
       EasyMock.verify(session, connection, rc);            
-   }      
+   }
+
+   public void testCleanUp() throws Exception
+   {
+      ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);
+      ClientConnectionInternal connection = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+
+      EasyMock.expect(session.getConnection()).andReturn(connection);
+      EasyMock.expect(connection.getRemotingConnection()).andReturn(rc);
+
+      EasyMock.replay(session, connection, rc);
+
+      ClientBrowser browser =
+         new ClientBrowserImpl(session, 67567576);
+      EasyMock.verify(session, connection, rc);
+      EasyMock.reset(session, connection, rc);
+      session.removeBrowser(browser);
+      EasyMock.replay(session, connection, rc);
+      browser.cleanUp();
+      EasyMock.verify(session, connection, rc);
+
+   }
 }

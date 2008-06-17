@@ -33,6 +33,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMe
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  *
  * @version <tt>$Revision: 3602 $</tt>
  *
@@ -84,6 +85,13 @@ public class ClientBrowserImpl implements ClientBrowser
          
          closed = true;
       }
+   }
+
+   public synchronized void cleanUp()
+   {
+      session.removeBrowser(this);
+
+      closed = true;
    }
 
    public boolean isClosed()

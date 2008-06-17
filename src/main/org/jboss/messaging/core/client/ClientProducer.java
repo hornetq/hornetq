@@ -12,6 +12,7 @@ import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  */
 public interface ClientProducer
 {        
@@ -36,4 +37,6 @@ public interface ClientProducer
    int getMaxRate();
    
    int getInitialWindowSize();
+
+   void cleanUp();
 }

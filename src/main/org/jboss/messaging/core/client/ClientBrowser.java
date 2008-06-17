@@ -13,6 +13,7 @@ import org.jboss.messaging.core.exception.MessagingException;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  */
 public interface ClientBrowser
 {
@@ -25,4 +26,6 @@ public interface ClientBrowser
    void close() throws MessagingException;
    
    boolean isClosed();
- }
+
+   void cleanUp();
+}

@@ -21,10 +21,6 @@
  */
 package org.jboss.messaging.tests.unit.core.client.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.MessageHandler;
@@ -33,8 +29,13 @@ import org.jboss.messaging.core.client.impl.ClientConsumerImpl;
 import org.jboss.messaging.core.client.impl.ClientConsumerInternal;
 import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.tests.util.UnitTestCase;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 /**
  * 
@@ -481,7 +482,34 @@ public class ClientConsumerImplTest extends UnitTestCase
 
       assertNull(consumer.receiveImmediate());           
    }
-   
+
+   public void testCleanUp() throws Exception
+   {
+      ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);
+      ClientConnectionInternal connection = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      ExecutorService executor = EasyMock.createStrictMock(ExecutorService.class);
+
+      EasyMock.expect(session.getExecutorService()).andReturn(executor);
+      EasyMock.expect(session.getConnection()).andReturn(connection);
+      EasyMock.expect(connection.getRemotingConnection()).andReturn(rc);
+
+      EasyMock.replay(session, connection, rc);
+
+      ClientConsumerInternal consumer =
+      new ClientConsumerImpl(session, 1, 2, 3, true);
+
+      EasyMock.verify(session, connection, rc);
+
+      EasyMock.reset(session, connection, rc);
+      PacketDispatcher packetDispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
+      EasyMock.expect(rc.getPacketDispatcher()).andReturn(packetDispatcher);
+      packetDispatcher.unregister(2);
+      session.removeConsumer(consumer);
+      EasyMock.replay(session, connection, rc, packetDispatcher);
+      consumer.cleanUp();
+      EasyMock.verify(session, connection, rc, packetDispatcher);
+   }
    // Private -----------------------------------------------------------------------------------------------------------
 
    
