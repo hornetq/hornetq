@@ -69,11 +69,11 @@ public class JBossMessage implements javax.jms.Message
 
    private static final SimpleString REPLYTO_HEADER_NAME = new SimpleString("JMSReplyTo");
    
-   private static final SimpleString CORRELATIONID_HEADER_NAME = new SimpleString("JMSCorrelationID");
+   public static final SimpleString CORRELATIONID_HEADER_NAME = new SimpleString("JMSCorrelationID");
 
-   private static final SimpleString JBM_MESSAGE_ID = new SimpleString("JMSMessageID");
+   public static final SimpleString JBM_MESSAGE_ID = new SimpleString("JMSMessageID");
    
-   private static final SimpleString TYPE_HEADER_NAME = new SimpleString("JMSType");
+   public static final SimpleString TYPE_HEADER_NAME = new SimpleString("JMSType");
    
    private static final SimpleString JMS = new SimpleString("JMS");
    
@@ -81,7 +81,7 @@ public class JBossMessage implements javax.jms.Message
    
    private static final SimpleString JMS_ = new SimpleString("JMS_");
    
-   private static final String JMSXDELIVERYCOUNT = "JMSXDeliveryCount";
+   public static final String JMSXDELIVERYCOUNT = "JMSXDeliveryCount";
    
    //Used when bridging a message
    public static final String JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST = "JBM_BRIDGE_MSG_ID_LIST";
@@ -424,16 +424,22 @@ public class JBossMessage implements javax.jms.Message
 
    public void setJMSRedelivered(final boolean redelivered) throws JMSException
    {      
-      if (message.getDeliveryCount() > 1)
+      if (!redelivered)
       {
-         //do nothing
+         message.setDeliveryCount(1);
       }
-      else
-      {
-         message.setDeliveryCount(2);
+      else {
+         if (message.getDeliveryCount() > 1)
+         {
+            //do nothing
+         }
+         else
+         {
+            message.setDeliveryCount(2);
+         }
       }
    }
-  
+   
    public void setJMSType(final String type) throws JMSException
    {
       if (type != null)
@@ -475,9 +481,11 @@ public class JBossMessage implements javax.jms.Message
 
    public void setJMSPriority(final int priority) throws JMSException
    {
+      checkPriority(priority);
+      
       message.setPriority((byte)priority);
    }
-      
+
    public void clearProperties() throws JMSException
    {     
       List<SimpleString> toRemove = new ArrayList<SimpleString>();
@@ -984,5 +992,14 @@ public class JBossMessage implements javax.jms.Message
       return true;
    }
    
+   
+   private void checkPriority(int priority) throws JMSException
+   {
+      if (priority < 0 || priority > 9)
+      {
+         throw new JMSException(priority + " is not valid: priority must be between 0 and 9");
+      }
+   }
+
    // Inner classes -------------------------------------------------
 }
