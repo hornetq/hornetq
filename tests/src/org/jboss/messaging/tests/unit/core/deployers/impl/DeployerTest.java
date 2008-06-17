@@ -243,10 +243,5 @@ public class DeployerTest  extends TestCase
       {
          return element;
       }
-
-      public int getOrder()
-      {
-         return 0;
-      }
    }
 }

@@ -241,9 +241,6 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
    public abstract void undeploy(Node node)
            throws Exception;
 
-
-   abstract public int getOrder();
-
    protected Element getRootElement(URL url)
            throws Exception
    {

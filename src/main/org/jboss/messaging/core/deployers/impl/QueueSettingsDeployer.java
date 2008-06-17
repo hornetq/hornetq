@@ -127,11 +127,6 @@ public class QueueSettingsDeployer extends XmlDeployer
       return "queues.xml";
    }
 
-   public int getOrder()
-   {
-      return 1;
-   }
-
    /**
     * undeploys an element
     * @param node the element to undeploy

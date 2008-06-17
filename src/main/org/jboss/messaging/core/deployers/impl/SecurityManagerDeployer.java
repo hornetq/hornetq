@@ -78,11 +78,6 @@ public class SecurityManagerDeployer extends XmlDeployer
       return "jbm-security.xml";
    }
 
-   public int getOrder()
-   {
-      return 1;
-   }
-
    public void setJbmSecurityManager(JBMUpdateableSecurityManager jbmSecurityManager)
    {
       this.jbmSecurityManager = jbmSecurityManager;
