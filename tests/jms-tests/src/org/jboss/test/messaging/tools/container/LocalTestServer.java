@@ -27,9 +27,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.jms.InvalidDestinationException;
 import javax.management.NotificationListener;
@@ -655,7 +655,7 @@ public class LocalTestServer implements Server, Runnable
       getJMSServerManager().destroyConnectionFactory(objectName);
    }
 
-   public void configureSecurityForDestination(String destName, boolean isQueue, HashSet<Role> roles) throws Exception
+   public void configureSecurityForDestination(String destName, boolean isQueue, Set<Role> roles) throws Exception
    {
       String prefix = isQueue ? "queuejms." : "topicjms.";
       if (roles != null)
@@ -798,19 +798,19 @@ public class LocalTestServer implements Server, Runnable
    }
 
 
-   public HashSet<Role> getSecurityConfig() throws Exception
+   public Set<Role> getSecurityConfig() throws Exception
    {
       return getMessagingServer().getSecurityRepository().getMatch("*");
    }
 
-   public void setSecurityConfig(HashSet<Role> defConfig) throws Exception
+   public void setSecurityConfig(Set<Role> defConfig) throws Exception
    {
       getMessagingServer().getSecurityRepository().removeMatch("*");
       getMessagingServer().getSecurityRepository().addMatch("*", defConfig);      
    }
 
 
-   public void setSecurityConfigOnManager(boolean b, String s, HashSet<Role> conf) throws Exception
+   public void setSecurityConfigOnManager(boolean b, String s, Set<Role> conf) throws Exception
    {
       String prefix = b ? "queuejms." : "topicjms.";
       getMessagingServer().getSecurityRepository().addMatch(prefix + s, conf);

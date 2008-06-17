@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.jms.Queue;
 import javax.jms.Topic;
@@ -36,11 +37,9 @@ import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
-import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.microcontainer.JBMBootstrapServer;
@@ -861,12 +860,12 @@ public class JBMServerTestCase extends JBMBaseTestCase
       return servers.get(server).getMessageCountForQueue(s);
    }
 
-   protected HashSet<Role> getSecurityConfig() throws Exception
+   protected Set<Role> getSecurityConfig() throws Exception
    {
       return servers.get(0).getSecurityConfig();
    }
 
-   protected void setSecurityConfig(HashSet<Role> defConfig) throws Exception
+   protected void setSecurityConfig(Set<Role> defConfig) throws Exception
    {
       servers.get(0).setSecurityConfig(defConfig);
    }

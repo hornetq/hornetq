@@ -1,7 +1,5 @@
 package org.jboss.messaging.core.settings;
 
-
-
 /**
  * allows objects to be mapped against a regex pattern and held in order in a list
  *

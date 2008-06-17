@@ -241,7 +241,7 @@ public class DeployerTest  extends TestCase
          return element;
       }
 
-      public int getWeight()
+      public int getOrder()
       {
          return 0;
       }

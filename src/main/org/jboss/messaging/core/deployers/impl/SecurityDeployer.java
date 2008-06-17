@@ -21,13 +21,14 @@
    */
 package org.jboss.messaging.core.deployers.impl;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import java.util.ArrayList;
-import java.util.HashSet;
 
 /**
  * Deploys the security settings into a security repository and adds them to the security store.
@@ -51,9 +52,9 @@ public class SecurityDeployer extends XmlDeployer
    /**
     * The repository to add to
     */
-   private HierarchicalRepository<HashSet<Role>> securityRepository;
+   private HierarchicalRepository<Set<Role>> securityRepository;
 
-   public SecurityDeployer(HierarchicalRepository<HashSet<Role>> securityRepository)
+   public SecurityDeployer(final HierarchicalRepository<Set<Role>> securityRepository)
    {
       this.securityRepository = securityRepository;
    }
@@ -84,7 +85,7 @@ public class SecurityDeployer extends XmlDeployer
     * @param node the element to deploy
     * @throws Exception .
     */
-   public void deploy(Node node) throws Exception
+   public void deploy(final Node node) throws Exception
    {
       HashSet<Role> securityRoles = new HashSet<Role>();
       ArrayList<String> create = new ArrayList<String>();
@@ -135,7 +136,7 @@ public class SecurityDeployer extends XmlDeployer
     * @param node the element to undeploy
     * @throws Exception .
     */
-   public void undeploy(Node node) throws Exception
+   public void undeploy(final Node node) throws Exception
    {
       String match = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
       securityRepository.removeMatch(match);
@@ -151,7 +152,7 @@ public class SecurityDeployer extends XmlDeployer
       return QUEUES_XML;
    }
 
-   public int getWeight()
+   public int getOrder()
    {
       return 1;
    }

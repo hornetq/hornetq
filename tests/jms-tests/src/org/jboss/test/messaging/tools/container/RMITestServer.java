@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
@@ -455,7 +456,7 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       server.undeployConnectionFactory(objectName);
    }
 
-   public void configureSecurityForDestination(String destName, boolean isQueue, HashSet<Role> roles) throws Exception
+   public void configureSecurityForDestination(String destName, boolean isQueue, Set<Role> roles) throws Exception
    {
       server.configureSecurityForDestination(destName, isQueue, roles);
    }
@@ -538,18 +539,18 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    }
 
 
-   public HashSet<Role> getSecurityConfig() throws Exception
+   public Set<Role> getSecurityConfig() throws Exception
    {
       return server.getSecurityConfig();
    }
 
-   public void setSecurityConfig(HashSet<Role> defConfig) throws Exception
+   public void setSecurityConfig(Set<Role> defConfig) throws Exception
    {
       server.setSecurityConfig(defConfig);
    }
 
 
-   public void setSecurityConfigOnManager(boolean b, String s, HashSet<Role> conf) throws Exception
+   public void setSecurityConfigOnManager(boolean b, String s, Set<Role> conf) throws Exception
    {
       server.setSecurityConfigOnManager(b, s, conf);
    }

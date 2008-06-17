@@ -64,9 +64,9 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
 
    private boolean trace = log.isTraceEnabled();
 
-   private HierarchicalRepository<HashSet<Role>> securityRepository;
+   private HierarchicalRepository<Set<Role>> securityRepository;
 
-   JBMSecurityManager securityManager;
+   private JBMSecurityManager securityManager;
 
    private final Set<SimpleString> readCache = new ConcurrentHashSet<SimpleString>();
 
@@ -113,7 +113,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
    
          String saddress = address.toString();
          
-         HashSet<Role> roles = securityRepository.getMatch(saddress);
+         Set<Role> roles = securityRepository.getMatch(saddress);
          if(!securityManager.validateUserAndRole(conn.getUsername(), conn.getPassword(), roles, checkType))
          {
              throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "Unable to validate user: " + conn.getUsername());
@@ -153,7 +153,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
 
    // Public --------------------------------------------------------
 
-   public void setSecurityRepository(HierarchicalRepository<HashSet<Role>> securityRepository)
+   public void setSecurityRepository(HierarchicalRepository<Set<Role>> securityRepository)
    {
       this.securityRepository = securityRepository;
       securityRepository.registerListener(this);

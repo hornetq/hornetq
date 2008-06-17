@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.server.impl;
 
 import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -108,7 +109,7 @@ public class MessagingServerImpl implements MessagingServer
    private DeploymentManager deploymentManager = new FileDeploymentManager();
    private ExecutorFactory executorFactory;
    private ExecutorService threadPool;
-   private HierarchicalRepository<HashSet<Role>> securityRepository = new HierarchicalObjectRepository<HashSet<Role>>();
+   private HierarchicalRepository<Set<Role>> securityRepository = new HierarchicalObjectRepository<Set<Role>>();
    private HierarchicalRepository<QueueSettings> queueSettingsRepository = new HierarchicalObjectRepository<QueueSettings>();
    private QueueFactory queueFactory;
    private ResourceManager resourceManager = new ResourceManagerImpl(0);
@@ -312,7 +313,7 @@ public class MessagingServerImpl implements MessagingServer
       this.postOffice = postOffice;
    }
 
-   public HierarchicalRepository<HashSet<Role>> getSecurityRepository()
+   public HierarchicalRepository<Set<Role>> getSecurityRepository()
    {
       return securityRepository;
    }

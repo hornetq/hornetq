@@ -21,8 +21,9 @@
   */
 package org.jboss.test.messaging.jms;
 
-import java.util.HashSet;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -35,16 +36,9 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.Topic;
-import javax.jms.XAConnection;
-import javax.jms.XAConnectionFactory;
-import javax.jms.XASession;
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.core.transaction.impl.XidImpl;
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
@@ -78,7 +72,7 @@ public class SecurityTest extends JMSTestCase
 
    // Attributes ----------------------------------------------------
 
-   private HashSet<Role> oldDefaultConfig;
+   private Set<Role> oldDefaultConfig;
 
    // Constructors --------------------------------------------------
 
@@ -528,8 +522,7 @@ public class SecurityTest extends JMSTestCase
     */
    public void testDefaultSecurityUpdate() throws Exception
    {
-      HashSet<Role>  defSecConf = getSecurityConfig();
-
+      Set<Role> defSecConf = getSecurityConfig();
 
       // "john" has the role def, so he should be able to create a producer and a consumer on a queue
       Connection conn = null;
@@ -684,7 +677,7 @@ public class SecurityTest extends JMSTestCase
          //Should fall back to the default config
          HashSet<Role> lockedConf = new HashSet<Role>();
          lockedConf.add(new Role("alien", true, true, true)) ;
-         HashSet<Role> orig = getSecurityConfig();
+         Set<Role> orig = getSecurityConfig();
          setSecurityConfig(lockedConf);
 
          assertFalse(canReadDestination(conn, topic2));

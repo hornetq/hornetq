@@ -21,7 +21,7 @@
   */
 package org.jboss.messaging.core.security;
 
-import java.util.HashSet;
+import java.util.Set;
 
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
@@ -40,7 +40,7 @@ public interface SecurityStore
    
    void check(SimpleString address, CheckType checkType, ServerConnection conn) throws Exception;
 
-   void setSecurityRepository(HierarchicalRepository<HashSet<Role>> securityRepository);
+   void setSecurityRepository(HierarchicalRepository<Set<Role>> securityRepository);
    
    void setSecurityManager(JBMSecurityManager securityManager);
 }

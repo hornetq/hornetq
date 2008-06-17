@@ -87,7 +87,7 @@ public class JournalStorageManager implements StorageManager
 	
 	private volatile boolean started;
 	
-	public JournalStorageManager(Configuration config)
+	public JournalStorageManager(final Configuration config)
 	{
 		if (config.getJournalType() != JournalType.NIO && config.getJournalType() != JournalType.ASYNCIO)
 		{
@@ -123,7 +123,7 @@ public class JournalStorageManager implements StorageManager
          log.info("AIO journal selected");
          if (!AIOSequentialFileFactory.isSupported())
          {
-            log.warn("AIO wasn't located on this platform, it will fall back to Java NIO. " +
+            log.warn("AIO wasn't located on this platform, it will fall back to using pure Java NIO. " +
                      "If your platform is Linux, install LibAIO to enable the AIO journal");
             journalFF = new NIOSequentialFileFactory(journalDir);
          }

@@ -63,8 +63,8 @@ public interface Deployer extends MessagingComponent
    void undeploy(URL url) throws Exception;
 
    /**
-    * the weight of the deployer, used for ordering the order that deployers are deployed.
-    * @return the weight
+    * the order of the deployer, used for ordering the order that deployers are deployed.
+    * @return the order
     */
-   int getWeight();
+   int getOrder();
 }

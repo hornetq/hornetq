@@ -233,7 +233,7 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
            throws Exception;
 
 
-   abstract public int getWeight();
+   abstract public int getOrder();
 
    protected Element getRootElement(URL url)
            throws Exception

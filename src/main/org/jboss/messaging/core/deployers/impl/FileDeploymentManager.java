@@ -29,6 +29,8 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -44,23 +46,27 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
 {
    private static final Logger log = Logger.getLogger(FileDeploymentManager.class);
    //these are the list of deployers, typically destination and connection factory.
-   private static ArrayList<Deployer> deployers = new ArrayList<Deployer>();
+   private static List<Deployer> deployers = new ArrayList<Deployer>();
    //any config files deployed and the time they were deployed
-   private static HashMap<URL, Long> deployed = new HashMap<URL, Long>();
+   private static Map<URL, Long> deployed = new HashMap<URL, Long>();
    // the list of URL's to deploy
-   private static ArrayList<URL> toDeploy = new ArrayList<URL>();
+   private static List<URL> toDeploy = new ArrayList<URL>();
    //the list of URL's to undeploy if removed
-   private static ArrayList<URL> toUndeploy = new ArrayList<URL>();
+   private static List<URL> toUndeploy = new ArrayList<URL>();
    //the list of URL's to redeploy if changed
-   private static ArrayList<URL> toRedeploy = new ArrayList<URL>();
+   private static List<URL> toRedeploy = new ArrayList<URL>();
    
    private static ScheduledExecutorService scheduler;
 
-   int currentWeight = 0;
+   private int currentOrder = 0;
 
-   public void start(final int weight) throws Exception
+   public synchronized void start(final int order) throws Exception
    {
-      Collection<ConfigurationURL> configurations = getUnstartedConfigurations(weight);
+      if (order <= currentOrder)
+      {
+         throw new IllegalArgumentException("Already started with weight " + currentOrder);
+      }
+      Collection<ConfigurationURL> configurations = getUnstartedConfigurations(order);
       for (ConfigurationURL configuration : configurations)
       {
          Iterator<URL> urls = configuration.getUrls();
@@ -71,14 +77,14 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
             deployed.put(url, new File(url.getFile()).lastModified());
          }
       }
-      currentWeight = weight;
+      currentOrder = order;
       // Get the scheduler
       scheduler = Executors.newSingleThreadScheduledExecutor();
 
       scheduler.scheduleAtFixedRate(this, 10, 5, TimeUnit.SECONDS);
    }
 
-   public void stop()
+   public synchronized void stop()
    {
       deployers.clear();
       if (scheduler != null)
@@ -94,37 +100,34 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
     * @param Deployer The Deployer object
     * @throws Exception .
     */
-   public void registerDeployer(final Deployer Deployer) throws Exception
+   public synchronized void registerDeployer(final Deployer Deployer) throws Exception
    {
-      synchronized (this)
+      deployers.add(Deployer);
+      if (Deployer.getOrder() <= currentOrder)
       {
-         deployers.add(Deployer);
-         if (Deployer.getWeight() <= currentWeight)
+         Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(Deployer.getConfigFileName());
+         while (urls.hasMoreElements())
          {
-            Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(Deployer.getConfigFileName());
-            while (urls.hasMoreElements())
+            URL url = urls.nextElement();
+            if (!deployed.keySet().contains(url))
             {
-               URL url = urls.nextElement();
-               if (!deployed.keySet().contains(url))
-               {
-                  deployed.put(url, new File(url.getFile()).lastModified());
-               }
-               try
-               {
-                  log.info(new StringBuilder("Deploying ").append(Deployer).append(" with url").append(url));
-                  Deployer.deploy(url);
+               deployed.put(url, new File(url.getFile()).lastModified());
+            }
+            try
+            {
+               log.info(new StringBuilder("Deploying ").append(Deployer).append(" with url").append(url));
+               Deployer.deploy(url);
 
-               }
-               catch (Exception e)
-               {
-                  log.error(new StringBuilder("Error deploying ").append(url), e);
-               }
+            }
+            catch (Exception e)
+            {
+               log.error(new StringBuilder("Error deploying ").append(url), e);
             }
          }
-      }
+      }      
    }
 
-   public void unregisterDeployer(final Deployer Deployer)
+   public synchronized void unregisterDeployer(final Deployer Deployer)
    {
       deployers.remove(Deployer);
       if (deployers.size() == 0)
@@ -140,19 +143,16 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
    /**
     * called by the ExecutorService every n seconds
     */
-   public void run()
+   public synchronized void run()
    {
-      synchronized (this)
+      try
       {
-         try
-         {
-            scan();
-         }
-         catch (Exception e)
-         {
-            log.warn("error scanning for URL's " + e);
-         }
+         scan();
       }
+      catch (Exception e)
+      {
+         log.warn("error scanning for URL's " + e);
+      }      
    }
 
    /**
@@ -163,10 +163,10 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
     */
    private Collection<ConfigurationURL> getUnstartedConfigurations(final int weight) throws IOException
    {
-      HashMap<String, ConfigurationURL> configurations = new HashMap<String, ConfigurationURL>();
+      Map<String, ConfigurationURL> configurations = new HashMap<String, ConfigurationURL>();
       for (Deployer deployer : deployers)
       {
-         if (deployer.getWeight() <= weight && deployer.getWeight() > currentWeight)
+         if (deployer.getOrder() <= weight && deployer.getOrder() > currentOrder)
          {
             Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(deployer.getConfigFileName());
 
@@ -186,10 +186,10 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
 
    private Collection<ConfigurationURL> getStartedConfigurations() throws IOException
    {
-      HashMap<String, ConfigurationURL> configurations = new HashMap<String, ConfigurationURL>();
+      Map<String, ConfigurationURL> configurations = new HashMap<String, ConfigurationURL>();
       for (Deployer deployer : deployers)
       {
-         if (deployer.getWeight() <= currentWeight)
+         if (deployer.getOrder() <= currentOrder)
          {
             Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(deployer.getConfigFileName());
 
@@ -311,8 +311,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
     * @param url the url to deploy
     * @throws Exception .
     */
-   private void deploy(final URL url)
-           throws Exception
+   private void deploy(final URL url) throws Exception
    {
       deployed.put(url, new File(url.getFile()).lastModified());
       for (Deployer Deployer : deployers)
@@ -329,9 +328,9 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
       }
    }
 
-   static class ConfigurationURL
+   private static class ConfigurationURL
    {
-      private ArrayList<URL> urls = new ArrayList<URL>();
+      private List<URL> urls = new ArrayList<URL>();
       private String configFileName;
 
       public ConfigurationURL(final Enumeration<URL> urls, final String configFileName)

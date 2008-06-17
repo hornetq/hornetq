@@ -21,20 +21,20 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import org.jboss.kernel.spi.deployment.KernelDeployment;
-import org.jboss.messaging.core.management.MessagingServerManagement;
-import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.jms.server.JMSServerManager;
+import java.rmi.Remote;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.transaction.UserTransaction;
-import java.rmi.Remote;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+
+import org.jboss.kernel.spi.deployment.KernelDeployment;
+import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.jms.server.JMSServerManager;
 
 /**
  * The remote interface exposed by TestServer.
@@ -230,7 +230,7 @@ public interface Server extends Remote
     * @param config - sending 'config' as a String and not as an org.w3c.dom.Element to avoid
     *        NotSerializableExceptions that show up when running tests on JDK 1.4.
     */
-   void configureSecurityForDestination(String destName, boolean isQueue, HashSet<Role> roles) throws Exception;
+   void configureSecurityForDestination(String destName, boolean isQueue, Set<Role> roles) throws Exception;
 
    /**
     * Executes a command on the server
@@ -262,11 +262,11 @@ public interface Server extends Remote
 
    List listAllSubscriptionsForTopic(String s) throws Exception;
 
-   HashSet<Role> getSecurityConfig() throws Exception;
+   Set<Role> getSecurityConfig() throws Exception;
 
-   void setSecurityConfig(HashSet<Role> defConfig) throws Exception;
+   void setSecurityConfig(Set<Role> defConfig) throws Exception;
 
-   void setSecurityConfigOnManager(boolean b, String s, HashSet<Role> lockedConf) throws Exception;
+   void setSecurityConfigOnManager(boolean b, String s, Set<Role> lockedConf) throws Exception;
 
    void setRedeliveryDelayOnDestination(String dest, boolean queue, long delay) throws Exception;
 

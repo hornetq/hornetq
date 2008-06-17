@@ -256,7 +256,7 @@ public class JMSServerDeployer extends XmlDeployer
       return "jbm-jndi.xml";
    }
 
-   public int getWeight()
+   public int getOrder()
    {
       return 2;
    }

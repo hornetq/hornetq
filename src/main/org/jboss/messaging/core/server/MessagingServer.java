@@ -21,7 +21,7 @@
  */
 package org.jboss.messaging.core.server;
 
-import java.util.HashSet;
+import java.util.Set;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.deployers.DeploymentManager;
@@ -79,7 +79,7 @@ public interface MessagingServer extends MessagingComponent
        
    ConnectionManager getConnectionManager();
    
-   HierarchicalRepository<HashSet<Role>> getSecurityRepository();
+   HierarchicalRepository<Set<Role>> getSecurityRepository();
    
    SecurityStore getSecurityStore();
 

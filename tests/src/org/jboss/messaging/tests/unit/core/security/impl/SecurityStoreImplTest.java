@@ -21,7 +21,11 @@
    */
 package org.jboss.messaging.tests.unit.core.security.impl;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import junit.framework.TestCase;
+
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.JBMSecurityManager;
@@ -30,8 +34,6 @@ import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.util.SimpleString;
-
-import java.util.HashSet;
 
 /**
  * tests SecurityStoreImpl
@@ -83,10 +85,10 @@ public class SecurityStoreImplTest extends TestCase
       JBMSecurityManager securityManager = EasyMock.createStrictMock(JBMSecurityManager.class);
       securityStore.setSecurityManager(securityManager);
       //noinspection unchecked
-      HierarchicalRepository<HashSet<Role>> repository = EasyMock.createStrictMock(HierarchicalRepository.class);
+      HierarchicalRepository<Set<Role>> repository = EasyMock.createStrictMock(HierarchicalRepository.class);
 
       SimpleString address = new SimpleString("anaddress");
-      HashSet<Role> roles = new HashSet<Role>();
+      Set<Role> roles = new HashSet<Role>();
       roles.add(new Role("user", false, false, true));
       repository.registerListener(securityStore);
       EasyMock.expect(repository.getMatch(address.toString())).andReturn(roles);
@@ -114,10 +116,10 @@ public class SecurityStoreImplTest extends TestCase
       JBMSecurityManager securityManager = EasyMock.createStrictMock(JBMSecurityManager.class);
       securityStore.setSecurityManager(securityManager);
       //noinspection unchecked
-      HierarchicalRepository<HashSet<Role>> repository = EasyMock.createStrictMock(HierarchicalRepository.class);
+      HierarchicalRepository<Set<Role>> repository = EasyMock.createStrictMock(HierarchicalRepository.class);
 
       SimpleString address = new SimpleString("anaddress");
-      HashSet<Role> roles = new HashSet<Role>();
+      Set<Role> roles = new HashSet<Role>();
       roles.add(new Role("user", false, false, true));
       repository.registerListener(securityStore);
       EasyMock.expect(repository.getMatch(address.toString())).andReturn(roles);
@@ -145,10 +147,10 @@ public class SecurityStoreImplTest extends TestCase
       JBMSecurityManager securityManager = EasyMock.createStrictMock(JBMSecurityManager.class);
       securityStore.setSecurityManager(securityManager);
       //noinspection unchecked
-      HierarchicalRepository<HashSet<Role>> repository = EasyMock.createStrictMock(HierarchicalRepository.class);
+      HierarchicalRepository<Set<Role>> repository = EasyMock.createStrictMock(HierarchicalRepository.class);
 
       SimpleString address = new SimpleString("anaddress");
-      HashSet<Role> roles = new HashSet<Role>();
+      Set<Role> roles = new HashSet<Role>();
       roles.add(new Role("user", false, false, true));
       repository.registerListener(securityStore);
       EasyMock.expect(repository.getMatch(address.toString())).andReturn(roles);
@@ -176,10 +178,10 @@ public class SecurityStoreImplTest extends TestCase
       JBMSecurityManager securityManager = EasyMock.createStrictMock(JBMSecurityManager.class);
       securityStore.setSecurityManager(securityManager);
       //noinspection unchecked
-      HierarchicalRepository<HashSet<Role>> repository = EasyMock.createStrictMock(HierarchicalRepository.class);
+      HierarchicalRepository<Set<Role>> repository = EasyMock.createStrictMock(HierarchicalRepository.class);
 
       SimpleString address = new SimpleString("anaddress");
-      HashSet<Role> roles = new HashSet<Role>();
+      Set<Role> roles = new HashSet<Role>();
       roles.add(new Role("user", false, false, true));
       repository.registerListener(securityStore);
       EasyMock.expect(repository.getMatch(address.toString())).andReturn(roles);

@@ -75,7 +75,7 @@ public class SecurityManagerDeployer extends XmlDeployer
       return "jbm-security.xml";
    }
 
-   public int getWeight()
+   public int getOrder()
    {
       return 1;
    }

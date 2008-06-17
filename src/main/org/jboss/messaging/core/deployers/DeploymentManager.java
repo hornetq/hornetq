@@ -45,7 +45,7 @@ public interface DeploymentManager
     */
    void unregisterDeployer(Deployer deployer);
 
-   void start(int weight) throws Exception;
+   void start(int order) throws Exception;
 
    void stop();
 }

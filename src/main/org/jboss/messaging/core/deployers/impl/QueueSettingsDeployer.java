@@ -21,7 +21,6 @@
    */
 package org.jboss.messaging.core.deployers.impl;
 
-import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.SimpleString;
@@ -126,7 +125,7 @@ public class QueueSettingsDeployer extends XmlDeployer
       return "queues.xml";
    }
 
-   public int getWeight()
+   public int getOrder()
    {
       return 1;
    }
