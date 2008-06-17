@@ -24,19 +24,19 @@ package org.jboss.messaging.tests.unit.core.deployers.impl;
 import junit.framework.TestCase;
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.deployers.DeploymentManager;
-import org.jboss.messaging.core.deployers.impl.SecurityManagerDeployer;
+import org.jboss.messaging.core.deployers.impl.BasicSecurityDeployer;
 import org.jboss.messaging.core.security.JBMUpdateableSecurityManager;
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * tests SecurityManagerDeployer
+ * tests BasicSecurityDeployer
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public class SecurityManagerDeployerTest  extends TestCase
 {
-   SecurityManagerDeployer deployer;
+   BasicSecurityDeployer deployer;
    String simpleSecurityXml = "<deployment>\n" +
            "</deployment>";
 
@@ -61,7 +61,7 @@ public class SecurityManagerDeployerTest  extends TestCase
    protected void setUp() throws Exception
    {
       DeploymentManager deploymentManager = EasyMock.createNiceMock(DeploymentManager.class);
-      deployer = new SecurityManagerDeployer(deploymentManager);
+      deployer = new BasicSecurityDeployer(deploymentManager);
    }
 
    protected void tearDown() throws Exception

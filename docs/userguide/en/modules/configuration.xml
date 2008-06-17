@@ -779,7 +779,7 @@
             <programlisting>
                <![CDATA[
    <bean name="SecurityManagerDeployer"
-      class="org.jboss.messaging.core.deployers.impl.SecurityManagerDeployer">
+      class="org.jboss.messaging.core.deployers.impl.BasicSecurityDeployer">
       <property name="jbmSecurityManager">
          <inject bean="JBMSecurityManager"/>
       </property>

@@ -127,7 +127,7 @@ public class MessagingServerImpl implements MessagingServer
       The following components are pluggable on the messaging server:
       Configuration, StorageManager, RemotingService and SecurityManager
       They must already be injected by the time the messaging server starts
-      It's up to the user to make sure the pluggable components are started - there 
+      It's up to the user to make sure the pluggable components are started - their
       lifecycle will not be controlled here
       */
       
@@ -234,26 +234,19 @@ public class MessagingServerImpl implements MessagingServer
 
    // MessagingServer implementation -----------------------------------------------------------
 
-   public Version getVersion()
-   {
-      return version;
-   }
-
-   public Configuration getConfiguration()
-   {
-      return configuration;
-   }
-
-   public boolean isStarted()
-   {
-      return started;
-   }
+   
+   // The plugabble components
 
    public void setConfiguration(Configuration configuration)
    {
       this.configuration = configuration;
    }
-
+   
+   public Configuration getConfiguration()
+   {
+      return configuration;
+   }
+   
    public void setRemotingService(RemotingService remotingService)
    {
       this.remotingService = remotingService;
@@ -264,54 +257,73 @@ public class MessagingServerImpl implements MessagingServer
       return remotingService;
    }
 
-   public ConnectionManager getConnectionManager()
-   {
-      return connectionManager;
-   }
-
-   public StorageManager getStorageManager()
-   {
-      return storageManager;
-   }
-
    public void setStorageManager(StorageManager storageManager)
    {
       this.storageManager = storageManager;
    }
-
-   public PostOffice getPostOffice()
+   
+   public StorageManager getStorageManager()
    {
-      return postOffice;
+      return storageManager;
    }
-
-   public void setPostOffice(PostOffice postOffice)
+   
+   public void setSecurityManager(JBMSecurityManager securityManager)
    {
-      this.postOffice = postOffice;
+      this.securityManager = securityManager;
    }
-
-   public HierarchicalRepository<Set<Role>> getSecurityRepository()
-   {
-      return securityRepository;
-   }
-
-   public HierarchicalRepository<QueueSettings> getQueueSettingsRepository()
-   {
-      return queueSettingsRepository;
-   }
-
-   public SecurityStore getSecurityStore()
-   {
-      return securityStore;
-   }
-
+      
    public JBMSecurityManager getSecurityManager()
    {
       return securityManager;
    }
 
-   public void setSecurityManager(JBMSecurityManager securityManager)
+   //The hardwired components
+   
+   public PostOffice getPostOffice()
    {
-      this.securityManager = securityManager;
+      return postOffice;
+   }
+   
+   public ConnectionManager getConnectionManager()
+   {
+      return connectionManager;
+   }
+   
+   public HierarchicalRepository<Set<Role>> getSecurityRepository()
+   {
+      return securityRepository;
+   }
+   
+   public SecurityStore getSecurityStore()
+   {
+      return securityStore;
+   }
+   
+   public HierarchicalRepository<QueueSettings> getQueueSettingsRepository()
+   {
+      return queueSettingsRepository;
+   }
+   
+   public ExecutorFactory getExecutorFactory()
+   {
+      return executorFactory;
+   }
+
+   public ResourceManager getResourceManager()
+   {
+      return resourceManager;
+   }
+   
+   public Version getVersion()
+   {
+      return version;
+   }
+   
+   //Operations
+   
+   public boolean isStarted()
+   {
+      return started;
    }
 
    public CreateConnectionResponse createConnection(final String username, final String password,
@@ -343,16 +355,6 @@ public class MessagingServerImpl implements MessagingServer
       return new CreateConnectionResponse(connection.getID(), version);
    }
 
-   public ExecutorFactory getExecutorFactory()
-   {
-      return executorFactory;
-   }
-
-   public ResourceManager getResourceManager()
-   {
-      return resourceManager;
-   }
-   
    // Public ---------------------------------------------------------------------------------------
 
    // Package protected ----------------------------------------------------------------------------

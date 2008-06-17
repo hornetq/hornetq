@@ -30,7 +30,7 @@
       </constructor>
    </bean>
 
-   <bean name="SecurityManagerDeployer" class="org.jboss.messaging.core.deployers.impl.SecurityManagerDeployer">
+   <bean name="BasicSecurityDeployer" class="org.jboss.messaging.core.deployers.impl.BasicSecurityDeployer">
       <constructor>
          <parameter>
             <inject bean="DeploymentManager"/>

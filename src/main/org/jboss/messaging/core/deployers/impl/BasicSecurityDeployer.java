@@ -28,20 +28,17 @@ import org.w3c.dom.NodeList;
 
 /**
  * 
- * TODO should rename this to security deployer rather than security manager deployer since doesn't deploy
- * security managers
- * 
  * deployer for adding security loaded from the file "jbm-security.xml"
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class SecurityManagerDeployer extends XmlDeployer
+public class BasicSecurityDeployer extends XmlDeployer
 {
    private JBMUpdateableSecurityManager jbmSecurityManager;
    private static final String PASSWORD_ATTRIBUTE = "password";
    private static final String ROLES_NODE = "role";
    private static final String ROLE_ATTR_NAME = "name";
 
-   public SecurityManagerDeployer(final DeploymentManager deploymentManager)
+   public BasicSecurityDeployer(final DeploymentManager deploymentManager)
    {
       super(deploymentManager);
    }
@@ -51,7 +48,7 @@ public class SecurityManagerDeployer extends XmlDeployer
       return new String[]{"user"};
    }
 
-   public void deploy(Node node) throws Exception
+   public void deploy(final Node node) throws Exception
    {
       String username = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
       String password = node.getAttributes().getNamedItem(PASSWORD_ATTRIBUTE).getNodeValue();
@@ -70,7 +67,7 @@ public class SecurityManagerDeployer extends XmlDeployer
       }
    }
 
-   public void undeploy(Node node) throws Exception
+   public void undeploy(final Node node) throws Exception
    {
       String username = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
       jbmSecurityManager.removeUser(username);
@@ -81,7 +78,7 @@ public class SecurityManagerDeployer extends XmlDeployer
       return "jbm-security.xml";
    }
 
-   public void setJbmSecurityManager(JBMUpdateableSecurityManager jbmSecurityManager)
+   public void setJbmSecurityManager(final JBMUpdateableSecurityManager jbmSecurityManager)
    {
       this.jbmSecurityManager = jbmSecurityManager;
    }

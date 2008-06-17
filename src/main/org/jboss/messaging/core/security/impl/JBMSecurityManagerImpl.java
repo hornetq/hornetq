@@ -34,7 +34,7 @@ import org.jboss.messaging.core.security.Role;
 
 /**
  * A basic implementation of the JBMUpdateableSecurityManager. This can be used within an appserver and be deployed by
- * SecurityManagerDeployer or used standalone or embedded.
+ * BasicSecurityDeployer or used standalone or embedded.
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
