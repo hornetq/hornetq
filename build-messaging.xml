@@ -246,6 +246,8 @@
       <path refid="slf4j.api.classpath"/>
       <path refid="slf4j.log4j.classpath"/>
    </path>
+	
+   <path refid="jpa.api.classpath"/>
    <!--
         Setting "external.project" to true makes jbossbuild use the current directory, and not its
         parent, as project root. DO NOT change this.
