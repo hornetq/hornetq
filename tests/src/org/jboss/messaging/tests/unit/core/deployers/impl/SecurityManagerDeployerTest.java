@@ -22,13 +22,13 @@
 package org.jboss.messaging.tests.unit.core.deployers.impl;
 
 import junit.framework.TestCase;
+import org.easymock.EasyMock;
+import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.SecurityManagerDeployer;
-import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
 import org.jboss.messaging.core.security.JBMUpdateableSecurityManager;
 import org.jboss.messaging.util.XMLUtil;
-import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
-import org.easymock.EasyMock;
+import org.w3c.dom.NodeList;
 
 /**
  * tests SecurityManagerDeployer
@@ -60,7 +60,8 @@ public class SecurityManagerDeployerTest  extends TestCase
 
    protected void setUp() throws Exception
    {
-      deployer = new SecurityManagerDeployer();
+      DeploymentManager deploymentManager = EasyMock.createNiceMock(DeploymentManager.class);
+      deployer = new SecurityManagerDeployer(deploymentManager);
    }
 
    protected void tearDown() throws Exception

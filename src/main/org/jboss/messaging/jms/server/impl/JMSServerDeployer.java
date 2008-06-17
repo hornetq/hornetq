@@ -21,9 +21,9 @@
    */
 package org.jboss.messaging.jms.server.impl;
 
+import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.XmlDeployer;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -36,8 +36,6 @@ public class JMSServerDeployer extends XmlDeployer
    Logger log = Logger.getLogger(JMSServerManagerImpl.class);
 
    private JMSServerManager jmsServerManager;
-
-   private MessagingServer messagingServer;
 
    private static final String CLIENTID_ELEMENT = "client-id";
    private static final String DUPS_OK_BATCH_SIZE_ELEMENT = "dups-ok-batch-size";
@@ -53,38 +51,14 @@ public class JMSServerDeployer extends XmlDeployer
    private static final String QUEUE_NODE_NAME = "queue";
    private static final String TOPIC_NODE_NAME = "topic";
 
+   public JMSServerDeployer(DeploymentManager deploymentManager)
+   {
+      super(deploymentManager);
+   }
+
    public void setJmsServerManager(JMSServerManager jmsServerManager)
    {
       this.jmsServerManager = jmsServerManager;
-   }
-
-   public void setMessagingServer(MessagingServer messagingServer)
-   {
-      this.messagingServer = messagingServer;
-   }
-
-   /**
-    * lifecycle method
-    */
-   public void start() throws Exception
-   {
-      try
-      {
-         messagingServer.getDeploymentManager().registerDeployer(this);
-      }
-      catch (Exception e)
-      {
-         log.error(new StringBuilder("Unable to get Deployment Manager: ").append(e));
-      }
-   }
-
-   /**
-    * lifecycle method
-    */
-   public void stop() throws Exception
-   {
-      super.stop();
-      messagingServer.getDeploymentManager().unregisterDeployer(this);
    }
 
    /**

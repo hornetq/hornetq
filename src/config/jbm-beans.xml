@@ -4,6 +4,8 @@
 
    <bean name="Configuration" class="org.jboss.messaging.core.config.impl.FileConfiguration"/>
 
+   <bean name="DeploymentManager" class="org.jboss.messaging.core.deployers.impl.FileDeploymentManager"/>
+   
    <bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JAASSecurityManager"/>
 
    <!-- <bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl">
@@ -68,12 +70,36 @@
    </bean>
 
    <bean name="JMSServerDeployer" class="org.jboss.messaging.jms.server.impl.JMSServerDeployer">
+      <constructor>
+         <parameter>
+            <inject bean="DeploymentManager"/>
+         </parameter>
+      </constructor>
       <property name="jmsServerManager">
          <inject bean="JMSServerManager"/>
       </property>
-      <property name="messagingServer">
-         <inject bean="MessagingServer"/>
-      </property>
+   </bean>
+
+   <bean name="QueueSettingsDeployer" class="org.jboss.messaging.core.deployers.impl.QueueSettingsDeployer">
+      <constructor>
+         <parameter>
+            <inject bean="DeploymentManager"/>
+         </parameter>
+         <parameter>
+            <inject bean="MessagingServer" property="queueSettingsRepository" state="Configured"/>
+         </parameter>
+      </constructor>
+   </bean>
+
+   <bean name="SecurityDeployer" class="org.jboss.messaging.core.deployers.impl.SecurityDeployer">
+      <constructor>
+         <parameter>
+            <inject bean="DeploymentManager"/>
+         </parameter>
+         <parameter>
+            <inject bean="MessagingServer" property="securityRepository"/>
+         </parameter>
+      </constructor>
    </bean>
 
 </deployment>

@@ -22,17 +22,14 @@
 package org.jboss.messaging.tests.unit.core.deployers.impl;
 
 import junit.framework.TestCase;
-
 import org.easymock.EasyMock;
 import org.easymock.IArgumentMatcher;
+import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.QueueSettingsDeployer;
-import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.postoffice.impl.BindingImpl;
-import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
-import org.jboss.messaging.util.XMLUtil;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.XMLUtil;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -56,8 +53,8 @@ public class QueueSettingsDeployerTest extends TestCase
    protected void setUp() throws Exception
    {
       repository = EasyMock.createStrictMock(HierarchicalRepository.class);
-
-      queueSettingsDeployer = new QueueSettingsDeployer(repository);
+      DeploymentManager deploymentManager = EasyMock.createNiceMock(DeploymentManager.class);
+      queueSettingsDeployer = new QueueSettingsDeployer(deploymentManager, repository);
    }
 
    public void testDeploy() throws Exception

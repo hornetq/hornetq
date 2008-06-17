@@ -21,6 +21,7 @@
    */
 package org.jboss.messaging.core.deployers.impl;
 
+import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.SimpleString;
@@ -49,9 +50,10 @@ public class QueueSettingsDeployer extends XmlDeployer
 
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
    
-   public QueueSettingsDeployer(final HierarchicalRepository<QueueSettings> queueSettingsRepository)
+   public QueueSettingsDeployer(final DeploymentManager deploymentManager, final HierarchicalRepository<QueueSettings> queueSettingsRepository)
    {
-   	this.queueSettingsRepository = queueSettingsRepository;
+   	super(deploymentManager);
+      this.queueSettingsRepository = queueSettingsRepository;
    }
    
    /**

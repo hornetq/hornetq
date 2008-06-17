@@ -157,6 +157,7 @@ public class ClientCrashTest extends TestCase
       ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", ConfigurationImpl.DEFAULT_PORT);
       config.getConnectionParams().setPingInterval(2000);
       config.getConnectionParams().setPingTimeout(1000);
+      config.setSecurityEnabled(false);
       server = new MessagingServerImpl(config);
       server.start();
 

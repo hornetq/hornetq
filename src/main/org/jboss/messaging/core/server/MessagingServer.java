@@ -21,10 +21,7 @@
  */
 package org.jboss.messaging.core.server;
 
-import java.util.Set;
-
 import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.PacketReturner;
@@ -38,6 +35,8 @@ import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.ExecutorFactory;
+
+import java.util.Set;
 
 /**
  * This interface defines the internal interface of the Messaging Server exposed
@@ -84,8 +83,6 @@ public interface MessagingServer extends MessagingComponent
    SecurityStore getSecurityStore();
 
    HierarchicalRepository<QueueSettings> getQueueSettingsRepository();
-   
-   DeploymentManager getDeploymentManager();
    
    ExecutorFactory getExecutorFactory();
    

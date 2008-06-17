@@ -7,17 +7,8 @@
 
 package org.jboss.messaging.tests.integration.core.remoting.impl;
 
-import java.util.UUID;
-
 import junit.framework.TestCase;
-
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
-import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientProducer;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.client.*;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
@@ -28,6 +19,8 @@ import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
+
+import java.util.UUID;
 
 public class PacketFilterTest  extends TestCase
 {
@@ -47,7 +40,8 @@ public class PacketFilterTest  extends TestCase
    {
       ConfigurationImpl config = new ConfigurationImpl();
       config.setTransport(TransportType.TCP);
-      config.setHost("localhost");      
+      config.setHost("localhost");
+      config.setSecurityEnabled(false);
       server = new MessagingServerImpl(config);
       server.start();
    }

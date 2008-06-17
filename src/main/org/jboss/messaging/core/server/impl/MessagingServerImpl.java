@@ -21,22 +21,9 @@
   */
 package org.jboss.messaging.core.server.impl;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
-
 import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.deployers.Deployer;
-import org.jboss.messaging.core.deployers.DeploymentManager;
-import org.jboss.messaging.core.deployers.impl.FileDeploymentManager;
-import org.jboss.messaging.core.deployers.impl.QueueSettingsDeployer;
-import org.jboss.messaging.core.deployers.impl.SecurityDeployer;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.memory.MemoryManager;
@@ -69,6 +56,10 @@ import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.ExecutorFactory;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 import org.jboss.messaging.util.VersionLoader;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.*;
 
 
 /**
@@ -104,9 +95,6 @@ public class MessagingServerImpl implements MessagingServer
    private RemotingSessionListener sessionListener;
    private MemoryManager memoryManager = new SimpleMemoryManager();
    private PostOffice postOffice;
-   private Deployer securityDeployer;
-   private Deployer queueSettingsDeployer;   
-   private DeploymentManager deploymentManager = new FileDeploymentManager();
    private ExecutorFactory executorFactory;
    private ExecutorService threadPool;
    private HierarchicalRepository<Set<Role>> securityRepository = new HierarchicalObjectRepository<Set<Role>>();
@@ -173,7 +161,6 @@ public class MessagingServerImpl implements MessagingServer
       securityRepository.setDefault(new HashSet<Role>());
       securityStore.setSecurityRepository(securityRepository);
       securityStore.setSecurityManager(securityManager);
-      securityDeployer = new SecurityDeployer(securityRepository);
       queueSettingsRepository.setDefault(new QueueSettings());
       scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(), new JBMThreadFactory("JBM-scheduled-threads"));
       queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository);
@@ -182,7 +169,6 @@ public class MessagingServerImpl implements MessagingServer
       this.sessionListener = cm;
       memoryManager = new SimpleMemoryManager();
       postOffice = new PostOfficeImpl(storageManager, queueFactory, configuration.isRequireDestinations());
-      queueSettingsDeployer = new QueueSettingsDeployer(queueSettingsRepository);
       threadPool = Executors.newFixedThreadPool(configuration.getThreadPoolMaxSize(), new JBMThreadFactory("JBM-session-threads"));
       executorFactory = new OrderedExecutorFactory(threadPool);
 
@@ -191,14 +177,9 @@ public class MessagingServerImpl implements MessagingServer
          remotingService.start();
       }
       // Start the wired components
-      securityDeployer.start();
       remotingService.addRemotingSessionListener(sessionListener);
       memoryManager.start();
-      deploymentManager.start(1);
-      deploymentManager.registerDeployer(securityDeployer);
-      deploymentManager.registerDeployer(queueSettingsDeployer);
       postOffice.start();
-      deploymentManager.start(2);
       serverPacketHandler = new MessagingServerPacketHandler(this);
       getRemotingService().getDispatcher().register(serverPacketHandler);
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -230,9 +211,6 @@ public class MessagingServerImpl implements MessagingServer
       started = false;
 
       // Stop the wired components
-      securityDeployer.stop();
-      queueSettingsDeployer.stop();
-      deploymentManager.stop();
       remotingService.removeRemotingSessionListener(sessionListener);
       connectionManager = null;
       memoryManager.stop();
@@ -281,11 +259,6 @@ public class MessagingServerImpl implements MessagingServer
    public RemotingService getRemotingService()
    {
       return remotingService;
-   }
-
-   public DeploymentManager getDeploymentManager()
-   {
-      return deploymentManager;
    }
 
    public ConnectionManager getConnectionManager()

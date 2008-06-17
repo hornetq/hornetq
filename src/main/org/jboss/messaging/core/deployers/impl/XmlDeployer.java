@@ -21,6 +21,15 @@
    */
 package org.jboss.messaging.core.deployers.impl;
 
+import org.jboss.messaging.core.deployers.Deployer;
+import org.jboss.messaging.core.deployers.DeploymentManager;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.server.MessagingComponent;
+import org.jboss.messaging.util.XMLUtil;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
@@ -28,14 +37,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
-
-import org.jboss.messaging.core.deployers.Deployer;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.MessagingComponent;
-import org.jboss.messaging.util.XMLUtil;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -47,6 +48,13 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
 
    private HashMap<URL, HashMap<String, Node>> configuration = new HashMap<URL, HashMap<String, Node>>();
 
+
+   protected DeploymentManager deploymentManager;
+
+   public XmlDeployer(final DeploymentManager deploymentManager)
+   {
+      this.deploymentManager = deploymentManager;
+   }
    /**
     * adds a URL to the already configured set of url's this deployer is handling
     * @param url The URL to add
@@ -186,7 +194,7 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
    //register with the deploymenmt manager
    public void start() throws Exception
    {
-
+      deploymentManager.registerDeployer(this);
    }
 
    //undeploy everything
@@ -207,6 +215,7 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
             }
          }
       }
+      deploymentManager.unregisterDeployer(this);
    }
 
    /**

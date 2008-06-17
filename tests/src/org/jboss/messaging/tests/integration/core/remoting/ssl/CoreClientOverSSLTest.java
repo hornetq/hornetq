@@ -21,9 +21,7 @@
  */
 package org.jboss.messaging.tests.integration.core.remoting.ssl;
 
-import static java.lang.Boolean.FALSE;
 import junit.framework.TestCase;
-
 import org.jboss.messaging.core.client.*;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
@@ -35,6 +33,8 @@ import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
 import org.jboss.messaging.tests.util.SpawnedVMSupport;
 import org.jboss.messaging.util.SimpleString;
+
+import static java.lang.Boolean.FALSE;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -118,6 +118,7 @@ public class CoreClientOverSSLTest extends TestCase
    {
       ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration(
             "localhost", SSL_PORT);
+      config.setSecurityEnabled(false);
       config.setSSLEnabled(true);
       config.setKeyStorePath("messaging.keystore");
       config.setKeyStorePassword("secureexample");

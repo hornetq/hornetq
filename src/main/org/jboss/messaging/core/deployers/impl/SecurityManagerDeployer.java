@@ -21,12 +21,10 @@
    */
 package org.jboss.messaging.core.deployers.impl;
 
+import org.jboss.messaging.core.deployers.DeploymentManager;
+import org.jboss.messaging.core.security.JBMUpdateableSecurityManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.jboss.messaging.core.security.JBMSecurityManager;
-import org.jboss.messaging.core.security.JBMUpdateableSecurityManager;
-import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
-import org.jboss.messaging.core.server.MessagingServer;
 
 /**
  * deployer for adding security loaded from the file "jbm-security.xml"
@@ -35,10 +33,15 @@ import org.jboss.messaging.core.server.MessagingServer;
 public class SecurityManagerDeployer extends XmlDeployer
 {
    private JBMUpdateableSecurityManager jbmSecurityManager;
-   private MessagingServer messagingServer;
+   private DeploymentManager deploymentManager;
    private static final String PASSWORD_ATTRIBUTE = "password";
    private static final String ROLES_NODE = "role";
    private static final String ROLE_ATTR_NAME = "name";
+
+   public SecurityManagerDeployer(final DeploymentManager deploymentManager)
+   {
+      super(deploymentManager);
+   }
 
    public String[] getElementTagName()
    {
@@ -83,23 +86,5 @@ public class SecurityManagerDeployer extends XmlDeployer
    public void setJbmSecurityManager(JBMUpdateableSecurityManager jbmSecurityManager)
    {
       this.jbmSecurityManager = jbmSecurityManager;
-   }
-
-   public void setMessagingServer(MessagingServer messagingServer)
-   {
-      this.messagingServer = messagingServer;
-   }
-
-   //register with the deploymenmt manager
-   public void start() throws Exception
-   {
-      super.start();
-      messagingServer.getDeploymentManager().registerDeployer(this);
-   }
-   
-   public void stop() throws Exception
-   {
-      super.stop();
-      messagingServer.getDeploymentManager().unregisterDeployer(this);
    }
 }

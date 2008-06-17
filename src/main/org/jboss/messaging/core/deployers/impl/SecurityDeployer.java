@@ -21,14 +21,15 @@
    */
 package org.jboss.messaging.core.deployers.impl;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-
+import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Deploys the security settings into a security repository and adds them to the security store.
@@ -54,8 +55,9 @@ public class SecurityDeployer extends XmlDeployer
     */
    private HierarchicalRepository<Set<Role>> securityRepository;
 
-   public SecurityDeployer(final HierarchicalRepository<Set<Role>> securityRepository)
+   public SecurityDeployer(final DeploymentManager deploymentManager, final HierarchicalRepository<Set<Role>> securityRepository)
    {
+      super(deploymentManager);
       this.securityRepository = securityRepository;
    }
 

@@ -23,8 +23,6 @@ package org.jboss.messaging.tests.unit.core.deployers.impl;
 
 
 import junit.framework.TestCase;
-
-import org.jboss.messaging.core.deployers.Deployer;
 import org.jboss.messaging.core.deployers.impl.XmlDeployer;
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
@@ -176,6 +174,11 @@ public class DeployerTest  extends TestCase
       private int deployments = 0;
       ArrayList<String> contents = new ArrayList<String>();
       HashMap<String, Node> nodes = new HashMap<String, Node>();
+
+      public TestDeployer()
+      {
+         super(null);
+      }
 
       public HashMap<String, Node> getNodes()
       {

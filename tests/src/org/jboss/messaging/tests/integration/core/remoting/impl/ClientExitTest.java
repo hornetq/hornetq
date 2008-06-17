@@ -21,9 +21,7 @@
 */
 package org.jboss.messaging.tests.integration.core.remoting.impl;
 
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import junit.framework.TestCase;
-
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientConsumer;
@@ -33,6 +31,7 @@ import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
+import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.tests.unit.core.remoting.impl.ConfigurationHelper;
@@ -102,6 +101,7 @@ public class ClientExitTest extends TestCase
    {
       ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration(
             "localhost", ConfigurationImpl.DEFAULT_PORT);
+      config.setSecurityEnabled(false);
       server = new MessagingServerImpl(config);
       server.start();
 

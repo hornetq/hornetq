@@ -44,8 +44,4 @@ public interface DeploymentManager
     * @throws Exception .
     */
    void unregisterDeployer(Deployer deployer);
-
-   void start(int order) throws Exception;
-
-   void stop();
 }

@@ -23,6 +23,7 @@ package org.jboss.messaging.tests.unit.core.deployers.impl;
 
 import junit.framework.TestCase;
 import org.easymock.EasyMock;
+import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.SecurityDeployer;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
@@ -59,7 +60,8 @@ public class SecurityDeployerTest extends TestCase
    protected void setUp() throws Exception
    {
       repository = EasyMock.createStrictMock(HierarchicalRepository.class);
-      deployer = new SecurityDeployer(EasyMock.createStrictMock(HierarchicalRepository.class));
+      DeploymentManager deploymentManager = EasyMock.createNiceMock(DeploymentManager.class);
+      deployer = new SecurityDeployer(deploymentManager, EasyMock.createStrictMock(HierarchicalRepository.class));
    }
 
    public void testSingle() throws Exception
