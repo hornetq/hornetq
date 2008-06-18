@@ -560,9 +560,7 @@ public class ClientSessionImplTest extends UnitTestCase
       testCreateBrowser(true);
       testCreateBrowser(false);
    }
-   
-   
-   
+         
    public void testGetXAResource() throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
@@ -751,9 +749,7 @@ public class ClientSessionImplTest extends UnitTestCase
       testClose(true);
       testClose(false);
    }
-   
-   
-    
+         
    public void testAddRemoveConsumer() throws Exception
    {
       testAddRemoveConsumer(true);

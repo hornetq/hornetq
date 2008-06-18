@@ -482,18 +482,16 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
    }
 
-
    public synchronized void cleanUp()
    {
       cleanUpChildren();
+      
       executorService.shutdown();
 
       connection.removeSession(this);
 
       closed = true;
    }
-
-
   
    public boolean isClosed()
    {

@@ -42,7 +42,6 @@ public class CreateConnectionRequest extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private int version;
-   private long remotingSessionID;
    private String username;
    private String password;
 
@@ -50,13 +49,11 @@ public class CreateConnectionRequest extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public CreateConnectionRequest(final int version,
-         final long remotingSessionID, final String username, final String password)
+   public CreateConnectionRequest(final int version, final String username, final String password)
    {
       super(CREATECONNECTION);
 
       this.version = version;
-      this.remotingSessionID = remotingSessionID;
       this.username = username;
       this.password = password;
    }
@@ -73,11 +70,6 @@ public class CreateConnectionRequest extends PacketImpl
       return version;
    }
 
-   public long getRemotingSessionID()
-   {
-      return remotingSessionID;
-   }
-
    public String getUsername()
    {
       return username;
@@ -91,7 +83,6 @@ public class CreateConnectionRequest extends PacketImpl
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putInt(version);
-      buffer.putLong(remotingSessionID);
       buffer.putNullableString(username);
       buffer.putNullableString(password);
    }
@@ -99,7 +90,6 @@ public class CreateConnectionRequest extends PacketImpl
    public void decodeBody(final MessagingBuffer buffer)
    {
       version = buffer.getInt();
-      remotingSessionID = buffer.getLong();
       username = buffer.getNullableString();
       password = buffer.getNullableString();
    }
@@ -109,7 +99,6 @@ public class CreateConnectionRequest extends PacketImpl
    {
       StringBuffer buf = new StringBuffer(getParentString());
       buf.append(", version=" + version);
-      buf.append(", remotingSessionID=" + remotingSessionID);
       buf.append(", username=" + username);
       buf.append(", password=" + password);
       buf.append("]");
@@ -125,8 +114,7 @@ public class CreateConnectionRequest extends PacketImpl
             
       CreateConnectionRequest r = (CreateConnectionRequest)other;
       
-      boolean matches = this.version == r.version &&
-                        this.remotingSessionID == r.remotingSessionID &&
+      boolean matches = this.version == r.version &&                     
                         this.username == null ? r.username == null : this.username.equals(r.username) &&
                         this.password == null ? r.password == null : this.password.equals(r.password);
       

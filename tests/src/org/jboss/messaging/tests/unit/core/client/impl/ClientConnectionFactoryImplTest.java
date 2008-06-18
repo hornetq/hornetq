@@ -230,14 +230,10 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
       
       rc.start();
       
-      final long sessID = 65126152;
-      
-      EasyMock.expect(rc.getSessionID()).andReturn(sessID);
-      
       Version clientVersion = VersionLoader.load();
       
       CreateConnectionRequest request =
-         new CreateConnectionRequest(clientVersion.getIncrementingVersion(), sessID, username, password);
+         new CreateConnectionRequest(clientVersion.getIncrementingVersion(), username, password);
       
       final long connTargetID = 5425142;
       

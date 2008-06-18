@@ -92,10 +92,9 @@ public interface MessagingServer extends MessagingComponent
   
    //Operations
    
-   CreateConnectionResponse createConnection(String username, String password,
-                                             long remotingClientSessionID,
+   CreateConnectionResponse createConnection(String username, String password,                                          
                                              int incrementingVersion,
-                                             PacketReturner sender) throws Exception;
+                                             PacketReturner returner) throws Exception;
    
       
    boolean isStarted();

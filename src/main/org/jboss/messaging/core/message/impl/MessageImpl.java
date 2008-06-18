@@ -86,7 +86,7 @@ public abstract class MessageImpl implements Message
    }
    
    protected MessageImpl(final byte type, final boolean durable, final long expiration,
-                      final long timestamp, final byte priority)
+                         final long timestamp, final byte priority)
    {
       this();
       this.type = type;

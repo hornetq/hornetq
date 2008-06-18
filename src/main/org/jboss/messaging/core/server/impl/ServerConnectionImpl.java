@@ -84,6 +84,8 @@ public class ServerConnectionImpl implements ServerConnection
    private final ConnectionManager connectionManager;
 
    private final PacketDispatcher dispatcher;
+   
+   private volatile boolean closed;
 
    // Constructors ---------------------------------------------------------------------------------
       
@@ -128,8 +130,7 @@ public class ServerConnectionImpl implements ServerConnection
    		                                                      final boolean autoCommitAcks,
                                                                final PacketReturner returner) throws Exception
    {            
-      ServerSession session =
-         new ServerSessionImpl(this, autoCommitSends, autoCommitAcks, xa, returner);
+      ServerSession session = doCreateSession(autoCommitSends, autoCommitAcks, xa, returner);
 
       sessions.add(session);
       
@@ -138,6 +139,13 @@ public class ServerConnectionImpl implements ServerConnection
       return new ConnectionCreateSessionResponseMessage(session.getID());
    }
    
+   protected ServerSession doCreateSession(final boolean autoCommitSends, final boolean autoCommitAcks,
+                                         final boolean xa, final PacketReturner returner)
+      throws Exception
+   {
+      return new ServerSessionImpl(this, autoCommitSends, autoCommitAcks, xa, returner);
+   }
+      
    public void start() throws Exception
    {
       setStarted(true);
@@ -150,6 +158,11 @@ public class ServerConnectionImpl implements ServerConnection
 
    public void close() throws Exception
    {
+      if (closed)
+      {
+         return;
+      }
+      
       Set<ServerSession> sessionsClone = new HashSet<ServerSession>(sessions);
       
       for (ServerSession session: sessionsClone)
@@ -163,11 +176,13 @@ public class ServerConnectionImpl implements ServerConnection
 
       for (Queue tempQueue: temporaryQueues)
       {                        
-         Binding binding = postOffice.getBinding(tempQueue.getName());
+         SimpleString name = tempQueue.getName();
+         
+         Binding binding = postOffice.getBinding(name);
          
          addresses.add(binding.getAddress());     
          
-         postOffice.removeBinding(tempQueue.getName());         
+         postOffice.removeBinding(name);         
       }
       
       for (SimpleString address: addresses)
@@ -187,6 +202,13 @@ public class ServerConnectionImpl implements ServerConnection
       connectionManager.unregisterConnection(remotingClientSessionID, this);
 
       dispatcher.unregister(id);
+      
+      closed = true;
+   }
+   
+   public boolean isClosed()
+   {
+      return closed;
    }
    
    public String getUsername()
@@ -252,6 +274,13 @@ public class ServerConnectionImpl implements ServerConnection
    {
       return remotingClientSessionID;
    }
+         
+   // Public ---------------------------------------------------------------------------------------
+    
+   public void addSession(final ServerSession session)
+   {
+      this.sessions.add(session);
+   }
    
    public Set<Queue> getTemporaryQueues()
    {
@@ -268,8 +297,6 @@ public class ServerConnectionImpl implements ServerConnection
       return new HashSet<ServerSession>(sessions);
    }
    
-   // Public ---------------------------------------------------------------------------------------
-    
    public String toString()
    {
       return "ConnectionEndpoint[" + id + "]";

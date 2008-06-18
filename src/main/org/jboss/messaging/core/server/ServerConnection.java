@@ -66,4 +66,6 @@ public interface ServerConnection
 	boolean isStarted();
 	
 	long getClientSessionID();
+	
+	boolean isClosed();
 }

@@ -112,6 +112,26 @@ public class VersionImpl implements Version, Serializable
    }
 
    // Public -------------------------------------------------------
+   
+   public boolean equals(Object other)
+   {
+      if (other == this)
+      {
+         return true;
+      }
+      if (other instanceof Version == false)
+      {
+         return false;
+      }
+      Version v = (Version)other;
+      
+      return this.versionName.equals(v.getVersionName()) &&
+             this.majorVersion == v.getMajorVersion() &&
+             this.minorVersion == v.getMinorVersion() &&
+             this.microVersion == v.getMicroVersion() &&
+             this.versionSuffix.equals(v.getVersionSuffix()) &&
+             this.incrementingVersion == v.getIncrementingVersion();
+   }
 
    // Package protected ---------------------------------------------
 

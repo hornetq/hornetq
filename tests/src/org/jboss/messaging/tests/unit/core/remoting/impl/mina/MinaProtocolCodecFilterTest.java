@@ -350,22 +350,19 @@ public class MinaProtocolCodecFilterTest extends UnitTestCase
    public void testCreateConnectionRequest() throws Exception
    {
       int version = randomInt();
-      long remotingSessionID = randomLong();
       String username = null;
       String password = null;
       CreateConnectionRequest request = new CreateConnectionRequest(version,
-            remotingSessionID, username, password);
+            username, password);
 
       Packet decodedPacket = encodeAndCheckBytesAndDecode(request, version,
-            remotingSessionID, username, password);
+            username, password);
 
       assertTrue(decodedPacket instanceof CreateConnectionRequest);
       CreateConnectionRequest decodedRequest = (CreateConnectionRequest) decodedPacket;
 
       assertEquals(CREATECONNECTION, decodedPacket.getType());
       assertEquals(request.getVersion(), decodedRequest.getVersion());
-      assertEquals(request.getRemotingSessionID(), decodedRequest
-            .getRemotingSessionID());
       assertEquals(request.getUsername(), decodedRequest.getUsername());
       assertEquals(request.getPassword(), decodedRequest.getPassword());
    }

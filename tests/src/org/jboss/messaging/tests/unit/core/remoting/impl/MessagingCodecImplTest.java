@@ -817,7 +817,7 @@ public class MessagingCodecImplTest extends UnitTestCase
 
    public void testCreateConnectionRequestPacket() throws Exception
    {
-      CreateConnectionRequest message = new CreateConnectionRequest(RandomUtil.randomInt(), RandomUtil.randomLong(), RandomUtil.randomString(), RandomUtil.randomString());
+      CreateConnectionRequest message = new CreateConnectionRequest(RandomUtil.randomInt(), RandomUtil.randomString(), RandomUtil.randomString());
       setHeaders(message);
       codec.encode(buff, message);
       buff.rewind();
@@ -825,8 +825,7 @@ public class MessagingCodecImplTest extends UnitTestCase
       checkHeaders(message, copy);
       assertEquals(message.getUsername(), copy.getUsername());
       assertEquals(message.getVersion(), copy.getVersion());
-      assertEquals(message.getPassword(), copy.getPassword());
-      assertEquals(message.getRemotingSessionID(), copy.getRemotingSessionID());
+      assertEquals(message.getPassword(), copy.getPassword());      
    }
 
    public void testConsumerFlowCreditMessagePacket() throws Exception

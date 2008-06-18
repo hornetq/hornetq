@@ -290,6 +290,72 @@ public class ClientConnectionImplTest extends UnitTestCase
       sessions = conn.getSessions();
       assertEquals(0, sessions.size());   
    }
+   
+   public void testSessionCleanedUp() throws Exception
+   {
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+
+      Location location = new LocationImpl(TransportType.TCP, "oranges");
+
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location);
+
+      final int connTargetID = 17267162;
+
+      Version version = new VersionImpl("uqysuyqs", 1, 1, 1, 12, "uqysuays");
+
+      ClientConnection conn = new ClientConnectionImpl(cf, connTargetID, rc, version);
+
+      ConnectionCreateSessionMessage request = new ConnectionCreateSessionMessage(true, true, true);
+
+      final int sessionTargetID = 12127162;
+
+      ConnectionCreateSessionResponseMessage response = new ConnectionCreateSessionResponseMessage(sessionTargetID);
+
+      EasyMock.expect(rc.sendBlocking(connTargetID, connTargetID, request)).andReturn(response);
+
+      EasyMock.replay(rc);
+      ClientSession session = conn.createClientSession(true, true, true, 1);
+      conn.cleanUp();
+      assertTrue(session.isClosed());
+      assertTrue(conn.isClosed());
+      EasyMock.verify(rc);
+   }
+
+
+   public void testSessionsCleanedUp() throws Exception
+   {
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+
+      Location location = new LocationImpl(TransportType.TCP, "oranges");
+
+      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location);
+
+      final int connTargetID = 17267162;
+
+      Version version = new VersionImpl("uqysuyqs", 1, 1, 1, 12, "uqysuays");
+
+      ClientConnection conn = new ClientConnectionImpl(cf, connTargetID, rc, version);
+
+      ConnectionCreateSessionMessage request = new ConnectionCreateSessionMessage(true, true, true);
+
+      final int sessionTargetID = 12127162;
+
+      ConnectionCreateSessionResponseMessage response = new ConnectionCreateSessionResponseMessage(sessionTargetID);
+
+      EasyMock.expect(rc.sendBlocking(connTargetID, connTargetID, request)).andReturn(response).anyTimes();
+
+      EasyMock.replay(rc);
+      ClientSession session = conn.createClientSession(true, true, true, 1);
+      ClientSession session2 = conn.createClientSession(true, true, true, 2);
+      ClientSession session3 = conn.createClientSession(true, true, true, 3);
+      conn.cleanUp();
+      assertTrue(session.isClosed());
+      assertTrue(session2.isClosed());
+      assertTrue(session3.isClosed());
+      assertTrue(conn.isClosed());
+      EasyMock.verify(rc);
+
+   }
                
    // Private -----------------------------------------------------------------------------------------------------------
 
@@ -349,75 +415,4 @@ public class ClientConnectionImplTest extends UnitTestCase
 
       EasyMock.verify(rc);
    }
-
-   public void testSessionCleanedUp() throws Exception
-      {
-         RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-
-      Location location = new LocationImpl(TransportType.TCP, "oranges");
-
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location);
-
-
-
-      final int connTargetID = 17267162;
-
-      Version version = new VersionImpl("uqysuyqs", 1, 1, 1, 12, "uqysuays");
-
-      ClientConnection conn = new ClientConnectionImpl(cf, connTargetID, rc, version);
-
-      ConnectionCreateSessionMessage request = new ConnectionCreateSessionMessage(true, true, true);
-
-      final int sessionTargetID = 12127162;
-
-      ConnectionCreateSessionResponseMessage response = new ConnectionCreateSessionResponseMessage(sessionTargetID);
-
-      EasyMock.expect(rc.sendBlocking(connTargetID, connTargetID, request)).andReturn(response);
-
-      EasyMock.replay(rc);
-      ClientSession session = conn.createClientSession(true, true, true, 1);
-      conn.cleanUp();
-      assertTrue(session.isClosed());
-      assertTrue(conn.isClosed());
-      EasyMock.verify(rc);
-
-      }
-
-
-   public void testSessionsCleanedUp() throws Exception
-      {
-         RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-
-      Location location = new LocationImpl(TransportType.TCP, "oranges");
-
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location);
-
-
-
-      final int connTargetID = 17267162;
-
-      Version version = new VersionImpl("uqysuyqs", 1, 1, 1, 12, "uqysuays");
-
-      ClientConnection conn = new ClientConnectionImpl(cf, connTargetID, rc, version);
-
-      ConnectionCreateSessionMessage request = new ConnectionCreateSessionMessage(true, true, true);
-
-      final int sessionTargetID = 12127162;
-
-      ConnectionCreateSessionResponseMessage response = new ConnectionCreateSessionResponseMessage(sessionTargetID);
-
-      EasyMock.expect(rc.sendBlocking(connTargetID, connTargetID, request)).andReturn(response).anyTimes();
-
-      EasyMock.replay(rc);
-      ClientSession session = conn.createClientSession(true, true, true, 1);
-      ClientSession session2 = conn.createClientSession(true, true, true, 2);
-      ClientSession session3 = conn.createClientSession(true, true, true, 3);
-      conn.cleanUp();
-      assertTrue(session.isClosed());
-      assertTrue(session2.isClosed());
-      assertTrue(session3.isClosed());
-      assertTrue(conn.isClosed());
-      EasyMock.verify(rc);
-
-      }
 }

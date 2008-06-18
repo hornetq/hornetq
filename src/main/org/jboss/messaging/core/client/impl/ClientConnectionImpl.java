@@ -165,6 +165,7 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    public synchronized void cleanUp()
    {
       cleanUpChildren();
+      
       closed = true;
    }
 

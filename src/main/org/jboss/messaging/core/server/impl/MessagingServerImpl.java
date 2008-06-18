@@ -179,8 +179,7 @@ public class MessagingServerImpl implements MessagingServer
       securityRepository = new HierarchicalObjectRepository<Set<Role>>();
       securityRepository.setDefault(new HashSet<Role>());
       securityStore.setSecurityRepository(securityRepository);
-      securityStore.setSecurityManager(securityManager);
-      
+      securityStore.setSecurityManager(securityManager);      
       scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(), new JBMThreadFactory("JBM-scheduled-threads"));            
       resourceManager = new ResourceManagerImpl(0);                           
       remotingService.addRemotingSessionListener(sessionListener);  
@@ -240,6 +239,11 @@ public class MessagingServerImpl implements MessagingServer
 
    public void setConfiguration(Configuration configuration)
    {
+      if (started)
+      {
+         throw new IllegalStateException("Cannot set configuration when started");
+      }
+      
       this.configuration = configuration;
    }
    
@@ -250,6 +254,10 @@ public class MessagingServerImpl implements MessagingServer
    
    public void setRemotingService(RemotingService remotingService)
    {
+      if (started)
+      {
+         throw new IllegalStateException("Cannot set remoting service when started");
+      }
       this.remotingService = remotingService;
    }
 
@@ -260,6 +268,10 @@ public class MessagingServerImpl implements MessagingServer
 
    public void setStorageManager(StorageManager storageManager)
    {
+      if (started)
+      {
+         throw new IllegalStateException("Cannot set storage manager when started");
+      }
       this.storageManager = storageManager;
    }
    
@@ -270,6 +282,11 @@ public class MessagingServerImpl implements MessagingServer
    
    public void setSecurityManager(JBMSecurityManager securityManager)
    {
+      if (started)
+      {
+         throw new IllegalStateException("Cannot set security Manager when started");
+      }
+      
       this.securityManager = securityManager;
    }
       
@@ -327,10 +344,9 @@ public class MessagingServerImpl implements MessagingServer
       return started;
    }
 
-   public CreateConnectionResponse createConnection(final String username, final String password,
-                                                    final long remotingClientSessionID,
+   public CreateConnectionResponse createConnection(final String username, final String password,                                  
                                                     final int incrementingVersion,
-                                                    final PacketReturner sender)
+                                                    final PacketReturner returner)
            throws Exception
    {
       if (version.getIncrementingVersion() < incrementingVersion)
@@ -345,11 +361,12 @@ public class MessagingServerImpl implements MessagingServer
 
       securityStore.authenticate(username, password);
 
-      final ServerConnection connection =
-              new ServerConnectionImpl(this, username, password,
-                                       sender.getSessionID());
+      long sessionID = returner.getSessionID();
       
-      connectionManager.registerConnection(sender.getSessionID(), connection);
+      final ServerConnection connection =
+              new ServerConnectionImpl(this, username, password, sessionID);
+      
+      connectionManager.registerConnection(sessionID, connection);
 
       remotingService.getDispatcher().register(new ServerConnectionPacketHandler(connection));
 

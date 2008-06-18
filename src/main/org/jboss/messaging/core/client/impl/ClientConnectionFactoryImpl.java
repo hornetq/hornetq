@@ -178,11 +178,9 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
          remotingConnection = remotingConnectionFactory.createRemotingConnection(location, connectionParams);
        
          remotingConnection.start();
-         
-         long sessionID = remotingConnection.getSessionID();
-         
+            
          CreateConnectionRequest request =
-            new CreateConnectionRequest(clientVersion.getIncrementingVersion(), sessionID, username, password);
+            new CreateConnectionRequest(clientVersion.getIncrementingVersion(), username, password);
          
          CreateConnectionResponse response =
             (CreateConnectionResponse)remotingConnection.sendBlocking(0, 0, request);
