@@ -33,7 +33,6 @@ import org.jboss.messaging.core.remoting.*;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaAcceptor;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
-import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
@@ -106,9 +105,8 @@ public class MinaAcceptorTest extends UnitTestCase
          connectionParams.setTrustStorePassword("secureexample");
          MinaConnector minaConnector = new MinaConnector(conf.getLocation(), connectionParams, new PacketDispatcherImpl(null));
          minaConnector.connect();
-         minaConnector.getDispatcher().dispatch(new Ping(), null);
          // TODO investigate why we need to wait a little bit before disconnecting to avoid a SSL exception
-         Thread.sleep(500);
+         Thread.sleep(1000);
          minaConnector.disconnect();
          EasyMock.verify(remotingService, cleanUpNotifier);
       }
