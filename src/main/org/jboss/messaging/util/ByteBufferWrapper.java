@@ -22,10 +22,7 @@
 
 package org.jboss.messaging.util;
 
-import static org.jboss.messaging.util.DataConstants.FALSE;
-import static org.jboss.messaging.util.DataConstants.NOT_NULL;
-import static org.jboss.messaging.util.DataConstants.NULL;
-import static org.jboss.messaging.util.DataConstants.TRUE;
+import static org.jboss.messaging.util.DataConstants.*;
 
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -56,7 +53,9 @@ public class ByteBufferWrapper implements MessagingBuffer
 	
 	public byte[] array()
    {
-   	return buffer.array();
+      byte[] b = new byte[buffer.limit()];
+      buffer.get(b);
+      return b;
    }
     
 	public int position()

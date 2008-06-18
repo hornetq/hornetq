@@ -22,9 +22,8 @@
 
 package org.jboss.messaging.tests.unit.core.remoting.impl;
 
-import static org.jboss.messaging.tests.integration.core.remoting.mina.TestSupport.PORT;
 import junit.framework.TestCase;
-
+import org.easymock.EasyMock;
 import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
@@ -35,6 +34,7 @@ import org.jboss.messaging.core.remoting.RemotingConnector;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.remoting.impl.ConnectorRegistryImpl;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
+import static org.jboss.messaging.tests.integration.core.remoting.mina.TestSupport.PORT;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -115,7 +115,40 @@ public class ConnectorRegistryImplTest extends TestCase
       assertNotNull(registry.removeConnector(config.getLocation()));
    }
 
+   public void testINVMConnectorFromINVMConfiguration() throws Exception
+   {
+      Configuration config = ConfigurationHelper.newInVMConfig();
 
+      // config is registered -> client and server are in the same vm
+      assertTrue(registry.register(config.getLocation(), dispatcher));
+
+      RemotingConnector connector = registry.getConnector(config.getLocation(), new ConnectionParamsImpl());
+
+      assertTrue(connector.getLocation().getTransport().equals(TransportType.INVM));
+
+      assertTrue(registry.unregister(config.getLocation()));
+
+      assertNotNull(registry.removeConnector(config.getLocation()));
+   }
+
+
+   public void testNoTransportThrowsException() throws Exception
+   {
+      Location location = EasyMock.createNiceMock(Location.class);
+      EasyMock.expect(location.getLocation()).andReturn(null);
+      EasyMock.replay(location);
+
+      try
+      {
+         RemotingConnector connector = registry.getConnector(location, new ConnectionParamsImpl());
+         fail("should throw exception");
+      }
+      catch (IllegalArgumentException e)
+      {
+         //pass
+      }
+      EasyMock.verify(location);
+   }
    public void testTCPConnectorFromTCPConfiguration() throws Exception
    {
       Configuration config = ConfigurationHelper.newTCPConfiguration("localhost", PORT);

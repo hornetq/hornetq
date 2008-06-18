@@ -18,14 +18,17 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.tests.unit.core.remoting.impl;
 
+import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.MessagingCodec;
 import org.jboss.messaging.core.remoting.impl.MessagingCodecImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.*;
+import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.core.version.impl.VersionImpl;
 import org.jboss.messaging.tests.util.RandomUtil;
@@ -59,6 +62,41 @@ public class MessagingCodecImplTest extends UnitTestCase
       codec = null;
       buff = null;
    }
+
+   public void testEmptyBuffer() throws Exception
+   {
+      buff = new ByteBufferWrapper(ByteBuffer.allocateDirect(3));
+      PacketImpl copy = (PacketImpl) codec.decode(buff);
+      assertNull(copy);
+   }
+
+
+   public void testWrongBodySize() throws Exception
+   {
+      buff = new ByteBufferWrapper(ByteBuffer.allocateDirect(30));
+      buff.putInt(40);
+      buff.rewind();
+      PacketImpl copy = (PacketImpl) codec.decode(buff);
+      assertNull(copy);
+   }
+
+   public void testInvalidPacketType() throws Exception
+   {
+      buff = new ByteBufferWrapper(ByteBuffer.allocateDirect(30));
+      buff.putInt(26);
+      buff.putInt(Integer.MAX_VALUE);
+      try
+      {
+         PacketImpl copy = (PacketImpl) codec.decode(buff);
+         fail("should throw exception");
+      }
+      catch (IllegalArgumentException e)
+      {
+         //pass
+      }
+   }
+
+
    public void testEmptyPacket() throws Exception
    {
       PacketImpl message = new PacketImpl(PacketImpl.NULL);
@@ -67,6 +105,701 @@ public class MessagingCodecImplTest extends UnitTestCase
       buff.rewind();
       PacketImpl copy = (PacketImpl) codec.decode(buff);
       checkHeaders(message, copy);
+   }
+
+   public void testEmptyPacketClose() throws Exception
+   {
+      PacketImpl message = new PacketImpl(PacketImpl.CLOSE);
+      setHeaders(message);
+      codec.encode(buff, message);
+      buff.rewind();
+      PacketImpl copy = (PacketImpl) codec.decode(buff);
+      checkHeaders(message, copy);
+   }
+
+   public void testEmptyPacketConnStart() throws Exception
+   {
+      PacketImpl message = new PacketImpl(PacketImpl.CONN_START);
+      setHeaders(message);
+      codec.encode(buff, message);
+      buff.rewind();
+      PacketImpl copy = (PacketImpl) codec.decode(buff);
+      checkHeaders(message, copy);
+   }
+
+   public void testEmptyPacketConnStop() throws Exception
+   {
+      PacketImpl message = new PacketImpl(PacketImpl.CONN_STOP);
+      setHeaders(message);
+      codec.encode(buff, message);
+      buff.rewind();
+      PacketImpl copy = (PacketImpl) codec.decode(buff);
+      checkHeaders(message, copy);
+   }
+
+   public void testEmptyPacketSessRecover() throws Exception
+   {
+      PacketImpl message = new PacketImpl(PacketImpl.SESS_RECOVER);
+      setHeaders(message);
+      codec.encode(buff, message);
+      buff.rewind();
+      PacketImpl copy = (PacketImpl) codec.decode(buff);
+      checkHeaders(message, copy);
+   }
+
+   public void testEmptyPacketSessCommit() throws Exception
+   {
+      PacketImpl message = new PacketImpl(PacketImpl.SESS_COMMIT);
+      setHeaders(message);
+      codec.encode(buff, message);
+      buff.rewind();
+      PacketImpl copy = (PacketImpl) codec.decode(buff);
+      checkHeaders(message, copy);
+   }
+
+   public void testEmptyPacketSessRollback() throws Exception
+   {
+      PacketImpl message = new PacketImpl(PacketImpl.SESS_ROLLBACK);
+      setHeaders(message);
+      codec.encode(buff, message);
+      buff.rewind();
+      PacketImpl copy = (PacketImpl) codec.decode(buff);
+      checkHeaders(message, copy);
+   }
+
+   public void testEmptyPacketSessBrowserReset() throws Exception
+   {
+      PacketImpl message = new PacketImpl(PacketImpl.SESS_BROWSER_RESET);
+      setHeaders(message);
+      codec.encode(buff, message);
+      buff.rewind();
+      PacketImpl copy = (PacketImpl) codec.decode(buff);
+      checkHeaders(message, copy);
+   }
+
+   public void testEmptyPacketSessBrowserHasNextMessage() throws Exception
+   {
+      PacketImpl message = new PacketImpl(PacketImpl.SESS_BROWSER_HASNEXTMESSAGE);
+      setHeaders(message);
+      codec.encode(buff, message);
+      buff.rewind();
+      PacketImpl copy = (PacketImpl) codec.decode(buff);
+      checkHeaders(message, copy);
+   }
+
+   public void testEmptyPacketSessBrowserNextMessage() throws Exception
+   {
+      PacketImpl message = new PacketImpl(PacketImpl.SESS_BROWSER_NEXTMESSAGE);
+      setHeaders(message);
+      codec.encode(buff, message);
+      buff.rewind();
+      PacketImpl copy = (PacketImpl) codec.decode(buff);
+      checkHeaders(message, copy);
+   }
+
+   public void testEmptyPacketSessXaInDoubtXids() throws Exception
+   {
+      PacketImpl message = new PacketImpl(PacketImpl.SESS_XA_INDOUBT_XIDS);
+      setHeaders(message);
+      codec.encode(buff, message);
+      buff.rewind();
+      PacketImpl copy = (PacketImpl) codec.decode(buff);
+      checkHeaders(message, copy);
+   }
+
+   public void testEmptyPacketSessXaGetTimeout() throws Exception
+   {
+      PacketImpl message = new PacketImpl(PacketImpl.SESS_XA_GET_TIMEOUT);
+      setHeaders(message);
+      codec.encode(buff, message);
+      buff.rewind();
+      PacketImpl copy = (PacketImpl) codec.decode(buff);
+      checkHeaders(message, copy);
+   }
+
+   public void testEmptyPacketSessXaSuspend() throws Exception
+   {
+      PacketImpl message = new PacketImpl(PacketImpl.SESS_XA_SUSPEND);
+      setHeaders(message);
+      codec.encode(buff, message);
+      buff.rewind();
+      PacketImpl copy = (PacketImpl) codec.decode(buff);
+      checkHeaders(message, copy);
+   }
+
+   public void _testProducerSendMessageNullBodyNoProps1() throws Exception
+   {
+      ClientMessageImpl message1 = new ClientMessageImpl(RandomUtil.randomInt(), RandomUtil.randomLong());
+      message1.setDestination(new SimpleString("test"));
+      PacketImpl message = new ProducerSendMessage(message1);
+      setHeaders(message);
+      codec.encode(buff, message);
+      buff.rewind();
+      ProducerSendMessage copy = (ProducerSendMessage) codec.decode(buff);
+      checkHeaders(message, copy);
+      assertEquals(0, copy.getServerMessage().getBody().limit());
+      assertEquals(message1.getDestination(), copy.getServerMessage().getDestination());
+      assertEquals(message1.getEncodeSize(), copy.getServerMessage().getEncodeSize());
+      assertEquals(message1.getExpiration(), copy.getServerMessage().getExpiration());
+      assertEquals(message1.getPriority(), copy.getServerMessage().getPriority());
+      assertEquals(message1.getTimestamp(), copy.getServerMessage().getTimestamp());
+      assertEquals(message1.getType(), copy.getServerMessage().getType());
+   }
+
+   public void _testProducerSendMessageNullBodyNoProps2() throws Exception
+   {
+      ClientMessageImpl message1 = new ClientMessageImpl(RandomUtil.randomByte(), RandomUtil.randomBoolean(),
+              RandomUtil.randomLong(), RandomUtil.randomLong(), RandomUtil.randomByte());
+      message1.setDestination(new SimpleString("test"));
+      PacketImpl message = new ProducerSendMessage(message1);
+      setHeaders(message);
+      codec.encode(buff, message);
+      buff.rewind();
+      ProducerSendMessage copy = (ProducerSendMessage) codec.decode(buff);
+      checkHeaders(message, copy);
+      assertEquals(0, copy.getServerMessage().getBody().limit());
+      assertEquals(message1.getDestination(), copy.getServerMessage().getDestination());
+      assertEquals(message1.getEncodeSize(), copy.getServerMessage().getEncodeSize());
+      assertEquals(message1.getExpiration(), copy.getServerMessage().getExpiration());
+      assertEquals(message1.getPriority(), copy.getServerMessage().getPriority());
+      assertEquals(message1.getTimestamp(), copy.getServerMessage().getTimestamp());
+      assertEquals(message1.getType(), copy.getServerMessage().getType());
+   }
+
+   public void _testProducerSendMessageNullBodyNoProps3() throws Exception
+   {
+      ClientMessageImpl message1 = new ClientMessageImpl(RandomUtil.randomByte(), RandomUtil.randomBoolean());
+      message1.setDestination(new SimpleString("test"));
+      PacketImpl message = new ProducerSendMessage(message1);
+      setHeaders(message);
+      codec.encode(buff, message);
+      buff.rewind();
+      ProducerSendMessage copy = (ProducerSendMessage) codec.decode(buff);
+      checkHeaders(message, copy);
+      assertEquals(0, copy.getServerMessage().getBody().limit());
+      assertEquals(message1.getDestination(), copy.getServerMessage().getDestination());
+      assertEquals(message1.getEncodeSize(), copy.getServerMessage().getEncodeSize());
+      assertEquals(message1.getExpiration(), copy.getServerMessage().getExpiration());
+      assertEquals(message1.getPriority(), copy.getServerMessage().getPriority());
+      assertEquals(message1.getTimestamp(), copy.getServerMessage().getTimestamp());
+      assertEquals(message1.getType(), copy.getServerMessage().getType());
+   }
+
+
+   public void _testProducerSendMessageNullBodyNoProps4() throws Exception
+   {
+      ClientMessageImpl message1 = new ClientMessageImpl(RandomUtil.randomBoolean());
+      message1.setDestination(new SimpleString("test"));
+      PacketImpl message = new ProducerSendMessage(message1);
+      setHeaders(message);
+      codec.encode(buff, message);
+      buff.rewind();
+      ProducerSendMessage copy = (ProducerSendMessage) codec.decode(buff);
+      checkHeaders(message, copy);
+      assertEquals(0, copy.getServerMessage().getBody().limit());
+      assertEquals(message1.getDestination(), copy.getServerMessage().getDestination());
+      assertEquals(message1.getEncodeSize(), copy.getServerMessage().getEncodeSize());
+      assertEquals(message1.getExpiration(), copy.getServerMessage().getExpiration());
+      assertEquals(message1.getPriority(), copy.getServerMessage().getPriority());
+      assertEquals(message1.getTimestamp(), copy.getServerMessage().getTimestamp());
+      assertEquals(message1.getType(), copy.getServerMessage().getType());
+   }
+
+   public void testProducerSendMessageBodyProps1() throws Exception
+   {
+      ClientMessageImpl message1 = new ClientMessageImpl(RandomUtil.randomInt(), RandomUtil.randomLong());
+      message1.setDestination(new SimpleString("test"));
+      byte[] bytes = RandomUtil.randomBytes();
+      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocateDirect(bytes.length));
+      body.putBytes(bytes);
+      body.rewind();
+      message1.setBody(body);
+      PacketImpl message = new ProducerSendMessage(message1);
+      setHeaders(message);
+      SimpleString boolProp = new SimpleString("bool.prop");
+      message1.putBooleanProperty(boolProp, RandomUtil.randomBoolean());
+      SimpleString byteProp = new SimpleString("byte.prop");
+      message1.putByteProperty(byteProp, RandomUtil.randomByte());
+      SimpleString byteprops = new SimpleString("bytes.prop");
+      message1.putBytesProperty(byteprops, RandomUtil.randomBytes());
+      SimpleString doubleProp = new SimpleString("double.prop");
+      message1.putDoubleProperty(doubleProp, RandomUtil.randomDouble());
+      SimpleString floatProp = new SimpleString("float.prop");
+      message1.putFloatProperty(floatProp, RandomUtil.randomFloat());
+      SimpleString intProp = new SimpleString("int.prop");
+      message1.putIntProperty(intProp, RandomUtil.randomInt());
+      SimpleString longProp = new SimpleString("long.prop");
+      message1.putLongProperty(longProp, RandomUtil.randomLong());
+      SimpleString shortProp = new SimpleString("short.prop");
+      message1.putShortProperty(shortProp, RandomUtil.randomShort());
+      SimpleString stringProp = new SimpleString("string.prop");
+      message1.putStringProperty(stringProp, RandomUtil.randomSimpleString());
+      codec.encode(buff, message);
+      buff.rewind();
+      ProducerSendMessage copy = (ProducerSendMessage) codec.decode(buff);
+      checkHeaders(message, copy);
+      assertEquals(bytes.length, copy.getServerMessage().getBody().limit());
+      assertEquals(message1.getDestination(), copy.getServerMessage().getDestination());
+      assertEquals(message1.getEncodeSize(), copy.getServerMessage().getEncodeSize());
+      assertEquals(message1.getExpiration(), copy.getServerMessage().getExpiration());
+      assertEquals(message1.getPriority(), copy.getServerMessage().getPriority());
+      assertEquals(message1.getTimestamp(), copy.getServerMessage().getTimestamp());
+      assertEquals(message1.getType(), copy.getServerMessage().getType());
+      assertEquals(9, copy.getServerMessage().getPropertyNames().size());
+      assertEquals(message1.getProperty(boolProp), copy.getServerMessage().getProperty(boolProp));
+      assertEquals(message1.getProperty(byteProp), copy.getServerMessage().getProperty(byteProp));
+      assertByteArraysEquivalent((byte[]) message1.getProperty(byteprops), (byte[]) copy.getServerMessage().getProperty(byteprops));
+      assertEquals(message1.getProperty(doubleProp), copy.getServerMessage().getProperty(doubleProp));
+      assertEquals(message1.getProperty(floatProp), copy.getServerMessage().getProperty(floatProp));
+      assertEquals(message1.getProperty(intProp), copy.getServerMessage().getProperty(intProp));
+      assertEquals(message1.getProperty(longProp), copy.getServerMessage().getProperty(longProp));
+      assertEquals(message1.getProperty(shortProp), copy.getServerMessage().getProperty(shortProp));
+      assertEquals(message1.getProperty(stringProp), copy.getServerMessage().getProperty(stringProp));
+   }
+
+   public void testProducerSendMessageBodyProps2() throws Exception
+   {
+      ClientMessageImpl message1 = new ClientMessageImpl(RandomUtil.randomByte(), RandomUtil.randomBoolean(),
+              RandomUtil.randomLong(), RandomUtil.randomLong(), RandomUtil.randomByte());
+      message1.setDestination(new SimpleString("test"));
+      byte[] bytes = RandomUtil.randomBytes();
+      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocateDirect(bytes.length));
+      body.putBytes(bytes);
+      body.rewind();
+      message1.setBody(body);
+      PacketImpl message = new ProducerSendMessage(message1);
+      setHeaders(message);
+      SimpleString boolProp = new SimpleString("bool.prop");
+      message1.putBooleanProperty(boolProp, RandomUtil.randomBoolean());
+      SimpleString byteProp = new SimpleString("byte.prop");
+      message1.putByteProperty(byteProp, RandomUtil.randomByte());
+      SimpleString byteprops = new SimpleString("bytes.prop");
+      message1.putBytesProperty(byteprops, RandomUtil.randomBytes());
+      SimpleString doubleProp = new SimpleString("double.prop");
+      message1.putDoubleProperty(doubleProp, RandomUtil.randomDouble());
+      SimpleString floatProp = new SimpleString("float.prop");
+      message1.putFloatProperty(floatProp, RandomUtil.randomFloat());
+      SimpleString intProp = new SimpleString("int.prop");
+      message1.putIntProperty(intProp, RandomUtil.randomInt());
+      SimpleString longProp = new SimpleString("long.prop");
+      message1.putLongProperty(longProp, RandomUtil.randomLong());
+      SimpleString shortProp = new SimpleString("short.prop");
+      message1.putShortProperty(shortProp, RandomUtil.randomShort());
+      SimpleString stringProp = new SimpleString("string.prop");
+      message1.putStringProperty(stringProp, RandomUtil.randomSimpleString());
+      codec.encode(buff, message);
+      buff.rewind();
+      ProducerSendMessage copy = (ProducerSendMessage) codec.decode(buff);
+      checkHeaders(message, copy);
+      assertEquals(bytes.length, copy.getServerMessage().getBody().limit());
+      assertEquals(message1.getDestination(), copy.getServerMessage().getDestination());
+      assertEquals(message1.getEncodeSize(), copy.getServerMessage().getEncodeSize());
+      assertEquals(message1.getExpiration(), copy.getServerMessage().getExpiration());
+      assertEquals(message1.getPriority(), copy.getServerMessage().getPriority());
+      assertEquals(message1.getTimestamp(), copy.getServerMessage().getTimestamp());
+      assertEquals(message1.getType(), copy.getServerMessage().getType());
+      assertEquals(9, copy.getServerMessage().getPropertyNames().size());
+      assertEquals(message1.getProperty(boolProp), copy.getServerMessage().getProperty(boolProp));
+      assertEquals(message1.getProperty(byteProp), copy.getServerMessage().getProperty(byteProp));
+      assertByteArraysEquivalent((byte[]) message1.getProperty(byteprops), (byte[]) copy.getServerMessage().getProperty(byteprops));
+      assertEquals(message1.getProperty(doubleProp), copy.getServerMessage().getProperty(doubleProp));
+      assertEquals(message1.getProperty(floatProp), copy.getServerMessage().getProperty(floatProp));
+      assertEquals(message1.getProperty(intProp), copy.getServerMessage().getProperty(intProp));
+      assertEquals(message1.getProperty(longProp), copy.getServerMessage().getProperty(longProp));
+      assertEquals(message1.getProperty(shortProp), copy.getServerMessage().getProperty(shortProp));
+      assertEquals(message1.getProperty(stringProp), copy.getServerMessage().getProperty(stringProp));
+   }
+
+   public void testProducerSendMessageBodyProps3() throws Exception
+   {
+      ClientMessageImpl message1 = new ClientMessageImpl(RandomUtil.randomByte(), RandomUtil.randomBoolean());
+      message1.setDestination(new SimpleString("test"));
+      byte[] bytes = RandomUtil.randomBytes();
+      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocateDirect(bytes.length));
+      body.putBytes(bytes);
+      body.rewind();
+      message1.setBody(body);
+      PacketImpl message = new ProducerSendMessage(message1);
+      setHeaders(message);
+      SimpleString boolProp = new SimpleString("bool.prop");
+      message1.putBooleanProperty(boolProp, RandomUtil.randomBoolean());
+      SimpleString byteProp = new SimpleString("byte.prop");
+      message1.putByteProperty(byteProp, RandomUtil.randomByte());
+      SimpleString byteprops = new SimpleString("bytes.prop");
+      message1.putBytesProperty(byteprops, RandomUtil.randomBytes());
+      SimpleString doubleProp = new SimpleString("double.prop");
+      message1.putDoubleProperty(doubleProp, RandomUtil.randomDouble());
+      SimpleString floatProp = new SimpleString("float.prop");
+      message1.putFloatProperty(floatProp, RandomUtil.randomFloat());
+      SimpleString intProp = new SimpleString("int.prop");
+      message1.putIntProperty(intProp, RandomUtil.randomInt());
+      SimpleString longProp = new SimpleString("long.prop");
+      message1.putLongProperty(longProp, RandomUtil.randomLong());
+      SimpleString shortProp = new SimpleString("short.prop");
+      message1.putShortProperty(shortProp, RandomUtil.randomShort());
+      SimpleString stringProp = new SimpleString("string.prop");
+      message1.putStringProperty(stringProp, RandomUtil.randomSimpleString());
+      codec.encode(buff, message);
+      buff.rewind();
+      ProducerSendMessage copy = (ProducerSendMessage) codec.decode(buff);
+      checkHeaders(message, copy);
+      assertEquals(bytes.length, copy.getServerMessage().getBody().limit());
+      assertEquals(message1.getDestination(), copy.getServerMessage().getDestination());
+      assertEquals(message1.getEncodeSize(), copy.getServerMessage().getEncodeSize());
+      assertEquals(message1.getExpiration(), copy.getServerMessage().getExpiration());
+      assertEquals(message1.getPriority(), copy.getServerMessage().getPriority());
+      assertEquals(message1.getTimestamp(), copy.getServerMessage().getTimestamp());
+      assertEquals(message1.getType(), copy.getServerMessage().getType());
+      assertEquals(9, copy.getServerMessage().getPropertyNames().size());
+      assertEquals(message1.getProperty(boolProp), copy.getServerMessage().getProperty(boolProp));
+      assertEquals(message1.getProperty(byteProp), copy.getServerMessage().getProperty(byteProp));
+      assertByteArraysEquivalent((byte[]) message1.getProperty(byteprops), (byte[]) copy.getServerMessage().getProperty(byteprops));
+      assertEquals(message1.getProperty(doubleProp), copy.getServerMessage().getProperty(doubleProp));
+      assertEquals(message1.getProperty(floatProp), copy.getServerMessage().getProperty(floatProp));
+      assertEquals(message1.getProperty(intProp), copy.getServerMessage().getProperty(intProp));
+      assertEquals(message1.getProperty(longProp), copy.getServerMessage().getProperty(longProp));
+      assertEquals(message1.getProperty(shortProp), copy.getServerMessage().getProperty(shortProp));
+      assertEquals(message1.getProperty(stringProp), copy.getServerMessage().getProperty(stringProp));
+   }
+
+
+   public void testProducerSendMessageBodyProps4() throws Exception
+   {
+      ClientMessageImpl message1 = new ClientMessageImpl(RandomUtil.randomBoolean());
+      message1.setDestination(new SimpleString("test"));
+      byte[] bytes = RandomUtil.randomBytes();
+      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocateDirect(bytes.length));
+      body.putBytes(bytes);
+      body.rewind();
+      message1.setBody(body);
+      PacketImpl message = new ProducerSendMessage(message1);
+      setHeaders(message);
+      SimpleString boolProp = new SimpleString("bool.prop");
+      message1.putBooleanProperty(boolProp, RandomUtil.randomBoolean());
+      SimpleString byteProp = new SimpleString("byte.prop");
+      message1.putByteProperty(byteProp, RandomUtil.randomByte());
+      SimpleString byteprops = new SimpleString("bytes.prop");
+      message1.putBytesProperty(byteprops, RandomUtil.randomBytes());
+      SimpleString doubleProp = new SimpleString("double.prop");
+      message1.putDoubleProperty(doubleProp, RandomUtil.randomDouble());
+      SimpleString floatProp = new SimpleString("float.prop");
+      message1.putFloatProperty(floatProp, RandomUtil.randomFloat());
+      SimpleString intProp = new SimpleString("int.prop");
+      message1.putIntProperty(intProp, RandomUtil.randomInt());
+      SimpleString longProp = new SimpleString("long.prop");
+      message1.putLongProperty(longProp, RandomUtil.randomLong());
+      SimpleString shortProp = new SimpleString("short.prop");
+      message1.putShortProperty(shortProp, RandomUtil.randomShort());
+      SimpleString stringProp = new SimpleString("string.prop");
+      message1.putStringProperty(stringProp, RandomUtil.randomSimpleString());
+      codec.encode(buff, message);
+      buff.rewind();
+      ProducerSendMessage copy = (ProducerSendMessage) codec.decode(buff);
+      checkHeaders(message, copy);
+      assertEquals(bytes.length, copy.getServerMessage().getBody().limit());
+      assertEquals(message1.getDestination(), copy.getServerMessage().getDestination());
+      assertEquals(message1.getEncodeSize(), copy.getServerMessage().getEncodeSize());
+      assertEquals(message1.getExpiration(), copy.getServerMessage().getExpiration());
+      assertEquals(message1.getPriority(), copy.getServerMessage().getPriority());
+      assertEquals(message1.getTimestamp(), copy.getServerMessage().getTimestamp());
+      assertEquals(message1.getType(), copy.getServerMessage().getType());
+      assertEquals(9, copy.getServerMessage().getPropertyNames().size());
+      assertEquals(message1.getProperty(boolProp), copy.getServerMessage().getProperty(boolProp));
+      assertEquals(message1.getProperty(byteProp), copy.getServerMessage().getProperty(byteProp));
+      assertByteArraysEquivalent((byte[]) message1.getProperty(byteprops), (byte[]) copy.getServerMessage().getProperty(byteprops));
+      assertEquals(message1.getProperty(doubleProp), copy.getServerMessage().getProperty(doubleProp));
+      assertEquals(message1.getProperty(floatProp), copy.getServerMessage().getProperty(floatProp));
+      assertEquals(message1.getProperty(intProp), copy.getServerMessage().getProperty(intProp));
+      assertEquals(message1.getProperty(longProp), copy.getServerMessage().getProperty(longProp));
+      assertEquals(message1.getProperty(shortProp), copy.getServerMessage().getProperty(shortProp));
+      assertEquals(message1.getProperty(stringProp), copy.getServerMessage().getProperty(stringProp));
+   }
+
+   public void _testProducerReceiveMessageNullBodyNoProps1() throws Exception
+   {
+      ServerMessage message1 = new ServerMessageImpl();
+      message1.setDestination(new SimpleString("test"));
+      PacketImpl message = new ReceiveMessage(message1, RandomUtil.randomInt(), RandomUtil.randomInt());
+      setHeaders(message);
+      codec.encode(buff, message);
+      buff.rewind();
+      ReceiveMessage copy = (ReceiveMessage) codec.decode(buff);
+      checkHeaders(message, copy);
+      assertEquals(0, copy.getClientMessage().getBody().limit());
+      assertEquals(message1.getDestination(), copy.getClientMessage().getDestination());
+      assertEquals(message1.getEncodeSize(), copy.getClientMessage().getEncodeSize());
+      assertEquals(message1.getExpiration(), copy.getClientMessage().getExpiration());
+      assertEquals(message1.getPriority(), copy.getClientMessage().getPriority());
+      assertEquals(message1.getTimestamp(), copy.getClientMessage().getTimestamp());
+      assertEquals(message1.getType(), copy.getClientMessage().getType());
+   }
+
+   public void _testProducerReceiveMessageNullBodyNoProps2() throws Exception
+   {
+      ServerMessage message1 = new ServerMessageImpl(RandomUtil.randomLong());
+      message1.setDestination(new SimpleString("test"));
+      PacketImpl message = new ReceiveMessage(message1, RandomUtil.randomInt(), RandomUtil.randomInt());
+      setHeaders(message);
+      codec.encode(buff, message);
+      buff.rewind();
+      ReceiveMessage copy = (ReceiveMessage) codec.decode(buff);
+      checkHeaders(message, copy);
+      assertEquals(0, copy.getClientMessage().getBody().limit());
+      assertEquals(message1.getDestination(), copy.getClientMessage().getDestination());
+      assertEquals(message1.getEncodeSize(), copy.getClientMessage().getEncodeSize());
+      assertEquals(message1.getExpiration(), copy.getClientMessage().getExpiration());
+      assertEquals(message1.getPriority(), copy.getClientMessage().getPriority());
+      assertEquals(message1.getTimestamp(), copy.getClientMessage().getTimestamp());
+      assertEquals(message1.getType(), copy.getClientMessage().getType());
+   }
+
+   public void _testProducerReceiveMessageNullBodyNoProps3() throws Exception
+   {
+      ServerMessage message1 = new ServerMessageImpl(new ServerMessageImpl());
+      message1.setDestination(new SimpleString("test"));
+      PacketImpl message = new ReceiveMessage(message1, RandomUtil.randomInt(), RandomUtil.randomInt());
+      setHeaders(message);
+      codec.encode(buff, message);
+      buff.rewind();
+      ReceiveMessage copy = (ReceiveMessage) codec.decode(buff);
+      checkHeaders(message, copy);
+      assertEquals(0, copy.getClientMessage().getBody().limit());
+      assertEquals(message1.getDestination(), copy.getClientMessage().getDestination());
+      assertEquals(message1.getEncodeSize(), copy.getClientMessage().getEncodeSize());
+      assertEquals(message1.getExpiration(), copy.getClientMessage().getExpiration());
+      assertEquals(message1.getPriority(), copy.getClientMessage().getPriority());
+      assertEquals(message1.getTimestamp(), copy.getClientMessage().getTimestamp());
+      assertEquals(message1.getType(), copy.getClientMessage().getType());
+   }
+
+   public void _testProducerReceiveMessageNullBodyNoProps4() throws Exception
+   {
+      ServerMessage message1 = new ServerMessageImpl(RandomUtil.randomByte(), RandomUtil.randomBoolean(), RandomUtil.randomLong(),
+              RandomUtil.randomLong(), RandomUtil.randomByte());
+      message1.setDestination(new SimpleString("test"));
+      PacketImpl message = new ReceiveMessage(message1, RandomUtil.randomInt(), RandomUtil.randomInt());
+      setHeaders(message);
+      codec.encode(buff, message);
+      buff.rewind();
+      ReceiveMessage copy = (ReceiveMessage) codec.decode(buff);
+      checkHeaders(message, copy);
+      assertEquals(0, copy.getClientMessage().getBody().limit());
+      assertEquals(message1.getDestination(), copy.getClientMessage().getDestination());
+      assertEquals(message1.getEncodeSize(), copy.getClientMessage().getEncodeSize());
+      assertEquals(message1.getExpiration(), copy.getClientMessage().getExpiration());
+      assertEquals(message1.getPriority(), copy.getClientMessage().getPriority());
+      assertEquals(message1.getTimestamp(), copy.getClientMessage().getTimestamp());
+      assertEquals(message1.getType(), copy.getClientMessage().getType());
+   }
+
+
+   public void testProducerReceiveMessageBodyProps1() throws Exception
+   {
+      ServerMessage message1 = new ServerMessageImpl();
+      message1.setDestination(new SimpleString("test"));
+      PacketImpl message = new ReceiveMessage(message1, RandomUtil.randomInt(), RandomUtil.randomInt());
+      byte[] bytes = RandomUtil.randomBytes();
+      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocateDirect(bytes.length));
+      body.putBytes(bytes);
+      body.rewind();
+      message1.setBody(body);
+      setHeaders(message);
+      SimpleString boolProp = new SimpleString("bool.prop");
+      message1.putBooleanProperty(boolProp, RandomUtil.randomBoolean());
+      SimpleString byteProp = new SimpleString("byte.prop");
+      message1.putByteProperty(byteProp, RandomUtil.randomByte());
+      SimpleString byteprops = new SimpleString("bytes.prop");
+      message1.putBytesProperty(byteprops, RandomUtil.randomBytes());
+      SimpleString doubleProp = new SimpleString("double.prop");
+      message1.putDoubleProperty(doubleProp, RandomUtil.randomDouble());
+      SimpleString floatProp = new SimpleString("float.prop");
+      message1.putFloatProperty(floatProp, RandomUtil.randomFloat());
+      SimpleString intProp = new SimpleString("int.prop");
+      message1.putIntProperty(intProp, RandomUtil.randomInt());
+      SimpleString longProp = new SimpleString("long.prop");
+      message1.putLongProperty(longProp, RandomUtil.randomLong());
+      SimpleString shortProp = new SimpleString("short.prop");
+      message1.putShortProperty(shortProp, RandomUtil.randomShort());
+      SimpleString stringProp = new SimpleString("string.prop");
+      message1.putStringProperty(stringProp, RandomUtil.randomSimpleString());
+      codec.encode(buff, message);
+      buff.rewind();
+      ReceiveMessage copy = (ReceiveMessage) codec.decode(buff);
+      checkHeaders(message, copy);
+      assertEquals(bytes.length, copy.getClientMessage().getBody().limit());
+      assertEquals(message1.getDestination(), copy.getClientMessage().getDestination());
+      assertEquals(message1.getEncodeSize(), copy.getClientMessage().getEncodeSize());
+      assertEquals(message1.getExpiration(), copy.getClientMessage().getExpiration());
+      assertEquals(message1.getPriority(), copy.getClientMessage().getPriority());
+      assertEquals(message1.getTimestamp(), copy.getClientMessage().getTimestamp());
+      assertEquals(message1.getType(), copy.getClientMessage().getType());
+      assertEquals(9, copy.getClientMessage().getPropertyNames().size());
+      assertEquals(message1.getProperty(boolProp), copy.getClientMessage().getProperty(boolProp));
+      assertEquals(message1.getProperty(byteProp), copy.getClientMessage().getProperty(byteProp));
+      assertByteArraysEquivalent((byte[]) message1.getProperty(byteprops), (byte[]) copy.getClientMessage().getProperty(byteprops));
+      assertEquals(message1.getProperty(doubleProp), copy.getClientMessage().getProperty(doubleProp));
+      assertEquals(message1.getProperty(floatProp), copy.getClientMessage().getProperty(floatProp));
+      assertEquals(message1.getProperty(intProp), copy.getClientMessage().getProperty(intProp));
+      assertEquals(message1.getProperty(longProp), copy.getClientMessage().getProperty(longProp));
+      assertEquals(message1.getProperty(shortProp), copy.getClientMessage().getProperty(shortProp));
+      assertEquals(message1.getProperty(stringProp), copy.getClientMessage().getProperty(stringProp));
+   }
+
+   public void testProducerReceiveMessageBodyProps2() throws Exception
+   {
+      ServerMessage message1 = new ServerMessageImpl(RandomUtil.randomLong());
+      message1.setDestination(new SimpleString("test"));
+      PacketImpl message = new ReceiveMessage(message1, RandomUtil.randomInt(), RandomUtil.randomInt());
+      byte[] bytes = RandomUtil.randomBytes();
+      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocateDirect(bytes.length));
+      body.putBytes(bytes);
+      body.rewind();
+      message1.setBody(body);
+      setHeaders(message);
+      SimpleString boolProp = new SimpleString("bool.prop");
+      message1.putBooleanProperty(boolProp, RandomUtil.randomBoolean());
+      SimpleString byteProp = new SimpleString("byte.prop");
+      message1.putByteProperty(byteProp, RandomUtil.randomByte());
+      SimpleString byteprops = new SimpleString("bytes.prop");
+      message1.putBytesProperty(byteprops, RandomUtil.randomBytes());
+      SimpleString doubleProp = new SimpleString("double.prop");
+      message1.putDoubleProperty(doubleProp, RandomUtil.randomDouble());
+      SimpleString floatProp = new SimpleString("float.prop");
+      message1.putFloatProperty(floatProp, RandomUtil.randomFloat());
+      SimpleString intProp = new SimpleString("int.prop");
+      message1.putIntProperty(intProp, RandomUtil.randomInt());
+      SimpleString longProp = new SimpleString("long.prop");
+      message1.putLongProperty(longProp, RandomUtil.randomLong());
+      SimpleString shortProp = new SimpleString("short.prop");
+      message1.putShortProperty(shortProp, RandomUtil.randomShort());
+      SimpleString stringProp = new SimpleString("string.prop");
+      message1.putStringProperty(stringProp, RandomUtil.randomSimpleString());
+      codec.encode(buff, message);
+      buff.rewind();
+      ReceiveMessage copy = (ReceiveMessage) codec.decode(buff);
+      checkHeaders(message, copy);
+      assertEquals(bytes.length, copy.getClientMessage().getBody().limit());
+      assertEquals(message1.getDestination(), copy.getClientMessage().getDestination());
+      assertEquals(message1.getEncodeSize(), copy.getClientMessage().getEncodeSize());
+      assertEquals(message1.getExpiration(), copy.getClientMessage().getExpiration());
+      assertEquals(message1.getPriority(), copy.getClientMessage().getPriority());
+      assertEquals(message1.getTimestamp(), copy.getClientMessage().getTimestamp());
+      assertEquals(message1.getType(), copy.getClientMessage().getType());
+      assertEquals(9, copy.getClientMessage().getPropertyNames().size());
+      assertEquals(message1.getProperty(boolProp), copy.getClientMessage().getProperty(boolProp));
+      assertEquals(message1.getProperty(byteProp), copy.getClientMessage().getProperty(byteProp));
+      assertByteArraysEquivalent((byte[]) message1.getProperty(byteprops), (byte[]) copy.getClientMessage().getProperty(byteprops));
+      assertEquals(message1.getProperty(doubleProp), copy.getClientMessage().getProperty(doubleProp));
+      assertEquals(message1.getProperty(floatProp), copy.getClientMessage().getProperty(floatProp));
+      assertEquals(message1.getProperty(intProp), copy.getClientMessage().getProperty(intProp));
+      assertEquals(message1.getProperty(longProp), copy.getClientMessage().getProperty(longProp));
+      assertEquals(message1.getProperty(shortProp), copy.getClientMessage().getProperty(shortProp));
+      assertEquals(message1.getProperty(stringProp), copy.getClientMessage().getProperty(stringProp));
+   }
+
+   public void testProducerReceiveMessageBodyProps3() throws Exception
+   {
+      ServerMessage message1 = new ServerMessageImpl(new ServerMessageImpl());
+      message1.setDestination(new SimpleString("test"));
+      PacketImpl message = new ReceiveMessage(message1, RandomUtil.randomInt(), RandomUtil.randomInt());
+      byte[] bytes = RandomUtil.randomBytes();
+      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocateDirect(bytes.length));
+      body.putBytes(bytes);
+      body.rewind();
+      message1.setBody(body);
+      setHeaders(message);
+      SimpleString boolProp = new SimpleString("bool.prop");
+      message1.putBooleanProperty(boolProp, RandomUtil.randomBoolean());
+      SimpleString byteProp = new SimpleString("byte.prop");
+      message1.putByteProperty(byteProp, RandomUtil.randomByte());
+      SimpleString byteprops = new SimpleString("bytes.prop");
+      message1.putBytesProperty(byteprops, RandomUtil.randomBytes());
+      SimpleString doubleProp = new SimpleString("double.prop");
+      message1.putDoubleProperty(doubleProp, RandomUtil.randomDouble());
+      SimpleString floatProp = new SimpleString("float.prop");
+      message1.putFloatProperty(floatProp, RandomUtil.randomFloat());
+      SimpleString intProp = new SimpleString("int.prop");
+      message1.putIntProperty(intProp, RandomUtil.randomInt());
+      SimpleString longProp = new SimpleString("long.prop");
+      message1.putLongProperty(longProp, RandomUtil.randomLong());
+      SimpleString shortProp = new SimpleString("short.prop");
+      message1.putShortProperty(shortProp, RandomUtil.randomShort());
+      SimpleString stringProp = new SimpleString("string.prop");
+      message1.putStringProperty(stringProp, RandomUtil.randomSimpleString());
+      codec.encode(buff, message);
+      buff.rewind();
+      ReceiveMessage copy = (ReceiveMessage) codec.decode(buff);
+      checkHeaders(message, copy);
+      assertEquals(bytes.length, copy.getClientMessage().getBody().limit());
+      assertEquals(message1.getDestination(), copy.getClientMessage().getDestination());
+      assertEquals(message1.getEncodeSize(), copy.getClientMessage().getEncodeSize());
+      assertEquals(message1.getExpiration(), copy.getClientMessage().getExpiration());
+      assertEquals(message1.getPriority(), copy.getClientMessage().getPriority());
+      assertEquals(message1.getTimestamp(), copy.getClientMessage().getTimestamp());
+      assertEquals(message1.getType(), copy.getClientMessage().getType());
+      assertEquals(9, copy.getClientMessage().getPropertyNames().size());
+      assertEquals(message1.getProperty(boolProp), copy.getClientMessage().getProperty(boolProp));
+      assertEquals(message1.getProperty(byteProp), copy.getClientMessage().getProperty(byteProp));
+      assertByteArraysEquivalent((byte[]) message1.getProperty(byteprops), (byte[]) copy.getClientMessage().getProperty(byteprops));
+      assertEquals(message1.getProperty(doubleProp), copy.getClientMessage().getProperty(doubleProp));
+      assertEquals(message1.getProperty(floatProp), copy.getClientMessage().getProperty(floatProp));
+      assertEquals(message1.getProperty(intProp), copy.getClientMessage().getProperty(intProp));
+      assertEquals(message1.getProperty(longProp), copy.getClientMessage().getProperty(longProp));
+      assertEquals(message1.getProperty(shortProp), copy.getClientMessage().getProperty(shortProp));
+      assertEquals(message1.getProperty(stringProp), copy.getClientMessage().getProperty(stringProp));
+   }
+
+   public void testProducerReceiveMessageBodyProps4() throws Exception
+   {
+      ServerMessage message1 = new ServerMessageImpl(RandomUtil.randomByte(), RandomUtil.randomBoolean(), RandomUtil.randomLong(),
+              RandomUtil.randomLong(), RandomUtil.randomByte());
+      message1.setDestination(new SimpleString("test"));
+      PacketImpl message = new ReceiveMessage(message1, RandomUtil.randomInt(), RandomUtil.randomInt());
+      byte[] bytes = RandomUtil.randomBytes();
+      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocateDirect(bytes.length));
+      body.putBytes(bytes);
+      body.rewind();
+      message1.setBody(body);
+      setHeaders(message);
+      SimpleString boolProp = new SimpleString("bool.prop");
+      message1.putBooleanProperty(boolProp, RandomUtil.randomBoolean());
+      SimpleString byteProp = new SimpleString("byte.prop");
+      message1.putByteProperty(byteProp, RandomUtil.randomByte());
+      SimpleString byteprops = new SimpleString("bytes.prop");
+      message1.putBytesProperty(byteprops, RandomUtil.randomBytes());
+      SimpleString doubleProp = new SimpleString("double.prop");
+      message1.putDoubleProperty(doubleProp, RandomUtil.randomDouble());
+      SimpleString floatProp = new SimpleString("float.prop");
+      message1.putFloatProperty(floatProp, RandomUtil.randomFloat());
+      SimpleString intProp = new SimpleString("int.prop");
+      message1.putIntProperty(intProp, RandomUtil.randomInt());
+      SimpleString longProp = new SimpleString("long.prop");
+      message1.putLongProperty(longProp, RandomUtil.randomLong());
+      SimpleString shortProp = new SimpleString("short.prop");
+      message1.putShortProperty(shortProp, RandomUtil.randomShort());
+      SimpleString stringProp = new SimpleString("string.prop");
+      message1.putStringProperty(stringProp, RandomUtil.randomSimpleString());
+      codec.encode(buff, message);
+      buff.rewind();
+      ReceiveMessage copy = (ReceiveMessage) codec.decode(buff);
+      checkHeaders(message, copy);
+      assertEquals(bytes.length, copy.getClientMessage().getBody().limit());
+      assertEquals(message1.getDestination(), copy.getClientMessage().getDestination());
+      assertEquals(message1.getEncodeSize(), copy.getClientMessage().getEncodeSize());
+      assertEquals(message1.getExpiration(), copy.getClientMessage().getExpiration());
+      assertEquals(message1.getPriority(), copy.getClientMessage().getPriority());
+      assertEquals(message1.getTimestamp(), copy.getClientMessage().getTimestamp());
+      assertEquals(message1.getType(), copy.getClientMessage().getType());
+      assertEquals(9, copy.getClientMessage().getPropertyNames().size());
+      assertEquals(message1.getProperty(boolProp), copy.getClientMessage().getProperty(boolProp));
+      assertEquals(message1.getProperty(byteProp), copy.getClientMessage().getProperty(byteProp));
+      assertByteArraysEquivalent((byte[]) message1.getProperty(byteprops), (byte[]) copy.getClientMessage().getProperty(byteprops));
+      assertEquals(message1.getProperty(doubleProp), copy.getClientMessage().getProperty(doubleProp));
+      assertEquals(message1.getProperty(floatProp), copy.getClientMessage().getProperty(floatProp));
+      assertEquals(message1.getProperty(intProp), copy.getClientMessage().getProperty(intProp));
+      assertEquals(message1.getProperty(longProp), copy.getClientMessage().getProperty(longProp));
+      assertEquals(message1.getProperty(shortProp), copy.getClientMessage().getProperty(shortProp));
+      assertEquals(message1.getProperty(stringProp), copy.getClientMessage().getProperty(stringProp));
    }
 
    public void testConnectionCreateSessionPacket() throws Exception
@@ -124,7 +857,7 @@ public class MessagingCodecImplTest extends UnitTestCase
               RandomUtil.randomString(),
               RandomUtil.randomInt(),
               RandomUtil.randomInt(),
-              RandomUtil.randomInt(),RandomUtil.randomInt(),RandomUtil.randomString()));
+              RandomUtil.randomInt(), RandomUtil.randomInt(), RandomUtil.randomString()));
       setHeaders(message);
       codec.encode(buff, message);
       buff.rewind();
@@ -231,7 +964,7 @@ public class MessagingCodecImplTest extends UnitTestCase
 
    }
 
-    public void testSessionBrowserHasNextMessageResponseMessagePacket() throws Exception
+   public void testSessionBrowserHasNextMessageResponseMessagePacket() throws Exception
    {
       SessionBrowserHasNextMessageResponseMessage message = new SessionBrowserHasNextMessageResponseMessage(RandomUtil.randomBoolean());
       setHeaders(message);
@@ -243,7 +976,7 @@ public class MessagingCodecImplTest extends UnitTestCase
 
    }
 
-    public void testSessionCancelMessagePacket() throws Exception
+   public void testSessionCancelMessagePacket() throws Exception
    {
       SessionCancelMessage message = new SessionCancelMessage(RandomUtil.randomLong(), RandomUtil.randomBoolean());
       setHeaders(message);
@@ -256,7 +989,7 @@ public class MessagingCodecImplTest extends UnitTestCase
 
    }
 
-    public void testSessionCreateBrowserMessagePacket() throws Exception
+   public void testSessionCreateBrowserMessagePacket() throws Exception
    {
       SessionCreateBrowserMessage message = new SessionCreateBrowserMessage(RandomUtil.randomSimpleString(), RandomUtil.randomSimpleString());
       setHeaders(message);
@@ -281,7 +1014,7 @@ public class MessagingCodecImplTest extends UnitTestCase
 
    }
 
-    public void testSessionCreateConsumerMessagePacket() throws Exception
+   public void testSessionCreateConsumerMessagePacket() throws Exception
    {
       SessionCreateConsumerMessage message = new SessionCreateConsumerMessage(RandomUtil.randomLong(),
               RandomUtil.randomSimpleString(), RandomUtil.randomSimpleString(), RandomUtil.randomBoolean(), RandomUtil.randomBoolean(),
@@ -348,7 +1081,7 @@ public class MessagingCodecImplTest extends UnitTestCase
    public void testSessionCreateQueueMessagePacket() throws Exception
    {
       SessionCreateQueueMessage message = new SessionCreateQueueMessage(RandomUtil.randomSimpleString(),
-              RandomUtil.randomSimpleString(),RandomUtil.randomSimpleString(), RandomUtil.randomBoolean(),RandomUtil.randomBoolean());
+              RandomUtil.randomSimpleString(), RandomUtil.randomSimpleString(), RandomUtil.randomBoolean(), RandomUtil.randomBoolean());
       setHeaders(message);
       codec.encode(buff, message);
       buff.rewind();
@@ -387,7 +1120,7 @@ public class MessagingCodecImplTest extends UnitTestCase
    {
       SessionQueueQueryResponseMessage message = new SessionQueueQueryResponseMessage(RandomUtil.randomBoolean(),
               RandomUtil.randomBoolean(), RandomUtil.randomInt(), RandomUtil.randomInt(), RandomUtil.randomInt(),
-              RandomUtil.randomSimpleString(),RandomUtil.randomSimpleString());
+              RandomUtil.randomSimpleString(), RandomUtil.randomSimpleString());
       setHeaders(message);
       codec.encode(buff, message);
       buff.rewind();
@@ -476,15 +1209,15 @@ public class MessagingCodecImplTest extends UnitTestCase
    }
 
    public void testSessionXAGetTimeoutResponseMessagePacket() throws Exception
-     {
-        SessionXAGetTimeoutResponseMessage message = new SessionXAGetTimeoutResponseMessage(RandomUtil.randomInt());
-        setHeaders(message);
-        codec.encode(buff, message);
-        buff.rewind();
-        SessionXAGetTimeoutResponseMessage copy = (SessionXAGetTimeoutResponseMessage) codec.decode(buff);
-        checkHeaders(message, copy);
-        assertEquals(message.getTimeoutSeconds(), copy.getTimeoutSeconds());
-     }
+   {
+      SessionXAGetTimeoutResponseMessage message = new SessionXAGetTimeoutResponseMessage(RandomUtil.randomInt());
+      setHeaders(message);
+      codec.encode(buff, message);
+      buff.rewind();
+      SessionXAGetTimeoutResponseMessage copy = (SessionXAGetTimeoutResponseMessage) codec.decode(buff);
+      checkHeaders(message, copy);
+      assertEquals(message.getTimeoutSeconds(), copy.getTimeoutSeconds());
+   }
 
    public void testSessionXAJoinMessagePacket() throws Exception
    {
