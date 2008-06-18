@@ -122,6 +122,25 @@ public class JBossConnectionFactory implements
       this.defaultSendNonPersistentMessagesBlocking = defaultSendNonPersistentMessagesBlocking;
       this.defaultSendPersistentMessagesBlocking = defaultSendPersistentMessagesBlocking;
    }
+   
+   public JBossConnectionFactory(final ClientConnectionFactory factory,
+         final String clientID, final int dupsOKBatchSize,
+         final Location location, final ConnectionParams connectionParams,
+         final int defaultConsumerWindowSize, final int defaultConsumerMaxRate,
+         final int defaultProducerWindowSize, final int defaultProducerMaxRate,
+         final boolean defaultBlockOnAcknowledge,
+         final boolean defaultSendNonPersistentMessagesBlocking,
+         final boolean defaultSendPersistentMessagesBlocking)
+   {
+      this(clientID, dupsOKBatchSize, location, connectionParams,
+            defaultConsumerWindowSize, defaultConsumerMaxRate,
+            defaultProducerWindowSize, defaultProducerMaxRate,
+            defaultBlockOnAcknowledge,
+            defaultSendNonPersistentMessagesBlocking,
+            defaultSendPersistentMessagesBlocking);
+      this.connectionFactory = factory;
+   }
+   
    // ConnectionFactory implementation -------------------------------------------------------------
    
    public Connection createConnection() throws JMSException
