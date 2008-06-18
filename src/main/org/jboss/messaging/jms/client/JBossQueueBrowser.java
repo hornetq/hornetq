@@ -54,7 +54,7 @@ public class JBossQueueBrowser implements QueueBrowser
 
    // Constructors ---------------------------------------------------------------------------------
 
-   JBossQueueBrowser(Queue queue, String messageSelector, ClientBrowser browser)
+   public JBossQueueBrowser(Queue queue, String messageSelector, ClientBrowser browser)
    {
       this.browser = browser;
       this.queue = queue;
@@ -146,7 +146,6 @@ public class JBossQueueBrowser implements QueueBrowser
          }
          catch (Exception e)
          {
-            e.printStackTrace();
             throw new IllegalStateException(e.getMessage());
          }
       }
