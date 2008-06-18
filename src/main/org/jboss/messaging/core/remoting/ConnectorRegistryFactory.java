@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.core.remoting;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.ConnectorRegistryImpl;
 
 /**
@@ -32,6 +33,10 @@ import org.jboss.messaging.core.remoting.impl.ConnectorRegistryImpl;
 public class ConnectorRegistryFactory implements ConnectorRegistryLocator
 {
    // Constants -----------------------------------------------------
+   private static Logger log = Logger.getLogger(ConnectorRegistryImpl.class);
+
+
+   public static final String CONNECTOR_LOCATOR_PROPERTY = "messaging.connectorlocator.name";
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
@@ -54,8 +59,23 @@ public class ConnectorRegistryFactory implements ConnectorRegistryLocator
    {
       if (REGISTRY_LOCATOR == null)
       {
-         //todo create the locator from another source using sys props, for now just use the default
-         REGISTRY_LOCATOR = new ConnectorRegistryFactory();
+         String locaterClass = System.getProperty(CONNECTOR_LOCATOR_PROPERTY);
+         if(locaterClass != null)
+         {
+            try
+            {
+               REGISTRY_LOCATOR = (ConnectorRegistryLocator) Class.forName(locaterClass).newInstance();
+            }
+            catch (Exception e)
+            {
+               log.warn("unable to create class for Registry Locator, using default", e);
+               REGISTRY_LOCATOR = new ConnectorRegistryFactory();
+            }
+         }
+         else
+         {
+            REGISTRY_LOCATOR = new ConnectorRegistryFactory();
+         }
       }
       return REGISTRY_LOCATOR.locate();
    }
