@@ -22,6 +22,71 @@
 
 package org.jboss.messaging.tests.unit.core.remoting.impl.mina;
 
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CLOSE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CONN_CREATESESSION;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CONN_CREATESESSION_RESP;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CONN_START;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CONN_STOP;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CONS_FLOWTOKEN;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATECONNECTION;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATECONNECTION_RESP;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EXCEPTION;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NULL;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PING;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PONG;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PROD_RECEIVETOKENS;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ACKNOWLEDGE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ADD_DESTINATION;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BINDINGQUERY;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BINDINGQUERY_RESP;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_HASNEXTMESSAGE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_HASNEXTMESSAGE_RESP;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_NEXTMESSAGE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_RESET;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CANCEL;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_COMMIT;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEBROWSER;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEBROWSER_RESP;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATECONSUMER;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATECONSUMER_RESP;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEPRODUCER;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEPRODUCER_RESP;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEQUEUE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_DELETE_QUEUE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_QUEUEQUERY;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_QUEUEQUERY_RESP;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_RECOVER;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_REMOVE_DESTINATION;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ROLLBACK;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_COMMIT;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_END;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_FORGET;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_GET_TIMEOUT;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_GET_TIMEOUT_RESP;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_INDOUBT_XIDS;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_INDOUBT_XIDS_RESP;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_JOIN;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_PREPARE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_RESP;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_RESUME;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_ROLLBACK;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SET_TIMEOUT;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SET_TIMEOUT_RESP;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_START;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SUSPEND;
+import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
+import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
+import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
+import static org.jboss.messaging.tests.util.RandomUtil.randomString;
+import static org.jboss.messaging.tests.util.RandomUtil.randomXid;
+import static org.jboss.messaging.util.DataConstants.SIZE_BYTE;
+import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.transaction.xa.Xid;
+
 import org.apache.mina.common.IoBuffer;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -29,21 +94,51 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.mina.MinaProtocolCodecFilter;
-import org.jboss.messaging.core.remoting.impl.wireformat.*;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.*;
+import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
+import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
+import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
+import org.jboss.messaging.core.remoting.impl.wireformat.ProducerFlowCreditMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCancelMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAForgetMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetInDoubtXidsResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetTimeoutResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAJoinMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAPrepareMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResumeMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.XidCodecSupport;
 import org.jboss.messaging.core.version.impl.VersionImpl;
-import org.jboss.messaging.tests.unit.core.remoting.impl.CodecAssert;
-import static org.jboss.messaging.tests.unit.core.remoting.impl.CodecAssert.assertSameXids;
-import static org.jboss.messaging.tests.util.RandomUtil.*;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import static org.jboss.messaging.util.DataConstants.SIZE_BYTE;
-import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
 import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
-
-import javax.transaction.xa.Xid;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -153,7 +248,7 @@ public class MinaProtocolCodecFilterTest extends UnitTestCase
       byte[] actualBody = new byte[bodyLength];
       buffer.getBytes(actualBody);
       MessagingBuffer expectedBody = encode(actualBody.length, bodyObjects);
-      CodecAssert.assertEqualsByteArrays(bodyLength, expectedBody.array(), actualBody);
+      UnitTestCase.assertEqualsByteArrays(bodyLength, expectedBody.array(), actualBody);
       // check the buffer has been wholly read
       assertEquals(0, buffer.remaining());
    }
@@ -712,7 +807,7 @@ public class MinaProtocolCodecFilterTest extends UnitTestCase
       SessionXAGetInDoubtXidsResponseMessage decodedMessage = (SessionXAGetInDoubtXidsResponseMessage) decodedPacket;
       assertEquals(SESS_XA_INDOUBT_XIDS_RESP, decodedMessage.getType());
 
-      assertSameXids(message.getXids(), decodedMessage.getXids());
+      UnitTestCase.assertSameXids(message.getXids(), decodedMessage.getXids());
    }
 
    public void testSessionXAGetTimeoutMessage() throws Exception

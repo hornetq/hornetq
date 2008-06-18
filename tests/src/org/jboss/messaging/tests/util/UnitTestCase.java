@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.transaction.xa.Xid;
+
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.server.MessageReference;
@@ -262,6 +264,45 @@ public class UnitTestCase extends TestCase
 	protected int calculateRecordSize(int size, int alignment)
    {
       return ((size / alignment) + (size % alignment != 0 ? 1 : 0)) * alignment;
+   }
+
+   public static void assertEqualsByteArrays(byte[] expected, byte[] actual)
+   {
+      assertEquals(expected.length, actual.length);
+      for (int i = 0; i < expected.length; i++)
+      {
+         assertEquals("byte at index " + i, expected[i], actual[i]);
+      }
+   }
+
+   public static void assertEqualsByteArrays(int length, byte[] expected, byte[] actual)
+   {
+      // we check only for the given length (the arrays might be
+      // larger)
+      assertTrue(expected.length >= length);
+      assertTrue(actual.length >= length);
+      for (int i = 0; i < length; i++)
+      {
+         assertEquals("byte at index " + i, expected[i], actual[i]);
+      }
+   }
+
+   public static void assertSameXids(List<Xid> expected, List<Xid> actual)
+   {
+      assertNotNull(expected);
+      assertNotNull(actual);
+      assertEquals(expected.size(), actual.size());
+   
+      for (int i = 0; i < expected.size(); i++)
+      {
+         Xid expectedXid = expected.get(i);
+         Xid actualXid = actual.get(i);
+         UnitTestCase.assertEqualsByteArrays(expectedXid.getBranchQualifier(), actualXid
+               .getBranchQualifier());
+         assertEquals(expectedXid.getFormatId(), actualXid.getFormatId());
+         UnitTestCase.assertEqualsByteArrays(expectedXid.getGlobalTransactionId(), actualXid
+               .getGlobalTransactionId());
+      }
    }
 
 }

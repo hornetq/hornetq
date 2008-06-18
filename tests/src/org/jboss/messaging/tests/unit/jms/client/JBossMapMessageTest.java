@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.tests.unit.jms.client;
 
-import static org.jboss.messaging.tests.unit.core.remoting.impl.CodecAssert.assertEqualsByteArrays;
 import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
 import static org.jboss.messaging.tests.util.RandomUtil.randomByte;
 import static org.jboss.messaging.tests.util.RandomUtil.randomBytes;
@@ -33,6 +32,7 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomShort;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
+import static org.jboss.messaging.tests.util.UnitTestCase.assertEqualsByteArrays;
 
 import javax.jms.MessageFormatException;
 

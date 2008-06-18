@@ -27,6 +27,7 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
+import static org.jboss.messaging.tests.util.UnitTestCase.assertEqualsByteArrays;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
@@ -39,7 +40,6 @@ import javax.jms.ObjectMessage;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.jms.client.JBossObjectMessage;
-import org.jboss.messaging.tests.unit.core.remoting.impl.CodecAssert;
 import org.jboss.messaging.util.MessagingBuffer;
 
 /**
@@ -125,7 +125,7 @@ public class JBossObjectMessageTest extends TestCase
       byte[] bytes = new byte[data.length];
       body.getBytes(bytes);
       
-      CodecAssert.assertEqualsByteArrays(data, bytes);
+      assertEqualsByteArrays(data, bytes);
    }
    
    public void testDoBeforeReceive() throws Exception

@@ -92,6 +92,16 @@ public class RandomUtil
       return randomString().getBytes();
    }
    
+   public static byte[] randomBytes(int length)
+   {
+      byte[] bytes = new byte[length];
+      for (int i = 0; i < bytes.length; i++)
+      {
+        bytes[i] = randomByte();
+      }
+      return bytes;
+   }
+   
    public static double randomDouble()
    {
       return random.nextDouble();

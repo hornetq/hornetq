@@ -353,6 +353,10 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       {
          writeBoolean((Boolean) value);
       }
+      else if (value instanceof Character)
+      {
+         writeChar((Character) value);
+      }
       else if (value instanceof Byte)
       {
          writeByte((Byte) value);

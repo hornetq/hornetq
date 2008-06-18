@@ -22,16 +22,27 @@
 
 package org.jboss.messaging.tests.unit.core.util;
 
+import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
+import static org.jboss.messaging.tests.util.RandomUtil.randomByte;
+import static org.jboss.messaging.tests.util.RandomUtil.randomBytes;
+import static org.jboss.messaging.tests.util.RandomUtil.randomChar;
+import static org.jboss.messaging.tests.util.RandomUtil.randomDouble;
+import static org.jboss.messaging.tests.util.RandomUtil.randomFloat;
+import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
+import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
+import static org.jboss.messaging.tests.util.RandomUtil.randomShort;
+import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
+import static org.jboss.messaging.tests.util.UnitTestCase.assertEqualsByteArrays;
+
+import java.util.Iterator;
+
 import junit.framework.TestCase;
+
 import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
-import static org.jboss.messaging.tests.unit.core.remoting.impl.CodecAssert.assertEqualsByteArrays;
-import org.jboss.messaging.tests.util.RandomUtil;
-import static org.jboss.messaging.tests.util.RandomUtil.*;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TypedProperties;
-
-import java.util.Iterator;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -65,7 +76,7 @@ public class TypedPropertiesTest extends TestCase
          {
             byte[] expectedBytes = (byte[]) expectedValue;
             byte[] actualBytes = (byte[]) actualValue;
-            assertEqualsByteArrays(expectedBytes, actualBytes);
+            UnitTestCase.assertEqualsByteArrays(expectedBytes, actualBytes);
          } else
          {
             assertEquals(expectedValue, actualValue);
@@ -170,7 +181,7 @@ public class TypedPropertiesTest extends TestCase
 
    public void testBytesProperty() throws Exception
    {
-      byte[] b = RandomUtil.randomBytes();
+      byte[] b = randomBytes();
       props.putBytesProperty(key, b);
       byte[] bb = (byte[]) props.getProperty(key);
       assertEqualsByteArrays(b, bb);
