@@ -223,7 +223,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 		return 0;
 	}
 	
-	public void fill(long position, int blocks, long size, byte fillChar)
+	public void fill(final long position, final int blocks, final long size, final byte fillChar)
 	{
 		checkOpened();
 		fill(handler, position, blocks, size, fillChar);
