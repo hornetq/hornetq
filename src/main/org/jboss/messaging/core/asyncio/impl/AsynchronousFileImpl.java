@@ -1,9 +1,24 @@
 /*
- * JBoss, the OpenSource J2EE webOS
+ * JBoss, Home of Professional Open Source
+ * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
  *
- * Distributable under LGPL license.
- * See terms of license at gnu.org.
- */
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */ 
 
 package org.jboss.messaging.core.asyncio.impl;
 
@@ -50,7 +65,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
       return totalMaxIO.get();
    }
    
-   private static boolean loadLibrary(String name) 
+   private static boolean loadLibrary(final String name) 
    {
       try
       {
@@ -224,7 +239,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	
 	/** The JNI layer will call this method, so we could use it to unlock readWriteLocks held in the java layer */
 	@SuppressWarnings("unused") // Called by the JNI layer.. just ignore the warning
-	private void callbackDone(AIOCallback callback)
+	private void callbackDone(final AIOCallback callback)
 	{
       writeSemaphore.release();
 		writeLatch.down();
@@ -232,7 +247,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	}
 	
 	@SuppressWarnings("unused") // Called by the JNI layer.. just ignore the warning
-	private void callbackError(AIOCallback callback, int errorCode, String errorMessage)
+	private void callbackError(final AIOCallback callback, int errorCode, String errorMessage)
 	{
       writeSemaphore.release();
       writeLatch.down();

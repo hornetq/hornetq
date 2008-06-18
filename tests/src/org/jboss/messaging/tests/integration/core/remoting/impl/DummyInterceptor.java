@@ -1,9 +1,24 @@
 /*
- * JBoss, the OpenSource J2EE webOS
+ * JBoss, Home of Professional Open Source
+ * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
  *
- * Distributable under LGPL license.
- * See terms of license at gnu.org.
- */
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */ 
 
 package org.jboss.messaging.tests.integration.core.remoting.impl;
 
@@ -16,6 +31,9 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.util.SimpleString;
 
+/**
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ */
 public class DummyInterceptor implements Interceptor
 {
    protected Logger log = Logger.getLogger(DummyInterceptor.class);
@@ -34,7 +52,7 @@ public class DummyInterceptor implements Interceptor
       syncCounter.set(0);
    }
    
-   public void intercept(Packet packet) throws MessagingException
+   public void intercept(final Packet packet) throws MessagingException
    {
       log.info("DummyFilter packet = " + packet.getClass().getName());
       syncCounter.addAndGet(1);

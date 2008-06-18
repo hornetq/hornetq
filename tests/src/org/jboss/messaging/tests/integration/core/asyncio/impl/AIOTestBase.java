@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2005, JBoss Inc., and individual contributors as indicated
+ * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */
+ */ 
 
 package org.jboss.messaging.tests.integration.core.asyncio.impl;
 
@@ -67,7 +67,7 @@ public abstract class AIOTestBase extends UnitTestCase
       //deleteDirectory(new File(fileDir));
    }
    
-   protected void encodeBufer(ByteBuffer buffer)
+   protected void encodeBufer(final ByteBuffer buffer)
    {
       buffer.clear();
       int size = buffer.limit();
