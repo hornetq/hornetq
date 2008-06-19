@@ -306,11 +306,6 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
    
    // Public --------------------------------------------------------
 
-   public ClientProducer getDelegate()
-   {
-      return producer;
-   }
-
    public String toString()
    {
       return "JBossMessageProducer->" + producer;
@@ -444,7 +439,7 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
 
       try
       {      	
-      	producer.send(address, jbm.getCoreMessage());      		      	
+      	producer.send(address, jbm.getDelegate());      		      	
       }
       catch (MessagingException e)
       {

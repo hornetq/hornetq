@@ -168,11 +168,6 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
       return noLocal;
    }
 
-   public ClientConsumer getConsumer()
-   {
-       return consumer;
-   }
-
    // Public --------------------------------------------------------
 
    public String toString()
@@ -188,7 +183,7 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
    
    private void checkClosed() throws JMSException
    {
-      if (session.getCoreSession().isClosed())
+      if (session.getDelegate().isClosed())
       {
          throw new IllegalStateException("Consumer is closed");
       }
@@ -204,9 +199,9 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
          
          if (message != null)
          {         
-            session.getCoreSession().acknowledge();
+            session.getDelegate().acknowledge();
                      
-            jbm = JBossMessage.createMessage(message, session.getCoreSession());
+            jbm = JBossMessage.createMessage(message, session.getDelegate());
             
             try
             {

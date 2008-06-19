@@ -105,11 +105,6 @@ public class JBossQueueBrowser implements QueueBrowser
       return "JBossQueueBrowser->" + browser;
    }
 
-   public ClientBrowser getBrowser()
-   {
-      return browser;
-   }
-
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------

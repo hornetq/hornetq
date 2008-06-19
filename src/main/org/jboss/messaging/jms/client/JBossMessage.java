@@ -862,7 +862,7 @@ public class JBossMessage implements javax.jms.Message
     
    // Public --------------------------------------------------------
    
-   public ClientMessage getCoreMessage()
+   public ClientMessage getDelegate()
    {
       return message;
    }
