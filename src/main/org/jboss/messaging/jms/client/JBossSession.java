@@ -377,7 +377,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
       ClientConsumer cd = createConsumer(jbdest, null, messageSelector, noLocal);
 
-      return new JBossMessageConsumer(this, cd, noLocal, destination, messageSelector, destination instanceof Topic);
+      return new JBossMessageConsumer(this, cd, noLocal, destination, messageSelector);
    }
 
    public Queue createQueue(final String queueName) throws JMSException
@@ -469,7 +469,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
       ClientConsumer cd = createConsumer(jbdest, name, messageSelector, noLocal);
 
-      return new JBossMessageConsumer(this, cd, noLocal, topic, messageSelector, false);
+      return new JBossMessageConsumer(this, cd, noLocal, topic, messageSelector);
    }
 
    private ClientConsumer createConsumer(final JBossDestination dest,

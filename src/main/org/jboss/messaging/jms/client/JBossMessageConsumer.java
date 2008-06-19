@@ -71,12 +71,10 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
    
    private String selector;
    
-   private boolean deleteQueueOnClose;
-   
    // Constructors --------------------------------------------------
 
    public JBossMessageConsumer(JBossSession session, ClientConsumer consumer, boolean noLocal,
-                               Destination destination, String selector, boolean deleteQueueOnClose) throws JMSException
+                               Destination destination, String selector) throws JMSException
    {      
       this.session = session;
       
@@ -88,9 +86,7 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
       
       this.destination = destination;
       
-      this.selector = selector;
-      
-      this.deleteQueueOnClose = deleteQueueOnClose;
+      this.selector = selector;      
    }
 
    // MessageConsumer implementation --------------------------------

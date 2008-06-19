@@ -306,7 +306,7 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
    
    // Public --------------------------------------------------------
 
-   public org.jboss.messaging.core.client.ClientProducer getDelegate()
+   public ClientProducer getDelegate()
    {
       return producer;
    }
