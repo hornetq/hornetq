@@ -22,29 +22,19 @@
 
 package org.jboss.messaging.jms.client;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.InvalidDestinationException;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageFormatException;
-import javax.jms.MessageNotReadableException;
-import javax.jms.MessageNotWriteableException;
-
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.JBossDestination;
+import org.jboss.messaging.util.ByteBufferWrapper;
 import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
+
+import javax.jms.*;
+import java.nio.ByteBuffer;
+import java.util.*;
 
 /**
  * 
@@ -61,6 +51,7 @@ import org.jboss.messaging.util.SimpleString;
  * @author Hiram Chirino (Cojonudo14@hotmail.com)
  * @author David Maplesden (David.Maplesden@orion.co.nz)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  *
  * $Id: JBossMessage.java 3466 2007-12-10 18:44:52Z timfox $
  */
@@ -170,21 +161,40 @@ public class JBossMessage implements javax.jms.Message
    private String jmsType;
               
    // Constructors --------------------------------------------------
-     
+   /**
+    * constructors for test purposes only
+    */
+   public JBossMessage()
+   {
+      message = new ClientMessageImpl(JBossMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, new ByteBufferWrapper(ByteBuffer.allocate(1024)));
+
+      //TODO - can we lazily create this?
+      body = message.getBody();
+   }
+
+   public JBossMessage(byte type)
+   {
+      message = new ClientMessageImpl(type, true, 0, System.currentTimeMillis(), (byte)4, new ByteBufferWrapper(ByteBuffer.allocate(1024)));
+
+      //TODO - can we lazily create this?
+      body = message.getBody();
+   }
+
+
    /*
     * Create a new message prior to sending
     */
-   protected JBossMessage(final byte type)
+   protected JBossMessage(final byte type, final ClientSession session)
    {
-      message = new ClientMessageImpl(type, true, 0, System.currentTimeMillis(), (byte)4);
+      message = session.createClientMessage(type, true, 0, System.currentTimeMillis(), (byte)4);
       
       //TODO - can we lazily create this?
       body = message.getBody();
    }
    
-   public JBossMessage()
+   public JBossMessage(final ClientSession session)
    {
-      this (JBossMessage.TYPE);
+      this (JBossMessage.TYPE, session);
    }
    
    /**
@@ -204,14 +214,14 @@ public class JBossMessage implements javax.jms.Message
    /*
     * A constructor that takes a foreign message
     */  
-   public JBossMessage(final Message foreign) throws JMSException
+   public JBossMessage(final Message foreign,final ClientSession session) throws JMSException
    {
-      this(foreign, JBossMessage.TYPE);
+      this(foreign, JBossMessage.TYPE, session);
    }
       
-   protected JBossMessage(final Message foreign, final byte type) throws JMSException
+   protected JBossMessage(final Message foreign, final byte type, final ClientSession session) throws JMSException
    {
-      this(type);
+      this(type, session);
 
       setJMSTimestamp(foreign.getJMSTimestamp());
 

@@ -22,16 +22,16 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.ServerConnection;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
@@ -113,7 +113,12 @@ public class ConnectionManagerImpl implements ConnectionManager, RemotingSession
    
    public synchronized int size()
    {
-      return endpoints.size();
+      int size = 0;
+      for (List<ServerConnection> connections : endpoints.values())
+      {
+         size += connections.size();
+      }
+      return size;
    }
 
    // FailureListener implementation --------------------------------------------------------------

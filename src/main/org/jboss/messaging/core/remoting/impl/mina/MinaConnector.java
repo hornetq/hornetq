@@ -204,7 +204,7 @@ public class MinaConnector implements RemotingConnector, CleanUpNotifier
       return minaSession;
    }
 
-   public boolean disconnect()
+   public synchronized boolean disconnect()
    {
       if (session == null)
       {

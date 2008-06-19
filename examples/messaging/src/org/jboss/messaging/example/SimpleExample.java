@@ -21,29 +21,15 @@
    */
 package org.jboss.messaging.example;
 
-import java.util.Set;
-
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
-import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientProducer;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.client.*;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.remoting.TransportType;
-import org.jboss.messaging.core.security.CheckType;
-import org.jboss.messaging.core.security.JBMSecurityManager;
-import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
@@ -80,7 +66,7 @@ public class SimpleExample
          SimpleString atestq = new SimpleString("atestq");
          clientSession.createQueue(atestq, atestq, null, false, true);
          ClientProducer clientProducer = clientSession.createProducer(atestq);
-         ClientMessage message = new ClientMessageImpl(JBossTextMessage.TYPE, false, 0,
+         ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE, false, 0,
                  System.currentTimeMillis(), (byte) 1);
          message.getBody().putString("Hello!");
          clientProducer.send(message);

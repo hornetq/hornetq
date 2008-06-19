@@ -23,12 +23,12 @@
 package org.jboss.messaging.jms.client;
 
 
-import javax.jms.JMSException;
-import javax.jms.TextMessage;
-
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.logging.Logger;
+
+import javax.jms.JMSException;
+import javax.jms.TextMessage;
 
 /**
  * This class implements javax.jms.TextMessage ported from SpyTextMessage in JBossMQ.
@@ -38,6 +38,7 @@ import org.jboss.messaging.core.logging.Logger;
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * 
  * @version $Revision: 3412 $
  *
@@ -67,6 +68,13 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
    {
       super(JBossTextMessage.TYPE);
    }
+   /**
+    * constructors for test purposes only
+    */
+   public JBossTextMessage(final ClientSession session)
+   {
+      super(JBossTextMessage.TYPE, session);
+   }
    
    public JBossTextMessage(final ClientMessage message, ClientSession session)
    {     
@@ -76,9 +84,9 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
    /**
     * A copy constructor for non-JBoss Messaging JMS TextMessages.
     */
-   public JBossTextMessage(final TextMessage foreign) throws JMSException
+   public JBossTextMessage(final TextMessage foreign, final ClientSession session) throws JMSException
    {
-      super(foreign, JBossTextMessage.TYPE);
+      super(foreign, JBossTextMessage.TYPE, session);
       
       text = foreign.getText();
    }

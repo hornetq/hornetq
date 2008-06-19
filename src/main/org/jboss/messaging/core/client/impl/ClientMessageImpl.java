@@ -24,12 +24,14 @@ package org.jboss.messaging.core.client.impl;
 
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * 
  * A ClientMessageImpl
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  *
  */
 public class ClientMessageImpl extends MessageImpl implements ClientMessage
@@ -54,19 +56,19 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessage
     * Construct messages before sending
     */
    public ClientMessageImpl(final byte type, final boolean durable, final long expiration,
-                            final long timestamp, final byte priority)
+                            final long timestamp, final byte priority, MessagingBuffer body)
    {
-      super(type, durable, expiration, timestamp, priority);
+      super(type, durable, expiration, timestamp, priority, body);
    }
    
-   public ClientMessageImpl(final byte type, final boolean durable)
+   public ClientMessageImpl(final byte type, final boolean durable, MessagingBuffer body)
    {
-      super(type, durable, 0, System.currentTimeMillis(), (byte)4);
+      super(type, durable, 0, System.currentTimeMillis(), (byte)4, body);
    }
    
-   public ClientMessageImpl(final boolean durable)
+   public ClientMessageImpl(final boolean durable, MessagingBuffer body)
    {
-      super((byte) 0, durable, 0, System.currentTimeMillis(), (byte)4);
+      super((byte) 0, durable, 0, System.currentTimeMillis(), (byte)4, body);
    }
    
    public void setDeliveryCount(final int deliveryCount)

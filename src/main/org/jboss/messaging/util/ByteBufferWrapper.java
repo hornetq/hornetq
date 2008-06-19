@@ -33,6 +33,7 @@ import java.nio.charset.Charset;
  * A ByteBufferWrapper
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  *
  */
 public class ByteBufferWrapper implements MessagingBuffer
@@ -53,9 +54,16 @@ public class ByteBufferWrapper implements MessagingBuffer
 	
 	public byte[] array()
    {
-      byte[] b = new byte[buffer.limit()];
-      buffer.get(b);
-      return b;
+      if(buffer.hasArray())
+      {
+         return buffer.array();
+      }
+      else
+      {
+         byte[] b = new byte[buffer.limit()];
+         buffer.get(b);
+         return b;
+      }
    }
     
 	public int position()

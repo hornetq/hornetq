@@ -22,37 +22,24 @@
 
 package org.jboss.messaging.jms.client;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.concurrent.atomic.AtomicLong;
-
-import javax.jms.BytesMessage;
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.IllegalStateException;
-import javax.jms.InvalidDestinationException;
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.Message;
-import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
-import javax.jms.Queue;
-import javax.jms.QueueSender;
-import javax.jms.StreamMessage;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.jms.TopicPublisher;
-
 import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.UUIDGenerator;
 
+import javax.jms.*;
+import javax.jms.IllegalStateException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -84,14 +71,17 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
    private final String messageIDPrefix;
    
    private final AtomicLong sequenceNumber = new AtomicLong(0);
+   private ClientSession clientSession;
 
    // Constructors --------------------------------------------------
    
-   public JBossMessageProducer(ClientProducer producer, JBossDestination defaultDestination) throws JMSException
+   public JBossMessageProducer(ClientProducer producer, JBossDestination defaultDestination, ClientSession clientSession) throws JMSException
    {
       this.producer = producer;     
       
       this.defaultDestination = defaultDestination;
+
+      this.clientSession = clientSession;
       
       //TODO the UUID should be generated at the JMS Connection level, 
       // then session, producers & messages ID could be created using simple sequences
@@ -376,27 +366,27 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
 
          if (message instanceof BytesMessage)
          {
-            jbm = new JBossBytesMessage((BytesMessage)message);
+            jbm = new JBossBytesMessage((BytesMessage)message, clientSession );
          }
          else if (message instanceof MapMessage)
          {
-            jbm = new JBossMapMessage((MapMessage)message);
+            jbm = new JBossMapMessage((MapMessage)message, clientSession);
          }
          else if (message instanceof ObjectMessage)
          {
-            jbm = new JBossObjectMessage((ObjectMessage)message);
+            jbm = new JBossObjectMessage((ObjectMessage)message, clientSession);
          }
          else if (message instanceof StreamMessage)
          {
-            jbm = new JBossStreamMessage((StreamMessage)message);
+            jbm = new JBossStreamMessage((StreamMessage)message, clientSession);
          }
          else if (message instanceof TextMessage)
          {
-            jbm = new JBossTextMessage((TextMessage)message);
+            jbm = new JBossTextMessage((TextMessage)message, clientSession);
          }
          else
          {
-            jbm = new JBossMessage(message);
+            jbm = new JBossMessage(message, clientSession);
          }
 
          // Set the destination on the original message

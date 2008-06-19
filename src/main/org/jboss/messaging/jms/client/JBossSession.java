@@ -22,42 +22,6 @@
 
 package org.jboss.messaging.jms.client;
 
-import java.io.Serializable;
-import java.util.LinkedList;
-import java.util.UUID;
-
-import javax.jms.BytesMessage;
-import javax.jms.Destination;
-import javax.jms.IllegalStateException;
-import javax.jms.InvalidClientIDException;
-import javax.jms.InvalidDestinationException;
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
-import javax.jms.Queue;
-import javax.jms.QueueBrowser;
-import javax.jms.QueueReceiver;
-import javax.jms.QueueSender;
-import javax.jms.QueueSession;
-import javax.jms.Session;
-import javax.jms.StreamMessage;
-import javax.jms.TemporaryQueue;
-import javax.jms.TemporaryTopic;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.jms.TopicPublisher;
-import javax.jms.TopicSession;
-import javax.jms.TopicSubscriber;
-import javax.jms.TransactionInProgressException;
-import javax.jms.XAQueueSession;
-import javax.jms.XASession;
-import javax.jms.XATopicSession;
-import javax.transaction.xa.XAResource;
-
 import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -66,16 +30,20 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
-import org.jboss.messaging.jms.JBossDestination;
-import org.jboss.messaging.jms.JBossQueue;
-import org.jboss.messaging.jms.JBossTemporaryQueue;
-import org.jboss.messaging.jms.JBossTemporaryTopic;
-import org.jboss.messaging.jms.JBossTopic;
+import org.jboss.messaging.jms.*;
 import org.jboss.messaging.util.SimpleString;
+
+import javax.jms.*;
+import javax.jms.IllegalStateException;
+import javax.transaction.xa.XAResource;
+import java.io.Serializable;
+import java.util.LinkedList;
+import java.util.UUID;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * 
  * @version <tt>$Revision$</tt>
  * 
@@ -139,35 +107,35 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
    {
       checkClosed();
       
-      return new JBossBytesMessage();
+      return new JBossBytesMessage(session);
    }
 
    public MapMessage createMapMessage() throws JMSException
    {
       checkClosed();
       
-   	return new JBossMapMessage();
+   	return new JBossMapMessage(session);
    }
 
    public Message createMessage() throws JMSException
    {
       checkClosed();
       
-      return new JBossMessage();
+      return new JBossMessage(session);
    }
 
    public ObjectMessage createObjectMessage() throws JMSException
    {
    	checkClosed();
    	
-   	return new JBossObjectMessage();
+   	return new JBossObjectMessage(session);
    }
 
    public ObjectMessage createObjectMessage(final Serializable object) throws JMSException
    {
    	checkClosed();
    	
-   	JBossObjectMessage jbm = new JBossObjectMessage();
+   	JBossObjectMessage jbm = new JBossObjectMessage(session);
    	
    	jbm.setObject(object);
    	
@@ -178,21 +146,21 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
    {
    	checkClosed();
    	
-   	return new JBossStreamMessage();
+   	return new JBossStreamMessage(session);
    }
 
    public TextMessage createTextMessage() throws JMSException
    {
    	checkClosed();
    	
-   	return new JBossTextMessage();
+   	return new JBossTextMessage(session);
    }
 
    public TextMessage createTextMessage(final String text) throws JMSException
    {
    	checkClosed();
    	
-   	JBossTextMessage jbm = new JBossTextMessage();
+   	JBossTextMessage jbm = new JBossTextMessage(session);
    	
    	jbm.setText(text);
    	
@@ -342,7 +310,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
       {
          ClientProducer producer = session.createProducer(jbd == null ? null : jbd.getSimpleAddress());
 
-         return new JBossMessageProducer(producer, jbd);
+         return new JBossMessageProducer(producer, jbd, session);
       }
       catch (MessagingException e)
       {

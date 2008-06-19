@@ -22,21 +22,21 @@
 
 package org.jboss.messaging.tests.unit.jms.client;
 
-import static org.easymock.EasyMock.createNiceMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
+import junit.framework.TestCase;
+import org.easymock.EasyMock;
+import static org.easymock.EasyMock.*;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.impl.ClientMessageImpl;
+import org.jboss.messaging.jms.client.JBossTextMessage;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-
-import java.util.Collections;
+import org.jboss.messaging.util.ByteBufferWrapper;
+import org.jboss.messaging.util.MessagingBuffer;
 
 import javax.jms.DeliveryMode;
 import javax.jms.TextMessage;
-
-import junit.framework.TestCase;
-
-import org.jboss.messaging.jms.client.JBossTextMessage;
-import org.jboss.messaging.util.MessagingBuffer;
+import java.nio.ByteBuffer;
+import java.util.Collections;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -69,16 +69,20 @@ public class JBossTextMessageTest extends TestCase
    public void testForeignTextMessage() throws Exception
    {
       TextMessage foreignMessage = createNiceMock(TextMessage.class);
+      ClientSession session = EasyMock.createNiceMock(ClientSession.class);
+      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocate(1024));
+      ClientMessage clientMessage = new ClientMessageImpl(JBossTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+      expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);  
       expect(foreignMessage.getJMSDeliveryMode()).andReturn(DeliveryMode.NON_PERSISTENT);
       expect(foreignMessage.getPropertyNames()).andReturn(Collections.enumeration(Collections.EMPTY_LIST));
       expect(foreignMessage.getText()).andReturn(text);
       
-      replay(foreignMessage);
+      replay(foreignMessage, session);
       
-      JBossTextMessage msg = new JBossTextMessage(foreignMessage);
+      JBossTextMessage msg = new JBossTextMessage(foreignMessage, session);
       assertEquals(text, msg.getText());
       
-      verify(foreignMessage);
+      verify(foreignMessage, session);
    }
    
    public void testGetText() throws Exception

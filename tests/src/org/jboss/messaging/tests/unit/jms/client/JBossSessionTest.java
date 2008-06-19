@@ -26,19 +26,23 @@ import junit.framework.TestCase;
 import org.easymock.EasyMock;
 import static org.easymock.EasyMock.*;
 import org.jboss.messaging.core.client.*;
+import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.jms.*;
 import org.jboss.messaging.jms.client.JBossConnection;
+import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.jms.client.JBossSession;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
+import org.jboss.messaging.util.ByteBufferWrapper;
 import org.jboss.messaging.util.SimpleString;
 
 import javax.jms.*;
 import javax.jms.IllegalStateException;
 import javax.transaction.xa.XAResource;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -2015,7 +2019,10 @@ public class JBossSessionTest extends TestCase
    private void doTestCreateMessage(MessageCreation creation)
          throws JMSException
    {
+      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocate(1024));
+      ClientMessage clientMessage = new ClientMessageImpl(JBossMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
       expect(mockClientSession.isClosed()).andReturn(false);
+      expect(mockClientSession.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);
       replay(mockClientConn, mockClientSession);
 
       JBossConnection connection = new JBossConnection(mockClientConn,

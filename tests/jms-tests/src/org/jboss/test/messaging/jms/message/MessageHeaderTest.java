@@ -21,28 +21,19 @@
   */
 package org.jboss.test.messaging.jms.message;
 
+import org.easymock.EasyMock;
+import static org.easymock.EasyMock.expect;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.impl.ClientMessageImpl;
+import org.jboss.messaging.jms.client.*;
+import org.jboss.messaging.util.ByteBufferWrapper;
+
+import javax.jms.*;
 import java.io.Serializable;
+import java.nio.ByteBuffer;
 import java.util.Enumeration;
 import java.util.HashSet;
-
-import javax.jms.BytesMessage;
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.Message;
-import javax.jms.MessageFormatException;
-import javax.jms.MessageNotWriteableException;
-import javax.jms.ObjectMessage;
-import javax.jms.StreamMessage;
-import javax.jms.TextMessage;
-
-import org.jboss.messaging.jms.client.JBossBytesMessage;
-import org.jboss.messaging.jms.client.JBossMapMessage;
-import org.jboss.messaging.jms.client.JBossMessage;
-import org.jboss.messaging.jms.client.JBossObjectMessage;
-import org.jboss.messaging.jms.client.JBossStreamMessage;
-import org.jboss.messaging.jms.client.JBossTextMessage;
 
 /**
  *
@@ -672,58 +663,91 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    public void testCopyOnJBossMessage() throws JMSException
    {
+      ClientSession session = EasyMock.createNiceMock(ClientSession.class);
+      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocate(1024));
+      ClientMessage clientMessage = new ClientMessageImpl(JBossTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+      expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);
+      EasyMock.replay(session);
       JBossMessage jbossMessage = new JBossMessage();
 
       configureMessage(jbossMessage);
 
-      JBossMessage copy = new JBossMessage(jbossMessage);
+      JBossMessage copy = new JBossMessage(jbossMessage, session);
 
       ensureEquivalent(jbossMessage, copy);
+      EasyMock.verify(session);
    }
 
 
    public void testCopyOnForeignMessage() throws JMSException
    {
+      ClientSession session = EasyMock.createNiceMock(ClientSession.class);
+      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocate(1024));
+      ClientMessage clientMessage = new ClientMessageImpl(JBossMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+      expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);
+      EasyMock.replay(session);
+
       Message foreignMessage = new SimpleJMSMessage();
 
-      JBossMessage copy = new JBossMessage(foreignMessage);
+      JBossMessage copy = new JBossMessage(foreignMessage, session);
 
       ensureEquivalent(foreignMessage, copy);
+
+      EasyMock.verify(session);
    }
    
    public void testCopyOnForeignBytesMessage() throws JMSException
    {
+      ClientSession session = EasyMock.createNiceMock(ClientSession.class);
+      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocate(1024));
+      ClientMessage clientMessage = new ClientMessageImpl(JBossBytesMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+      expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);
+      EasyMock.replay(session);
+
       BytesMessage foreignBytesMessage = new SimpleJMSBytesMessage();
       for(int i = 0; i < 20; i++)
       {
          foreignBytesMessage.writeByte((byte)i);
       }
 
-      JBossBytesMessage copy = new JBossBytesMessage(foreignBytesMessage);
+      JBossBytesMessage copy = new JBossBytesMessage(foreignBytesMessage, session);
 
       foreignBytesMessage.reset();
       copy.reset();
 
       ensureEquivalent(foreignBytesMessage, copy);
+      EasyMock.verify(session);
    }
   
    public void testCopyOnForeignMapMessage() throws JMSException
    {
+      ClientSession session = EasyMock.createNiceMock(ClientSession.class);
+      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocate(1024));
+      ClientMessage clientMessage = new ClientMessageImpl(JBossMapMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+      expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);
+      EasyMock.replay(session);
       MapMessage foreignMapMessage = new SimpleJMSMapMessage();
       foreignMapMessage.setInt("int", 1);
       foreignMapMessage.setString("string", "test");
 
-      JBossMapMessage copy = new JBossMapMessage(foreignMapMessage);
+      JBossMapMessage copy = new JBossMapMessage(foreignMapMessage, session);
 
       ensureEquivalent(foreignMapMessage, copy);
+      EasyMock.verify(session);
    }
 
 
    public void testCopyOnForeignObjectMessage() throws JMSException
    {
+      ClientSession session = EasyMock.createNiceMock(ClientSession.class);
+      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocate(1024));
+      ClientMessage clientMessage = new ClientMessageImpl(JBossObjectMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+      expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);
+      EasyMock.replay(session);
+
       ObjectMessage foreignObjectMessage = new SimpleJMSObjectMessage();
 
-      JBossObjectMessage copy = new JBossObjectMessage(foreignObjectMessage);
+      JBossObjectMessage copy = new JBossObjectMessage(foreignObjectMessage, session);
 
       ensureEquivalent(foreignObjectMessage, copy);
    }
@@ -731,24 +755,38 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    public void testCopyOnForeignStreamMessage() throws JMSException
    {
+      ClientSession session = EasyMock.createNiceMock(ClientSession.class);
+      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocate(1024));
+      ClientMessage clientMessage = new ClientMessageImpl(JBossStreamMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+      expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);
+      EasyMock.replay(session);
+
       StreamMessage foreignStreamMessage = new SimpleJMSStreamMessage();
       foreignStreamMessage.writeByte((byte)1);
       foreignStreamMessage.writeByte((byte)2);
       foreignStreamMessage.writeByte((byte)3);
 
-      JBossStreamMessage copy = new JBossStreamMessage(foreignStreamMessage);
+      JBossStreamMessage copy = new JBossStreamMessage(foreignStreamMessage, session);
 
       ensureEquivalent(foreignStreamMessage, copy);
+      EasyMock.verify(session);
    }
 
 
    public void testCopyOnForeignTextMessage() throws JMSException
    {
+      ClientSession session = EasyMock.createNiceMock(ClientSession.class);
+      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocate(1024));
+      ClientMessage clientMessage = new ClientMessageImpl(JBossTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+      expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);
+      EasyMock.replay(session);
+
       TextMessage foreignTextMessage = new SimpleJMSTextMessage();
 
-      JBossTextMessage copy = new JBossTextMessage(foreignTextMessage);
+      JBossTextMessage copy = new JBossTextMessage(foreignTextMessage, session);
 
       ensureEquivalent(foreignTextMessage, copy);
+      EasyMock.verify(session);
    }
    
    public void testForeignJMSDestination() throws JMSException

@@ -22,49 +22,43 @@
 
 package org.jboss.messaging.tests.unit.jms.client;
 
+import junit.framework.TestCase;
+import org.easymock.EasyMock;
 import static org.easymock.EasyMock.anyInt;
 import static org.easymock.EasyMock.anyLong;
 import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.expectLastCall;
-import static org.easymock.EasyMock.gt;
 import static org.easymock.EasyMock.isA;
 import static org.easymock.EasyMock.isNull;
 import static org.easymock.EasyMock.startsWith;
 import static org.easymock.classextension.EasyMock.createStrictMock;
 import static org.easymock.classextension.EasyMock.replay;
 import static org.easymock.classextension.EasyMock.verify;
-import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
-import static org.jboss.messaging.tests.util.RandomUtil.randomBytes;
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-
-import java.util.Vector;
-
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.IllegalStateException;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Queue;
-import javax.jms.Topic;
-
-import junit.framework.TestCase;
-
-import org.easymock.EasyMock;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
+import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.jms.client.JBossMessageProducer;
+import static org.jboss.messaging.tests.util.RandomUtil.*;
+import org.jboss.messaging.util.ByteBufferWrapper;
 import org.jboss.messaging.util.SimpleString;
+
+import javax.jms.*;
+import javax.jms.IllegalStateException;
+import java.nio.ByteBuffer;
+import java.util.Vector;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public class JBossMessageProducerTest extends TestCase
 {
@@ -81,13 +75,14 @@ public class JBossMessageProducerTest extends TestCase
    public void testClose() throws Exception
    {
       ClientProducer clientProducer = createStrictMock(ClientProducer.class);
+      ClientSession clientSession = createStrictMock(ClientSession.class);
       clientProducer.close();
 
-      replay(clientProducer);
+      replay(clientProducer, clientSession);
 
       JBossDestination destination = new JBossQueue(randomString());
       JBossMessageProducer producer = new JBossMessageProducer(clientProducer,
-            destination);
+            destination, clientSession);
 
       producer.close();
 
@@ -97,14 +92,15 @@ public class JBossMessageProducerTest extends TestCase
    public void testCloseThrowsException() throws Exception
    {
       ClientProducer clientProducer = createStrictMock(ClientProducer.class);
+      ClientSession clientSession = createStrictMock(ClientSession.class);
       clientProducer.close();
       expectLastCall().andThrow(new MessagingException());
 
-      replay(clientProducer);
+      replay(clientProducer, clientSession);
 
       JBossDestination destination = new JBossQueue(randomString());
       JBossMessageProducer producer = new JBossMessageProducer(clientProducer,
-            destination);
+            destination, clientSession);
 
       try
       {
@@ -114,18 +110,19 @@ public class JBossMessageProducerTest extends TestCase
       {
       }
 
-      verify(clientProducer);
+      verify(clientProducer, clientSession);
    }
 
    public void testCheckClosed() throws Exception
    {
       JBossDestination destination = new JBossQueue(randomString());
       ClientProducer clientProducer = createStrictMock(ClientProducer.class);
+      ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(clientProducer.isClosed()).andReturn(true);
-      replay(clientProducer);
+      replay(clientProducer, clientSession);
 
       JBossMessageProducer producer = new JBossMessageProducer(clientProducer,
-            destination);
+            destination, clientSession);
 
       try
       {
@@ -135,98 +132,121 @@ public class JBossMessageProducerTest extends TestCase
       {
       }
 
-      verify(clientProducer);
+      verify(clientProducer, clientSession);
    }
 
    public void testDisabledMessageID() throws Exception
    {
       ClientProducer clientProducer = createStrictMock(ClientProducer.class);
+      ClientSession clientSession = createStrictMock(ClientSession.class);
       EasyMock.expect(clientProducer.isClosed()).andStubReturn(false);
-      replay(clientProducer);
+      replay(clientProducer, clientSession);
 
       JBossDestination destination = new JBossQueue(randomString());
       JBossMessageProducer producer = new JBossMessageProducer(clientProducer,
-            destination);
+            destination, clientSession);
       boolean disabledMessageID = randomBoolean();
       producer.setDisableMessageID(disabledMessageID);
       assertEquals(disabledMessageID, producer.getDisableMessageID());
 
-      verify(clientProducer);
+      verify(clientProducer, clientSession);
    }
 
    public void testDisableMessageTimestamp() throws Exception
    {
       ClientProducer clientProducer = createStrictMock(ClientProducer.class);
+      ClientSession clientSession = createStrictMock(ClientSession.class);
       EasyMock.expect(clientProducer.isClosed()).andStubReturn(false);
-      replay(clientProducer);
+
+      replay(clientProducer, clientSession);
 
       JBossDestination destination = new JBossQueue(randomString());
       JBossMessageProducer producer = new JBossMessageProducer(clientProducer,
-            destination);
+            destination, clientSession);
       boolean disabledTimestamp = randomBoolean();
       producer.setDisableMessageTimestamp(disabledTimestamp);
       assertEquals(disabledTimestamp, producer.getDisableMessageTimestamp());
 
-      verify(clientProducer);
+      verify(clientProducer, clientSession);
    }
 
    public void testDeliveryMode() throws Exception
    {
       ClientProducer clientProducer = createStrictMock(ClientProducer.class);
+      ClientSession clientSession = createStrictMock(ClientSession.class);
       EasyMock.expect(clientProducer.isClosed()).andStubReturn(false);
-      replay(clientProducer);
+      replay(clientProducer, clientSession);
 
       JBossDestination destination = new JBossQueue(randomString());
       JBossMessageProducer producer = new JBossMessageProducer(clientProducer,
-            destination);
+            destination, clientSession);
       int deliveryMode = DeliveryMode.PERSISTENT;
       producer.setDeliveryMode(deliveryMode);
       assertEquals(deliveryMode, producer.getDeliveryMode());
 
-      verify(clientProducer);
+      verify(clientProducer, clientSession);
    }
 
    public void testPriority() throws Exception
    {
       ClientProducer clientProducer = createStrictMock(ClientProducer.class);
+      ClientSession clientSession = createStrictMock(ClientSession.class);
       EasyMock.expect(clientProducer.isClosed()).andStubReturn(false);
-      replay(clientProducer);
+      replay(clientProducer, clientSession);
 
       JBossDestination destination = new JBossQueue(randomString());
       JBossMessageProducer producer = new JBossMessageProducer(clientProducer,
-            destination);
+            destination, clientSession);
       int priority = 7;
       producer.setPriority(priority);
       assertEquals(priority, producer.getPriority());
 
-      verify(clientProducer);
+      verify(clientProducer, clientSession);
    }
 
    public void testTimeToLive() throws Exception
    {
       ClientProducer clientProducer = createStrictMock(ClientProducer.class);
+      ClientSession clientSession = createStrictMock(ClientSession.class);
       EasyMock.expect(clientProducer.isClosed()).andStubReturn(false);
-      replay(clientProducer);
+      replay(clientProducer, clientSession);
 
       JBossDestination destination = new JBossQueue(randomString());
       JBossMessageProducer producer = new JBossMessageProducer(clientProducer,
-            destination);
+            destination, clientSession);
       long ttl = System.currentTimeMillis();
       producer.setTimeToLive(ttl);
       assertEquals(ttl, producer.getTimeToLive());
 
-      verify(clientProducer);
+      verify(clientProducer, clientSession);
    }
 
    public void testGetDestination() throws Exception
    {
       ClientProducer clientProducer = createStrictMock(ClientProducer.class);
+      ClientSession clientSession = createStrictMock(ClientSession.class);
       EasyMock.expect(clientProducer.isClosed()).andStubReturn(false);
-      replay(clientProducer);
+      replay(clientProducer, clientSession);
 
       JBossDestination destination = new JBossQueue(randomString());
       JBossMessageProducer producer = new JBossMessageProducer(clientProducer,
-            destination);
+            destination, clientSession);
+      assertEquals(destination, producer.getDestination());
+
+      verify(clientProducer, clientSession);
+   }
+
+   public void testGetDelegate() throws Exception
+   {
+      ClientProducer clientProducer = createStrictMock(ClientProducer.class);
+      ClientSession clientSession = createStrictMock(ClientSession.class);
+      EasyMock.expect(clientProducer.isClosed()).andStubReturn(false);
+      EasyMock.expect(clientProducer.isClosed()).andStubReturn(false);
+      replay(clientProducer, clientSession);
+
+      JBossDestination destination = new JBossQueue(randomString());
+      JBossMessageProducer producer = new JBossMessageProducer(clientProducer,
+            destination, clientSession);
       assertEquals(destination, producer.getDestination());
 
       verify(clientProducer);
@@ -235,12 +255,13 @@ public class JBossMessageProducerTest extends TestCase
    public void testGetTopic() throws Exception
    {
       ClientProducer clientProducer = createStrictMock(ClientProducer.class);
+      ClientSession clientSession = createStrictMock(ClientSession.class);
       EasyMock.expect(clientProducer.isClosed()).andStubReturn(false);
-      replay(clientProducer);
+      replay(clientProducer, clientSession);
 
       JBossDestination destination = new JBossTopic(randomString());
       JBossMessageProducer producer = new JBossMessageProducer(clientProducer,
-            destination);
+            destination, clientSession);
       assertEquals(destination, producer.getTopic());
 
       verify(clientProducer);
@@ -249,15 +270,16 @@ public class JBossMessageProducerTest extends TestCase
    public void testGetQueue() throws Exception
    {
       ClientProducer clientProducer = createStrictMock(ClientProducer.class);
+      ClientSession clientSession = createStrictMock(ClientSession.class);
       EasyMock.expect(clientProducer.isClosed()).andStubReturn(false);
-      replay(clientProducer);
+      replay(clientProducer, clientSession);
 
       JBossDestination destination = new JBossQueue(randomString());
       JBossMessageProducer producer = new JBossMessageProducer(clientProducer,
-            destination);
+            destination, clientSession);
       assertEquals(destination, producer.getQueue());
 
-      verify(clientProducer);
+      verify(clientProducer, clientSession);
    }
 
    public void testSend() throws Exception
@@ -284,7 +306,7 @@ public class JBossMessageProducerTest extends TestCase
                }
             });
    }
-   
+
    public void testSendWithQueue() throws Exception
    {
       doProduceWithDestination(new JBossQueue(randomString()),
@@ -310,7 +332,7 @@ public class JBossMessageProducerTest extends TestCase
          }
       });
    }
-   
+
    public void testPublishWithDestination() throws Exception
    {
       doProduceWithDestination(new JBossTopic(randomString()), new MessageProduction()
@@ -336,6 +358,10 @@ public class JBossMessageProducerTest extends TestCase
       JBossDestination replyTo = new JBossQueue(randomString());
       ClientProducer clientProducer = createStrictMock(ClientProducer.class);
       Message message = createStrictMock(Message.class);
+      ClientSession session = EasyMock.createNiceMock(ClientSession.class);
+      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocate(1024));
+      ClientMessage clientMessage = new ClientMessageImpl(JBossMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+      expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);
       expect(clientProducer.isClosed()).andStubReturn(false);
       message.setJMSDeliveryMode(anyInt());
       message.setJMSPriority(anyInt());
@@ -355,13 +381,13 @@ public class JBossMessageProducerTest extends TestCase
       message.setJMSDestination(destination);
       message.setJMSMessageID(startsWith("ID:"));
       clientProducer.send((SimpleString) isNull(), isA(ClientMessage.class));
-      replay(clientProducer, message);
+      replay(clientProducer, message, session);
 
       JBossMessageProducer producer = new JBossMessageProducer(clientProducer,
-            destination);
+            destination, session);
       production.produce(producer, message, destination);
 
-      verify(clientProducer, message);
+      verify(clientProducer, message, session);
    }
 
    private void doProduceWithDestination(JBossDestination destination,
@@ -369,6 +395,10 @@ public class JBossMessageProducerTest extends TestCase
    {
       JBossDestination replyTo = new JBossQueue(randomString());
       ClientProducer clientProducer = createStrictMock(ClientProducer.class);
+      ClientSession clientSession = createStrictMock(ClientSession.class);
+      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocate(1024));
+      ClientMessage clientMessage = new ClientMessageImpl(JBossMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+      expect(clientSession.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);
       Message message = createStrictMock(Message.class);
       expect(clientProducer.isClosed()).andStubReturn(false);
       message.setJMSDeliveryMode(anyInt());
@@ -389,13 +419,13 @@ public class JBossMessageProducerTest extends TestCase
       message.setJMSDestination(destination);
       message.setJMSMessageID(startsWith("ID:"));
       clientProducer.send(eq(destination.getSimpleAddress()), isA(ClientMessage.class));
-      replay(clientProducer, message);
+      replay(clientProducer, message, clientSession);
 
       JBossMessageProducer producer = new JBossMessageProducer(clientProducer,
-            destination);
+            destination, clientSession);
       production.produce(producer, message, destination);
 
-      verify(clientProducer, message);
+      verify(clientProducer, message, clientSession);
    }
 
    // Inner classes -------------------------------------------------

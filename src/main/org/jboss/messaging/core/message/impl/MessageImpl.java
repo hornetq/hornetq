@@ -22,48 +22,45 @@
 
 package org.jboss.messaging.core.message.impl;
 
-import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
-import static org.jboss.messaging.util.DataConstants.SIZE_BYTE;
-import static org.jboss.messaging.util.DataConstants.SIZE_INT;
-import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
-
-import java.util.Set;
-
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
+import static org.jboss.messaging.util.DataConstants.*;
 import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.util.MessagingBufferFactory;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TypedProperties;
 
+import java.util.Set;
+
 /**
  * A concrete implementation of a message
- * 
+ *
  * All messages handled by JBM core are of this type
- * 
+ *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @version <tt>$Revision: 2740 $</tt>
- * 
+ *
  * For normal message transportation serialization is not used
- * 
+ *
  * $Id: MessageSupport.java 2740 2007-05-30 11:36:28Z timfox $
  */
 public abstract class MessageImpl implements Message
 {
    // Constants -----------------------------------------------------
-   
+
    private static final Logger log = Logger.getLogger(MessageImpl.class);
-   
+
    public static final SimpleString HDR_ACTUAL_EXPIRY_TIME = new SimpleString("JBMActualExpiryTime");
-   
+
    // Attributes ----------------------------------------------------
 
    private SimpleString destination;
-   
+
    private byte type;
-   
+
    protected boolean durable;
 
    /** GMT milliseconds at which this message expires. 0 means never expires * */
@@ -72,31 +69,40 @@ public abstract class MessageImpl implements Message
    private long timestamp;
 
    private TypedProperties properties;
-   
+
    private byte priority;
 
 
    private MessagingBuffer body;
-   
+
    // Constructors --------------------------------------------------
 
    protected MessageImpl()
    {
       this.properties = new TypedProperties();
    }
-   
+
+   /**
+    * overridden by the client message, we need access to the connection so we can create the appropriate MessagingBuffer.
+    * @param type
+    * @param durable
+    * @param expiration
+    * @param timestamp
+    * @param priority
+    * @param body
+    */
    protected MessageImpl(final byte type, final boolean durable, final long expiration,
-                         final long timestamp, final byte priority)
+                      final long timestamp, final byte priority, MessagingBuffer body)
    {
       this();
       this.type = type;
       this.durable = durable;
       this.expiration = expiration;
       this.timestamp = timestamp;
-      this.priority = priority;            
-      this.body = new IoBufferWrapper(1024);
+      this.priority = priority;
+      this.body = body;
    }
-   
+
    /*
     * Copy constructor
     */
@@ -111,7 +117,7 @@ public abstract class MessageImpl implements Message
       this.properties = new TypedProperties(other.properties);
       this.body = other.body;
    }
-   
+
    // Message implementation ----------------------------------------
 
    public void encode(MessagingBuffer buff)
@@ -123,22 +129,22 @@ public abstract class MessageImpl implements Message
       buff.putLong(timestamp);
       buff.putByte(priority);
       properties.encode(buff);
-      buff.putInt(body.limit());     
-      buff.putBytes(body.array(), 0, body.limit());   
+      buff.putInt(body.limit());
+      buff.putBytes(body.array(), 0, body.limit());
    }
-   
+
    public int getEncodeSize()
    {
-      return /* Destination */ SimpleString.sizeofString(destination) + 
-      /* Type */ SIZE_BYTE + 
-      /* Durable */ SIZE_BOOLEAN + 
-      /* Expiration */ SIZE_LONG + 
-      /* Timestamp */ SIZE_LONG + 
-      /* Priority */ SIZE_BYTE + 
-      /* PropertySize and Properties */ properties.getEncodeSize() + 
-      /* BodySize and Body */ SIZE_INT + body.limit();      
+      return /* Destination */ SimpleString.sizeofString(destination) +
+      /* Type */ SIZE_BYTE +
+      /* Durable */ SIZE_BOOLEAN +
+      /* Expiration */ SIZE_LONG +
+      /* Timestamp */ SIZE_LONG +
+      /* Priority */ SIZE_BYTE +
+      /* PropertySize and Properties */ properties.getEncodeSize() +
+      /* BodySize and Body */ SIZE_INT + body.limit();
    }
-   
+
    public void decode(final MessagingBuffer buffer)
    {
       destination = buffer.getSimpleString();
@@ -147,14 +153,14 @@ public abstract class MessageImpl implements Message
       expiration = buffer.getLong();
       timestamp = buffer.getLong();
       priority = buffer.getByte();
-      
+
       properties.decode(buffer);
       int len = buffer.getInt();
 
       //TODO - this can be optimised
       byte[] bytes = new byte[len];
       buffer.getBytes(bytes);
-      body = new IoBufferWrapper(len);
+      body = MessagingBufferFactory.createMessagingBuffer(buffer, len);
       body.putBytes(bytes);      
    }
    

@@ -22,18 +22,17 @@
 
 package org.jboss.messaging.jms.client;
 
-import java.nio.BufferUnderflowException;
-
-import javax.jms.JMSException;
-import javax.jms.MessageEOFException;
-import javax.jms.MessageFormatException;
-import javax.jms.StreamMessage;
-
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
 import org.jboss.messaging.util.DataConstants;
+
+import javax.jms.JMSException;
+import javax.jms.MessageEOFException;
+import javax.jms.MessageFormatException;
+import javax.jms.StreamMessage;
+import java.nio.BufferUnderflowException;
 
 /**
  * This class implements javax.jms.StreamMessage.
@@ -46,6 +45,7 @@ import org.jboss.messaging.util.DataConstants;
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * 
  * @version $Revision: 3412 $
  *
@@ -73,15 +73,20 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    {   
       super(JBossStreamMessage.TYPE);
    }
+
+   public JBossStreamMessage(final ClientSession session)
+   {   
+      super(JBossStreamMessage.TYPE, session);
+   }
    
    public JBossStreamMessage(final ClientMessage message, final ClientSession session)
    {
       super(message, session);
    }
    
-   public JBossStreamMessage(final StreamMessage foreign) throws JMSException
+   public JBossStreamMessage(final StreamMessage foreign, final ClientSession session) throws JMSException
    {
-      super(foreign, JBossStreamMessage.TYPE);
+      super(foreign, JBossStreamMessage.TYPE, session);
       
       foreign.reset();
       

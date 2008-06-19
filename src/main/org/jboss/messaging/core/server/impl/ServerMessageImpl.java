@@ -22,18 +22,20 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.util.MessagingBuffer;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 
  * A ServerMessageImpl
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  *
  */
 public class ServerMessageImpl extends MessageImpl implements ServerMessage
@@ -77,9 +79,9 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
     * Only used in testing
     */
    public ServerMessageImpl(final byte type, final boolean durable, final long expiration,
-                            final long timestamp, final byte priority)
+                            final long timestamp, final byte priority, MessagingBuffer buffer)
    {
-      super(type, durable, expiration, timestamp, priority);
+      super(type, durable, expiration, timestamp, priority, buffer);
    }
    
    public long getMessageID()

@@ -22,23 +22,15 @@
 
 package org.jboss.messaging.tests.integration.core.remoting.ssl;
 
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
-
-import java.util.Arrays;
-
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientProducer;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.client.*;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.logging.Logger;
+import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import org.jboss.messaging.jms.client.JBossTextMessage;
+
+import java.util.Arrays;
 
 /**
  * This client will open a connection, send a message to a queue over SSL and
@@ -83,7 +75,7 @@ public class CoreClientOverSSL
          ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
          ClientProducer producer = session.createProducer(CoreClientOverSSLTest.QUEUE);
 
-         ClientMessage message = new ClientMessageImpl(JBossTextMessage.TYPE, false, 0,
+         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);
          message.getBody().putString(CoreClientOverSSLTest.MESSAGE_TEXT_FROM_CLIENT);
          producer.send(message);

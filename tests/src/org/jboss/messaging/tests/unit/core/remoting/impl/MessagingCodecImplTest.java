@@ -227,9 +227,10 @@ public class MessagingCodecImplTest extends UnitTestCase
       checkHeaders(message, copy);
    }
 
-   public void _testProducerSendMessageNullBodyNoProps1() throws Exception
+   public void testProducerSendMessageNullBodyNoProps1() throws Exception
    {
       ClientMessageImpl message1 = new ClientMessageImpl(RandomUtil.randomInt(), RandomUtil.randomLong());
+      message1.setBody(new ByteBufferWrapper(ByteBuffer.allocate(0)));
       message1.setDestination(new SimpleString("test"));
       PacketImpl message = new ProducerSendMessage(message1);
       setHeaders(message);
@@ -246,10 +247,10 @@ public class MessagingCodecImplTest extends UnitTestCase
       assertEquals(message1.getType(), copy.getServerMessage().getType());
    }
 
-   public void _testProducerSendMessageNullBodyNoProps2() throws Exception
+   public void testProducerSendMessageNullBodyNoProps2() throws Exception
    {
       ClientMessageImpl message1 = new ClientMessageImpl(RandomUtil.randomByte(), RandomUtil.randomBoolean(),
-              RandomUtil.randomLong(), RandomUtil.randomLong(), RandomUtil.randomByte());
+              RandomUtil.randomLong(), RandomUtil.randomLong(), RandomUtil.randomByte(), new ByteBufferWrapper(ByteBuffer.allocate(0)));
       message1.setDestination(new SimpleString("test"));
       PacketImpl message = new ProducerSendMessage(message1);
       setHeaders(message);
@@ -266,9 +267,9 @@ public class MessagingCodecImplTest extends UnitTestCase
       assertEquals(message1.getType(), copy.getServerMessage().getType());
    }
 
-   public void _testProducerSendMessageNullBodyNoProps3() throws Exception
+   public void testProducerSendMessageNullBodyNoProps3() throws Exception
    {
-      ClientMessageImpl message1 = new ClientMessageImpl(RandomUtil.randomByte(), RandomUtil.randomBoolean());
+      ClientMessageImpl message1 = new ClientMessageImpl(RandomUtil.randomByte(), RandomUtil.randomBoolean(), new ByteBufferWrapper(ByteBuffer.allocate(0)));
       message1.setDestination(new SimpleString("test"));
       PacketImpl message = new ProducerSendMessage(message1);
       setHeaders(message);
@@ -286,9 +287,9 @@ public class MessagingCodecImplTest extends UnitTestCase
    }
 
 
-   public void _testProducerSendMessageNullBodyNoProps4() throws Exception
+   public void testProducerSendMessageNullBodyNoProps4() throws Exception
    {
-      ClientMessageImpl message1 = new ClientMessageImpl(RandomUtil.randomBoolean());
+      ClientMessageImpl message1 = new ClientMessageImpl(RandomUtil.randomBoolean(), new ByteBufferWrapper(ByteBuffer.allocate(0)));
       message1.setDestination(new SimpleString("test"));
       PacketImpl message = new ProducerSendMessage(message1);
       setHeaders(message);
@@ -360,7 +361,7 @@ public class MessagingCodecImplTest extends UnitTestCase
    public void testProducerSendMessageBodyProps2() throws Exception
    {
       ClientMessageImpl message1 = new ClientMessageImpl(RandomUtil.randomByte(), RandomUtil.randomBoolean(),
-              RandomUtil.randomLong(), RandomUtil.randomLong(), RandomUtil.randomByte());
+              RandomUtil.randomLong(), RandomUtil.randomLong(), RandomUtil.randomByte(), new ByteBufferWrapper(ByteBuffer.allocate(1024)));
       message1.setDestination(new SimpleString("test"));
       byte[] bytes = RandomUtil.randomBytes();
       ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocateDirect(bytes.length));
@@ -412,7 +413,7 @@ public class MessagingCodecImplTest extends UnitTestCase
 
    public void testProducerSendMessageBodyProps3() throws Exception
    {
-      ClientMessageImpl message1 = new ClientMessageImpl(RandomUtil.randomByte(), RandomUtil.randomBoolean());
+      ClientMessageImpl message1 = new ClientMessageImpl(RandomUtil.randomByte(), RandomUtil.randomBoolean(), new ByteBufferWrapper(ByteBuffer.allocate(1024)));
       message1.setDestination(new SimpleString("test"));
       byte[] bytes = RandomUtil.randomBytes();
       ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocateDirect(bytes.length));
@@ -465,7 +466,7 @@ public class MessagingCodecImplTest extends UnitTestCase
 
    public void testProducerSendMessageBodyProps4() throws Exception
    {
-      ClientMessageImpl message1 = new ClientMessageImpl(RandomUtil.randomBoolean());
+      ClientMessageImpl message1 = new ClientMessageImpl(RandomUtil.randomBoolean(), new ByteBufferWrapper(ByteBuffer.allocate(1024)));
       message1.setDestination(new SimpleString("test"));
       byte[] bytes = RandomUtil.randomBytes();
       ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocateDirect(bytes.length));
@@ -515,10 +516,11 @@ public class MessagingCodecImplTest extends UnitTestCase
       assertEquals(message1.getProperty(stringProp), copy.getServerMessage().getProperty(stringProp));
    }
 
-   public void _testProducerReceiveMessageNullBodyNoProps1() throws Exception
+   public void testProducerReceiveMessageNullBodyNoProps1() throws Exception
    {
       ServerMessage message1 = new ServerMessageImpl();
       message1.setDestination(new SimpleString("test"));
+      message1.setBody(new ByteBufferWrapper(ByteBuffer.allocate(0)));
       PacketImpl message = new ReceiveMessage(message1, RandomUtil.randomInt(), RandomUtil.randomInt());
       setHeaders(message);
       codec.encode(buff, message);
@@ -534,10 +536,11 @@ public class MessagingCodecImplTest extends UnitTestCase
       assertEquals(message1.getType(), copy.getClientMessage().getType());
    }
 
-   public void _testProducerReceiveMessageNullBodyNoProps2() throws Exception
+   public void testProducerReceiveMessageNullBodyNoProps2() throws Exception
    {
       ServerMessage message1 = new ServerMessageImpl(RandomUtil.randomLong());
       message1.setDestination(new SimpleString("test"));
+      message1.setBody(new ByteBufferWrapper(ByteBuffer.allocate(0)));
       PacketImpl message = new ReceiveMessage(message1, RandomUtil.randomInt(), RandomUtil.randomInt());
       setHeaders(message);
       codec.encode(buff, message);
@@ -553,10 +556,11 @@ public class MessagingCodecImplTest extends UnitTestCase
       assertEquals(message1.getType(), copy.getClientMessage().getType());
    }
 
-   public void _testProducerReceiveMessageNullBodyNoProps3() throws Exception
+   public void testProducerReceiveMessageNullBodyNoProps3() throws Exception
    {
       ServerMessage message1 = new ServerMessageImpl(new ServerMessageImpl());
       message1.setDestination(new SimpleString("test"));
+      message1.setBody(new ByteBufferWrapper(ByteBuffer.allocate(0)));
       PacketImpl message = new ReceiveMessage(message1, RandomUtil.randomInt(), RandomUtil.randomInt());
       setHeaders(message);
       codec.encode(buff, message);
@@ -572,11 +576,12 @@ public class MessagingCodecImplTest extends UnitTestCase
       assertEquals(message1.getType(), copy.getClientMessage().getType());
    }
 
-   public void _testProducerReceiveMessageNullBodyNoProps4() throws Exception
+   public void testProducerReceiveMessageNullBodyNoProps4() throws Exception
    {
       ServerMessage message1 = new ServerMessageImpl(RandomUtil.randomByte(), RandomUtil.randomBoolean(), RandomUtil.randomLong(),
-              RandomUtil.randomLong(), RandomUtil.randomByte());
+              RandomUtil.randomLong(), RandomUtil.randomByte(),new ByteBufferWrapper(ByteBuffer.allocateDirect(1024)));
       message1.setDestination(new SimpleString("test"));
+      message1.setBody(new ByteBufferWrapper(ByteBuffer.allocate(0)));
       PacketImpl message = new ReceiveMessage(message1, RandomUtil.randomInt(), RandomUtil.randomInt());
       setHeaders(message);
       codec.encode(buff, message);
@@ -752,7 +757,7 @@ public class MessagingCodecImplTest extends UnitTestCase
    public void testProducerReceiveMessageBodyProps4() throws Exception
    {
       ServerMessage message1 = new ServerMessageImpl(RandomUtil.randomByte(), RandomUtil.randomBoolean(), RandomUtil.randomLong(),
-              RandomUtil.randomLong(), RandomUtil.randomByte());
+              RandomUtil.randomLong(), RandomUtil.randomByte(), new ByteBufferWrapper(ByteBuffer.allocateDirect(1024)));
       message1.setDestination(new SimpleString("test"));
       PacketImpl message = new ReceiveMessage(message1, RandomUtil.randomInt(), RandomUtil.randomInt());
       byte[] bytes = RandomUtil.randomBytes();

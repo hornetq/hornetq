@@ -22,22 +22,14 @@
 
 package org.jboss.messaging.tests.integration.core.remoting.impl;
 
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
-import static org.jboss.messaging.tests.integration.core.remoting.impl.ClientExitTest.QUEUE;
-
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
-import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientProducer;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.client.*;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
+import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import org.jboss.messaging.jms.client.JBossTextMessage;
+import static org.jboss.messaging.tests.integration.core.remoting.impl.ClientExitTest.QUEUE;
 
 /**
  * Code to be run in an external VM, via main().
@@ -69,7 +61,7 @@ public class GracefulClient
          ClientProducer producer = session.createProducer(QUEUE);
          ClientConsumer consumer = session.createConsumer(QUEUE);
 
-         ClientMessage message = new ClientMessageImpl(JBossTextMessage.TYPE, false, 0,
+         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);
          message.getBody().putString(ClientExitTest.MESSAGE_TEXT);
          producer.send(message);

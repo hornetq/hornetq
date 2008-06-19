@@ -22,22 +22,14 @@
 
 package org.jboss.messaging.tests.integration.core.remoting.impl;
 
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import junit.framework.TestCase;
-
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
-import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientProducer;
-import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.*;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.server.ConnectionManager;
+import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
@@ -121,7 +113,7 @@ public class ClientCrashTest extends TestCase
          // + 1 per connection to the client
          assertActiveConnections(1 + numberOfConnectionsOnTheClient);
 
-         ClientMessage message = new ClientMessageImpl(JBossTextMessage.TYPE, false, 0,
+         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
                  System.currentTimeMillis(), (byte) 1);
          message.getBody().putString(ClientCrashTest.MESSAGE_TEXT_FROM_SERVER);
          producer.send(message);

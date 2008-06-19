@@ -22,8 +22,6 @@
 
 package org.jboss.messaging.tests.unit.core.message.impl;
 
-import java.nio.ByteBuffer;
-
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.journal.EncodingSupport;
@@ -38,6 +36,8 @@ import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeQueueFactory;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.ByteBufferWrapper;
 import org.jboss.messaging.util.SimpleString;
+
+import java.nio.ByteBuffer;
 
 /**
  * 
@@ -63,7 +63,7 @@ public class MessageTest extends UnitTestCase
       long timestamp = 82798172;
       byte priority = 32;
       
-      ClientMessage message = new ClientMessageImpl(type, reliable, expiration, timestamp, priority);
+      ClientMessage message = new ClientMessageImpl(type, reliable, expiration, timestamp, priority,  new ByteBufferWrapper(ByteBuffer.allocateDirect(1024)));
   
       assertEquals(type, message.getType());
       assertEquals(reliable, message.isDurable());
@@ -72,7 +72,7 @@ public class MessageTest extends UnitTestCase
       
       reliable = false;
       
-      message = new ClientMessageImpl(type, reliable, expiration, timestamp, priority);
+      message = new ClientMessageImpl(type, reliable, expiration, timestamp, priority,  new ByteBufferWrapper(ByteBuffer.allocateDirect(1024)));
 
       assertEquals(type, message.getType());
       assertEquals(reliable, message.isDurable());
@@ -263,7 +263,7 @@ public class MessageTest extends UnitTestCase
       SimpleString address = new SimpleString("Simple Destination ");
       
       ServerMessageImpl implMsg = new ServerMessageImpl(/* type */ (byte)1, /* durable */ true, /* expiration */ 0,
-            /* timestamp */ 0, /* priority */(byte)0);
+            /* timestamp */ 0, /* priority */(byte)0,  new ByteBufferWrapper(ByteBuffer.allocateDirect(1024)));
       
       implMsg.setDestination(address);
       implMsg.setBody(bufferBody);

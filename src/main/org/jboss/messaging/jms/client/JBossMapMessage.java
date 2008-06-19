@@ -22,19 +22,18 @@
 
 package org.jboss.messaging.jms.client;
 
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.MessageFormatException;
-
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TypedProperties;
+
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
+import javax.jms.MessageFormatException;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * This class implements javax.jms.MapMessage
@@ -43,6 +42,7 @@ import org.jboss.messaging.util.TypedProperties;
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * 
  * @version $Revision: 3412 $
  *
@@ -61,13 +61,18 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-
-   /*
-    * This constructor is used to construct messages prior to sending
-    */
    public JBossMapMessage()
    {
       super(JBossMapMessage.TYPE);
+
+      map = new TypedProperties();
+   }
+   /*
+    * This constructor is used to construct messages prior to sending
+    */
+   public JBossMapMessage(final ClientSession session)
+   {
+      super(JBossMapMessage.TYPE, session);
       
       map = new TypedProperties();
    }
@@ -83,9 +88,9 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
     * @param foreign
     * @throws JMSException
     */
-   public JBossMapMessage(final MapMessage foreign) throws JMSException
+   public JBossMapMessage(final MapMessage foreign, final ClientSession session) throws JMSException
    {
-      super(foreign, JBossMapMessage.TYPE);     
+      super(foreign, JBossMapMessage.TYPE, session);     
       Enumeration names = foreign.getMapNames();
       while (names.hasMoreElements())
       {

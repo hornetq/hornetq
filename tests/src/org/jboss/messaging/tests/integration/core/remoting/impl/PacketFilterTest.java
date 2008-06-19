@@ -22,19 +22,9 @@
 
 package org.jboss.messaging.tests.integration.core.remoting.impl;
 
-import java.util.UUID;
-
 import junit.framework.TestCase;
-
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
-import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientProducer;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.client.*;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
@@ -44,6 +34,8 @@ import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
+
+import java.util.UUID;
 
 /**
  * 
@@ -203,7 +195,7 @@ public class PacketFilterTest  extends TestCase
          String msg = "msg " + UUID.randomUUID().toString();
          
          interceptor.changeMessage = true;
-         ClientMessage message = new ClientMessageImpl(JBossTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte) 1);
+         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte) 1);
          message.getBody().putString(msg);
          producer.send(message);
          

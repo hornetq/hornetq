@@ -22,31 +22,31 @@
 
 package org.jboss.messaging.tests.unit.jms.client;
 
-import static org.easymock.EasyMock.createNiceMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
+import junit.framework.TestCase;
+import org.easymock.EasyMock;
+import static org.easymock.EasyMock.*;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.impl.ClientMessageImpl;
+import org.jboss.messaging.jms.client.JBossObjectMessage;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import static org.jboss.messaging.tests.util.UnitTestCase.assertEqualsByteArrays;
-
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.Collections;
+import org.jboss.messaging.util.ByteBufferWrapper;
+import org.jboss.messaging.util.MessagingBuffer;
 
 import javax.jms.DeliveryMode;
 import javax.jms.ObjectMessage;
-
-import junit.framework.TestCase;
-
-import org.jboss.messaging.jms.client.JBossObjectMessage;
-import org.jboss.messaging.util.MessagingBuffer;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.util.Collections;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public class JBossObjectMessageTest extends TestCase
 {
@@ -73,18 +73,22 @@ public class JBossObjectMessageTest extends TestCase
    public void testForeignObjectMessage() throws Exception
    {
       ObjectMessage foreignMessage = createNiceMock(ObjectMessage.class);
+      ClientSession session = EasyMock.createNiceMock(ClientSession.class);
+      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocate(1024));
+      ClientMessage clientMessage = new ClientMessageImpl(JBossObjectMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+      expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);
       expect(foreignMessage.getJMSDeliveryMode()).andReturn(DeliveryMode.NON_PERSISTENT);
       expect(foreignMessage.getPropertyNames()).andReturn(Collections.enumeration(Collections.EMPTY_LIST));
       expect(foreignMessage.getObject()).andReturn(object);
-      
-      replay(foreignMessage);
-      
-      JBossObjectMessage msg = new JBossObjectMessage(foreignMessage);
+
+      replay(foreignMessage, session);
+
+      JBossObjectMessage msg = new JBossObjectMessage(foreignMessage, session);
       assertEquals(object, msg.getObject());
-      
-      verify(foreignMessage);
+
+      verify(foreignMessage, session);
    }
-   
+
    public void testGetText() throws Exception
    {
       JBossObjectMessage msg = new JBossObjectMessage();
@@ -100,16 +104,16 @@ public class JBossObjectMessageTest extends TestCase
       msg.clearBody();
       assertEquals(null, msg.getObject());
    }
-   
+
    public void testGetType() throws Exception
    {
       JBossObjectMessage msg = new JBossObjectMessage();
       assertEquals(JBossObjectMessage.TYPE, msg.getType());
    }
-   
+
    public void testDoBeforeSend() throws Exception
    {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);      
+      ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
       ObjectOutputStream oos = new ObjectOutputStream(baos);
       oos.writeObject(object);
       oos.flush();
@@ -117,14 +121,14 @@ public class JBossObjectMessageTest extends TestCase
 
       JBossObjectMessage msg = new JBossObjectMessage();
       msg.setObject(object);
-      
+
       msg.doBeforeSend();
 
       MessagingBuffer body = msg.getDelegate().getBody();
       assertEquals(data.length, body.getInt());
       byte[] bytes = new byte[data.length];
       body.getBytes(bytes);
-      
+
       assertEqualsByteArrays(data, bytes);
    }
    

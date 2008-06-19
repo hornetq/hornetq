@@ -6,28 +6,22 @@
  */
 package org.jboss.messaging.tests.unit.jms.client;
 
-import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
-import static org.jboss.messaging.tests.util.RandomUtil.randomByte;
-import static org.jboss.messaging.tests.util.RandomUtil.randomBytes;
-import static org.jboss.messaging.tests.util.RandomUtil.randomChar;
-import static org.jboss.messaging.tests.util.RandomUtil.randomDouble;
-import static org.jboss.messaging.tests.util.RandomUtil.randomFloat;
-import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
-import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
-import static org.jboss.messaging.tests.util.RandomUtil.randomShort;
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
+import junit.framework.TestCase;
+import org.easymock.EasyMock;
+import static org.easymock.EasyMock.expect;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.impl.ClientMessageImpl;
+import org.jboss.messaging.jms.client.JBossBytesMessage;
+import static org.jboss.messaging.tests.util.RandomUtil.*;
 import static org.jboss.messaging.tests.util.UnitTestCase.assertEqualsByteArrays;
-
-import java.util.ArrayList;
+import org.jboss.messaging.util.ByteBufferWrapper;
+import org.jboss.messaging.util.MessagingBuffer;
 
 import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
-
-import junit.framework.TestCase;
-
-import org.jboss.messaging.jms.client.JBossBytesMessage;
-import org.jboss.messaging.jms.client.JBossTextMessage;
-import org.jboss.messaging.util.MessagingBuffer;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -49,18 +43,26 @@ public class JBossBytesMessageTest extends TestCase
 
    public void testForeignBytesMessage() throws Exception
    {
+      ClientSession session = EasyMock.createNiceMock(ClientSession.class);
+      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocate(3000));
+      ClientMessage clientMessage = new ClientMessageImpl(JBossBytesMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+      ByteBufferWrapper body2 = new ByteBufferWrapper(ByteBuffer.allocate(3000));
+      ClientMessage clientMessage2 = new ClientMessageImpl(JBossBytesMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body2);
+      expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);
+      expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage2);
+      EasyMock.replay(session);
       byte[] foreignBytes = randomBytes(3000);
-      JBossBytesMessage foreignMessage = new JBossBytesMessage();
+      JBossBytesMessage foreignMessage = new JBossBytesMessage(session);
       foreignMessage.writeBytes(foreignBytes);
       foreignMessage.reset();
-
-      JBossBytesMessage message = new JBossBytesMessage(foreignMessage);
+      JBossBytesMessage message = new JBossBytesMessage(foreignMessage, session);
       byte[] b = new byte[(int) foreignMessage.getBodyLength()];
       message.reset();
 
       message.readBytes(b);
 
       assertEqualsByteArrays(foreignBytes, b);
+      EasyMock.verify(session);
    }
    
    public void testGetType() throws Exception
@@ -71,13 +73,13 @@ public class JBossBytesMessageTest extends TestCase
 
    public void testGetBodyLength() throws Exception
    {
-      byte[] value = randomBytes(3000);
+      byte[] value = randomBytes(1023);
 
       JBossBytesMessage message = new JBossBytesMessage();
       message.writeBytes(value);
       message.reset();
 
-      assertEquals(3000, message.getBodyLength());
+      assertEquals(1023, message.getBodyLength());
 
    }
    

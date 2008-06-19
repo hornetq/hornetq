@@ -22,23 +22,18 @@
 
 package org.jboss.messaging.core.remoting.impl.mina;
 
+import org.apache.mina.common.*;
+import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.Acceptor;
+import org.jboss.messaging.core.remoting.CleanUpNotifier;
+import org.jboss.messaging.core.remoting.RemotingService;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addSSLFilter;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import org.apache.mina.common.DefaultIoFilterChainBuilder;
-import org.apache.mina.common.IdleStatus;
-import org.apache.mina.common.IoService;
-import org.apache.mina.common.IoServiceListener;
-import org.apache.mina.common.IoSession;
-import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.Acceptor;
-import org.jboss.messaging.core.remoting.CleanUpNotifier;
-import org.jboss.messaging.core.remoting.RemotingService;
 
 /**
  * A Mina TCP Acceptor that supports SSL
@@ -149,6 +144,7 @@ public class MinaAcceptor implements Acceptor
        */
       public void sessionCreated(IoSession session)
       {
+         log.info("session idddddddd " + session.getId());
          //register pinger
          if (remotingService.getConfiguration().getConnectionParams().getPingInterval() > 0)
          {

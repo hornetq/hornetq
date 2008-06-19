@@ -22,17 +22,16 @@
 
 package org.jboss.messaging.jms.client;
 
-import java.nio.BufferUnderflowException;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
-
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
+import java.nio.BufferUnderflowException;
 
 /**
  * This class implements javax.jms.BytesMessage.
@@ -41,6 +40,7 @@ import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * 
  * @version $Revision: 3412 $
  * 
@@ -57,13 +57,17 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
    // Attributes ----------------------------------------------------
 
    // Constructor ---------------------------------------------------
+   public JBossBytesMessage()
+   {
+      super(JBossBytesMessage.TYPE);
+   }
 
    /*
     * This constructor is used to construct messages prior to sending
     */
-   public JBossBytesMessage()
+   public JBossBytesMessage(final ClientSession session)
    {
-      super(JBossBytesMessage.TYPE);
+      super(JBossBytesMessage.TYPE, session);
    }
 
    /*
@@ -77,9 +81,9 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
    /*
     * Foreign message constructor
     */
-   public JBossBytesMessage(final BytesMessage foreign) throws JMSException
+   public JBossBytesMessage(final BytesMessage foreign, final ClientSession session) throws JMSException
    {
-      super(foreign, JBossBytesMessage.TYPE);
+      super(foreign, JBossBytesMessage.TYPE, session);
 
       foreign.reset();
 

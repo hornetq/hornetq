@@ -22,42 +22,25 @@
 
 package org.jboss.messaging.tests.unit.jms.client;
 
-import static org.easymock.EasyMock.createNiceMock;
-import static org.easymock.EasyMock.createStrictMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
-import static org.jboss.messaging.tests.util.RandomUtil.randomByte;
-import static org.jboss.messaging.tests.util.RandomUtil.randomBytes;
-import static org.jboss.messaging.tests.util.RandomUtil.randomDouble;
-import static org.jboss.messaging.tests.util.RandomUtil.randomFloat;
-import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
-import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
-import static org.jboss.messaging.tests.util.RandomUtil.randomShort;
-import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-
-import java.util.Collections;
+import junit.framework.TestCase;
+import org.easymock.EasyMock;
+import static org.easymock.EasyMock.*;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.impl.ClientMessageImpl;
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.jms.client.*;
+import static org.jboss.messaging.tests.util.RandomUtil.*;
+import org.jboss.messaging.util.ByteBufferWrapper;
+import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.util.SimpleString;
 
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageFormatException;
-
-import junit.framework.TestCase;
-
-import org.easymock.EasyMock;
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.jms.client.JBossBytesMessage;
-import org.jboss.messaging.jms.client.JBossMapMessage;
-import org.jboss.messaging.jms.client.JBossMessage;
-import org.jboss.messaging.jms.client.JBossObjectMessage;
-import org.jboss.messaging.jms.client.JBossStreamMessage;
-import org.jboss.messaging.jms.client.JBossTextMessage;
-import org.jboss.messaging.util.MessagingBuffer;
-import org.jboss.messaging.util.SimpleString;
+import java.nio.ByteBuffer;
+import java.util.Collections;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -125,16 +108,20 @@ public class JBossMessageTest extends TestCase
    public void testForeignMessage() throws Exception
    {
       Message foreignMessage = createNiceMock(Message.class);
+      ClientSession session = EasyMock.createNiceMock(ClientSession.class);
+      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocate(1024));
+      ClientMessage clientMessage = new ClientMessageImpl(JBossMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+      expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);
       expect(foreignMessage.getJMSDeliveryMode()).andReturn(
             DeliveryMode.NON_PERSISTENT);
       expect(foreignMessage.getPropertyNames()).andReturn(
             Collections.enumeration(Collections.EMPTY_LIST));
 
-      replay(foreignMessage);
+      replay(foreignMessage, session);
 
-      JBossMessage msg = new JBossMessage(foreignMessage);
+      JBossMessage msg = new JBossMessage(foreignMessage, session);
 
-      verify(foreignMessage);
+      verify(foreignMessage, session);
    }
 
    public void testGetJMSMessageID() throws Exception

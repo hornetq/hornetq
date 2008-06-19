@@ -22,18 +22,13 @@
 
 package org.jboss.messaging.jms.client;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-
-import javax.jms.JMSException;
-import javax.jms.ObjectMessage;
-
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.util.ObjectInputStreamWithClassLoader;
+
+import javax.jms.JMSException;
+import javax.jms.ObjectMessage;
+import java.io.*;
 
 /**
  * This class implements javax.jms.ObjectMessage
@@ -44,6 +39,7 @@ import org.jboss.messaging.util.ObjectInputStreamWithClassLoader;
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * 
  * @version $Revision: 3412 $
  *
@@ -70,6 +66,11 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    {
       super(JBossObjectMessage.TYPE);
    }
+
+   public JBossObjectMessage( final ClientSession session)
+   {
+      super(JBossObjectMessage.TYPE, session);
+   }
    
    public JBossObjectMessage(final ClientMessage message, ClientSession session)
    {
@@ -79,9 +80,9 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    /**
     * A copy constructor for foreign JMS ObjectMessages.
     */
-   public JBossObjectMessage(final ObjectMessage foreign) throws JMSException
+   public JBossObjectMessage(final ObjectMessage foreign, final ClientSession session) throws JMSException
    {
-      super(foreign, JBossObjectMessage.TYPE);
+      super(foreign, JBossObjectMessage.TYPE, session);
 
       setObject(foreign.getObject()); 
    }

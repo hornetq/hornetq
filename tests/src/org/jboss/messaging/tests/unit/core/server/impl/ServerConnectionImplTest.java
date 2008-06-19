@@ -21,8 +21,6 @@
  */ 
 package org.jboss.messaging.tests.unit.core.server.impl;
 
-import java.util.concurrent.Executor;
-
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -43,6 +41,8 @@ import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.ExecutorFactory;
 import org.jboss.messaging.util.SimpleString;
+
+import java.util.concurrent.Executor;
 
 /**
  * 
@@ -396,7 +396,10 @@ public class ServerConnectionImplTest extends UnitTestCase
       
       EasyMock.expect(pd.generateID()).andReturn(sessionID);
       
-      EasyMock.expect(sm.generateTransactionID()).andReturn(8172L);
+      if(!xa)
+      {
+         EasyMock.expect(sm.generateTransactionID()).andReturn(8172L);
+      }
       
       pd.register(EasyMock.isA(ServerSessionPacketHandler.class));
       

@@ -22,10 +22,6 @@
 
 package org.jboss.messaging.tests.performance.persistence.impl;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.core.config.impl.FileConfiguration;
 import org.jboss.messaging.core.logging.Logger;
@@ -36,7 +32,13 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.tests.performance.persistence.fakes.FakePostOffice;
 import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.util.ByteBufferWrapper;
 import org.jboss.messaging.util.SimpleString;
+
+import java.io.File;
+import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 
@@ -175,7 +177,7 @@ public class StorageManagerTimingTest extends UnitTestCase
 
                   
                   ServerMessageImpl implMsg = new ServerMessageImpl(/* type */ (byte)1, /* durable */ true, /* expiration */ 0,
-                        /* timestamp */ 0, /* priority */(byte)0);
+                        /* timestamp */ 0, /* priority */(byte)0, new ByteBufferWrapper(ByteBuffer.allocateDirect(1024)));
                   
                   implMsg.putStringProperty(new SimpleString("Key"), new SimpleString("This String is worthless!"));
 

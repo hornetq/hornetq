@@ -21,16 +21,8 @@
    */
 package org.jboss.messaging.example;
 
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
-import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientProducer;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.client.*;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -58,7 +50,7 @@ public class SimpleClient
          ClientSession clientSession = clientConnection.createClientSession(false, true, true, 100, true, false);
          SimpleString queue = new SimpleString("queuejms.testQueue");
          ClientProducer clientProducer = clientSession.createProducer(queue);
-         ClientMessage message = new ClientMessageImpl(JBossTextMessage.TYPE, false, 0,
+         ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE, false, 0,
                                                        System.currentTimeMillis(), (byte) 1);
          message.getBody().putString("Hello!");
          clientProducer.send(message);

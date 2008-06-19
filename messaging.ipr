@@ -472,6 +472,8 @@
         <root url="file://$PROJECT_DIR$/src/config" />
         <root url="jar://$PROJECT_DIR$/thirdparty/apache-mina/lib/mina-core-2.0.0-M2-20080520.004618-19.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/easymock/lib/easymock.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/easymock-classextension/lib/easymockclassextension.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/cglib/lib/cglib.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>

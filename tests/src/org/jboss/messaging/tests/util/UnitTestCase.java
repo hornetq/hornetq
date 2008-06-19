@@ -22,26 +22,20 @@
 
 package org.jboss.messaging.tests.util;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import javax.transaction.xa.Xid;
-
 import junit.framework.TestCase;
-
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
+import org.jboss.messaging.util.ByteBufferWrapper;
+
+import javax.transaction.xa.Xid;
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * 
@@ -202,7 +196,7 @@ public class UnitTestCase extends TestCase
          
    protected ServerMessage generateMessage(long id)
    {
-      ServerMessage message = new ServerMessageImpl((byte)0, true, 0, System.currentTimeMillis(), (byte)4);
+      ServerMessage message = new ServerMessageImpl((byte)0, true, 0, System.currentTimeMillis(), (byte)4, new ByteBufferWrapper(ByteBuffer.allocateDirect(1024)));
       
       message.setMessageID(id);
       
