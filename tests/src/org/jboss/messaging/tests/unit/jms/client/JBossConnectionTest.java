@@ -55,20 +55,6 @@ public class JBossConnectionTest extends TestCase
 
    // Public --------------------------------------------------------
 
-   public void testGetClientConnection() throws Exception
-   {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      clientConn.setRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
-      replay(clientConn);
-
-      JBossConnection connection = new JBossConnection(clientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
-
-      assertSame(clientConn, connection.getConnection());
-      verify(clientConn);
-
-   }
-   
    public void testStart() throws Exception
    {
       ClientConnection clientConn = createStrictMock(ClientConnection.class);

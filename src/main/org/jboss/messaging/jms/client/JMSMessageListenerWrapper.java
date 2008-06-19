@@ -62,7 +62,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
     */
    public void onMessage(final ClientMessage message)
    {
-      JBossMessage jbm = JBossMessage.createMessage(message, session.getCoreSession());
+      JBossMessage jbm = JBossMessage.createMessage(message, session.getDelegate());
       
       try
       {
@@ -79,7 +79,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
       {
          try
          {
-            session.getCoreSession().acknowledge();
+            session.getDelegate().acknowledge();
          }
          catch (MessagingException e)
          {
@@ -101,7 +101,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
          {            
             try
             {                              
-               session.getCoreSession().rollback();
+               session.getDelegate().rollback();
                
                session.setRecoverCalled(true);
             }
@@ -117,9 +117,9 @@ public class JMSMessageListenerWrapper implements MessageHandler
          try
          {
             //We don't want to call this if the connection/session was closed from inside onMessage
-            if (!session.getCoreSession().isClosed())
+            if (!session.getDelegate().isClosed())
             {
-               session.getCoreSession().acknowledge();
+               session.getDelegate().acknowledge();
             }
          }
          catch (MessagingException e)

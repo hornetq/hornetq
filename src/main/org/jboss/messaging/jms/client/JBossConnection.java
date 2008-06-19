@@ -321,12 +321,6 @@ public class JBossConnection implements
                                    JBossSession.TYPE_TOPIC_SESSION, cacheProducers);
    }
 
-
-   public ClientConnection getConnection()
-   {
-      return connection;
-   }
-
    public String toString()
    {
       return "JBossConnection->" + connection;

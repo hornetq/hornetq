@@ -110,7 +110,7 @@ public class JBossTextMessageTest extends TestCase
       
       msg.doBeforeSend();
 
-      MessagingBuffer body = msg.getCoreMessage().getBody();
+      MessagingBuffer body = msg.getDelegate().getBody();
       String s = body.getNullableString();
       assertEquals(text, s);
    }
@@ -119,7 +119,7 @@ public class JBossTextMessageTest extends TestCase
    {
       JBossTextMessage msg = new JBossTextMessage();
       assertNull(msg.getText());
-      MessagingBuffer body = msg.getCoreMessage().getBody();
+      MessagingBuffer body = msg.getDelegate().getBody();
       body.putNullableString(text);
       body.flip();
       

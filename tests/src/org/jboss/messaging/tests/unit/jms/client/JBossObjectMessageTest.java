@@ -120,7 +120,7 @@ public class JBossObjectMessageTest extends TestCase
       
       msg.doBeforeSend();
 
-      MessagingBuffer body = msg.getCoreMessage().getBody();
+      MessagingBuffer body = msg.getDelegate().getBody();
       assertEquals(data.length, body.getInt());
       byte[] bytes = new byte[data.length];
       body.getBytes(bytes);
@@ -137,7 +137,7 @@ public class JBossObjectMessageTest extends TestCase
       byte[] data = baos.toByteArray();
       
       JBossObjectMessage message = new JBossObjectMessage();
-      MessagingBuffer body = message.getCoreMessage().getBody();
+      MessagingBuffer body = message.getDelegate().getBody();
       body.putInt(data.length);
       body.putBytes(data);
       body.flip();

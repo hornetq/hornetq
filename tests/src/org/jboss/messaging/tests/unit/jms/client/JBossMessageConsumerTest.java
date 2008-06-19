@@ -122,7 +122,7 @@ public class JBossMessageConsumerTest extends TestCase
 
       expect(clientSession.isClosed()).andReturn(true);
 
-      expect(session.getCoreSession()).andReturn(clientSession);
+      expect(session.getDelegate()).andReturn(clientSession);
       ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
 
       replay(session, clientSession, clientConsumer);
@@ -149,7 +149,7 @@ public class JBossMessageConsumerTest extends TestCase
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(session.getAcknowledgeMode()).andReturn(Session.AUTO_ACKNOWLEDGE);
       expect(clientSession.isClosed()).andReturn(false);
-      expect(session.getCoreSession()).andReturn(clientSession);
+      expect(session.getDelegate()).andReturn(clientSession);
       ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
 
       replay(session, clientSession, clientConsumer);
@@ -176,23 +176,6 @@ public class JBossMessageConsumerTest extends TestCase
             clientConsumer, noLocal, destination, null);
 
       assertEquals(noLocal, consumer.getNoLocal());
-
-      verify(session, clientConsumer);
-   }
-
-   public void testGetConsumer() throws Exception
-   {
-      Destination destination = new JBossQueue(randomString());
-      JBossSession session = createStrictMock(JBossSession.class);
-      expect(session.getAcknowledgeMode()).andReturn(Session.AUTO_ACKNOWLEDGE);
-      ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
-
-      replay(session, clientConsumer);
-
-      JBossMessageConsumer consumer = new JBossMessageConsumer(session,
-            clientConsumer, false, destination, null);
-
-      assertEquals(clientConsumer, consumer.getConsumer());
 
       verify(session, clientConsumer);
    }
@@ -238,7 +221,7 @@ public class JBossMessageConsumerTest extends TestCase
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(session.getAcknowledgeMode()).andReturn(Session.AUTO_ACKNOWLEDGE);
       expect(clientSession.isClosed()).andReturn(false);
-      expect(session.getCoreSession()).andReturn(clientSession);
+      expect(session.getDelegate()).andReturn(clientSession);
       ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
 
       replay(session, clientSession, clientConsumer);
@@ -257,7 +240,7 @@ public class JBossMessageConsumerTest extends TestCase
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(session.getAcknowledgeMode()).andReturn(Session.AUTO_ACKNOWLEDGE);
       expect(clientSession.isClosed()).andReturn(false);
-      expect(session.getCoreSession()).andReturn(clientSession);
+      expect(session.getDelegate()).andReturn(clientSession);
       ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
       clientConsumer.setMessageHandler(isA(MessageHandler.class));
       MessageListener listener = createStrictMock(MessageListener.class);
@@ -363,7 +346,7 @@ public class JBossMessageConsumerTest extends TestCase
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(session.getAcknowledgeMode()).andReturn(Session.AUTO_ACKNOWLEDGE);
       clientSession.acknowledge();
-      expect(session.getCoreSession()).andStubReturn(clientSession);
+      expect(session.getDelegate()).andStubReturn(clientSession);
       ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
       ClientMessage clientMessage = createStrictMock(ClientMessage.class);
       expect(clientMessage.getType()).andReturn(JBossMessage.TYPE);

@@ -232,20 +232,6 @@ public class JBossMessageProducerTest extends TestCase
       verify(clientProducer);
    }
 
-   public void testGetDelegate() throws Exception
-   {
-      ClientProducer clientProducer = createStrictMock(ClientProducer.class);
-      EasyMock.expect(clientProducer.isClosed()).andStubReturn(false);
-      replay(clientProducer);
-
-      JBossDestination destination = new JBossQueue(randomString());
-      JBossMessageProducer producer = new JBossMessageProducer(clientProducer,
-            destination);
-      assertEquals(clientProducer, producer.getDelegate());
-
-      verify(clientProducer);
-   }
-
    public void testGetTopic() throws Exception
    {
       ClientProducer clientProducer = createStrictMock(ClientProducer.class);

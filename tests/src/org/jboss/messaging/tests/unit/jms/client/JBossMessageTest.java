@@ -157,7 +157,7 @@ public class JBossMessageTest extends TestCase
    public void testGetJMSDeliveryModeAsPersistent() throws Exception
    {
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().setDurable(true);
+      message.getDelegate().setDurable(true);
       
       assertEquals(DeliveryMode.PERSISTENT, message.getJMSDeliveryMode());
    }
@@ -165,7 +165,7 @@ public class JBossMessageTest extends TestCase
    public void testGetJMSDeliveryModeAsNonPersistent() throws Exception
    {
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().setDurable(false);
+      message.getDelegate().setDurable(false);
       
       assertEquals(DeliveryMode.NON_PERSISTENT, message.getJMSDeliveryMode());
    }
@@ -175,7 +175,7 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();
       message.setJMSDeliveryMode(DeliveryMode.PERSISTENT);
       
-      assertTrue(message.getCoreMessage().isDurable());
+      assertTrue(message.getDelegate().isDurable());
    }
 
    public void testSetJMSDeliveryModeWithNonPersistent() throws Exception
@@ -183,7 +183,7 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();
       message.setJMSDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      assertFalse(message.getCoreMessage().isDurable());
+      assertFalse(message.getDelegate().isDurable());
    }
 
    public void testSetJMSDeliveryModeWithInvalidValue() throws Exception
@@ -203,13 +203,13 @@ public class JBossMessageTest extends TestCase
    {
       JBossMessage message = new JBossMessage();
       
-      message.getCoreMessage().setDeliveryCount(0);
+      message.getDelegate().setDeliveryCount(0);
       assertFalse(message.getJMSRedelivered());
       
-      message.getCoreMessage().setDeliveryCount(1);
+      message.getDelegate().setDeliveryCount(1);
       assertFalse(message.getJMSRedelivered());
 
-      message.getCoreMessage().setDeliveryCount(2);
+      message.getDelegate().setDeliveryCount(2);
       assertTrue(message.getJMSRedelivered());
    }
    
@@ -218,7 +218,7 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();
 
       message.setJMSRedelivered(true);
-      assertEquals(2, message.getCoreMessage().getDeliveryCount());
+      assertEquals(2, message.getDelegate().getDeliveryCount());
    }
    
    public void testSetJMSRedeliveredToFalse() throws Exception
@@ -226,7 +226,7 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();
 
       message.setJMSRedelivered(false);
-      assertEquals(1, message.getCoreMessage().getDeliveryCount());
+      assertEquals(1, message.getDelegate().getDeliveryCount());
    }
 
    public void testSetJMSType() throws Exception
@@ -235,7 +235,7 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();      
       message.setJMSType(type);
       
-      SimpleString t = (SimpleString) message.getCoreMessage().getProperty(JBossMessage.TYPE_HEADER_NAME);
+      SimpleString t = (SimpleString) message.getDelegate().getProperty(JBossMessage.TYPE_HEADER_NAME);
       assertEquals(type, t.toString());
    }
    
@@ -246,7 +246,7 @@ public class JBossMessageTest extends TestCase
     
       assertNull(message.getJMSType());
       
-      message.getCoreMessage().putStringProperty(JBossMessage.TYPE_HEADER_NAME, new SimpleString(type));
+      message.getDelegate().putStringProperty(JBossMessage.TYPE_HEADER_NAME, new SimpleString(type));
       assertEquals(type, message.getJMSType());
    }
    
@@ -256,14 +256,14 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();      
       message.setJMSTimestamp(timestamp);
       
-      assertEquals(timestamp, message.getCoreMessage().getTimestamp());
+      assertEquals(timestamp, message.getDelegate().getTimestamp());
    }
    
    public void testGetJMSTimestamp() throws Exception
    {
       long timestamp = randomLong();
       JBossMessage message = new JBossMessage();      
-      message.getCoreMessage().setTimestamp(timestamp);
+      message.getDelegate().setTimestamp(timestamp);
     
       assertEquals(timestamp, message.getJMSTimestamp());
    }
@@ -275,7 +275,7 @@ public class JBossMessageTest extends TestCase
     
       message.setJMSCorrelationID(correlationID);
       
-      SimpleString value = (SimpleString) message.getCoreMessage().getProperty(JBossMessage.CORRELATIONID_HEADER_NAME);
+      SimpleString value = (SimpleString) message.getDelegate().getProperty(JBossMessage.CORRELATIONID_HEADER_NAME);
       
       assertEquals(correlationID, value.toString());      
    }
@@ -285,7 +285,7 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();      
       message.setJMSCorrelationID(null);
       
-      assertFalse(message.getCoreMessage().containsProperty(JBossMessage.CORRELATIONID_HEADER_NAME));
+      assertFalse(message.getDelegate().containsProperty(JBossMessage.CORRELATIONID_HEADER_NAME));
    }
    
    public void testGetJMSCorrelationID() throws Exception
@@ -293,7 +293,7 @@ public class JBossMessageTest extends TestCase
       String correlationID = randomString();
       JBossMessage message = new JBossMessage();
       
-      message.getCoreMessage().putStringProperty(JBossMessage.CORRELATIONID_HEADER_NAME, new SimpleString(correlationID));
+      message.getDelegate().putStringProperty(JBossMessage.CORRELATIONID_HEADER_NAME, new SimpleString(correlationID));
       
       assertEquals(correlationID, message.getJMSCorrelationID());
    }
@@ -306,7 +306,7 @@ public class JBossMessageTest extends TestCase
     
       message.setJMSCorrelationIDAsBytes(correlationID);
       
-      byte[] value = (byte[]) message.getCoreMessage().getProperty(JBossMessage.CORRELATIONID_HEADER_NAME);
+      byte[] value = (byte[]) message.getDelegate().getProperty(JBossMessage.CORRELATIONID_HEADER_NAME);
       
       assertEquals(correlationID, value);      
    }
@@ -316,7 +316,7 @@ public class JBossMessageTest extends TestCase
       byte[] correlationID = randomBytes();
       JBossMessage message = new JBossMessage();
       
-      message.getCoreMessage().putBytesProperty(JBossMessage.CORRELATIONID_HEADER_NAME, correlationID);
+      message.getDelegate().putBytesProperty(JBossMessage.CORRELATIONID_HEADER_NAME, correlationID);
       
       assertEquals(correlationID, message.getJMSCorrelationIDAsBytes());
    }
@@ -327,7 +327,7 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();
       
       message.setJMSPriority(priority);
-      assertEquals(priority, message.getCoreMessage().getPriority());
+      assertEquals(priority, message.getDelegate().getPriority());
    }
    
    public void testSetInvalidPriority() throws Exception
@@ -348,7 +348,7 @@ public class JBossMessageTest extends TestCase
       int priority = 9;
       JBossMessage message = new JBossMessage();
 
-      message.getCoreMessage().setPriority((byte) priority);
+      message.getDelegate().setPriority((byte) priority);
       assertEquals(priority, message.getJMSPriority());
    }
    
@@ -358,7 +358,7 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();
       message.setJMSExpiration(expiration);
       
-      assertEquals(expiration, message.getCoreMessage().getExpiration());
+      assertEquals(expiration, message.getDelegate().getExpiration());
    }
 
    public void testGetJMSExpiration() throws Exception
@@ -366,7 +366,7 @@ public class JBossMessageTest extends TestCase
       long expiration = randomLong();
       JBossMessage message = new JBossMessage();
       
-      message.getCoreMessage().setExpiration(expiration);
+      message.getDelegate().setExpiration(expiration);
       assertEquals(expiration, message.getJMSExpiration());
    }
 
@@ -498,7 +498,7 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();
       message.setBooleanProperty(propertyName, value);
 
-      boolean v = (Boolean) message.getCoreMessage().getProperty(
+      boolean v = (Boolean) message.getDelegate().getProperty(
             new SimpleString(propertyName));
       assertEquals(value, v);
    }
@@ -508,7 +508,7 @@ public class JBossMessageTest extends TestCase
       boolean value = true;
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putBooleanProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putBooleanProperty(new SimpleString(propertyName), value);
       
       boolean v = message.getBooleanProperty(propertyName);
       assertEquals(value, v);
@@ -527,7 +527,7 @@ public class JBossMessageTest extends TestCase
       SimpleString value = new SimpleString("true");
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putStringProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putStringProperty(new SimpleString(propertyName), value);
       
       boolean v = message.getBooleanProperty(propertyName);
       assertEquals(true, v);
@@ -536,7 +536,7 @@ public class JBossMessageTest extends TestCase
    public void testGetBooleanPropertyWithInvalidType() throws Exception
    {
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putFloatProperty(new SimpleString(propertyName), randomFloat());
+      message.getDelegate().putFloatProperty(new SimpleString(propertyName), randomFloat());
 
       try
       {
@@ -554,7 +554,7 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();
       message.setByteProperty(propertyName, value);
 
-      byte v = (Byte) message.getCoreMessage().getProperty(
+      byte v = (Byte) message.getDelegate().getProperty(
             new SimpleString(propertyName));
       assertEquals(value, v);
    }
@@ -564,7 +564,7 @@ public class JBossMessageTest extends TestCase
       byte value = randomByte();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putByteProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putByteProperty(new SimpleString(propertyName), value);
       
       byte v = message.getByteProperty(propertyName);
       assertEquals(value, v);
@@ -589,7 +589,7 @@ public class JBossMessageTest extends TestCase
       SimpleString value = new SimpleString(Byte.toString(b));
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putStringProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putStringProperty(new SimpleString(propertyName), value);
       
       byte v = message.getByteProperty(propertyName);
       assertEquals(b, v);
@@ -598,7 +598,7 @@ public class JBossMessageTest extends TestCase
    public void testGetBytePropertyWithInvalidType() throws Exception
    {
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putFloatProperty(new SimpleString(propertyName), randomFloat());
+      message.getDelegate().putFloatProperty(new SimpleString(propertyName), randomFloat());
 
       try
       {
@@ -616,7 +616,7 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();
       message.setShortProperty(propertyName, value);
 
-      short v = (Short) message.getCoreMessage().getProperty(
+      short v = (Short) message.getDelegate().getProperty(
             new SimpleString(propertyName));
       assertEquals(value, v);
    }
@@ -626,7 +626,7 @@ public class JBossMessageTest extends TestCase
       short value = randomShort();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putShortProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putShortProperty(new SimpleString(propertyName), value);
       
       short v = message.getShortProperty(propertyName);
       assertEquals(value, v);
@@ -650,7 +650,7 @@ public class JBossMessageTest extends TestCase
       byte value = randomByte();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putByteProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putByteProperty(new SimpleString(propertyName), value);
       
       short v = message.getShortProperty(propertyName);
       assertEquals(value, v);
@@ -662,7 +662,7 @@ public class JBossMessageTest extends TestCase
       SimpleString value = new SimpleString(Short.toString(s));
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putStringProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putStringProperty(new SimpleString(propertyName), value);
       
       short v = message.getShortProperty(propertyName);
       assertEquals(s, v);
@@ -671,7 +671,7 @@ public class JBossMessageTest extends TestCase
    public void testGetShortPropertyWithInvalidType() throws Exception
    {
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putFloatProperty(new SimpleString(propertyName), randomFloat());
+      message.getDelegate().putFloatProperty(new SimpleString(propertyName), randomFloat());
 
       try
       {
@@ -689,7 +689,7 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();
       message.setIntProperty(propertyName, value);
 
-      int v = (Integer) message.getCoreMessage().getProperty(
+      int v = (Integer) message.getDelegate().getProperty(
             new SimpleString(propertyName));
       assertEquals(value, v);
    }
@@ -699,7 +699,7 @@ public class JBossMessageTest extends TestCase
       int value = randomInt();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putIntProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putIntProperty(new SimpleString(propertyName), value);
       
       int v = message.getIntProperty(propertyName);
       assertEquals(value, v);
@@ -710,7 +710,7 @@ public class JBossMessageTest extends TestCase
       int value = randomInt();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().setDeliveryCount(value);
+      message.getDelegate().setDeliveryCount(value);
       
       int v = message.getIntProperty(JBossMessage.JMSXDELIVERYCOUNT);
       assertEquals(value, v);
@@ -733,7 +733,7 @@ public class JBossMessageTest extends TestCase
       byte value = randomByte();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putByteProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putByteProperty(new SimpleString(propertyName), value);
       
       int v = message.getIntProperty(propertyName);
       assertEquals(value, v);
@@ -744,7 +744,7 @@ public class JBossMessageTest extends TestCase
       short value = randomShort();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putShortProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putShortProperty(new SimpleString(propertyName), value);
       
       int v = message.getIntProperty(propertyName);
       assertEquals(value, v);
@@ -756,7 +756,7 @@ public class JBossMessageTest extends TestCase
       SimpleString value = new SimpleString(Integer.toString(i));
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putStringProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putStringProperty(new SimpleString(propertyName), value);
       
       int v = message.getIntProperty(propertyName);
       assertEquals(i, v);
@@ -765,7 +765,7 @@ public class JBossMessageTest extends TestCase
    public void testGetIntPropertyWithInvalidType() throws Exception
    {
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putFloatProperty(new SimpleString(propertyName), randomFloat());
+      message.getDelegate().putFloatProperty(new SimpleString(propertyName), randomFloat());
 
       try
       {
@@ -783,7 +783,7 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();
       message.setLongProperty(propertyName, value);
 
-      long v = (Long) message.getCoreMessage().getProperty(
+      long v = (Long) message.getDelegate().getProperty(
             new SimpleString(propertyName));
       assertEquals(value, v);
    }
@@ -793,7 +793,7 @@ public class JBossMessageTest extends TestCase
       long value = randomLong();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putLongProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putLongProperty(new SimpleString(propertyName), value);
       
       long v = message.getLongProperty(propertyName);
       assertEquals(value, v);
@@ -804,7 +804,7 @@ public class JBossMessageTest extends TestCase
       int value = randomInt();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().setDeliveryCount(value);
+      message.getDelegate().setDeliveryCount(value);
       
       long v = message.getLongProperty(JBossMessage.JMSXDELIVERYCOUNT);
       assertEquals(value, v);
@@ -828,7 +828,7 @@ public class JBossMessageTest extends TestCase
       byte value = randomByte();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putByteProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putByteProperty(new SimpleString(propertyName), value);
       
       long v = message.getLongProperty(propertyName);
       assertEquals(value, v);
@@ -839,7 +839,7 @@ public class JBossMessageTest extends TestCase
       short value = randomShort();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putShortProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putShortProperty(new SimpleString(propertyName), value);
       
       long v = message.getLongProperty(propertyName);
       assertEquals(value, v);
@@ -850,7 +850,7 @@ public class JBossMessageTest extends TestCase
       int value = randomInt();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putIntProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putIntProperty(new SimpleString(propertyName), value);
       
       long v = message.getLongProperty(propertyName);
       assertEquals(value, v);
@@ -862,7 +862,7 @@ public class JBossMessageTest extends TestCase
       SimpleString value = new SimpleString(Long.toString(l));
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putStringProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putStringProperty(new SimpleString(propertyName), value);
       
       long v = message.getLongProperty(propertyName);
       assertEquals(l, v);
@@ -871,7 +871,7 @@ public class JBossMessageTest extends TestCase
    public void testGetLongPropertyWithInvalidType() throws Exception
    {
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putFloatProperty(new SimpleString(propertyName), randomFloat());
+      message.getDelegate().putFloatProperty(new SimpleString(propertyName), randomFloat());
 
       try
       {
@@ -889,7 +889,7 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();
       message.setFloatProperty(propertyName, value);
 
-      float v = (Float) message.getCoreMessage().getProperty(
+      float v = (Float) message.getDelegate().getProperty(
             new SimpleString(propertyName));
       assertEquals(value, v);
    }
@@ -899,7 +899,7 @@ public class JBossMessageTest extends TestCase
       float value = randomFloat();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putFloatProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putFloatProperty(new SimpleString(propertyName), value);
       
       float v = message.getFloatProperty(propertyName);
       assertEquals(value, v);
@@ -924,7 +924,7 @@ public class JBossMessageTest extends TestCase
       SimpleString value = new SimpleString(Float.toString(f));
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putStringProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putStringProperty(new SimpleString(propertyName), value);
       
       float v = message.getFloatProperty(propertyName);
       assertEquals(f, v);
@@ -933,7 +933,7 @@ public class JBossMessageTest extends TestCase
    public void testGetFloatPropertyWithInvalidType() throws Exception
    {
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putBooleanProperty(new SimpleString(propertyName), true);
+      message.getDelegate().putBooleanProperty(new SimpleString(propertyName), true);
 
       try
       {
@@ -951,7 +951,7 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();
       message.setDoubleProperty(propertyName, value);
 
-      double v = (Double) message.getCoreMessage().getProperty(
+      double v = (Double) message.getDelegate().getProperty(
             new SimpleString(propertyName));
       assertEquals(value, v);
    }
@@ -961,7 +961,7 @@ public class JBossMessageTest extends TestCase
       double value = randomDouble();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putDoubleProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putDoubleProperty(new SimpleString(propertyName), value);
       
       double v = message.getDoubleProperty(propertyName);
       assertEquals(value, v);
@@ -985,7 +985,7 @@ public class JBossMessageTest extends TestCase
       float value = randomFloat();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putFloatProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putFloatProperty(new SimpleString(propertyName), value);
       
       double v = message.getDoubleProperty(propertyName);
       assertEquals(Float.valueOf(value).doubleValue(), v);
@@ -997,7 +997,7 @@ public class JBossMessageTest extends TestCase
       SimpleString value = new SimpleString(Double.toString(d));
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putStringProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putStringProperty(new SimpleString(propertyName), value);
       
       double v = message.getDoubleProperty(propertyName);
       assertEquals(d, v);
@@ -1006,7 +1006,7 @@ public class JBossMessageTest extends TestCase
    public void testGetDoublePropertyWithInvalidType() throws Exception
    {
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putBooleanProperty(new SimpleString(propertyName), true);
+      message.getDelegate().putBooleanProperty(new SimpleString(propertyName), true);
 
       try
       {
@@ -1024,7 +1024,7 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();
       message.setStringProperty(propertyName, value);
 
-      SimpleString v = (SimpleString) message.getCoreMessage().getProperty(
+      SimpleString v = (SimpleString) message.getDelegate().getProperty(
             new SimpleString(propertyName));
       assertEquals(value, v.toString());
    }
@@ -1034,7 +1034,7 @@ public class JBossMessageTest extends TestCase
       String value = randomString();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putStringProperty(new SimpleString(propertyName), new SimpleString(value));
+      message.getDelegate().putStringProperty(new SimpleString(propertyName), new SimpleString(value));
       
       String v = message.getStringProperty(propertyName);
       assertEquals(value, v);
@@ -1045,7 +1045,7 @@ public class JBossMessageTest extends TestCase
       int value = randomInt();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().setDeliveryCount(value);
+      message.getDelegate().setDeliveryCount(value);
       
       String v = message.getStringProperty(JBossMessage.JMSXDELIVERYCOUNT);
       assertEquals(Integer.toString(value), v);
@@ -1064,7 +1064,7 @@ public class JBossMessageTest extends TestCase
       boolean value = true;
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putBooleanProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putBooleanProperty(new SimpleString(propertyName), value);
       
       String v = message.getStringProperty(propertyName);
       assertEquals(Boolean.toString(value), v);
@@ -1075,7 +1075,7 @@ public class JBossMessageTest extends TestCase
       byte value = randomByte();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putByteProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putByteProperty(new SimpleString(propertyName), value);
       
       String v = message.getStringProperty(propertyName);
       assertEquals(Byte.toString(value), v);
@@ -1086,7 +1086,7 @@ public class JBossMessageTest extends TestCase
       short value = randomShort();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putShortProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putShortProperty(new SimpleString(propertyName), value);
       
       String v = message.getStringProperty(propertyName);
       assertEquals(Short.toString(value), v);
@@ -1097,7 +1097,7 @@ public class JBossMessageTest extends TestCase
       int value = randomInt();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putIntProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putIntProperty(new SimpleString(propertyName), value);
       
       String v = message.getStringProperty(propertyName);
       assertEquals(Integer.toString(value), v);
@@ -1108,7 +1108,7 @@ public class JBossMessageTest extends TestCase
       long value = randomLong();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putLongProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putLongProperty(new SimpleString(propertyName), value);
       
       String v = message.getStringProperty(propertyName);
       assertEquals(Long.toString(value), v);
@@ -1119,7 +1119,7 @@ public class JBossMessageTest extends TestCase
       float value = randomFloat();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putFloatProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putFloatProperty(new SimpleString(propertyName), value);
       
       String v = message.getStringProperty(propertyName);
       assertEquals(Float.toString(value), v);
@@ -1130,7 +1130,7 @@ public class JBossMessageTest extends TestCase
       double value = randomDouble();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putDoubleProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putDoubleProperty(new SimpleString(propertyName), value);
       
       String v = message.getStringProperty(propertyName);
       assertEquals(Double.toString(value), v);
@@ -1143,7 +1143,7 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();
       message.setObjectProperty(propertyName, value);
 
-      boolean v = (Boolean) message.getCoreMessage().getProperty(
+      boolean v = (Boolean) message.getDelegate().getProperty(
             new SimpleString(propertyName));
       assertEquals(value, v);
    }
@@ -1155,7 +1155,7 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();
       message.setObjectProperty(propertyName, value);
 
-      byte v = (Byte) message.getCoreMessage().getProperty(
+      byte v = (Byte) message.getDelegate().getProperty(
             new SimpleString(propertyName));
       assertEquals(value, v);
    }
@@ -1167,7 +1167,7 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();
       message.setObjectProperty(propertyName, value);
 
-      short v = (Short) message.getCoreMessage().getProperty(
+      short v = (Short) message.getDelegate().getProperty(
             new SimpleString(propertyName));
       assertEquals(value, v);
    }
@@ -1179,7 +1179,7 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();
       message.setObjectProperty(propertyName, value);
 
-      int v = (Integer) message.getCoreMessage().getProperty(
+      int v = (Integer) message.getDelegate().getProperty(
             new SimpleString(propertyName));
       assertEquals(value, v);
    }
@@ -1191,7 +1191,7 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();
       message.setObjectProperty(propertyName, value);
 
-      long v = (Long) message.getCoreMessage().getProperty(
+      long v = (Long) message.getDelegate().getProperty(
             new SimpleString(propertyName));
       assertEquals(value, v);
    }
@@ -1203,7 +1203,7 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();
       message.setObjectProperty(propertyName, value);
 
-      float v = (Float) message.getCoreMessage().getProperty(
+      float v = (Float) message.getDelegate().getProperty(
             new SimpleString(propertyName));
       assertEquals(value, v);
    }
@@ -1215,7 +1215,7 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();
       message.setObjectProperty(propertyName, value);
 
-      double v = (Double) message.getCoreMessage().getProperty(
+      double v = (Double) message.getDelegate().getProperty(
             new SimpleString(propertyName));
       assertEquals(value, v);
    }
@@ -1227,7 +1227,7 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();
       message.setObjectProperty(propertyName, value);
 
-      SimpleString v = (SimpleString) message.getCoreMessage().getProperty(
+      SimpleString v = (SimpleString) message.getDelegate().getProperty(
             new SimpleString(propertyName));
       assertEquals(value, v.toString());
    }
@@ -1250,7 +1250,7 @@ public class JBossMessageTest extends TestCase
       double value = randomDouble();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putDoubleProperty(new SimpleString(propertyName), value);
+      message.getDelegate().putDoubleProperty(new SimpleString(propertyName), value);
       
       Object v = message.getObjectProperty(propertyName);
       assertTrue(v instanceof Double);
@@ -1262,7 +1262,7 @@ public class JBossMessageTest extends TestCase
       String value = randomString();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putStringProperty(new SimpleString(propertyName), new SimpleString(value));
+      message.getDelegate().putStringProperty(new SimpleString(propertyName), new SimpleString(value));
       
       Object v = message.getObjectProperty(propertyName);
       assertTrue(v instanceof String);
@@ -1274,7 +1274,7 @@ public class JBossMessageTest extends TestCase
       int value = randomInt();
       
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().setDeliveryCount(value);
+      message.getDelegate().setDeliveryCount(value);
       
       Object v = message.getObjectProperty(JBossMessage.JMSXDELIVERYCOUNT);
       assertTrue(v instanceof String);

@@ -991,7 +991,7 @@ public class Bridge implements MessagingComponent
          {
          	JBossSession jsession = (JBossSession)sourceSession;
 
-         	org.jboss.messaging.core.client.ClientSession session = jsession.getCoreSession();
+         	org.jboss.messaging.core.client.ClientSession session = jsession.getDelegate();
             
          	//session.setTreatAsNonTransactedWhenNotEnlisted(false);
          }

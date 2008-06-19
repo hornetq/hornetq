@@ -90,19 +90,6 @@ public class JBossQueueBrowserTest extends TestCase
       verify(clientBrowser);
    }
 
-   public void testGetBrowser() throws Exception
-   {
-      Queue queue = new JBossQueue(randomString());
-      ClientBrowser clientBrowser = createStrictMock(ClientBrowser.class);
-      replay(clientBrowser);
-
-      JBossQueueBrowser browser = new JBossQueueBrowser(queue, null,
-            clientBrowser);
-      assertEquals(clientBrowser, browser.getBrowser());
-
-      verify(clientBrowser);
-   }
-
    public void testClose() throws Exception
    {
       Queue queue = new JBossQueue(randomString());
