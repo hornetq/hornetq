@@ -63,11 +63,11 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    private final Map<String, List<String>> connectionFactoryBindings = new HashMap<String, List<String>>();
 
-   private MessagingServerManagement messagingServerManagement;
-
-   public void setMessagingServerManagement(final MessagingServerManagement messagingServerManagement)
+   private final MessagingServerManagement messagingServerManagement;
+   
+   public JMSServerManagerImpl(final MessagingServerManagement serverManager)
    {
-      this.messagingServerManagement = messagingServerManagement;
+      messagingServerManagement = serverManager;
    }
 
    /**

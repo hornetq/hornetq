@@ -38,8 +38,6 @@ public interface ServerConnection
 {
 	long getID();
 	
-	MessagingServer getServer();
-	
 	ConnectionCreateSessionResponseMessage createSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks,
                                                         PacketReturner returner) throws Exception;
 	

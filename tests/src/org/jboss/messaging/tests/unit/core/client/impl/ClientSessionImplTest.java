@@ -22,27 +22,66 @@
 
 package org.jboss.messaging.tests.unit.core.client.impl;
 
+import static org.jboss.messaging.tests.util.RandomUtil.randomXid;
+
+import java.util.Arrays;
+
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.Location;
-import org.jboss.messaging.core.client.impl.*;
+import org.jboss.messaging.core.client.impl.ClientConnectionInternal;
+import org.jboss.messaging.core.client.impl.ClientConsumerInternal;
+import org.jboss.messaging.core.client.impl.ClientConsumerPacketHandler;
+import org.jboss.messaging.core.client.impl.ClientProducerInternal;
+import org.jboss.messaging.core.client.impl.ClientProducerPacketHandler;
+import org.jboss.messaging.core.client.impl.ClientSessionImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionInternal;
+import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.TransportType;
-import org.jboss.messaging.core.remoting.impl.wireformat.*;
-import static org.jboss.messaging.tests.util.RandomUtil.randomXid;
+import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCancelMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAForgetMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetInDoubtXidsResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetTimeoutResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAJoinMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAPrepareMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResumeMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
-
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-import java.util.Arrays;
 
 /**
  * 
@@ -66,10 +105,13 @@ public class ClientSessionImplTest extends UnitTestCase
    public void testConstructorInvalidArgs() throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
 
       try
       {
-         new ClientSessionImpl(conn, 1, false, -2, false, false, false, false);
+         new ClientSessionImpl(conn, 1, false, -2, false, false, false, false, rc, cf, pd);
          fail("Should throw exception");
       }
       catch (IllegalArgumentException e)
@@ -79,7 +121,7 @@ public class ClientSessionImplTest extends UnitTestCase
 
       try
       {
-         new ClientSessionImpl(conn, 1, false, -10, false, false, false, false);
+         new ClientSessionImpl(conn, 1, false, -10, false, false, false, false, rc, cf, pd);
          fail("Should throw exception");
       }
       catch (IllegalArgumentException e)
@@ -89,7 +131,7 @@ public class ClientSessionImplTest extends UnitTestCase
 
       try
       {
-         new ClientSessionImpl(conn, 1, false, 0, false, false, false, false);
+         new ClientSessionImpl(conn, 1, false, 0, false, false, false, false, rc, cf, pd);
          fail("Should throw exception");
       }
       catch (IllegalArgumentException e)
@@ -101,11 +143,10 @@ public class ClientSessionImplTest extends UnitTestCase
    public void testCreateQueue() throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
 
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
-      
       SessionCreateQueueMessage request = new SessionCreateQueueMessage(new SimpleString("blah"), new SimpleString("hagshg"),
             new SimpleString("jhjhs"), false, false);
       
@@ -113,22 +154,21 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(targetID, targetID, request)).andReturn(null);
       
-      EasyMock.replay(conn, rc);
+      EasyMock.replay(conn, rc, cf, pd);
 
-      ClientSession session = new ClientSessionImpl(conn, targetID, false, -1, false, false, false, false);
+      ClientSession session = new ClientSessionImpl(conn, targetID, false, -1, false, false, false, false, rc, cf, pd);
                   
       session.createQueue(request.getAddress(), request.getQueueName(), request.getFilterString(), request.isDurable(), request.isTemporary());
       
-      EasyMock.verify(conn, rc);     
+      EasyMock.verify(conn, rc, cf, pd);     
    }
    
    public void testDeleteQueue() throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
       
       SessionDeleteQueueMessage request = new SessionDeleteQueueMessage(new SimpleString("blah"));
       
@@ -136,22 +176,21 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(targetID, targetID, request)).andReturn(null);
       
-      EasyMock.replay(conn, rc);
+      EasyMock.replay(conn, rc, cf, pd);
                   
-      ClientSession session = new ClientSessionImpl(conn, targetID, false, -1, false, false, false, false);
+      ClientSession session = new ClientSessionImpl(conn, targetID, false, -1, false, false, false, false, rc, cf, pd);
                   
       session.deleteQueue(request.getQueueName());
       
-      EasyMock.verify(conn, rc);     
+      EasyMock.verify(conn, rc, cf, pd);     
    }
    
    public void testQueueQuery() throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
       
       SessionQueueQueryMessage request = new SessionQueueQueryMessage(new SimpleString("blah"));
       
@@ -161,13 +200,13 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(targetID, targetID, request)).andReturn(resp);
       
-      EasyMock.replay(conn, rc);
+      EasyMock.replay(conn, rc, cf, pd);
                   
-      ClientSession session = new ClientSessionImpl(conn, targetID, false, -1, false, false, false, false);
+      ClientSession session = new ClientSessionImpl(conn, targetID, false, -1, false, false, false, false, rc, cf, pd);
                   
       SessionQueueQueryResponseMessage resp2 = session.queueQuery(request.getQueueName());
       
-      EasyMock.verify(conn, rc);
+      EasyMock.verify(conn, rc, rc, cf, pd);
       
       assertTrue(resp == resp2);
    }
@@ -175,11 +214,10 @@ public class ClientSessionImplTest extends UnitTestCase
    public void testBindingQuery() throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
 
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
-      
       SessionBindingQueryMessage request = new SessionBindingQueryMessage(new SimpleString("blah"));
       
       SessionBindingQueryResponseMessage resp = new SessionBindingQueryResponseMessage();
@@ -188,13 +226,13 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(targetID, targetID, request)).andReturn(resp);
       
-      EasyMock.replay(conn, rc);
+      EasyMock.replay(conn, rc, cf, pd);
                   
-      ClientSession session = new ClientSessionImpl(conn, targetID, false, -1, false, false, false, false);
+      ClientSession session = new ClientSessionImpl(conn, targetID, false, -1, false, false, false, false, rc, cf, pd);
                   
       SessionBindingQueryResponseMessage resp2 = session.bindingQuery(request.getAddress());
       
-      EasyMock.verify(conn, rc); 
+      EasyMock.verify(conn, rc, cf, pd); 
       
       assertTrue(resp == resp2);
    }
@@ -202,10 +240,9 @@ public class ClientSessionImplTest extends UnitTestCase
    public void testAddDestination() throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
       
       SessionAddDestinationMessage request = new SessionAddDestinationMessage(new SimpleString("blah"), true);
       
@@ -213,22 +250,21 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(targetID, targetID, request)).andReturn(null);
       
-      EasyMock.replay(conn, rc);
+      EasyMock.replay(conn, rc, cf, pd);
       
-      ClientSession session = new ClientSessionImpl(conn, targetID, false, -1, false, false, false, false);
+      ClientSession session = new ClientSessionImpl(conn, targetID, false, -1, false, false, false, false, rc, cf, pd);
                   
       session.addDestination(request.getAddress(), request.isTemporary());
       
-      EasyMock.verify(conn, rc); 
+      EasyMock.verify(conn, rc, cf, pd); 
    }
    
    public void testRemoveDestination() throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
       
       SessionRemoveDestinationMessage request = new SessionRemoveDestinationMessage(new SimpleString("blah"), true);
       
@@ -236,13 +272,13 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(targetID, targetID, request)).andReturn(null);
       
-      EasyMock.replay(conn, rc);
+      EasyMock.replay(conn, rc, cf, pd);
                   
-      ClientSession session = new ClientSessionImpl(conn, targetID, false, -1, false, false, false, false);
+      ClientSession session = new ClientSessionImpl(conn, targetID, false, -1, false, false, false, false, rc, cf, pd);
                   
       session.removeDestination(request.getAddress(), true);
       
-      EasyMock.verify(conn, rc); 
+      EasyMock.verify(conn, rc, cf, pd); 
    }
    
    public void testCreateConsumer() throws Exception
@@ -374,13 +410,9 @@ public class ClientSessionImplTest extends UnitTestCase
    public void testProducerCaching() throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-           
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
-           
-      //In ClientSessionImpl constructor
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
         
       final long sessionTargetID = 9121892;
       
@@ -392,8 +424,6 @@ public class ClientSessionImplTest extends UnitTestCase
       //In create producer method
             
       {
-         EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
-         
          final long clientTargetID = 7676876;
          
          EasyMock.expect(pd.generateID()).andReturn(clientTargetID);
@@ -405,17 +435,11 @@ public class ClientSessionImplTest extends UnitTestCase
             new SessionCreateProducerResponseMessage(67765765, windowSize, maxRate);
          
          EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, request)).andReturn(resp);
-         
-         EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
-         
-         EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
-                  
+               
          pd.register(new ClientProducerPacketHandler(null, clientTargetID));
       }
       
-      {
-         EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
-         
+      {  
          final long clientTargetID = 54654654;
          
          EasyMock.expect(pd.generateID()).andReturn(clientTargetID);
@@ -428,18 +452,14 @@ public class ClientSessionImplTest extends UnitTestCase
          
          EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, request)).andReturn(resp);
          
-         EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
-         
-         EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
-                  
          pd.register(new ClientProducerPacketHandler(null, clientTargetID));
       }
       
-      EasyMock.replay(conn, rc, pd);
+      EasyMock.replay(conn, rc, cf, pd);
       
       //Create three with address1 - only one should be actually created
       
-      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, true, false, false, false);
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, true, false, false, false, rc, cf, pd);
       
       assertEquals(0, session.getProducerCache().size());
       
@@ -481,7 +501,7 @@ public class ClientSessionImplTest extends UnitTestCase
       
       assertEquals(2, session.getProducerCache().size());
             
-      EasyMock.verify(conn, rc, pd);     
+      EasyMock.verify(conn, rc, cf, pd);
       
       assertTrue(producer1 == producer2);
       assertTrue(producer2 == producer3);
@@ -493,13 +513,9 @@ public class ClientSessionImplTest extends UnitTestCase
    public void testProducerNoCaching() throws Exception
    { 
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-           
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
-           
-      //In ClientSessionImpl constructor
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
           
       final long sessionTargetID = 7617622;      
       final SimpleString address = new SimpleString("gyugg");
@@ -509,13 +525,10 @@ public class ClientSessionImplTest extends UnitTestCase
       for (int i = 0; i < 3; i++)
       {
          //In create producer method
-         
-         EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
-         
+          
          final long clientTargetID = i + 65655;
          
-         EasyMock.expect(pd.generateID()).andReturn(clientTargetID);
-         
+         EasyMock.expect(pd.generateID()).andReturn(clientTargetID);         
          
          SessionCreateProducerMessage request =
             new SessionCreateProducerMessage(clientTargetID, address, windowSize, maxRate);             
@@ -524,17 +537,13 @@ public class ClientSessionImplTest extends UnitTestCase
             new SessionCreateProducerResponseMessage(i + 273263, windowSize, maxRate);
          
          EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, request)).andReturn(resp);
-         
-         EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
-         
-         EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
-                  
+                    
          pd.register(new ClientProducerPacketHandler(null, clientTargetID));      
       }
 
-      EasyMock.replay(conn, rc, pd);
+      EasyMock.replay(conn, rc, cf, pd);
       
-      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false, rc, cf, pd);
 
       ClientProducerInternal producer1 = (ClientProducerInternal)session.createProducer(address, windowSize, maxRate,
                                                                                         false, false);
@@ -548,7 +557,7 @@ public class ClientSessionImplTest extends UnitTestCase
                                                                                         false, false);
       session.removeProducer(producer3);
       
-      EasyMock.verify(conn, rc, pd);
+      EasyMock.verify(conn, rc, cf, pd);
       
       assertFalse(producer1 == producer2);
       assertFalse(producer2 == producer3);
@@ -564,8 +573,11 @@ public class ClientSessionImplTest extends UnitTestCase
    public void testGetXAResource() throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
       
-      ClientSession session = new ClientSessionImpl(conn, 5465, false, -1, false, false, false, false);
+      ClientSession session = new ClientSessionImpl(conn, 5465, false, -1, false, false, false, false, rc, cf, pd);
       
       XAResource res = session.getXAResource();
       
@@ -575,12 +587,9 @@ public class ClientSessionImplTest extends UnitTestCase
    public void testTransactedSessionAcknowledgeNotBroken() throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-           
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
-           
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
       
       final int numMessages = 100;
       
@@ -606,9 +615,9 @@ public class ClientSessionImplTest extends UnitTestCase
 
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_ROLLBACK))).andReturn(null);
                   
-      EasyMock.replay(conn, rc, pd, cons1, cons2);
+      EasyMock.replay(conn, rc, cf, pd, cons1, cons2);
       
-      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false, rc, cf, pd);
       
       session.addConsumer(cons1);
       session.addConsumer(cons2);
@@ -635,7 +644,7 @@ public class ClientSessionImplTest extends UnitTestCase
       
       session.rollback();
       
-      EasyMock.verify(conn, rc, pd, cons1, cons2);
+      EasyMock.verify(conn, rc, cf, pd, cons1, cons2);
    }
    
    public void testAutoCommitSessionAcknowledge() throws Exception
@@ -653,12 +662,9 @@ public class ClientSessionImplTest extends UnitTestCase
    public void testTransactedSessionAcknowledgeNotBrokenExpired() throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-      
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
-           
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
       
       final int[] messages = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
       
@@ -673,11 +679,9 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_COMMIT))).andReturn(null);
                   
-      EasyMock.replay(conn);
-      EasyMock.replay(rc);
-      EasyMock.replay(pd);
-      
-      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+      EasyMock.replay(conn, rc, cf, pd);
+
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false, rc, cf, pd);
       
       //Simulate some messages being delivered in a non broken sequence (i.e. what would happen with a single consumer
       //on the session)
@@ -692,20 +696,15 @@ public class ClientSessionImplTest extends UnitTestCase
       //Then commit
       session.commit();
       
-      EasyMock.verify(conn);
-      EasyMock.verify(rc);
-      EasyMock.verify(pd); 
+      EasyMock.verify(conn, rc, cf, pd);
    }
    
    public void testTransactedSessionAcknowledgeBrokenExpired() throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-           
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
-           
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
       
       final int[] messages = new int[] { 1, 3, 5, 7, 9, 2, 4, 10, 20, 21, 22, 23, 19, 18, 15, 30, 31, 32, 40, 35 };
       
@@ -720,11 +719,9 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_COMMIT))).andReturn(null);
                   
-      EasyMock.replay(conn);
-      EasyMock.replay(rc);
-      EasyMock.replay(pd);
+      EasyMock.replay(conn, rc, cf, pd);
       
-      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false, rc, cf, pd);
       
       //Simulate some messages being delivered in a broken sequence (i.e. what would happen with a single consumer
       //on the session)
@@ -739,9 +736,7 @@ public class ClientSessionImplTest extends UnitTestCase
       //Then commit
       session.commit();
       
-      EasyMock.verify(conn);
-      EasyMock.verify(rc);
-      EasyMock.verify(pd); 
+      EasyMock.verify(conn, rc, cf, pd);; 
    }
    
    public void testClose() throws Exception   
@@ -759,21 +754,19 @@ public class ClientSessionImplTest extends UnitTestCase
    public void testAddRemoveProducer() throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-      
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-          
-      //In ClientSessionImpl constructor
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
         
       final long sessionTargetID = 9121892;
                   
-      EasyMock.replay(conn, rc);
+      EasyMock.replay(conn, rc, cf, pd);
       
-      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false, rc, cf, pd);
       
-      EasyMock.verify(conn, rc);
+      EasyMock.verify(conn, rc, cf, pd);
       
-      EasyMock.reset(conn, rc);
+      EasyMock.reset(conn, rc, cf, pd);
                                       
       ClientProducerInternal prod1 = EasyMock.createStrictMock(ClientProducerInternal.class);
       ClientProducerInternal prod2 = EasyMock.createStrictMock(ClientProducerInternal.class);
@@ -798,21 +791,19 @@ public class ClientSessionImplTest extends UnitTestCase
    public void testAddRemoveBrowser() throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-      
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-          
-      //In ClientSessionImpl constructor
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
         
       final long sessionTargetID = 9121892;
                   
-      EasyMock.replay(conn, rc);
+      EasyMock.replay(conn, rc, cf, pd);
       
-      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false, rc, cf, pd);
       
-      EasyMock.verify(conn, rc);
+      EasyMock.verify(conn, rc, cf, pd);
       
-      EasyMock.reset(conn, rc);
+      EasyMock.reset(conn, rc, cf, pd);
                                       
       ClientBrowser browser1 = EasyMock.createStrictMock(ClientBrowser.class);
       ClientBrowser browser2 = EasyMock.createStrictMock(ClientBrowser.class);
@@ -861,11 +852,9 @@ public class ClientSessionImplTest extends UnitTestCase
    public void testGetTransactionTimeout() throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-      
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-          
-      //In ClientSessionImpl constructor
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
         
       final long sessionTargetID = 9121892;
       
@@ -877,71 +866,43 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, packet)).andReturn(resp);
                        
-      EasyMock.replay(conn, rc);
+      EasyMock.replay(conn, rc, cf, pd);
       
-      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, true, -1, false, false, false, false);
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, true, -1, false, false, false, false, rc, cf, pd);
       
       int timeout2 = session.getTransactionTimeout();
             
-      EasyMock.verify(conn, rc);  
+      EasyMock.verify(conn, rc, cf, pd);  
       
       assertEquals(timeout, timeout2);
    }
    
    public void testIsSameRM() throws Exception
    {
+      ClientConnectionInternal conn1 = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      ClientConnectionInternal conn2 = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      ClientConnectionInternal conn3 = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      RemotingConnection rc1 = EasyMock.createStrictMock(RemotingConnection.class);
+      RemotingConnection rc2 = EasyMock.createStrictMock(RemotingConnection.class);
+      RemotingConnection rc3 = EasyMock.createStrictMock(RemotingConnection.class);
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
+            
       Location location1 = new LocationImpl(TransportType.TCP, "blah1");      
+      
       Location location2 = new LocationImpl(TransportType.TCP, "blah2");
       
-      ClientConnectionInternal conn1 = EasyMock.createStrictMock(ClientConnectionInternal.class);      
-      RemotingConnection rc1 = EasyMock.createStrictMock(RemotingConnection.class);          
-      EasyMock.expect(conn1.getRemotingConnection()).andReturn(rc1);
+      EasyMock.expect(rc1.getLocation()).andStubReturn(location1);
+      EasyMock.expect(rc2.getLocation()).andStubReturn(location1);
+      EasyMock.expect(rc3.getLocation()).andStubReturn(location2);
+                    
+      EasyMock.replay(conn1, conn2, conn3, rc1, rc2, rc3, cf, pd);
       
-      ClientConnectionInternal conn2 = EasyMock.createStrictMock(ClientConnectionInternal.class);      
-      RemotingConnection rc2 = EasyMock.createStrictMock(RemotingConnection.class);          
-      EasyMock.expect(conn2.getRemotingConnection()).andReturn(rc2);
+      ClientSessionInternal session1 = new ClientSessionImpl(conn1, 4343, true, -1, false, false, false, false, rc1, cf, pd);
       
-      ClientConnectionInternal conn3 = EasyMock.createStrictMock(ClientConnectionInternal.class);      
-      RemotingConnection rc3 = EasyMock.createStrictMock(RemotingConnection.class);          
-      EasyMock.expect(conn3.getRemotingConnection()).andReturn(rc3);
-       
-      EasyMock.expect(conn1.getRemotingConnection()).andReturn(rc1);      
-      EasyMock.expect(rc1.getLocation()).andReturn(location1);      
-      EasyMock.expect(conn2.getRemotingConnection()).andReturn(rc2);      
-      EasyMock.expect(rc2.getLocation()).andReturn(location1);
+      ClientSessionInternal session2 = new ClientSessionImpl(conn2, 4343, true, -1, false, false, false, false, rc2, cf, pd);
       
-      EasyMock.expect(conn2.getRemotingConnection()).andReturn(rc2);      
-      EasyMock.expect(rc2.getLocation()).andReturn(location1);
-      EasyMock.expect(conn1.getRemotingConnection()).andReturn(rc1);      
-      EasyMock.expect(rc1.getLocation()).andReturn(location1);      
-            
-      EasyMock.expect(conn1.getRemotingConnection()).andReturn(rc1);      
-      EasyMock.expect(rc1.getLocation()).andReturn(location1);      
-      EasyMock.expect(conn3.getRemotingConnection()).andReturn(rc3);      
-      EasyMock.expect(rc3.getLocation()).andReturn(location2);
-      
-      EasyMock.expect(conn3.getRemotingConnection()).andReturn(rc3);      
-      EasyMock.expect(rc3.getLocation()).andReturn(location2);
-      EasyMock.expect(conn1.getRemotingConnection()).andReturn(rc1);      
-      EasyMock.expect(rc1.getLocation()).andReturn(location1);      
-            
-      EasyMock.expect(conn2.getRemotingConnection()).andReturn(rc2);      
-      EasyMock.expect(rc2.getLocation()).andReturn(location1);      
-      EasyMock.expect(conn3.getRemotingConnection()).andReturn(rc3);      
-      EasyMock.expect(rc3.getLocation()).andReturn(location2);
-      
-      EasyMock.expect(conn3.getRemotingConnection()).andReturn(rc3);      
-      EasyMock.expect(rc3.getLocation()).andReturn(location2);
-      EasyMock.expect(conn2.getRemotingConnection()).andReturn(rc2);      
-      EasyMock.expect(rc2.getLocation()).andReturn(location1);      
-          
-      EasyMock.replay(conn1, conn2, conn3, rc1, rc2, rc3);
-      
-      ClientSessionInternal session1 = new ClientSessionImpl(conn1, 4343, true, -1, false, false, false, false);
-      
-      ClientSessionInternal session2 = new ClientSessionImpl(conn2, 4343, true, -1, false, false, false, false);
-      
-      ClientSessionInternal session3 = new ClientSessionImpl(conn3, 4343, true, -1, false, false, false, false);
+      ClientSessionInternal session3 = new ClientSessionImpl(conn3, 4343, true, -1, false, false, false, false, rc3, cf, pd);
       
       assertTrue(session1.isSameRM(session2));
       assertTrue(session2.isSameRM(session1));
@@ -996,10 +957,9 @@ public class ClientSessionImplTest extends UnitTestCase
    public void testCleanUp() throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
 
       SessionCreateQueueMessage request = new SessionCreateQueueMessage(new SimpleString("blah"), new SimpleString("hagshg"),
             new SimpleString("jhjhs"), false, false);
@@ -1008,39 +968,37 @@ public class ClientSessionImplTest extends UnitTestCase
 
       EasyMock.expect(rc.sendBlocking(targetID, targetID, request)).andReturn(null);
 
-      EasyMock.replay(conn, rc);
+      EasyMock.replay(conn, rc, cf, pd);
 
-      ClientSessionInternal session = new ClientSessionImpl(conn, targetID, false, -1, false, false, false, false);
+      ClientSessionInternal session = new ClientSessionImpl(conn, targetID, false, -1, false, false, false, false, rc, cf, pd);
 
       session.createQueue(request.getAddress(), request.getQueueName(), request.getFilterString(), request.isDurable(), request.isTemporary());
 
-      EasyMock.verify(conn, rc);
+      EasyMock.verify(conn, rc, cf, pd);
 
-      EasyMock.reset(conn, rc);
+      EasyMock.reset(conn, rc, cf, pd);
       conn.removeSession(session);
-      EasyMock.replay(conn, rc);
+      EasyMock.replay(conn, rc, cf, pd);
       session.cleanUp();
-      EasyMock.verify(conn, rc);
+      EasyMock.verify(conn, rc, cf, pd);
    }
 
    public void notXA() throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-      
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-          
-      //In ClientSessionImpl constructor
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
               
       final long sessionTargetID = 9121892;
                   
-      EasyMock.replay(conn, rc);
+      EasyMock.replay(conn, rc, cf, pd);
       
-      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false, rc, cf, pd);
       
-      EasyMock.verify(conn, rc);
+      EasyMock.verify(conn, rc, cf, pd);
       
-      EasyMock.reset(conn, rc);      
+      EasyMock.reset(conn, rc, cf, pd);      
       try
       {
          session.commit(randomXid(), false);
@@ -1147,21 +1105,19 @@ public class ClientSessionImplTest extends UnitTestCase
    private void testClose(boolean delivered) throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-          
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-          
-      //In ClientSessionImpl constructor
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
         
       final long sessionTargetID = 9121892;
                   
-      EasyMock.replay(conn, rc);
+      EasyMock.replay(conn, rc, cf, pd);
       
-      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false, rc, cf, pd);
       
-      EasyMock.verify(conn, rc);
+      EasyMock.verify(conn, rc, cf, pd);
       
-      EasyMock.reset(conn, rc);
+      EasyMock.reset(conn, rc, cf, pd);
       
       ClientProducerInternal prod1 = EasyMock.createStrictMock(ClientProducerInternal.class);
       ClientProducerInternal prod2 = EasyMock.createStrictMock(ClientProducerInternal.class);
@@ -1192,7 +1148,7 @@ public class ClientSessionImplTest extends UnitTestCase
       
       conn.removeSession(session);      
             
-      EasyMock.replay(conn, rc, prod1, prod2, cons1, cons2, browser1, browser2);
+      EasyMock.replay(conn, rc, cf, pd, prod1, prod2, cons1, cons2, browser1, browser2);
                  
       session.addProducer(prod1);
       session.addProducer(prod2);
@@ -1217,19 +1173,19 @@ public class ClientSessionImplTest extends UnitTestCase
             
       session.close();
       
-      EasyMock.verify(conn, rc, prod1, prod2, cons1, cons2, browser1, browser2);
+      EasyMock.verify(conn, rc, cf, pd, prod1, prod2, cons1, cons2, browser1, browser2);
       
       assertTrue(session.isClosed());  
       
-      EasyMock.reset(conn, rc, prod1, prod2, cons1, cons2, browser1, browser2);
+      EasyMock.reset(conn, rc, cf, pd, prod1, prod2, cons1, cons2, browser1, browser2);
       
-      EasyMock.replay(conn, rc, prod1, prod2, cons1, cons2, browser1, browser2);
+      EasyMock.replay(conn, rc, cf, pd, prod1, prod2, cons1, cons2, browser1, browser2);
       
       //Close again should do nothing
       
       session.close();
       
-      EasyMock.verify(conn, rc, prod1, prod2, cons1, cons2, browser1, browser2);
+      EasyMock.verify(conn, rc, cf, pd, prod1, prod2, cons1, cons2, browser1, browser2);
       
       try
       {
@@ -1416,11 +1372,9 @@ public class ClientSessionImplTest extends UnitTestCase
    private void testXAStart(int flags, boolean error) throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-      
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-          
-      //In ClientSessionImpl constructor
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
         
       final long sessionTargetID = 9121892;
       
@@ -1453,9 +1407,9 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, packet)).andReturn(resp);
                        
-      EasyMock.replay(conn, rc);
+      EasyMock.replay(conn, rc, cf, pd);
       
-      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, true, -1, false, false, false, false);
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, true, -1, false, false, false, false, rc, cf, pd);
       
       //Simulate some unflushed messages
       
@@ -1482,17 +1436,15 @@ public class ClientSessionImplTest extends UnitTestCase
          session.start(xid, flags);
       }
       
-      EasyMock.verify(conn, rc);          
+      EasyMock.verify(conn, rc, cf, pd);          
    }
    
    private void testXASetTransactionTimeout(boolean error) throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-      
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-          
-      //In ClientSessionImpl constructor
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
         
       final long sessionTargetID = 9121892;
       
@@ -1504,26 +1456,24 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, packet)).andReturn(resp);
                        
-      EasyMock.replay(conn, rc);
+      EasyMock.replay(conn, rc, cf, pd);
       
-      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, true, -1, false, false, false, false);
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, true, -1, false, false, false, false, rc, cf, pd);
       
       boolean ok = session.setTransactionTimeout(timeout);
       
       assertTrue(ok == !error);
       
-      EasyMock.verify(conn, rc);  
+      EasyMock.verify(conn, rc, cf, pd);  
    }
    
    private void testXARollback(boolean error) throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-      
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-          
-      //In ClientSessionImpl constructor
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
-        
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
+           
       final long sessionTargetID = 9121892;
       
       Xid xid = randomXid();
@@ -1534,9 +1484,9 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, packet)).andReturn(resp);
                        
-      EasyMock.replay(conn, rc);
+      EasyMock.replay(conn, rc, cf, pd);
       
-      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, true, -1, false, false, false, false);
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, true, -1, false, false, false, false, rc, cf, pd);
       
       if (error)
       {
@@ -1555,18 +1505,16 @@ public class ClientSessionImplTest extends UnitTestCase
          session.rollback(xid);
       }
       
-      EasyMock.verify(conn, rc);  
+      EasyMock.verify(conn, rc, cf, pd);  
    }
    
    private void testXARecover(final int flags) throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
       
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-          
-      //In ClientSessionImpl constructor
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
-        
       final long sessionTargetID = 9121892;
       
       final Xid[] xids = new Xid[] { randomXid(), randomXid(), randomXid() } ;
@@ -1580,9 +1528,9 @@ public class ClientSessionImplTest extends UnitTestCase
          EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, packet)).andReturn(resp);
       }
                        
-      EasyMock.replay(conn, rc);
+      EasyMock.replay(conn, rc, cf, pd);
       
-      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, true, -1, false, false, false, false);
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, true, -1, false, false, false, false, rc, cf, pd);
       
       Xid[] xids2 = session.recover(flags);
       
@@ -1600,17 +1548,15 @@ public class ClientSessionImplTest extends UnitTestCase
          assertTrue(xids2.length == 0);
       }
       
-      EasyMock.verify(conn, rc);  
+      EasyMock.verify(conn, rc, cf, pd);  
    }
    
    private void testXAPrepare(boolean error, boolean readOnly) throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-      
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-          
-      //In ClientSessionImpl constructor
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
         
       final long sessionTargetID = 9121892;
       
@@ -1622,9 +1568,9 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, packet)).andReturn(resp);
                        
-      EasyMock.replay(conn, rc);
+      EasyMock.replay(conn, rc, cf, pd);
       
-      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, true, -1, false, false, false, false);
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, true, -1, false, false, false, false, rc, cf, pd);
       
       if (error)
       {
@@ -1652,17 +1598,15 @@ public class ClientSessionImplTest extends UnitTestCase
          }
       }
       
-      EasyMock.verify(conn, rc);  
+      EasyMock.verify(conn, rc, cf, pd);  
    }
    
    private void testXAForget(final boolean error) throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-      
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-          
-      //In ClientSessionImpl constructor
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
         
       final long sessionTargetID = 9121892;
       
@@ -1680,9 +1624,9 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, packet)).andReturn(resp);
                        
-      EasyMock.replay(conn, rc);
+      EasyMock.replay(conn, rc, cf, pd);
       
-      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, true, -1, false, false, false, false);
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, true, -1, false, false, false, false, rc, cf, pd);
       
       //Simulate some unflushed messages
       
@@ -1709,17 +1653,15 @@ public class ClientSessionImplTest extends UnitTestCase
          session.forget(xid);
       }
       
-      EasyMock.verify(conn, rc);           
+      EasyMock.verify(conn, rc, cf, pd);           
    }
    
    private void testXAEnd(int flags, boolean error) throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-      
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-          
-      //In ClientSessionImpl constructor
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
         
       final long sessionTargetID = 9121892;
       
@@ -1749,9 +1691,9 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, packet)).andReturn(resp);
                        
-      EasyMock.replay(conn, rc);
+      EasyMock.replay(conn, rc, cf, pd);
       
-      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, true, -1, false, false, false, false);
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, true, -1, false, false, false, false, rc, cf, pd);
       
       //Simulate some unflushed messages
       
@@ -1778,17 +1720,15 @@ public class ClientSessionImplTest extends UnitTestCase
          session.end(xid, flags);
       }
       
-      EasyMock.verify(conn, rc);          
+      EasyMock.verify(conn, rc, cf, pd);          
    }
    
    private void testXACommit(boolean onePhase, boolean error) throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-      
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-          
-      //In ClientSessionImpl constructor
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
         
       final long sessionTargetID = 9121892;
       
@@ -1800,9 +1740,9 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, packet)).andReturn(resp);
                        
-      EasyMock.replay(conn, rc);
+      EasyMock.replay(conn, rc, cf, pd);
       
-      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, true, -1, false, false, false, false);
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, true, -1, false, false, false, false, rc, cf, pd);
       
       if (error)
       {
@@ -1821,27 +1761,25 @@ public class ClientSessionImplTest extends UnitTestCase
          session.commit(xid, onePhase);
       }
       
-      EasyMock.verify(conn, rc);  
+      EasyMock.verify(conn, rc, cf, pd);  
    }
    
    private void testAddRemoveConsumer(boolean delivered) throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-      
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-          
-      //In ClientSessionImpl constructor
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
         
       final long sessionTargetID = 9121892;
                   
-      EasyMock.replay(conn, rc);
+      EasyMock.replay(conn, rc, cf, pd);
       
-      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false, rc, cf, pd);
       
-      EasyMock.verify(conn, rc);
+      EasyMock.verify(conn, rc, cf, pd);
       
-      EasyMock.reset(conn, rc);
+      EasyMock.reset(conn, rc, cf, pd);
          
       final int numDeliveries = 10;
       
@@ -1856,7 +1794,7 @@ public class ClientSessionImplTest extends UnitTestCase
       
       rc.sendOneWay(sessionTargetID, sessionTargetID, new SessionCancelMessage(-1, false));
                        
-      EasyMock.replay(conn, rc);
+      EasyMock.replay(conn, rc, cf, pd);
                        
       ClientConsumerInternal cons1 = EasyMock.createStrictMock(ClientConsumerInternal.class);
       ClientConsumerInternal cons2 = EasyMock.createStrictMock(ClientConsumerInternal.class);
@@ -1886,18 +1824,15 @@ public class ClientSessionImplTest extends UnitTestCase
       session.removeConsumer(cons2);
       assertEquals(0, session.getConsumers().size());
       
-      EasyMock.verify(conn, rc);          
+      EasyMock.verify(conn, rc, cf, pd);          
    }
    
    private void testAutoCommitSessionAcknowledge(boolean blockOnAcknowledge) throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-           
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
-           
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
       
       final int numMessages = 100;
       
@@ -1943,9 +1878,10 @@ public class ClientSessionImplTest extends UnitTestCase
             
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_ROLLBACK))).andReturn(null);
                                      
-      EasyMock.replay(conn, rc, pd, cons1, cons2);
+      EasyMock.replay(conn, rc, cf, pd, cons1, cons2);
             
-      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, batchSize, false, false, true, blockOnAcknowledge);
+      ClientSessionInternal session =
+         new ClientSessionImpl(conn, sessionTargetID, false, batchSize, false, false, true, blockOnAcknowledge, rc, cf, pd);
       
       session.addConsumer(cons1);
       
@@ -1973,18 +1909,15 @@ public class ClientSessionImplTest extends UnitTestCase
       
       session.rollback();
       
-      EasyMock.verify(conn, rc, pd, cons1, cons2);
+      EasyMock.verify(conn, rc, cf, pd, cons1, cons2);
    }
    
    private void testTransactedSessionAcknowledgeBroken(boolean blockOnAcknowledge) throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-           
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
-           
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
       
       final int[] messages = new int[] { 1, 3, 5, 7, 9, 2, 4, 10, 20, 21, 22, 23, 19, 18, 15, 30, 31, 32, 40, 35 };
       
@@ -2031,9 +1964,10 @@ public class ClientSessionImplTest extends UnitTestCase
             
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_ROLLBACK))).andReturn(null);
                         
-      EasyMock.replay(conn, rc, pd, cons1, cons2);
+      EasyMock.replay(conn, rc, cf, pd, cons1, cons2);
       
-      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, blockOnAcknowledge);
+      ClientSessionInternal session =
+         new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, blockOnAcknowledge, rc, cf, pd);
       
       session.addConsumer(cons1);
       session.addConsumer(cons2);
@@ -2060,17 +1994,15 @@ public class ClientSessionImplTest extends UnitTestCase
       
       session.rollback();
       
-      EasyMock.verify(conn, rc, pd, cons1, cons2); 
+      EasyMock.verify(conn, rc, cf, pd, cons1, cons2); 
    }
    
    private void testCreateBrowser(boolean filter) throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-      
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-            
-      //In ClientSessionImpl constructor
-      EasyMock.expect(conn.getRemotingConnection()).andStubReturn(rc);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
           
       final long sessionTargetID = 7617622;      
       final SimpleString queueName = new SimpleString("gyugg");
@@ -2084,9 +2016,9 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, request)).andReturn(resp);
       
-      EasyMock.replay(conn, rc);
+      EasyMock.replay(conn, rc, cf, pd);
       
-      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false, rc, cf, pd);
       
       if (filter)
       {
@@ -2097,7 +2029,7 @@ public class ClientSessionImplTest extends UnitTestCase
          ClientBrowser browser = session.createBrowser(queueName);
       }
       
-      EasyMock.verify(conn, rc);
+      EasyMock.verify(conn, rc, cf, pd);
    }
    
    private void testCreateProducerWithWindowSizeMethod(final SimpleString address,
@@ -2107,26 +2039,14 @@ public class ClientSessionImplTest extends UnitTestCase
          final boolean blockOnPSend,
          final boolean autoCommitSends) throws Exception
    {
-      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
-
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
-
-      // In ClientSessionImpl constructor
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
-
-      EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
 
       // Defaults from cf
 
-      EasyMock.expect(conn.getConnectionFactory()).andReturn(cf);
-
       EasyMock.expect(cf.isDefaultBlockOnNonPersistentSend()).andReturn(blockOnNPSend);
-
-      EasyMock.expect(conn.getConnectionFactory()).andReturn(cf);
 
       EasyMock.expect(cf.isDefaultBlockOnPersistentSend()).andReturn(blockOnPSend);   
 
@@ -2144,25 +2064,16 @@ public class ClientSessionImplTest extends UnitTestCase
 
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, request)).andReturn(resp);
 
-      EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
 
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);      
-      
       pd.register(new ClientProducerPacketHandler(null, clientTargetID));
 
-      EasyMock.replay(cf);
-      EasyMock.replay(conn);
-      EasyMock.replay(rc);
-      EasyMock.replay(pd);
+      EasyMock.replay(cf, conn, rc, pd);
 
-      ClientSession session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, autoCommitSends, false, false);
+      ClientSession session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, autoCommitSends, false, false, rc, cf, pd);
 
       ClientProducerInternal producer = (ClientProducerInternal)session.createProducerWithWindowSize(address, windowSize);
 
-      EasyMock.verify(cf);
-      EasyMock.verify(conn);
-      EasyMock.verify(rc);
-      EasyMock.verify(pd);
+      EasyMock.verify(cf, conn, rc, pd);   
 
       assertEquals(address, producer.getAddress());
       assertEquals(autoCommitSends && blockOnNPSend, producer.isBlockOnNonPersistentSend());
@@ -2178,26 +2089,14 @@ public class ClientSessionImplTest extends UnitTestCase
                                                     final boolean blockOnPSend,
                                                     final boolean autoCommitSends) throws Exception
    {
-      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
-
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
-
-      // In ClientSessionImpl constructor
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
-
-      EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
       
       // Defaults from cf
         
-      EasyMock.expect(conn.getConnectionFactory()).andReturn(cf);
-      
       EasyMock.expect(cf.isDefaultBlockOnNonPersistentSend()).andReturn(blockOnNPSend);
-      
-      EasyMock.expect(conn.getConnectionFactory()).andReturn(cf);
       
       EasyMock.expect(cf.isDefaultBlockOnPersistentSend()).andReturn(blockOnPSend);   
 
@@ -2214,26 +2113,16 @@ public class ClientSessionImplTest extends UnitTestCase
          new SessionCreateProducerResponseMessage(67765765, initialCredits, serverMaxRate);
 
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, request)).andReturn(resp);
-
-      EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
-
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
-            
+        
       pd.register(new ClientProducerPacketHandler(null, clientTargetID));
 
-      EasyMock.replay(cf);
-      EasyMock.replay(conn);
-      EasyMock.replay(rc);
-      EasyMock.replay(pd);
+      EasyMock.replay(cf, conn, rc, pd);
 
-      ClientSession session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, autoCommitSends, false, false);
+      ClientSession session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, autoCommitSends, false, false, rc, cf, pd);
 
       ClientProducerInternal producer = (ClientProducerInternal)session.createRateLimitedProducer(address, maxRate);
 
-      EasyMock.verify(cf);
-      EasyMock.verify(conn);
-      EasyMock.verify(rc);
-      EasyMock.verify(pd);
+      EasyMock.verify(cf, conn, rc, pd);
 
       assertEquals(address, producer.getAddress());
       assertEquals(autoCommitSends && blockOnNPSend, producer.isBlockOnNonPersistentSend());
@@ -2249,35 +2138,19 @@ public class ClientSessionImplTest extends UnitTestCase
          final boolean blockOnPSend,
          final boolean autoCommitSends) throws Exception
    {
-      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
-
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-
-      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
-
-      // In ClientSessionImpl constructor
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
-
-      EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);;
       
       // Defaults from cf
       
-      EasyMock.expect(conn.getConnectionFactory()).andReturn(cf);
-      
       EasyMock.expect(cf.getDefaultProducerWindowSize()).andReturn(windowSize);
-      
-      EasyMock.expect(conn.getConnectionFactory()).andReturn(cf);
       
       EasyMock.expect(cf.getDefaultProducerMaxRate()).andReturn(maxRate);   
       
-      EasyMock.expect(conn.getConnectionFactory()).andReturn(cf);
-      
       EasyMock.expect(cf.isDefaultBlockOnNonPersistentSend()).andReturn(blockOnNPSend);
-      
-      EasyMock.expect(conn.getConnectionFactory()).andReturn(cf);
-      
+        
       EasyMock.expect(cf.isDefaultBlockOnPersistentSend()).andReturn(blockOnPSend);   
 
       final long clientTargetID = 7676876;
@@ -2293,26 +2166,16 @@ public class ClientSessionImplTest extends UnitTestCase
          new SessionCreateProducerResponseMessage(67765765, initialCredits, serverMaxRate);
 
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, request)).andReturn(resp);
-
-      EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
-      
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
-      
+  
       pd.register(new ClientProducerPacketHandler(null, clientTargetID));
 
-      EasyMock.replay(cf);
-      EasyMock.replay(conn);
-      EasyMock.replay(rc);
-      EasyMock.replay(pd);
+      EasyMock.replay(cf, conn, rc, pd);
 
-      ClientSession session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, autoCommitSends, false, false);
+      ClientSession session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, autoCommitSends, false, false, rc, cf, pd);
 
       ClientProducerInternal producer = (ClientProducerInternal)session.createProducer(address);
 
-      EasyMock.verify(cf);
-      EasyMock.verify(conn);
-      EasyMock.verify(rc);
-      EasyMock.verify(pd);
+      EasyMock.verify(cf, conn, rc, pd);
 
       assertEquals(address, producer.getAddress());
       assertEquals(autoCommitSends && blockOnNPSend, producer.isBlockOnNonPersistentSend());
@@ -2328,19 +2191,11 @@ public class ClientSessionImplTest extends UnitTestCase
                                              final boolean blockOnPSend,
                                              final boolean autoCommitSends) throws Exception
    {
-      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
-      
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-           
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
-           
-      //In ClientSessionImpl constructor
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
                         
-      EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
-      
       final long clientTargetID = 7676876;
       
       EasyMock.expect(pd.generateID()).andReturn(clientTargetID);
@@ -2355,25 +2210,15 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, request)).andReturn(resp);
       
-      EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
-      
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
-      
       pd.register(new ClientProducerPacketHandler(null, clientTargetID));
       
-      EasyMock.replay(cf);
-      EasyMock.replay(conn);
-      EasyMock.replay(rc);
-      EasyMock.replay(pd);
+      EasyMock.replay(cf, conn, rc, pd);
       
-      ClientSession session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, autoCommitSends, false, false);
+      ClientSession session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, autoCommitSends, false, false, rc, cf, pd);
 
       ClientProducerInternal producer = (ClientProducerInternal)session.createProducer(address, windowSize, maxRate, blockOnNPSend, blockOnPSend);
       
-      EasyMock.verify(cf);
-      EasyMock.verify(conn);
-      EasyMock.verify(rc);
-      EasyMock.verify(pd);
+      EasyMock.verify(cf, conn, rc, pd);
       
       assertEquals(address, producer.getAddress());
       assertEquals(autoCommitSends && blockOnNPSend, producer.isBlockOnNonPersistentSend());
@@ -2386,26 +2231,15 @@ public class ClientSessionImplTest extends UnitTestCase
          final boolean autoDeleteQueue, final boolean direct,
          final int windowSize, final int maxRate, final int serverWindowSize) throws Exception
    {
-      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
-      
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-           
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
-           
-      EasyMock.expect(conn.getRemotingConnection()).andStubReturn(rc);
-      
-      EasyMock.expect(conn.getConnectionFactory()).andReturn(cf);
          
       EasyMock.expect(cf.getDefaultConsumerWindowSize()).andReturn(windowSize);
       
-      EasyMock.expect(conn.getConnectionFactory()).andReturn(cf);
-      
       EasyMock.expect(cf.getDefaultConsumerMaxRate()).andReturn(maxRate);      
                   
-      EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
-      
       final long clientTargetID = 87126716;
       
       EasyMock.expect(pd.generateID()).andReturn(clientTargetID);
@@ -2421,26 +2255,17 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, request)).andReturn(resp);
       
-      EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
-      
       pd.register(new ClientConsumerPacketHandler(null, clientTargetID));
       
       rc.sendOneWay(resp.getConsumerTargetID(), sessionTargetID,
                     new ConsumerFlowCreditMessage(resp.getWindowSize()));
       
-      EasyMock.replay(cf);
-      EasyMock.replay(conn);
-      EasyMock.replay(rc);
-      EasyMock.replay(pd);
-      
-      ClientSession session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+      EasyMock.replay(cf, conn, rc, pd);
+      ClientSession session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false, rc, cf, pd);
       
       ClientConsumerInternal consumer = (ClientConsumerInternal)session.createConsumer(queueName, filterString, noLocal, autoDeleteQueue,
                                                                    direct);              
-      EasyMock.verify(cf);
-      EasyMock.verify(conn);
-      EasyMock.verify(rc);
-      EasyMock.verify(pd); 
+      EasyMock.verify(cf, conn, rc, pd);
       
       assertEquals(clientTargetID, consumer.getClientTargetID());
       
@@ -2462,17 +2287,10 @@ public class ClientSessionImplTest extends UnitTestCase
          final boolean autoDeleteQueue, final boolean direct,
          final int windowSize, final int maxRate, final int serverWindowSize) throws Exception
    {
-      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
-      
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-           
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
-           
-      EasyMock.expect(conn.getRemotingConnection()).andStubReturn(rc);
-       
-      EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
       
       final long clientTargetID = 87126716;
       
@@ -2489,26 +2307,18 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, request)).andReturn(resp);
           
-      EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
-      
       pd.register(new ClientConsumerPacketHandler(null, clientTargetID));
       
       rc.sendOneWay(resp.getConsumerTargetID(), sessionTargetID,
                     new ConsumerFlowCreditMessage(resp.getWindowSize()));
       
-      EasyMock.replay(cf);
-      EasyMock.replay(conn);
-      EasyMock.replay(rc);
-      EasyMock.replay(pd);
+      EasyMock.replay(cf, conn, rc, pd);
       
-      ClientSession session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+      ClientSession session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false, rc, cf, pd);
       
       ClientConsumerInternal consumer = (ClientConsumerInternal)session.createConsumer(queueName, filterString, noLocal, autoDeleteQueue,
                                                                    direct, windowSize, maxRate);    
-      EasyMock.verify(cf);
-      EasyMock.verify(conn);
-      EasyMock.verify(rc);
-      EasyMock.verify(pd); 
+      EasyMock.verify(cf, conn, rc, pd); 
       
       assertEquals(clientTargetID, consumer.getClientTargetID());
       
@@ -2529,26 +2339,15 @@ public class ClientSessionImplTest extends UnitTestCase
    private void testCreateConsumerBasicMethod(final SimpleString queueName, final int windowSize,
          final int maxRate, final int serverWindowSize) throws Exception
    {
-      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
-      
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
-           
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
-           
-      EasyMock.expect(conn.getRemotingConnection()).andStubReturn(rc);
-      
-      EasyMock.expect(conn.getConnectionFactory()).andReturn(cf);
       
       EasyMock.expect(cf.getDefaultConsumerWindowSize()).andReturn(windowSize);
       
-      EasyMock.expect(conn.getConnectionFactory()).andReturn(cf);
-      
       EasyMock.expect(cf.getDefaultConsumerMaxRate()).andReturn(maxRate);   
        
-      EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
-      
       final long clientTargetID = 87126716;
       
       EasyMock.expect(pd.generateID()).andReturn(clientTargetID);
@@ -2564,25 +2363,17 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(sessionTargetID, sessionTargetID, request)).andReturn(resp);
       
-      EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
-      
       pd.register(new ClientConsumerPacketHandler(null, clientTargetID));
       
       rc.sendOneWay(resp.getConsumerTargetID(), sessionTargetID,
                     new ConsumerFlowCreditMessage(resp.getWindowSize()));
       
-      EasyMock.replay(cf);
-      EasyMock.replay(conn);
-      EasyMock.replay(rc);
-      EasyMock.replay(pd);
+      EasyMock.replay(cf, conn, rc, pd);
       
-      ClientSession session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false);
+      ClientSession session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false, rc, cf, pd);
       
       ClientConsumerInternal consumer = (ClientConsumerInternal)session.createConsumer(queueName);    
-      EasyMock.verify(cf);
-      EasyMock.verify(conn);
-      EasyMock.verify(rc);
-      EasyMock.verify(pd); 
+      EasyMock.verify(cf, conn, rc, pd);
       
       assertEquals(clientTargetID, consumer.getClientTargetID());
       
@@ -2607,19 +2398,17 @@ public class ClientSessionImplTest extends UnitTestCase
          final boolean blockOnAcknowledge) throws Exception
    {
       ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
 
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-
-      EasyMock.expect(conn.getRemotingConnection()).andReturn(rc);
-
-      EasyMock.replay(conn);
-      EasyMock.replay(rc);
+      EasyMock.replay(conn, rc, cf, pd);
 
       ClientSessionInternal session = new ClientSessionImpl(conn, serverTargetID, xa,
-            lazyAckBatchSize, cacheProducers, autoCommitSends, autoCommitAcks, blockOnAcknowledge);
+            lazyAckBatchSize, cacheProducers, autoCommitSends, autoCommitAcks, blockOnAcknowledge,
+            rc, cf, pd);
 
-      EasyMock.verify(conn);
-      EasyMock.verify(rc);      
+      EasyMock.verify(conn, rc, cf, pd);
 
       assertTrue(conn == session.getConnection());
       assertEquals(xa, session.isXA());

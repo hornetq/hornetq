@@ -33,6 +33,7 @@ import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingConnectionFactory;
 import org.jboss.messaging.core.remoting.TransportType;
@@ -220,6 +221,8 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
       
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
       
+      PacketDispatcher dispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
+      
       ClientConnectionFactory cf =
          new ClientConnectionFactoryImpl(rcf, location, params,
                32432, 4323,
@@ -244,7 +247,9 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
       
       EasyMock.expect(rc.sendBlocking(0, 0, request)).andReturn(response);
       
-      EasyMock.replay(rcf, rc);
+      EasyMock.expect(rc.getPacketDispatcher()).andReturn(dispatcher);
+      
+      EasyMock.replay(rcf, rc, dispatcher);
       
       ClientConnection conn;
       
@@ -257,7 +262,7 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
          conn = cf.createConnection(username, password);
       }
          
-      EasyMock.verify(rcf, rc);
+      EasyMock.verify(rcf, rc, dispatcher);
       
       assertTrue(conn instanceof ClientConnectionImpl);
       

@@ -93,13 +93,11 @@ public class PacketFilterTest  extends TestCase
       ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location);
       ClientConnection conn = null;
       try
-      {
-         
+      {         
          // Deploy using the API
          interceptorA = new DummyInterceptor();
          messagingService.getServer().getRemotingService().addInterceptor(interceptorA);
-         
-         
+                  
          interceptorA.sendException=true;
          try
          {
@@ -117,8 +115,7 @@ public class PacketFilterTest  extends TestCase
          conn.createClientSession(false, true, true, -1, false, false);
          conn.close();
          conn = null;
-         
-         
+                  
          assertEquals(0, DummyInterceptorB.getCounter());
          assertTrue(interceptorA.getCounter() > 0);
          
@@ -146,7 +143,6 @@ public class PacketFilterTest  extends TestCase
          
          assertTrue(DummyInterceptorB.getCounter() > 0);
          assertTrue(interceptorA.getCounter() == 0);
-
          
          log.info("Undeploying server");
          messagingService.getServer().getRemotingService().removeInterceptor(interceptorB);
@@ -188,13 +184,11 @@ public class PacketFilterTest  extends TestCase
       ClientConnection conn = null;
         
       try
-      {
-         
+      {         
          interceptor = new DummyInterceptor();
          messagingService.getServer().getRemotingService().addInterceptor(interceptor);
-         messagingService.getServer().getPostOffice().addBinding(QUEUE1, QUEUE1, null, false, false);
-         
-         interceptor.sendException=false;
+ 
+         interceptor.sendException = false;
 
          Location location = new LocationImpl(TransportType.TCP, "localhost", ConfigurationImpl.DEFAULT_PORT);
          
@@ -202,6 +196,9 @@ public class PacketFilterTest  extends TestCase
          conn = cf.createConnection();
          conn.start();
          ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
+         
+         session.createQueue(QUEUE1, QUEUE1, null, false, true);
+         
          ClientProducer producer = session.createProducer(QUEUE1);
          String msg = "msg " + UUID.randomUUID().toString();
          
@@ -213,8 +210,7 @@ public class PacketFilterTest  extends TestCase
          ClientConsumer consumer = session.createConsumer(QUEUE1);
          Message m = consumer.receive(100000);
          assertEquals(m.getProperty(new SimpleString("DummyInterceptor")), new SimpleString("was here"));
-         
-         
+                  
          assertNotNull(m);
          
          assertEquals(msg, m.getBody().getString());

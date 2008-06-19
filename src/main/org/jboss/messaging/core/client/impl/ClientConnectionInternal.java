@@ -37,11 +37,12 @@ import org.jboss.messaging.core.remoting.RemotingConnection;
  */
 public interface ClientConnectionInternal extends ClientConnection
 {
-   RemotingConnection getRemotingConnection();
-
    void addSession(ClientSessionInternal session);
    
    void removeSession(ClientSessionInternal session);
    
    Set<ClientSession> getSessions();
+   
+   //For testing only
+   RemotingConnection getRemotingConnection();
 }

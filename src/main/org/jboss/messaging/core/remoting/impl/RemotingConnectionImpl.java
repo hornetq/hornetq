@@ -83,7 +83,11 @@ public class RemotingConnectionImpl implements RemotingConnection
 
       connector = ConnectorRegistryFactory.getRegistry().getConnector(location, connectionParams);
       
+      log.info("*** getting connector " + connector);
+      
       session = connector.connect();
+      
+      log.info("** got session " + session.getID());
 
       if (log.isDebugEnabled())
          log.debug("Using " + connector + " to connect to " + location);

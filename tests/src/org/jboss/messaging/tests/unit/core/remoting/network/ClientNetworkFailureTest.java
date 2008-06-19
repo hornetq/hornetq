@@ -209,7 +209,6 @@ public class ClientNetworkFailureTest extends TestCase
    private void assertActiveConnectionsOnTheServer(int expectedSize)
            throws Exception
    {
-      ConnectionManager cm = messagingService.getServer().getConnectionManager();
-      assertEquals(expectedSize, cm.getActiveConnections().size());
+      assertEquals(expectedSize, messagingService.getServer().getServerManagement().getConnectionCount());
    }
 }

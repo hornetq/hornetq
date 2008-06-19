@@ -51,7 +51,5 @@ public interface ClientConnection
 
    Version getServerVersion();
       
-   ClientConnectionFactory getConnectionFactory();
-
    void cleanUp();
 }

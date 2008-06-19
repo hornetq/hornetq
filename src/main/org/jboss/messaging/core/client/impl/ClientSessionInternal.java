@@ -24,7 +24,6 @@ package org.jboss.messaging.core.client.impl;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
 
 import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.client.ClientSession;
@@ -65,6 +64,4 @@ public interface ClientSessionInternal extends ClientSession
    Set<ClientBrowser> getBrowsers();
    
    Map<SimpleString, ClientProducerInternal> getProducerCache();
-   
-   ExecutorService getExecutorService();
 }

@@ -51,19 +51,25 @@ public class ClientBrowserImpl implements ClientBrowser
 	
 	private final RemotingConnection remotingConnection;
 	
+	private final long sessionTargetID;
+	
 	private volatile boolean closed;
 	
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientBrowserImpl(final ClientSessionInternal session, final long serverTargetID)
+   public ClientBrowserImpl(final ClientSessionInternal session, final long serverTargetID,
+                            final RemotingConnection remotingConnection,
+                            final long sessionTargetID)
    {
-      this.remotingConnection = session.getConnection().getRemotingConnection();
+      this.remotingConnection = remotingConnection;
       
       this.serverTargetID = serverTargetID;
       
       this.session = session;
+      
+      this.sessionTargetID = sessionTargetID;
    }
 
    // ClientBrowser implementation -----------------------------------------------------------------
@@ -77,7 +83,7 @@ public class ClientBrowserImpl implements ClientBrowser
       
       try
       {
-         remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), new PacketImpl(PacketImpl.CLOSE));
+         remotingConnection.sendBlocking(serverTargetID, sessionTargetID, new PacketImpl(PacketImpl.CLOSE));
       }
       finally
       {
@@ -103,7 +109,7 @@ public class ClientBrowserImpl implements ClientBrowser
    {
       checkClosed();
       
-      remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), new PacketImpl(PacketImpl.SESS_BROWSER_RESET));
+      remotingConnection.sendBlocking(serverTargetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_BROWSER_RESET));
    }
 
    public boolean hasNextMessage() throws MessagingException
@@ -111,7 +117,7 @@ public class ClientBrowserImpl implements ClientBrowser
       checkClosed();
       
       SessionBrowserHasNextMessageResponseMessage response =
-         (SessionBrowserHasNextMessageResponseMessage)remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), new PacketImpl(PacketImpl.SESS_BROWSER_HASNEXTMESSAGE));
+         (SessionBrowserHasNextMessageResponseMessage)remotingConnection.sendBlocking(serverTargetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_BROWSER_HASNEXTMESSAGE));
       
       return response.hasNext();
    }
@@ -121,7 +127,7 @@ public class ClientBrowserImpl implements ClientBrowser
       checkClosed();
       
       ReceiveMessage response =
-         (ReceiveMessage)remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), new PacketImpl(PacketImpl.SESS_BROWSER_NEXTMESSAGE));
+         (ReceiveMessage)remotingConnection.sendBlocking(serverTargetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_BROWSER_NEXTMESSAGE));
       
       return response.getClientMessage();
    }

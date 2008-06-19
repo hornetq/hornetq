@@ -21,23 +21,60 @@
  */ 
 package org.jboss.messaging.core.client.impl;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.client.ClientBrowser;
+import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.wireformat.*;
+import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCancelMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAForgetMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetInDoubtXidsResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetTimeoutResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAJoinMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAPrepareMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResumeMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TokenBucketLimiterImpl;
-
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -82,6 +119,10 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    private final Map<SimpleString, ClientProducerInternal> producerCache;
    
+   private final ClientConnectionFactory connectionFactory;
+   
+   private final PacketDispatcher dispatcher;
+   
    private volatile boolean closed;
       
    private boolean acked = true;
@@ -113,7 +154,10 @@ public class ClientSessionImpl implements ClientSessionInternal
                             final boolean xa,
                             final int lazyAckBatchSize, final boolean cacheProducers,                            
                             final boolean autoCommitSends, final boolean autoCommitAcks,
-                            final boolean blockOnAcknowledge) throws MessagingException
+                            final boolean blockOnAcknowledge,
+                            final RemotingConnection remotingConnection,
+                            final ClientConnectionFactory connectionFactory,
+                            final PacketDispatcher dispatcher) throws MessagingException
    {
    	if (lazyAckBatchSize < -1 || lazyAckBatchSize == 0)
    	{
@@ -124,7 +168,11 @@ public class ClientSessionImpl implements ClientSessionInternal
       
       this.connection = connection;
       
-      this.remotingConnection = connection.getRemotingConnection();
+      this.remotingConnection = remotingConnection;
+      
+      this.connectionFactory = connectionFactory;
+      
+      this.dispatcher = dispatcher;
       
       this.cacheProducers = cacheProducers;
       
@@ -224,8 +272,8 @@ public class ClientSessionImpl implements ClientSessionInternal
       checkClosed();
       
       return createConsumer(queueName, filterString, noLocal, autoDeleteQueue, direct,
-                            connection.getConnectionFactory().getDefaultConsumerWindowSize(),
-                            connection.getConnectionFactory().getDefaultConsumerMaxRate());
+                            connectionFactory.getDefaultConsumerWindowSize(),
+                            connectionFactory.getDefaultConsumerMaxRate());
    }
    
    public ClientConsumer createConsumer(final SimpleString queueName, final SimpleString filterString, final boolean noLocal,
@@ -234,7 +282,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    {
       checkClosed();
       
-      long clientTargetID = remotingConnection.getPacketDispatcher().generateID();
+      long clientTargetID = dispatcher.generateID();
     
       SessionCreateConsumerMessage request =
          new SessionCreateConsumerMessage(clientTargetID, queueName, filterString, noLocal, autoDeleteQueue,
@@ -268,11 +316,12 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
       
       ClientConsumerInternal consumer =
-         new ClientConsumerImpl(this, response.getConsumerTargetID(), clientTargetID, clientWindowSize, direct);
+         new ClientConsumerImpl(this, response.getConsumerTargetID(), clientTargetID, clientWindowSize, direct,
+                                remotingConnection, dispatcher, executorService, serverTargetID);
 
       addConsumer(consumer);
       
-      remotingConnection.getPacketDispatcher().register(new ClientConsumerPacketHandler(consumer, clientTargetID));
+      dispatcher.register(new ClientConsumerPacketHandler(consumer, clientTargetID));
       
       //Now we send window size credits to start the consumption
       //We even send it if windowSize == -1, since we need to start the consumer
@@ -296,7 +345,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       SessionCreateBrowserResponseMessage response = (SessionCreateBrowserResponseMessage)remotingConnection.sendBlocking(serverTargetID, serverTargetID, request);
 
-      ClientBrowser browser = new ClientBrowserImpl(this, response.getBrowserTargetID());  
+      ClientBrowser browser = new ClientBrowserImpl(this, response.getBrowserTargetID(), remotingConnection, serverTargetID);  
 
       addBrowser(browser);
 
@@ -307,8 +356,8 @@ public class ClientSessionImpl implements ClientSessionInternal
    {
       checkClosed();
       
-      return createProducer(address, connection.getConnectionFactory().getDefaultProducerWindowSize(),
-                            connection.getConnectionFactory().getDefaultProducerMaxRate());
+      return createProducer(address, connectionFactory.getDefaultProducerWindowSize(),
+                            connectionFactory.getDefaultProducerMaxRate());
    }
       
    public ClientProducer createRateLimitedProducer(SimpleString address, int rate) throws MessagingException
@@ -328,8 +377,8 @@ public class ClientSessionImpl implements ClientSessionInternal
    private ClientProducer createProducer(final SimpleString address, final int windowSize, final int maxRate) throws MessagingException
    {
       return createProducer(address, windowSize, maxRate,
-                            connection.getConnectionFactory().isDefaultBlockOnNonPersistentSend(),
-                            connection.getConnectionFactory().isDefaultBlockOnPersistentSend());
+                            connectionFactory.isDefaultBlockOnNonPersistentSend(),
+                            connectionFactory.isDefaultBlockOnPersistentSend());
    }
    
    public ClientProducer createProducer(final SimpleString address, final int windowSize, final int maxRate,
@@ -347,7 +396,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       if (producer == null)
       {
-         long clientTargetID = remotingConnection.getPacketDispatcher().generateID();
+         long clientTargetID = dispatcher.generateID();
 
          SessionCreateProducerMessage request = new SessionCreateProducerMessage(clientTargetID, address, windowSize, maxRate);
 
@@ -363,9 +412,12 @@ public class ClientSessionImpl implements ClientSessionInternal
                response.getMaxRate() == -1 ? null : new TokenBucketLimiterImpl(response.getMaxRate(), false),
                autoCommitSends && blockOnNonPersistentSend,                                                      
                autoCommitSends && blockOnPersistentSend,
-               response.getInitialCredits());  
+               response.getInitialCredits(),
+               remotingConnection,               
+               dispatcher,
+               serverTargetID);  
 
-         remotingConnection.getPacketDispatcher().register(new ClientProducerPacketHandler(producer, clientTargetID));        
+         dispatcher.register(new ClientProducerPacketHandler(producer, clientTargetID));        
       }
 
       addProducer(producer);
@@ -736,8 +788,8 @@ public class ClientSessionImpl implements ClientSessionInternal
       
       ClientSessionImpl other = (ClientSessionImpl)xares;
       
-      return connection.getRemotingConnection().getLocation()
-                .equals(other.getConnection().getRemotingConnection().getLocation());
+      return remotingConnection.getLocation()
+                .equals(other.remotingConnection.getLocation());
    }
 
    public int prepare(final Xid xid) throws XAException

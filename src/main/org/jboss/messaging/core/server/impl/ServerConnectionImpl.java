@@ -24,20 +24,25 @@ package org.jboss.messaging.core.server.impl;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketReturner;
-import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
+import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.server.ConnectionManager;
-import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.server.ServerSession;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.ConcurrentHashSet;
+import org.jboss.messaging.util.ExecutorFactory;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -72,12 +77,8 @@ public class ServerConnectionImpl implements ServerConnection
    private final Set<Queue> temporaryQueues = new ConcurrentHashSet<Queue>();
    
    private final Set<SimpleString> temporaryDestinations = new ConcurrentHashSet<SimpleString>();
-   
-   private final MessagingServer server;
-   
+     
    private volatile boolean started;
-   
-   //We cache some of the service locally
    
    private final PostOffice postOffice;
 
@@ -85,33 +86,54 @@ public class ServerConnectionImpl implements ServerConnection
 
    private final PacketDispatcher dispatcher;
    
+   private final StorageManager storageManager;
+   
+   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
+   
+   private final ResourceManager resourceManager;
+   
+   private final SecurityStore securityStore;
+   
+   private final ExecutorFactory executorFactory;
+   
    private volatile boolean closed;
 
    // Constructors ---------------------------------------------------------------------------------
       
-   public ServerConnectionImpl(final MessagingServer server,
-                               final String username, final String password,
-   		                      final long remotingClientSessionID)
-   {
-      RemotingService rs = server.getRemotingService();
-      
-      this.dispatcher = rs.getDispatcher();
- 
-   	this.id = dispatcher.generateID();
-      
+   public ServerConnectionImpl(final String username, final String password,
+                               final long remotingClientSessionID,
+                               final PostOffice postOffice,
+                               final ConnectionManager connectionManager,
+                               final PacketDispatcher packetDispatcher,
+                               final StorageManager storageManager,
+                               final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                               final ResourceManager resourceManager,
+                               final SecurityStore securityStore,
+                               final ExecutorFactory executorFactory)
+   {          	      
    	this.username = username;
       
       this.password = password;
       
       this.remotingClientSessionID = remotingClientSessionID;
 
-      started = false;
+      this.postOffice = postOffice;
       
-      this.server = server;
+      this.connectionManager = connectionManager;
       
-      this.postOffice = server.getPostOffice();
+      this.dispatcher = packetDispatcher;
       
-      this.connectionManager = server.getConnectionManager();
+      this.storageManager = storageManager;
+      
+      this.queueSettingsRepository = queueSettingsRepository;
+      
+      this.resourceManager = resourceManager;
+      
+      this.securityStore = securityStore;
+      
+      this.executorFactory = executorFactory;
+      
+      this.id = dispatcher.generateID();    
    }
 
    // ServerConnection implementation ------------------------------------------------------------
@@ -119,11 +141,6 @@ public class ServerConnectionImpl implements ServerConnection
    public long getID()
    {
    	return id;
-   }
-   
-   public MessagingServer getServer()
-   {
-      return server;
    }
    
    public ConnectionCreateSessionResponseMessage createSession(final boolean xa, final boolean autoCommitSends,
@@ -140,10 +157,15 @@ public class ServerConnectionImpl implements ServerConnection
    }
    
    protected ServerSession doCreateSession(final boolean autoCommitSends, final boolean autoCommitAcks,
-                                         final boolean xa, final PacketReturner returner)
+                                           final boolean xa, final PacketReturner returner)
       throws Exception
    {
-      return new ServerSessionImpl(this, autoCommitSends, autoCommitAcks, xa, returner);
+      Executor executor = executorFactory.getExecutor();
+            
+      return new ServerSessionImpl(this, autoCommitSends, autoCommitAcks, xa, returner,
+                                   storageManager, postOffice, queueSettingsRepository,
+                                   resourceManager, securityStore, dispatcher,
+                                   executor);
    }
       
    public void start() throws Exception
@@ -237,6 +259,7 @@ public class ServerConnectionImpl implements ServerConnection
       {
          throw new IllegalStateException("Connection already has temporary queue " + queue);
       }
+      
       temporaryQueues.add(queue);      
    }
    
@@ -254,6 +277,7 @@ public class ServerConnectionImpl implements ServerConnection
       {
          throw new IllegalStateException("Connection already has temporary destination " + address);
       }
+      
       temporaryDestinations.add(address);     
    }
    
@@ -279,7 +303,7 @@ public class ServerConnectionImpl implements ServerConnection
     
    public void addSession(final ServerSession session)
    {
-      this.sessions.add(session);
+      sessions.add(session);
    }
    
    public Set<Queue> getTemporaryQueues()

@@ -585,9 +585,13 @@ public class JBMServerTestCase extends JBMBaseTestCase
    protected void removeAllMessages(String destName, boolean isQueue, int server) throws Exception
    {
       if (isQueue)
+      {
          servers.get(server).removeAllMessagesForQueue(destName);
+      }
       else
+      {
          servers.get(server).removeAllMessagesForTopic(destName);
+      }
    }
 
    public void dropTables() throws Exception
@@ -595,21 +599,7 @@ public class JBMServerTestCase extends JBMBaseTestCase
       dropAllTables();
    }
 
-
-//   public StorageManager getPersistenceManager()
-//   {
-//      try
-//      {
-//         return servers.get(0).getPersistenceManager();
-//      }
-//      catch (Exception e)
-//      {
-//         //will never happen as always is local
-//         return null;
-//      }
-//   }
-
-   protected void dropAllTables() throws Exception
+   private void dropAllTables() throws Exception
    {
       log.info("DROPPING ALL TABLES FROM DATABASE!");
 
@@ -723,9 +713,7 @@ public class JBMServerTestCase extends JBMBaseTestCase
    protected static void assertActiveConnectionsOnTheServer(int expectedSize)
    throws Exception
    {
-      ConnectionManager cm = servers.get(0).getMessagingServer()
-      .getConnectionManager();
-      assertEquals(expectedSize, cm.getActiveConnections().size());
+      assertEquals(expectedSize, servers.get(0).getMessagingServer().getServerManagement().getConnectionCount());
    }
 
    public static void deployConnectionFactory(String clientId, String objectName,
@@ -809,42 +797,6 @@ public class JBMServerTestCase extends JBMBaseTestCase
       servers.get(server).undeployConnectionFactory(objectName);
    }
 
-   private void clearDatabase() throws Exception
-   {
-      if (databaseClearer == null)
-      {
-         JBMBootstrapServer bootstrap = new JBMBootstrapServer(new String[]{"datasource.xml", "transaction-manager.xml", "database-clearer.xml"});
-         bootstrap.run();
-         databaseClearer = (DatabaseClearer) bootstrap.getKernel().getRegistry().getEntry("DatabaseClearer").getTarget();
-         databaseClearer.deleteAllData();
-      }
-      else
-      {
-         databaseClearer.deleteData();
-      }
-   }
-
-   /*protected void deployAdministeredObjects() throws Exception
-   {
-
-      ServerManagement.deployTopic("Topic1");
-      ServerManagement.deployTopic("Topic2");
-      ServerManagement.deployTopic("Topic3");
-      ServerManagement.deployQueue("Queue1");
-      ServerManagement.deployQueue("Queue2");
-      ServerManagement.deployQueue("Queue3");
-      ServerManagement.deployQueue("Queue4");
-
-      ic = getInitialContext();
-      cf = (JBossConnectionFactory) ic.lookup("/ConnectionFactory");
-      topic1 = (Topic) ic.lookup("/topic/Topic1");
-      topic2 = (Topic) ic.lookup("/topic/Topic2");
-      topic3 = (Topic) ic.lookup("/topic/Topic3");
-      queue1 = (Queue) ic.lookup("/queue/Queue1");
-      queue2 = (Queue) ic.lookup("/queue/Queue2");
-      queue3 = (Queue) ic.lookup("/queue/Queue3");
-      queue4 = (Queue) ic.lookup("/queue/Queue4");
-   }*/
    protected List listAllSubscriptionsForTopic(String s) throws Exception
    {
       return servers.get(0).listAllSubscriptionsForTopic(s);
@@ -872,7 +824,7 @@ public class JBMServerTestCase extends JBMBaseTestCase
 
    protected void setSecurityConfigOnManager(boolean b, String s, HashSet<Role> lockedConf) throws Exception
    {
-      servers.get(0).setSecurityConfigOnManager(b, s, lockedConf);
+      servers.get(0).configureSecurityForDestination(s, b, lockedConf);
    }
 
    protected void setRedeliveryDelayOnDestination(String dest, boolean isQueue, long delay) throws Exception
@@ -880,15 +832,6 @@ public class JBMServerTestCase extends JBMBaseTestCase
       servers.get(0).setRedeliveryDelayOnDestination(dest, isQueue, delay);
    }
 
-//   protected void setDefaultRedeliveryDelay(long delay) throws Exception
-//   {
-//      servers.get(0).setDefaultRedeliveryDelay(delay);
-//   }
-
-   /*public TransactionManager getTransactionManager()
-   {
-      return databaseClearer.getTransactionManager();
-   }*/
    protected void kill(int i) throws Exception
    {
       log.info("Attempting to kill server " + i);

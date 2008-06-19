@@ -266,7 +266,7 @@ public interface Server extends Remote
 
    void setSecurityConfig(Set<Role> defConfig) throws Exception;
 
-   void setSecurityConfigOnManager(boolean b, String s, Set<Role> lockedConf) throws Exception;
+   //void setSecurityConfigOnManager(boolean b, String s, Set<Role> lockedConf) throws Exception;
 
    void setRedeliveryDelayOnDestination(String dest, boolean queue, long delay) throws Exception;
 

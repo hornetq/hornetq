@@ -226,7 +226,9 @@ public class ByteBufferWrapper implements MessagingBuffer
    	if (b == NULL)
    	{
    	   return null;
-   	} else {
+   	}
+   	else
+   	{
          return getSimpleString();
    	}
    }

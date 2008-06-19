@@ -21,20 +21,21 @@
  */ 
 package org.jboss.messaging.core.client.impl;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.ConcurrentHashSet;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * The client-side Connection connectionFactory class.
@@ -69,6 +70,8 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    
    private final ClientConnectionFactory connectionFactory;
    
+   private final PacketDispatcher dispatcher;
+   
    private volatile boolean closed;
       
    // Static ---------------------------------------------------------------------------------------
@@ -78,7 +81,8 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    public ClientConnectionImpl(final ClientConnectionFactory connectionFactory,
                                final long serverTargetID,
                                final RemotingConnection connection,
-                               final Version serverVersion)
+                               final Version serverVersion,
+                               final PacketDispatcher dispatcher)
    {
       this.connectionFactory = connectionFactory;
       
@@ -87,6 +91,8 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       this.remotingConnection = connection;
       
       this.serverVersion = serverVersion;
+      
+      this.dispatcher = dispatcher;
    }
    
    // ClientConnection implementation --------------------------------------------------------------
@@ -104,7 +110,8 @@ public class ClientConnectionImpl implements ClientConnectionInternal
 
       ClientSessionInternal session =
       	new ClientSessionImpl(this, response.getSessionID(), xa, ackBatchSize, cacheProducers,
-      			                autoCommitSends, autoCommitAcks, blockOnAcknowledge);
+      			                autoCommitSends, autoCommitAcks, blockOnAcknowledge,
+      			                remotingConnection, connectionFactory, dispatcher);
 
       addSession(session);
 
@@ -201,10 +208,10 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       return serverVersion;
    }
    
-   public ClientConnectionFactory getConnectionFactory()
-   {
-      return connectionFactory;
-   }
+//   public ClientConnectionFactory getConnectionFactory()
+//   {
+//      return connectionFactory;
+//   }
 
    // Public ---------------------------------------------------------------------------------------
 

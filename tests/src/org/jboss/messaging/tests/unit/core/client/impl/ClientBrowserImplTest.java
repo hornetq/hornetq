@@ -25,6 +25,7 @@ package org.jboss.messaging.tests.unit.core.client.impl;
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientBrowserImpl;
 import org.jboss.messaging.core.client.impl.ClientConnectionInternal;
 import org.jboss.messaging.core.client.impl.ClientSessionInternal;
@@ -49,18 +50,13 @@ public class ClientBrowserImplTest extends UnitTestCase
    public void testConstructor() throws Exception
    {
       ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);
-      ClientConnectionInternal connection = EasyMock.createStrictMock(ClientConnectionInternal.class);
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
             
-      EasyMock.expect(session.getConnection()).andReturn(connection);
-      EasyMock.expect(connection.getRemotingConnection()).andReturn(rc);
-      
-      EasyMock.replay(session, connection, rc);
+      final long serverTargetID = 1209102;
+      final long sessionTargetID = 19281982;
       
       ClientBrowser browser =
-         new ClientBrowserImpl(session, 67567576);
-      
-      EasyMock.verify(session, connection, rc);            
+         new ClientBrowserImpl(session, serverTargetID, rc, sessionTargetID);      
    }
    
    public void testHasNextMessage() throws Exception
@@ -71,163 +67,129 @@ public class ClientBrowserImplTest extends UnitTestCase
    
    public void testNextMessage() throws Exception
    {
-      ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);
-      ClientConnectionInternal connection = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);      
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
             
-      EasyMock.expect(session.getConnection()).andReturn(connection);
-      EasyMock.expect(connection.getRemotingConnection()).andReturn(rc);
-      
-      final long targetID = 187282;
-      
-      long sessionTargetID = 198271982;
+      final long serverTargetID = 1209102;
+      final long sessionTargetID = 19281982;
       
       ReceiveMessage resp = new ReceiveMessage();
       
-      EasyMock.expect(session.getServerTargetID()).andReturn(sessionTargetID);
+      EasyMock.expect(rc.sendBlocking(serverTargetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_BROWSER_NEXTMESSAGE))).andReturn(resp);
       
-      EasyMock.expect(rc.sendBlocking(targetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_BROWSER_NEXTMESSAGE))).andReturn(resp);
-      
-      EasyMock.replay(session, connection, rc);
+      EasyMock.replay(session, rc);
       
       ClientBrowser browser =
-         new ClientBrowserImpl(session, targetID);
+         new ClientBrowserImpl(session, serverTargetID, rc, sessionTargetID);      
             
       ClientMessage msg2 = browser.nextMessage();
       
       assertTrue(msg2 == null);
       
-      EasyMock.verify(session, connection, rc);            
+      EasyMock.verify(session, rc);            
    }
    
    public void testReset() throws Exception
    {
       ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);
-      ClientConnectionInternal connection = EasyMock.createStrictMock(ClientConnectionInternal.class);
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
             
-      EasyMock.expect(session.getConnection()).andReturn(connection);
-      EasyMock.expect(connection.getRemotingConnection()).andReturn(rc);
-      
-      final long targetID = 187282;
-      
-      long sessionTargetID = 198271982;
-      
-      EasyMock.expect(session.getServerTargetID()).andReturn(sessionTargetID);
-      
-      EasyMock.expect(rc.sendBlocking(targetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_BROWSER_RESET))).andReturn(null);
-      
-      EasyMock.replay(session, connection, rc);
-      
-      ClientBrowser browser =
-         new ClientBrowserImpl(session, targetID);
+      final long serverTargetID = 1209102;
+      final long sessionTargetID = 19281982;
             
+      ClientBrowser browser =
+         new ClientBrowserImpl(session, serverTargetID, rc, sessionTargetID);  
+      
+      EasyMock.expect(rc.sendBlocking(serverTargetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_BROWSER_RESET))).andReturn(null);
+      
+      EasyMock.replay(session, rc);
+      
       browser.reset();
       
-      EasyMock.verify(session, connection, rc);            
+      EasyMock.verify(session, rc);            
    }
    
    public void testClose() throws Exception
    {
-      ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);
-      ClientConnectionInternal connection = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);     
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
             
-      EasyMock.expect(session.getConnection()).andReturn(connection);
-      EasyMock.expect(connection.getRemotingConnection()).andReturn(rc);
-      
-      EasyMock.replay(session, connection, rc);
-      
-      final long targetID = 187282;
-      
+      final long serverTargetID = 1209102;
+      final long sessionTargetID = 19281982;
+            
       ClientBrowser browser =
-         new ClientBrowserImpl(session, targetID);
-      
-      EasyMock.verify(session, connection, rc);  
-      
-      EasyMock.reset(session, connection, rc);
-      
-      long sessionTargetID = 198271982;
-      
-      EasyMock.expect(session.getServerTargetID()).andReturn(sessionTargetID);
-      
-      EasyMock.expect(rc.sendBlocking(targetID, sessionTargetID, new PacketImpl(PacketImpl.CLOSE))).andReturn(null);
+         new ClientBrowserImpl(session, serverTargetID, rc, sessionTargetID);  
+       
+      EasyMock.expect(rc.sendBlocking(serverTargetID, sessionTargetID, new PacketImpl(PacketImpl.CLOSE))).andReturn(null);
       
       session.removeBrowser(browser);
       
-      EasyMock.replay(session, connection, rc);
+      EasyMock.replay(session, rc);
       
       assertFalse(browser.isClosed());
             
       browser.close();
       
-      EasyMock.verify(session, connection, rc);
+      EasyMock.verify(session, rc);
       
       assertTrue(browser.isClosed());
       
       //Try and close again - nothing should happen
       
-      EasyMock.reset(session, connection, rc);
+      EasyMock.reset(session, rc);
       
-      EasyMock.replay(session, connection, rc);
+      EasyMock.replay(session, rc);
       
       browser.close();
                 
-      EasyMock.verify(session, connection, rc);
+      EasyMock.verify(session, rc);
    }
 
    // Private -----------------------------------------------------------------------------------------------------------
    
    private void testHasNextMessage(final boolean hasNext) throws Exception
    {
-      ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);
-      ClientConnectionInternal connection = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);     
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
             
-      EasyMock.expect(session.getConnection()).andReturn(connection);
-      EasyMock.expect(connection.getRemotingConnection()).andReturn(rc);
+      final long serverTargetID = 187282;
       
-      final long targetID = 187282;
-      
-      long sessionTargetID = 198271982;
+      final long sessionTargetID = 198271982;
       
       SessionBrowserHasNextMessageResponseMessage resp = new SessionBrowserHasNextMessageResponseMessage(hasNext);
       
-      EasyMock.expect(session.getServerTargetID()).andReturn(sessionTargetID);
+      EasyMock.expect(rc.sendBlocking(serverTargetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_BROWSER_HASNEXTMESSAGE))).andReturn(resp);
       
-      EasyMock.expect(rc.sendBlocking(targetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_BROWSER_HASNEXTMESSAGE))).andReturn(resp);
-      
-      EasyMock.replay(session, connection, rc);
+      EasyMock.replay(session, rc);
       
       ClientBrowser browser =
-         new ClientBrowserImpl(session, targetID);
+         new ClientBrowserImpl(session, serverTargetID, rc, sessionTargetID);      
             
       boolean has = browser.hasNextMessage();
       
       assertEquals(has, hasNext);
       
-      EasyMock.verify(session, connection, rc);            
+      EasyMock.verify(session, rc);            
    }
 
    public void testCleanUp() throws Exception
    {
       ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);
-      ClientConnectionInternal connection = EasyMock.createStrictMock(ClientConnectionInternal.class);
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
 
-      EasyMock.expect(session.getConnection()).andReturn(connection);
-      EasyMock.expect(connection.getRemotingConnection()).andReturn(rc);
-
-      EasyMock.replay(session, connection, rc);
-
+      final long serverTargetID = 187282;
+      
+      final long sessionTargetID = 198271982;
+      
       ClientBrowser browser =
-         new ClientBrowserImpl(session, 67567576);
-      EasyMock.verify(session, connection, rc);
-      EasyMock.reset(session, connection, rc);
+         new ClientBrowserImpl(session, serverTargetID, rc, sessionTargetID);      
+      
       session.removeBrowser(browser);
-      EasyMock.replay(session, connection, rc);
+      
+      EasyMock.replay(session, rc);
+      
       browser.cleanUp();
-      EasyMock.verify(session, connection, rc);
-
+      
+      EasyMock.verify(session, rc);
    }
 }

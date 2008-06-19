@@ -23,9 +23,12 @@
 package org.jboss.messaging.core.management;
 
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -36,6 +39,8 @@ import org.jboss.messaging.util.SimpleString;
  */
 public interface MessagingServerManagement
 {
+   int getConnectionCount();
+   
    /**
     * is the server started
     * @return true if the server is running
@@ -88,6 +93,14 @@ public interface MessagingServerManagement
     */
    void removeAllMessagesForAddress(SimpleString address) throws Exception;
 
+   void setSecurityForAddress(String address, Set<Role> roles) throws Exception;
+   
+   void removeSecurityForAddress(String address) throws Exception;
+   
+   Set<Role> getSecurityForAddress(String address) throws Exception;
+   
+   void setQueueAttributes(String queueName, QueueSettings settings) throws Exception;
+   
    /**
     * remove all the messages for a specific binding
     * @param name the name of the binding

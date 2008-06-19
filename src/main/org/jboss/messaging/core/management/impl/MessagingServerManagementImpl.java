@@ -24,13 +24,19 @@ package org.jboss.messaging.core.management.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.management.MessagingServerManagement;
+import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.server.MessagingComponent;
+import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -44,9 +50,9 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>
  */
 //@JMX(name = "jboss.messaging:service=MessagingServerManagement", exposedInterface = MessagingServerManagement.class)
-public class MessagingServerManagementImpl implements MessagingServerManagement, MessagingComponent
+public class MessagingServerManagementImpl implements MessagingServerManagement
 {
-   private MessagingServer messagingServer;
+   //private MessagingServer messagingServer;
 
 //   private HashMap<String, MessageCounter> currentCounters = new HashMap<String, MessageCounter>();
 //
@@ -55,58 +61,96 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
 //   private ScheduledExecutorService scheduler;
 //
 //   private int maxMessageCounters = 20;
-
-   public void setMessagingServer(MessagingServer messagingServer)
+   
+   private final PostOffice postOffice;
+   
+   private final StorageManager storageManager;
+   
+   private final Configuration configuration;
+   
+   private final ConnectionManager connectionManager;
+   
+   private final MessagingServer server;
+   
+   private HierarchicalRepository<Set<Role>> securityRepository;
+   
+   private HierarchicalRepository<QueueSettings> queueSettingsRepository;
+   
+   
+   
+   public MessagingServerManagementImpl(final PostOffice postOffice, final StorageManager storageManager,
+                                        final Configuration configuration,
+                                        final ConnectionManager connectionManager,                                        
+                                        final HierarchicalRepository<Set<Role>> securityRepository,
+                                        final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                                        final MessagingServer server)
    {
-      this.messagingServer = messagingServer;
+      this.postOffice = postOffice;
+      
+      this.storageManager = storageManager;
+      
+      this.configuration = configuration;
+      
+      this.connectionManager = connectionManager;
+      
+      this.server = server;
+      
+      this.securityRepository = securityRepository;
+      
+      this.queueSettingsRepository = queueSettingsRepository;
    }
 
    public boolean isStarted()
    {
-      return messagingServer.isStarted();
+      return server.isStarted();
    }
 
    public void createQueue(SimpleString address, SimpleString name) throws Exception
    {
-      if (messagingServer.getPostOffice().getBinding(name) == null)
+      if (postOffice.getBinding(name) == null)
       {
-         messagingServer.getPostOffice().addBinding(address, name, null, true, false);
+         postOffice.addBinding(address, name, null, true, false);
       }
+   }
+   
+   public int getConnectionCount()
+   {
+      return connectionManager.size();
    }
 
    public void destroyQueue(SimpleString name) throws Exception
    {
-      Binding binding = messagingServer.getPostOffice().getBinding(name);
+      Binding binding = postOffice.getBinding(name);
 
       if (binding != null)
       {
          Queue queue = binding.getQueue();
 
-         queue.deleteAllReferences(messagingServer.getStorageManager());
+         queue.deleteAllReferences(storageManager);
          
-         messagingServer.getPostOffice().removeBinding(queue.getName());
+         postOffice.removeBinding(queue.getName());
       }
    }
 
    public boolean addDestination(SimpleString address) throws Exception
    {
-      return messagingServer.getPostOffice().addDestination(address, false);
+      return postOffice.addDestination(address, false);
    }
 
    public boolean removeDestination(SimpleString address) throws Exception
    {
-      return messagingServer.getPostOffice().removeDestination(address, false);
+      return postOffice.removeDestination(address, false);
    }
 
    public void removeAllMessagesForAddress(SimpleString address) throws Exception
    {
-      List<Binding> bindings = messagingServer.getPostOffice().getBindingsForAddress(address);
+      List<Binding> bindings = postOffice.getBindingsForAddress(address);
 
       for (Binding binding : bindings)
       {
          Queue queue = binding.getQueue();
 
-         queue.deleteAllReferences(messagingServer.getStorageManager());
+         queue.deleteAllReferences(storageManager);
       }
    }
 //
@@ -163,7 +207,7 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
    public List<Queue> getQueuesForAddress(SimpleString address) throws Exception
    {
       List<Queue> queues = new ArrayList<Queue>();
-      List<Binding> bindings = messagingServer.getPostOffice().getBindingsForAddress(address);
+      List<Binding> bindings = postOffice.getBindingsForAddress(address);
 
       for (Binding binding : bindings)
       {
@@ -177,6 +221,28 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
    {
       return getQueue(queue).getMessageCount();
    }
+   
+   public void setSecurityForAddress(String address, Set<Role> roles) throws Exception
+   {
+      this.securityRepository.addMatch(address, roles);
+   }
+   
+   public void removeSecurityForAddress(String address) throws Exception
+   {
+      this.securityRepository.removeMatch(address);
+   }
+   
+   public Set<Role> getSecurityForAddress(String address) throws Exception
+   {
+      return this.securityRepository.getMatch(address);
+   }
+   
+   public void setQueueAttributes(String queueName, QueueSettings settings) throws Exception
+   {
+      this.queueSettingsRepository.addMatch(queueName, settings);
+   }
+   
+   
 //
 //   public int getMaxMessageCounters()
 //   {
@@ -396,7 +462,7 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
 
    public Configuration getConfiguration()
    {
-      return messagingServer.getConfiguration();
+      return configuration;
    }
 
    // Private ---------------------------------------------------------------------------
@@ -404,7 +470,7 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
 
    private Queue getQueue(SimpleString queueName) throws Exception
    {
-      Binding binding = messagingServer.getPostOffice().getBinding(queueName);
+      Binding binding = postOffice.getBinding(queueName);
       if (binding == null)
       {
          throw new IllegalArgumentException("No queue with name " + queueName);
@@ -415,18 +481,18 @@ public class MessagingServerManagementImpl implements MessagingServerManagement,
 
 
 
-   public void start() throws Exception
-   {
-      //scheduler = Executors.newScheduledThreadPool(maxMessageCounters);
-   }
-
-   public void stop() throws Exception
-   {
-//      if (scheduler != null)
-//      {
-//         scheduler.shutdown();
-//      }
-   }
+//   public void start() throws Exception
+//   {
+//      //scheduler = Executors.newScheduledThreadPool(maxMessageCounters);
+//   }
+//
+//   public void stop() throws Exception
+//   {
+////      if (scheduler != null)
+////      {
+////         scheduler.shutdown();
+////      }
+//   }
 
 //   protected void finalize() throws Throwable
 //   {

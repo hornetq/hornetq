@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2005, JBoss Inc., and individual contributors as indicated
+ * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -18,11 +18,10 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */
+ */ 
 package org.jboss.messaging.tests.unit.core.server.impl;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,9 +39,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRespons
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.server.impl.ConnectionManagerImpl;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.core.server.impl.MessagingServerPacketHandler;
@@ -62,7 +59,6 @@ import org.jboss.messaging.util.VersionLoader;
 public class MessagingServerImplTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(MessagingServerImplTest.class);
-
    
    // Private -----------------------------------------------------------------------------------------------------------
    
@@ -70,20 +66,11 @@ public class MessagingServerImplTest extends UnitTestCase
    {
       MessagingServer server = new MessagingServerImpl();
       
-      Version version = VersionLoader.load();
-      
-      assertEquals(version, server.getVersion());
-      
-      assertNull(server.getConfiguration());
-      assertNull(server.getConnectionManager());
-      assertNull(server.getExecutorFactory());
-      assertNull(server.getPostOffice());
-      assertNull(server.getQueueSettingsRepository());
-      assertNull(server.getRemotingService());
-      assertNull(server.getResourceManager());
-      assertNull(server.getSecurityManager());
-      assertNull(server.getSecurityRepository());
-      assertNull(server.getSecurityStore());
+      Version version = VersionLoader.load();      
+      assertEquals(version, server.getVersion());      
+      assertNull(server.getConfiguration());     
+      assertNull(server.getRemotingService());      
+      assertNull(server.getSecurityManager());     
       assertNull(server.getStorageManager());      
    }
    
@@ -195,13 +182,14 @@ public class MessagingServerImplTest extends UnitTestCase
       
       EasyMock.reset(sm, rs);
       
+      PacketDispatcher pd = EasyMock.createMock(PacketDispatcher.class);
+      EasyMock.expect(rs.getDispatcher()).andReturn(pd);
       EasyMock.expect(sm.isStarted()).andStubReturn(true);
       EasyMock.expect(rs.isStarted()).andStubReturn(true);
       rs.addRemotingSessionListener(EasyMock.isA(ConnectionManagerImpl.class));
       sm.loadBindings(EasyMock.isA(QueueFactoryImpl.class), EasyMock.isA(ArrayList.class), EasyMock.isA(ArrayList.class));
       sm.loadMessages(EasyMock.isA(PostOfficeImpl.class), EasyMock.isA(Map.class));
-      PacketDispatcher pd = EasyMock.createMock(PacketDispatcher.class);
-      EasyMock.expect(rs.getDispatcher()).andReturn(pd);
+            
       pd.register(EasyMock.isA(MessagingServerPacketHandler.class));
       
       EasyMock.replay(sm, rs, pd);
@@ -270,7 +258,6 @@ public class MessagingServerImplTest extends UnitTestCase
          //Ok
       }
       
-      EasyMock.expect(rs.getDispatcher()).andReturn(pd);
       pd.unregister(0);
       rs.removeRemotingSessionListener(EasyMock.isA(ConnectionManagerImpl.class));
       
@@ -370,16 +357,11 @@ public class MessagingServerImplTest extends UnitTestCase
    
    public void testCreateConnectionOK() throws Exception
    {      
-      MessagingServer server = new MessagingServerImpl();
-          
-      server.setConfiguration(new ConfigurationImpl());
-            
-      StorageManager sm = EasyMock.createMock(StorageManager.class);
-      
-      server.setStorageManager(sm);
-      
-      RemotingService rs = EasyMock.createMock(RemotingService.class);
-      
+      MessagingServer server = new MessagingServerImpl();          
+      server.setConfiguration(new ConfigurationImpl());            
+      StorageManager sm = EasyMock.createMock(StorageManager.class);      
+      server.setStorageManager(sm);      
+      RemotingService rs = EasyMock.createMock(RemotingService.class);      
       server.setRemotingService(rs);
       
       JBMSecurityManager sem = new JBMSecurityManager()
@@ -397,20 +379,21 @@ public class MessagingServerImplTest extends UnitTestCase
       
       server.setSecurityManager(sem);
       
+      PacketDispatcher pd = EasyMock.createMock(PacketDispatcher.class);
+      EasyMock.expect(rs.getDispatcher()).andReturn(pd);
+      
       rs.addRemotingSessionListener(EasyMock.isA(ConnectionManagerImpl.class));
       sm.loadBindings(EasyMock.isA(QueueFactoryImpl.class), EasyMock.isA(ArrayList.class), EasyMock.isA(ArrayList.class));
       sm.loadMessages(EasyMock.isA(PostOfficeImpl.class), EasyMock.isA(Map.class));
-      PacketDispatcher pd = EasyMock.createMock(PacketDispatcher.class);
-      EasyMock.expect(rs.getDispatcher()).andReturn(pd);
+      
       pd.register(EasyMock.isA(MessagingServerPacketHandler.class));      
       EasyMock.expect(sm.isStarted()).andStubReturn(true);
       EasyMock.expect(rs.isStarted()).andStubReturn(true);
       
       
-      EasyMock.expect(rs.getDispatcher()).andReturn(pd);
       final long id = 129812;
       EasyMock.expect(pd.generateID()).andReturn(id);
-      EasyMock.expect(rs.getDispatcher()).andReturn(pd);
+
       pd.register(EasyMock.isA(ServerConnectionPacketHandler.class));
       
       PacketReturner returner = EasyMock.createStrictMock(PacketReturner.class);
@@ -430,16 +413,7 @@ public class MessagingServerImplTest extends UnitTestCase
       assertEquals(VersionLoader.load(), resp.getServerVersion());
       assertEquals(id, resp.getConnectionTargetID());     
       
-      ConnectionManager cm = server.getConnectionManager();
-      
-      List<ServerConnection> conns = cm.getActiveConnections();
-      assertEquals(1, conns.size());
-      ServerConnection conn = conns.get(0);
-      assertEquals(id, conn.getID());
-      assertTrue(server == conn.getServer());
-      assertEquals(username, conn.getUsername());
-      assertEquals(password, conn.getPassword());
-      assertEquals(sessionID, conn.getClientSessionID());
+      assertEquals(1, server.getServerManagement().getConnectionCount());
    }
    
   

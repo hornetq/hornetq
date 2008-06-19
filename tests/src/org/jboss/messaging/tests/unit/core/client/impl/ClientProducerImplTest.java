@@ -124,20 +124,17 @@ public class ClientProducerImplTest extends UnitTestCase
       ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);
       ClientConnectionInternal connection = EasyMock.createStrictMock(ClientConnectionInternal.class);
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      
-      EasyMock.expect(session.getConnection()).andReturn(connection);
-      EasyMock.expect(connection.getRemotingConnection()).andReturn(rc);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
       
       final int initialCredits = 7612672;
 
-      EasyMock.replay(session, connection, rc);
+      EasyMock.replay(session, connection, rc, pd);
       
       ClientProducerInternal producer =
          new ClientProducerImpl(session, 7876L, 76767L, new SimpleString("uhasuuhs"), null,
-                                false, false, initialCredits);
-      
-      EasyMock.verify(session, connection, rc);
-      
+                                false, false, initialCredits,
+                                rc, pd, 871872L);
+       
       assertEquals(initialCredits, producer.getAvailableCredits());
       
       final int credits1 = 1928;
@@ -149,6 +146,8 @@ public class ClientProducerImplTest extends UnitTestCase
       assertEquals(initialCredits + credits1 + credits2, producer.getAvailableCredits());
       producer.receiveCredits(credits3);
       assertEquals(initialCredits + credits1 + credits2 + credits3, producer.getAvailableCredits());
+      
+      EasyMock.verify(session, connection, rc, pd);      
    }
    
    public void testClose() throws Exception
@@ -157,28 +156,22 @@ public class ClientProducerImplTest extends UnitTestCase
       ClientConnectionInternal connection = EasyMock.createStrictMock(ClientConnectionInternal.class);
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
+
+      final long clientTargetID = 121212;  
       
-      EasyMock.expect(session.getConnection()).andReturn(connection);
-      EasyMock.expect(connection.getRemotingConnection()).andReturn(rc);
-      
-      EasyMock.replay(session, connection, rc);
-      
-      final int initialCredits = 7612672;
-      
-      final long clientTargetID = 121212;      
+      EasyMock.replay(session, connection, rc, pd);
       
       ClientProducerInternal producer =
          new ClientProducerImpl(session, 7876L, clientTargetID, new SimpleString("uhasuuhs"), null,
-                                false, false, initialCredits);
+                                false, false, 8767878,
+                                rc, pd, 871872L);
       
       assertFalse(producer.isClosed());
       
-      EasyMock.verify(session, connection, rc);
-      EasyMock.reset(session, connection, rc);
-      
-      
+      EasyMock.verify(session, connection, rc, pd);
+      EasyMock.reset(session, connection, rc, pd);
+            
       session.removeProducer(producer);
-      EasyMock.expect(rc.getPacketDispatcher()).andReturn(pd);
       pd.unregister(clientTargetID);
       
       EasyMock.replay(session, connection, rc, pd);
@@ -205,29 +198,30 @@ public class ClientProducerImplTest extends UnitTestCase
       ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);
       ClientConnectionInternal connection = EasyMock.createStrictMock(ClientConnectionInternal.class);
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
 
-      EasyMock.expect(session.getConnection()).andReturn(connection);
-      EasyMock.expect(connection.getRemotingConnection()).andReturn(rc);
-
-      SimpleString address = new SimpleString("uhasuuhs");
-
-      EasyMock.replay(session, connection, rc);
-
+      EasyMock.replay(session, connection, rc, pd);
+      
+      final long clientTargetID = 121212;
+      
       ClientProducerInternal producer =
-         new ClientProducerImpl(session, 7876L, 76767L, address, null,
-                                true, true, 1);
+         new ClientProducerImpl(session, 7876L, clientTargetID, new SimpleString("uhasuuhs"), null,
+                                false, false, 8767878,
+                                rc, pd, 871872L);
 
-      EasyMock.verify(session, connection, rc);
+      EasyMock.verify(session, connection, rc, pd);
 
-      EasyMock.reset(session, connection, rc);
-      PacketDispatcher packetDispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
+      EasyMock.reset(session, connection, rc, pd);
+      
       session.removeProducer(producer);
-      EasyMock.expect(rc.getPacketDispatcher()).andReturn(packetDispatcher);
-      packetDispatcher.unregister(76767L);
-      EasyMock.replay(session, connection, rc, packetDispatcher);
+      
+      pd.unregister(clientTargetID);
+      
+      EasyMock.replay(session, connection, rc, pd);
+      
       producer.cleanUp();
 
-      EasyMock.verify(session, connection, rc, packetDispatcher);
+      EasyMock.verify(session, connection, rc, pd);
    }
    
    // Private ----------------------------------------------------------------------------------------
@@ -237,31 +231,29 @@ public class ClientProducerImplTest extends UnitTestCase
       ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);
       ClientConnectionInternal connection = EasyMock.createStrictMock(ClientConnectionInternal.class);
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      
-      EasyMock.expect(session.getConnection()).andReturn(connection);
-      EasyMock.expect(connection.getRemotingConnection()).andReturn(rc);
-      
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
+       
       SimpleString address = new SimpleString("uhasuuhs");
       
       final int initialCredits = 7612672;
 
-      EasyMock.replay(session, connection, rc);
+      EasyMock.replay(session, connection, rc, pd);
       
       TokenBucketLimiter limiter = maxRate != -1 ? new TokenBucketLimiterImpl(maxRate, false) : null;
       
       ClientProducerInternal producer =
          new ClientProducerImpl(session, 7876L, 76767L, address, limiter,
-                                blockOnNP, blockOnP, initialCredits);
+                                blockOnNP, blockOnP, initialCredits,
+                                rc, pd, 871872L);
       
-      EasyMock.verify(session, connection, rc);
+      EasyMock.verify(session, connection, rc, pd);
       
       assertEquals(address, producer.getAddress());
       assertEquals(initialCredits, producer.getInitialWindowSize());
       assertEquals(maxRate, producer.getMaxRate());
       assertEquals(blockOnNP, producer.isBlockOnNonPersistentSend());
       assertEquals(blockOnP, producer.isBlockOnPersistentSend());
-      assertFalse(producer.isClosed());
-      
+      assertFalse(producer.isClosed());      
    }
    
    private void testSend(final int maxRate, final int windowSize,
@@ -273,11 +265,9 @@ public class ClientProducerImplTest extends UnitTestCase
       ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);
       ClientConnectionInternal connection = EasyMock.createStrictMock(ClientConnectionInternal.class);
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
       ClientMessage message = EasyMock.createStrictMock(ClientMessage.class);
             
-      EasyMock.expect(session.getConnection()).andReturn(connection);
-      EasyMock.expect(connection.getRemotingConnection()).andReturn(rc);
-      
       if (sendAddress != null)
       {
          message.setDestination(sendAddress);
@@ -302,8 +292,6 @@ public class ClientProducerImplTest extends UnitTestCase
             
       final long sessionTargetID = 18726178;
       
-      EasyMock.expect(session.getServerTargetID()).andReturn(sessionTargetID);
-      
       if (sendBlocking)
       {
          EasyMock.expect(rc.sendBlocking(targetID, sessionTargetID, new ProducerSendMessage(message))).andReturn(null);
@@ -320,11 +308,12 @@ public class ClientProducerImplTest extends UnitTestCase
          EasyMock.expect(message.getEncodeSize()).andReturn(messageSize);
       }
       
-      EasyMock.replay(session, connection, rc, message);
+      EasyMock.replay(session, connection, rc, message, pd);
             
       ClientProducerInternal producer =
-         new ClientProducerImpl(session, targetID, 76767L, prodAddress, limiter, blockOnNonPersistentSend,
-               blockOnPersistentSend, windowSize);
+         new ClientProducerImpl(session, targetID, 76767L, prodAddress, limiter,
+               blockOnNonPersistentSend, blockOnPersistentSend, windowSize,
+                                rc, pd, sessionTargetID);
       
       if (sendAddress != null)
       {
@@ -335,7 +324,7 @@ public class ClientProducerImplTest extends UnitTestCase
          producer.send(message);
       }
       
-      EasyMock.verify(session, connection, rc, message);
+      EasyMock.verify(session, connection, rc, message, pd);
       
       if (sendAddress == null && windowSize != -1)
       {

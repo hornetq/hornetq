@@ -110,6 +110,11 @@ public class ConnectionManagerImpl implements ConnectionManager, RemotingSession
       }
       return list;
    }      
+   
+   public synchronized int size()
+   {
+      return endpoints.size();
+   }
 
    // FailureListener implementation --------------------------------------------------------------
 

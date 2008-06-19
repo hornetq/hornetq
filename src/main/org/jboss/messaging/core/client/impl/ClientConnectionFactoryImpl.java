@@ -27,6 +27,7 @@ import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingConnectionFactory;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionFactoryImpl;
@@ -185,7 +186,8 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
          CreateConnectionResponse response =
             (CreateConnectionResponse)remotingConnection.sendBlocking(0, 0, request);
 
-         return new ClientConnectionImpl(this, response.getConnectionTargetID(), remotingConnection, response.getServerVersion());
+         return new ClientConnectionImpl(this, response.getConnectionTargetID(), remotingConnection,
+               response.getServerVersion(), remotingConnection.getPacketDispatcher());
       }
       catch (Throwable t)
       {

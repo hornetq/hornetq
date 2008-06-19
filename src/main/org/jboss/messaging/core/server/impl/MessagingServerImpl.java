@@ -34,11 +34,14 @@ import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.MessagingServerManagement;
+import org.jboss.messaging.core.management.impl.MessagingServerManagementImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.ConnectorRegistryFactory;
 import org.jboss.messaging.core.remoting.Interceptor;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
@@ -98,6 +101,8 @@ public class MessagingServerImpl implements MessagingServer
    private HierarchicalRepository<Set<Role>> securityRepository;
    private ResourceManager resourceManager;   
    private MessagingServerPacketHandler serverPacketHandler;
+   private MessagingServerManagement serverManagement;
+   private PacketDispatcher dispatcher;
 
    // plugins
 
@@ -183,6 +188,7 @@ public class MessagingServerImpl implements MessagingServer
       scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(), new JBMThreadFactory("JBM-scheduled-threads"));            
       resourceManager = new ResourceManagerImpl(0);                           
       remotingService.addRemotingSessionListener(sessionListener);  
+      dispatcher = remotingService.getDispatcher();
       postOffice.start();
       serverPacketHandler = new MessagingServerPacketHandler(this);          
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -198,9 +204,12 @@ public class MessagingServerImpl implements MessagingServer
             log.warn("Error instantiating interceptor \"" + interceptorClass + "\"", e);
          }
       }
+      serverManagement = new MessagingServerManagementImpl(postOffice, storageManager, configuration,
+                                                           connectionManager, securityRepository,
+                                                           queueSettingsRepository, this);
       //Register the handler as the last thing - since after that users will be able to connect
       started = true;
-      getRemotingService().getDispatcher().register(serverPacketHandler);      
+      dispatcher.register(serverPacketHandler);      
    }
 
    public synchronized void stop() throws Exception
@@ -210,7 +219,7 @@ public class MessagingServerImpl implements MessagingServer
          return;
       }
       
-      getRemotingService().getDispatcher().unregister(serverPacketHandler.getID());       
+      dispatcher.unregister(serverPacketHandler.getID());       
       remotingService.removeRemotingSessionListener(sessionListener);
       
       securityStore = null;
@@ -227,6 +236,7 @@ public class MessagingServerImpl implements MessagingServer
       queueFactory = null;
       resourceManager = null;
       serverPacketHandler = null;
+      serverManagement = null;
       ConnectorRegistryFactory.getRegistry().clear();
       
       started = false;
@@ -294,50 +304,23 @@ public class MessagingServerImpl implements MessagingServer
    {
       return securityManager;
    }
-
-   //The hardwired components
    
-   public PostOffice getPostOffice()
-   {
-      return postOffice;
-   }
-   
-   public ConnectionManager getConnectionManager()
-   {
-      return connectionManager;
-   }
-   
+   //This is needed for the security deployer
    public HierarchicalRepository<Set<Role>> getSecurityRepository()
    {
       return securityRepository;
    }
    
-   public SecurityStore getSecurityStore()
-   {
-      return securityStore;
-   }
-   
+   //This is needed for the queue settings deployer
    public HierarchicalRepository<QueueSettings> getQueueSettingsRepository()
    {
       return queueSettingsRepository;
    }
-   
-   public ExecutorFactory getExecutorFactory()
-   {
-      return executorFactory;
-   }
 
-   public ResourceManager getResourceManager()
-   {
-      return resourceManager;
-   }
-   
    public Version getVersion()
    {
       return version;
    }
-   
-   //Operations
    
    public boolean isStarted()
    {
@@ -354,6 +337,7 @@ public class MessagingServerImpl implements MessagingServer
          throw new MessagingException(MessagingException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS,
                  "client not compatible with version: " + version.getFullVersion());
       }
+      
       // Authenticate. Successful autentication will place a new SubjectContext on thread local,
       // which will be used in the authorization process. However, we need to make sure we clean
       // up thread local immediately after we used the information, otherwise some other people
@@ -363,14 +347,25 @@ public class MessagingServerImpl implements MessagingServer
 
       long sessionID = returner.getSessionID();
       
+      log.info("****Session id is " + sessionID);
+      
       final ServerConnection connection =
-              new ServerConnectionImpl(this, username, password, sessionID);
+              new ServerConnectionImpl(username, password, sessionID,
+                                       postOffice, connectionManager,
+                                       dispatcher, storageManager,
+                                       queueSettingsRepository, resourceManager,
+                                       securityStore, executorFactory);
       
       connectionManager.registerConnection(sessionID, connection);
 
-      remotingService.getDispatcher().register(new ServerConnectionPacketHandler(connection));
+      dispatcher.register(new ServerConnectionPacketHandler(connection));
 
       return new CreateConnectionResponse(connection.getID(), version);
+   }
+         
+   public MessagingServerManagement getServerManagement()
+   {
+      return serverManagement;
    }
 
    // Public ---------------------------------------------------------------------------------------

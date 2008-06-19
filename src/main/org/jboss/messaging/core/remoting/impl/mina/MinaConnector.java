@@ -165,6 +165,8 @@ public class MinaConnector implements RemotingConnector, CleanUpNotifier
          throw new IOException("Cannot connect to " + address.toString());
       }
       session = future.getSession();
+      
+      log.info("Got mina session " + session);
 
       MinaSession minaSession = new MinaSession(session);
       //register a handler for dealing with server pings

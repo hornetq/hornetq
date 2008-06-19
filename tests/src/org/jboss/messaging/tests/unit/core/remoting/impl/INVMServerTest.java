@@ -55,12 +55,10 @@ public class INVMServerTest extends TestCase
 
    public void testConnectionsToTwoINVMServers() throws Exception
    {
-      ClientConnectionFactory cf_1 = new ClientConnectionFactoryImpl(
-            new LocationImpl(0));
+      ClientConnectionFactory cf_1 = new ClientConnectionFactoryImpl(new LocationImpl(0));
       ClientConnectionInternal conn_1 = (ClientConnectionInternal) cf_1.createConnection();
 
-      ClientConnectionFactory cf_2 = new ClientConnectionFactoryImpl(
-            new LocationImpl(1));
+      ClientConnectionFactory cf_2 = new ClientConnectionFactoryImpl(new LocationImpl(1));
       ClientConnectionInternal conn_2 = (ClientConnectionInternal) cf_2.createConnection();
       
       assertNotSame(conn_1.getRemotingConnection().getSessionID(), conn_2.getRemotingConnection().getSessionID());

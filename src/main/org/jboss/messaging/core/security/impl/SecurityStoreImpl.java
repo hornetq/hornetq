@@ -115,7 +115,8 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
          String saddress = address.toString();
          
          Set<Role> roles = securityRepository.getMatch(saddress);
-         if(!securityManager.validateUserAndRole(conn.getUsername(), conn.getPassword(), roles, checkType))
+         
+         if (!securityManager.validateUserAndRole(conn.getUsername(), conn.getPassword(), roles, checkType))
          {
              throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "Unable to validate user: " + conn.getUsername());
          }

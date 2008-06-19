@@ -69,11 +69,6 @@ public class SimpleExample
          messagingService = MessagingServiceImpl.newNullStorageMessagingServer(configuration);
          //start the server
          messagingService.start();
-         //add a new binding
-         
-         SimpleString atestq = new SimpleString("atestq");
-         
-         messagingService.getServer().getPostOffice().addBinding(atestq, atestq, null, false, false);
 
          //then we create a client as normal
          Location location = new LocationImpl(TransportType.TCP, "localhost", 5400);
@@ -82,6 +77,8 @@ public class SimpleExample
 
          clientConnection = connectionFactory.createConnection();
          ClientSession clientSession = clientConnection.createClientSession(false, true, true, 100, true, false);
+         SimpleString atestq = new SimpleString("atestq");
+         clientSession.createQueue(atestq, atestq, null, false, true);
          ClientProducer clientProducer = clientSession.createProducer(atestq);
          ClientMessage message = new ClientMessageImpl(JBossTextMessage.TYPE, false, 0,
                  System.currentTimeMillis(), (byte) 1);

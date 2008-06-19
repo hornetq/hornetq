@@ -123,9 +123,7 @@ public class ServerSessionImpl implements ServerSession
    private final Executor executor;
 
    private Transaction tx;
-   
-   //We cache some of the services locally
-   
+     
    private final StorageManager storageManager;
 
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
@@ -141,10 +139,18 @@ public class ServerSessionImpl implements ServerSession
    // Constructors
    // ---------------------------------------------------------------------------------
 
-   public ServerSessionImpl(final ServerConnection connection, final boolean autoCommitSends,
+   public ServerSessionImpl(final ServerConnection connection,
+                            final boolean autoCommitSends,
                             final boolean autoCommitAcks,
                             final boolean xa, 
-                            final PacketReturner sender) throws Exception
+                            final PacketReturner sender,
+                            final StorageManager storageManager,
+                            final PostOffice postOffice,
+                            final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                            final ResourceManager resourceManager,
+                            final SecurityStore securityStore,
+                            final PacketDispatcher packetDispatcher,
+                            final Executor executor) throws Exception
    {
       this.autoCommitSends = autoCommitSends;
 
@@ -153,17 +159,22 @@ public class ServerSessionImpl implements ServerSession
       this.connection = connection;
       
       this.sender = sender;
-      
-      MessagingServer server = connection.getServer();
             
-      this.storageManager = server.getStorageManager();
-      this.postOffice = server.getPostOffice();
-      this.queueSettingsRepository = server.getQueueSettingsRepository();
-      this.resourceManager = server.getResourceManager();
-      this.securityStore = server.getSecurityStore();
-      this.dispatcher = server.getRemotingService().getDispatcher();
+      this.storageManager = storageManager;
+      
+      this.postOffice = postOffice;
+      
+      this.queueSettingsRepository = queueSettingsRepository;
+      
+      this.resourceManager = resourceManager;
+      
+      this.securityStore = securityStore;
+      
+      this.dispatcher = packetDispatcher;
+      
       this.id = dispatcher.generateID();      
-      this.executor = server.getExecutorFactory().getExecutor();
+      
+      this.executor = executor;
 
       if (!xa)
       {
@@ -285,6 +296,7 @@ public class ServerSessionImpl implements ServerSession
       {
          securityStore.check(msg.getDestination(), CheckType.WRITE, connection);
       }
+      
       catch (MessagingException e)
       {       
          if (!autoCommitSends)
@@ -992,7 +1004,11 @@ public class ServerSessionImpl implements ServerSession
       ServerConsumer consumer =
               new ServerConsumerImpl(this, clientTargetID, binding.getQueue(), noLocal, filter,
                                      autoDeleteQueue, windowSize != -1, maxRate, connection.getID(),
-                                     connection.isStarted());
+                                     connection.isStarted(),
+                                     storageManager,
+                                     queueSettingsRepository,
+                                     postOffice,
+                                     dispatcher);
 
       dispatcher.register(new ServerConsumerPacketHandler(consumer));
 
@@ -1071,7 +1087,10 @@ public class ServerSessionImpl implements ServerSession
 
       securityStore.check(binding.getAddress(), CheckType.READ, connection);
 
-      ServerBrowserImpl browser = new ServerBrowserImpl(this, binding.getQueue(), filterString == null ? null : filterString.toString());
+      ServerBrowserImpl browser =
+         new ServerBrowserImpl(this, binding.getQueue(),
+                               filterString == null ? null : filterString.toString(),
+                               dispatcher);
 
       browsers.add(browser);
 
@@ -1108,7 +1127,8 @@ public class ServerSessionImpl implements ServerSession
       final int serverWindowSize = windowToUse == -1 ? -1 : (int)(windowToUse * 0.75);            
       
       ServerProducerImpl producer 
-         = new ServerProducerImpl(this, clientTargetID, address, sender, flowController, serverWindowSize);
+         = new ServerProducerImpl(this, clientTargetID, address, sender, flowController, serverWindowSize,
+                                  dispatcher);
 
       producers.add(producer);
 

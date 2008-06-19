@@ -56,4 +56,6 @@ public interface ConnectionManager
     * @return List<ServerConnection>
     */
    List<ServerConnection> getActiveConnections();
+   
+   int size();
 }

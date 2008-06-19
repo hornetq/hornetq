@@ -22,22 +22,19 @@
 
 package org.jboss.messaging.core.server;
 
+import java.util.Set;
+
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.management.MessagingServerManagement;
 import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
-import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.version.Version;
-import org.jboss.messaging.util.ExecutorFactory;
-
-import java.util.Set;
 
 /**
  * This interface defines the internal interface of the Messaging Server exposed
@@ -53,8 +50,6 @@ import java.util.Set;
  */
 public interface MessagingServer extends MessagingComponent
 {  
-   //The pluggable components
-   
    void setConfiguration(Configuration configuration);
    
    Configuration getConfiguration(); 
@@ -71,32 +66,17 @@ public interface MessagingServer extends MessagingComponent
       
    void setSecurityManager(JBMSecurityManager securityManager);
 
-   
-   //Access to hard wired components
-      
-   PostOffice getPostOffice();
-   
-   ConnectionManager getConnectionManager();
-   
-   HierarchicalRepository<Set<Role>> getSecurityRepository();
-   
-   SecurityStore getSecurityStore();
-
-   HierarchicalRepository<QueueSettings> getQueueSettingsRepository();
-   
-   ExecutorFactory getExecutorFactory();
-   
-   ResourceManager getResourceManager();
-   
    Version getVersion();
   
-   //Operations
-   
    CreateConnectionResponse createConnection(String username, String password,                                          
                                              int incrementingVersion,
                                              PacketReturner returner) throws Exception;
-   
-      
+        
    boolean isStarted();
    
+   MessagingServerManagement getServerManagement();  
+   
+   HierarchicalRepository<Set<Role>> getSecurityRepository();
+   
+   HierarchicalRepository<QueueSettings> getQueueSettingsRepository();
 }

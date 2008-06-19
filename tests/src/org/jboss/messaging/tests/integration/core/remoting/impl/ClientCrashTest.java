@@ -186,8 +186,7 @@ public class ClientCrashTest extends TestCase
    private void assertActiveConnections(int expectedActiveConnections)
            throws Exception
    {
-      ConnectionManager cm = messagingService.getServer().getConnectionManager();
-      assertEquals(expectedActiveConnections, cm.getActiveConnections().size());
+      assertEquals(expectedActiveConnections, messagingService.getServer().getServerManagement().getConnectionCount());
    }
 
    // Inner classes -------------------------------------------------

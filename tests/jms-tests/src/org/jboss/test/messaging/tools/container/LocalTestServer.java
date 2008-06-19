@@ -31,12 +31,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.jms.InvalidDestinationException;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
-import javax.naming.Context;
 import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
@@ -48,7 +45,7 @@ import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.microcontainer.JBMBootstrapServer;
-import org.jboss.messaging.util.JNDIUtil;
+import org.jboss.messaging.util.SimpleString;
 import org.jboss.test.messaging.tools.ConfigurationHelper;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
@@ -83,11 +80,6 @@ public class LocalTestServer implements Server, Runnable
    // Attributes -----------------------------------------------------------------------------------
 
    private ServiceContainer sc;
-
-   // service dependencies
-   private ObjectName persistenceManagerObjectName;
-   private ObjectName postOfficeObjectName;
-   private ObjectName jmsUserManagerObjectName;
 
    // the server MBean itself
    private ObjectName serverPeerObjectName;
@@ -446,24 +438,6 @@ public class LocalTestServer implements Server, Runnable
       return serverPeerObjectName;
    }
 
-//   /**
-//    * Only for in-VM use!
-//    */
-//   public MessageStore getMessageStore() throws Exception
-//   {
-//      return getServerPeer().getMessageStore();
-//   }
-
-//   public DestinationManager getDestinationManager() throws Exception
-//   {
-//      return getServerPeer().getDestinationManager();
-//   }
-//
-//   public StorageManager getPersistenceManager()
-//   {
-//      return getServerPeer().getPersistenceManagerInstance();
-//   }
-
    /**
     * Only for in-VM use!
     */
@@ -471,78 +445,6 @@ public class LocalTestServer implements Server, Runnable
    {
       return getMessagingServer();
    }
-
-//   public void deployTopic(String name, String jndiName, boolean clustered) throws Exception
-//   {
-//      deployDestination(false, name, jndiName, clustered);
-//   }
-//
-//   public void deployTopic(String name, String jndiName, int fullSize, int pageSize,
-//                           int downCacheSize, boolean clustered) throws Exception
-//   {
-//      deployDestination(false, name, jndiName, fullSize, pageSize, downCacheSize, clustered);
-//   }
-//
-//   public void deployTopicProgrammatically(String name, String jndiName) throws Exception
-//   {
-//      deployTopic(name, jndiName, false);
-//   }
-//
-//   public void deployQueue(String name, String jndiName, boolean clustered) throws Exception
-//   {
-//      deployDestination(true, name, jndiName, clustered);
-//   }
-//
-//   public void deployQueue(String name, String jndiName, int fullSize, int pageSize,
-//                           int downCacheSize, boolean clustered) throws Exception
-//   {
-//      deployDestination(true, name, jndiName, fullSize, pageSize, downCacheSize, clustered);
-//   }
-//
-//   public void deployQueueProgrammatically(String name, String jndiName) throws Exception
-//   {
-//      deployQueue(name, jndiName, false);
-//   }
-//
-//   public void deployDestination(boolean isQueue, String name, String jndiName, boolean clustered) throws Exception
-//   {
-//      if (isQueue)
-//         getMessagingServer().deployQueue(name, jndiName);
-//      else
-//         getMessagingServer().deployTopic(name, jndiName);
-//   }
-//
-//   public void deployDestination(boolean isQueue,
-//                                 String name,
-//                                 String jndiName,
-//                                 int fullSize,
-//                                 int pageSize,
-//                                 int downCacheSize,
-//                                 boolean clustered) throws Exception
-//   {
-//      if (isQueue)
-//         getMessagingServer().deployQueue(name, jndiName, fullSize, pageSize, downCacheSize);
-//      else
-//         getMessagingServer().deployTopic(name, jndiName, fullSize, pageSize, downCacheSize);
-//   }
-//
-//   public void undeployDestination(boolean isQueue, String name) throws Exception
-//   {
-//      if (isQueue)
-//         getMessagingServer().undeployQueue(name);
-//      else
-//         getMessagingServer().undeployTopic(name);
-//   }
-//
-//   public boolean undeployDestinationProgrammatically(boolean isQueue, String name) throws Exception
-//   {
-//      if (isQueue)
-//         return getMessagingServer().undeployQueue(name);
-//      else
-//         return getMessagingServer().undeployTopic(name);
-//   }
-
-
    public void destroyQueue(String name, String jndiName) throws Exception
    {
       this.getJMSServerManager().destroyQueue(name);
@@ -561,36 +463,6 @@ public class LocalTestServer implements Server, Runnable
    public void createTopic(String name, String jndiName) throws Exception
    {
       this.getJMSServerManager().createTopic(name, "/topic/" + (jndiName != null ? jndiName : name));
-   }
-
-   private void bindObject(String jndiName, Object object)
-           throws Exception
-   {
-      String parentContext;
-      String jndiNameInContext;
-      int sepIndex = jndiName.lastIndexOf('/');
-      if (sepIndex == -1)
-      {
-         parentContext = "";
-      }
-      else
-      {
-         parentContext = jndiName.substring(0, sepIndex);
-      }
-      jndiNameInContext = jndiName.substring(sepIndex + 1);
-      try
-      {
-         getInitialContext().lookup(jndiName);
-         throw new InvalidDestinationException("Destination " + jndiName + " already exists");
-      }
-      catch (NameNotFoundException e)
-      {
-         // OK
-      }
-
-      Context c = JNDIUtil.createContext(getInitialContext(), parentContext);
-
-      c.rebind(jndiNameInContext, object);
    }
 
    public void deployConnectionFactory(String clientId, String objectName,
@@ -660,11 +532,11 @@ public class LocalTestServer implements Server, Runnable
       String prefix = isQueue ? "queuejms." : "topicjms.";
       if (roles != null)
       {
-         getMessagingServer().getSecurityRepository().addMatch(prefix + destName, roles);
+         getMessagingServer().getServerManagement().setSecurityForAddress(prefix + destName, roles);
       }
       else
       {
-         getMessagingServer().getSecurityRepository().removeMatch(prefix + destName);
+         getMessagingServer().getServerManagement().removeSecurityForAddress(prefix + destName);
       }
    }
 
@@ -678,26 +550,6 @@ public class LocalTestServer implements Server, Runnable
       //return sc.getUserTransaction();
       return null;
    }
-
-//   public Set getNodeIDView() throws Exception
-//   {
-//      return getServerPeer().getPostOffice().nodeIDView();
-//   }
-//
-//   public Map getFailoverMap() throws Exception
-//   {
-//      return getServerPeer().getPostOffice().getFailoverMap();
-//   }
-//
-//   public Map getRecoveryArea(String queueName) throws Exception
-//   {
-//      return getServerPeer().getPostOffice().getRecoveryArea(queueName);
-//   }
-//
-//   public int getRecoveryMapSize(String queueName) throws Exception
-//   {
-//      return getServerPeer().getPostOffice().getRecoveryMapSize(queueName);
-//   }
 
    public List pollNotificationListener(long listenerID) throws Exception
    {
@@ -800,29 +652,21 @@ public class LocalTestServer implements Server, Runnable
 
    public Set<Role> getSecurityConfig() throws Exception
    {
-      return getMessagingServer().getSecurityRepository().getMatch("*");
+      return getMessagingServer().getServerManagement().getSecurityForAddress("*");
    }
 
    public void setSecurityConfig(Set<Role> defConfig) throws Exception
    {
-      getMessagingServer().getSecurityRepository().removeMatch("*");
-      getMessagingServer().getSecurityRepository().addMatch("*", defConfig);      
+      getMessagingServer().getServerManagement().removeSecurityForAddress("*");
+      getMessagingServer().getServerManagement().setSecurityForAddress("*", defConfig);      
    }
-
-
-   public void setSecurityConfigOnManager(boolean b, String s, Set<Role> conf) throws Exception
-   {
-      String prefix = b ? "queuejms." : "topicjms.";
-      getMessagingServer().getSecurityRepository().addMatch(prefix + s, conf);
-   }
-
 
    public void setRedeliveryDelayOnDestination(String dest, boolean queue, long delay) throws Exception
    {
       String condition = (queue ? "queuejms." : "topicjms.") + dest;
       QueueSettings queueSettings = new QueueSettings();
       queueSettings.setRedeliveryDelay(delay);
-      getMessagingServer().getQueueSettingsRepository().addMatch(condition, queueSettings);
+      getMessagingServer().getServerManagement().setQueueAttributes(condition, queueSettings);      
    }
 
 

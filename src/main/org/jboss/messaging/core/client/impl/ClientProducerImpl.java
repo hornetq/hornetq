@@ -22,16 +22,17 @@
 
 package org.jboss.messaging.core.client.impl;
 
+import java.util.concurrent.Semaphore;
+
 import org.jboss.messaging.core.client.AcknowledgementHandler;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TokenBucketLimiter;
-
-import java.util.concurrent.Semaphore;
 
 /**
  * The client-side Producer connectionFactory class.
@@ -64,6 +65,8 @@ public class ClientProducerImpl implements ClientProducerInternal
    
    private final RemotingConnection remotingConnection;
    
+   private final PacketDispatcher dispatcher;
+   
    private volatile boolean closed;
    
    //For limit throttling
@@ -81,7 +84,9 @@ public class ClientProducerImpl implements ClientProducerInternal
    private final boolean creditFlowControl;
    
    private final int initialWindowSize;
-    
+   
+   private final long sessionTargetID;
+   
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
@@ -93,7 +98,10 @@ public class ClientProducerImpl implements ClientProducerInternal
    		                    final TokenBucketLimiter rateLimiter,
    		                    final boolean blockOnNonPersistentSend,
    		                    final boolean blockOnPersistentSend,
-   		                    final int initialCredits)
+   		                    final int initialCredits,
+   		                    final RemotingConnection remotingConnection,
+   		                    final PacketDispatcher dispatcher,
+   		                    final long sessionTargetID)
    {   	
       this.session = session;
       
@@ -103,7 +111,11 @@ public class ClientProducerImpl implements ClientProducerInternal
       
       this.address = address;
       
-      this.remotingConnection = session.getConnection().getRemotingConnection();
+      this.remotingConnection = remotingConnection;
+      
+      this.dispatcher = dispatcher;
+      
+      this.sessionTargetID = sessionTargetID;
       
       this.rateLimiter = rateLimiter;
             
@@ -158,7 +170,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       
       session.removeProducer(this);
       
-      remotingConnection.getPacketDispatcher().unregister(clientTargetID);
+      dispatcher.unregister(clientTargetID);
       
       closed = true;
    }
@@ -167,7 +179,7 @@ public class ClientProducerImpl implements ClientProducerInternal
    {
       session.removeProducer(this);
 
-      remotingConnection.getPacketDispatcher().unregister(clientTargetID);
+      dispatcher.unregister(clientTargetID);
 
       closed = true;
    }
@@ -241,11 +253,11 @@ public class ClientProducerImpl implements ClientProducerInternal
                
       if (sendBlocking)
       {        
-         remotingConnection.sendBlocking(serverTargetID, session.getServerTargetID(), message);
+         remotingConnection.sendBlocking(serverTargetID, sessionTargetID, message);
       }
       else
       {
-         remotingConnection.sendOneWay(serverTargetID, session.getServerTargetID(), message);
+         remotingConnection.sendOneWay(serverTargetID, sessionTargetID, message);
       }      
       
       //We only flow control with non-anonymous producers

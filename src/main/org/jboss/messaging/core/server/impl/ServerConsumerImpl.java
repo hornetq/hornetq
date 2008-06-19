@@ -28,9 +28,9 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConsumer;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -45,11 +45,6 @@ import org.jboss.messaging.core.transaction.impl.TransactionImpl;
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
- * Partially derived from JBM 1.x version by:
- * 
- * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  * @version <tt>$Revision: 3783 $</tt> $Id: ServerConsumerImpl.java 3783 2008-02-25 12:15:14Z timfox $
  */
@@ -87,7 +82,6 @@ public class ServerConsumerImpl implements ServerConsumer
    
    private boolean started;
    
-   //We cache some of the service locally
    private final StorageManager storageManager;
    
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
@@ -100,7 +94,11 @@ public class ServerConsumerImpl implements ServerConsumer
                       final Queue messageQueue, final boolean noLocal, final Filter filter,
    		             final boolean autoDeleteQueue, final boolean enableFlowControl, final int maxRate,
    		             final long connectionID, 
-					       final boolean started)
+					       final boolean started,
+					       final StorageManager storageManager,
+					       final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+					       final PostOffice postOffice,
+					       final PacketDispatcher dispatcher)
    {
    	this.clientTargetID = clientTargetID;
       
@@ -116,8 +114,6 @@ public class ServerConsumerImpl implements ServerConsumer
 
       this.session = session;
       
-      MessagingServer server = session.getConnection().getServer();
-
       this.started = started;
       
       if (enableFlowControl)
@@ -129,13 +125,13 @@ public class ServerConsumerImpl implements ServerConsumer
       	availableCredits = null;
       }
       
-      this.storageManager = server.getStorageManager();
+      this.storageManager = storageManager;
       
-      this.queueSettingsRepository = server.getQueueSettingsRepository();
+      this.queueSettingsRepository = queueSettingsRepository;
       
-      this.postOffice = server.getPostOffice();
+      this.postOffice = postOffice;
       
-      this.id = server.getRemotingService().getDispatcher().generateID();
+      this.id = dispatcher.generateID();
             
       messageQueue.addConsumer(this);
    }

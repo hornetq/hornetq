@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerFlowCreditMessage;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -69,9 +70,10 @@ public class ServerProducerImpl implements ServerProducer
 	                          final SimpleString address, 
 			                    final PacketReturner sender,
 			                    final FlowController flowController,
-			                    final int windowSize) throws Exception
+			                    final int windowSize,
+			                    final PacketDispatcher dispatcher) throws Exception
 	{
-		this.id = session.getConnection().getServer().getRemotingService().getDispatcher().generateID();
+		this.id = dispatcher.generateID();
 		
 		this.clientTargetID = clientTargetID;
       

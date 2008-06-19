@@ -39,6 +39,7 @@ import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
@@ -74,15 +75,16 @@ public class ServerBrowserImpl
    private final Queue destination;
    private final Filter filter;
    private Iterator<ServerMessage> iterator;
-
+   
    // Constructors ---------------------------------------------------------------------------------
 
    public ServerBrowserImpl(final ServerSession session,
-                            final Queue destination, final String messageFilter) throws Exception
+                            final Queue destination, final String messageFilter,
+                            final PacketDispatcher dispatcher) throws Exception
    {     
       this.session = session;
       
-      this.id = session.getConnection().getServer().getRemotingService().getDispatcher().generateID();
+      this.id = dispatcher.generateID();
       
       this.destination = destination;
 

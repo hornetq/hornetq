@@ -74,8 +74,6 @@ public class ConnectionManagerTest extends TestCase
       }
    }
 
-
-
    // TestCase overrides -------------------------------------------
 
    // Public --------------------------------------------------------
@@ -105,11 +103,9 @@ public class ConnectionManagerTest extends TestCase
       assertActiveConnectionsOnTheServer(0);
    }
 
-   private void assertActiveConnectionsOnTheServer(int expectedSize)
-   throws Exception
-   {
-      ConnectionManager cm = messagingService.getServer().getConnectionManager();
-      assertEquals(expectedSize, cm.getActiveConnections().size());
+   private void assertActiveConnectionsOnTheServer(int expectedSize) throws Exception
+   {      
+      assertEquals(expectedSize, messagingService.getServer().getServerManagement().getConnectionCount());
    }
 
 }

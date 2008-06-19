@@ -26,7 +26,6 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -312,76 +311,11 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return server.isStarted();
    }
 
-//   public MessageStore getMessageStore() throws Exception
-//   {
-//      return server.getMessageStore();
-//   }
-//
-//   public DestinationManager getDestinationManager() throws Exception
-//   {
-//      return server.getDestinationManager();
-//   }
-//
-//   public StorageManager getPersistenceManager()
-//   {
-//      return server.getPersistenceManager();
-//   }
-
    public MessagingServer getServerPeer() throws Exception
    {
       return server.getServerPeer();
    }
 
-//   public void deployTopic(String name, String jndiName, boolean clustered) throws Exception
-//   {
-//      server.deployTopic(name, jndiName, clustered);
-//   }
-//
-//   public void deployTopic(String name,
-//                           String jndiName,
-//                           int fullSize,
-//                           int pageSize,
-//                           int downCacheSize,
-//                           boolean clustered) throws Exception
-//   {
-//      server.deployTopic(name, jndiName, fullSize, pageSize, downCacheSize, clustered);
-//   }
-//
-//   public void deployTopicProgrammatically(String name, String jndiName) throws Exception
-//   {
-//      server.deployTopicProgrammatically(name, jndiName);
-//   }
-//
-//   public void deployQueue(String name, String jndiName, boolean clustered) throws Exception
-//   {
-//      server.deployQueue(name, jndiName, clustered);
-//   }
-//
-//   public void deployQueue(String name,
-//                           String jndiName,
-//                           int fullSize,
-//                           int pageSize,
-//                           int downCacheSize,
-//                           boolean clustered) throws Exception
-//   {
-//      server.deployQueue(name, jndiName, fullSize, pageSize, downCacheSize, clustered);
-//   }
-//
-//   public void deployQueueProgrammatically(String name, String jndiName) throws Exception
-//   {
-//      server.deployQueueProgrammatically(name, jndiName);
-//   }
-//
-//   public void undeployDestination(boolean isQueue, String name) throws Exception
-//   {
-//      server.undeployDestination(isQueue, name);
-//   }
-//
-//   public boolean undeployDestinationProgrammatically(boolean isQueue, String name) throws Exception
-//   {
-//      return server.undeployDestinationProgrammatically(isQueue, name);
-//   }
-   
    public void destroyQueue(String name, String jndiName) throws Exception
    {
       server.destroyQueue(name, jndiName);
@@ -549,23 +483,11 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       server.setSecurityConfig(defConfig);
    }
 
-
-   public void setSecurityConfigOnManager(boolean b, String s, Set<Role> conf) throws Exception
-   {
-      server.setSecurityConfigOnManager(b, s, conf);
-   }
-
-
    public void setRedeliveryDelayOnDestination(String dest, boolean queue, long delay) throws Exception
    {
       server.setRedeliveryDelayOnDestination(dest, queue, delay);
    }
 
-
-//   public void setDefaultRedeliveryDelay(long delay) throws Exception
-//   {
-//      server.setDefaultRedeliveryDelay(delay);
-//   }
 
    public InitialContext getInitialContext() throws Exception
    {

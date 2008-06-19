@@ -22,19 +22,20 @@
 
 package org.jboss.messaging.core.client.impl;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -69,7 +70,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    
    private final ExecutorService sessionExecutor;
    
+   private final long sessionTargetID;
+   
    private final RemotingConnection remotingConnection;
+   
+   private final PacketDispatcher dispatcher;
 
    private final int clientWindowSize;
    
@@ -107,7 +112,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    public ClientConsumerImpl(final ClientSessionInternal session, final long targetID,
                              final long clientTargetID,                                                   
                              final int clientWindowSize,
-                             final boolean direct)
+                             final boolean direct,
+                             final RemotingConnection remotingConnection,
+                             final PacketDispatcher dispatcher,
+                             final ExecutorService executorService,
+                             final long sessionTargetID)
    {
       this.targetID = targetID;
       
@@ -115,9 +124,13 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       
       this.session = session;
       
-      this.sessionExecutor = session.getExecutorService();
+      this.sessionTargetID = sessionTargetID;
       
-      this.remotingConnection = session.getConnection().getRemotingConnection();
+      this.sessionExecutor = executorService;
+      
+      this.remotingConnection = remotingConnection;
+      
+      this.dispatcher = dispatcher;
       
       this.clientWindowSize = clientWindowSize;
       
@@ -273,9 +286,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          
          receiverThread = null;
 
-         remotingConnection.sendBlocking(targetID, session.getServerTargetID(), new PacketImpl(PacketImpl.CLOSE));
+         remotingConnection.sendBlocking(targetID, sessionTargetID, new PacketImpl(PacketImpl.CLOSE));
 
-         remotingConnection.getPacketDispatcher().unregister(clientTargetID);
+         dispatcher.unregister(clientTargetID);
       }
       finally
       {
@@ -305,7 +318,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
          receiverThread = null;
 
-         remotingConnection.getPacketDispatcher().unregister(clientTargetID);
+         dispatcher.unregister(clientTargetID);
       }
       finally
       {
@@ -319,8 +332,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          }
       }
    }
-
-
 
    public boolean isClosed()
    {
@@ -463,7 +474,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    
          if (creditsToSend >= clientWindowSize)
          {            
-            remotingConnection.sendOneWay(targetID, session.getServerTargetID(), new ConsumerFlowCreditMessage(creditsToSend));
+            remotingConnection.sendOneWay(targetID, sessionTargetID, new ConsumerFlowCreditMessage(creditsToSend));
             
             creditsToSend = 0;            
          }

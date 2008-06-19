@@ -35,7 +35,6 @@ import javax.naming.NameNotFoundException;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.management.impl.MessagingServerManagementImpl;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
@@ -53,15 +52,13 @@ public class JMSServerManagerimplTest extends TestCase
 
    protected void setUp() throws Exception
    {
-      jmsServerManager = new JMSServerManagerImpl();
-      MessagingServerManagementImpl messagingServerManagement = new MessagingServerManagementImpl();
+           
       ConfigurationImpl conf = new ConfigurationImpl();
       conf.getConnectionParams().setInVMOptimisationEnabled(true);
       conf.setTransport(INVM);
       messagingService = MessagingServiceImpl.newNullStorageMessagingServer(conf);
       messagingService.start();
-      jmsServerManager.setMessagingServerManagement(messagingServerManagement);
-      messagingServerManagement.setMessagingServer(messagingService.getServer());
+      jmsServerManager = new JMSServerManagerImpl(messagingService.getServer().getServerManagement());     
       Hashtable env = new Hashtable();
       env.put("java.naming.factory.initial",
               "org.jboss.messaging.tests.util.InVMSingleInitialContextFactory");
