@@ -195,6 +195,7 @@
       <path refid="jboss.test14.classpath"/>
       <path refid="jboss.jboss.retro.classpath"/>
    	  <path refid="easymock.easymock.classpath" />
+      <path refid="easymock.classextension.classpath" />
    </path>
 
    <path id="jms.test.compilation.classpath">
@@ -217,6 +218,7 @@
       <path refid="oswego.concurrent.classpath"/>
       <path refid="slf4j.api.classpath"/>
       <path refid="slf4j.log4j.classpath"/>
+   	  <path refid="cglib.classpath" />
    </path>
 
    <path id="jms.test.execution.classpath">
