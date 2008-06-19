@@ -396,7 +396,7 @@ public class ServerConnectionImplTest extends UnitTestCase
       
       EasyMock.expect(pd.generateID()).andReturn(sessionID);
       
-      if(!xa)
+      if (!xa)
       {
          EasyMock.expect(sm.generateTransactionID()).andReturn(8172L);
       }

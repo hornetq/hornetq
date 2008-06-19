@@ -140,9 +140,9 @@ public class TransactionImpl implements Transaction
 
             synchronized (message)
             {
-               message.decrementDurableRefCount();
+               int count = message.decrementDurableRefCount();
 
-               if (message.getDurableRefCount() == 0)
+               if (count == 0)
                {
                   storageManager.storeDeleteTransactional(id, message
                           .getMessageID());

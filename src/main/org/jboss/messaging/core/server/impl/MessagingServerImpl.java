@@ -347,8 +347,6 @@ public class MessagingServerImpl implements MessagingServer
 
       long sessionID = returner.getSessionID();
       
-      log.info("****Session id is " + sessionID);
-      
       final ServerConnection connection =
               new ServerConnectionImpl(username, password, sessionID,
                                        postOffice, connectionManager,

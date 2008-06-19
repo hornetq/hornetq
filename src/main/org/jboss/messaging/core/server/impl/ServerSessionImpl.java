@@ -57,7 +57,6 @@ import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.server.Delivery;
 import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.server.ServerConsumer;
@@ -135,7 +134,7 @@ public class ServerSessionImpl implements ServerSession
    private final SecurityStore securityStore;
    
    private final PacketDispatcher dispatcher;
-   
+
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -175,9 +174,9 @@ public class ServerSessionImpl implements ServerSession
       this.id = dispatcher.generateID();      
       
       this.executor = executor;
-
+      
       if (!xa)
-      {
+      {         
          tx = new TransactionImpl(storageManager, postOffice);
       }
    }
@@ -188,11 +187,6 @@ public class ServerSessionImpl implements ServerSession
    public long getID()
    {
       return id;
-   }
-
-   public ServerConnection getConnection()
-   {
-      return connection;
    }
 
    public void removeBrowser(final ServerBrowserImpl browser) throws Exception
@@ -295,8 +289,7 @@ public class ServerSessionImpl implements ServerSession
       try
       {
          securityStore.check(msg.getDestination(), CheckType.WRITE, connection);
-      }
-      
+      }      
       catch (MessagingException e)
       {       
          if (!autoCommitSends)
@@ -376,7 +369,7 @@ public class ServerSessionImpl implements ServerSession
                }
 
                if (autoCommitAcks)
-               {
+               {                
                   doAck(ref);
                }
                else
@@ -562,8 +555,6 @@ public class ServerSessionImpl implements ServerSession
       {
          tx = new TransactionImpl(storageManager, postOffice);
       }
-
-
    }
 
    public SessionXAResponseMessage XACommit(final boolean onePhase, final Xid xid) throws Exception
@@ -1147,6 +1138,16 @@ public class ServerSessionImpl implements ServerSession
    {
       return "SessionEndpoint[" + id + "]";
    }
+   
+   public Transaction getTransaction()
+   {      
+      return tx;
+   }
+   
+   public java.util.Queue<Delivery> getDeliveries()
+   {
+      return deliveries;
+   }
 
    // Private --------------------------------------------------------------------------------------------
 
@@ -1155,7 +1156,7 @@ public class ServerSessionImpl implements ServerSession
       ServerMessage message = ref.getMessage();
 
       Queue queue = ref.getQueue();
-
+      
       if (message.isDurable() && queue.isDurable())
       {
          int count = message.decrementDurableRefCount();
@@ -1172,6 +1173,4 @@ public class ServerSessionImpl implements ServerSession
 
       queue.referenceAcknowledged(ref);
    }
-
-
 }
