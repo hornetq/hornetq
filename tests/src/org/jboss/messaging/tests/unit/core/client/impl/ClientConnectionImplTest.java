@@ -189,6 +189,8 @@ public class ClientConnectionImplTest extends UnitTestCase
       
       assertTrue(conn.isClosed());
       
+      assertSame(conn.getRemotingConnection(), rc);
+      
       //Close again should do nothing
       EasyMock.reset(rc, pd, sess1, sess2, sess3);
       

@@ -32,6 +32,7 @@ import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 import java.util.ArrayList;
@@ -469,6 +470,28 @@ public class ClientConsumerImplTest extends UnitTestCase
       EasyMock.verify(msgs.toArray());
    }
 
+   public void testClose() throws Exception
+   {
+      ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);
+      ClientConnectionInternal connection = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      ExecutorService executor = EasyMock.createStrictMock(ExecutorService.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
+
+      final long clientTargetID = 120912;
+      ClientConsumerInternal consumer =
+         new ClientConsumerImpl(session, 675765, clientTargetID, 787, false, rc, pd, executor, 878787);
+
+      pd.unregister(clientTargetID);
+      session.removeConsumer(consumer);
+      EasyMock.expect(rc.sendBlocking(675765, 878787, new PacketImpl(PacketImpl.CLOSE))).andReturn(null);
+      EasyMock.replay(session, connection, rc, executor, pd);
+      
+      consumer.close();
+      EasyMock.verify(session, connection, rc, executor, pd);
+   }
+   
+   
    public void testCleanUp() throws Exception
    {
       ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);
