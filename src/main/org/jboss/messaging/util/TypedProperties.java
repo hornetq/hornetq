@@ -689,11 +689,6 @@ public class TypedProperties implements EncodingSupport
 			buffer.putChar(val);
 		}
 
-		public int size()
-		{
-			return SIZE_CHAR;
-		}
-
 		public int encodeSize()
       {
          return SIZE_BYTE + SIZE_CHAR;
