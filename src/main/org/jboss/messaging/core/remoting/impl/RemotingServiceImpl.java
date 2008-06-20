@@ -77,8 +77,6 @@ public class RemotingServiceImpl implements RemotingService, CleanUpNotifier
 
    public RemotingServiceImpl(Configuration config)
    {
-      assert config != null;
-
       validate(config);
 
       this.config = config;
@@ -104,14 +102,20 @@ public class RemotingServiceImpl implements RemotingService, CleanUpNotifier
 
    public void addRemotingSessionListener(RemotingSessionListener listener)
    {
-      assert listener != null;
+      if(listener == null)
+      {
+         throw new IllegalArgumentException("listener can not be null");
+      }
 
       listeners.add(listener);
    }
 
    public void removeRemotingSessionListener(RemotingSessionListener listener)
    {
-      assert listener != null;
+      if(listener == null)
+      {
+         throw new IllegalArgumentException("listener can not be null");
+      }
 
       listeners.remove(listener);
    }

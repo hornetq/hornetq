@@ -43,6 +43,18 @@ public class RemotingConfigurationValidatorTest extends TestCase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
+   public void testNullonfigurationThrowsException()
+   {
+      try
+      {
+         validate(null);
+         fail("should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         //pass
+      }
+   }
 
    public void testINVMConfiguration()
    {

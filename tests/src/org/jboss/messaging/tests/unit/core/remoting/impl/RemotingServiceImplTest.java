@@ -62,6 +62,7 @@ public class RemotingServiceImplTest extends UnitTestCase
       EasyMock.verify(acceptor);
       assertEquals(1, remotingService.getAcceptors().size());
       assertEquals(config, remotingService.getConfiguration());
+      assertTrue(remotingService.isStarted());
    }
 
    public void testSingleAcceptorStartedTwiceIsIgnored() throws Exception
@@ -203,6 +204,38 @@ public class RemotingServiceImplTest extends UnitTestCase
       EasyMock.verify(interceptor);
    }
 
+   public void testAddingNullListernerThrowsException() throws Exception
+   {
+      ConfigurationImpl config = new ConfigurationImpl();
+      config.setTransport(TransportType.INVM);
+      RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
+      try
+      {
+         remotingService.addRemotingSessionListener(null);
+         fail("should throw exception");
+      }
+      catch (IllegalArgumentException e)
+      {
+         //pass
+      }
+   }
+
+   public void testRemovingNullInterceptorThrowsException() throws Exception
+   {
+      ConfigurationImpl config = new ConfigurationImpl();
+      config.setTransport(TransportType.INVM);
+      RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
+      try
+      {
+         remotingService.removeRemotingSessionListener(null);
+         fail("should throw exception");
+      }
+      catch (IllegalArgumentException e)
+      {
+         //pass
+      }
+   }
+
    public void testMultipleInterceptorsAddedToDispatcher() throws Exception
    {
       ConfigurationImpl config = new ConfigurationImpl();
@@ -285,6 +318,7 @@ public class RemotingServiceImplTest extends UnitTestCase
       {
          e.printStackTrace();
       }
+      assertTrue(remotingService.isSession(1l));
       remotingService.unregisterPinger(1l);
       assertTrue(dummySession.count > 10);
    }
