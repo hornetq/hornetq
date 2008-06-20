@@ -22,17 +22,11 @@
 
 package org.jboss.messaging.tests.unit.core.management.impl;
 
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.management.MessagingServerManagement;
 import org.jboss.messaging.core.management.impl.MessagingServerManagementImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
@@ -92,8 +86,6 @@ public class MessagingServerManagementImplTest extends UnitTestCase
 
       mockPostOffice = EasyMock.createMock(PostOffice.class);
 
-      beNiceOnProperties(mockPostOffice);
-      
       EasyMock.expect(mockPostOffice.getBinding(name)).andReturn(null);
       
       EasyMock.expect(mockPostOffice.addBinding(destination, name, null, true, false)).andReturn(null);
@@ -108,7 +100,6 @@ public class MessagingServerManagementImplTest extends UnitTestCase
 
       EasyMock.reset(mockPostOffice);
       
-      beNiceOnProperties(mockPostOffice);
       EasyMock.expect(mockPostOffice.getBinding(name)).andReturn(EasyMock.createNiceMock(Binding.class));
       
       EasyMock.replay(mockPostOffice);
@@ -125,8 +116,6 @@ public class MessagingServerManagementImplTest extends UnitTestCase
       mockConnectionManager = EasyMock.createMock(ConnectionManager.class);
       EasyMock.expect(mockConnectionManager.size()).andReturn(123);
       
-      beNiceOnProperties(mockConnectionManager, "size");
-      
       EasyMock.replay(mockConnectionManager);
       
       MessagingServerManagementImpl impl = createImpl();
@@ -140,13 +129,10 @@ public class MessagingServerManagementImplTest extends UnitTestCase
       SimpleString name = RandomUtil.randomSimpleString();
       
       mockPostOffice = EasyMock.createMock(PostOffice.class);
-      beNiceOnProperties(mockPostOffice);
       
       Binding binding = EasyMock.createMock(Binding.class);
-      beNiceOnProperties(binding, "queue");
       
       Queue queue = EasyMock.createMock(Queue.class);
-      beNiceOnProperties(queue, "name");
 
       
       EasyMock.expect(mockPostOffice.getBinding(name)).andReturn(binding);
@@ -184,7 +170,6 @@ public class MessagingServerManagementImplTest extends UnitTestCase
       SimpleString address = RandomUtil.randomSimpleString();
       
       mockPostOffice = EasyMock.createMock(PostOffice.class);
-      beNiceOnProperties(mockPostOffice);
       
       EasyMock.expect(mockPostOffice.addDestination(address, false)).andReturn(false);
       
@@ -210,7 +195,6 @@ public class MessagingServerManagementImplTest extends UnitTestCase
       SimpleString address = RandomUtil.randomSimpleString();
       
       mockPostOffice = EasyMock.createMock(PostOffice.class);
-      beNiceOnProperties(mockPostOffice);
       
       EasyMock.expect(mockPostOffice.removeDestination(address, false)).andReturn(false);
       
@@ -244,11 +228,9 @@ public class MessagingServerManagementImplTest extends UnitTestCase
       for (int i = 0; i < numberOfQueues; i++)
       {
          Queue queue = EasyMock.createMock(Queue.class);
-         beNiceOnProperties(queue);
          queues.add(queue);
          
          Binding binding = EasyMock.createMock(Binding.class);
-         beNiceOnProperties(binding, "queue");
          bindings.add(binding);
          
          EasyMock.expect(binding.getQueue()).andReturn(queue);
@@ -257,7 +239,6 @@ public class MessagingServerManagementImplTest extends UnitTestCase
       }
       
       mockPostOffice = EasyMock.createMock(PostOffice.class);
-      beNiceOnProperties(mockPostOffice);
       
       EasyMock.expect(mockPostOffice.getBindingsForAddress(address)).andReturn(bindings);
 
@@ -292,11 +273,10 @@ public class MessagingServerManagementImplTest extends UnitTestCase
       for (int i = 0; i < numberOfQueues; i++)
       {
          Queue queue = EasyMock.createMock(Queue.class);
-         beNiceOnProperties(queue);
+
          queues.add(queue);
          
          Binding binding = EasyMock.createMock(Binding.class);
-         beNiceOnProperties(binding, "queue");
          
          bindings.add(binding);
          
@@ -329,81 +309,6 @@ public class MessagingServerManagementImplTest extends UnitTestCase
    
    // Private -------------------------------------------------------
 
-   /** This won't really work on Strict Mocks as it will require ordering. So make sure to only use this on regular Mocks (without ordering). */
-   private <T> void beNiceOnProperties(T mock, String ... ignores) throws Exception
-   {
-      BeanInfo info;
-      info = Introspector.getBeanInfo(mock.getClass());
-      
-      for (PropertyDescriptor descr: info.getPropertyDescriptors())
-      {
-         
-         // Bean Introspector will consider getClass as a property, and we need to ignore it
-         if (descr.getName().equals("class"))
-         {
-            continue;
-         }
-         
-         boolean ignore = false;
-         
-         
-         
-         for (String toignore: ignores)
-         {
-            if (descr.getName().equals(toignore) || descr.getReadMethod().getName().equals(toignore))
-            {
-               ignore = true;
-               break;
-            }
-         }
-         
-         if (!ignore)
-         {
-            try
-            {
-               descr.getReadMethod().invoke(mock);
-               
-               if (descr.getReadMethod().getReturnType().equals(Boolean.class) ||
-                     descr.getReadMethod().getReturnType().equals(Boolean.TYPE))
-               {
-                  EasyMock.expectLastCall().andReturn(false).anyTimes();
-               }
-               else if (descr.getReadMethod().getReturnType().equals(Integer.class) ||
-                     descr.getReadMethod().getReturnType().equals(Integer.TYPE))
-               {
-                  EasyMock.expectLastCall().andReturn(0).anyTimes();
-               }
-               else if (descr.getReadMethod().getReturnType().equals(Long.class) ||
-                     descr.getReadMethod().getReturnType().equals(Long.TYPE))
-               {
-                  EasyMock.expectLastCall().andReturn(0l).anyTimes();
-               }
-               else if (descr.getReadMethod().getReturnType().equals(Double.class) ||
-                     descr.getReadMethod().getReturnType().equals(Double.TYPE))
-               {
-                  EasyMock.expectLastCall().andReturn((double)0).anyTimes();
-               }
-               else if (descr.getReadMethod().getReturnType().equals(Float.class) ||
-                     descr.getReadMethod().getReturnType().equals(Float.TYPE))
-               {
-                  EasyMock.expectLastCall().andReturn((float)0).anyTimes();
-               }
-               else
-               {
-                  EasyMock.expectLastCall().andReturn(null).anyTimes();
-               }
-               
-            }
-            catch (Exception ignored)
-            {
-               ignored.printStackTrace();
-            }
-         }
-      }
-      
-      
-   }
-   
    private MessagingServerManagementImpl createImpl()
    {
       return new MessagingServerManagementImpl(mockPostOffice,
