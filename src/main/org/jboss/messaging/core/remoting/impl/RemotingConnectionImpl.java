@@ -59,10 +59,16 @@ public class RemotingConnectionImpl implements RemotingConnection
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public RemotingConnectionImpl(final Location location, ConnectionParams connectionParams) throws Exception
+   public RemotingConnectionImpl(final Location location, ConnectionParams connectionParams) throws IllegalArgumentException
    {
-      assert location != null;
-      assert connectionParams != null;
+      if(location == null)
+      {
+         throw new IllegalArgumentException("location must not be null");
+      }
+      if(connectionParams == null)
+      {
+         throw new IllegalArgumentException("connection params must not be null");
+      }
 
       this.location = location;
       this.connectionParams = connectionParams;
@@ -187,7 +193,7 @@ public class RemotingConnectionImpl implements RemotingConnection
 
    public void sendOneWay(final long targetID, final long executorID, final Packet packet) throws MessagingException
    {
-      assert packet != null;
+      checkConnected();
 
       packet.setTargetID(targetID);
       packet.setExecutorID(executorID);

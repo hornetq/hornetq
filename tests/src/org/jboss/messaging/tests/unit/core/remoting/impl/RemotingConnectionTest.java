@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.tests.unit.core.remoting.impl;
 
@@ -30,6 +30,7 @@ import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.*;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
@@ -41,6 +42,34 @@ public class RemotingConnectionTest extends UnitTestCase
    {
       super.tearDown();
       ConnectorRegistryFactory.setRegisteryLocator(null);
+   }
+
+   public void testNullLocationThrowsException()
+   {
+      ConnectionParams connectionParams = EasyMock.createNiceMock(ConnectionParams.class);
+      try
+      {
+         new RemotingConnectionImpl(null, connectionParams);
+         fail("should throw exception");
+      }
+      catch (IllegalArgumentException e)
+      {
+         //pass
+      }
+   }
+
+   public void testNullConnectionParamsThrowsException()
+   {
+      Location location = EasyMock.createNiceMock(Location.class);
+      try
+      {
+         new RemotingConnectionImpl(location, null);
+         fail("should throw exception");
+      }
+      catch (IllegalArgumentException e)
+      {
+         //pass
+      }
    }
 
    public void testConnectionStarted() throws Throwable
@@ -93,6 +122,41 @@ public class RemotingConnectionTest extends UnitTestCase
 
       RemotingConnectionImpl remotingConnection = new RemotingConnectionImpl(location, connectionParams);
       remotingConnection.start();
+      remotingConnection.stop();
+      EasyMock.verify(connector);
+      EasyMock.verify(connectorRegistry);
+      assertEquals(-1, remotingConnection.getSessionID());
+
+   }
+
+   public void testConnectionListenerRemovedOnStop() throws Throwable
+   {
+      final ConnectorRegistry connectorRegistry = EasyMock.createStrictMock(ConnectorRegistry.class);
+      RemotingConnector connector = EasyMock.createStrictMock(RemotingConnector.class);
+      RemotingSessionListener listener = EasyMock.createNiceMock(RemotingSessionListener.class);
+      ConnectorRegistryFactory.setRegisteryLocator(new ConnectorRegistryLocator()
+      {
+         public ConnectorRegistry locate()
+         {
+            return connectorRegistry;
+         }
+      });
+      Location location = EasyMock.createNiceMock(Location.class);
+      ConnectionParams connectionParams = EasyMock.createNiceMock(ConnectionParams.class);
+      RemotingSession remotingSession = EasyMock.createStrictMock(RemotingSession.class);
+
+      EasyMock.expect(connectorRegistry.getConnector(location, connectionParams)).andReturn(connector);
+      EasyMock.expect(connectorRegistry.removeConnector(location)).andReturn(connector);
+      EasyMock.replay(connectorRegistry);
+      EasyMock.expect(connector.connect()).andReturn(remotingSession);
+      connector.addSessionListener(listener);
+      connector.removeSessionListener(listener);
+      EasyMock.expect(connector.disconnect()).andReturn(true);
+      EasyMock.replay(connector);
+
+      RemotingConnectionImpl remotingConnection = new RemotingConnectionImpl(location, connectionParams);
+      remotingConnection.start();
+      remotingConnection.setRemotingSessionListener(listener);
       remotingConnection.stop();
       EasyMock.verify(connector);
       EasyMock.verify(connectorRegistry);
@@ -239,6 +303,141 @@ public class RemotingConnectionTest extends UnitTestCase
       assertNotNull(nioSession.getPacketDispatched());
    }
 
+   public void testConnectionSendBlockingThrowsExceptionIfSessionNull() throws Throwable
+   {
+      final ConnectorRegistry connectorRegistry = EasyMock.createStrictMock(ConnectorRegistry.class);
+      RemotingConnector connector = EasyMock.createStrictMock(RemotingConnector.class);
+      ConnectorRegistryFactory.setRegisteryLocator(new ConnectorRegistryLocator()
+      {
+         public ConnectorRegistry locate()
+         {
+            return connectorRegistry;
+         }
+      });
+      Location location = EasyMock.createNiceMock(Location.class);
+      ConnectionParams connectionParams = new ConnectionParamsImpl();
+      connectionParams.setCallTimeout(1000);
+      DummyDispatcher dispatcher = new DummyDispatcher();
+      DummySession nioSession = new DummySession(dispatcher, 0, null, false);
+      PacketHandler handler = null;
+
+      Packet packet = EasyMock.createStrictMock(Packet.class);
+
+      //EasyMock.expect(connectorRegistry.getConnector(location, connectionParams)).andReturn(connector);
+      EasyMock.replay(connectorRegistry);
+      EasyMock.expect(connector.getDispatcher()).andReturn(dispatcher).anyTimes();
+      EasyMock.replay(connector);
+      //packet.setTargetID(1);
+      //packet.setExecutorID(2);
+      // packet.setResponseTargetID(0);
+      EasyMock.replay(packet);
+
+
+      RemotingConnectionImpl remotingConnection = new RemotingConnectionImpl(location, connectionParams);
+      try
+      {
+         remotingConnection.sendBlocking(1, 2, packet);
+         fail("should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         //pass
+      }
+      EasyMock.verify(connector);
+      EasyMock.verify(connectorRegistry);
+      EasyMock.verify(packet);
+      assertNull(nioSession.getPacketDispatched());
+   }
+
+   public void testConnectionSendBlockingThrowsExceptionWhenSessionNotConnected() throws Throwable
+   {
+      final ConnectorRegistry connectorRegistry = EasyMock.createStrictMock(ConnectorRegistry.class);
+      RemotingConnector connector = EasyMock.createStrictMock(RemotingConnector.class);
+      ConnectorRegistryFactory.setRegisteryLocator(new ConnectorRegistryLocator()
+      {
+         public ConnectorRegistry locate()
+         {
+            return connectorRegistry;
+         }
+      });
+      Location location = EasyMock.createNiceMock(Location.class);
+      ConnectionParams connectionParams = new ConnectionParamsImpl();
+      connectionParams.setCallTimeout(1000);
+      DummyDispatcher dispatcher = new DummyDispatcher();
+      RemotingSession nioSession = EasyMock.createStrictMock(RemotingSession.class);
+      PacketHandler handler = null;
+
+      Packet packet = EasyMock.createStrictMock(Packet.class);
+      EasyMock.expect(nioSession.isConnected()).andReturn(false);
+      EasyMock.expect(connectorRegistry.getConnector(location, connectionParams)).andReturn(connector);
+      EasyMock.replay(connectorRegistry);
+      EasyMock.expect(connector.connect()).andReturn(nioSession);
+      EasyMock.replay(connector, nioSession);
+      EasyMock.replay(packet);
+
+
+      RemotingConnectionImpl remotingConnection = new RemotingConnectionImpl(location, connectionParams);
+      remotingConnection.start();
+      try
+      {
+         remotingConnection.sendBlocking(1, 2, packet);
+         fail("should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         //pass
+      }
+      EasyMock.verify(connector, connectorRegistry, packet, nioSession);
+   }
+
+   public void testConnectionSendBlockingThrowsMessagingException() throws Throwable
+   {
+      final ConnectorRegistry connectorRegistry = EasyMock.createStrictMock(ConnectorRegistry.class);
+      RemotingConnector connector = EasyMock.createStrictMock(RemotingConnector.class);
+      ConnectorRegistryFactory.setRegisteryLocator(new ConnectorRegistryLocator()
+      {
+         public ConnectorRegistry locate()
+         {
+            return connectorRegistry;
+         }
+      });
+      Location location = EasyMock.createNiceMock(Location.class);
+      ConnectionParams connectionParams = new ConnectionParamsImpl();
+      connectionParams.setCallTimeout(1000);
+      DummyDispatcher dispatcher = new DummyDispatcher();
+      DummySession nioSession = new DummySession(dispatcher, 0, null, false);
+      PacketHandler handler = null;
+
+      MessagingExceptionMessage packet = new MessagingExceptionMessage(new MessagingException());
+
+      EasyMock.expect(connectorRegistry.getConnector(location, connectionParams)).andReturn(connector);
+      EasyMock.replay(connectorRegistry);
+      EasyMock.expect(connector.connect()).andReturn(nioSession);
+      EasyMock.expect(connector.getDispatcher()).andReturn(dispatcher);
+      EasyMock.expect(connector.getDispatcher()).andReturn(dispatcher);
+      EasyMock.expect(connector.getDispatcher()).andReturn(dispatcher);
+      EasyMock.replay(connector);
+      packet.setTargetID(1);
+      packet.setExecutorID(2);
+      packet.setResponseTargetID(0);
+
+
+      RemotingConnectionImpl remotingConnection = new RemotingConnectionImpl(location, connectionParams);
+      remotingConnection.start();
+      try
+      {
+         remotingConnection.sendBlocking(1, 2, packet);
+         fail("should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         //pass
+      }
+      EasyMock.verify(connector);
+      EasyMock.verify(connectorRegistry);
+      assertNotNull(nioSession.getPacketDispatched());
+   }
+
    public void testConnectionSendBlockingWithTimeout() throws Throwable
    {
       final ConnectorRegistry connectorRegistry = EasyMock.createStrictMock(ConnectorRegistry.class);
@@ -376,6 +575,90 @@ public class RemotingConnectionTest extends UnitTestCase
       assertNull(nioSession.getPacketDispatched());
    }
 
+   public void testConnectionSendOneWayThrowsExceptionOnNullSession() throws Throwable
+   {
+      final ConnectorRegistry connectorRegistry = EasyMock.createStrictMock(ConnectorRegistry.class);
+      RemotingConnector connector = EasyMock.createStrictMock(RemotingConnector.class);
+      ConnectorRegistryFactory.setRegisteryLocator(new ConnectorRegistryLocator()
+      {
+         public ConnectorRegistry locate()
+         {
+            return connectorRegistry;
+         }
+      });
+      Location location = EasyMock.createNiceMock(Location.class);
+      ConnectionParams connectionParams = new ConnectionParamsImpl();
+      connectionParams.setCallTimeout(1000);
+      DummyDispatcher dispatcher = new DummyDispatcher();
+      DummySession nioSession = new DummySession(dispatcher, 0, null, true);
+      PacketHandler handler = null;
+
+      Packet packet = EasyMock.createStrictMock(Packet.class);
+
+      EasyMock.replay(connectorRegistry);
+      EasyMock.replay(connector);
+      EasyMock.replay(packet);
+
+
+      RemotingConnectionImpl remotingConnection = new RemotingConnectionImpl(location, connectionParams);
+      try
+      {
+         remotingConnection.sendOneWay(1, 2, packet);
+         fail("should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         //pass
+      }
+      EasyMock.verify(connector);
+      EasyMock.verify(connectorRegistry);
+      EasyMock.verify(packet);
+      assertNull(nioSession.getPacketDispatched());
+   }
+
+   public void testConnectionSendOneWayThrowsExceptionOnSessionNoConnected() throws Throwable
+   {
+      final ConnectorRegistry connectorRegistry = EasyMock.createStrictMock(ConnectorRegistry.class);
+      RemotingConnector connector = EasyMock.createStrictMock(RemotingConnector.class);
+      ConnectorRegistryFactory.setRegisteryLocator(new ConnectorRegistryLocator()
+      {
+         public ConnectorRegistry locate()
+         {
+            return connectorRegistry;
+         }
+      });
+      Location location = EasyMock.createNiceMock(Location.class);
+      ConnectionParams connectionParams = new ConnectionParamsImpl();
+      connectionParams.setCallTimeout(1000);
+      DummyDispatcher dispatcher = new DummyDispatcher();
+      RemotingSession nioSession = EasyMock.createStrictMock(RemotingSession.class);
+      PacketHandler handler = null;
+
+      Packet packet = EasyMock.createStrictMock(Packet.class);
+      EasyMock.expect(nioSession.isConnected()).andReturn(false);
+      EasyMock.expect(connectorRegistry.getConnector(location, connectionParams)).andReturn(connector);
+      EasyMock.replay(connectorRegistry);
+      EasyMock.expect(connector.connect()).andReturn(nioSession);
+      EasyMock.replay(connector);
+      EasyMock.replay(packet);
+
+
+      RemotingConnectionImpl remotingConnection = new RemotingConnectionImpl(location, connectionParams);
+      remotingConnection.start();
+      try
+      {
+         remotingConnection.sendOneWay(1, 2, packet);
+         fail("should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         //pass
+      }
+      EasyMock.verify(connector);
+      EasyMock.verify(connectorRegistry);
+      EasyMock.verify(packet);
+   }
+
    public void testConnectionSendOneWayErrorOnWrite() throws Throwable
    {
       final ConnectorRegistry connectorRegistry = EasyMock.createStrictMock(ConnectorRegistry.class);
@@ -483,6 +766,86 @@ public class RemotingConnectionTest extends UnitTestCase
       EasyMock.verify(connector);
       EasyMock.verify(connectorRegistry);
    }
+
+   public void testConnectionSetListenerTwiceThrowsException() throws Throwable
+   {
+      final ConnectorRegistry connectorRegistry = EasyMock.createStrictMock(ConnectorRegistry.class);
+      RemotingConnector connector = EasyMock.createStrictMock(RemotingConnector.class);
+      ConnectorRegistryFactory.setRegisteryLocator(new ConnectorRegistryLocator()
+      {
+         public ConnectorRegistry locate()
+         {
+            return connectorRegistry;
+         }
+      });
+      Location location = EasyMock.createNiceMock(Location.class);
+      ConnectionParams connectionParams = EasyMock.createNiceMock(ConnectionParams.class);
+      RemotingSession remotingSession = EasyMock.createStrictMock(RemotingSession.class);
+      RemotingSessionListener listener = EasyMock.createNiceMock(RemotingSessionListener.class);
+      RemotingSessionListener listener2 = EasyMock.createNiceMock(RemotingSessionListener.class);
+
+      EasyMock.expect(connectorRegistry.getConnector(location, connectionParams)).andReturn(connector);
+      EasyMock.replay(connectorRegistry);
+      EasyMock.expect(connector.connect()).andReturn(remotingSession);
+      connector.addSessionListener(listener);
+      EasyMock.replay(connector);
+
+      RemotingConnectionImpl remotingConnection = new RemotingConnectionImpl(location, connectionParams);
+      remotingConnection.start();
+      remotingConnection.setRemotingSessionListener(listener);
+      try
+      {
+         remotingConnection.setRemotingSessionListener(listener2);
+         fail("should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         //pass
+      }
+      EasyMock.verify(connector);
+      EasyMock.verify(connectorRegistry);
+   }
+
+   public void testGetDispatcher() throws Throwable
+   {
+      final ConnectorRegistry connectorRegistry = EasyMock.createStrictMock(ConnectorRegistry.class);
+      RemotingConnector connector = EasyMock.createStrictMock(RemotingConnector.class);
+      ConnectorRegistryFactory.setRegisteryLocator(new ConnectorRegistryLocator()
+      {
+         public ConnectorRegistry locate()
+         {
+            return connectorRegistry;
+         }
+      });
+      Location location = EasyMock.createNiceMock(Location.class);
+      ConnectionParams connectionParams = EasyMock.createNiceMock(ConnectionParams.class);
+      RemotingSession remotingSession = EasyMock.createStrictMock(RemotingSession.class);
+
+      EasyMock.expect(connectorRegistry.getConnector(location, connectionParams)).andReturn(connector);
+      EasyMock.replay(connectorRegistry);
+      EasyMock.expect(connector.connect()).andReturn(remotingSession);
+      PacketDispatcher packetDispatcher = EasyMock.createNiceMock(PacketDispatcher.class);
+      EasyMock.expect(connector.getDispatcher()).andReturn(packetDispatcher);
+      EasyMock.replay(connector);
+
+      RemotingConnectionImpl remotingConnection = new RemotingConnectionImpl(location, connectionParams);
+      remotingConnection.start();
+      assertEquals(remotingConnection.getPacketDispatcher(), packetDispatcher);
+      EasyMock.verify(connector);
+      EasyMock.verify(connectorRegistry);
+   }
+
+   public void testGetLocation() throws Throwable
+   {
+      Location location = EasyMock.createNiceMock(Location.class);
+      ConnectionParams connectionParams = EasyMock.createNiceMock(ConnectionParams.class);
+      EasyMock.replay(location, connectionParams);
+
+      RemotingConnectionImpl remotingConnection = new RemotingConnectionImpl(location, connectionParams);
+      assertEquals(remotingConnection.getLocation(), location);
+      EasyMock.verify(location, connectionParams);
+   }
+
 
    class DummyDispatcher implements PacketDispatcher
    {

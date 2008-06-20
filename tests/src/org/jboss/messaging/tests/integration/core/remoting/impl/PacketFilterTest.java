@@ -91,15 +91,9 @@ public class PacketFilterTest  extends TestCase
          messagingService.getServer().getRemotingService().addInterceptor(interceptorA);
                   
          interceptorA.sendException=true;
-         try
-         {
+       
             conn = cf.createConnection();
-            fail("Exception expected");
-         }
-         catch (Exception e)
-         {
-            conn = null;
-         }
+
          
          interceptorA.sendException=false;
          

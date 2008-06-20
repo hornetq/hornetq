@@ -22,24 +22,16 @@
 
 package org.jboss.messaging.core.remoting.impl;
 
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.*;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NO_ID_SET;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
-
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.Interceptor;
-import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.PacketHandler;
-import org.jboss.messaging.core.remoting.PacketHandlerRegistrationListener;
-import org.jboss.messaging.core.remoting.PacketReturner;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -187,7 +179,14 @@ public class PacketDispatcherImpl implements PacketDispatcher
       {
          for (Interceptor filter : filters)
          {
-            filter.intercept(packet);
+            try
+            {
+               filter.intercept(packet);
+            }
+            catch (Throwable e)
+            {
+               log.warn("unable to call interceptor: " + filter, e);
+            }
          }
       }
    }
@@ -198,22 +197,5 @@ public class PacketDispatcherImpl implements PacketDispatcher
 
    // Private -------------------------------------------------------
 
-   private void dump()
-   {
-      if (log.isDebugEnabled())
-      {
-         StringBuffer buf = new StringBuffer("Registered PacketHandlers ("
-                 + this + "):\n");
-         Iterator<Entry<Long, PacketHandler>> iterator = handlers.entrySet()
-                 .iterator();
-         while (iterator.hasNext())
-         {
-            Map.Entry<java.lang.Long, org.jboss.messaging.core.remoting.PacketHandler> entry = (Map.Entry<java.lang.Long, org.jboss.messaging.core.remoting.PacketHandler>) iterator
-                    .next();
-            buf.append(entry.getKey() + " : " + entry.getValue() + "\n");
-         }
-         log.debug(buf.toString());
-      }
-   }
    // Inner classes -------------------------------------------------
 }

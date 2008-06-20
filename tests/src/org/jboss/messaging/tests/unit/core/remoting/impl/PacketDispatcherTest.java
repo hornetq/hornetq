@@ -226,6 +226,80 @@ public class PacketDispatcherTest extends TestCase
 
       verify(handler, listener);
    }
+
+   public void testAddInterceptor() throws Exception
+   {
+      Interceptor interceptor = EasyMock.createStrictMock(Interceptor.class);
+      Packet packet = EasyMock.createStrictMock(Packet.class);
+      interceptor.intercept(packet);
+      EasyMock.replay(interceptor, packet);
+      dispatcher.addInterceptor(interceptor);
+      dispatcher.callFilters(packet);
+      EasyMock.verify(interceptor, packet);
+   }
+
+   public void testAddInterceptors() throws Exception
+   {
+      Interceptor interceptor = EasyMock.createStrictMock(Interceptor.class);
+      Interceptor interceptor2 = EasyMock.createStrictMock(Interceptor.class);
+      Interceptor interceptor3 = EasyMock.createStrictMock(Interceptor.class);
+      Packet packet = EasyMock.createStrictMock(Packet.class);
+      interceptor.intercept(packet);
+      interceptor2.intercept(packet);
+      interceptor3.intercept(packet);
+      EasyMock.replay(interceptor, interceptor2, interceptor3, packet);
+      dispatcher.addInterceptor(interceptor);
+      dispatcher.addInterceptor(interceptor2);
+      dispatcher.addInterceptor(interceptor3);
+      dispatcher.callFilters(packet);
+      EasyMock.verify(interceptor, interceptor2, interceptor3, packet);
+   }
+
+   public void testAddAndRemoveInterceptor() throws Exception
+   {
+      Interceptor interceptor = EasyMock.createStrictMock(Interceptor.class);
+      Packet packet = EasyMock.createStrictMock(Packet.class);
+      interceptor.intercept(packet);
+      EasyMock.replay(interceptor, packet);
+      dispatcher.addInterceptor(interceptor);
+      dispatcher.callFilters(packet);
+      dispatcher.removeInterceptor(interceptor);
+      dispatcher.callFilters(packet);
+      EasyMock.verify(interceptor, packet);
+   }
+
+   public void testAddAndRemoveInterceptors() throws Exception
+     {
+        Interceptor interceptor = EasyMock.createStrictMock(Interceptor.class);
+        Interceptor interceptor2 = EasyMock.createStrictMock(Interceptor.class);
+        Interceptor interceptor3 = EasyMock.createStrictMock(Interceptor.class);
+        Packet packet = EasyMock.createStrictMock(Packet.class);
+        interceptor.intercept(packet);
+        interceptor2.intercept(packet);
+        interceptor3.intercept(packet);
+        interceptor.intercept(packet);
+        interceptor3.intercept(packet);
+        EasyMock.replay(interceptor, interceptor2, interceptor3, packet);
+        dispatcher.addInterceptor(interceptor);
+        dispatcher.addInterceptor(interceptor2);
+        dispatcher.addInterceptor(interceptor3);
+        dispatcher.callFilters(packet);
+        dispatcher.removeInterceptor(interceptor2);
+        dispatcher.callFilters(packet);
+        EasyMock.verify(interceptor, interceptor2, interceptor3, packet);
+     }
+
+   public void testInterceptorThrowingException() throws Exception
+   {
+      Interceptor interceptor = EasyMock.createStrictMock(Interceptor.class);
+      Packet packet = EasyMock.createStrictMock(Packet.class);
+      interceptor.intercept(packet);
+      EasyMock.expectLastCall().andThrow(new RuntimeException());
+      EasyMock.replay(interceptor, packet);
+      dispatcher.addInterceptor(interceptor);
+      dispatcher.callFilters(packet);
+      EasyMock.verify(interceptor, packet);
+   }
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
