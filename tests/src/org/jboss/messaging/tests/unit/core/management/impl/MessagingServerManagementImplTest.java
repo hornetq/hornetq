@@ -26,10 +26,13 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.management.MessagingServerManagement;
 import org.jboss.messaging.core.management.impl.MessagingServerManagementImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
@@ -227,13 +230,98 @@ public class MessagingServerManagementImplTest extends UnitTestCase
       EasyMock.verify(mockPostOffice);
       
    }
+
    
-   //   public MessagingServerManagementImpl(final PostOffice postOffice, final StorageManager storageManager,
-   //         final Configuration configuration,
-   //         final ConnectionManager connectionManager,                                        
-   //         final HierarchicalRepository<Set<Role>> securityRepository,
-   //         final HierarchicalRepository<QueueSettings> queueSettingsRepository,
-   //         final MessagingServer server)
+   public void testRemoveAllMessagesForAddress() throws Exception
+   {
+      SimpleString address = RandomUtil.randomSimpleString();
+
+      int numberOfQueues = 10;
+      
+      ArrayList<Queue> queues = new ArrayList<Queue>();
+      ArrayList<Binding> bindings = new ArrayList<Binding>();
+      
+      for (int i = 0; i < numberOfQueues; i++)
+      {
+         Queue queue = EasyMock.createMock(Queue.class);
+         beNiceOnProperties(queue);
+         queues.add(queue);
+         
+         Binding binding = EasyMock.createMock(Binding.class);
+         beNiceOnProperties(binding, "queue");
+         bindings.add(binding);
+         
+         EasyMock.expect(binding.getQueue()).andReturn(queue);
+         
+         queue.deleteAllReferences(mockStorageManager);
+      }
+      
+      mockPostOffice = EasyMock.createMock(PostOffice.class);
+      beNiceOnProperties(mockPostOffice);
+      
+      EasyMock.expect(mockPostOffice.getBindingsForAddress(address)).andReturn(bindings);
+
+      EasyMock.replay(mockPostOffice);
+      
+      EasyMock.replay(queues.toArray());
+      
+      EasyMock.replay(bindings.toArray());
+      
+      MessagingServerManagementImpl impl = createImpl();
+      
+      impl.removeAllMessagesForAddress(address);
+
+      EasyMock.verify(mockPostOffice);
+      
+      EasyMock.verify(queues.toArray());
+      
+      EasyMock.verify(bindings.toArray());
+      
+   
+   }
+   
+   
+   public void testGetQueuesForAddress() throws Exception
+   {
+      
+      int numberOfQueues = 10;
+      
+      ArrayList<Queue> queues = new ArrayList<Queue>();
+      ArrayList<Binding> bindings = new ArrayList<Binding>();
+      
+      for (int i = 0; i < numberOfQueues; i++)
+      {
+         Queue queue = EasyMock.createMock(Queue.class);
+         beNiceOnProperties(queue);
+         queues.add(queue);
+         
+         Binding binding = EasyMock.createMock(Binding.class);
+         beNiceOnProperties(binding, "queue");
+         
+         bindings.add(binding);
+         
+         EasyMock.expect(binding.getQueue()).andReturn(queue);
+      }
+      
+
+      SimpleString address = RandomUtil.randomSimpleString();
+      
+      EasyMock.expect(mockPostOffice.getBindingsForAddress(address)).andReturn(bindings);
+      
+      EasyMock.replay(mockPostOffice);
+      EasyMock.replay(queues.toArray());
+      EasyMock.replay(bindings.toArray());
+      
+      MessagingServerManagementImpl impl = createImpl();
+      assertEquals(numberOfQueues, impl.getQueuesForAddress(address).size());
+
+      EasyMock.verify(mockPostOffice);
+      EasyMock.verify(queues.toArray());
+      EasyMock.verify(bindings.toArray());
+      
+   }
+
+   
    
    // Package protected ---------------------------------------------
    
@@ -264,7 +352,6 @@ public class MessagingServerManagementImplTest extends UnitTestCase
          {
             if (descr.getName().equals(toignore) || descr.getReadMethod().getName().equals(toignore))
             {
-               System.out.println("Ignoring " + toignore);
                ignore = true;
                break;
             }
