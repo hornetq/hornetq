@@ -263,7 +263,7 @@ public class VariableLatchTest extends TestCase
             readyLatch.countDown();
             try
             {
-               latch.waitCompletion(5);
+               latch.waitCompletion(1000);
             }
             catch (Exception e)
             {
@@ -305,6 +305,17 @@ public class VariableLatchTest extends TestCase
       assertEquals(false, t.waiting);
       
       assertNull(t.e);
+      
+      
+      latch.waitCompletion(1000);
+
+      assertEquals(0, latch.getCount());
+      
+      latch.down();
+      
+      assertEquals(0, latch.getCount());
+      
+      
       
       
       
