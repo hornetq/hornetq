@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.tests.unit.core.util;
 
@@ -32,60 +32,60 @@ import org.jboss.messaging.util.VariableLatch;
 /**
  * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
+ * 
  */
 public class VariableLatchTest extends TestCase
 {
    private static final Logger log = Logger.getLogger(VariableLatchTest.class);
    
-   
    public void testLatchOnSingleThread() throws Exception
    {
       VariableLatch latch = new VariableLatch();
       
-      for (int i=1;i<=10000;i++)
+      for (int i = 1; i <= 10000; i++)
       {
          latch.up();
          assertEquals(i, latch.getCount());
       }
       
-      for (int i=10000; i>0; i--)
+      for (int i = 10000; i > 0; i--)
       {
          assertEquals(i, latch.getCount());
          latch.down();
-         assertEquals(i-1, latch.getCount());
+         assertEquals(i - 1, latch.getCount());
       }
       
       latch.waitCompletion();
    }
-
+   
    public void testTimeout() throws Exception
    {
       VariableLatch latch = new VariableLatch();
       
       latch.up();
-
+      
       long start = System.currentTimeMillis();
       try
       {
          latch.waitCompletion(1000);
-         fail ("It was suppsoed to throw an exception");
-      }
-      catch (Exception ignored)
+         fail("It was suppsoed to throw an exception");
+      } catch (Exception ignored)
       {
       }
       long end = System.currentTimeMillis();
       
-      assertTrue ("Timeout didn't work correctly", end - start >= 1000 && end - start < 2000);
+      assertTrue("Timeout didn't work correctly", end - start >= 1000
+            && end - start < 2000);
    }
-
-   /** 
+   
+   /**
     * 
-    * This test will open numberOfThreads threads, and add numberOfAdds on the VariableLatch
-    * After those addthreads are finished, the latch count should be numberOfThreads * numberOfAdds
-    * Then it will open numberOfThreads threads again releasing numberOfAdds on the VariableLatch
-    * After those releaseThreads are finished, the latch count should be 0
-    * And all the waiting threads should be finished also
+    * This test will open numberOfThreads threads, and add numberOfAdds on the
+    * VariableLatch After those addthreads are finished, the latch count should
+    * be numberOfThreads * numberOfAdds Then it will open numberOfThreads
+    * threads again releasing numberOfAdds on the VariableLatch After those
+    * releaseThreads are finished, the latch count should be 0 And all the
+    * waiting threads should be finished also
     * 
     * @throws Exception
     */
@@ -93,21 +93,21 @@ public class VariableLatchTest extends TestCase
    {
       final VariableLatch latch = new VariableLatch();
       
-      latch.up(); // We hold at least one, so ThreadWaits won't go away  
+      latch.up(); // We hold at least one, so ThreadWaits won't go away
       
       final int numberOfThreads = 100;
       final int numberOfAdds = 1000;
       
       class ThreadWait extends Thread
       {
-         boolean waiting = true;
+         private volatile boolean waiting = true;
+         
          public void run()
          {
             try
             {
                latch.waitCompletion(5000);
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                log.error(e);
             }
@@ -117,10 +117,10 @@ public class VariableLatchTest extends TestCase
       
       class ThreadAdd extends Thread
       {
-         CountDownLatch latchReady; 
-         CountDownLatch latchStart;
+         private final CountDownLatch latchReady;
+         private final CountDownLatch latchStart;
          
-         ThreadAdd(CountDownLatch latchReady, CountDownLatch latchStart)
+         ThreadAdd(final CountDownLatch latchReady, final CountDownLatch latchStart)
          {
             this.latchReady = latchReady;
             this.latchStart = latchStart;
@@ -131,14 +131,14 @@ public class VariableLatchTest extends TestCase
             try
             {
                latchReady.countDown();
-               // Everybody should start at the same time, to worse concurrency effects
+               // Everybody should start at the same time, to worse concurrency
+               // effects
                latchStart.await();
-               for (int i=0; i< numberOfAdds; i++)
+               for (int i = 0; i < numberOfAdds; i++)
                {
                   latch.up();
                }
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                log.error(e.getMessage(), e);
             }
@@ -151,8 +151,7 @@ public class VariableLatchTest extends TestCase
       ThreadAdd[] threadAdds = new ThreadAdd[numberOfThreads];
       ThreadWait waits[] = new ThreadWait[numberOfThreads];
       
-      
-      for (int i=0; i< numberOfThreads; i++)
+      for (int i = 0; i < numberOfThreads; i++)
       {
          threadAdds[i] = new ThreadAdd(latchReady, latchStart);
          threadAdds[i].start();
@@ -163,13 +162,12 @@ public class VariableLatchTest extends TestCase
       latchReady.await();
       latchStart.countDown();
       
-      
-      for (int i=0; i< numberOfThreads; i++)
+      for (int i = 0; i < numberOfThreads; i++)
       {
          threadAdds[i].join();
       }
       
-      for (int i=0; i< numberOfThreads; i++)
+      for (int i = 0; i < numberOfThreads; i++)
       {
          assertTrue(waits[i].waiting);
       }
@@ -178,10 +176,10 @@ public class VariableLatchTest extends TestCase
       
       class ThreadDown extends Thread
       {
-         CountDownLatch latchReady; 
-         CountDownLatch latchStart;
+         private final CountDownLatch latchReady;
+         private final CountDownLatch latchStart;
          
-         ThreadDown(CountDownLatch latchReady, CountDownLatch latchStart)
+         ThreadDown(final CountDownLatch latchReady, final CountDownLatch latchStart)
          {
             this.latchReady = latchReady;
             this.latchStart = latchStart;
@@ -192,14 +190,14 @@ public class VariableLatchTest extends TestCase
             try
             {
                latchReady.countDown();
-               // Everybody should start at the same time, to worse concurrency effects
+               // Everybody should start at the same time, to worse concurrency
+               // effects
                latchStart.await();
-               for (int i=0; i< numberOfAdds; i++)
+               for (int i = 0; i < numberOfAdds; i++)
                {
                   latch.down();
                }
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                log.error(e.getMessage(), e);
             }
@@ -211,7 +209,7 @@ public class VariableLatchTest extends TestCase
       
       ThreadDown down[] = new ThreadDown[numberOfThreads];
       
-      for (int i=0; i< numberOfThreads; i++)
+      for (int i = 0; i < numberOfThreads; i++)
       {
          down[i] = new ThreadDown(latchReady, latchStart);
          down[i].start();
@@ -220,30 +218,30 @@ public class VariableLatchTest extends TestCase
       latchReady.await();
       latchStart.countDown();
       
-      for (int i=0; i< numberOfThreads; i++)
+      for (int i = 0; i < numberOfThreads; i++)
       {
          down[i].join();
       }
       
       assertEquals(1, latch.getCount());
-
-      for (int i=0; i< numberOfThreads; i++)
+      
+      for (int i = 0; i < numberOfThreads; i++)
       {
          assertTrue(waits[i].waiting);
       }
-
+      
       latch.down();
       
-      for (int i=0; i< numberOfThreads; i++)
+      for (int i = 0; i < numberOfThreads; i++)
       {
          waits[i].join();
       }
       
       assertEquals(0, latch.getCount());
       
-      for (int i=0; i< numberOfThreads; i++)
+      for (int i = 0; i < numberOfThreads; i++)
       {
-         assertFalse (waits[i].waiting);
+         assertFalse(waits[i].waiting);
       }
    }
    
@@ -254,9 +252,10 @@ public class VariableLatchTest extends TestCase
       
       class ThreadWait extends Thread
       {
-         boolean waiting = false;
-         Exception e;
-         CountDownLatch readyLatch = new CountDownLatch(1);
+         private volatile boolean waiting = false;
+         private volatile Exception e;
+         private final CountDownLatch readyLatch = new CountDownLatch(1);
+         
          public void run()
          {
             waiting = true;
@@ -264,13 +263,12 @@ public class VariableLatchTest extends TestCase
             try
             {
                latch.waitCompletion(1000);
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                log.error(e);
                this.e = e;
             }
-             waiting = false;
+            waiting = false;
          }
       }
       
@@ -282,11 +280,11 @@ public class VariableLatchTest extends TestCase
       assertEquals(true, t.waiting);
       
       latch.down();
-
+      
       t.join();
-
+      
       assertEquals(false, t.waiting);
-
+      
       assertNull(t.e);
       
       latch.up();
@@ -297,7 +295,7 @@ public class VariableLatchTest extends TestCase
       t.readyLatch.await();
       
       assertEquals(true, t.waiting);
-
+      
       latch.down();
       
       t.join();
@@ -306,21 +304,14 @@ public class VariableLatchTest extends TestCase
       
       assertNull(t.e);
       
-      
       latch.waitCompletion(1000);
-
+      
       assertEquals(0, latch.getCount());
       
       latch.down();
       
       assertEquals(0, latch.getCount());
       
-      
-      
-      
-      
-      
    }
    
-
 }
