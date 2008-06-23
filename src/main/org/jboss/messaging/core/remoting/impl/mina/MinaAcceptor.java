@@ -144,7 +144,7 @@ public class MinaAcceptor implements Acceptor
        */
       public void sessionCreated(IoSession session)
       {
-         log.info("session idddddddd " + session.getId());
+         log.info("session id " + session.getId());
          //register pinger
          if (remotingService.getConfiguration().getConnectionParams().getPingInterval() > 0)
          {
