@@ -61,6 +61,14 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(56546, conf.getJournalMaxAIO());
       assertEquals(432323, conf.getJournalAIOTimeout());
       assertEquals(6544, conf.getJournalTaskPeriod());
+      
+      assertEquals(false, conf.getConnectionParams().isInVMOptimisationEnabled());
+      assertEquals(7654, conf.getConnectionParams().getCallTimeout());
+      assertEquals(false, conf.getConnectionParams().isTcpNoDelay());
+      assertEquals(987654, conf.getConnectionParams().getTcpReceiveBufferSize());
+      assertEquals(2345676, conf.getConnectionParams().getTcpSendBufferSize());
+      assertEquals(123123, conf.getConnectionParams().getPingInterval());
+      assertEquals(321321, conf.getConnectionParams().getPingTimeout());
    }
    
    public void testSetGetConfigurationURL()

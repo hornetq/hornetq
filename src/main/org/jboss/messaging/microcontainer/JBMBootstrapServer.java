@@ -50,11 +50,12 @@ public class JBMBootstrapServer extends BasicBootstrap
    /**
     * The deployments
     */
-   protected List deployments = new CopyOnWriteArrayList();
+   protected List<KernelDeployment> deployments = new CopyOnWriteArrayList<KernelDeployment>();
    /**
     * The arguments
     */
    protected String[] args;
+   
    private Properties properties;
 
    /**
@@ -63,9 +64,10 @@ public class JBMBootstrapServer extends BasicBootstrap
     * @param args the command line arguments
     * @throws Exception for any error
     */
-   public static void main(String[] args) throws Exception
+   public static void main(final String[] args) throws Exception
    {
       JBMBootstrapServer bootstrap = new JBMBootstrapServer(args);
+      
       bootstrap.run();
    }
 
@@ -89,7 +91,7 @@ public class JBMBootstrapServer extends BasicBootstrap
       this.args = args;
    }
 
-   public JBMBootstrapServer(String[] args, KernelConfig kernelConfig) throws Exception
+   public JBMBootstrapServer(final String[] args, KernelConfig kernelConfig) throws Exception
    {
       super(kernelConfig);
       //System.setProperty("java.naming.factory.initial", "org.jnp.interfaces.LocalOnlyContextFactory");
@@ -116,7 +118,7 @@ public class JBMBootstrapServer extends BasicBootstrap
     *
     * @param deployment the deployment
     */
-   public void undeploy(KernelDeployment deployment) throws Throwable
+   public void undeploy(final KernelDeployment deployment) throws Throwable
    {
       log.debug("Undeploying " + deployment.getName());
       deployments.remove(deployment);
@@ -131,7 +133,7 @@ public class JBMBootstrapServer extends BasicBootstrap
       }
    }
 
-   public KernelDeployment deploy(String arg) throws Throwable
+   public KernelDeployment deploy(final String arg) throws Throwable
    {
       ClassLoader cl = Thread.currentThread().getContextClassLoader();
       URL url = cl.getResource(arg);
@@ -155,7 +157,7 @@ public class JBMBootstrapServer extends BasicBootstrap
     * Deploys a XML on the container
     * 
     */
-   public KernelDeployment deploy(String name, String xml) throws Throwable
+   public KernelDeployment deploy(final String name, final String xml) throws Throwable
    {
       ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
       PrintStream printOut = new PrintStream(byteOut);
@@ -178,7 +180,7 @@ public class JBMBootstrapServer extends BasicBootstrap
     * @param url the deployment url
     * @throws Throwable for any error
     */
-   protected KernelDeployment deploy(URL url) throws Throwable
+   protected KernelDeployment deploy(final URL url) throws Throwable
    {
       log.debug("Deploying " + url);
       KernelDeployment deployment = deployer.deploy(url);
@@ -190,7 +192,7 @@ public class JBMBootstrapServer extends BasicBootstrap
    public void shutDown()
    {
       log.info("Shutting down");
-      ListIterator iterator = deployments.listIterator(deployments.size());
+      ListIterator<KernelDeployment> iterator = deployments.listIterator(deployments.size());
       while (iterator.hasPrevious())
       {
          KernelDeployment deployment = (KernelDeployment) iterator.previous();
@@ -207,6 +209,8 @@ public class JBMBootstrapServer extends BasicBootstrap
    {
       properties = props;
    }
+   
+   
    protected class Shutdown extends Thread
    {
       public void run()
