@@ -185,5 +185,8 @@ public class ConnectionManagerImpl implements ConnectionManager, RemotingSession
             log.error("Failed to close connection", e);
          }          
       }
-   }   
+      conns.clear();
+      connections.remove(remotingClientSessionID);
+   }
+
 }
