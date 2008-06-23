@@ -2,7 +2,7 @@
  *
  * Copyright (c) 2002- Tatu Saloranta, tatu.saloranta@iki.fi
  *
- * Licensed under the License specified in the file LICENSE which is
+ * Licensed under the License specified in the file licenses/LICENSE.txt which is
  * included with the source code.
  * You may not use this file except in compliance with the License.
  *
