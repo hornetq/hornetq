@@ -52,50 +52,50 @@ public class ConnectionManagerImpl implements ConnectionManager, RemotingSession
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private Map<Long /* remoting session ID */, List<ServerConnection>> endpoints;
+   private Map<Long /* remoting session ID */, List<ServerConnection>> connections;
    
    // Constructors ---------------------------------------------------------------------------------
 
    public ConnectionManagerImpl()
    {
-      endpoints = new HashMap<Long, List<ServerConnection>>();
+      connections = new HashMap<Long, List<ServerConnection>>();
    }
 
    // ConnectionManager implementation -------------------------------------------------------------
 
-   public synchronized void registerConnection(long remotingClientSessionID,
-                                               ServerConnection endpoint)
+   public synchronized void registerConnection(final long remotingClientSessionID,
+                                               final ServerConnection connection)
    {    
-      List<ServerConnection> connectionEndpoints = endpoints.get(remotingClientSessionID);
+      List<ServerConnection> connectionEndpoints = connections.get(remotingClientSessionID);
 
       if (connectionEndpoints == null)
       {
          connectionEndpoints = new ArrayList<ServerConnection>();
-         endpoints.put(remotingClientSessionID, connectionEndpoints);
+         connections.put(remotingClientSessionID, connectionEndpoints);
       }
 
-      connectionEndpoints.add(endpoint);
+      connectionEndpoints.add(connection);
 
-      log.debug("registered connection " + endpoint + " as " + remotingClientSessionID);
+      log.debug("registered connection " + connection + " as " + remotingClientSessionID);
    }
    
-   public synchronized ServerConnection unregisterConnection(long remotingClientSessionID,
-         ServerConnection endpoint)
+   public synchronized ServerConnection unregisterConnection(final long remotingClientSessionID,
+                                                             final ServerConnection connection)
    {
-      List<ServerConnection> connectionEndpoints = endpoints.get(remotingClientSessionID);
+      List<ServerConnection> connectionEndpoints = connections.get(remotingClientSessionID);
 
       if (connectionEndpoints != null)
       {
-         connectionEndpoints.remove(endpoint);
+         connectionEndpoints.remove(connection);
 
-         log.debug("unregistered connection " + endpoint + " with remoting session ID " + remotingClientSessionID);
+         log.debug("unregistered connection " + connection + " with remoting session ID " + remotingClientSessionID);
 
          if (connectionEndpoints.isEmpty())
          {
-            endpoints.remove(remotingClientSessionID);           
+            connections.remove(remotingClientSessionID);           
          }
 
-         return endpoint;
+         return connection;
       }
       return null;
    }
@@ -104,9 +104,9 @@ public class ConnectionManagerImpl implements ConnectionManager, RemotingSession
    {
       // I will make a copy to avoid ConcurrentModification
       List<ServerConnection> list = new ArrayList<ServerConnection>();
-      for (List<ServerConnection> connections : endpoints.values())
+      for (List<ServerConnection> conns : connections.values())
       {
-         list.addAll(connections);
+         list.addAll(conns);
       }
       return list;
    }      
@@ -114,9 +114,9 @@ public class ConnectionManagerImpl implements ConnectionManager, RemotingSession
    public synchronized int size()
    {
       int size = 0;
-      for (List<ServerConnection> connections : endpoints.values())
+      for (List<ServerConnection> conns : connections.values())
       {
-         size += connections.size();
+         size += conns.size();
       }
       return size;
    }
@@ -129,7 +129,7 @@ public class ConnectionManagerImpl implements ConnectionManager, RemotingSession
       {
          log.warn(me.getMessage(), me);
       }
-      closeConsumers(sessionID);
+      closeConnections(sessionID);
    }
    
    // Public ---------------------------------------------------------------------------------------
@@ -145,26 +145,32 @@ public class ConnectionManagerImpl implements ConnectionManager, RemotingSession
 
    // Private --------------------------------------------------------------------------------------
 
-   private synchronized void closeConsumers(long remotingClientSessionID)
+   private synchronized void closeConnections(final long remotingClientSessionID)
    {
-      List<ServerConnection> connectionEndpoints = endpoints.get(remotingClientSessionID);
+      List<ServerConnection> conns = connections.get(remotingClientSessionID);
       
-      if (connectionEndpoints == null || connectionEndpoints.isEmpty())
+      if (conns == null || conns.isEmpty())
+      {
          return;
+      }
       
       // we still have connections open for the session
       
-      log.warn("A problem has been detected with the connection to remote client " +
+      log.warn("A problem has been detected with the connection from client " +
             remotingClientSessionID + ". It is possible the client has exited without closing " +
             "its connection(s) or the network has failed. All connection resources " +
             "corresponding to that client process will now be removed.");
 
-      // the connection endpoints are copied in a new list to avoid concurrent modification exception
+      // the connection connections are copied in a new list to avoid concurrent modification exception
       List<ServerConnection> copy;
-      if (connectionEndpoints != null)
-         copy = new ArrayList<ServerConnection>(connectionEndpoints);
+      if (conns != null)
+      {
+         copy = new ArrayList<ServerConnection>(conns);
+      }
       else
+      {
          copy = new ArrayList<ServerConnection>();
+      }
          
       for (ServerConnection sce : copy)
       {
@@ -179,35 +185,5 @@ public class ConnectionManagerImpl implements ConnectionManager, RemotingSession
             log.error("Failed to close connection", e);
          }          
       }
-      
-      //dump();
-   }
-   
-//   private void dump()
-//   {
-//      if (log.isDebugEnabled())
-//      {
-//         StringBuffer buff = new StringBuffer("*********** Dumping connections\n");
-//         buff.append("remoting session ID -----> server connection endpoints:\n");
-//         if (endpoints.size() == 0)
-//         {
-//            buff.append("    No registered endpoints\n");
-//         }
-//         for (Entry<Long, List<ServerConnection>> entry : endpoints.entrySet())
-//         {
-//            List<ServerConnection> connectionEndpoints = entry.getValue();
-//            buff.append("    "  + entry.getKey() + "----->\n");
-//            for (ServerConnection sce : connectionEndpoints)
-//            {
-//               buff.append("        " + sce + " (" + System.identityHashCode(sce) + ") " + sce.getClientAddress() + "\n");
-//            }
-//         }
-//         buff.append("*** Dumped connections");
-//         
-//         log.debug(buff);
-//      }
-//   }
-   
-   // Inner classes --------------------------------------------------------------------------------
-
+   }   
 }

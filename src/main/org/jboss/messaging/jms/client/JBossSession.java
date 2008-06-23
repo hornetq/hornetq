@@ -22,6 +22,41 @@
 
 package org.jboss.messaging.jms.client;
 
+import java.io.Serializable;
+import java.util.UUID;
+
+import javax.jms.BytesMessage;
+import javax.jms.Destination;
+import javax.jms.IllegalStateException;
+import javax.jms.InvalidClientIDException;
+import javax.jms.InvalidDestinationException;
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
+import javax.jms.Queue;
+import javax.jms.QueueBrowser;
+import javax.jms.QueueReceiver;
+import javax.jms.QueueSender;
+import javax.jms.QueueSession;
+import javax.jms.Session;
+import javax.jms.StreamMessage;
+import javax.jms.TemporaryQueue;
+import javax.jms.TemporaryTopic;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.jms.TopicPublisher;
+import javax.jms.TopicSession;
+import javax.jms.TopicSubscriber;
+import javax.jms.TransactionInProgressException;
+import javax.jms.XAQueueSession;
+import javax.jms.XASession;
+import javax.jms.XATopicSession;
+import javax.transaction.xa.XAResource;
+
 import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -30,17 +65,18 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
-import org.jboss.messaging.jms.*;
+import org.jboss.messaging.jms.JBossDestination;
+import org.jboss.messaging.jms.JBossQueue;
+import org.jboss.messaging.jms.JBossTemporaryQueue;
+import org.jboss.messaging.jms.JBossTemporaryTopic;
+import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.util.SimpleString;
 
-import javax.jms.*;
-import javax.jms.IllegalStateException;
-import javax.transaction.xa.XAResource;
-import java.io.Serializable;
-import java.util.LinkedList;
-import java.util.UUID;
-
 /**
+ * 
+ * Note that we *do not* support JMS ASF (Application Server Facilities) optional
+ * constructs such as ConnectionConsumer
+ * 
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
@@ -76,11 +112,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
    private final boolean transacted;
    
    private final boolean xa;
-   
-   private LinkedList<AsfMessageHolder> asfMessages;
-   
-   private MessageListener distinguishedListener;
-      
+        
    private boolean recoverCalled;
       
    // Constructors --------------------------------------------------
@@ -257,44 +289,16 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
    {
       checkClosed();
       
-      return distinguishedListener;
+      return null;
    }
 
    public void setMessageListener(final MessageListener listener) throws JMSException
    {
-      checkClosed();
-      
-      this.distinguishedListener = listener;
+      checkClosed();     
    }
    
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public void run()
    {
-//      try
-//      {
-//         if (asfMessages != null)
-//         {         
-//            while (asfMessages.size() > 0)
-//            {
-//               AsfMessageHolder holder = (AsfMessageHolder)asfMessages.removeFirst();
-//                    
-//               session.preDeliver(holder.getMsg().getDeliveryId());
-//               
-//               session.postDeliver();
-//               
-//               distinguishedListener.onMessage(holder.getMsg());
-//            }
-//         }
-//      }
-//      catch (Exception e)
-//      {
-//         log.error("Failed to process ASF messages", e);
-//      }
-      
-      //Need to work out how to get ASF to work with core
    }
 
    public MessageProducer createProducer(final Destination destination) throws JMSException
@@ -825,27 +829,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
    }
 
    // Package protected ---------------------------------------------
-   
-   /*
-    * This method is used by the JBossConnectionConsumer to load up the session
-    * with messages to be processed by the session's run() method
-    */
-   void addAsfMessage(final JBossMessage m, final String consumerID, final String queueName, final int maxDeliveries,
-                      final ClientSession connectionConsumerSession) throws JMSException
-   {
-      
-      AsfMessageHolder holder =
-         new AsfMessageHolder(m, consumerID, queueName, maxDeliveries,
-                              connectionConsumerSession);
-
-      if (asfMessages == null)
-      {
-         asfMessages = new LinkedList<AsfMessageHolder>();
-      }
-      
-      asfMessages.add(holder);      
-   }
-      
+     
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
