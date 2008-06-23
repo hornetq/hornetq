@@ -62,10 +62,6 @@ public class MessageReferenceImpl implements MessageReference
    
    // Constructors --------------------------------------------------
 
-   public MessageReferenceImpl()
-   {
-   }
-
    public MessageReferenceImpl(final MessageReferenceImpl other, final Queue queue)
    {
       this.deliveryCount = other.deliveryCount;
@@ -192,7 +188,7 @@ public class MessageReferenceImpl implements MessageReference
       		binding = postOffice.addBinding(expiryQueue, expiryQueue, null, true, false);
       	}
       	
-         ServerMessage copyMessage = makeCopyForDLQOrExpiry(false, persistenceManager);
+         ServerMessage copyMessage = makeCopyForDLQOrExpiry(true, persistenceManager);
          
          copyMessage.setDestination(binding.getAddress());
          
