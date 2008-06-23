@@ -22,6 +22,16 @@
 
 package org.jboss.messaging.core.deployers.impl;
 
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.messaging.core.deployers.Deployer;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.logging.Logger;
@@ -31,45 +41,41 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Set;
-
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public abstract class XmlDeployer implements Deployer, MessagingComponent
 {
    private static Logger log = Logger.getLogger(XmlDeployer.class);
+   
    protected static final String NAME_ATTR = "name";
 
-   private final HashMap<URL, HashMap<String, Node>> configuration = new HashMap<URL, HashMap<String, Node>>();
+   private final Map<URL, Map<String, Node>> configuration = new HashMap<URL, Map<String, Node>>();
 
    private final DeploymentManager deploymentManager;
    
-   private volatile boolean started;
+   private boolean started;
 
    public XmlDeployer(final DeploymentManager deploymentManager)
    {
       this.deploymentManager = deploymentManager;
    }
+   
    /**
     * adds a URL to the already configured set of url's this deployer is handling
     * @param url The URL to add
     * @param name the name of the element
     * @param e .
     */
-   public void addToConfiguration(URL url, String name, Node e)
+   public synchronized void addToConfiguration(final URL url, final String name, final Node e)
    {
-      if (configuration.get(url) == null)
+      Map<String, Node> map = configuration.get(url);      
+      if (map == null)
       {
-         configuration.put(url, new HashMap<String, Node>());
-      }
-      configuration.get(url).put(name, e);
+         map = new HashMap<String, Node>();         
+         configuration.put(url, map);
+      }      
+      map.put(name, e);
    }
 
    /**
@@ -78,10 +84,10 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
     * @param url The resource to redeploy
     * @throws Exception .
     */
-   public void redeploy(URL url) throws Exception
+   public synchronized void redeploy(final URL url) throws Exception
    {
       Element e = getRootElement(url);
-      ArrayList<String> added = new ArrayList<String>();
+      List<String> added = new ArrayList<String>();
       //pull out the elements that need deploying
       String elements[] = getElementTagName();
       for (String element : elements)
@@ -93,7 +99,8 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
             String name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
             added.add(name);
             //if this has never been deployed deploy
-            if (configuration.get(url) == null || (configuration.get(url) != null && configuration.get(url).get(name) == null))
+            Map<String, Node> map = configuration.get(url); 
+            if (map == null || (map != null && map.get(name) == null))
             {
                log.info(new StringBuilder(name).append(" doesn't exist deploying"));
                deploy(node);
@@ -106,18 +113,17 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
                deploy(node);
                addToConfiguration(url, name, node);
             }
-
          }
       }
       //now check for anything that has been removed and undeploy
       if (configuration.get(url) != null)
       {
          Set<String> keys = configuration.get(url).keySet();
-         ArrayList<String> removed = new ArrayList<String>();
+         List<String> removed = new ArrayList<String>();
 
          for (String key : keys)
          {
-            if(!added.contains(key))
+            if (!added.contains(key))
             {
                undeploy(configuration.get(url).get(key));
                removed.add(key);
@@ -135,7 +141,7 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
     * @param url The Resource that was deleted
     * @throws Exception .
     */
-   public void undeploy(URL url) throws Exception
+   public synchronized void undeploy(final URL url) throws Exception
    {
       Set<String> keys = configuration.get(url).keySet();
       for (String key : keys)
@@ -151,7 +157,7 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
     * @param url The resource todeploy
     * @throws Exception .
     */
-   public void deploy(URL url) throws Exception
+   public synchronized void deploy(final URL url) throws Exception
    {
       Element e = getRootElement(url);
       //find all thenodes to deploy
@@ -165,7 +171,7 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
             Node keyNode = node.getAttributes().getNamedItem(getKeyAttribute());
             if(keyNode == null)
             {
-               log.error("key attribuet missing for configuration " + node);
+               log.error("key attribute missing for configuration " + node);
                continue;
             }
             String name = keyNode.getNodeValue();
@@ -194,18 +200,28 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
    }
 
    //register with the deploymenmt manager
-   public void start() throws Exception
+   public synchronized void start() throws Exception
    {
+      if (started)
+      {
+         return;
+      }
+      
       deploymentManager.registerDeployer(this);
       
       started = true;
    }
 
    //undeploy everything
-   public void stop() throws Exception
+   public synchronized void stop() throws Exception
    {
-      Collection<HashMap<String, Node>> urls = configuration.values();
-      for (HashMap<String, Node> hashMap : urls)
+      if (!started)
+      {
+         return;
+      }
+      
+      Collection<Map<String, Node>> urls = configuration.values();
+      for (Map<String, Node> hashMap : urls)
       {
          for (Node node : hashMap.values())
          {
@@ -224,7 +240,7 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
       started = false;
    }
    
-   public boolean isStarted()
+   public synchronized boolean isStarted()
    {
       return started;
    }
@@ -241,18 +257,17 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
     * @param node the element to deploy
     * @throws Exception .
     */
-   public abstract void deploy(Node node)
-           throws Exception;
+   public abstract void deploy(final Node node) throws Exception;
 
    /**
     * undeploys an element
     * @param node the element to undeploy
     * @throws Exception .
     */
-   public abstract void undeploy(Node node)
+   public abstract void undeploy(final Node node)
            throws Exception;
 
-   protected Element getRootElement(URL url)
+   protected Element getRootElement(final URL url)
            throws Exception
    {
       Reader reader = new InputStreamReader(url.openStream());
@@ -261,7 +276,7 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
       return XMLUtil.stringToElement(xml);
    }
 
-   private boolean hasNodeChanged(URL url, Node child, String name)
+   private boolean hasNodeChanged(final URL url, final Node child, final String name)
    {
       String newTextContent = child.getTextContent();
       String origTextContent = configuration.get(url).get(name).getTextContent();

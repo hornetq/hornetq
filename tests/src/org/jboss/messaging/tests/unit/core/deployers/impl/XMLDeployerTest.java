@@ -34,31 +34,31 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * tests the abstract deployer class
+ * tests the abstract xml deployer class
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class DeployerTest  extends TestCase
+public class XMLDeployerTest  extends TestCase
 {
-   private String conf1 = "<deployment>\n" +
+   private static final String conf1 = "<deployment>\n" +
            "   <test name=\"test1\">content1</test>\n" +
            "   <test name=\"test2\">content2</test>\n" +
            "   <test name=\"test3\">content3</test>\n" +
            "   <test name=\"test4\">content4</test>\n" +
            "</deployment>";
 
-   private String conf2 = "<deployment>\n" +
+   private static final String conf2 = "<deployment>\n" +
            "   <test name=\"test1\">content1</test>\n" +
            "   <test name=\"test2\">contenthaschanged2</test>\n" +
            "   <test name=\"test3\">contenthaschanged3</test>\n" +
            "   <test name=\"test4\">content4</test>\n" +
            "</deployment>";
 
-   private String conf3 = "<deployment>\n" +
+   private static final String conf3 = "<deployment>\n" +
            "   <test name=\"test1\">content1</test>\n" +
            "   <test name=\"test2\">contenthaschanged2</test>\n" +
            "</deployment>";
 
-   private String conf4 = "<deployment>\n" +
+   private static final String conf4 = "<deployment>\n" +
            "   <test name=\"test1\">content1</test>\n" +
            "   <test name=\"test2\">content2</test>\n" +
            "   <test name=\"test3\">content3</test>\n" +
@@ -68,7 +68,6 @@ public class DeployerTest  extends TestCase
            "</deployment>";
 
    private URL url;
-
 
    protected void setUp() throws Exception
    {
@@ -168,6 +167,7 @@ public class DeployerTest  extends TestCase
       assertNull(testDeployer.getNodes().get("test3"));
       assertNull(testDeployer.getNodes().get("test4"));
    }
+         
    class TestDeployer extends XmlDeployer
    {
       private String elementname = "test";
