@@ -738,6 +738,64 @@ public class ClientSessionImplTest extends UnitTestCase
       
       EasyMock.verify(conn, rc, cf, pd);; 
    }
+
+   public void testCleanup() throws Exception
+   {
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
+        
+      final long sessionTargetID = 9121892;
+                  
+      EasyMock.replay(conn, rc, cf, pd);
+      
+      ClientSessionInternal session = new ClientSessionImpl(conn, sessionTargetID, false, -1, false, false, false, false, rc, cf, pd);
+      
+      EasyMock.verify(conn, rc, cf, pd);
+      
+      EasyMock.reset(conn, rc, cf, pd);
+      
+      ClientProducerInternal prod1 = EasyMock.createStrictMock(ClientProducerInternal.class);
+      ClientProducerInternal prod2 = EasyMock.createStrictMock(ClientProducerInternal.class);
+      
+      ClientConsumerInternal cons1 = EasyMock.createStrictMock(ClientConsumerInternal.class);
+      ClientConsumerInternal cons2 = EasyMock.createStrictMock(ClientConsumerInternal.class);
+      
+      ClientBrowser browser1 = EasyMock.createStrictMock(ClientBrowser.class);
+      ClientBrowser browser2 = EasyMock.createStrictMock(ClientBrowser.class);
+                    
+      prod1.cleanUp();
+      prod2.cleanUp();
+      cons1.cleanUp();
+      cons2.cleanUp();
+      browser1.cleanUp();
+      browser2.cleanUp();
+      
+      conn.removeSession(session);      
+            
+      EasyMock.replay(conn, rc, cf, pd, prod1, prod2, cons1, cons2, browser1, browser2);
+                 
+      session.addProducer(prod1);
+      session.addProducer(prod2);
+      
+      session.addConsumer(cons1);
+      session.addConsumer(cons2);
+      
+      session.addBrowser(browser1);
+      session.addBrowser(browser2);
+      
+      assertFalse(session.isClosed());
+      
+      session.cleanUp();
+
+      assertTrue(session.isClosed());
+      
+      EasyMock.verify(conn, rc, cf, pd, prod1, prod2, cons1, cons2, browser1, browser2);
+      
+   }
+   
+   
    
    public void testClose() throws Exception   
    {
