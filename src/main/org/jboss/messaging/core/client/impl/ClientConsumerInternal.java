@@ -48,4 +48,6 @@ public interface ClientConsumerInternal extends ClientConsumer
    int getBufferSize();
    
    int getCreditsToSend();
+   
+   void cleanUp() throws Exception;
 }

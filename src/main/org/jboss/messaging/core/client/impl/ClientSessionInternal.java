@@ -64,4 +64,6 @@ public interface ClientSessionInternal extends ClientSession
    Set<ClientBrowser> getBrowsers();
    
    Map<SimpleString, ClientProducerInternal> getProducerCache();
+   
+   void cleanUp() throws Exception;
 }

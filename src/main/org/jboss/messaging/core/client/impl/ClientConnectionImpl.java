@@ -169,11 +169,21 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       }
    }
 
-   public synchronized void cleanUp()
+   public synchronized void cleanUp() throws Exception
    {
-      cleanUpChildren();
+      if (closed)
+      {
+         return;
+      }
       
-      closed = true;
+      try
+      {
+         cleanUpChildren();
+      }
+      finally
+      {            
+         closed = true;
+      }
    }
 
    public boolean isClosed()
@@ -208,11 +218,6 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       return serverVersion;
    }
    
-//   public ClientConnectionFactory getConnectionFactory()
-//   {
-//      return connectionFactory;
-//   }
-
    // Public ---------------------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
@@ -241,13 +246,13 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       }
    }
 
-   private void cleanUpChildren()
+   private void cleanUpChildren() throws Exception
    {
       //We copy the set of sessions to prevent ConcurrentModificationException which would occur
       //when the child trues to remove itself from its parent
-      Set<ClientSession> childrenClone = new HashSet<ClientSession>(sessions);
+      Set<ClientSessionInternal> childrenClone = new HashSet<ClientSessionInternal>(sessions);
 
-      for (ClientSession session: childrenClone)
+      for (ClientSessionInternal session: childrenClone)
       {
          session.cleanUp();
       }

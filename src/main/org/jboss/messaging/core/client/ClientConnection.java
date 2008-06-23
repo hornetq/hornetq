@@ -50,6 +50,4 @@ public interface ClientConnection
    boolean isClosed();
 
    Version getServerVersion();
-      
-   void cleanUp();
 }

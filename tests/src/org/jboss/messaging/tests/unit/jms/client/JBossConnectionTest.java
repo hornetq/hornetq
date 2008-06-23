@@ -22,20 +22,40 @@
 
 package org.jboss.messaging.tests.unit.jms.client;
 
+import static org.easymock.EasyMock.createStrictMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
+import static org.jboss.messaging.tests.util.RandomUtil.randomString;
+
+import javax.jms.ConnectionConsumer;
+import javax.jms.ConnectionMetaData;
+import javax.jms.Destination;
+import javax.jms.ExceptionListener;
+import javax.jms.JMSException;
+import javax.jms.Queue;
+import javax.jms.QueueSession;
+import javax.jms.ServerSessionPool;
+import javax.jms.Session;
+import javax.jms.Topic;
+import javax.jms.TopicSession;
+import javax.jms.XAQueueSession;
+import javax.jms.XASession;
+import javax.jms.XATopicSession;
+
 import junit.framework.TestCase;
+
 import org.easymock.EasyMock;
-import static org.easymock.EasyMock.*;
 import org.easymock.IArgumentMatcher;
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.RemotingSessionListener;
+import org.jboss.messaging.core.client.impl.ClientConnectionInternal;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.jms.client.JBossConnection;
 import org.jboss.messaging.tests.util.RandomUtil;
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-
-import javax.jms.*;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -683,7 +703,7 @@ public class JBossConnectionTest extends TestCase
 
    public void testResourcesCleanedUp() throws Exception
    {
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
+      ClientConnectionInternal clientConn = createStrictMock(ClientConnectionInternal.class);
       FailureListenerMatcher failureListenerMatcher = new FailureListenerMatcher();
       EasyMock.reportMatcher(failureListenerMatcher);
       clientConn.setRemotingSessionListener(null);

@@ -35,7 +35,7 @@ public class MessagingBufferFactory
 {
    public static MessagingBuffer createMessagingBuffer(TransportType transportType, int len)
    {
-      if(transportType == TransportType.TCP)
+      if (transportType == TransportType.TCP)
       {
          return new IoBufferWrapper(len);
       }
@@ -51,7 +51,7 @@ public class MessagingBufferFactory
 
    public static MessagingBuffer createMessagingBuffer(MessagingBuffer buffer, int len)
    {
-      if(buffer instanceof IoBufferWrapper)
+      if (buffer instanceof IoBufferWrapper)
       {
          return new IoBufferWrapper(len);
       }

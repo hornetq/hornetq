@@ -96,8 +96,6 @@ public interface ClientSession extends XAResource
    
    boolean isXA();
 
-   void cleanUp();
-
    ClientMessage createClientMessage(final byte type, final boolean durable, final long expiration,
                             final long timestamp, final byte priority);
 

@@ -259,6 +259,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
+   //TODO - should combine close() and cleanup() functionality in one method - there is currently duplication
+   
    public void close() throws MessagingException
    {
       if (closed)

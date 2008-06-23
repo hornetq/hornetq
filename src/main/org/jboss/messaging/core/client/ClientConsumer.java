@@ -45,7 +45,5 @@ public interface ClientConsumer
    
    boolean isClosed();   
    
-   boolean isDirect();
-
-   void cleanUp();
+   boolean isDirect();   
 }

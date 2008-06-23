@@ -52,6 +52,4 @@ public interface ClientProducer
    int getMaxRate();
    
    int getInitialWindowSize();
-
-   void cleanUp();
 }

@@ -42,6 +42,8 @@ public interface ClientConnectionInternal extends ClientConnection
    void removeSession(ClientSessionInternal session);
    
    Set<ClientSession> getSessions();
+      
+   void cleanUp() throws Exception;
    
    //For testing only
    RemotingConnection getRemotingConnection();

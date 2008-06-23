@@ -168,22 +168,19 @@ public class ClientProducerImpl implements ClientProducerInternal
          return;         
       }
       
-      session.removeProducer(this);
-      
-      dispatcher.unregister(clientTargetID);
-      
-      closed = true;
+      doCleanup();
    }
 
    public void cleanUp()
    {
-      session.removeProducer(this);
-
-      dispatcher.unregister(clientTargetID);
-
-      closed = true;
+      if (closed)
+      {
+         return;         
+      }
+      
+      doCleanup();
    }
-
+         
    public boolean isClosed()
    {
       return closed;
@@ -228,6 +225,15 @@ public class ClientProducerImpl implements ClientProducerInternal
    // Package Private ------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
+   
+   private void doCleanup()
+   {
+      session.removeProducer(this);
+
+      dispatcher.unregister(clientTargetID);
+
+      closed = true;
+   }
    
    private void doSend(final SimpleString address, final ClientMessage msg) throws MessagingException
    {
