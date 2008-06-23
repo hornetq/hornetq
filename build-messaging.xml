@@ -826,10 +826,11 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${test.classes.dir}">
-               <include name="**/org/jboss/messaging/tests/integration/**/*${test-mask}.class"/>
-               <include name="**/org/jboss/messaging/tests/unit/**/*${test-mask}.class"/>
-               <exclude name="**/org/jboss/messaging/tests/local/**/*${test-mask}.class"/>
-               <exclude name="**/org/jboss/messaging/tests/performance/**/*${test-mask}.class"/>
+               <include name="${test-mask}"/>
+               <include name="**/org/jboss/messaging/tests/integration/**/${test-mask}.class"/>
+               <include name="**/org/jboss/messaging/tests/unit/**/${test-mask}.class"/>
+               <exclude name="**/org/jboss/messaging/tests/local/**/${test-mask}.class"/>
+               <exclude name="**/org/jboss/messaging/tests/performance/**/${test-mask}.class"/>
             </fileset>
          </batchtest>
       </junit>
