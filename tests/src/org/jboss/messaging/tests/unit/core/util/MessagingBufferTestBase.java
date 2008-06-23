@@ -125,6 +125,27 @@ public abstract class MessagingBufferTestBase extends TestCase
       assertEquals(b, wrapper.getByte());
    }
    
+   public void testUnsignedByte() throws Exception
+   {
+      byte b = (byte) 0xff;
+      wrapper.putByte(b);
+      
+      wrapper.flip();
+      
+      assertEquals(255, wrapper.getUnsignedByte());
+
+      wrapper.rewind();
+      
+      b = (byte) 0xf;
+      wrapper.putByte(b);
+      
+      wrapper.flip();
+      
+      assertEquals(b, wrapper.getUnsignedByte());
+   }
+   
+   
+   
    public void testBytes() throws Exception
    {
       byte[] bytes = randomBytes();
@@ -211,6 +232,45 @@ public abstract class MessagingBufferTestBase extends TestCase
       wrapper.flip();
       
       assertEquals(l, wrapper.getLong());
+   }
+   
+   public void testUnsignedShort() throws Exception
+   {
+      short s1 = Short.MAX_VALUE;
+      
+      wrapper.putShort(s1);
+      
+      wrapper.flip();
+      
+      int s2 = wrapper.getUnsignedShort();
+      
+      assertEquals((int) s1, s2);
+      
+      wrapper.rewind();
+      
+      s1 = Short.MIN_VALUE;
+      
+      wrapper.putShort(s1);
+      
+      wrapper.flip();
+      
+      s2 = wrapper.getUnsignedShort();
+      
+      assertEquals(((int) s1) * -1, s2);
+      
+      wrapper.rewind();
+      
+      s1 = -1;
+      
+      wrapper.putShort(s1);
+      
+      wrapper.flip();
+      
+      s2 = wrapper.getUnsignedShort();
+      
+      // / The max of an unsigned short
+      // (http://en.wikipedia.org/wiki/Unsigned_short)
+      assertEquals(s2, 65535);
    }
    
    public void testShort() throws Exception
