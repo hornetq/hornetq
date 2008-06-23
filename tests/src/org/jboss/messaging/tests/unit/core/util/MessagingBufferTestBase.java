@@ -136,6 +136,19 @@ public abstract class MessagingBufferTestBase extends TestCase
       wrapper.getBytes(b);
       assertEqualsByteArrays(bytes, b);
    }
+   
+   public void testBytesWithLength() throws Exception
+   {
+      byte[] bytes = randomBytes();
+      // put only half of the bytes
+      wrapper.putBytes(bytes, 0, bytes.length / 2);
+      
+      wrapper.flip();
+      
+      byte[] b = new byte[bytes.length / 2];
+      wrapper.getBytes(b, 0, b.length);
+      assertEqualsByteArrays(b.length, bytes, b);
+   }
 
    public void testPutTrueBoolean() throws Exception
    {
@@ -238,7 +251,90 @@ public abstract class MessagingBufferTestBase extends TestCase
       
       assertEquals(str, wrapper.getUTF());
    }
+   
+   public void testArray() throws Exception
+   {
+      byte[] bytes = randomBytes(128);
+      wrapper.putBytes(bytes);
+      
+      wrapper.flip();
+      
+      byte[] array = wrapper.array();
+      assertEquals(wrapper.capacity(), array.length);
+      assertEqualsByteArrays(128, bytes, wrapper.array());
+   }
 
+   public void testRewind() throws Exception
+   {
+      int i = randomInt();
+      wrapper.putInt(i);
+      
+      wrapper.flip();
+      
+      assertEquals(i, wrapper.getInt());
+      
+      wrapper.rewind();
+
+      assertEquals(i, wrapper.getInt());
+   }
+   
+   public void testRemaining() throws Exception
+   {
+      int capacity = wrapper.capacity();
+      assertEquals(capacity, wrapper.remaining());
+
+      // fill 1/3 of the buffer
+      int fill = capacity / 3;
+      byte[] bytes = randomBytes(fill);
+      wrapper.putBytes(bytes);
+      
+      // check the remaining is 2/3
+      assertEquals(capacity - fill, wrapper.remaining());
+   }
+   
+   public void testPosition() throws Exception
+   {
+      assertEquals(0, wrapper.position());
+      
+      byte[] bytes = randomBytes(128);
+      wrapper.putBytes(bytes);
+      
+      assertEquals(bytes.length, wrapper.position());
+      
+      wrapper.position(0);
+      assertEquals(0, wrapper.position());      
+   }
+
+   public void testLimit() throws Exception
+   {
+      assertEquals(wrapper.capacity(), wrapper.limit());
+
+      byte[] bytes = randomBytes(128);
+      wrapper.putBytes(bytes);
+
+      assertEquals(wrapper.capacity(), wrapper.limit()); 
+      
+      wrapper.limit(128);
+      assertEquals(128, wrapper.limit());
+   }
+   
+   public void testSlice() throws Exception
+   {
+      byte[] bytes = randomBytes(128);
+      wrapper.putBytes(bytes);
+
+      wrapper.position(0);
+      wrapper.limit(128);
+      
+      MessagingBuffer slicedBuffer = wrapper.slice();
+      assertEquals(128, slicedBuffer.capacity());
+      
+      byte[] slicedBytes = new byte[128];
+      slicedBuffer.getBytes(slicedBytes);
+      
+      assertEqualsByteArrays(bytes, slicedBytes);
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
