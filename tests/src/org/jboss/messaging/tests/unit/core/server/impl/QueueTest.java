@@ -1201,12 +1201,6 @@ public class QueueTest extends UnitTestCase
       assertEquals(4, queue.getDeliveringCount());
    }
    
-   
-   
-  
-   
-   
-   
    // Inner classes ---------------------------------------------------------------
         
    class DummyDistributionPolicy implements DistributionPolicy

@@ -44,5 +44,5 @@ public interface DeploymentManager
     * @param deployer The deployable object
     * @throws Exception .
     */
-   void unregisterDeployer(Deployer deployer);
+   void unregisterDeployer(Deployer deployer) throws Exception;
 }

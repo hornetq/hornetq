@@ -322,10 +322,12 @@ public class JBossMessageTest extends TestCase
       int invalidPriority = 10;
       JBossMessage message = new JBossMessage();
 
-      try {
+      try
+      {
          message.setJMSPriority(invalidPriority);
          fail("0 <= priority <= 9");
-      } catch(JMSException e)
+      }
+      catch(JMSException e)
       {
       }
    }
@@ -389,7 +391,8 @@ public class JBossMessageTest extends TestCase
       {
          message.setJMSMessageID(messageID);
          fail("messageID does not start with ID:");
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
 
       }
@@ -422,7 +425,8 @@ public class JBossMessageTest extends TestCase
       {
          message.setBooleanProperty(null, true);
          fail("property name can not be null");
-      } catch (IllegalArgumentException e)
+      }
+      catch (IllegalArgumentException e)
       {
       }
    }
@@ -448,7 +452,8 @@ public class JBossMessageTest extends TestCase
       {
          message.setBooleanProperty("", true);
          fail("property name can not be empty");
-      } catch (IllegalArgumentException e)
+      }
+      catch (IllegalArgumentException e)
       {
       }
    }

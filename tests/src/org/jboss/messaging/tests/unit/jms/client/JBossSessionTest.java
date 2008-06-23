@@ -387,7 +387,8 @@ public class JBossSessionTest extends TestCase
             JBossSession.TYPE_GENERIC_SESSION);
       assertNull(session.getMessageListener());
       session.setMessageListener(listener);
-      assertSame(listener, session.getMessageListener());
+      //Note we don't implement ASF so always return null
+      assertNull(session.getMessageListener());
 
       verify(listener);
    }
