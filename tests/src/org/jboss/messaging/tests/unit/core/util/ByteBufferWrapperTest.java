@@ -24,7 +24,6 @@ package org.jboss.messaging.tests.unit.core.util;
 
 import java.nio.ByteBuffer;
 
-import org.jboss.messaging.tests.integration.core.remoting.mina.MessagingBufferTestBase;
 import org.jboss.messaging.util.ByteBufferWrapper;
 import org.jboss.messaging.util.MessagingBuffer;
 
