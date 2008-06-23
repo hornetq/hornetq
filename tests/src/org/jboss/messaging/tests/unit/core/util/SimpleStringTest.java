@@ -188,10 +188,23 @@ public class SimpleStringTest extends TestCase
 	
 	public void testEquals() throws Exception
 	{
+	   assertFalse(new SimpleString("abcdef").equals(new Object()));
+	   
 		assertEquals(new SimpleString("abcdef"), new SimpleString("abcdef"));
 		
 		assertFalse(new SimpleString("abcdef").equals(new SimpleString("abggcdef")));
+      assertFalse(new SimpleString("abcdef").equals(new SimpleString("ghijkl")));
 	}
+	
+	public void testHashcode() throws Exception
+   {
+	   SimpleString str = new SimpleString("abcdef");
+      SimpleString sameStr = new SimpleString("abcdef");
+      SimpleString differentStr = new SimpleString("ghijk");
+      
+      assertTrue(str.hashCode() == sameStr.hashCode());
+      assertFalse(str.hashCode() == differentStr.hashCode());
+   }
 	
 	public void testUnicode() throws Exception
    {
