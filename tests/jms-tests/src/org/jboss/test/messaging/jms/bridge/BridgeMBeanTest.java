@@ -36,7 +36,7 @@ import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.jms.server.bridge.Bridge;
+import org.jboss.messaging.jms.bridge.Bridge;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**

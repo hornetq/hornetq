@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */ 
 
-package org.jboss.messaging.jms.server.bridge;
+package org.jboss.messaging.jms.bridge;
 
 import javax.jms.ConnectionFactory;
 

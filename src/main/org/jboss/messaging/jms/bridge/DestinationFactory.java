@@ -20,9 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */ 
 
-package org.jboss.messaging.jms.server.bridge;
-
-import java.util.Hashtable;
+package org.jboss.messaging.jms.bridge;
 
 import javax.jms.Destination;
 
@@ -34,15 +32,7 @@ import javax.jms.Destination;
  * $Id: $
  *
  */
-public class JNDIDestinationFactory extends JNDIFactorySupport implements DestinationFactory
+public interface DestinationFactory
 {
-   public JNDIDestinationFactory(Hashtable jndiProperties, String lookup)
-   {
-      super(jndiProperties, lookup);      
-   }
-
-   public Destination createDestination() throws Exception
-   {
-   	return (Destination)createObject();   	
-   }
+	Destination createDestination() throws Exception;
 }
