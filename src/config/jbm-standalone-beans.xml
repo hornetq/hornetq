@@ -41,15 +41,13 @@
       </property>
    </bean>
 
-<!--
    <bean name="MessagingServerManagement"
          class="org.jboss.messaging.core.management.impl.MessagingServerManagementImpl">
-      <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.messaging:service=MessagingServerManagement",exposedInterface=org.jboss.messaging.core.management.MessagingServerManagement.class)</annotation>
-      <property name="messagingServer">
-         <inject bean="MessagingServer"/>
-      </property>
+      <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.messaging:service=MessagingServerManagement",exposedInterface=org.jboss.messaging.core.management.MessagingServerManagement.class)</annotation>      
+      <constructor factoryMethod="getServerManagement">
+         <factory bean="MessagingServer"/>
+      </constructor>
    </bean>
--->   
 
    <bean name="MessagingServer" class="org.jboss.messaging.core.server.impl.MessagingServerImpl">
       <depends>QueueSettingsDeployer</depends>
@@ -64,7 +62,7 @@
       </property>
       <property name="securityManager">
          <inject bean="JBMSecurityManager"/>
-      </property>
+      </property>      
    </bean>
 
    <bean name="StorageManager" class="org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager">
