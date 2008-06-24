@@ -23,10 +23,7 @@
 package org.jboss.messaging.tests.unit.core.client.impl;
 
 import org.easymock.EasyMock;
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
-import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.client.*;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientConnectionImpl;
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
@@ -220,7 +217,6 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
       RemotingConnectionFactory rcf = EasyMock.createStrictMock(RemotingConnectionFactory.class);
       
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      
       PacketDispatcher dispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
       
       ClientConnectionFactory cf =
@@ -232,7 +228,7 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
       EasyMock.expect(rcf.createRemotingConnection(location, params)).andReturn(rc);
       
       rc.start();
-      
+
       Version clientVersion = VersionLoader.load();
       
       CreateConnectionRequest request =
@@ -246,9 +242,9 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
          new CreateConnectionResponse(connTargetID, serverVersion);
       
       EasyMock.expect(rc.sendBlocking(0, 0, request)).andReturn(response);
-      
+
       EasyMock.expect(rc.getPacketDispatcher()).andReturn(dispatcher);
-      
+      rc.addRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
       EasyMock.replay(rcf, rc, dispatcher);
       
       ClientConnection conn;

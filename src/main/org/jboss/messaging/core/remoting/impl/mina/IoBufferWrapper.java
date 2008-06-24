@@ -22,17 +22,13 @@
 
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import static org.jboss.messaging.util.DataConstants.FALSE;
-import static org.jboss.messaging.util.DataConstants.NOT_NULL;
-import static org.jboss.messaging.util.DataConstants.NULL;
-import static org.jboss.messaging.util.DataConstants.TRUE;
-
-import java.nio.charset.Charset;
-
 import org.apache.mina.common.IoBuffer;
 import org.jboss.messaging.core.logging.Logger;
+import static org.jboss.messaging.util.DataConstants.*;
 import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
+
+import java.nio.charset.Charset;
 
 /**
  * 
@@ -113,7 +109,12 @@ public class IoBufferWrapper implements MessagingBuffer
    {
       return new IoBufferWrapper(buffer.slice());
    }
-   
+
+   public MessagingBuffer createNewBuffer(int len)
+   {
+      return new IoBufferWrapper(len);
+   }
+
    public int remaining()
    {
       return buffer.remaining();

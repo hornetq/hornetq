@@ -22,10 +22,6 @@
 
 package org.jboss.messaging.core.client.impl;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -36,6 +32,10 @@ import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -258,80 +258,21 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          }
       }
    }
-
-   //TODO - should combine close() and cleanup() functionality in one method - there is currently duplication
    
    public void close() throws MessagingException
    {
-      if (closed)
-      {
-         return;
-      }
-      
-      try
-      {
-         // Now we wait for any current handler runners to run.
-         waitForOnMessageToComplete();
-
-         closed = true;
-                           
-         if (receiverThread != null)
-         {
-            synchronized (this)
-            {   
-               // Wake up any receive() thread that might be waiting
-               notify();
-            }
-         }
-                          
-         handler = null;
-         
-         receiverThread = null;
-
-         remotingConnection.sendBlocking(targetID, sessionTargetID, new PacketImpl(PacketImpl.CLOSE));
-
-         dispatcher.unregister(clientTargetID);
-      }
-      finally
-      {
-         session.removeConsumer(this);
-      }   	
+      doCleanUp(true);
    }
 
    public synchronized void cleanUp()
    {
-     try
+      try
       {
-         // Now we wait for any current handler runners to run.
-         waitForOnMessageToComplete();
-
-         closed = true;
-
-         if (receiverThread != null)
-         {
-            synchronized (this)
-            {
-               // Wake up any receive() thread that might be waiting
-               notify();
-            }
-         }
-
-         handler = null;
-
-         receiverThread = null;
-
-         dispatcher.unregister(clientTargetID);
+         doCleanUp(false);
       }
-      finally
+      catch (MessagingException e)
       {
-         try
-         {
-            session.removeConsumer(this);
-         }
-         catch (MessagingException e)
-         {
-            log.warn("Unable to clean up consumer:" + this);
-         }
+         log.warn("problem cleaning up: " + this);
       }
    }
 
@@ -568,7 +509,47 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 			log.error("RuntimeException thrown from handler", e);
 		}
    }
-   
+
+   public void doCleanUp(boolean sendCloseMessage) throws MessagingException
+   {
+      if (closed)
+      {
+         return;
+      }
+
+      try
+      {
+         // Now we wait for any current handler runners to run.
+         waitForOnMessageToComplete();
+
+         closed = true;
+
+         if (receiverThread != null)
+         {
+            synchronized (this)
+            {
+               // Wake up any receive() thread that might be waiting
+               notify();
+            }
+         }
+
+         handler = null;
+
+         receiverThread = null;
+
+         if(sendCloseMessage)
+         {
+            remotingConnection.sendBlocking(targetID, sessionTargetID, new PacketImpl(PacketImpl.CLOSE));
+         }
+
+         dispatcher.unregister(clientTargetID);
+      }
+      finally
+      {
+         session.removeConsumer(this);
+      }
+   }
+
    // Inner classes
    // --------------------------------------------------------------------------------
    

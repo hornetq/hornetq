@@ -21,63 +21,21 @@
  */ 
 package org.jboss.messaging.core.client.impl;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-
-import org.jboss.messaging.core.client.ClientBrowser;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
-import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.*;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCancelMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAForgetMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetInDoubtXidsResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetTimeoutResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAJoinMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAPrepareMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResumeMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
-import org.jboss.messaging.util.MessagingBuffer;
-import org.jboss.messaging.util.MessagingBufferFactory;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.TokenBucketLimiterImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.*;
+import org.jboss.messaging.util.*;
+
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -148,6 +106,8 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    private final boolean blockOnAcknowledge;
 
+   private MessagingBufferFactory messagingBufferFactory;
+
    //For testing only
    private boolean forceNotSameRM;
 
@@ -200,6 +160,8 @@ public class ClientSessionImpl implements ClientSessionInternal
       this.autoCommitSends = autoCommitSends;
 
       this.blockOnAcknowledge = blockOnAcknowledge;
+
+      messagingBufferFactory = new MessagingBufferFactoryImpl();
    }
 
    // ClientSession implementation -----------------------------------------------------------------
@@ -530,19 +492,19 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    public ClientMessage createClientMessage(byte type, boolean durable, long expiration, long timestamp, byte priority)
    {
-      MessagingBuffer body = MessagingBufferFactory.createMessagingBuffer(remotingConnection.getLocation().getTransport(), 1024);
+      MessagingBuffer body = messagingBufferFactory.createMessagingBuffer(remotingConnection.getLocation().getTransport(), 1024);
       return new ClientMessageImpl(type, durable, expiration, timestamp, priority, body);
    }
 
    public ClientMessage createClientMessage(byte type, boolean durable)
    {
-      MessagingBuffer body = MessagingBufferFactory.createMessagingBuffer(remotingConnection.getLocation().getTransport(), 1024);
+      MessagingBuffer body = messagingBufferFactory.createMessagingBuffer(remotingConnection.getLocation().getTransport(), 1024);
       return new ClientMessageImpl(type, durable, body);
    }
 
    public ClientMessage createClientMessage(boolean durable)
    {
-      MessagingBuffer body = MessagingBufferFactory.createMessagingBuffer(remotingConnection.getLocation().getTransport(), 1024);
+      MessagingBuffer body = messagingBufferFactory.createMessagingBuffer(remotingConnection.getLocation().getTransport(), 1024);
       return new ClientMessageImpl(durable, body);
    }
 

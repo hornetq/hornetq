@@ -22,15 +22,11 @@
 
 package org.jboss.messaging.tests.unit.core.util;
 
-import java.nio.ByteBuffer;
-
+import junit.framework.TestCase;
 import org.jboss.messaging.core.remoting.TransportType;
-import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
-import org.jboss.messaging.util.ByteBufferWrapper;
 import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.MessagingBufferFactory;
-
-import junit.framework.TestCase;
+import org.jboss.messaging.util.MessagingBufferFactoryImpl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -40,6 +36,7 @@ import junit.framework.TestCase;
  */
 public class MessagingBufferFactoryTest extends TestCase
 {
+   private MessagingBufferFactory messagingBufferFactory;
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -50,10 +47,22 @@ public class MessagingBufferFactoryTest extends TestCase
 
    // Public --------------------------------------------------------
 
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      messagingBufferFactory = new MessagingBufferFactoryImpl();
+   }
+
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();
+      messagingBufferFactory = null;
+   }
+
    public void testCreateMessagingBufferForTCP() throws Exception
    {
       int length = 512;
-      MessagingBuffer buffer = MessagingBufferFactory.createMessagingBuffer(TransportType.TCP, length);
+      MessagingBuffer buffer = messagingBufferFactory.createMessagingBuffer(TransportType.TCP, length);
       assertNotNull(buffer);
       assertEquals(length, buffer.capacity());
    }
@@ -62,30 +71,11 @@ public class MessagingBufferFactoryTest extends TestCase
    public void testCreateMessagingBufferForINVM() throws Exception
    {
       int length = 512;
-      MessagingBuffer buffer = MessagingBufferFactory.createMessagingBuffer(TransportType.INVM, length);
+      MessagingBuffer buffer = messagingBufferFactory.createMessagingBuffer(TransportType.INVM, length);
       assertNotNull(buffer);
       assertEquals(length, buffer.capacity());
    }
    
-   public void testCreateMessagingBufferFromByteBufferWrapper() throws Exception
-   {
-      int length = 512;
-      MessagingBuffer buffer = new ByteBufferWrapper(ByteBuffer.allocate(length));
-      
-      MessagingBuffer buff = MessagingBufferFactory.createMessagingBuffer(buffer, length);
-      assertNotNull(buff);
-      assertTrue(buff instanceof ByteBufferWrapper);
-   }
-
-   public void testCreateMessagingBufferFromIoBufferWrapper() throws Exception
-   {
-      int length = 512;
-      MessagingBuffer buffer = new IoBufferWrapper(length);
-      
-      MessagingBuffer buff = MessagingBufferFactory.createMessagingBuffer(buffer, length);
-      assertNotNull(buff);
-      assertTrue(buff instanceof IoBufferWrapper);
-   }
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

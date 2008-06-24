@@ -90,8 +90,13 @@ public class ByteBufferWrapper implements MessagingBuffer
    {
    	return new ByteBufferWrapper(buffer.slice());
    }
-	
-	public void rewind()
+
+   public MessagingBuffer createNewBuffer(int len)
+   {
+      return new ByteBufferWrapper(ByteBuffer.allocate(len));
+   }
+
+   public void rewind()
 	{
 		buffer.rewind();
 	}

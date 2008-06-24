@@ -22,17 +22,7 @@
 
 package org.jboss.messaging.tests.unit.core.remoting.network;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
-import static org.jboss.messaging.tests.integration.core.remoting.mina.TestSupport.PING_INTERVAL;
-import static org.jboss.messaging.tests.integration.core.remoting.mina.TestSupport.PING_TIMEOUT;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-
 import junit.framework.TestCase;
-
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.RemotingSessionListener;
@@ -43,10 +33,18 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Acceptor;
 import org.jboss.messaging.core.remoting.TransportType;
+import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import org.jboss.messaging.core.remoting.impl.RemotingServiceImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaAcceptor;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
+import static org.jboss.messaging.tests.integration.core.remoting.mina.TestSupport.PING_INTERVAL;
+import static org.jboss.messaging.tests.integration.core.remoting.mina.TestSupport.PING_TIMEOUT;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -137,14 +135,7 @@ public class ClientNetworkFailureTest extends TestCase
       //Thread.sleep((PING_INTERVAL + PING_TIMEOUT) * 1000);
       assertActiveConnectionsOnTheServer(0);
 
-      try
-      {
-         conn.close();
-         fail("close should fail since client resources must have been cleaned up on the server side");
-      }
-      catch (Exception e)
-      {
-      }
+      assertTrue(conn.isClosed());
 
       minaService.removeRemotingSessionListener(listener);
    }

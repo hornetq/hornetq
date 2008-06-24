@@ -115,5 +115,7 @@ public interface MessagingBuffer
 	
 	void rewind();
 	
-	MessagingBuffer slice();	
+	MessagingBuffer slice();
+
+   MessagingBuffer createNewBuffer(int len);
 }

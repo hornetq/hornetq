@@ -156,7 +156,7 @@ public class RemotingConnectionTest extends UnitTestCase
 
       RemotingConnectionImpl remotingConnection = new RemotingConnectionImpl(location, connectionParams);
       remotingConnection.start();
-      remotingConnection.setRemotingSessionListener(listener);
+      remotingConnection.addRemotingSessionListener(listener);
       remotingConnection.stop();
       EasyMock.verify(connector);
       EasyMock.verify(connectorRegistry);
@@ -729,7 +729,7 @@ public class RemotingConnectionTest extends UnitTestCase
 
       RemotingConnectionImpl remotingConnection = new RemotingConnectionImpl(location, connectionParams);
       remotingConnection.start();
-      remotingConnection.setRemotingSessionListener(listener);
+      remotingConnection.addRemotingSessionListener(listener);
       EasyMock.verify(connector);
       EasyMock.verify(connectorRegistry);
    }
@@ -760,51 +760,13 @@ public class RemotingConnectionTest extends UnitTestCase
 
       RemotingConnectionImpl remotingConnection = new RemotingConnectionImpl(location, connectionParams);
       remotingConnection.start();
-      remotingConnection.setRemotingSessionListener(listener);
-      remotingConnection.setRemotingSessionListener(null);
-      remotingConnection.setRemotingSessionListener(listener2);
+      remotingConnection.addRemotingSessionListener(listener);
+      remotingConnection.removeRemotingSessionListener(listener);
+      remotingConnection.addRemotingSessionListener(listener2);
       EasyMock.verify(connector);
       EasyMock.verify(connectorRegistry);
    }
 
-   public void testConnectionSetListenerTwiceThrowsException() throws Throwable
-   {
-      final ConnectorRegistry connectorRegistry = EasyMock.createStrictMock(ConnectorRegistry.class);
-      RemotingConnector connector = EasyMock.createStrictMock(RemotingConnector.class);
-      ConnectorRegistryFactory.setRegisteryLocator(new ConnectorRegistryLocator()
-      {
-         public ConnectorRegistry locate()
-         {
-            return connectorRegistry;
-         }
-      });
-      Location location = EasyMock.createNiceMock(Location.class);
-      ConnectionParams connectionParams = EasyMock.createNiceMock(ConnectionParams.class);
-      RemotingSession remotingSession = EasyMock.createStrictMock(RemotingSession.class);
-      RemotingSessionListener listener = EasyMock.createNiceMock(RemotingSessionListener.class);
-      RemotingSessionListener listener2 = EasyMock.createNiceMock(RemotingSessionListener.class);
-
-      EasyMock.expect(connectorRegistry.getConnector(location, connectionParams)).andReturn(connector);
-      EasyMock.replay(connectorRegistry);
-      EasyMock.expect(connector.connect()).andReturn(remotingSession);
-      connector.addSessionListener(listener);
-      EasyMock.replay(connector);
-
-      RemotingConnectionImpl remotingConnection = new RemotingConnectionImpl(location, connectionParams);
-      remotingConnection.start();
-      remotingConnection.setRemotingSessionListener(listener);
-      try
-      {
-         remotingConnection.setRemotingSessionListener(listener2);
-         fail("should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-         //pass
-      }
-      EasyMock.verify(connector);
-      EasyMock.verify(connectorRegistry);
-   }
 
    public void testGetDispatcher() throws Throwable
    {

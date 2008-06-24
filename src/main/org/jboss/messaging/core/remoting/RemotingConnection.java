@@ -45,7 +45,7 @@ public interface RemotingConnection
    
    void sendOneWay(long targetID, long executorID, Packet packet) throws MessagingException;
    
-   void setRemotingSessionListener(RemotingSessionListener newListener);
+   void addRemotingSessionListener(RemotingSessionListener newListener);
    
    PacketDispatcher getPacketDispatcher();
    

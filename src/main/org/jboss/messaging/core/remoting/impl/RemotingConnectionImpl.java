@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl;
 
@@ -29,6 +29,9 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.*;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
@@ -55,17 +58,17 @@ public class RemotingConnectionImpl implements RemotingConnection
 
    private RemotingSession session;
 
-   private RemotingSessionListener listener;
+   private List<RemotingSessionListener> sessionListeners = new ArrayList<RemotingSessionListener>();
 
    // Constructors ---------------------------------------------------------------------------------
 
    public RemotingConnectionImpl(final Location location, ConnectionParams connectionParams) throws IllegalArgumentException
    {
-      if(location == null)
+      if (location == null)
       {
          throw new IllegalArgumentException("location must not be null");
       }
-      if(connectionParams == null)
+      if (connectionParams == null)
       {
          throw new IllegalArgumentException("connection params must not be null");
       }
@@ -88,9 +91,9 @@ public class RemotingConnectionImpl implements RemotingConnection
       }
 
       connector = ConnectorRegistryFactory.getRegistry().getConnector(location, connectionParams);
-      
+
       session = connector.connect();
-      
+
       if (log.isDebugEnabled())
          log.debug("Using " + connector + " to connect to " + location);
 
@@ -106,13 +109,13 @@ public class RemotingConnectionImpl implements RemotingConnection
       {
          if (connector != null)
          {
-            if (listener != null)
+            for (RemotingSessionListener sessionListener : sessionListeners)
             {
-               connector.removeSessionListener(listener);
+               connector.removeSessionListener(sessionListener);
             }
-            
+
             RemotingConnector connectorFromRegistry = ConnectorRegistryFactory.getRegistry().removeConnector(location);
-            
+
             if (connectorFromRegistry != null)
             {
                connectorFromRegistry.disconnect();
@@ -210,23 +213,31 @@ public class RemotingConnectionImpl implements RemotingConnection
       }
    }
 
-   public synchronized void setRemotingSessionListener(final RemotingSessionListener newListener)
+   public synchronized void addRemotingSessionListener(final RemotingSessionListener newListener)
    {
-      if (listener != null && newListener != null)
+      if (newListener == null)
       {
-         throw new IllegalStateException("FailureListener already set to " + listener);
+         throw new IllegalStateException("FailureListener cannot be null");
+      }
+
+      if (sessionListeners.contains(newListener))
+      {
+         throw new IllegalStateException("FailureListener already set");
       }
 
       if (newListener != null)
       {
+         sessionListeners.add(newListener);
          connector.addSessionListener(newListener);
       }
-      else
-      {
-         connector.removeSessionListener(listener);
-      }
-      this.listener = newListener;
    }
+
+   public synchronized void removeRemotingSessionListener(final RemotingSessionListener listener)
+   {
+      sessionListeners.remove(listener);
+      connector.removeSessionListener(listener);
+   }
+
 
    public PacketDispatcher getPacketDispatcher()
    {

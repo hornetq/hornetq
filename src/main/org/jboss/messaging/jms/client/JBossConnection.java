@@ -22,34 +22,14 @@
 
 package org.jboss.messaging.jms.client;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionConsumer;
-import javax.jms.ConnectionMetaData;
-import javax.jms.Destination;
-import javax.jms.ExceptionListener;
-import javax.jms.IllegalStateException;
-import javax.jms.JMSException;
-import javax.jms.Queue;
-import javax.jms.QueueConnection;
-import javax.jms.QueueSession;
-import javax.jms.ServerSessionPool;
-import javax.jms.Session;
-import javax.jms.Topic;
-import javax.jms.TopicConnection;
-import javax.jms.TopicSession;
-import javax.jms.XAConnection;
-import javax.jms.XAQueueConnection;
-import javax.jms.XAQueueSession;
-import javax.jms.XASession;
-import javax.jms.XATopicConnection;
-import javax.jms.XATopicSession;
-
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.RemotingSessionListener;
-import org.jboss.messaging.core.client.impl.ClientConnectionInternal;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+
+import javax.jms.*;
+import javax.jms.IllegalStateException;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -423,17 +403,6 @@ public class JBossConnection implements
             je.initCause(me);
 
             exceptionListener.onException(je);
-         }
-
-         try
-         {
-            //FIXME - this should not be called from the jms layer
-            //We need cleanup to also occur when core connections are dead, and the user may not be using the jms api
-            ((ClientConnectionInternal)connection).cleanUp();
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to cleanup connection", e);            
          }
       }
       

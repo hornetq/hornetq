@@ -21,9 +21,6 @@
  */ 
 package org.jboss.messaging.core.client.impl;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.RemotingSessionListener;
@@ -36,6 +33,9 @@ import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSession
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.ConcurrentHashSet;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * The client-side Connection connectionFactory class.
@@ -89,6 +89,8 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       this.serverTargetID = serverTargetID;
       
       this.remotingConnection = connection;
+
+      this.remotingConnection.addRemotingSessionListener(new JBMFailureListener());
       
       this.serverVersion = serverVersion;
       
@@ -144,7 +146,7 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    {
       checkClosed();
       
-      remotingConnection.setRemotingSessionListener(listener);
+      remotingConnection.addRemotingSessionListener(listener);
    }
    
    public synchronized void close() throws MessagingException
@@ -258,6 +260,21 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       }
    }
 
+   private class JBMFailureListener implements RemotingSessionListener
+   {
+      public void sessionDestroyed(long sessionID, MessagingException me)
+      {
+         try
+         {
+            cleanUp();
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to cleanup connection", e);
+         }
+      }
+
+   }
    // Inner Classes --------------------------------------------------------------------------------
 
 }

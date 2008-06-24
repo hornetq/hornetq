@@ -26,7 +26,6 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import static org.jboss.messaging.util.DataConstants.*;
 import org.jboss.messaging.util.MessagingBuffer;
-import org.jboss.messaging.util.MessagingBufferFactory;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TypedProperties;
 
@@ -160,7 +159,7 @@ public abstract class MessageImpl implements Message
       //TODO - this can be optimised
       byte[] bytes = new byte[len];
       buffer.getBytes(bytes);
-      body = MessagingBufferFactory.createMessagingBuffer(buffer, len);
+      body = buffer.createNewBuffer(len);
       body.putBytes(bytes);      
    }
    
