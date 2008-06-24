@@ -22,13 +22,19 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Set;
+import org.jboss.messaging.core.filter.Filter;
+import org.jboss.messaging.core.list.PriorityLinkedList;
+import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.FlowController;
+import org.jboss.messaging.core.server.*;
+import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.core.transaction.impl.TransactionImpl;
+import org.jboss.messaging.util.SimpleString;
+
+import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -37,21 +43,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.list.PriorityLinkedList;
-import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.FlowController;
-import org.jboss.messaging.core.server.Consumer;
-import org.jboss.messaging.core.server.DistributionPolicy;
-import org.jboss.messaging.core.server.HandleStatus;
-import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.core.transaction.impl.TransactionImpl;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -102,7 +93,7 @@ public class QueueImpl implements Queue
 
    private int pos;
    
-   private boolean locked;
+   //private boolean locked;
    
    private AtomicInteger sizeBytes = new AtomicInteger(0);
 
@@ -167,39 +158,30 @@ public class QueueImpl implements Queue
    
    public HandleStatus addLast(final MessageReference ref)
    {
-      if (locked)
-      {
+
          lock.lock();
-      }
       try
       {         
          return add(ref, false);
       }
       finally
       {
-         if (locked)
-         {
             lock.unlock();
-         }
       }
    }
 
    public HandleStatus addFirst(final MessageReference ref)
    {
-      if (locked)
-      {
          lock.lock();
-      }      
+
       try
       {
          return add(ref, true);
       }
       finally
       {
-         if (locked)
-         {
             lock.unlock();
-         }
+        
       }
    }
 
@@ -508,14 +490,14 @@ public class QueueImpl implements Queue
    {
       lock.lock();
       
-      locked = true;
+      //locked = true;
    }
    
    public synchronized void unlock()
    {            
       lock.unlock();          
       
-      locked = false;
+      //locked = false;
    }
 
    // Public
