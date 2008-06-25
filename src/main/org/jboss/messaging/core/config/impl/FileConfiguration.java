@@ -24,7 +24,6 @@ package org.jboss.messaging.core.config.impl;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 
@@ -42,7 +41,7 @@ import org.w3c.dom.NodeList;
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class FileConfiguration extends ConfigurationImpl implements Serializable
+public class FileConfiguration extends ConfigurationImpl
 {
    private static final long serialVersionUID = -4766689627675039596L;
    

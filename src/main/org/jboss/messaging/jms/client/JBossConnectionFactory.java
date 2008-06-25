@@ -240,7 +240,7 @@ public class JBossConnectionFactory implements
       return "JBossConnectionFactory->" + connectionFactory;
    }
 
-   public synchronized ClientConnectionFactory getDelegate()
+   public synchronized ClientConnectionFactory getCoreConnection()
    {
       if (connectionFactory == null)
       {
@@ -270,7 +270,7 @@ public class JBossConnectionFactory implements
    {
       try
       {
-         getDelegate();
+         getCoreConnection();
          
          ClientConnection res = connectionFactory.createConnection(username, password);
                     

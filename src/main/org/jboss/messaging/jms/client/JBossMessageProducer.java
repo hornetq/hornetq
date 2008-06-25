@@ -429,7 +429,7 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
 
       try
       {      	
-      	producer.send(address, jbm.getDelegate());      		      	
+      	producer.send(address, jbm.getCoreMessage());      		      	
       }
       catch (MessagingException e)
       {

@@ -27,12 +27,17 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.List;
 
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
+import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.TransportType;
@@ -232,6 +237,103 @@ public class ConfigurationImplTest extends TestCase
    {
       testOverrideWithSystemProperties(false);
       testOverrideWithSystemProperties(true);
+   }
+   
+   public void testSerialize() throws Exception
+   {
+      boolean b = randomBoolean();
+      conf.setClustered(b);
+      
+      int i = randomInt();
+      conf.setScheduledThreadPoolMaxSize(i);
+   
+      i = randomInt();
+      conf.setThreadPoolMaxSize(i);
+
+      String s = randomString();
+      conf.setHost(s);
+
+      i = randomInt() % 3;
+      TransportType transport = i == 0 ? TransportType.TCP : i == 1 ? TransportType.HTTP : i == 2 ? TransportType.INVM : TransportType.INVM;
+      conf.setTransport(transport);
+
+      i = randomInt();
+      conf.setPort(i);
+ 
+      long l = randomLong();
+      conf.setSecurityInvalidationInterval(l);
+
+      b = randomBoolean();
+      conf.setRequireDestinations(b);
+    
+      b = randomBoolean();
+      conf.setSecurityEnabled(b);
+
+      b = randomBoolean();
+      conf.setSSLEnabled(b);
+ 
+      s = randomString();
+      conf.setKeyStorePath(s);
+
+      s = randomString();
+      conf.setKeyStorePassword(s);
+ 
+      s = randomString();
+      conf.setTrustStorePath(s);
+ 
+      s = randomString();
+      conf.setTrustStorePassword(s);
+   
+      s = randomString();
+      conf.setBindingsDirectory(s);
+
+      b = randomBoolean();
+      conf.setCreateBindingsDir(b);
+
+      s = randomString();
+      conf.setJournalDirectory(s);
+   
+      b = randomBoolean();
+      conf.setCreateJournalDir(b);
+   
+      i = randomInt() % 3;
+      JournalType journal = i == 0 ? JournalType.ASYNCIO : i == 1 ? JournalType.JDBC : i == 2 ? JournalType.NIO : JournalType.NIO;
+      conf.setJournalType(journal);
+   
+      b = randomBoolean();
+      conf.setJournalSyncTransactional(b);
+    
+      b = randomBoolean();
+      conf.setJournalSyncNonTransactional(b);
+
+      i = randomInt();
+      conf.setJournalFileSize(i);
+ 
+      i = randomInt();
+      conf.setJournalMinFiles(i);
+ 
+      i = randomInt();
+      conf.setJournalMaxAIO(i);
+  
+      l = randomLong();
+      conf.setJournalAIOTimeout(l);
+  
+      l = randomLong();
+      conf.setJournalTaskPeriod(l);
+ 
+      i = randomInt();
+      conf.setServerID(i);
+
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      ObjectOutputStream oos = new ObjectOutputStream(baos);
+      oos.writeObject(conf);
+      oos.flush();
+      
+      ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+      ObjectInputStream ois = new ObjectInputStream(bais);
+      Configuration conf2 = (Configuration)ois.readObject();
+      
+      assertTrue(conf.equals(conf2));      
    }
    
    // Protected ----------------------------------------------------------------------------------------

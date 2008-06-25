@@ -115,7 +115,7 @@ public class JBossBytesMessageTest extends TestCase
       boolean value = randomBoolean();
       JBossBytesMessage message = new JBossBytesMessage();
 
-      MessagingBuffer body = message.getDelegate().getBody();
+      MessagingBuffer body = message.getCoreMessage().getBody();
       body.putBoolean(value);
       message.reset();
 
@@ -149,7 +149,7 @@ public class JBossBytesMessageTest extends TestCase
       byte value = randomByte();
       JBossBytesMessage message = new JBossBytesMessage();
 
-      MessagingBuffer body = message.getDelegate().getBody();
+      MessagingBuffer body = message.getCoreMessage().getBody();
       body.putByte(value);
       message.reset();
 
@@ -185,7 +185,7 @@ public class JBossBytesMessageTest extends TestCase
       byte[] value = randomBytes();
       JBossBytesMessage message = new JBossBytesMessage();
 
-      MessagingBuffer body = message.getDelegate().getBody();
+      MessagingBuffer body = message.getCoreMessage().getBody();
       body.putBytes(value);
       message.reset();
 
@@ -220,7 +220,7 @@ public class JBossBytesMessageTest extends TestCase
       short value = randomShort();
       JBossBytesMessage message = new JBossBytesMessage();
 
-      MessagingBuffer body = message.getDelegate().getBody();
+      MessagingBuffer body = message.getCoreMessage().getBody();
       body.putShort(value);
       message.reset();
 
@@ -254,7 +254,7 @@ public class JBossBytesMessageTest extends TestCase
       char value = randomChar();
       JBossBytesMessage message = new JBossBytesMessage();
 
-      MessagingBuffer body = message.getDelegate().getBody();
+      MessagingBuffer body = message.getCoreMessage().getBody();
       body.putChar(value);
       message.reset();
 
@@ -288,7 +288,7 @@ public class JBossBytesMessageTest extends TestCase
       int value = randomInt();
       JBossBytesMessage message = new JBossBytesMessage();
 
-      MessagingBuffer body = message.getDelegate().getBody();
+      MessagingBuffer body = message.getCoreMessage().getBody();
       body.putInt(value);
       message.reset();
 
@@ -322,7 +322,7 @@ public class JBossBytesMessageTest extends TestCase
       long value = randomLong();
       JBossBytesMessage message = new JBossBytesMessage();
 
-      MessagingBuffer body = message.getDelegate().getBody();
+      MessagingBuffer body = message.getCoreMessage().getBody();
       body.putLong(value);
       message.reset();
 
@@ -356,7 +356,7 @@ public class JBossBytesMessageTest extends TestCase
       float value = randomFloat();
       JBossBytesMessage message = new JBossBytesMessage();
 
-      MessagingBuffer body = message.getDelegate().getBody();
+      MessagingBuffer body = message.getCoreMessage().getBody();
       body.putFloat(value);
       message.reset();
 
@@ -390,7 +390,7 @@ public class JBossBytesMessageTest extends TestCase
       double value = randomDouble();
       JBossBytesMessage message = new JBossBytesMessage();
 
-      MessagingBuffer body = message.getDelegate().getBody();
+      MessagingBuffer body = message.getCoreMessage().getBody();
       body.putDouble(value);
       message.reset();
 
@@ -424,7 +424,7 @@ public class JBossBytesMessageTest extends TestCase
       String value = randomString();
       JBossBytesMessage message = new JBossBytesMessage();
 
-      MessagingBuffer body = message.getDelegate().getBody();
+      MessagingBuffer body = message.getCoreMessage().getBody();
       body.putUTF(value);
       message.reset();
 

@@ -35,12 +35,12 @@ import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * 
- * A MessagingXidTest
+ * A XidImplTest
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class MessagingXidTest extends UnitTestCase
+public class XidImplTest extends UnitTestCase
 {
    public void testSerialize() throws Exception
    {

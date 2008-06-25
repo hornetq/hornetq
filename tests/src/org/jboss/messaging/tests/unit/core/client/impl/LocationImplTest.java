@@ -25,9 +25,16 @@ package org.jboss.messaging.tests.unit.core.client.impl;
 import static org.jboss.messaging.core.remoting.TransportType.HTTP;
 import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.TransportType;
@@ -92,6 +99,22 @@ public class LocationImplTest extends TestCase
       assertNotSame(new LocationImpl(TCP, "anotherhost", 9000), new LocationImpl(TCP, "localhost", 9000));
       assertNotSame(new LocationImpl(HTTP, "localhost", 9000), new LocationImpl(TCP, "localhost", 9000));
       assertNotSame(new LocationImpl(HTTP, "localhost", 9000), new LocationImpl(43));
+   }
+   
+   public void testSerialize() throws Exception
+   {
+      Location location = new LocationImpl(HTTP, "blahblah", 65126512);
+      
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      ObjectOutputStream oos = new ObjectOutputStream(baos);
+      oos.writeObject(location);
+      oos.flush();
+      
+      ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+      ObjectInputStream ois = new ObjectInputStream(bais);
+      LocationImpl location2 = (LocationImpl)ois.readObject();
+      
+      assertTrue(location.equals(location2));      
    }
 
    // Package protected ---------------------------------------------

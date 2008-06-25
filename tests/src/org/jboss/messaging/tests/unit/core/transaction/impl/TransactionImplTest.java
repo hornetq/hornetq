@@ -46,14 +46,14 @@ import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
- * A TransactionTest
+ * A TransactionImplTest
  * 
  * TODO test with persistent and non persistent
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class TransactionTest extends UnitTestCase
+public class TransactionImplTest extends UnitTestCase
 {
 	private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 

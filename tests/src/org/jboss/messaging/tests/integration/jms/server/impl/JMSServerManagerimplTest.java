@@ -232,7 +232,7 @@ public class JMSServerManagerimplTest extends TestCase
       jmsServerManager.createConnectionFactory("newtestcf", "anid", 100, 1000, -1, 1000, -1, false, false, true, "newtestcf");
       JBossConnectionFactory jbcf = (JBossConnectionFactory) initialContext.lookup("newtestcf");
       assertNotNull(jbcf);
-      assertNotNull(jbcf.getDelegate());
+      assertNotNull(jbcf.getCoreConnection());
       jmsServerManager.destroyConnectionFactory("newtestcf");
       try
       {
@@ -249,10 +249,10 @@ public class JMSServerManagerimplTest extends TestCase
       jmsServerManager.createConnectionFactory("newtestcf", "anid", 100, 1000, -1, 1000, -1, false, false, true, bindings);
       jbcf = (JBossConnectionFactory) initialContext.lookup("newtestcf");
       assertNotNull(jbcf);
-      assertNotNull(jbcf.getDelegate());
+      assertNotNull(jbcf.getCoreConnection());
       jbcf = (JBossConnectionFactory) initialContext.lookup("oranewtestcf");
       assertNotNull(jbcf);
-      assertNotNull(jbcf.getDelegate());
+      assertNotNull(jbcf.getCoreConnection());
       jmsServerManager.destroyConnectionFactory("newtestcf");
       try
       {

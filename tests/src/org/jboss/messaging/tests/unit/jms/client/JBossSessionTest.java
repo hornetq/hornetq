@@ -1892,7 +1892,7 @@ public class JBossSessionTest extends TestCase
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
 
-      ClientSession clientSession = session.getDelegate();
+      ClientSession clientSession = session.getCoreSession();
       assertNotNull(clientSession);
       assertSame(mockClientSession, clientSession);
    }

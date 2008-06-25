@@ -912,7 +912,7 @@ public class BridgeImpl implements MessagingComponent, Bridge
          {
          	JBossSession jsession = (JBossSession)sourceSession;
 
-         	ClientSession clientSession = jsession.getDelegate();
+         	ClientSession clientSession = jsession.getCoreSession();
             
          	//clientSession.setTreatAsNonTransactedWhenNotEnlisted(false);
          }

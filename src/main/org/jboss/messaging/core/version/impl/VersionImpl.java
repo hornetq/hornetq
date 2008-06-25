@@ -36,6 +36,8 @@ public class VersionImpl implements Version, Serializable
 {
    // Constants -----------------------------------------------------
 
+   private static final long serialVersionUID = -5271227256591080403L;
+
    private static final Logger log = Logger.getLogger(VersionImpl.class);
 
    // Static --------------------------------------------------------

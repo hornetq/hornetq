@@ -465,6 +465,55 @@ public class ConfigurationImpl implements Configuration
    {
       return this.defaultConnectionParams;
    }
+   
+   public boolean equals(Object other)
+   {
+      if (this == other)
+      {
+         return true;
+      }
+      
+      if (other instanceof Configuration == false)
+      {
+         return false;
+      }
+      
+      Configuration cother = (Configuration)other;
+      
+      return cother.isClustered() == this.isClustered() &&
+             cother.isCreateBindingsDir() == this.isCreateBindingsDir() &&
+             cother.isCreateJournalDir() == this.isCreateJournalDir() &&
+             cother.isJournalSyncNonTransactional() == this.isJournalSyncNonTransactional() &&
+             cother.isJournalSyncTransactional() == this.isJournalSyncTransactional() &&
+             cother.isRequireDestinations() == this.isRequireDestinations() &&
+             cother.isSecurityEnabled() == this.isSecurityEnabled() &&
+             cother.isSSLEnabled() == this.isSSLEnabled() &&
+             cother.getBindingsDirectory().equals(this.getBindingsDirectory()) &&
+             cother.getConnectionParams().equals(this.getConnectionParams()) &&
+             cother.getHost().equals(this.getHost()) &&
+             cother.getJournalAIOTimeout() == this.getJournalAIOTimeout() &&
+             cother.getJournalDirectory().equals(this.getJournalDirectory()) &&
+             cother.getJournalFileSize() == this.getJournalFileSize() &&
+             cother.getJournalMaxAIO() == this.getJournalMaxAIO() &&
+             cother.getJournalMinFiles() == this.getJournalMinFiles() &&
+             cother.getJournalTaskPeriod() == this.getJournalTaskPeriod() &&
+             cother.getJournalType() == this.getJournalType() &&
+             cother.getKeyStorePassword() == null ?
+                   this.getKeyStorePassword() == null : cother.getKeyStorePassword().equals(this.getKeyStorePassword()) && 
+             cother.getKeyStorePath() == null ?
+                   this.getKeyStorePath() == null : cother.getKeyStorePath().equals(this.getKeyStorePath()) &&
+             cother.getLocation().equals(this.getLocation()) &&
+             cother.getPort() == this.getPort() &&
+             cother.getScheduledThreadPoolMaxSize() == this.getScheduledThreadPoolMaxSize() &&
+             cother.getSecurityInvalidationInterval() == this.getSecurityInvalidationInterval() &&
+             cother.getServerID() == this.getServerID() &&
+             cother.getThreadPoolMaxSize() == this.getThreadPoolMaxSize() &&
+             cother.getTransport() == this.getTransport() &&
+             cother.getTrustStorePassword() == null ?
+                   this.getTrustStorePassword() == null : cother.getTrustStorePassword().equals(this.getTrustStorePassword()) && 
+             cother.getTrustStorePath() == null ?
+                   this.getTrustStorePath() == null : cother.getTrustStorePath().equals(this.getTrustStorePath());
+   }
 
 }
  

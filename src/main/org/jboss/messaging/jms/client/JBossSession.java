@@ -763,7 +763,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
       return "JBossSession->" + session;
    }
    
-   public ClientSession getDelegate()
+   public ClientSession getCoreSession()
    {
       return session;
    }   

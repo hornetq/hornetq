@@ -65,7 +65,7 @@ public class JMSMessageListenerWrapperTest extends TestCase
       expect(clientSession.isClosed()).andReturn(false);
       clientSession.acknowledge();
       JBossSession session = createStrictMock(JBossSession.class);
-      expect(session.getDelegate()).andStubReturn(clientSession);
+      expect(session.getCoreSession()).andStubReturn(clientSession);
       expect(session.isRecoverCalled()).andReturn(false);
       session.setRecoverCalled(false);
       MessageListener listener = createStrictMock(MessageListener.class);
@@ -85,7 +85,7 @@ public class JMSMessageListenerWrapperTest extends TestCase
       ClientSession clientSession = createStrictMock(ClientSession.class);
       clientSession.acknowledge();
       JBossSession session = createStrictMock(JBossSession.class);
-      expect(session.getDelegate()).andStubReturn(clientSession);
+      expect(session.getCoreSession()).andStubReturn(clientSession);
       expect(session.isRecoverCalled()).andReturn(false);
       
       session.setRecoverCalled(false);
@@ -106,7 +106,7 @@ public class JMSMessageListenerWrapperTest extends TestCase
       ClientSession clientSession = createStrictMock(ClientSession.class);
       clientSession.rollback();
       JBossSession session = createStrictMock(JBossSession.class);
-      expect(session.getDelegate()).andStubReturn(clientSession);
+      expect(session.getCoreSession()).andStubReturn(clientSession);
       session.setRecoverCalled(true);
       expect(session.isRecoverCalled()).andReturn(true);
       session.setRecoverCalled(false);

@@ -193,7 +193,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
 
                JBossMessage jbm = (JBossMessage)m;
                
-               if (!jbm.getDelegate().isExpired())
+               if (!jbm.getCoreMessage().isExpired())
                {
                   log.error("The message " + m + " should have expired");
                   testFailed = true;

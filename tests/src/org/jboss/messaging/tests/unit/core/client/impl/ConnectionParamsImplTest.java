@@ -22,6 +22,11 @@
 
 package org.jboss.messaging.tests.unit.core.client.impl;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.tests.util.RandomUtil;
@@ -149,6 +154,58 @@ public class ConnectionParamsImplTest extends UnitTestCase
          System.clearProperty(ConnectionParamsImpl.SSL_TRUSTSTORE_PATH_PROPERTY_NAME);
          System.clearProperty(ConnectionParamsImpl.SSL_TRUSTSTORE_PASSWORD_PROPERTY_NAME);
       }
+   }
+   
+   public void testSerialize() throws Exception
+   {
+      ConnectionParams cp = new ConnectionParamsImpl();
+      
+      boolean b = RandomUtil.randomBoolean();
+      cp.setInVMOptimisationEnabled(b);
+
+      b = RandomUtil.randomBoolean();
+      cp.setSSLEnabled(b);
+
+      b = RandomUtil.randomBoolean();
+      cp.setTcpNoDelay(b);
+   
+      int i = RandomUtil.randomInt();
+      cp.setCallTimeout(i);
+  
+      long l = RandomUtil.randomLong();
+      cp.setPingInterval(l);
+      
+      l = RandomUtil.randomLong();
+      cp.setPingTimeout(l);
+    
+      i = RandomUtil.randomInt();
+      cp.setTcpReceiveBufferSize(i);
+
+      i = RandomUtil.randomInt();
+      cp.setTcpSendBufferSize(i);
+
+      String s = RandomUtil.randomString();
+      cp.setKeyStorePath(s);
+     
+      s = RandomUtil.randomString();
+      cp.setKeyStorePassword(s);
+ 
+      s = RandomUtil.randomString();
+      cp.setTrustStorePath(s);
+  
+      s = RandomUtil.randomString();
+      cp.setTrustStorePassword(s);
+
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      ObjectOutputStream oos = new ObjectOutputStream(baos);
+      oos.writeObject(cp);
+      oos.flush();
+      
+      ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+      ObjectInputStream ois = new ObjectInputStream(bais);
+      ConnectionParamsImpl cp2 = (ConnectionParamsImpl)ois.readObject();
+      
+      assertTrue(cp.equals(cp2));      
    }
    
    // Private -----------------------------------------------------------------------------------------------------------

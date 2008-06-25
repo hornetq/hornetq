@@ -22,6 +22,11 @@
 
 package org.jboss.messaging.tests.unit.core.version.impl;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.version.impl.VersionImpl;
@@ -65,15 +70,30 @@ public class VersionImplTest extends TestCase
 
    public void testEquals() throws Exception
    {
-    VersionImpl version = new VersionImpl("JBM", 2, 0, 1, 10, "suffix");  
-    VersionImpl sameVersion = new VersionImpl("JBM", 2, 0, 1, 10, "suffix");  
-    VersionImpl differentVersion = new VersionImpl("JBM", 2, 0, 1, 11, "suffix");
-    
-    assertFalse(version.equals(new Object()));
-    
-    assertTrue(version.equals(version));
-    assertTrue(version.equals(sameVersion));
-    assertFalse(version.equals(differentVersion));
+      VersionImpl version = new VersionImpl("JBM", 2, 0, 1, 10, "suffix");  
+      VersionImpl sameVersion = new VersionImpl("JBM", 2, 0, 1, 10, "suffix");  
+      VersionImpl differentVersion = new VersionImpl("JBM", 2, 0, 1, 11, "suffix");
+
+      assertFalse(version.equals(new Object()));
+
+      assertTrue(version.equals(version));
+      assertTrue(version.equals(sameVersion));
+      assertFalse(version.equals(differentVersion));
+   }
+   
+   public void testSerialize() throws Exception
+   {
+      VersionImpl version = new VersionImpl("uyiuy", 3, 7, 6, 12, "uhuhuh");  
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      ObjectOutputStream oos = new ObjectOutputStream(baos);
+      oos.writeObject(version);
+      oos.flush();
+      
+      ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+      ObjectInputStream ois = new ObjectInputStream(bais);
+      VersionImpl version2 = (VersionImpl)ois.readObject();
+      
+      assertTrue(version.equals(version2));  
    }
 
    // Package protected ---------------------------------------------

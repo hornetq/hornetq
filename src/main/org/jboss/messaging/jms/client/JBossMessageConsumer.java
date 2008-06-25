@@ -183,7 +183,7 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
    
    private void checkClosed() throws JMSException
    {
-      if (session.getDelegate().isClosed())
+      if (session.getCoreSession().isClosed())
       {
          throw new IllegalStateException("Consumer is closed");
       }
@@ -199,9 +199,9 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
          
          if (message != null)
          {         
-            session.getDelegate().acknowledge();
+            session.getCoreSession().acknowledge();
                      
-            jbm = JBossMessage.createMessage(message, session.getDelegate());
+            jbm = JBossMessage.createMessage(message, session.getCoreSession());
             
             try
             {
