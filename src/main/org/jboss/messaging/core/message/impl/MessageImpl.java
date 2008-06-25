@@ -22,14 +22,18 @@
 
 package org.jboss.messaging.core.message.impl;
 
+import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
+import static org.jboss.messaging.util.DataConstants.SIZE_BYTE;
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
+
+import java.util.Set;
+
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import static org.jboss.messaging.util.DataConstants.*;
 import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TypedProperties;
-
-import java.util.Set;
 
 /**
  * A concrete implementation of a message
@@ -71,7 +75,6 @@ public abstract class MessageImpl implements Message
 
    private byte priority;
 
-
    private MessagingBuffer body;
 
    // Constructors --------------------------------------------------
@@ -91,7 +94,7 @@ public abstract class MessageImpl implements Message
     * @param body
     */
    protected MessageImpl(final byte type, final boolean durable, final long expiration,
-                      final long timestamp, final byte priority, MessagingBuffer body)
+                         final long timestamp, final byte priority, MessagingBuffer body)
    {
       this();
       this.type = type;
@@ -207,7 +210,6 @@ public abstract class MessageImpl implements Message
    {
       this.timestamp = timestamp;
    }
-
  
    public byte getPriority()
    {
@@ -219,7 +221,6 @@ public abstract class MessageImpl implements Message
       this.priority = priority;
    }
      
-
    public boolean isExpired()
    {
       if (expiration == 0)
@@ -312,7 +313,7 @@ public abstract class MessageImpl implements Message
    }
       
    // Public --------------------------------------------------------
-
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

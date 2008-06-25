@@ -440,7 +440,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 			
 			assertEquals("type not same", rexpected.isUpdate, ractual.isUpdate);
 			
-			assertByteArraysEquivalent(rexpected.data, ractual.data);
+			assertEqualsByteArrays(rexpected.data, ractual.data);
 		}     
 	}
 	

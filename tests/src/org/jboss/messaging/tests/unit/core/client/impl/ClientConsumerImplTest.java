@@ -510,8 +510,8 @@ public class ClientConsumerImplTest extends UnitTestCase
       consumer.cleanUp();
       EasyMock.verify(session, connection, rc, executor, pd);
    }
+   
    // Private -----------------------------------------------------------------------------------------------------------
-
    
    private void testConstructor(final long targetID, final long clientTargetID,
                                 final int windowSize, final boolean direct) throws Exception

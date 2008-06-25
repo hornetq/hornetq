@@ -152,7 +152,6 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
       invalidateCache();
    }
 
-
    // Public --------------------------------------------------------
 
    public void setSecurityRepository(HierarchicalRepository<Set<Role>> securityRepository)
@@ -160,7 +159,6 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
       this.securityRepository = securityRepository;
       securityRepository.registerListener(this);
    }
-
 
    public void setSecurityManager(JBMSecurityManager securityManager)
    {

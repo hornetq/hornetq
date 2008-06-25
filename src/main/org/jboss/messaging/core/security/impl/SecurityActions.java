@@ -44,7 +44,7 @@ class SecurityActions
 		PrincipalInfoAction PRIVILEGED = new PrincipalInfoAction()
 		{
 			public void push(final Principal principal, final Object credential,
-					final Subject subject)
+					           final Subject subject)
 			{
 				AccessController.doPrivileged(
 						new PrivilegedAction()
@@ -52,19 +52,6 @@ class SecurityActions
 							public Object run()
 							{
 								SecurityAssociation.pushSubjectContext(subject, principal, credential);
-								return null;
-							}
-						}
-				);
-			}
-			public void dup()
-			{
-				AccessController.doPrivileged(
-						new PrivilegedAction()
-						{
-							public Object run()
-							{
-								SecurityAssociation.dupSubjectContext();
 								return null;
 							}
 						}
@@ -87,13 +74,9 @@ class SecurityActions
 
 		PrincipalInfoAction NON_PRIVILEGED = new PrincipalInfoAction()
 		{
-			public void push(Principal principal, Object credential, Subject subject)
+			public void push(final Principal principal, final Object credential, final Subject subject)
 			{
 				SecurityAssociation.pushSubjectContext(subject, principal, credential);
-			}
-			public void dup()
-			{
-				SecurityAssociation.dupSubjectContext();
 			}
 			public void pop()
 			{
@@ -102,12 +85,11 @@ class SecurityActions
 		};
 
 		void push(Principal principal, Object credential, Subject subject);
-		void dup();
 		void pop();
 	}
 
-	static void pushSubjectContext(Principal principal, Object credential,
-			Subject subject)
+	static void pushSubjectContext(final Principal principal, final Object credential,
+			                         final Subject subject)
 	{
 		if(System.getSecurityManager() == null)
 		{
@@ -118,9 +100,10 @@ class SecurityActions
 			PrincipalInfoAction.PRIVILEGED.push(principal, credential, subject);
 		}
 	}
+	
 	static void popSubjectContext()
 	{
-		if(System.getSecurityManager() == null)
+		if (System.getSecurityManager() == null)
 		{
 			PrincipalInfoAction.NON_PRIVILEGED.pop();
 		}

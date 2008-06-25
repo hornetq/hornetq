@@ -71,6 +71,11 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessage
       super((byte) 0, durable, 0, System.currentTimeMillis(), (byte)4, body);
    }
    
+   /* Only used in testing */
+   public ClientMessageImpl()
+   {      
+   }
+   
    public void setDeliveryCount(final int deliveryCount)
    {
       this.deliveryCount = deliveryCount;

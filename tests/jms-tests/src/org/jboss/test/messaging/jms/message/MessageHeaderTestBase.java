@@ -53,7 +53,7 @@ import org.jboss.test.messaging.JBMServerTestCase;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 2883 $</tt>
  *
- * $Id: MessageTest.java 2883 2007-07-12 23:36:16Z timfox $
+ * $Id: MessageImplTestBase.java 2883 2007-07-12 23:36:16Z timfox $
  */
 public class MessageHeaderTestBase extends JBMServerTestCase
 {

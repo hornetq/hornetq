@@ -281,14 +281,14 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       assertEquals(rb3.limit(), bytesRead);
       rb3.rewind();
       rb3.get(rbytes3);
-      assertByteArraysEquivalent(bytes3, rbytes3);    
+      assertEqualsByteArrays(bytes3, rbytes3);    
       
       sf.position(rb1.limit());
       
       bytesRead = sf.read(rb2);
       assertEquals(rb2.limit(), bytesRead);
       rb2.get(rbytes2);
-      assertByteArraysEquivalent(bytes2, rbytes2);
+      assertEqualsByteArrays(bytes2, rbytes2);
       
       sf.position(0);
       
@@ -296,7 +296,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       assertEquals(rb1.limit(), bytesRead);
       rb1.get(rbytes1);
       
-      assertByteArraysEquivalent(bytes1, rbytes1);
+      assertEqualsByteArrays(bytes1, rbytes1);
       
       sf.close();
    }

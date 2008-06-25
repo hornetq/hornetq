@@ -78,9 +78,9 @@ public class XidImplTest extends UnitTestCase
       
       XidImpl xid1 = new XidImpl(bq, formatID, globalTXID);
       
-      assertByteArraysEquivalent(bq, xid1.getBranchQualifier());
+      assertEqualsByteArrays(bq, xid1.getBranchQualifier());
       
-      assertByteArraysEquivalent(globalTXID, xid1.getGlobalTransactionId());
+      assertEqualsByteArrays(globalTXID, xid1.getGlobalTransactionId());
       
       assertEquals(formatID, xid1.getFormatId());
    }
@@ -117,11 +117,11 @@ public class XidImplTest extends UnitTestCase
    
    private void assertXidsEquivalent(Xid xid1, Xid xid2)
    {
-      assertByteArraysEquivalent(xid1.getBranchQualifier(), xid2.getBranchQualifier());
+      assertEqualsByteArrays(xid1.getBranchQualifier(), xid2.getBranchQualifier());
       
       assertEquals(xid1.getFormatId(), xid2.getFormatId());
       
-      assertByteArraysEquivalent(xid1.getGlobalTransactionId(), xid2.getGlobalTransactionId());
+      assertEqualsByteArrays(xid1.getGlobalTransactionId(), xid2.getGlobalTransactionId());
    }
    
    // Inner classes ---------------------------------------------------------------------------

@@ -349,7 +349,7 @@ public class MessagingCodecImplTest extends UnitTestCase
       assertEquals(9, copy.getServerMessage().getPropertyNames().size());
       assertEquals(message1.getProperty(boolProp), copy.getServerMessage().getProperty(boolProp));
       assertEquals(message1.getProperty(byteProp), copy.getServerMessage().getProperty(byteProp));
-      assertByteArraysEquivalent((byte[]) message1.getProperty(byteprops), (byte[]) copy.getServerMessage().getProperty(byteprops));
+      assertEqualsByteArrays((byte[]) message1.getProperty(byteprops), (byte[]) copy.getServerMessage().getProperty(byteprops));
       assertEquals(message1.getProperty(doubleProp), copy.getServerMessage().getProperty(doubleProp));
       assertEquals(message1.getProperty(floatProp), copy.getServerMessage().getProperty(floatProp));
       assertEquals(message1.getProperty(intProp), copy.getServerMessage().getProperty(intProp));
@@ -402,7 +402,7 @@ public class MessagingCodecImplTest extends UnitTestCase
       assertEquals(9, copy.getServerMessage().getPropertyNames().size());
       assertEquals(message1.getProperty(boolProp), copy.getServerMessage().getProperty(boolProp));
       assertEquals(message1.getProperty(byteProp), copy.getServerMessage().getProperty(byteProp));
-      assertByteArraysEquivalent((byte[]) message1.getProperty(byteprops), (byte[]) copy.getServerMessage().getProperty(byteprops));
+      assertEqualsByteArrays((byte[]) message1.getProperty(byteprops), (byte[]) copy.getServerMessage().getProperty(byteprops));
       assertEquals(message1.getProperty(doubleProp), copy.getServerMessage().getProperty(doubleProp));
       assertEquals(message1.getProperty(floatProp), copy.getServerMessage().getProperty(floatProp));
       assertEquals(message1.getProperty(intProp), copy.getServerMessage().getProperty(intProp));
@@ -454,7 +454,7 @@ public class MessagingCodecImplTest extends UnitTestCase
       assertEquals(9, copy.getServerMessage().getPropertyNames().size());
       assertEquals(message1.getProperty(boolProp), copy.getServerMessage().getProperty(boolProp));
       assertEquals(message1.getProperty(byteProp), copy.getServerMessage().getProperty(byteProp));
-      assertByteArraysEquivalent((byte[]) message1.getProperty(byteprops), (byte[]) copy.getServerMessage().getProperty(byteprops));
+      assertEqualsByteArrays((byte[]) message1.getProperty(byteprops), (byte[]) copy.getServerMessage().getProperty(byteprops));
       assertEquals(message1.getProperty(doubleProp), copy.getServerMessage().getProperty(doubleProp));
       assertEquals(message1.getProperty(floatProp), copy.getServerMessage().getProperty(floatProp));
       assertEquals(message1.getProperty(intProp), copy.getServerMessage().getProperty(intProp));
@@ -507,7 +507,7 @@ public class MessagingCodecImplTest extends UnitTestCase
       assertEquals(9, copy.getServerMessage().getPropertyNames().size());
       assertEquals(message1.getProperty(boolProp), copy.getServerMessage().getProperty(boolProp));
       assertEquals(message1.getProperty(byteProp), copy.getServerMessage().getProperty(byteProp));
-      assertByteArraysEquivalent((byte[]) message1.getProperty(byteprops), (byte[]) copy.getServerMessage().getProperty(byteprops));
+      assertEqualsByteArrays((byte[]) message1.getProperty(byteprops), (byte[]) copy.getServerMessage().getProperty(byteprops));
       assertEquals(message1.getProperty(doubleProp), copy.getServerMessage().getProperty(doubleProp));
       assertEquals(message1.getProperty(floatProp), copy.getServerMessage().getProperty(floatProp));
       assertEquals(message1.getProperty(intProp), copy.getServerMessage().getProperty(intProp));
@@ -641,7 +641,7 @@ public class MessagingCodecImplTest extends UnitTestCase
       assertEquals(9, copy.getClientMessage().getPropertyNames().size());
       assertEquals(message1.getProperty(boolProp), copy.getClientMessage().getProperty(boolProp));
       assertEquals(message1.getProperty(byteProp), copy.getClientMessage().getProperty(byteProp));
-      assertByteArraysEquivalent((byte[]) message1.getProperty(byteprops), (byte[]) copy.getClientMessage().getProperty(byteprops));
+      assertEqualsByteArrays((byte[]) message1.getProperty(byteprops), (byte[]) copy.getClientMessage().getProperty(byteprops));
       assertEquals(message1.getProperty(doubleProp), copy.getClientMessage().getProperty(doubleProp));
       assertEquals(message1.getProperty(floatProp), copy.getClientMessage().getProperty(floatProp));
       assertEquals(message1.getProperty(intProp), copy.getClientMessage().getProperty(intProp));
@@ -693,7 +693,7 @@ public class MessagingCodecImplTest extends UnitTestCase
       assertEquals(9, copy.getClientMessage().getPropertyNames().size());
       assertEquals(message1.getProperty(boolProp), copy.getClientMessage().getProperty(boolProp));
       assertEquals(message1.getProperty(byteProp), copy.getClientMessage().getProperty(byteProp));
-      assertByteArraysEquivalent((byte[]) message1.getProperty(byteprops), (byte[]) copy.getClientMessage().getProperty(byteprops));
+      assertEqualsByteArrays((byte[]) message1.getProperty(byteprops), (byte[]) copy.getClientMessage().getProperty(byteprops));
       assertEquals(message1.getProperty(doubleProp), copy.getClientMessage().getProperty(doubleProp));
       assertEquals(message1.getProperty(floatProp), copy.getClientMessage().getProperty(floatProp));
       assertEquals(message1.getProperty(intProp), copy.getClientMessage().getProperty(intProp));
@@ -745,7 +745,7 @@ public class MessagingCodecImplTest extends UnitTestCase
       assertEquals(9, copy.getClientMessage().getPropertyNames().size());
       assertEquals(message1.getProperty(boolProp), copy.getClientMessage().getProperty(boolProp));
       assertEquals(message1.getProperty(byteProp), copy.getClientMessage().getProperty(byteProp));
-      assertByteArraysEquivalent((byte[]) message1.getProperty(byteprops), (byte[]) copy.getClientMessage().getProperty(byteprops));
+      assertEqualsByteArrays((byte[]) message1.getProperty(byteprops), (byte[]) copy.getClientMessage().getProperty(byteprops));
       assertEquals(message1.getProperty(doubleProp), copy.getClientMessage().getProperty(doubleProp));
       assertEquals(message1.getProperty(floatProp), copy.getClientMessage().getProperty(floatProp));
       assertEquals(message1.getProperty(intProp), copy.getClientMessage().getProperty(intProp));
@@ -798,7 +798,7 @@ public class MessagingCodecImplTest extends UnitTestCase
       assertEquals(9, copy.getClientMessage().getPropertyNames().size());
       assertEquals(message1.getProperty(boolProp), copy.getClientMessage().getProperty(boolProp));
       assertEquals(message1.getProperty(byteProp), copy.getClientMessage().getProperty(byteProp));
-      assertByteArraysEquivalent((byte[]) message1.getProperty(byteprops), (byte[]) copy.getClientMessage().getProperty(byteprops));
+      assertEqualsByteArrays((byte[]) message1.getProperty(byteprops), (byte[]) copy.getClientMessage().getProperty(byteprops));
       assertEquals(message1.getProperty(doubleProp), copy.getClientMessage().getProperty(doubleProp));
       assertEquals(message1.getProperty(floatProp), copy.getClientMessage().getProperty(floatProp));
       assertEquals(message1.getProperty(intProp), copy.getClientMessage().getProperty(intProp));
@@ -1162,9 +1162,9 @@ public class MessagingCodecImplTest extends UnitTestCase
       SessionXACommitMessage copy = (SessionXACommitMessage) codec.decode(buff);
       checkHeaders(message, copy);
       assertEquals(message.isOnePhase(), copy.isOnePhase());
-      assertByteArraysEquivalent(message.getXid().getBranchQualifier(), copy.getXid().getBranchQualifier());
+      assertEqualsByteArrays(message.getXid().getBranchQualifier(), copy.getXid().getBranchQualifier());
       assertEquals(message.getXid().getFormatId(), copy.getXid().getFormatId());
-      assertByteArraysEquivalent(message.getXid().getGlobalTransactionId(), copy.getXid().getGlobalTransactionId());
+      assertEqualsByteArrays(message.getXid().getGlobalTransactionId(), copy.getXid().getGlobalTransactionId());
    }
 
    public void testSessionXAEndMessagePacket() throws Exception
@@ -1177,9 +1177,9 @@ public class MessagingCodecImplTest extends UnitTestCase
       SessionXAEndMessage copy = (SessionXAEndMessage) codec.decode(buff);
       checkHeaders(message, copy);
       assertEquals(message.isFailed(), copy.isFailed());
-      assertByteArraysEquivalent(message.getXid().getBranchQualifier(), copy.getXid().getBranchQualifier());
+      assertEqualsByteArrays(message.getXid().getBranchQualifier(), copy.getXid().getBranchQualifier());
       assertEquals(message.getXid().getFormatId(), copy.getXid().getFormatId());
-      assertByteArraysEquivalent(message.getXid().getGlobalTransactionId(), copy.getXid().getGlobalTransactionId());
+      assertEqualsByteArrays(message.getXid().getGlobalTransactionId(), copy.getXid().getGlobalTransactionId());
    }
 
    public void testSessionXAForgetMessagePacket() throws Exception
@@ -1190,9 +1190,9 @@ public class MessagingCodecImplTest extends UnitTestCase
       buff.rewind();
       SessionXAForgetMessage copy = (SessionXAForgetMessage) codec.decode(buff);
       checkHeaders(message, copy);
-      assertByteArraysEquivalent(message.getXid().getBranchQualifier(), copy.getXid().getBranchQualifier());
+      assertEqualsByteArrays(message.getXid().getBranchQualifier(), copy.getXid().getBranchQualifier());
       assertEquals(message.getXid().getFormatId(), copy.getXid().getFormatId());
-      assertByteArraysEquivalent(message.getXid().getGlobalTransactionId(), copy.getXid().getGlobalTransactionId());
+      assertEqualsByteArrays(message.getXid().getGlobalTransactionId(), copy.getXid().getGlobalTransactionId());
    }
 
    public void testSessionXAGetInDoubtXidsResponseMessagePacket() throws Exception
@@ -1206,9 +1206,9 @@ public class MessagingCodecImplTest extends UnitTestCase
       buff.rewind();
       SessionXAGetInDoubtXidsResponseMessage copy = (SessionXAGetInDoubtXidsResponseMessage) codec.decode(buff);
       checkHeaders(message, copy);
-      assertByteArraysEquivalent(message.getXids().get(0).getBranchQualifier(), copy.getXids().get(0).getBranchQualifier());
+      assertEqualsByteArrays(message.getXids().get(0).getBranchQualifier(), copy.getXids().get(0).getBranchQualifier());
       assertEquals(message.getXids().get(0).getFormatId(), copy.getXids().get(0).getFormatId());
-      assertByteArraysEquivalent(message.getXids().get(0).getGlobalTransactionId(), copy.getXids().get(0).getGlobalTransactionId());
+      assertEqualsByteArrays(message.getXids().get(0).getGlobalTransactionId(), copy.getXids().get(0).getGlobalTransactionId());
       assertEquals(1, message.getXids().size());
    }
 
@@ -1231,9 +1231,9 @@ public class MessagingCodecImplTest extends UnitTestCase
       buff.rewind();
       SessionXAJoinMessage copy = (SessionXAJoinMessage) codec.decode(buff);
       checkHeaders(message, copy);
-      assertByteArraysEquivalent(message.getXid().getBranchQualifier(), copy.getXid().getBranchQualifier());
+      assertEqualsByteArrays(message.getXid().getBranchQualifier(), copy.getXid().getBranchQualifier());
       assertEquals(message.getXid().getFormatId(), copy.getXid().getFormatId());
-      assertByteArraysEquivalent(message.getXid().getGlobalTransactionId(), copy.getXid().getGlobalTransactionId());
+      assertEqualsByteArrays(message.getXid().getGlobalTransactionId(), copy.getXid().getGlobalTransactionId());
    }
 
    public void testSessionXAPrepareMessagePacket() throws Exception
@@ -1244,9 +1244,9 @@ public class MessagingCodecImplTest extends UnitTestCase
       buff.rewind();
       SessionXAPrepareMessage copy = (SessionXAPrepareMessage) codec.decode(buff);
       checkHeaders(message, copy);
-      assertByteArraysEquivalent(message.getXid().getBranchQualifier(), copy.getXid().getBranchQualifier());
+      assertEqualsByteArrays(message.getXid().getBranchQualifier(), copy.getXid().getBranchQualifier());
       assertEquals(message.getXid().getFormatId(), copy.getXid().getFormatId());
-      assertByteArraysEquivalent(message.getXid().getGlobalTransactionId(), copy.getXid().getGlobalTransactionId());
+      assertEqualsByteArrays(message.getXid().getGlobalTransactionId(), copy.getXid().getGlobalTransactionId());
    }
 
    public void testSessionXAResponseMessagePacket() throws Exception
@@ -1270,9 +1270,9 @@ public class MessagingCodecImplTest extends UnitTestCase
       buff.rewind();
       SessionXAResumeMessage copy = (SessionXAResumeMessage) codec.decode(buff);
       checkHeaders(message, copy);
-      assertByteArraysEquivalent(message.getXid().getBranchQualifier(), copy.getXid().getBranchQualifier());
+      assertEqualsByteArrays(message.getXid().getBranchQualifier(), copy.getXid().getBranchQualifier());
       assertEquals(message.getXid().getFormatId(), copy.getXid().getFormatId());
-      assertByteArraysEquivalent(message.getXid().getGlobalTransactionId(), copy.getXid().getGlobalTransactionId());
+      assertEqualsByteArrays(message.getXid().getGlobalTransactionId(), copy.getXid().getGlobalTransactionId());
    }
 
    public void testSessionXARollbackMessagePacket() throws Exception
@@ -1283,9 +1283,9 @@ public class MessagingCodecImplTest extends UnitTestCase
       buff.rewind();
       SessionXARollbackMessage copy = (SessionXARollbackMessage) codec.decode(buff);
       checkHeaders(message, copy);
-      assertByteArraysEquivalent(message.getXid().getBranchQualifier(), copy.getXid().getBranchQualifier());
+      assertEqualsByteArrays(message.getXid().getBranchQualifier(), copy.getXid().getBranchQualifier());
       assertEquals(message.getXid().getFormatId(), copy.getXid().getFormatId());
-      assertByteArraysEquivalent(message.getXid().getGlobalTransactionId(), copy.getXid().getGlobalTransactionId());
+      assertEqualsByteArrays(message.getXid().getGlobalTransactionId(), copy.getXid().getGlobalTransactionId());
    }
 
    public void testSessionXASetTimeoutMessagePacket() throws Exception
@@ -1318,9 +1318,9 @@ public class MessagingCodecImplTest extends UnitTestCase
       buff.rewind();
       SessionXAStartMessage copy = (SessionXAStartMessage) codec.decode(buff);
       checkHeaders(message, copy);
-      assertByteArraysEquivalent(message.getXid().getBranchQualifier(), copy.getXid().getBranchQualifier());
+      assertEqualsByteArrays(message.getXid().getBranchQualifier(), copy.getXid().getBranchQualifier());
       assertEquals(message.getXid().getFormatId(), copy.getXid().getFormatId());
-      assertByteArraysEquivalent(message.getXid().getGlobalTransactionId(), copy.getXid().getGlobalTransactionId());
+      assertEqualsByteArrays(message.getXid().getGlobalTransactionId(), copy.getXid().getGlobalTransactionId());
    }
 
    private void setHeaders(PacketImpl packet)
