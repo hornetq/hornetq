@@ -18,8 +18,13 @@
       </property>
    </bean>
 
-   <bean name="DeploymentManager" class="org.jboss.messaging.core.deployers.impl.FileDeploymentManager"/>
-
+   <bean name="DeploymentManager" class="org.jboss.messaging.core.deployers.impl.FileDeploymentManager">
+      <constructor>
+         <!-- The scan time in milliseconds -->
+         <parameter>5000</parameter>
+      </constructor>
+   </bean>
+   
    <bean name="Configuration" class="org.jboss.messaging.core.config.impl.FileConfiguration"/>
 
    <!--<bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JAASSecurityManager"/>-->

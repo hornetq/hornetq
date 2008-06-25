@@ -1004,36 +1004,6 @@ public class QueueImplTest extends UnitTestCase
       }
    }
 
-   /*
-   public void testQuickSpeedTest()
-   {
-      Queue queue = new QueueImpl(1);
-      
-      final int numMessages = 1000000;
-      
-      FakeConsumer cons = new FakeConsumer();
-      
-      queue.addConsumer(cons);
-      
-      long start = System.currentTimeMillis();
-      
-      for (int i = 0; i < numMessages; i++)
-      {
-         MessageReference ref = this.generateReference(1);
-         
-         queue.addLast(ref);
-      }
-      
-      long end = System.currentTimeMillis();
-      
-      double rate = 1000 * (double)numMessages / (end - start); 
-      
-      System.out.println("Rate: " + rate);
-      
-      assertEquals(numMessages, cons.getReferences().size());
-   }
-   */
-
    public void testConsumeWithFiltersAddAndRemoveConsumer() throws Exception
    {
       Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);

@@ -212,13 +212,14 @@
 
    <path id="unit.test.execution.classpath">
       <pathelement location="${test.dir}/config"/>
+      <pathelement location="${test.dir}/tmpfiles"/>
       <pathelement location="${test.classes.dir}"/>
       <pathelement location="${src.config.dir}"/>
       <path refid="test.compilation.classpath"/>
       <path refid="oswego.concurrent.classpath"/>
       <path refid="slf4j.api.classpath"/>
       <path refid="slf4j.log4j.classpath"/>
-   	  <path refid="cglib.classpath" />
+   	<path refid="cglib.classpath" />
    </path>
 
    <path id="jms.test.execution.classpath">
