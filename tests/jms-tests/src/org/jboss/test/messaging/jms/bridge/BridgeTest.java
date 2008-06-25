@@ -37,6 +37,8 @@ import javax.transaction.TransactionManager;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.bridge.Bridge;
+import org.jboss.messaging.jms.bridge.QualityOfServiceMode;
+import org.jboss.messaging.jms.bridge.impl.BridgeImpl;
 import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.tm.TransactionManagerLocator;
 
@@ -62,32 +64,32 @@ public class BridgeTest extends BridgeTestBase
    
    public void testNoMaxBatchTime_AtMostOnce_P() throws Exception
    {
-      testNoMaxBatchTime(Bridge.QOS_AT_MOST_ONCE, true);
+      testNoMaxBatchTime(QualityOfServiceMode.AT_MOST_ONCE, true);
    }
    
    public void testNoMaxBatchTime_DuplicatesOk_P() throws Exception
    {
-      testNoMaxBatchTime(Bridge.QOS_DUPLICATES_OK, true);
+      testNoMaxBatchTime(QualityOfServiceMode.DUPLICATES_OK, true);
    }
    
    public void testNoMaxBatchTime_OnceAndOnlyOnce_P() throws Exception
    {
-      testNoMaxBatchTime(Bridge.QOS_ONCE_AND_ONLY_ONCE, true);
+      testNoMaxBatchTime(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true);
    }
    
    public void testNoMaxBatchTime_AtMostOnce_NP() throws Exception
    {
-      testNoMaxBatchTime(Bridge.QOS_AT_MOST_ONCE, false);
+      testNoMaxBatchTime(QualityOfServiceMode.AT_MOST_ONCE, false);
    }
    
    public void testNoMaxBatchTime_DuplicatesOk_NP() throws Exception
    {
-      testNoMaxBatchTime(Bridge.QOS_DUPLICATES_OK, false);
+      testNoMaxBatchTime(QualityOfServiceMode.DUPLICATES_OK, false);
    }
    
    public void testNoMaxBatchTime_OnceAndOnlyOnce_NP() throws Exception
    {
-      testNoMaxBatchTime(Bridge.QOS_ONCE_AND_ONLY_ONCE, false);
+      testNoMaxBatchTime(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false);
    }
    
    //Same server
@@ -96,32 +98,32 @@ public class BridgeTest extends BridgeTestBase
    
    public void testNoMaxBatchTimeSameServer_AtMostOnce_P() throws Exception
    {
-      testNoMaxBatchTimeSameServer(Bridge.QOS_AT_MOST_ONCE, true);
+      testNoMaxBatchTimeSameServer(QualityOfServiceMode.AT_MOST_ONCE, true);
    }
    
    public void testNoMaxBatchTimeSameServer_DuplicatesOk_P() throws Exception
    {
-      testNoMaxBatchTimeSameServer(Bridge.QOS_DUPLICATES_OK, true);
+      testNoMaxBatchTimeSameServer(QualityOfServiceMode.DUPLICATES_OK, true);
    }
    
    public void testNoMaxBatchTimeSameServer_OnceAndOnlyOnce_P() throws Exception
    {
-      testNoMaxBatchTimeSameServer(Bridge.QOS_ONCE_AND_ONLY_ONCE, true);
+      testNoMaxBatchTimeSameServer(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true);
    }
    
    public void testNoMaxBatchTimeSameServer_AtMostOnce_NP() throws Exception
    {
-      testNoMaxBatchTimeSameServer(Bridge.QOS_AT_MOST_ONCE, false);
+      testNoMaxBatchTimeSameServer(QualityOfServiceMode.AT_MOST_ONCE, false);
    }
    
    public void testNoMaxBatchTimeSameServer_DuplicatesOk_NP() throws Exception
    {
-      testNoMaxBatchTimeSameServer(Bridge.QOS_DUPLICATES_OK, false);
+      testNoMaxBatchTimeSameServer(QualityOfServiceMode.DUPLICATES_OK, false);
    }
    
    public void testNoMaxBatchTimeSameServer_OnceAndOnlyOnce_NP() throws Exception
    {
-      testNoMaxBatchTimeSameServer(Bridge.QOS_ONCE_AND_ONLY_ONCE, false);
+      testNoMaxBatchTimeSameServer(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false);
    }
    
    
@@ -129,32 +131,32 @@ public class BridgeTest extends BridgeTestBase
    
    public void testMaxBatchTime_AtMostOnce_P() throws Exception
    {
-      this.testMaxBatchTime(Bridge.QOS_AT_MOST_ONCE, true);
+      this.testMaxBatchTime(QualityOfServiceMode.AT_MOST_ONCE, true);
    }
    
    public void testMaxBatchTime_DuplicatesOk_P() throws Exception
    {
-      this.testMaxBatchTime(Bridge.QOS_DUPLICATES_OK, true);
+      this.testMaxBatchTime(QualityOfServiceMode.DUPLICATES_OK, true);
    }
    
    public void testMaxBatchTime_OnceAndOnlyOnce_P() throws Exception
    {
-      testMaxBatchTime(Bridge.QOS_ONCE_AND_ONLY_ONCE, true);
+      testMaxBatchTime(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true);
    }
    
    public void testMaxBatchTime_AtMostOnce_NP() throws Exception
    {
-      this.testMaxBatchTime(Bridge.QOS_AT_MOST_ONCE, false);
+      this.testMaxBatchTime(QualityOfServiceMode.AT_MOST_ONCE, false);
    }
    
    public void testMaxBatchTime_DuplicatesOk_NP() throws Exception
    {
-      this.testMaxBatchTime(Bridge.QOS_DUPLICATES_OK, false);
+      this.testMaxBatchTime(QualityOfServiceMode.DUPLICATES_OK, false);
    }
    
    public void testMaxBatchTime_OnceAndOnlyOnce_NP() throws Exception
    {
-      testMaxBatchTime(Bridge.QOS_ONCE_AND_ONLY_ONCE, false);
+      testMaxBatchTime(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false);
    }
     
    // Same server
@@ -163,108 +165,108 @@ public class BridgeTest extends BridgeTestBase
    
    public void testMaxBatchTimeSameServer_AtMostOnce_P() throws Exception
    {
-      this.testMaxBatchTimeSameServer(Bridge.QOS_AT_MOST_ONCE, true);
+      this.testMaxBatchTimeSameServer(QualityOfServiceMode.AT_MOST_ONCE, true);
    }
    
    public void testMaxBatchTimeSameServer_DuplicatesOk_P() throws Exception
    {
-      this.testMaxBatchTimeSameServer(Bridge.QOS_DUPLICATES_OK, true);
+      this.testMaxBatchTimeSameServer(QualityOfServiceMode.DUPLICATES_OK, true);
    }
    
    public void testMaxBatchTimeSameServer_OnceAndOnlyOnce_P() throws Exception
    {
-      testMaxBatchTimeSameServer(Bridge.QOS_ONCE_AND_ONLY_ONCE, true);
+      testMaxBatchTimeSameServer(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true);
    }
    
    public void testMaxBatchTimeSameServer_AtMostOnce_NP() throws Exception
    {
-      this.testMaxBatchTimeSameServer(Bridge.QOS_AT_MOST_ONCE, false);
+      this.testMaxBatchTimeSameServer(QualityOfServiceMode.AT_MOST_ONCE, false);
    }
    
    public void testMaxBatchTimeSameServer_DuplicatesOk_NP() throws Exception
    {
-      this.testMaxBatchTimeSameServer(Bridge.QOS_DUPLICATES_OK, false);
+      this.testMaxBatchTimeSameServer(QualityOfServiceMode.DUPLICATES_OK, false);
    }
    
    public void testMaxBatchTimeSameServer_OnceAndOnlyOnce_NP() throws Exception
    {
-      testMaxBatchTimeSameServer(Bridge.QOS_ONCE_AND_ONLY_ONCE, false);
+      testMaxBatchTimeSameServer(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false);
    }
    
    // Stress with batch size of 50
    
    public void testStress_AtMostOnce_P_50() throws Exception
    {
-      testStress(Bridge.QOS_AT_MOST_ONCE, true, 50);
+      testStress(QualityOfServiceMode.AT_MOST_ONCE, true, 50);
    }
    
    public void testStress_DuplicatesOk_P_50() throws Exception
    {
-      testStress(Bridge.QOS_DUPLICATES_OK, true, 50);
+      testStress(QualityOfServiceMode.DUPLICATES_OK, true, 50);
    }
    
    public void testStress_OnceAndOnlyOnce_P_50() throws Exception
    {
-      testStress(Bridge.QOS_ONCE_AND_ONLY_ONCE, true, 50);
+      testStress(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true, 50);
    }
    
    public void testStress_AtMostOnce_NP_50() throws Exception
    {
-      testStress(Bridge.QOS_AT_MOST_ONCE, false, 50);
+      testStress(QualityOfServiceMode.AT_MOST_ONCE, false, 50);
    }
    
    public void testStress_DuplicatesOk_NP_50() throws Exception
    {
-      testStress(Bridge.QOS_DUPLICATES_OK, false, 50);
+      testStress(QualityOfServiceMode.DUPLICATES_OK, false, 50);
    }
    
    public void testStress_OnceAndOnlyOnce_NP_50() throws Exception
    {
-      testStress(Bridge.QOS_ONCE_AND_ONLY_ONCE, false, 50);
+      testStress(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false, 50);
    }
    
    // Stress with batch size of 1
    
    public void testStress_AtMostOnce_P_1() throws Exception
    {
-      testStress(Bridge.QOS_AT_MOST_ONCE, true, 1);
+      testStress(QualityOfServiceMode.AT_MOST_ONCE, true, 1);
    }
    
    public void testStress_DuplicatesOk_P_1() throws Exception
    {
-      testStress(Bridge.QOS_DUPLICATES_OK, true, 1);
+      testStress(QualityOfServiceMode.DUPLICATES_OK, true, 1);
    }
    
    public void testStress_OnceAndOnlyOnce_P_1() throws Exception
    {
-      testStress(Bridge.QOS_ONCE_AND_ONLY_ONCE, true, 1);
+      testStress(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true, 1);
    }
    
    public void testStress_AtMostOnce_NP_1() throws Exception
    {
-      testStress(Bridge.QOS_AT_MOST_ONCE, false, 1);
+      testStress(QualityOfServiceMode.AT_MOST_ONCE, false, 1);
    }
    
    public void testStress_DuplicatesOk_NP_1() throws Exception
    {
-      testStress(Bridge.QOS_DUPLICATES_OK, false, 1);
+      testStress(QualityOfServiceMode.DUPLICATES_OK, false, 1);
    }
    
    public void testStress_OnceAndOnlyOnce_NP_1() throws Exception
    {
-      testStress(Bridge.QOS_ONCE_AND_ONLY_ONCE, false, 1);
+      testStress(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false, 1);
    }
    
    // Max batch time
    
    public void testStressMaxBatchTime_OnceAndOnlyOnce_NP() throws Exception
    {
-   	this.testStressBatchTime(Bridge.QOS_ONCE_AND_ONLY_ONCE, false, 200);
+   	this.testStressBatchTime(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false, 200);
    }
    
    public void testStressMaxBatchTime_OnceAndOnlyOnce_P() throws Exception
    {
-   	this.testStressBatchTime(Bridge.QOS_ONCE_AND_ONLY_ONCE, true, 200);
+   	this.testStressBatchTime(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true, 200);
    }
    
    
@@ -274,73 +276,73 @@ public class BridgeTest extends BridgeTestBase
    
    public void testStressSameServer_AtMostOnce_P_50() throws Exception
    {
-      testStressSameServer(Bridge.QOS_AT_MOST_ONCE, true, 50);
+      testStressSameServer(QualityOfServiceMode.AT_MOST_ONCE, true, 50);
    }
    
    public void testStressSameServer_DuplicatesOk_P_50() throws Exception
    {
-      testStressSameServer(Bridge.QOS_DUPLICATES_OK, true, 50);
+      testStressSameServer(QualityOfServiceMode.DUPLICATES_OK, true, 50);
    }
    
    public void testStressSameServer_OnceAndOnlyOnce_P_50() throws Exception
    {
-      testStress(Bridge.QOS_ONCE_AND_ONLY_ONCE, true, 50);
+      testStress(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true, 50);
    }
    
    public void testStressSameServer_AtMostOnce_NP_50() throws Exception
    {
-      testStressSameServer(Bridge.QOS_AT_MOST_ONCE, false, 50);
+      testStressSameServer(QualityOfServiceMode.AT_MOST_ONCE, false, 50);
    }
    
    public void testStressSameServer_DuplicatesOk_NP_50() throws Exception
    {
-      testStressSameServer(Bridge.QOS_DUPLICATES_OK, false, 50);
+      testStressSameServer(QualityOfServiceMode.DUPLICATES_OK, false, 50);
    }
    
    public void testStressSameServer_OnceAndOnlyOnce_NP_50() throws Exception
    {
-      testStressSameServer(Bridge.QOS_ONCE_AND_ONLY_ONCE, false, 50);
+      testStressSameServer(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false, 50);
    }
    
    // Stress with batch size of 1
    
    public void testStressSameServer_AtMostOnce_P_1() throws Exception
    {
-      testStressSameServer(Bridge.QOS_AT_MOST_ONCE, true, 1);
+      testStressSameServer(QualityOfServiceMode.AT_MOST_ONCE, true, 1);
    }
    
    public void testStressSameServer_DuplicatesOk_P_1() throws Exception
    {
-      testStressSameServer(Bridge.QOS_DUPLICATES_OK, true, 1);
+      testStressSameServer(QualityOfServiceMode.DUPLICATES_OK, true, 1);
    }
    
    public void testStressSameServer_OnceAndOnlyOnce_P_1() throws Exception
    {
-      testStressSameServer(Bridge.QOS_ONCE_AND_ONLY_ONCE, true, 1);
+      testStressSameServer(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true, 1);
    }
    
    public void testStressSameServer_AtMostOnce_NP_1() throws Exception
    {
-      testStressSameServer(Bridge.QOS_AT_MOST_ONCE, false, 1);
+      testStressSameServer(QualityOfServiceMode.AT_MOST_ONCE, false, 1);
    }
    
    public void testStressSameServer_DuplicatesOk_NP_1() throws Exception
    {
-      testStressSameServer(Bridge.QOS_DUPLICATES_OK, false, 1);
+      testStressSameServer(QualityOfServiceMode.DUPLICATES_OK, false, 1);
    }
    
    public void testStressSameServer_OnceAndOnlyOnce_NP_1() throws Exception
    {
-      testStressSameServer(Bridge.QOS_ONCE_AND_ONLY_ONCE, false, 1);
+      testStressSameServer(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false, 1);
    }
    
    public void testParams() throws Exception
    {
-      Bridge bridge = null;
+      BridgeImpl bridge = null;
       
       try
       {               
-         int qosMode = Bridge.QOS_AT_MOST_ONCE;
+         QualityOfServiceMode qosMode = QualityOfServiceMode.AT_MOST_ONCE;
          
          int batchSize = 10;
          
@@ -366,7 +368,7 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new Bridge(null, cff1, sourceQueueFactory, targetQueueFactory,
+            bridge= new BridgeImpl(null, cff1, sourceQueueFactory, targetQueueFactory,
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, qosMode,
                                batchSize, maxBatchTime,
@@ -379,7 +381,7 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new Bridge(cff0, null, sourceQueueFactory, targetQueueFactory,
+            bridge= new BridgeImpl(cff0, null, sourceQueueFactory, targetQueueFactory,
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, qosMode,
                                batchSize, maxBatchTime,
@@ -392,7 +394,7 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new Bridge(cff0, cff1, null, targetQueueFactory,
+            bridge= new BridgeImpl(cff0, cff1, null, targetQueueFactory,
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, qosMode,
                                batchSize, maxBatchTime,
@@ -405,7 +407,7 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new Bridge(cff0, cff1, sourceQueueFactory, null,
+            bridge= new BridgeImpl(cff0, cff1, sourceQueueFactory, null,
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, qosMode,
                                batchSize, maxBatchTime,
@@ -418,7 +420,7 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new Bridge(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+            bridge= new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, -2, maxRetries, qosMode,
                                batchSize, maxBatchTime,
@@ -431,7 +433,7 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new Bridge(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+            bridge= new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, -1, 10, qosMode,
                                batchSize, maxBatchTime,
@@ -444,35 +446,9 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new Bridge(cff0, cff1, sourceQueueFactory, null,
+            bridge= new BridgeImpl(cff0, cff1, sourceQueueFactory, null,
                                sourceUsername, sourcePassword, destUsername, destPassword,
-                               selector, failureRetryInterval, maxRetries, -2,
-                               batchSize, maxBatchTime,
-                               subName, clientID, false);
-         }
-         catch (IllegalArgumentException e)
-         {
-            //Ok
-         }
-         
-         try
-         {
-            bridge= new Bridge(cff0, cff1, sourceQueueFactory, null,
-                               sourceUsername, sourcePassword, destUsername, destPassword,
-                               selector, failureRetryInterval, maxRetries, 3,
-                               batchSize, maxBatchTime,
-                               subName, clientID, false);
-         }
-         catch (IllegalArgumentException e)
-         {
-            //Ok
-         }
-         
-         try
-         {
-            bridge= new Bridge(cff0, cff1, sourceQueueFactory, null,
-                               sourceUsername, sourcePassword, destUsername, destPassword,
-                               selector, failureRetryInterval, maxRetries, 3,
+                               selector, failureRetryInterval, maxRetries, qosMode,
                                0, maxBatchTime,
                                subName, clientID, false);
          }
@@ -483,9 +459,9 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new Bridge(cff0, cff1, sourceQueueFactory, null,
+            bridge= new BridgeImpl(cff0, cff1, sourceQueueFactory, null,
                                sourceUsername, sourcePassword, destUsername, destPassword,
-                               selector, failureRetryInterval, maxRetries, 3,
+                               selector, failureRetryInterval, maxRetries, qosMode,
                                batchSize, -2,
                                subName, clientID, false);
          }
@@ -505,7 +481,7 @@ public class BridgeTest extends BridgeTestBase
    
    public void testSelector() throws Exception
    {      
-      Bridge bridge = null;
+      BridgeImpl bridge = null;
       
       Connection connSource = null;
       
@@ -517,9 +493,9 @@ public class BridgeTest extends BridgeTestBase
          
          String selector = "vegetable='radish'";
          
-         bridge = new Bridge(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+         bridge = new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
-                  selector, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
+                  selector, 5000, 10, QualityOfServiceMode.AT_MOST_ONCE,
                   1, -1,
                   null, null, false);
          
@@ -592,7 +568,7 @@ public class BridgeTest extends BridgeTestBase
    
    public void testStartBridgeWithJTATransactionAlreadyRunning() throws Exception
    {  
-      Bridge bridge = null;
+      BridgeImpl bridge = null;
       
       Transaction toResume = null;
       
@@ -611,9 +587,9 @@ public class BridgeTest extends BridgeTestBase
            
          final int NUM_MESSAGES = 10;
          
-         bridge = new Bridge(cff0, cff1, sourceTopicFactory, targetQueueFactory,
+         bridge = new BridgeImpl(cff0, cff1, sourceTopicFactory, targetQueueFactory,
                   null, null, null, null,
-                  null, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
+                  null, 5000, 10, QualityOfServiceMode.AT_MOST_ONCE,
                   1, -1,
                   null, null, false);
          
@@ -657,15 +633,15 @@ public class BridgeTest extends BridgeTestBase
    
    public void testNonDurableSubscriber() throws Exception
    { 
-      Bridge bridge = null;
+      BridgeImpl bridge = null;
             
       try
       {   
          final int NUM_MESSAGES = 10;
          
-         bridge = new Bridge(cff0, cff1, sourceTopicFactory, targetQueueFactory,
+         bridge = new BridgeImpl(cff0, cff1, sourceTopicFactory, targetQueueFactory,
                   null, null, null, null,
-                  null, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
+                  null, 5000, 10, QualityOfServiceMode.AT_MOST_ONCE,
                   1, -1,
                   null, null, false);
          
@@ -686,15 +662,15 @@ public class BridgeTest extends BridgeTestBase
    
    public void testDurableSubscriber() throws Exception
    {
-      Bridge bridge = null;
+      BridgeImpl bridge = null;
             
       try
       {
          final int NUM_MESSAGES = 10;
          
-         bridge = new Bridge(cff0, cff1, sourceTopicFactory, targetQueueFactory,
+         bridge = new BridgeImpl(cff0, cff1, sourceTopicFactory, targetQueueFactory,
                   null, null, null, null,
-                  null, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
+                  null, 5000, 10, QualityOfServiceMode.AT_MOST_ONCE,
                   1, -1,
                   "subTest", "clientid123", false);
          
@@ -732,7 +708,7 @@ public class BridgeTest extends BridgeTestBase
    
    private void messageIDInHeader(boolean on) throws Exception
    { 
-      Bridge bridge = null;
+      BridgeImpl bridge = null;
       
       Connection connSource = null;
       
@@ -742,9 +718,9 @@ public class BridgeTest extends BridgeTestBase
       {
          final int NUM_MESSAGES = 10;
          
-         bridge = new Bridge(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+         bridge = new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
-                  null, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
+                  null, 5000, 10, QualityOfServiceMode.AT_MOST_ONCE,
                   1, -1,
                   null, null, on);
          
@@ -903,7 +879,7 @@ public class BridgeTest extends BridgeTestBase
    
    private void propertiesPreserved(boolean persistent, boolean messageIDInHeader) throws Exception
    { 
-      Bridge bridge = null;
+      BridgeImpl bridge = null;
       
       Connection connSource = null;
       
@@ -913,9 +889,9 @@ public class BridgeTest extends BridgeTestBase
       {
          final int NUM_MESSAGES = 10;
          
-         bridge = new Bridge(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+         bridge = new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
-                  null, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
+                  null, 5000, 10, QualityOfServiceMode.AT_MOST_ONCE,
                   1, -1,
                   null, null, messageIDInHeader);
          
@@ -1064,7 +1040,7 @@ public class BridgeTest extends BridgeTestBase
    
    public void testNoMessageIDInHeader() throws Exception
    { 
-      Bridge bridge = null;
+      BridgeImpl bridge = null;
       
       Connection connSource = null;
       
@@ -1074,9 +1050,9 @@ public class BridgeTest extends BridgeTestBase
       {
          final int NUM_MESSAGES = 10;
          
-         bridge = new Bridge(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+         bridge = new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
-                  null, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
+                  null, 5000, 10, QualityOfServiceMode.AT_MOST_ONCE,
                   1, -1,
                   null, null, false);
          
@@ -1151,17 +1127,17 @@ public class BridgeTest extends BridgeTestBase
    
    // Private -------------------------------------------------------------------------------
              
-   private void testStress(int qosMode, boolean persistent, int batchSize) throws Exception
+   private void testStress(QualityOfServiceMode qosMode, boolean persistent, int batchSize) throws Exception
    {
       Connection connSource = null;
       
-      Bridge bridge = null;
+      BridgeImpl bridge = null;
       
       Thread t = null;
             
       try
       {      
-         bridge = new Bridge(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+         bridge = new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, qosMode,
                   batchSize, -1,
@@ -1224,17 +1200,17 @@ public class BridgeTest extends BridgeTestBase
       }      
    }
    
-   private void testStressBatchTime(int qosMode, boolean persistent, int maxBatchTime) throws Exception
+   private void testStressBatchTime(QualityOfServiceMode qosMode, boolean persistent, int maxBatchTime) throws Exception
    {
       Connection connSource = null;
       
-      Bridge bridge = null;
+      BridgeImpl bridge = null;
       
       Thread t = null;
             
       try
       {      
-         bridge = new Bridge(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+         bridge = new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, qosMode,
                   2, maxBatchTime,
@@ -1298,17 +1274,17 @@ public class BridgeTest extends BridgeTestBase
    }
    
    //Both source and destination on same rm
-   private void testStressSameServer(int qosMode, boolean persistent, int batchSize) throws Exception
+   private void testStressSameServer(QualityOfServiceMode qosMode, boolean persistent, int batchSize) throws Exception
    {
       Connection connSource = null;
       
-      Bridge bridge = null;
+      BridgeImpl bridge = null;
       
       Thread t = null;
             
       try
       {  
-         bridge = new Bridge(cff0, cff0, sourceQueueFactory, localTargetQueueFactory,
+         bridge = new BridgeImpl(cff0, cff0, sourceQueueFactory, localTargetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, qosMode,
                   batchSize, -1,
@@ -1372,15 +1348,15 @@ public class BridgeTest extends BridgeTestBase
    }
    
       
-   private void testNoMaxBatchTime(int qosMode, boolean persistent) throws Exception
+   private void testNoMaxBatchTime(QualityOfServiceMode qosMode, boolean persistent) throws Exception
    {
-      Bridge bridge = null;
+      BridgeImpl bridge = null;
             
       try
       {
          final int NUM_MESSAGES = 10;
          
-         bridge = new Bridge(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+         bridge = new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, qosMode,
                   NUM_MESSAGES, -1,
@@ -1430,15 +1406,15 @@ public class BridgeTest extends BridgeTestBase
       }                  
    }
    
-   private void testNoMaxBatchTimeSameServer(int qosMode, boolean persistent) throws Exception
+   private void testNoMaxBatchTimeSameServer(QualityOfServiceMode qosMode, boolean persistent) throws Exception
    {
-      Bridge bridge = null;
+      BridgeImpl bridge = null;
             
       try
       {
          final int NUM_MESSAGES = 10;
          
-         bridge = new Bridge(cff0, cff0, sourceQueueFactory, localTargetQueueFactory,
+         bridge = new BridgeImpl(cff0, cff0, sourceQueueFactory, localTargetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, qosMode,
                   NUM_MESSAGES, -1,
@@ -1488,9 +1464,9 @@ public class BridgeTest extends BridgeTestBase
       }                  
    }
    
-   private void testMaxBatchTime(int qosMode, boolean persistent) throws Exception
+   private void testMaxBatchTime(QualityOfServiceMode qosMode, boolean persistent) throws Exception
    {
-      Bridge bridge = null;
+      BridgeImpl bridge = null;
             
       try
       {
@@ -1498,7 +1474,7 @@ public class BridgeTest extends BridgeTestBase
          
          final int MAX_BATCH_SIZE = 100000; // something big so it won't reach it
          
-         bridge = new Bridge(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+         bridge = new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 3000, 10, qosMode,
                   MAX_BATCH_SIZE, MAX_BATCH_TIME,
@@ -1529,9 +1505,9 @@ public class BridgeTest extends BridgeTestBase
       }                  
    }
    
-   private void testMaxBatchTimeSameServer(int qosMode, boolean persistent) throws Exception
+   private void testMaxBatchTimeSameServer(QualityOfServiceMode qosMode, boolean persistent) throws Exception
    {
-      Bridge bridge = null;
+      BridgeImpl bridge = null;
             
       try
       {
@@ -1539,7 +1515,7 @@ public class BridgeTest extends BridgeTestBase
          
          final int MAX_BATCH_SIZE = 100000; // something big so it won't reach it
          
-         bridge = new Bridge(cff0, cff0, sourceQueueFactory, localTargetQueueFactory,
+         bridge = new BridgeImpl(cff0, cff0, sourceQueueFactory, localTargetQueueFactory,
                   null, null, null, null,
                   null, 3000, 10, qosMode,
                   MAX_BATCH_SIZE, MAX_BATCH_TIME,

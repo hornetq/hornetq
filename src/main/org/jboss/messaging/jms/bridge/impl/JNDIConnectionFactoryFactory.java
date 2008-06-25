@@ -20,19 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */ 
 
-package org.jboss.messaging.jms.bridge;
+package org.jboss.messaging.jms.bridge.impl;
 
 import java.util.Hashtable;
 
 import javax.jms.ConnectionFactory;
 
+import org.jboss.messaging.jms.bridge.ConnectionFactoryFactory;
+
 /**
  * A JNDIConnectionFactoryFactory
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
+ * @version <tt>$Revision:4566 $</tt>
  *
- * $Id$
+ * $Id:JNDIConnectionFactoryFactory.java 4566 2008-06-24 08:01:35Z jmesnil $
  *
  */
 public class JNDIConnectionFactoryFactory extends JNDIFactorySupport implements ConnectionFactoryFactory

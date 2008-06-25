@@ -26,6 +26,7 @@ import javax.management.ObjectName;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingComponent;
+import org.jboss.messaging.jms.bridge.impl.BridgeImpl;
 
 /**
  * A BridgeService
@@ -52,7 +53,7 @@ public class BridgeService implements BridgeMBean
       
    public BridgeService()
    {
-      bridge = new Bridge();
+      bridge = new BridgeImpl();
    }
    
    // JMX attributes ----------------------------------------------------------------
@@ -139,32 +140,32 @@ public class BridgeService implements BridgeMBean
 
    public String getTargetUsername()
    {
-      return bridge.getDestUsername();
+      return bridge.getTargetUsername();
    }
 
    public String getTargetPassword()
    {
-      return bridge.getDestPassword();
+      return bridge.getTargetPassword();
    }
    
    public void setTargetUsername(String name)
    {
-      bridge.setDestUserName(name);
+      bridge.setTargetUsername(name);
    }
    
    public void setTargetPassword(String pwd)
    {
-      bridge.setDestPassword(pwd);
+      bridge.setTargetPassword(pwd);
    }
    
    public int getQualityOfServiceMode()
    {
-      return bridge.getQualityOfServiceMode();
+      return bridge.getQualityOfServiceMode().intValue();
    }
    
    public void setQualityOfServiceMode(int mode)
    {
-      bridge.setQualityOfServiceMode(mode);
+      bridge.setQualityOfServiceMode(QualityOfServiceMode.valueOf(mode));
    }
    
    public String getSelector()
@@ -199,12 +200,12 @@ public class BridgeService implements BridgeMBean
 
    public String getSubName()
    {
-      return bridge.getSubName();
+      return bridge.getSubscriptionName();
    }
    
    public void setSubName(String subname)
    {
-      bridge.setSubName(subname);
+      bridge.setSubscriptionName(subname);
    }
 
    public String getClientID()

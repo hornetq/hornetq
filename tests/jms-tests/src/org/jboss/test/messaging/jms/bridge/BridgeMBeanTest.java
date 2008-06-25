@@ -37,6 +37,7 @@ import javax.naming.InitialContext;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.bridge.Bridge;
+import org.jboss.messaging.jms.bridge.QualityOfServiceMode;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
@@ -103,7 +104,7 @@ public class BridgeMBeanTest extends BridgeTestBase
 	      on = deployBridge(0, "Bridge1", sourceProviderLoader, targetProviderLoader,
 	                                   "/queue/sourceQueue", "/queue/targetQueue",
 	                                   null, null, null, null,
-	                                   Bridge.QOS_AT_MOST_ONCE, null, 1,
+	                                   QualityOfServiceMode.AT_MOST_ONCE, null, 1,
 	                                   -1, null, null, 5000, -1, false);
 	      log.info("Deployed bridge");
 	      
@@ -267,7 +268,7 @@ public class BridgeMBeanTest extends BridgeTestBase
          on = deployBridge(0, "Bridge2", sourceProviderLoader, targetProviderLoader,
                            "/queue/sourceQueue", "/queue/targetQueue",
                            null, null, null, null,
-                           Bridge.QOS_ONCE_AND_ONLY_ONCE, null, 1,
+                           QualityOfServiceMode.ONCE_AND_ONLY_ONCE, null, 1,
                            -1, null, null, 5000, -1, false);
          
          log.trace("Constructed bridge");
@@ -351,11 +352,11 @@ public class BridgeMBeanTest extends BridgeTestBase
          
          {
             Integer qos = (Integer)ServerManagement.getAttribute(on, "QualityOfServiceMode");
-            assertEquals(Bridge.QOS_ONCE_AND_ONLY_ONCE, qos.intValue());
-            ServerManagement.setAttribute(on, "QualityOfServiceMode", String.valueOf(Bridge.QOS_AT_MOST_ONCE));
+            assertEquals(QualityOfServiceMode.ONCE_AND_ONLY_ONCE.intValue(), qos.intValue());
+            ServerManagement.setAttribute(on, "QualityOfServiceMode", String.valueOf(QualityOfServiceMode.AT_MOST_ONCE.intValue()));
             qos = (Integer)ServerManagement.getAttribute(on, "QualityOfServiceMode");
-            assertEquals(new Integer(Bridge.QOS_AT_MOST_ONCE), qos);
-            ServerManagement.setAttribute(on, "QualityOfServiceMode", String.valueOf(Bridge.QOS_ONCE_AND_ONLY_ONCE));
+            assertEquals(new Integer(QualityOfServiceMode.AT_MOST_ONCE.intValue()), qos);
+            ServerManagement.setAttribute(on, "QualityOfServiceMode", String.valueOf(QualityOfServiceMode.ONCE_AND_ONLY_ONCE.intValue()));
          }
          
          {
@@ -492,10 +493,10 @@ public class BridgeMBeanTest extends BridgeTestBase
          
          {
             Integer qos = (Integer)ServerManagement.getAttribute(on, "QualityOfServiceMode");
-            assertEquals(Bridge.QOS_ONCE_AND_ONLY_ONCE, qos.intValue());
-            ServerManagement.setAttribute(on, "QualityOfServiceMode", String.valueOf(Bridge.QOS_AT_MOST_ONCE));
+            assertEquals(QualityOfServiceMode.ONCE_AND_ONLY_ONCE.intValue(), qos.intValue());
+            ServerManagement.setAttribute(on, "QualityOfServiceMode", String.valueOf(QualityOfServiceMode.AT_MOST_ONCE.intValue()));
             qos = (Integer)ServerManagement.getAttribute(on, "QualityOfServiceMode");
-            assertEquals(new Integer(Bridge.QOS_ONCE_AND_ONLY_ONCE), qos);
+            assertEquals(new Integer(QualityOfServiceMode.ONCE_AND_ONLY_ONCE.intValue()), qos);
          }
          
          {
@@ -593,7 +594,7 @@ public class BridgeMBeanTest extends BridgeTestBase
             String sourceDestLookup, String targetDestLookup,
             String sourceUsername, String sourcePassword,
             String targetUsername, String targetPassword,
-            int qos, String selector, int maxBatchSize,
+            QualityOfServiceMode qos, String selector, int maxBatchSize,
             long maxBatchTime, String subName, String clientID,
             long failureRetryInterval, int maxRetries, boolean addMessageIDInHeader) throws Exception
    {
@@ -621,7 +622,7 @@ public class BridgeMBeanTest extends BridgeTestBase
       {
          config += "<attribute name=\"TargetPassword\">" + targetPassword + "</attribute>";
       }
-      config += "<attribute name=\"QualityOfServiceMode\">" + qos +"</attribute>";
+      config += "<attribute name=\"QualityOfServiceMode\">" + qos.intValue() +"</attribute>";
       if (selector != null)
       {
          config += "<attribute name=\"Selector\">" + selector + "</attribute>";

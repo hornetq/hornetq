@@ -23,6 +23,8 @@ package org.jboss.test.messaging.jms.bridge;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.bridge.Bridge;
+import org.jboss.messaging.jms.bridge.QualityOfServiceMode;
+import org.jboss.messaging.jms.bridge.impl.BridgeImpl;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
@@ -47,36 +49,36 @@ public class ReconnectTest extends BridgeTestBase
    
    public void testCrashAndReconnectDestBasic_OnceAndOnlyOnce_P() throws Exception
    {
-      testCrashAndReconnectDestBasic(Bridge.QOS_ONCE_AND_ONLY_ONCE, true);
+      testCrashAndReconnectDestBasic(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true);
    }
    
    public void testCrashAndReconnectDestBasic_OnceAndOnlyOnce_NP() throws Exception
    {
-      testCrashAndReconnectDestBasic(Bridge.QOS_ONCE_AND_ONLY_ONCE, false);
+      testCrashAndReconnectDestBasic(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false);
    }
 
    // dups ok
 
    public void testCrashAndReconnectDestBasic_DuplicatesOk_P() throws Exception
    {
-      testCrashAndReconnectDestBasic(Bridge.QOS_DUPLICATES_OK, true);
+      testCrashAndReconnectDestBasic(QualityOfServiceMode.DUPLICATES_OK, true);
    }
 
    public void testCrashAndReconnectDestBasic_DuplicatesOk_NP() throws Exception
    {
-      testCrashAndReconnectDestBasic(Bridge.QOS_DUPLICATES_OK, false);
+      testCrashAndReconnectDestBasic(QualityOfServiceMode.DUPLICATES_OK, false);
    }
 
    // At most once
 
    public void testCrashAndReconnectDestBasic_AtMostOnce_P() throws Exception
    {
-      testCrashAndReconnectDestBasic(Bridge.QOS_AT_MOST_ONCE, true);
+      testCrashAndReconnectDestBasic(QualityOfServiceMode.AT_MOST_ONCE, true);
    }
 
    public void testCrashAndReconnectDestBasic_AtMostOnce_NP() throws Exception
    {
-      testCrashAndReconnectDestBasic(Bridge.QOS_AT_MOST_ONCE, false);
+      testCrashAndReconnectDestBasic(QualityOfServiceMode.AT_MOST_ONCE, false);
    }
 
    // Crash tests specific to XA transactions
@@ -97,9 +99,9 @@ public class ReconnectTest extends BridgeTestBase
    {
       ServerManagement.kill(1);
 
-      Bridge bridge = new Bridge(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+      BridgeImpl bridge = new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
             null, null, null, null,
-            null, 1000, -1, Bridge.QOS_DUPLICATES_OK,
+            null, 1000, -1, QualityOfServiceMode.DUPLICATES_OK,
             10, -1,
             null, null, false);
       
@@ -138,13 +140,13 @@ public class ReconnectTest extends BridgeTestBase
     * Send some more messages
     * Verify all messages are received
     */
-   private void testCrashAndReconnectDestBasic(int qosMode, boolean persistent) throws Exception
+   private void testCrashAndReconnectDestBasic(QualityOfServiceMode qosMode, boolean persistent) throws Exception
    {
-      Bridge bridge = null;
+      BridgeImpl bridge = null;
          
       try
       {   
-         bridge = new Bridge(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+         bridge = new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 1000, -1, qosMode,
                   10, -1,
@@ -220,13 +222,13 @@ public class ReconnectTest extends BridgeTestBase
     */
    private void testCrashAndReconnectDestCrashBeforePrepare(boolean persistent) throws Exception
    {   
-      Bridge bridge = null;
+      BridgeImpl bridge = null;
             
       try
       {
-         bridge = new Bridge(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+         bridge = new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
-                  null, 1000, -1, Bridge.QOS_ONCE_AND_ONLY_ONCE,
+                  null, 1000, -1, QualityOfServiceMode.ONCE_AND_ONLY_ONCE,
                   10, 5000,
                   null, null, false);
          
@@ -262,7 +264,7 @@ public class ReconnectTest extends BridgeTestBase
          
          sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES / 2, persistent);
                            
-         checkMessagesReceived(cf1, targetQueue, Bridge.QOS_ONCE_AND_ONLY_ONCE, NUM_MESSAGES, false);         
+         checkMessagesReceived(cf1, targetQueue, QualityOfServiceMode.ONCE_AND_ONLY_ONCE, NUM_MESSAGES, false);         
       }
       finally
       {      

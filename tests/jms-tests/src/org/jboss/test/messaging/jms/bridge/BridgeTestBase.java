@@ -38,11 +38,12 @@ import javax.jms.Topic;
 import javax.naming.InitialContext;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.jms.bridge.Bridge;
 import org.jboss.messaging.jms.bridge.ConnectionFactoryFactory;
 import org.jboss.messaging.jms.bridge.DestinationFactory;
-import org.jboss.messaging.jms.bridge.JNDIConnectionFactoryFactory;
-import org.jboss.messaging.jms.bridge.JNDIDestinationFactory;
+import org.jboss.messaging.jms.bridge.Bridge;
+import org.jboss.messaging.jms.bridge.QualityOfServiceMode;
+import org.jboss.messaging.jms.bridge.impl.JNDIConnectionFactoryFactory;
+import org.jboss.messaging.jms.bridge.impl.JNDIDestinationFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.ServiceContainer;
@@ -208,7 +209,7 @@ public class BridgeTestBase extends JBMServerTestCase
    }
    
 
-   protected void checkMessagesReceived(ConnectionFactory cf, Destination dest, int qosMode,
+   protected void checkMessagesReceived(ConnectionFactory cf, Destination dest, QualityOfServiceMode qosMode,
    		                               int numMessages, boolean longWaitForFirst) throws Exception
    {
       Connection conn = null;
@@ -248,7 +249,7 @@ public class BridgeTestBase extends JBMServerTestCase
             
          }
          
-         if (qosMode == Bridge.QOS_ONCE_AND_ONLY_ONCE || qosMode == Bridge.QOS_DUPLICATES_OK)
+         if (qosMode == QualityOfServiceMode.ONCE_AND_ONLY_ONCE || qosMode == QualityOfServiceMode.DUPLICATES_OK)
          {            
             //All the messages should be received
             
@@ -258,12 +259,12 @@ public class BridgeTestBase extends JBMServerTestCase
             }
             
             //Should be no more
-            if (qosMode == Bridge.QOS_ONCE_AND_ONLY_ONCE)
+            if (qosMode == QualityOfServiceMode.ONCE_AND_ONLY_ONCE)
             {
                assertEquals(numMessages, msgs.size());
             }         
          }
-         else if (qosMode == Bridge.QOS_AT_MOST_ONCE)
+         else if (qosMode == QualityOfServiceMode.AT_MOST_ONCE)
          {
             //No *guarantee* that any messages will be received
             //but you still might get some depending on how/where the crash occurred                 

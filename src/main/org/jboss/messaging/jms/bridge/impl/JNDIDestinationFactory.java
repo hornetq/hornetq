@@ -20,11 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */ 
 
-package org.jboss.messaging.jms.bridge;
+package org.jboss.messaging.jms.bridge.impl;
 
 import java.util.Hashtable;
 
-import javax.naming.InitialContext;
+import javax.jms.Destination;
+
+import org.jboss.messaging.jms.bridge.DestinationFactory;
 
 /**
  * 
@@ -34,45 +36,15 @@ import javax.naming.InitialContext;
  * $Id: $
  *
  */
-public abstract class JNDIFactorySupport
+public class JNDIDestinationFactory extends JNDIFactorySupport implements DestinationFactory
 {
-	protected Hashtable jndiProperties;
-   
-   protected String lookup;
-   
-   protected JNDIFactorySupport(Hashtable jndiProperties, String lookup)
+   public JNDIDestinationFactory(Hashtable jndiProperties, String lookup)
    {
-      this.jndiProperties = jndiProperties;
-      
-      this.lookup = lookup;       
+      super(jndiProperties, lookup);      
    }
 
-   protected Object createObject() throws Exception
+   public Destination createDestination() throws Exception
    {
-      InitialContext ic = null;
-      
-      Object obj = null;
-      
-      try
-      {
-         if (jndiProperties == null)
-         {
-            ic = new InitialContext();
-         }
-         else
-         {
-            ic = new InitialContext(jndiProperties);
-         }
-         
-         obj = ic.lookup(lookup);         
-      }
-      finally
-      {
-         if (ic != null)
-         {
-            ic.close();
-         }
-      }
-      return obj;      
+   	return (Destination)createObject();   	
    }
 }
