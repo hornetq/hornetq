@@ -28,6 +28,7 @@ import javax.jms.Destination;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 
+import org.jboss.messaging.jms.referenceable.DestinationObjectFactory;
 import org.jboss.messaging.jms.referenceable.SerializableObjectRefAddr;
 import org.jboss.messaging.util.SimpleString;
 
@@ -109,9 +110,9 @@ public abstract class JBossDestination implements Destination, Serializable/*, R
    
    public Reference getReference() throws NamingException
    {
-      return new Reference("org.jboss.jms.destination.JBossDestination",
+      return new Reference(this.getClass().getCanonicalName(),
                            new SerializableObjectRefAddr("JBM-DEST", this),
-                           "org.jboss.jms.referenceable.DestinationObjectFactory",
+                           DestinationObjectFactory.class.getCanonicalName(),
                            null);
    }
 

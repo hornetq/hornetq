@@ -48,6 +48,7 @@ import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionFactoryImpl;
+import org.jboss.messaging.jms.referenceable.ConnectionFactoryObjectFactory;
 import org.jboss.messaging.jms.referenceable.SerializableObjectRefAddr;
 
 /**
@@ -227,9 +228,9 @@ public class JBossConnectionFactory implements
    
    public Reference getReference() throws NamingException
    {
-      return new Reference("org.jboss.messaging.jms.client.JBossConnectionFactory",
+      return new Reference(this.getClass().getCanonicalName(),
                new SerializableObjectRefAddr("JBM-CF", this),
-               "org.jboss.jms.referenceable.ConnectionFactoryObjectFactory",
+               ConnectionFactoryObjectFactory.class.getCanonicalName(),
                null);
    }
    
