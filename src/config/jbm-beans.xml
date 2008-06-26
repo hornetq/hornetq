@@ -11,7 +11,7 @@
       </constructor>
    </bean>
    
-   <bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JAASSecurityManager"/>
+   <bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JBossASSecurityManager"/>
 
    <!-- <bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl">
       <constructor>

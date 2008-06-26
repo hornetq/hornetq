@@ -67,8 +67,6 @@ public class SecurityDeployerTest extends TestCase
 
    public void testSingle() throws Exception
    {
-
-
       Element e = XMLUtil.stringToElement(conf);
       Role role = new Role("durpublisher", true, true, true);
       Role role2 = new Role("guest", true, true, false);
@@ -79,8 +77,7 @@ public class SecurityDeployerTest extends TestCase
       roles.add(role3);
       repository.addMatch("topics.testTopic", roles);
       EasyMock.replay(repository);
-      deployer.deploy(e);
-      
+      deployer.deploy(e);      
    }
 
    public void testMultiple() throws Exception
@@ -97,8 +94,8 @@ public class SecurityDeployerTest extends TestCase
       EasyMock.replay(repository);
       deployer.deploy(XMLUtil.stringToElement(conf));
       deployer.deploy(XMLUtil.stringToElement(conf2));
-
    }
+   
    public void testNoRolesAdded() throws Exception
    {
       HashSet<Role> roles = new HashSet<Role>();

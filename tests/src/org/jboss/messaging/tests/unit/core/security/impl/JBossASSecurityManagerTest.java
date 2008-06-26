@@ -22,32 +22,38 @@
 
 package org.jboss.messaging.tests.unit.core.security.impl;
 
+import java.security.Principal;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import javax.naming.InitialContext;
+import javax.security.auth.Subject;
+import javax.security.auth.message.MessageInfo;
+
 import junit.framework.TestCase;
+
 import org.easymock.EasyMock;
 import org.easymock.IArgumentMatcher;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.core.security.impl.JAASSecurityManager;
+import org.jboss.messaging.core.security.impl.JBossASSecurityManager;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.RealmMapping;
 import org.jboss.security.SimplePrincipal;
 
-import javax.security.auth.Subject;
-import java.util.HashSet;
-import java.util.Set;
-
 /**
- * tests the JAASSecurityManager
+ * tests the JBossASSecurityManager
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class JAASSecurityManagerTest extends TestCase
+public class JBossASSecurityManagerTest extends TestCase
 {
-   JAASSecurityManager securityManager;
+   private JBossASSecurityManager securityManager;
 
    protected void setUp() throws Exception
    {
-      securityManager = new JAASSecurityManager();
+      securityManager = new JBossASSecurityManager();
    }
 
    protected void tearDown() throws Exception
@@ -85,7 +91,7 @@ public class JAASSecurityManagerTest extends TestCase
       roleHashSet.add(new Role("newuser1", true, true, true));
       securityManager.validateUserAndRole("newuser1", "newpassword1", roleHashSet, CheckType.CREATE);
    }
-
+   
    public static SimplePrincipal principal(SimplePrincipal principal)
    {
       EasyMock.reportMatcher(new SimplePrincipalMatcher(principal));
@@ -98,7 +104,7 @@ public class JAASSecurityManagerTest extends TestCase
       return subject;
    }
 
-   static class SimplePrincipalMatcher implements IArgumentMatcher
+   private static class SimplePrincipalMatcher implements IArgumentMatcher
    {
       SimplePrincipal principal;
 
@@ -123,7 +129,7 @@ public class JAASSecurityManagerTest extends TestCase
       }
    }
 
-   static class SubjectMatcher implements IArgumentMatcher
+   private static class SubjectMatcher implements IArgumentMatcher
    {
       Subject subject;
 
@@ -146,5 +152,5 @@ public class JAASSecurityManagerTest extends TestCase
       {
          stringBuffer.append("Invalid Subject created");
       }
-   }
+   }     
 }

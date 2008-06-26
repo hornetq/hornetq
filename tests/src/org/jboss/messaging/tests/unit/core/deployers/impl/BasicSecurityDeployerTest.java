@@ -35,19 +35,20 @@ import org.w3c.dom.NodeList;
  * tests BasicSecurityDeployer
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class SecurityManagerDeployerTest  extends TestCase
+public class BasicSecurityDeployerTest  extends TestCase
 {
-   BasicSecurityDeployer deployer;
-   String simpleSecurityXml = "<deployment>\n" +
+   private BasicSecurityDeployer deployer;
+   
+   private static final String simpleSecurityXml = "<deployment>\n" +
            "</deployment>";
 
-   String singleUserXml = "<deployment>\n" +
+   private static final String singleUserXml = "<deployment>\n" +
            "      <user name=\"guest\" password=\"guest\">\n" +
            "         <role name=\"guest\"/>\n" +
            "      </user>\n" +
            "</deployment>";
 
-   String multipleUserXml = "<deployment>\n" +
+   private static final String multipleUserXml = "<deployment>\n" +
            "      <user name=\"guest\" password=\"guest\">\n" +
            "         <role name=\"guest\"/>\n" +
            "         <role name=\"foo\"/>\n" +

@@ -93,8 +93,6 @@ public class QueueImpl implements Queue
 
    private int pos;
    
-   //private boolean locked;
-   
    private AtomicInteger sizeBytes = new AtomicInteger(0);
 
    private AtomicInteger messagesAdded = new AtomicInteger(0);
@@ -158,21 +156,20 @@ public class QueueImpl implements Queue
    
    public HandleStatus addLast(final MessageReference ref)
    {
-
-         lock.lock();
+      lock.lock();
       try
       {         
          return add(ref, false);
       }
       finally
       {
-            lock.unlock();
+         lock.unlock();
       }
    }
 
    public HandleStatus addFirst(final MessageReference ref)
    {
-         lock.lock();
+      lock.lock();
 
       try
       {
@@ -180,8 +177,7 @@ public class QueueImpl implements Queue
       }
       finally
       {
-            lock.unlock();
-        
+         lock.unlock();       
       }
    }
 
@@ -486,18 +482,14 @@ public class QueueImpl implements Queue
       tx.commit();
    }
    
-   public synchronized void lock()
+   public void lock()
    {
       lock.lock();
-      
-      //locked = true;
    }
    
-   public synchronized void unlock()
+   public void unlock()
    {            
       lock.unlock();          
-      
-      //locked = false;
    }
 
    // Public

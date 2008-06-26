@@ -32,19 +32,21 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.RealmMapping;
 import org.jboss.security.SimplePrincipal;
 
 /**
- * This implementation delegates to the a real JAAS Authentication Manager and will typically be used within an appserver
- * and it up via jndi.
+ * This implementation delegates to the JBoss AS security interfaces (which in turn use JAAS)
+ * It can be used when running JBM in JBoss AS
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
-public class JAASSecurityManager implements JBMSecurityManager
+public class JBossASSecurityManager implements JBMSecurityManager, MessagingComponent
 {
-   private static final Logger log = Logger.getLogger(JAASSecurityManager.class);
+   private static final Logger log = Logger.getLogger(JBossASSecurityManager.class);
 
    // Static --------------------------------------------------------
 
@@ -66,9 +68,11 @@ public class JAASSecurityManager implements JBMSecurityManager
     * The JNDI name of the AuthenticationManager(and RealmMapping since they are the same object).
     */
    private String securityDomainName = "java:/jaas/messaging";
-
+   
+   private boolean started;
+   
    public boolean validateUser(final String user, final String password)
-   {
+   {      
       SimplePrincipal principal = new SimplePrincipal(user);
 
       char[] passwordChars = null;
@@ -147,13 +151,34 @@ public class JAASSecurityManager implements JBMSecurityManager
     *
     * @throws Exception
     */
-   public void start() throws Exception
+   public synchronized void start() throws Exception
    {
+      if (started)
+      {
+         return;
+      }
+      
       InitialContext ic = new InitialContext();
       authenticationManager = (AuthenticationManager) ic.lookup(securityDomainName);
       realmMapping = (RealmMapping) authenticationManager;
+      
+      started = true;
    }
-
+   
+   public synchronized void stop()
+   {
+      if (!started)
+      {
+         return;
+      }
+      started = false;
+   }
+   
+   public synchronized boolean isStarted()
+   {
+      return started;
+   }
+   
    public void setSecurityDomainName(String securityDomainName)
    {
       this.securityDomainName = securityDomainName;

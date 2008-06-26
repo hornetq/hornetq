@@ -381,15 +381,6 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 	 * */
 	private int calculateNumberOfFiles(int fileSize, int alignment, int ... record) throws Exception
 	{
-		
-		
-//		log.info("Processing calculateNumberOfFiles(" + fileSize + ", " + alignment);
-//		for (int recordN: record)
-//		{
-//		System.out.print(", " + recordN);
-//		}
-//		System.out.println(");");
-		
 		int headerSize = calculateRecordSize(JournalImpl.SIZE_HEADER, alignment);
 		int currentPosition = headerSize;
 		int totalFiles = 0;
@@ -399,8 +390,6 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 			int numberOfRecords = record[i];
 			int recordSize = calculateRecordSize(record[i+1], alignment);
 			
-//			log.info(" numberOfRecords = " + numberOfRecords + " recordSize=" + recordSize);
-			
 			while (numberOfRecords>0)
 			{
 				int recordsFit = (fileSize - currentPosition) / recordSize;
@@ -408,24 +397,19 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 				{
 					currentPosition = currentPosition + numberOfRecords*recordSize;
 					numberOfRecords = 0;
-//					log.info("   Adding " + numberOfRecords + " records of size " + recordSize + " numberOfFiles = " + totalFiles + " Position=" + currentPosition);
 				}
 				else if (recordsFit > 0)
 				{
 					currentPosition = currentPosition + recordsFit*recordSize;
 					numberOfRecords -= recordsFit;
-//					log.info("   Adding " + recordsFit + " (fitting) of size " + recordSize + " numberOfFiles = " + totalFiles + " Position = " + currentPosition);
 				}
 				else
 				{
 					totalFiles++;
 					currentPosition = headerSize;
-//					log.info("   Exploded... totalFiles=" + totalFiles);
 				}
 			}
 		}
-		
-		// System.out.println("   Returning " + totalFiles);
 		
 		return totalFiles;
 		
@@ -2768,25 +2752,20 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		commit(1);
 		deleteTx(2, 1, 2, 3, 4, 5, 6);
 		commit(2);
-		
-		
-		
-//		// Just to make sure the commit won't be released. The commit will be on the same file as addTx(3);
-addTx(3, 11);
-addTx(4, 31);
-commit(3);
 
-log.info("Debug on Journal before stopJournal - \n" + debugJournal());
+      // Just to make sure the commit won't be released. The commit will be on the same file as addTx(3);
+		addTx(3, 11);
+		addTx(4, 31);
+		commit(3);
 
-stopJournal();
-createJournal();
-startJournal();
-loadAndCheck();
+		log.info("Debug on Journal before stopJournal - \n" + debugJournal());
 
-
+		stopJournal();
+		createJournal();
+		startJournal();
+		loadAndCheck();
 	}
-	
+
 	protected abstract int getAlignment();
-	
-	
+
 }

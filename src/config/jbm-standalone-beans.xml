@@ -27,7 +27,7 @@
    
    <bean name="Configuration" class="org.jboss.messaging.core.config.impl.FileConfiguration"/>
 
-   <!--<bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JAASSecurityManager"/>-->
+   <!--<bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JBossASSecurityManager"/>-->
 
    <bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl">
       <constructor>
