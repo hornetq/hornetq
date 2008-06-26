@@ -40,6 +40,8 @@ public abstract class TestSupport
    public static final long REQRES_TIMEOUT = 2; // in seconds
 
    public static final int PORT = 9090;
+   
+   public static final String HOST = "localhost";
 
    // Attributes ----------------------------------------------------
 

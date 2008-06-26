@@ -24,6 +24,8 @@ package org.jboss.messaging.core.remoting.impl.mina;
 
 import org.apache.mina.common.*;
 import org.apache.mina.filter.ssl.SslFilter;
+import org.apache.mina.transport.socket.SocketConnector;
+import org.apache.mina.transport.socket.SocketSessionConfig;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.Location;
@@ -35,8 +37,6 @@ import org.jboss.messaging.core.ping.Pinger;
 import org.jboss.messaging.core.ping.impl.PingerImpl;
 import org.jboss.messaging.core.remoting.*;
 import org.jboss.messaging.core.remoting.impl.ResponseHandlerImpl;
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addSSLFilter;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
 
@@ -64,8 +64,12 @@ public class MinaConnector implements RemotingConnector, CleanUpNotifier
    private final Location location;
 
    private final ConnectionParams connectionParams;
+   
+   private final FilterChainSupport chainSupport;
 
-   private transient NioSocketConnector connector;
+   private transient SocketConnector connector;
+   
+   private transient SocketSessionConfig connectorConfig;
 
    private final PacketDispatcher dispatcher;
 
@@ -74,11 +78,12 @@ public class MinaConnector implements RemotingConnector, CleanUpNotifier
    private IoSession session;
 
    private final List<RemotingSessionListener> listeners = new ArrayList<RemotingSessionListener>();
+
    private IoServiceListenerAdapter ioListener;
 
    private MinaHandler handler;
 
-   private ScheduledExecutorService scheduledExecutor;
+   private final ScheduledExecutorService scheduledExecutor;
 
    private boolean alive = true;
 
@@ -88,21 +93,52 @@ public class MinaConnector implements RemotingConnector, CleanUpNotifier
 
    // Public --------------------------------------------------------
 
-   public MinaConnector(Location location, PacketDispatcher dispatcher)
+   public MinaConnector(final Location location, final PacketDispatcher dispatcher)
    {
       this(location, new ConnectionParamsImpl(), dispatcher);
    }
 
-   public MinaConnector(Location location, ConnectionParams connectionParams, PacketDispatcher dispatcher)
+   public MinaConnector(final Location location, final ConnectionParams connectionParams, final PacketDispatcher dispatcher)
    {
-      assert location != null;
-      assert dispatcher != null;
-      assert connectionParams != null;
+      this(location, connectionParams, new NioSocketConnector(), new FilterChainSupportImpl(),dispatcher);
+   }
+   
+   public MinaConnector(final Location location, final ConnectionParams connectionParams, final SocketConnector connector, 
+                        FilterChainSupport chainSupport, final PacketDispatcher dispatcher)
+   {
+      if (location == null)
+      {
+         throw new IllegalArgumentException("Invalid argument null location");
+      }
+      
+      if (dispatcher == null)
+      {
+         throw new IllegalArgumentException("Invalid argument null dispatcher");
+      }
+      
+      if (connectionParams == null)
+      {
+         throw new IllegalArgumentException("Invalid argument null connectionParams");
+      }
+      
+      if (connector == null)
+      {
+         throw new IllegalArgumentException("Invalid argument null connector");
+      }
+
+      if (chainSupport == null)
+      {
+         throw new IllegalArgumentException("Invalid argument null chainSupport");
+      }
 
       this.location = location;
       this.connectionParams = connectionParams;
       this.dispatcher = dispatcher;
-      this.connector = new NioSocketConnector();
+      this.connector = connector;
+      this.connectorConfig = connector.getSessionConfig();
+      this.chainSupport = chainSupport;
+      
+      
       DefaultIoFilterChainBuilder filterChain = connector.getFilterChain();
 
       connector.setSessionDataStructureFactory(new MessagingIOSessionDataStructureFactory());
@@ -112,7 +148,7 @@ public class MinaConnector implements RemotingConnector, CleanUpNotifier
       {
          try
          {
-            addSSLFilter(filterChain, true, connectionParams.getKeyStorePath(), connectionParams.getKeyStorePassword(), null, null);
+            this.chainSupport.addSSLFilter(filterChain, true, connectionParams.getKeyStorePath(), connectionParams.getKeyStorePassword(), null, null);
          }
          catch (Exception e)
          {
@@ -121,20 +157,20 @@ public class MinaConnector implements RemotingConnector, CleanUpNotifier
             throw ise;
          }
       }
-      addCodecFilter(filterChain);
-      connector.getSessionConfig().setTcpNoDelay(connectionParams.isTcpNoDelay());
+      this.chainSupport.addCodecFilter(filterChain);
+      connectorConfig.setTcpNoDelay(connectionParams.isTcpNoDelay());
       int receiveBufferSize = connectionParams.getTcpReceiveBufferSize();
       if (receiveBufferSize != -1)
       {
-         connector.getSessionConfig().setReceiveBufferSize(receiveBufferSize);
+         connectorConfig.setReceiveBufferSize(receiveBufferSize);
       }
       int sendBufferSize = connectionParams.getTcpSendBufferSize();
       if (sendBufferSize != -1)
       {
-         connector.getSessionConfig().setSendBufferSize(sendBufferSize);
+         connectorConfig.setSendBufferSize(sendBufferSize);
       }
-      connector.getSessionConfig().setKeepAlive(true);
-      connector.getSessionConfig().setReuseAddress(true);
+      connectorConfig.setKeepAlive(true);
+      connectorConfig.setReuseAddress(true);
 
       scheduledExecutor = new ScheduledThreadPoolExecutor(1);
    }
@@ -166,7 +202,7 @@ public class MinaConnector implements RemotingConnector, CleanUpNotifier
       }
       session = future.getSession();
       
-      log.info("Got mina session " + session);
+      log.info("Connected on session " + session);
 
       MinaSession minaSession = new MinaSession(session);
       //register a handler for dealing with server pings
@@ -208,6 +244,7 @@ public class MinaConnector implements RemotingConnector, CleanUpNotifier
    {
       if (session == null)
       {
+         // TODO: shouldn't this throw an exception such as not initialized, not connected instead of return false? (written by Clebert)
          return false;
       }
       alive = false;

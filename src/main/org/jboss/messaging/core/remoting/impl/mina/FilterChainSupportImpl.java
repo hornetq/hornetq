@@ -18,89 +18,57 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
+
 
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import org.apache.mina.common.IoSession;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.RemotingSession;
+import javax.net.ssl.SSLContext;
 
-/**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
- * @version <tt>$Revision$</tt>
- * 
- */
-public class MinaSession implements RemotingSession
+import org.apache.mina.common.DefaultIoFilterChainBuilder;
+import org.apache.mina.filter.codec.ProtocolCodecFilter;
+import org.apache.mina.filter.ssl.SslFilter;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
+
+public class FilterChainSupportImpl implements FilterChainSupport
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(MinaConnector.class);
-      
-   // Attributes ----------------------------------------------------
+   private static final Logger log = Logger.getLogger(FilterChainSupport.class);
 
-   private final IoSession session;
+   // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public MinaSession(IoSession session)
-   {
-      assert session != null;
-
-      this.session = session;
-   }
-
    // Public --------------------------------------------------------
 
-   public long getID()
+   public void addCodecFilter(final DefaultIoFilterChainBuilder filterChain)
    {
-      return session.getId();
+      assert filterChain != null;
+
+      filterChain.addLast("codec", new ProtocolCodecFilter(new MinaProtocolCodecFilter()));
+   }
+
+   public void addSSLFilter(
+         final DefaultIoFilterChainBuilder filterChain, final boolean client,
+         final String keystorePath, final String keystorePassword, final String trustStorePath,
+         final String trustStorePassword) throws Exception
+   {
+      SSLContext context = SSLSupport.getInstance(client, keystorePath, keystorePassword,
+            trustStorePath, trustStorePassword);
+      SslFilter filter = new SslFilter(context);
+      if (client)
+      {
+         filter.setUseClientMode(true);
+         filter.setWantClientAuth(true);
+      }
+      filterChain.addLast("ssl", filter); 
    }
    
-   
-   public void write(Packet packet)
-   {     
-      session.write(packet);
-   }
-
-   public boolean isConnected()
-   {
-      return session.isConnected();
-   }
-
-   @Override
-   public int hashCode()
-   {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((session == null) ? 0 : session.hashCode());
-      return result;
-   }
-
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (this == obj)
-         return true;
-      if (obj == null)
-         return false;
-      if (getClass() != obj.getClass())
-         return false;
-      final MinaSession other = (MinaSession) obj;
-      
-      return this.session == other.session;
-   }
-   
-
    // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
 }

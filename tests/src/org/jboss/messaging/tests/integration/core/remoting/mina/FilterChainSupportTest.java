@@ -23,8 +23,6 @@
 package org.jboss.messaging.tests.integration.core.remoting.mina;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addSSLFilter;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 
 import java.net.InetSocketAddress;
@@ -40,6 +38,8 @@ import org.apache.mina.common.IoSession;
 import org.apache.mina.filter.ssl.SslFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
+import org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport;
+import org.jboss.messaging.core.remoting.impl.mina.FilterChainSupportImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 
 /**
@@ -80,9 +80,11 @@ public class FilterChainSupportTest extends TestCase
    {
       InetSocketAddress address = new InetSocketAddress("localhost", 9091);
       NioSocketAcceptor acceptor = new NioSocketAcceptor();
-      addSSLFilter(acceptor.getFilterChain(), false, keystorePath,
+      FilterChainSupport support = new FilterChainSupportImpl();
+      
+      support.addSSLFilter(acceptor.getFilterChain(), false, keystorePath,
             keystorePassword, trustStorePath, trustStorePassword);
-      addCodecFilter(acceptor.getFilterChain());
+      support.addCodecFilter(acceptor.getFilterChain());
       acceptor.setDefaultLocalAddress(address);
 
       final CountDownLatch latch = new CountDownLatch(1);
@@ -99,9 +101,9 @@ public class FilterChainSupportTest extends TestCase
       acceptor.bind();
 
       NioSocketConnector connector = new NioSocketConnector();
-      addSSLFilter(connector.getFilterChain(), true,
+      support.addSSLFilter(connector.getFilterChain(), true,
             keystorePath, keystorePassword, null, null);
-      addCodecFilter(connector.getFilterChain());
+      support.addCodecFilter(connector.getFilterChain());
       connector.setHandler(new IoHandlerAdapter());
       ConnectFuture future = connector.connect(address).awaitUninterruptibly();
       IoSession session = future.getSession();

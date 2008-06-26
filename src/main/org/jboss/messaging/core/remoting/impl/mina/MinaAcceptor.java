@@ -28,8 +28,6 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Acceptor;
 import org.jboss.messaging.core.remoting.CleanUpNotifier;
 import org.jboss.messaging.core.remoting.RemotingService;
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
-import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addSSLFilter;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
@@ -49,6 +47,7 @@ public class MinaAcceptor implements Acceptor
    private IoServiceListener acceptorListener;
    private CleanUpNotifier cleanupNotifier;
    private RemotingService remotingService;
+   private FilterChainSupport chainSupport = new FilterChainSupportImpl();
 
    public void startAccepting(RemotingService remotingService, CleanUpNotifier cleanupNotifier) throws Exception
    {
@@ -65,12 +64,12 @@ public class MinaAcceptor implements Acceptor
       // addMDCFilter(filterChain);
       if (remotingService.getConfiguration().isSSLEnabled())
       {
-         addSSLFilter(filterChain, false, remotingService.getConfiguration().getKeyStorePath(),
+         chainSupport.addSSLFilter(filterChain, false, remotingService.getConfiguration().getKeyStorePath(),
                  remotingService.getConfiguration().getKeyStorePassword(), remotingService.getConfiguration()
                  .getTrustStorePath(), remotingService.getConfiguration()
                  .getTrustStorePassword());
       }
-      addCodecFilter(filterChain);
+      chainSupport.addCodecFilter(filterChain);
 
       // Bind
       acceptor.setDefaultLocalAddress(new InetSocketAddress(remotingService.getConfiguration().getHost(), remotingService.getConfiguration().getPort()));
