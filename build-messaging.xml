@@ -687,23 +687,15 @@
                <include name="**/messaging/**/${test-mask}.class"/>
                <include name="**/jms/**/${test-mask}.class"/>
                <include name="**/messaging/util/**/${test-mask}.class"/>
-               <!-- We exclude the recovery tests for now, until we get recovery up and running again -->
+
+               <exclude name="**/jms/JCAWrapperTest.class"/>
                <exclude name="**/jms/XARecoveryTest.class"/>
                <exclude name="**/jms/XAResourceRecoveryTest.class"/>
                <exclude name="**/jms/XATest.class"/>
-               <exclude name="**/jms/ConnectionConsumerTest.class"/>
-
-               <exclude name="**/*NativeTest.class"/>
                <exclude name="**/jms/MemLeakTest.class"/>
-               <exclude name="**/jms/RemotingConnectionConfigurationTest.class"/>
                <exclude name="**/jms/stress/**"/>
                <exclude name="**/jms/bridge/**"/>
                <exclude name="**/jms/manual/**"/>
-               <exclude name="**/jms/clustering/**"/>
-               <exclude name="**/postoffice/**"/>
-               <exclude name="**/jms/JCAWrapperTest.class"/>
-               <exclude name="**/jms/server/ServerPeerTest.class"/>
-               <exclude name="**/stress/PacketStressTest.class"/>
             </fileset>
          </batchtest>
       </junit>
