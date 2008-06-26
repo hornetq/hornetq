@@ -22,8 +22,11 @@
 
 package org.jboss.messaging.tests.unit.core.util;
 
+import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import junit.framework.TestCase;
 
+import org.jboss.messaging.tests.util.RandomUtil;
+import org.jboss.messaging.util.DataConstants;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -226,5 +229,15 @@ public class SimpleStringTest extends TestCase
       s = new SimpleString(data);
       
       assertEquals(myString, s.toString());
+   }
+	
+	public void testSizeofString() throws Exception
+   {
+	   assertEquals(DataConstants.SIZE_INT, SimpleString.sizeofString(null));
+      assertEquals(DataConstants.SIZE_INT, SimpleString.sizeofString(new SimpleString("")));
+
+	   SimpleString str = new SimpleString(randomString());
+	   assertEquals(DataConstants.SIZE_INT + str.getData().length, SimpleString.sizeofString(str));
+      
    }
 }
