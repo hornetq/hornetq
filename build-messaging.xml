@@ -220,6 +220,12 @@
       <path refid="slf4j.api.classpath"/>
       <path refid="slf4j.log4j.classpath"/>
    	<path refid="cglib.classpath" />
+      <path refid="jboss.common.core.classpath"/>
+      <path refid="jboss.aop.classpath"/>
+      <path refid="trove.trove.classpath"/>
+      <path refid="javassist.classpath"/>
+      <path refid="jboss.jbossxb.classpath"/>
+      <path refid="apache.xerces.classpath"/>
    </path>
 
    <path id="jms.test.execution.classpath">
