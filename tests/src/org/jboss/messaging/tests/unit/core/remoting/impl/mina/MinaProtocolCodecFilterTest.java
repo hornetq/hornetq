@@ -22,6 +22,10 @@
 
 package org.jboss.messaging.tests.unit.core.remoting.impl.mina;
 
+import static org.easymock.EasyMock.createStrictMock;
+import static org.easymock.EasyMock.isA;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CONN_CREATESESSION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CONN_CREATESESSION_RESP;
@@ -88,7 +92,10 @@ import java.util.List;
 import javax.transaction.xa.Xid;
 
 import org.apache.mina.common.IoBuffer;
+import org.apache.mina.common.IoSession;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
+import org.apache.mina.filter.codec.ProtocolEncoderOutput;
+import org.easymock.EasyMock;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
@@ -288,6 +295,21 @@ public class MinaProtocolCodecFilterTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   public void testEncode() throws Exception
+   {
+      IoSession session = createStrictMock(IoSession.class);
+      Object message = new PacketImpl(NULL);
+      ProtocolEncoderOutput out = createStrictMock(ProtocolEncoderOutput.class);
+
+      out.write(isA(IoBuffer.class));
+      replay(session, out);
+
+      MinaProtocolCodecFilter filter = new MinaProtocolCodecFilter();
+      filter.encode(session, message, out);
+      
+      verify(session, out);
+   }
+   
    public void testNullPacket() throws Exception
    {
       Packet packet = new PacketImpl(NULL);
