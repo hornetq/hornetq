@@ -408,14 +408,7 @@ public class MinaConnectorTest extends UnitTestCase
 
       disconnect(minaConnector);
       
-      try
-      {
-         minaConnector.addSessionListener(EasyMock.createNiceMock(RemotingSessionListener.class));
-         fail("Supposed to throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-      }
+      minaConnector.addSessionListener(EasyMock.createNiceMock(RemotingSessionListener.class));
    }
    
    public void testAddRemoveListener() throws Exception
@@ -486,28 +479,6 @@ public class MinaConnectorTest extends UnitTestCase
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
-
-   private MessagingException messagingExceptionMatch(final int errorID)
-   {
-      EasyMock.reportMatcher(new IArgumentMatcher()
-      {
-
-         public void appendTo(StringBuffer buffer)
-         {
-            buffer.append(errorID);
-         }
-
-         public boolean matches(Object argument)
-         {
-            MessagingException ex = (MessagingException) argument;
-            
-            return ex.getCode() == errorID;
-         }
-         
-      });
-      
-      return null;
-   }
 
    private Pong pongMatch(final int sessionId, final boolean sessionFailed)
    {
