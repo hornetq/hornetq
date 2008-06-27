@@ -35,6 +35,8 @@ import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
+import java.util.Enumeration;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -61,6 +63,7 @@ import org.jboss.messaging.jms.bridge.ConnectionFactoryFactory;
 import org.jboss.messaging.jms.bridge.DestinationFactory;
 import org.jboss.messaging.jms.bridge.QualityOfServiceMode;
 import org.jboss.messaging.jms.bridge.impl.BridgeImpl;
+import org.jboss.messaging.jms.client.JBossMessage;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -123,6 +126,50 @@ public class BridgeImplTest extends TestCase
       assertEquals(clientID, bridge.getClientID());
       assertEquals(addMessageIDInHeader, bridge.isAddMessageIDInHeader());
 
+      verify(sourceCFF, sourceDF, targetCFF, targetDF);
+   }
+   
+   public void testMaxRetriesMustBeDisabledWhenFailureRetryIntervalIsDisabled() throws Exception
+   {
+      long disabledFailureRetryInterval = -1;
+      
+      ConnectionFactoryFactory sourceCFF = createStrictMock(ConnectionFactoryFactory.class);
+      ConnectionFactoryFactory targetCFF = createStrictMock(ConnectionFactoryFactory.class);
+      DestinationFactory sourceDF = createStrictMock(DestinationFactory.class);
+      DestinationFactory targetDF = createStrictMock(DestinationFactory.class);
+      String sourceUsername = randomString();
+      String sourcePassword = randomString();
+      String targetUsername = randomString();
+      String targetPassword = randomString();
+      String selector = "color = 'green'";
+      QualityOfServiceMode qosMode = QualityOfServiceMode.AT_MOST_ONCE;
+      int maxBatchSize = 1;
+      long maxBatchTime = -1;
+      String subName = randomString();
+      String clientID = randomString();
+      boolean addMessageIDInHeader = false;
+
+      replay(sourceCFF, sourceDF, targetCFF, targetDF);
+
+      int maxRetriesGreaterThanZero = 1;
+      try
+      {
+         new BridgeImpl(sourceCFF, targetCFF, sourceDF, targetDF,
+               sourceUsername, sourcePassword, targetUsername, targetPassword,
+               selector, disabledFailureRetryInterval, maxRetriesGreaterThanZero, qosMode, maxBatchSize,
+               maxBatchTime, subName, clientID, addMessageIDInHeader);
+         fail("IllegalArgumentException");
+      } catch(IllegalArgumentException e)
+      {         
+      }
+      
+      int disabledMaxRetries = -1;
+      Bridge bridge = new BridgeImpl(sourceCFF, targetCFF, sourceDF, targetDF,
+            sourceUsername, sourcePassword, targetUsername, targetPassword,
+            selector, disabledFailureRetryInterval, disabledMaxRetries, qosMode, maxBatchSize,
+            maxBatchTime, subName, clientID, addMessageIDInHeader);
+      assertNotNull(bridge);
+      
       verify(sourceCFF, sourceDF, targetCFF, targetDF);
    }
 
@@ -828,7 +875,285 @@ public class BridgeImplTest extends TestCase
       // with batch size of 2, receive 1 messages and do not send any
       doSendMessagesByBatchInXA(2, 1, 0, 0);
    }
+   
+   public void testExceptionOnSourceAndRetrySucceeds() throws Exception
+   {
+      ConnectionFactoryFactory sourceCFF = createStrictMock(ConnectionFactoryFactory.class);
+      ConnectionFactory sourceCF = createStrictMock(ConnectionFactory.class);
+      Connection sourceConn = createStrictMock(Connection.class);
+      Session sourceSession = createStrictMock(Session.class);
+      MessageConsumer sourceConsumer = createStrictMock(MessageConsumer.class);
+      DestinationFactory sourceDF = createStrictMock(DestinationFactory.class);
+      Destination sourceDest = createStrictMock(Destination.class);
+      ConnectionFactoryFactory targetCFF = createStrictMock(ConnectionFactoryFactory.class);
+      ConnectionFactory targetCF = createStrictMock(ConnectionFactory.class);
+      Connection targetConn = createStrictMock(Connection.class);
+      Session targetSession = createStrictMock(Session.class);
+      MessageProducer targetProducer = createStrictMock(MessageProducer.class);
+      DestinationFactory targetDF = createStrictMock(DestinationFactory.class);
+      Destination targetDest = createStrictMock(Destination.class);
+      TransactionManager tm = createStrictMock(TransactionManager.class);
+      Message message = createNiceMock(Message.class);
 
+      expect(tm.suspend()).andReturn(null);
+      expect(sourceDF.createDestination()).andReturn(sourceDest);
+      expect(targetDF.createDestination()).andReturn(targetDest);
+      expect(sourceCFF.createConnectionFactory()).andReturn(sourceCF);
+      expect(sourceCF.createConnection()).andReturn(sourceConn);
+      SetExceptionListenerAnswer exceptionListenerAnswer = new SetExceptionListenerAnswer();
+      sourceConn.setExceptionListener(isA(ExceptionListener.class));
+      expectLastCall().andAnswer(exceptionListenerAnswer);
+      expect(sourceConn.createSession(anyBoolean(), anyInt())).andReturn(
+            sourceSession);
+      expect(sourceSession.createConsumer(sourceDest))
+            .andReturn(sourceConsumer);
+      sourceConsumer.setMessageListener(isA(MessageListener.class));
+      expect(targetCFF.createConnectionFactory()).andReturn(targetCF);
+      expect(targetCF.createConnection()).andReturn(targetConn);
+      targetConn.setExceptionListener(isA(ExceptionListener.class));
+      expect(targetConn.createSession(anyBoolean(), anyInt())).andReturn(
+            targetSession);
+      expect(targetSession.createProducer(null)).andReturn(targetProducer);
+      sourceConn.start();
+
+      //after failure detection, we retry to start the bridge:
+      expect(sourceDF.createDestination()).andReturn(sourceDest);
+      expect(targetDF.createDestination()).andReturn(targetDest);
+      expect(sourceCFF.createConnectionFactory()).andReturn(sourceCF);
+      expect(sourceCF.createConnection()).andReturn(sourceConn);
+      sourceConn.setExceptionListener(isA(ExceptionListener.class));
+      expectLastCall().andAnswer(exceptionListenerAnswer);
+      expect(sourceConn.createSession(anyBoolean(), anyInt())).andReturn(
+            sourceSession);
+      expect(sourceSession.createConsumer(sourceDest))
+            .andReturn(sourceConsumer);
+      sourceConsumer.setMessageListener(isA(MessageListener.class));
+      expect(targetCFF.createConnectionFactory()).andReturn(targetCF);
+      expect(targetCF.createConnection()).andReturn(targetConn);
+      targetConn.setExceptionListener(isA(ExceptionListener.class));
+      expect(targetConn.createSession(anyBoolean(), anyInt())).andReturn(
+            targetSession);
+      expect(targetSession.createProducer(null)).andReturn(targetProducer);
+      sourceConn.start();
+      
+      
+      replay(sourceCFF, sourceCF, sourceConn, sourceSession, sourceConsumer,
+            sourceDF, sourceDest);
+      replay(targetCFF, targetCF, targetConn, targetSession, targetProducer,
+            targetDF, targetDest);
+      replay(tm);
+      replay(message);
+
+      BridgeImpl bridge = new BridgeImpl();
+      assertNotNull(bridge);
+
+      bridge.setSourceConnectionFactoryFactory(sourceCFF);
+      bridge.setSourceDestinationFactory(sourceDF);
+      bridge.setTargetConnectionFactoryFactory(targetCFF);
+      bridge.setTargetDestinationFactory(targetDF);
+      bridge.setFailureRetryInterval(10);
+      bridge.setMaxRetries(2);
+      bridge.setMaxBatchSize(1);
+      bridge.setMaxBatchTime(-1);
+      bridge.setTransactionManager(tm);
+      bridge.setQualityOfServiceMode(QualityOfServiceMode.AT_MOST_ONCE);
+
+      assertFalse(bridge.isStarted());
+      bridge.start();
+      assertTrue(bridge.isStarted());
+      
+      exceptionListenerAnswer.listener.onException(new JMSException("exception on the source"));
+      Thread.sleep(4 * bridge.getFailureRetryInterval());
+      // reconnection must have succeded
+      assertTrue(bridge.isStarted());
+      
+      verify(sourceCFF, sourceCF, sourceConn, sourceSession, sourceConsumer,
+            sourceDF, sourceDest);
+      verify(targetCFF, targetCF, targetConn, targetSession, targetProducer,
+            targetDF, targetDest);
+      verify(tm);
+      verify(message);
+   }
+
+   public void testExceptionOnSourceAndRetryFails() throws Exception
+   {
+      ConnectionFactoryFactory sourceCFF = createStrictMock(ConnectionFactoryFactory.class);
+      ConnectionFactory sourceCF = createStrictMock(ConnectionFactory.class);
+      Connection sourceConn = createStrictMock(Connection.class);
+      Session sourceSession = createStrictMock(Session.class);
+      MessageConsumer sourceConsumer = createStrictMock(MessageConsumer.class);
+      DestinationFactory sourceDF = createStrictMock(DestinationFactory.class);
+      Destination sourceDest = createStrictMock(Destination.class);
+      ConnectionFactoryFactory targetCFF = createStrictMock(ConnectionFactoryFactory.class);
+      ConnectionFactory targetCF = createStrictMock(ConnectionFactory.class);
+      Connection targetConn = createStrictMock(Connection.class);
+      Session targetSession = createStrictMock(Session.class);
+      MessageProducer targetProducer = createStrictMock(MessageProducer.class);
+      DestinationFactory targetDF = createStrictMock(DestinationFactory.class);
+      Destination targetDest = createStrictMock(Destination.class);
+      TransactionManager tm = createStrictMock(TransactionManager.class);
+      Message message = createNiceMock(Message.class);
+
+      expect(tm.suspend()).andReturn(null);
+      expect(sourceDF.createDestination()).andReturn(sourceDest);
+      expect(targetDF.createDestination()).andReturn(targetDest);
+      expect(sourceCFF.createConnectionFactory()).andReturn(sourceCF);
+      expect(sourceCF.createConnection()).andReturn(sourceConn);
+      SetExceptionListenerAnswer exceptionListenerAnswer = new SetExceptionListenerAnswer();
+      sourceConn.setExceptionListener(isA(ExceptionListener.class));
+      expectLastCall().andAnswer(exceptionListenerAnswer);
+      expect(sourceConn.createSession(anyBoolean(), anyInt())).andReturn(
+            sourceSession);
+      expect(sourceSession.createConsumer(sourceDest))
+            .andReturn(sourceConsumer);
+      sourceConsumer.setMessageListener(isA(MessageListener.class));
+      expect(targetCFF.createConnectionFactory()).andReturn(targetCF);
+      expect(targetCF.createConnection()).andReturn(targetConn);
+      targetConn.setExceptionListener(isA(ExceptionListener.class));
+      expect(targetConn.createSession(anyBoolean(), anyInt())).andReturn(
+            targetSession);
+      expect(targetSession.createProducer(null)).andReturn(targetProducer);
+      sourceConn.start();
+
+      //after failure detection, we clean up...
+      // and it is stopped
+      sourceConn.close();
+      targetConn.close();
+      // ...retry to start the bridge but it fails...
+      expect(sourceDF.createDestination()).andReturn(sourceDest);
+      expect(targetDF.createDestination()).andReturn(targetDest);
+      expect(sourceCFF.createConnectionFactory()).andReturn(sourceCF);
+      expect(sourceCF.createConnection()).andThrow(new JMSException("exception while retrying to connect"));
+      // ... so we clean up again...
+      sourceConn.close();
+      targetConn.close();
+      // ... and finally stop the bridge
+      sourceConn.close();
+      targetConn.close();
+      
+      replay(sourceCFF, sourceCF, sourceConn, sourceSession, sourceConsumer,
+            sourceDF, sourceDest);
+      replay(targetCFF, targetCF, targetConn, targetSession, targetProducer,
+            targetDF, targetDest);
+      replay(tm);
+      replay(message);
+
+      BridgeImpl bridge = new BridgeImpl();
+      assertNotNull(bridge);
+
+      bridge.setSourceConnectionFactoryFactory(sourceCFF);
+      bridge.setSourceDestinationFactory(sourceDF);
+      bridge.setTargetConnectionFactoryFactory(targetCFF);
+      bridge.setTargetDestinationFactory(targetDF);
+      bridge.setFailureRetryInterval(10);
+      bridge.setMaxRetries(1);
+      bridge.setMaxBatchSize(1);
+      bridge.setMaxBatchTime(-1);
+      bridge.setTransactionManager(tm);
+      bridge.setQualityOfServiceMode(QualityOfServiceMode.AT_MOST_ONCE);
+
+      assertFalse(bridge.isStarted());
+      bridge.start();
+      assertTrue(bridge.isStarted());
+      
+      exceptionListenerAnswer.listener.onException(new JMSException("exception on the source"));
+      Thread.sleep(4 * bridge.getFailureRetryInterval());
+      // reconnection must have failed
+      assertFalse(bridge.isStarted());
+      
+      verify(sourceCFF, sourceCF, sourceConn, sourceSession, sourceConsumer,
+            sourceDF, sourceDest);
+      verify(targetCFF, targetCF, targetConn, targetSession, targetProducer,
+            targetDF, targetDest);
+      verify(tm);
+      verify(message);
+   }
+   
+   public void testAddMessageIDInHeader() throws Exception
+   {
+      String messageID = randomString();
+      
+      ConnectionFactoryFactory sourceCFF = createStrictMock(ConnectionFactoryFactory.class);
+      ConnectionFactory sourceCF = createStrictMock(ConnectionFactory.class);
+      Connection sourceConn = createStrictMock(Connection.class);
+      Session sourceSession = createStrictMock(Session.class);
+      MessageConsumer sourceConsumer = createStrictMock(MessageConsumer.class);
+      DestinationFactory sourceDF = createStrictMock(DestinationFactory.class);
+      Destination sourceDest = createStrictMock(Destination.class);
+      ConnectionFactoryFactory targetCFF = createStrictMock(ConnectionFactoryFactory.class);
+      ConnectionFactory targetCF = createStrictMock(ConnectionFactory.class);
+      Connection targetConn = createStrictMock(Connection.class);
+      Session targetSession = createStrictMock(Session.class);
+      MessageProducer targetProducer = createStrictMock(MessageProducer.class);
+      DestinationFactory targetDF = createStrictMock(DestinationFactory.class);
+      Destination targetDest = createStrictMock(Destination.class);
+      TransactionManager tm = createStrictMock(TransactionManager.class);
+      Message message = createNiceMock(Message.class);
+      Enumeration propsEnum = createStrictMock(Enumeration.class);
+
+      expect(tm.suspend()).andReturn(null);
+      expect(sourceDF.createDestination()).andReturn(sourceDest);
+      expect(targetDF.createDestination()).andReturn(targetDest);
+      expect(sourceCFF.createConnectionFactory()).andReturn(sourceCF);
+      expect(sourceCF.createConnection()).andReturn(sourceConn);
+      sourceConn.setExceptionListener(isA(ExceptionListener.class));
+      expect(sourceConn.createSession(anyBoolean(), anyInt())).andReturn(
+            sourceSession);
+      expect(sourceSession.createConsumer(sourceDest))
+            .andReturn(sourceConsumer);
+      SetMessageListenerAnswer answer = new SetMessageListenerAnswer();
+      sourceConsumer.setMessageListener(isA(MessageListener.class));
+      expectLastCall().andAnswer(answer);
+      expect(targetCFF.createConnectionFactory()).andReturn(targetCF);
+      expect(targetCF.createConnection()).andReturn(targetConn);
+      targetConn.setExceptionListener(isA(ExceptionListener.class));
+      expect(targetConn.createSession(anyBoolean(), anyInt())).andReturn(
+            targetSession);
+      expect(targetSession.createProducer(null)).andReturn(targetProducer);
+      sourceConn.start();
+
+      expect(message.getJMSMessageID()).andReturn(messageID);
+      expect(message.getPropertyNames()).andReturn(propsEnum);
+      expect(propsEnum.hasMoreElements()).andReturn(false);
+      message.setStringProperty(JBossMessage.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST, messageID);
+      targetProducer.send(targetDest, message, 0, 0, 0);
+
+      replay(sourceCFF, sourceCF, sourceConn, sourceSession, sourceConsumer,
+            sourceDF, sourceDest);
+      replay(targetCFF, targetCF, targetConn, targetSession, targetProducer,
+            targetDF, targetDest);
+      replay(tm);
+      replay(message, propsEnum);
+
+      BridgeImpl bridge = new BridgeImpl();
+      assertNotNull(bridge);
+
+      bridge.setSourceConnectionFactoryFactory(sourceCFF);
+      bridge.setSourceDestinationFactory(sourceDF);
+      bridge.setTargetConnectionFactoryFactory(targetCFF);
+      bridge.setTargetDestinationFactory(targetDF);
+      bridge.setFailureRetryInterval(-1);
+      bridge.setMaxRetries(-1);
+      bridge.setMaxBatchSize(1);
+      bridge.setMaxBatchTime(-1);
+      bridge.setTransactionManager(tm);
+      bridge.setQualityOfServiceMode(QualityOfServiceMode.AT_MOST_ONCE);
+      bridge.setAddMessageIDInHeader(true);
+      
+      assertFalse(bridge.isStarted());
+      bridge.start();
+      assertTrue(bridge.isStarted());
+
+      answer.listener.onMessage(message);
+
+      verify(sourceCFF, sourceCF, sourceConn, sourceSession, sourceConsumer,
+            sourceDF, sourceDest);
+      verify(targetCFF, targetCF, targetConn, targetSession, targetProducer,
+            targetDF, targetDest);
+      verify(tm);
+      verify(message, propsEnum);
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -1142,6 +1467,17 @@ public class BridgeImplTest extends TestCase
       public Object answer() throws Throwable
       {
          listener = (MessageListener) getCurrentArguments()[0];
+         return null;
+      }
+   }
+   
+   class SetExceptionListenerAnswer implements IAnswer
+   {
+      ExceptionListener listener = null;
+
+      public Object answer() throws Throwable
+      {
+         listener = (ExceptionListener) getCurrentArguments()[0];
          return null;
       }
    }

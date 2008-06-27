@@ -626,7 +626,7 @@ public class BridgeImpl implements MessagingComponent, Bridge
       checkValidValue(maxRetries, "maxRetries");
       if (failureRetryInterval == -1 && maxRetries > 0)
       {
-         throw new IllegalArgumentException("If failureRetryInterval == -1 maxRetries must be 0");
+         throw new IllegalArgumentException("If failureRetryInterval == -1 maxRetries must be set to -1");
       }
       checkMaxBatchSize(maxBatchSize);
       checkValidValue(maxBatchTime, "maxBatchTime");
