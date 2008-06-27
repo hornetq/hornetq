@@ -22,41 +22,16 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NO_ID_SET;
-
-import java.util.List;
-
-import javax.transaction.xa.Xid;
-
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketReturner;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCancelMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAForgetMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetInDoubtXidsResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetTimeoutResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAJoinMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAPrepareMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResumeMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.*;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NO_ID_SET;
 import org.jboss.messaging.core.server.ServerSession;
+
+import javax.transaction.xa.Xid;
+import java.util.List;
 
 /**
  * 
@@ -80,18 +55,6 @@ public class ServerSessionPacketHandler extends ServerPacketHandlerSupport
    public long getID()
    {
       return session.getID();
-   }
-   
-   public boolean equals(ServerSessionPacketHandler other)
-   {
-      if (other instanceof ServerSessionPacketHandler == false)
-      {
-         return false;
-      }
-      
-      ServerSessionPacketHandler sother = (ServerSessionPacketHandler)other;
-      
-      return sother.session.getID() == session.getID();
    }
 
    public Packet doHandle(final Packet packet, final PacketReturner sender) throws Exception
@@ -128,13 +91,13 @@ public class ServerSessionPacketHandler extends ServerPacketHandlerSupport
       case PacketImpl.SESS_QUEUEQUERY:
       {
          SessionQueueQueryMessage request = (SessionQueueQueryMessage) packet;
-         response = session.executeQueueQuery(request);
+         response = session.executeQueueQuery(request.getQueueName());
          break;
       }
       case PacketImpl.SESS_BINDINGQUERY:
       {
          SessionBindingQueryMessage request = (SessionBindingQueryMessage)packet;
-         response = session.executeBindingQuery(request);
+         response = session.executeBindingQuery(request.getAddress());
          break;
       }
       case PacketImpl.SESS_CREATEBROWSER:

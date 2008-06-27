@@ -981,14 +981,14 @@ public class ServerSessionImpl implements ServerSession
       return response;
    }
 
-   public SessionQueueQueryResponseMessage executeQueueQuery(final SessionQueueQueryMessage request) throws Exception
+   public SessionQueueQueryResponseMessage executeQueueQuery(final SimpleString queueName) throws Exception
    {
-      if (request.getQueueName() == null)
+      if (queueName == null)
       {
          throw new IllegalArgumentException("Queue name is null");
       }
 
-      Binding binding = postOffice.getBinding(request.getQueueName());
+      Binding binding = postOffice.getBinding(queueName);
 
       SessionQueueQueryResponseMessage response;
 
@@ -1012,20 +1012,20 @@ public class ServerSessionImpl implements ServerSession
       return response;
    }
 
-   public SessionBindingQueryResponseMessage executeBindingQuery(final SessionBindingQueryMessage request) throws Exception
+   public SessionBindingQueryResponseMessage executeBindingQuery(final SimpleString address) throws Exception
    {
-      if (request.getAddress() == null)
+      if (address == null)
       {
          throw new IllegalArgumentException("Address is null");
       }
 
-      boolean exists = postOffice.containsDestination(request.getAddress());
+      boolean exists = postOffice.containsDestination(address);
 
       List<SimpleString> queueNames = new ArrayList<SimpleString>();
 
       if (exists)
       {
-         List<Binding> bindings = postOffice.getBindingsForAddress(request.getAddress());
+         List<Binding> bindings = postOffice.getBindingsForAddress(address);
 
          for (Binding binding : bindings)
          {

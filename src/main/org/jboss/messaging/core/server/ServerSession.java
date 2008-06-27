@@ -22,20 +22,12 @@
 
 package org.jboss.messaging.core.server;
 
-import java.util.List;
-
-import javax.transaction.xa.Xid;
-
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.*;
 import org.jboss.messaging.core.server.impl.ServerBrowserImpl;
 import org.jboss.messaging.util.SimpleString;
+
+import javax.transaction.xa.Xid;
+import java.util.List;
 
 /**
  * 
@@ -109,9 +101,9 @@ public interface ServerSession
    
    SessionCreateProducerResponseMessage createProducer(long clientTargetID, SimpleString address, int windowSize, int maxRate) throws Exception;   
 
-   SessionQueueQueryResponseMessage executeQueueQuery(SessionQueueQueryMessage request) throws Exception;
+   SessionQueueQueryResponseMessage executeQueueQuery(SimpleString queueName) throws Exception;
 
-   SessionBindingQueryResponseMessage executeBindingQuery(SessionBindingQueryMessage request) throws Exception;
+   SessionBindingQueryResponseMessage executeBindingQuery(SimpleString address) throws Exception;
 
    SessionCreateBrowserResponseMessage createBrowser(SimpleString queueName, SimpleString filterString) throws Exception;
 }

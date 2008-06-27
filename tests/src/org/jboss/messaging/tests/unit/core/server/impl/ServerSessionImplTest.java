@@ -1503,7 +1503,7 @@ public class ServerSessionImplTest extends UnitTestCase
       expect(binding.getAddress()).andReturn(address);
       replay(conn, returner, sm, po, qs, rm, ss, pd, executor, binding, queue);
       SessionQueueQueryMessage message = new SessionQueueQueryMessage(address);
-      SessionQueueQueryResponseMessage resp = session.executeQueueQuery(message);
+      SessionQueueQueryResponseMessage resp = session.executeQueueQuery(address);
       verify(conn, returner, sm, po, qs, rm, ss, pd, executor, binding, queue);
       assertEquals(resp.isDurable(),true);
       assertEquals(resp.isTemporary(),true);
@@ -1535,7 +1535,7 @@ public class ServerSessionImplTest extends UnitTestCase
       expect(binding.getAddress()).andReturn(address);
       replay(conn, returner, sm, po, qs, rm, ss, pd, executor, binding, queue, filter);
       SessionQueueQueryMessage message = new SessionQueueQueryMessage(address);
-      SessionQueueQueryResponseMessage resp = session.executeQueueQuery(message);
+      SessionQueueQueryResponseMessage resp = session.executeQueueQuery(address);
       verify(conn, returner, sm, po, qs, rm, ss, pd, executor, binding, queue, filter);
       assertEquals(resp.isDurable(),true);
       assertEquals(resp.isTemporary(),true);
@@ -1556,7 +1556,7 @@ public class ServerSessionImplTest extends UnitTestCase
       expect(po.getBinding(address)).andReturn(null);
       replay(conn, returner, sm, po, qs, rm, ss, pd, executor, binding, queue);
       SessionQueueQueryMessage message = new SessionQueueQueryMessage(address);
-      SessionQueueQueryResponseMessage resp = session.executeQueueQuery(message);
+      SessionQueueQueryResponseMessage resp = session.executeQueueQuery(address);
       verify(conn, returner, sm, po, qs, rm, ss, pd, executor, binding, queue);
       assertEquals(resp.isExists(),false);
    }
@@ -1570,7 +1570,7 @@ public class ServerSessionImplTest extends UnitTestCase
       SessionQueueQueryMessage message = new SessionQueueQueryMessage();
       try
       {
-         session.executeQueueQuery(message);
+         session.executeQueueQuery(null);
          fail("should throw exception");
       }
       catch (IllegalArgumentException e)
@@ -1601,7 +1601,7 @@ public class ServerSessionImplTest extends UnitTestCase
       expect(queue2.getName()).andReturn(qName2);
       replay(conn, returner, sm, po, qs, rm, ss, pd, executor, binding, queue, binding2, queue2);
       SessionBindingQueryMessage message = new SessionBindingQueryMessage(address);
-      SessionBindingQueryResponseMessage resp = session.executeBindingQuery(message);
+      SessionBindingQueryResponseMessage resp = session.executeBindingQuery(address);
       verify(conn, returner, sm, po, qs, rm, ss, pd, executor, binding, queue, binding2, queue2);
       assertEquals(resp.isExists(),true);
       assertEquals(resp.getQueueNames().size(),2);
@@ -1617,7 +1617,7 @@ public class ServerSessionImplTest extends UnitTestCase
       expect(po.containsDestination(address)).andReturn(false);
       replay(conn, returner, sm, po, qs, rm, ss, pd, executor);
       SessionBindingQueryMessage message = new SessionBindingQueryMessage(address);
-      SessionBindingQueryResponseMessage resp = session.executeBindingQuery(message);
+      SessionBindingQueryResponseMessage resp = session.executeBindingQuery(address);
       verify(conn, returner, sm, po, qs, rm, ss, pd, executor);
       assertEquals(resp.isExists(),false);
       assertEquals(resp.getQueueNames().size(),0);
@@ -1631,7 +1631,7 @@ public class ServerSessionImplTest extends UnitTestCase
       SessionBindingQueryMessage message = new SessionBindingQueryMessage();
       try
       {
-         session.executeBindingQuery(message);
+         session.executeBindingQuery(null);
          fail("should throw exception");
       }
       catch (IllegalArgumentException e)
