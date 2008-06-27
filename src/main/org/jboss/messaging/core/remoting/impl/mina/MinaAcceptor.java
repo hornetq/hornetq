@@ -23,7 +23,9 @@
 package org.jboss.messaging.core.remoting.impl.mina;
 
 import org.apache.mina.common.*;
+import org.apache.mina.transport.socket.SocketAcceptor;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Acceptor;
 import org.jboss.messaging.core.remoting.CleanUpNotifier;
@@ -43,7 +45,7 @@ public class MinaAcceptor implements Acceptor
    private static final Logger log = Logger.getLogger(MinaAcceptor.class);
 
    private ExecutorService threadPool;
-   private NioSocketAcceptor acceptor;
+   private SocketAcceptor acceptor;
    private IoServiceListener acceptorListener;
    private CleanUpNotifier cleanupNotifier;
    private RemotingService remotingService;
@@ -53,16 +55,18 @@ public class MinaAcceptor implements Acceptor
    {
       this.remotingService = remotingService;
       this.cleanupNotifier = cleanupNotifier;
-      acceptor = new NioSocketAcceptor();
+      this.acceptor = createAcceptor();
 
       acceptor.setSessionDataStructureFactory(new MessagingIOSessionDataStructureFactory());
 
       DefaultIoFilterChainBuilder filterChain = acceptor.getFilterChain();
       
-      log.info(remotingService.getConfiguration().getHost());
+      Configuration config = remotingService.getConfiguration();
+      
+      log.info(config.getHost());
 
       // addMDCFilter(filterChain);
-      if (remotingService.getConfiguration().isSSLEnabled())
+      if (config.isSSLEnabled())
       {
          chainSupport.addSSLFilter(filterChain, false, remotingService.getConfiguration().getKeyStorePath(),
                  remotingService.getConfiguration().getKeyStorePassword(), remotingService.getConfiguration()
@@ -116,9 +120,17 @@ public class MinaAcceptor implements Acceptor
     */
    public DefaultIoFilterChainBuilder getFilterChain()
    {
+      // TODO: get rid of this assert (Validate this condition on tests)
       assert acceptor != null;
 
       return acceptor.getFilterChain();
+   }
+   
+
+   // This could be used in Override for tests (to replace an EasyMock for instance)
+   protected SocketAcceptor createAcceptor()
+   {
+      return new NioSocketAcceptor();
    }
 
    private final class MinaSessionListener implements IoServiceListener

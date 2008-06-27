@@ -78,8 +78,15 @@ public class MinaHandler extends IoHandlerAdapter implements
                       final boolean closeSessionOnExceptionCaught,
                       final boolean useExecutor)
    {
-      assert dispatcher != null;
-      assert executorService != null;
+      if (dispatcher == null)
+      {
+         throw new IllegalArgumentException ("argument dispatcher can't be null");
+      }
+      
+      if (executorService == null && useExecutor)
+      {
+         throw new IllegalArgumentException ("executorService can't be null");
+      }
 
       this.dispatcher = dispatcher;
       this.failureNotifier = failureNotifier;
