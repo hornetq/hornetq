@@ -449,7 +449,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       log.info("** data length is " + data.length);
       log.info(UnitTestCase.dumpBytes(data));
        
-      bindingsJournal.appendAddRecord(EasyMock.eq(0), EasyMock.eq(JournalStorageManager.BINDING_RECORD), EasyMock.aryEq(data));
+      bindingsJournal.appendAddRecord(EasyMock.eq(0L), EasyMock.eq(JournalStorageManager.BINDING_RECORD), EasyMock.aryEq(data));
       
       if (useFilter)
       {
@@ -535,7 +535,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       daos.write(destBytes);      
       daos.flush();      
       byte[] data = baos.toByteArray();
-      bindingsJournal.appendAddRecord(EasyMock.eq(0), EasyMock.eq(JournalStorageManager.DESTINATION_RECORD), EasyMock.aryEq(data));
+      bindingsJournal.appendAddRecord(EasyMock.eq(0L), EasyMock.eq(JournalStorageManager.DESTINATION_RECORD), EasyMock.aryEq(data));
                   
       EasyMock.replay(messageJournal, bindingsJournal);
       
@@ -561,12 +561,12 @@ public class JournalStorageManagerTest extends UnitTestCase
       
       baos = new ByteArrayOutputStream();      
       daos = new DataOutputStream(baos);      
-      destBytes = dest.getData();
+      destBytes = dest2.getData();
       daos.writeInt(destBytes.length);      
       daos.write(destBytes);      
       daos.flush();      
       data = baos.toByteArray();
-      bindingsJournal.appendAddRecord(EasyMock.eq(1), EasyMock.eq(JournalStorageManager.DESTINATION_RECORD), EasyMock.aryEq(data));
+      bindingsJournal.appendAddRecord(EasyMock.eq(2L), EasyMock.eq(JournalStorageManager.DESTINATION_RECORD), EasyMock.aryEq(data));
 
       EasyMock.replay(messageJournal, bindingsJournal);
       
@@ -576,7 +576,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       
       EasyMock.reset(messageJournal, bindingsJournal);
       
-      bindingsJournal.appendDeleteRecord(1);
+      bindingsJournal.appendDeleteRecord(2);
       
       EasyMock.replay(messageJournal, bindingsJournal);
       
