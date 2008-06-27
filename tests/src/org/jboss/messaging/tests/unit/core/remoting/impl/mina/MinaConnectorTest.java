@@ -59,7 +59,9 @@ import org.easymock.EasyMock;
 import org.easymock.IAnswer;
 import org.easymock.IArgumentMatcher;
 import org.jboss.messaging.core.client.ConnectionParams;
+import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.client.impl.LocationImpl;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketReturner;
@@ -105,7 +107,9 @@ public class MinaConnectorTest extends UnitTestCase
    
    private FilterChainSupport filterChainSupport;
    
-   private SetHandlerAnswer setHandlerAnswer;
+   private PacketHandlerAnswer packetHandlerAnswer;
+   
+   private IoServiceListenerAnswer ioServiceListenerAnswer;
    
    // Static --------------------------------------------------------
    
@@ -134,7 +138,9 @@ public class MinaConnectorTest extends UnitTestCase
       
       filterChainSupport = null;
       
-      setHandlerAnswer = null;
+      packetHandlerAnswer = null;
+      
+      ioServiceListenerAnswer = null;
 
    }
    
@@ -341,11 +347,137 @@ public class MinaConnectorTest extends UnitTestCase
       
       EasyMock.replay(retPack);
       
-      this.setHandlerAnswer.handler.handle(ping, retPack);
+      this.packetHandlerAnswer.handler.handle(ping, retPack);
 
       EasyMock.verify(retPack);
       
       disconnect(minaConnector);
+      
+   }
+   
+   public void testIOServiceListenerAdapter() throws Exception
+   {
+      MinaConnector minaConnector = construct(true);
+      
+      connect(minaConnector, true);
+      
+      RemotingSessionListener listener = EasyMock.createStrictMock(RemotingSessionListener.class);
+      
+      listener.sessionDestroyed(EasyMock.eq(3l), messagingExceptionMatch(MessagingException.INTERNAL_ERROR));
+      
+      EasyMock.expect(ioSession.getId()).andStubReturn(3l);
+      
+      EasyMock.replay(listener, ioSession);
+      
+      minaConnector.addSessionListener(listener);
+      
+      IoServiceListener handler = ioServiceListenerAnswer.handler;
+      
+      IoService service = EasyMock.createNiceMock(IoService.class);
+      
+      handler.serviceActivated(service);
+      
+      handler.serviceDeactivated(service);
+      
+      handler.serviceIdle(service, IdleStatus.BOTH_IDLE);
+      
+      handler.sessionDestroyed(ioSession);
+      
+      handler.sessionCreated(ioSession);
+      
+      EasyMock.verify(listener, ioSession);
+      
+      EasyMock.reset(listener, ioSession);
+      
+   }
+
+   public void testInvalidAddRemoveListener() throws Exception
+   {
+      MinaConnector minaConnector = construct(true);
+      
+      connect(minaConnector, true);
+      
+      try
+      {
+         minaConnector.addSessionListener(null);
+         fail("Supposed to throw exception");
+      }
+      catch (IllegalArgumentException e)
+      {
+      }
+
+      disconnect(minaConnector);
+      
+      try
+      {
+         minaConnector.addSessionListener(EasyMock.createNiceMock(RemotingSessionListener.class));
+         fail("Supposed to throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+      }
+   }
+   
+   public void testAddRemoveListener() throws Exception
+   {
+      MinaConnector minaConnector = construct(true);
+      
+      connect(minaConnector, true);
+      
+      RemotingSessionListener listener = EasyMock.createStrictMock(RemotingSessionListener.class);
+      
+      listener.sessionDestroyed(EasyMock.eq(3l), messagingExceptionMatch(MessagingException.ILLEGAL_STATE));
+      
+      RemotingSessionListener listener2 = EasyMock.createStrictMock(RemotingSessionListener.class);
+      
+      listener2.sessionDestroyed(EasyMock.eq(3l), messagingExceptionMatch(MessagingException.ILLEGAL_STATE));
+      
+      EasyMock.expect(ioSession.getId()).andStubReturn(3l);
+      
+      EasyMock.replay(listener, listener2, ioSession);
+      
+      minaConnector.addSessionListener(listener);
+      
+      minaConnector.addSessionListener(listener2);
+      
+      minaConnector.fireCleanup(3, new MessagingException(MessagingException.ILLEGAL_STATE));
+      
+      EasyMock.verify(listener, listener2, ioSession);
+      
+      EasyMock.reset(listener, listener2, ioSession);
+      
+      listener.sessionDestroyed(3l, null);
+      
+      listener2.sessionDestroyed(3l, null);
+      
+      EasyMock.replay(listener, listener2, ioSession);
+      
+      minaConnector.fireCleanup(3);
+      
+      EasyMock.verify(listener, listener2, ioSession);
+      
+      EasyMock.reset(listener, listener2, ioSession);
+      
+
+      minaConnector = construct(true);
+      
+      connect(minaConnector, true);
+      
+      minaConnector.addSessionListener(listener);
+      
+      minaConnector.addSessionListener(listener2);
+      
+      minaConnector.removeSessionListener(listener2);
+      
+      listener.sessionDestroyed(3l, null);
+      
+      EasyMock.replay(listener, listener2, ioSession);
+      
+      minaConnector.fireCleanup(3);
+      
+      EasyMock.verify(listener, listener2, ioSession);
+      
+      EasyMock.reset(listener, listener2, ioSession);
       
    }
    
@@ -354,6 +486,28 @@ public class MinaConnectorTest extends UnitTestCase
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
+
+   private MessagingException messagingExceptionMatch(final int errorID)
+   {
+      EasyMock.reportMatcher(new IArgumentMatcher()
+      {
+
+         public void appendTo(StringBuffer buffer)
+         {
+            buffer.append(errorID);
+         }
+
+         public boolean matches(Object argument)
+         {
+            MessagingException ex = (MessagingException) argument;
+            
+            return ex.getCode() == errorID;
+         }
+         
+      });
+      
+      return null;
+   }
 
    private Pong pongMatch(final int sessionId, final boolean sessionFailed)
    {
@@ -398,6 +552,10 @@ public class MinaConnectorTest extends UnitTestCase
       
       connector.addListener(EasyMock.isA(IoServiceListener.class));
       
+      ioServiceListenerAnswer = new IoServiceListenerAnswer();
+      
+      EasyMock.expectLastCall().andAnswer(ioServiceListenerAnswer);
+      
       EasyMock.expect(futureConnect.awaitUninterruptibly()).andReturn(futureConnect);
       
       EasyMock.expect(futureConnect.isConnected()).andReturn(true);
@@ -408,9 +566,9 @@ public class MinaConnectorTest extends UnitTestCase
       
       dispatcher.register(EasyMock.isA(PacketHandler.class));
       
-      this.setHandlerAnswer = new SetHandlerAnswer();
+      this.packetHandlerAnswer = new PacketHandlerAnswer();
       
-      EasyMock.expectLastCall().andAnswer(setHandlerAnswer);
+      EasyMock.expectLastCall().andAnswer(packetHandlerAnswer);
       
       if (ping)
       {
@@ -546,6 +704,12 @@ public class MinaConnectorTest extends UnitTestCase
       
       EasyMock.reset(connectionParams, dispatcher, connector, sessionConfig, filterChainSupport);
       
+      assertSame (location, mina.getLocation());
+      
+      assertSame (connectionParams, mina.getConnectionParams());
+      
+      assertSame (dispatcher, mina.getDispatcher());
+      
       return mina;
    }
    
@@ -553,14 +717,24 @@ public class MinaConnectorTest extends UnitTestCase
    // Inner classes -------------------------------------------------
    
 
-   class SetHandlerAnswer implements IAnswer<Object>
+   class PacketHandlerAnswer implements IAnswer<Object>
    {
       PacketHandler handler;
 
       public Object answer() throws Throwable
       {
          handler = (PacketHandler)EasyMock.getCurrentArguments()[0];
-         System.out.println("handler = " + handler);
+         return null;
+      }
+   }
+   
+   class IoServiceListenerAnswer implements IAnswer<Object>
+   {
+      IoServiceListener handler;
+
+      public Object answer() throws Throwable
+      {
+         handler = (IoServiceListener)EasyMock.getCurrentArguments()[0];
          return null;
       }
    }

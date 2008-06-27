@@ -127,6 +127,7 @@ public class MinaHandler extends IoHandlerAdapter implements
       }
       if (closeSessionOnExceptionCaught)
       {
+         // TODO: (JBMESSAGING-1383) Shouldn't this be closed on MinaConnector instead?
          session.close();
       }
    }

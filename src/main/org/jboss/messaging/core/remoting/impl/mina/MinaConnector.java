@@ -281,8 +281,7 @@ public class MinaConnector implements RemotingConnector, CleanUpNotifier
 
    public synchronized void addSessionListener(final RemotingSessionListener listener)
    {
-      assert listener != null;
-      assert connector != null;
+      validateArgument(listener);
 
       listeners.add(listener);
 
@@ -294,8 +293,7 @@ public class MinaConnector implements RemotingConnector, CleanUpNotifier
 
    public synchronized void removeSessionListener(RemotingSessionListener listener)
    {
-      assert listener != null;
-      assert connector != null;
+      validateArgument(listener);
 
       listeners.remove(listener);
 
@@ -328,7 +326,7 @@ public class MinaConnector implements RemotingConnector, CleanUpNotifier
       alive = false;
       for (RemotingSessionListener listener : listeners)
       {
-         listener.sessionDestroyed(sessionID, me);
+         listener.sessionDestroyed(sessionID, me); 
       }
 
       session = null;
@@ -352,6 +350,19 @@ public class MinaConnector implements RemotingConnector, CleanUpNotifier
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+
+   private void validateArgument(final RemotingSessionListener listener)
+   {
+      if (listener == null)
+      {
+         throw new IllegalArgumentException("Argument listener shouldn't be null");
+      }
+      
+      if (connector == null)
+      {
+         throw new IllegalStateException("Connector is disconnected");
+      }
+   }
 
    // Inner classes -------------------------------------------------
 
