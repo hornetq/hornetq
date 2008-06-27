@@ -1325,7 +1325,7 @@ public class ServerSessionImplTest extends UnitTestCase
       Binding binding = createStrictMock(Binding.class);
       expect(po.containsDestination(address)).andReturn(false);
       ss.check(address, CheckType.CREATE, conn);
-      expectLastCall().andThrow(new MessagingException());
+      expectLastCall().andThrow(new MessagingException(MessagingException.SECURITY_EXCEPTION));
       replay(conn, returner, sm, po, qs, rm, ss, pd, executor, binding);
       try
       {
@@ -1334,7 +1334,7 @@ public class ServerSessionImplTest extends UnitTestCase
       }
       catch (MessagingException e)
       {
-         assertEquals(e.getCode(), MessagingException.QUEUE_DOES_NOT_EXIST);
+         assertEquals(e.getCode(), MessagingException.SECURITY_EXCEPTION);
       }
       verify(conn, returner, sm, po, qs, rm, ss, pd, executor, binding);
    }
