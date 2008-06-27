@@ -38,6 +38,9 @@ import javax.transaction.xa.Xid;
 
 import junit.framework.TestCase;
 
+import org.easymock.EasyMock;
+import org.easymock.IArgumentMatcher;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -233,4 +236,28 @@ public class UnitTestCase extends TestCase
       }
    }
 
+   
+   public static MessagingException messagingExceptionMatch(final int errorID)
+   {
+      EasyMock.reportMatcher(new IArgumentMatcher()
+      {
+
+         public void appendTo(StringBuffer buffer)
+         {
+            buffer.append(errorID);
+         }
+
+         public boolean matches(Object argument)
+         {
+            MessagingException ex = (MessagingException) argument;
+            
+            return ex.getCode() == errorID;
+         }
+         
+      });
+      
+      return null;
+   }
+
+   
 }
