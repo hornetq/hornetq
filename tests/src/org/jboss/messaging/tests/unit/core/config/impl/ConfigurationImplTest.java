@@ -36,8 +36,6 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
-import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.TransportType;

@@ -202,7 +202,7 @@ public class JournalImpl implements TestableJournal
 	private final AtomicLong transactionIDSequence = new AtomicLong(0);
 	
 	private Reclaimer reclaimer = new Reclaimer();
-	
+			
 	public JournalImpl(final int fileSize, final int minFiles,
 			             final boolean syncTransactional, final boolean syncNonTransactional,
 			             final SequentialFileFactory fileFactory, final long taskPeriod,
@@ -378,8 +378,8 @@ public class JournalImpl implements TestableJournal
 		return transactionIDSequence.getAndIncrement();
 	}
 	
-   public void appendAddRecordTransactional(final long txID, final byte recordType, final long id,
-         final EncodingSupport record) throws Exception
+   public void appendAddRecordTransactional(final long txID, final long id, final byte recordType, 
+                                            final EncodingSupport record) throws Exception
    {
       if (state != STATE_LOADED)
       {
@@ -419,8 +419,7 @@ public class JournalImpl implements TestableJournal
       tx.addPos(usedFile, id);
    }
    
-	public void appendAddRecordTransactional(final long txID, final byte recordType, final long id,
-	      final byte[] record) throws Exception
+	public void appendAddRecordTransactional(final long txID, final long id, final byte recordType, final byte[] record) throws Exception
    {
 	   if (state != STATE_LOADED)
 	   {
@@ -458,8 +457,7 @@ public class JournalImpl implements TestableJournal
 	   tx.addPos(usedFile, id);
    }
 	
-	public void appendUpdateRecordTransactional(final long txID, byte recordType, final long id,
-			final byte[] record) throws Exception
+	public void appendUpdateRecordTransactional(final long txID, final long id, byte recordType, final byte[] record) throws Exception
 	{
 		if (state != STATE_LOADED)
 		{
@@ -1352,6 +1350,51 @@ public class JournalImpl implements TestableJournal
 	{
 		return posFilesMap.size();
 	}
+	
+	public int getFileSize()
+   {
+      return fileSize;
+   }
+   
+   public int getMinFiles()
+   {
+      return minFiles;
+   }
+   
+   public boolean isSyncTransactional()
+   {
+      return syncTransactional;
+   }
+   
+   public boolean isSyncNonTransactional()
+   {
+      return syncNonTransactional;
+   }
+   
+   public long getTaskPeriod()
+   {
+      return taskPeriod;
+   }
+   
+   public String getFilePrefix()
+   {
+      return filePrefix;
+   }
+   
+   public String getFileExtension()
+   {
+      return fileExtension;
+   }
+   
+   public int getMaxAIO()
+   {
+      return maxAIO;
+   }
+   
+   public long getAIOTimeout()
+   {
+      return aioTimeout;
+   }
 	
 	// MessagingComponent implementation ---------------------------------------------------
 	

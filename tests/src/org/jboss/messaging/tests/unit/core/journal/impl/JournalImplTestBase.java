@@ -254,7 +254,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 			// SIZE_BYTE + SIZE_LONG + SIZE_LONG + SIZE_INT + record.length + SIZE_BYTE
 			byte[] record = generateRecord(recordLength - JournalImpl.SIZE_ADD_RECORD_TX );
 			
-			journal.appendAddRecordTransactional(txID, (byte)0, arguments[i], record);
+			journal.appendAddRecordTransactional(txID, arguments[i], (byte)0, record);
 			
 			tx.records.add(new RecordInfo(arguments[i], (byte)0, record, false));
 			
@@ -271,7 +271,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		{     
 			byte[] updateRecord = generateRecord(recordLength - JournalImpl.SIZE_UPDATE_RECORD_TX );
 			
-			journal.appendUpdateRecordTransactional(txID, (byte)0, arguments[i], updateRecord);
+			journal.appendUpdateRecordTransactional(txID, arguments[i], (byte)0, updateRecord);
 			
 			tx.records.add(new RecordInfo(arguments[i], (byte)0, updateRecord, true));
 		}     

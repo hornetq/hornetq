@@ -863,18 +863,12 @@ public class ServerSessionImpl implements ServerSession
    public void createQueue(final SimpleString address, final SimpleString queueName,
                            final SimpleString filterString, boolean durable, final boolean temporary) throws Exception
    {
-      //make sure the user has privileges to create this address
+      //make sure the user has privileges to create this queue
       if (!postOffice.containsDestination(address))
       {
-         try
-         {
-            securityStore.check(address, CheckType.CREATE, connection);
-         }
-         catch (MessagingException e)
-         {
-            throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
-         }
+         securityStore.check(address, CheckType.CREATE, connection);
       }
+      
       Binding binding = postOffice.getBinding(queueName);
 
       if (binding != null)

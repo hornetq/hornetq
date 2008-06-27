@@ -46,6 +46,21 @@ public interface TestableJournal extends Journal
 
    void debugWait() throws Exception;
 	
-	//void dump();
-	
+   int getFileSize();
+   
+   int getMinFiles();
+   
+   boolean isSyncTransactional();
+   
+   boolean isSyncNonTransactional();
+   
+   long getTaskPeriod();
+   
+   String getFilePrefix();
+   
+   String getFileExtension();
+   
+   int getMaxAIO();
+   
+   long getAIOTimeout();   	
 }

@@ -100,8 +100,6 @@ public class QueueSettingsDeployerTest extends TestCase
 
       public boolean matches(Object o)
       {
-         if (this == o) return true;
-
          QueueSettings that = (QueueSettings) o;
 
          if (!queueSettings.getDLQ().equals(that.getDLQ())) return false;

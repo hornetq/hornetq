@@ -80,9 +80,9 @@ public class JournalStorageManager implements StorageManager
    
    // Bindings journal record type
    
-	private static final byte BINDING_RECORD = 21;
+	public static final byte BINDING_RECORD = 21;
 	
-	private static final byte DESTINATION_RECORD = 22;
+	public static final byte DESTINATION_RECORD = 22;
 	   
    // type + expiration + timestamp + priority
    public static final int SIZE_FIELDS = SIZE_INT + SIZE_LONG + SIZE_LONG + SIZE_BYTE; 
@@ -173,6 +173,13 @@ public class JournalStorageManager implements StorageManager
 	   		config.getJournalTaskPeriod(), "jbm-data", "jbm", config.getJournalMaxAIO(), config.getJournalAIOTimeout());
 	}
 	
+	/* This constructor is only used for testing */
+	public JournalStorageManager(final Journal messageJournal, final Journal bindingsJournal)
+   {
+	   this.messageJournal = messageJournal;
+	   this.bindingsJournal = bindingsJournal;
+   }
+	
 	public long generateMessageID()
 	{
 		return messageIDSequence.getAndIncrement();
@@ -206,14 +213,14 @@ public class JournalStorageManager implements StorageManager
 	
    public void storeMessageTransactional(long txID, ServerMessage message) throws Exception
    {
-      messageJournal.appendAddRecordTransactional(txID, ADD_MESSAGE, message.getMessageID(), message);
+      messageJournal.appendAddRecordTransactional(txID, message.getMessageID(), ADD_MESSAGE, message);
    }
    
    public void storeAcknowledgeTransactional(long txID, long queueID, long messageID) throws Exception
    {
    	byte[] record = ackBytes(queueID, messageID);
 		
-		messageJournal.appendUpdateRecordTransactional(txID, ACKNOWLEDGE_REF, messageID, record);	
+		messageJournal.appendUpdateRecordTransactional(txID, messageID, ACKNOWLEDGE_REF, record);	
    }
    
    public void storeDeleteTransactional(long txID, long messageID) throws Exception
@@ -260,8 +267,10 @@ public class JournalStorageManager implements StorageManager
 		List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
 		
 		long maxMessageID = messageJournal.load(records, preparedTransactions);
-		
+	
 		messageIDSequence.set(maxMessageID + 1);
+		
+		//TODO - recover prepared transactions
       
 		for (RecordInfo record: records)
 		{
@@ -280,9 +289,9 @@ public class JournalStorageManager implements StorageManager
 					ServerMessage message = new ServerMessageImpl(record.id);
 					
 					message.decode(buff);
-					
+
 					List<MessageReference> refs = postOffice.route(message);
-					
+
 					for (MessageReference ref: refs)
 					{
 						ref.getQueue().addLast(ref);
@@ -511,8 +520,7 @@ public class JournalStorageManager implements StorageManager
 				}
 
 				Queue queue = queueFactory.createQueue(id, queueName, filter, true, false);
-
-				
+			
 				Binding binding = new BindingImpl(address, queue);
 
 				bindings.add(binding);      
@@ -546,7 +554,7 @@ public class JournalStorageManager implements StorageManager
 	{
 		if (started)
 		{
-			throw new IllegalStateException("Already started");
+			return;
 		}
 		
 		bindingsJournal.start();
@@ -564,7 +572,7 @@ public class JournalStorageManager implements StorageManager
 	{
 		if (!started)
 		{
-			throw new IllegalStateException("Already started");
+			return;
 		}
 		
 		bindingsJournal.stop();
@@ -577,6 +585,18 @@ public class JournalStorageManager implements StorageManager
 	public synchronized boolean isStarted()
 	{
 	   return started;
+	}
+	
+	// Public -----------------------------------------------------------------------------------
+	
+	public Journal getMessageJournal()
+	{
+	   return messageJournal;
+	}
+	
+	public Journal getBindingsJournal()
+	{
+	   return bindingsJournal;
 	}
 	
 	// Private ----------------------------------------------------------------------------------

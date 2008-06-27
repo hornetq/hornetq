@@ -56,7 +56,7 @@ import org.jboss.messaging.util.ByteBufferWrapper;
  */
 public class UnitTestCase extends TestCase
 {
-   protected String dumpBytes(byte[] bytes)
+   public static String dumpBytes(byte[] bytes)
    {
       StringBuffer buff = new StringBuffer();
       

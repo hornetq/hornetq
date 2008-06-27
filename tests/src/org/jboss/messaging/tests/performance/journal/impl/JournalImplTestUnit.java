@@ -276,7 +276,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
             long startTrans = System.currentTimeMillis();
             for (int j=0; j<1000; j++)
             {
-               journal.appendAddRecordTransactional(i, (byte)0, count++, data);
+               journal.appendAddRecordTransactional(i, count++, (byte)0, data);
             }
             
             journal.appendCommitRecord(i);
