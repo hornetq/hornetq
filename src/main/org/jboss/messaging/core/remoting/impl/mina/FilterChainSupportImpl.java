@@ -31,6 +31,11 @@ import org.apache.mina.filter.ssl.SslFilter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
 
+/**
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ */
 public class FilterChainSupportImpl implements FilterChainSupport
 {
    // Constants -----------------------------------------------------
