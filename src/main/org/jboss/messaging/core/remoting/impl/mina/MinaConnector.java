@@ -358,10 +358,6 @@ public class MinaConnector implements RemotingConnector, CleanUpNotifier
          throw new IllegalArgumentException("Argument listener shouldn't be null");
       }
       
-      if (connector == null)
-      {
-         throw new IllegalStateException("Connector is disconnected");
-      }
    }
 
    // Inner classes -------------------------------------------------
