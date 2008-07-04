@@ -796,9 +796,7 @@ public class ClientSessionImplTest extends UnitTestCase
       EasyMock.verify(conn, rc, cf, pd, prod1, prod2, cons1, cons2, browser1, browser2);
       
    }
-   
-   
-   
+         
    public void testClose() throws Exception   
    {
       testClose(true);

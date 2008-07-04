@@ -305,7 +305,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       if (ignoreDeliveryMark >= 0)
       {
          long delID = message.getDeliveryID();
-
+         
          if (delID > ignoreDeliveryMark)
          {
             // Ignore - the session is recovering and these are inflight
@@ -320,7 +320,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          }
          else
          {
-         	throw new IllegalStateException("Invalid delivery serverTargetID " + delID);
+         	throw new IllegalStateException("Invalid delivery id " + delID);
          }
       }
       
