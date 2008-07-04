@@ -29,6 +29,8 @@ import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingSession;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
 import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.util.ByteBufferWrapper;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -51,7 +53,7 @@ public class INVMConnectorTest extends UnitTestCase
       EasyMock.verify(location, connectionParams, clientPacketDispatcher, serverPacketDispatcher);
    }
 
-    public void testDisconnect() throws Exception
+   public void testDisconnect() throws Exception
    {
       Location location = EasyMock.createStrictMock(Location.class);
       ConnectionParams connectionParams = EasyMock.createStrictMock(ConnectionParams.class);
@@ -71,4 +73,21 @@ public class INVMConnectorTest extends UnitTestCase
       EasyMock.replay(location, connectionParams, clientPacketDispatcher, serverPacketDispatcher);
       EasyMock.verify(location, connectionParams, clientPacketDispatcher, serverPacketDispatcher);
    }
+    
+    public void testCreateBuffer() throws Exception
+    {
+       Location location = EasyMock.createStrictMock(Location.class);
+       ConnectionParams connectionParams = EasyMock.createStrictMock(ConnectionParams.class);
+       PacketDispatcher clientPacketDispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
+       PacketDispatcher serverPacketDispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
+       INVMConnector invmConnector = new INVMConnector(location, connectionParams, 0, clientPacketDispatcher, serverPacketDispatcher);
+       
+       final int size = 120912;
+       
+       MessagingBuffer buff = invmConnector.createBuffer(size);
+       
+       assertTrue(buff instanceof ByteBufferWrapper);
+       
+       assertEquals(size, buff.capacity());
+    }
 }

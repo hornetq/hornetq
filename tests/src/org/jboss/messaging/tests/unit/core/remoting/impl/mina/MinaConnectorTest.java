@@ -69,6 +69,7 @@ import org.jboss.messaging.core.remoting.RemotingSession;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.remoting.impl.ResponseHandlerImpl;
 import org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport;
+import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaHandler;
 import org.jboss.messaging.core.remoting.impl.mina.MinaSession;
@@ -77,6 +78,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
 import org.jboss.messaging.tests.integration.core.remoting.mina.TestSupport;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * 
@@ -84,13 +86,11 @@ import org.jboss.messaging.tests.util.UnitTestCase;
  *
  */
 public class MinaConnectorTest extends UnitTestCase
-{
-   
+{   
    // Constants -----------------------------------------------------
    
    // Attributes ----------------------------------------------------
-   
-   
+      
    private LocationImpl location;
    
    private ConnectionParams connectionParams;
@@ -474,6 +474,19 @@ public class MinaConnectorTest extends UnitTestCase
       
    }
    
+   public void testCreateBuffer() throws Exception
+   {
+      MinaConnector minaConnector = construct(true);
+      
+      final int size = 120912;
+      
+      MessagingBuffer buff = minaConnector.createBuffer(size);
+      
+      assertTrue(buff instanceof IoBufferWrapper);
+      
+      assertEquals(size, buff.capacity());
+   }
+   
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
@@ -710,27 +723,27 @@ public class MinaConnectorTest extends UnitTestCase
       }
    }
    
-   
+
    /** Mina is not 100% "interfacable", so I'm mocking this class */
-  class ProxySSLFilter extends SslFilter
+   class ProxySSLFilter extends SslFilter
    {
-      
+
       private final WriteFuture futureStop;
-      
+
       public ProxySSLFilter(WriteFuture futureStop) throws Exception
       {
          super(SSLContext.getInstance("TLS"));
          this.futureStop = futureStop;
       }
-      
+
       public WriteFuture stopSsl(IoSession session) throws SSLException
       {
          return futureStop;
       }
-      
+
    }
-   
-   
+
+
    /** Mina is not 100% "interfacable", so I'm mocking this class */
    class ProxyFilterChain extends DefaultIoFilterChain
    {

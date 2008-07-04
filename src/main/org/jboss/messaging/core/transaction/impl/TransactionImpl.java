@@ -121,6 +121,7 @@ public class TransactionImpl implements Transaction
       {
          throw new IllegalStateException("Transaction is in invalid state " + state);
       }
+      
       acknowledgements.add(acknowledgement);
 
       ServerMessage message = acknowledgement.getMessage();
@@ -157,7 +158,6 @@ public class TransactionImpl implements Transaction
             }
          }
       }
-
    }
 
    public void prepare() throws Exception
@@ -343,6 +343,7 @@ public class TransactionImpl implements Transaction
    public void markAsRollbackOnly(MessagingException messagingException)
    {
       state = State.ROLLBACK_ONLY;
+      
       this.messagingException = messagingException;
    }
 

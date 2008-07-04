@@ -28,13 +28,25 @@ import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.*;
+import org.jboss.messaging.core.remoting.ConnectorRegistry;
+import org.jboss.messaging.core.remoting.ConnectorRegistryFactory;
+import org.jboss.messaging.core.remoting.ConnectorRegistryLocator;
+import org.jboss.messaging.core.remoting.Interceptor;
+import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.PacketHandler;
+import org.jboss.messaging.core.remoting.PacketHandlerRegistrationListener;
+import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.RemotingConnector;
+import org.jboss.messaging.core.remoting.RemotingSession;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
 public class RemotingConnectionTest extends UnitTestCase
 {
@@ -807,6 +819,40 @@ public class RemotingConnectionTest extends UnitTestCase
       assertEquals(remotingConnection.getLocation(), location);
       EasyMock.verify(location, connectionParams);
    }
+   
+   public void testCreateBuffer() throws Throwable
+   {
+      final ConnectorRegistry connectorRegistry = EasyMock.createStrictMock(ConnectorRegistry.class);
+      RemotingConnector connector = EasyMock.createStrictMock(RemotingConnector.class);
+      ConnectorRegistryFactory.setRegisteryLocator(new ConnectorRegistryLocator()
+      {
+         public ConnectorRegistry locate()
+         {
+            return connectorRegistry;
+         }
+      });
+      Location location = EasyMock.createNiceMock(Location.class);
+      ConnectionParams connectionParams = EasyMock.createNiceMock(ConnectionParams.class);
+      RemotingSession remotingSession = EasyMock.createStrictMock(RemotingSession.class);
+
+      EasyMock.expect(connectorRegistry.getConnector(location, connectionParams)).andReturn(connector);
+      EasyMock.replay(connectorRegistry);
+      EasyMock.expect(connector.connect()).andReturn(remotingSession);
+      
+      final int size = 120912;      
+      MessagingBuffer buff = EasyMock.createMock(MessagingBuffer.class);
+      EasyMock.expect(connector.createBuffer(size)).andReturn(buff);
+      
+      EasyMock.replay(connector);
+
+      RemotingConnectionImpl remotingConnection = new RemotingConnectionImpl(location, connectionParams);
+      remotingConnection.start();
+      MessagingBuffer buff2 = remotingConnection.createBuffer(size);
+            
+      EasyMock.verify(connector);
+      EasyMock.verify(connectorRegistry);
+      assertTrue(buff == buff2);
+   }
 
 
    class DummyDispatcher implements PacketDispatcher
@@ -912,8 +958,6 @@ public class RemotingConnectionTest extends UnitTestCase
                }
             }).start();
          }
-
-
       }
 
       public boolean isConnected()

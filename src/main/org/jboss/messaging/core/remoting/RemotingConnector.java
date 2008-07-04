@@ -27,6 +27,7 @@ import java.io.IOException;
 import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.RemotingSessionListener;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -49,4 +50,6 @@ public interface RemotingConnector
    Location getLocation();
    
    ConnectionParams getConnectionParams();
+   
+   MessagingBuffer createBuffer(int size);
 }

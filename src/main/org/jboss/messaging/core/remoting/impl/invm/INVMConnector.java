@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.remoting.impl.invm;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.Location;
@@ -30,6 +31,8 @@ import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnector;
 import org.jboss.messaging.core.remoting.RemotingSession;
+import org.jboss.messaging.util.ByteBufferWrapper;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -69,7 +72,7 @@ public class INVMConnector implements RemotingConnector
 
    // Public --------------------------------------------------------
 
-   // NIOConnector implementation -----------------------------------
+   // RemotingConnector implementation -----------------------------------
 
    public RemotingSession connect()
          throws IOException
@@ -113,6 +116,11 @@ public class INVMConnector implements RemotingConnector
    
    public void removeSessionListener(RemotingSessionListener listener)
    {      
+   }
+   
+   public MessagingBuffer createBuffer(int size)
+   {
+      return new ByteBufferWrapper(ByteBuffer.allocate(size));
    }
 
    // Package protected ---------------------------------------------

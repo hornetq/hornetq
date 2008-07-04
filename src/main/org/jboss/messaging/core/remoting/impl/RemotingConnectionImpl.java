@@ -22,16 +22,22 @@
 
 package org.jboss.messaging.core.remoting.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.*;
+import org.jboss.messaging.core.remoting.ConnectorRegistryFactory;
+import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.RemotingConnector;
+import org.jboss.messaging.core.remoting.RemotingSession;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
@@ -247,6 +253,11 @@ public class RemotingConnectionImpl implements RemotingConnection
    public Location getLocation()
    {
       return location;
+   }
+   
+   public MessagingBuffer createBuffer(final int size)
+   {
+      return connector.createBuffer(size);
    }
 
    // Package protected ----------------------------------------------------------------------------

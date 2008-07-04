@@ -33,6 +33,7 @@ import javax.transaction.xa.Xid;
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.client.ClientConnectionFactory;
+import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.ClientConnectionInternal;
@@ -81,6 +82,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMess
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -1156,6 +1158,53 @@ public class ClientSessionImplTest extends UnitTestCase
       {
          assertEquals(XAException.XAER_RMERR, e.errorCode);
       }
+   }
+   
+   public void testCreateMessage() throws Exception
+   {
+      ClientConnectionInternal conn = EasyMock.createStrictMock(ClientConnectionInternal.class);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
+      ClientConnectionFactory cf = EasyMock.createStrictMock(ClientConnectionFactory.class);
+      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
+      MessagingBuffer buff = EasyMock.createMock(MessagingBuffer.class);
+      EasyMock.expect(rc.createBuffer(ClientSessionImpl.INITIAL_MESSAGE_BODY_SIZE)).andStubReturn(buff);      
+      EasyMock.replay(rc);
+      
+      ClientSessionInternal session = new ClientSessionImpl(conn, 453543, false, -1, false, false, false, false, rc, cf, pd);
+      
+      ClientMessage msg = session.createClientMessage(false);
+      assertFalse(msg.isDurable());
+      
+      msg = session.createClientMessage(true);
+      assertTrue(msg.isDurable());
+      
+      final byte type = 123;
+      
+      msg = session.createClientMessage(type, false);
+      assertFalse(msg.isDurable());
+      assertEquals(type, msg.getType());
+      
+      msg = session.createClientMessage(type, true);
+      assertTrue(msg.isDurable());
+      assertEquals(type, msg.getType());
+            
+      final long expiration = 120912902;
+      final long timestamp = 1029128;
+      final byte priority = 12;
+            
+      msg = session.createClientMessage(type, false, expiration, timestamp, priority);
+      assertFalse(msg.isDurable());
+      assertEquals(type, msg.getType());
+      assertEquals(expiration, msg.getExpiration());
+      assertEquals(timestamp, msg.getTimestamp());
+      assertEquals(priority, msg.getPriority());
+
+      msg = session.createClientMessage(type, true, expiration, timestamp, priority);
+      assertTrue(msg.isDurable());
+      assertEquals(type, msg.getType());
+      assertEquals(expiration, msg.getExpiration());
+      assertEquals(timestamp, msg.getTimestamp());
+      assertEquals(priority, msg.getPriority());
    }
    
    // Private -------------------------------------------------------------------------------------------
