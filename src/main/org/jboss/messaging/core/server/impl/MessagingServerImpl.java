@@ -22,14 +22,6 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
-
 import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -39,11 +31,7 @@ import org.jboss.messaging.core.management.impl.MessagingServerManagementImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
-import org.jboss.messaging.core.remoting.ConnectorRegistryFactory;
-import org.jboss.messaging.core.remoting.Interceptor;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.PacketReturner;
-import org.jboss.messaging.core.remoting.RemotingService;
+import org.jboss.messaging.core.remoting.*;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
@@ -62,6 +50,10 @@ import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.ExecutorFactory;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 import org.jboss.messaging.util.VersionLoader;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.*;
 
 
 /**
@@ -92,7 +84,7 @@ public class MessagingServerImpl implements MessagingServer
    private SecurityStore securityStore;
    private ConnectionManager connectionManager;
    private RemotingSessionListener sessionListener; 
-   private HierarchicalRepository<QueueSettings> queueSettingsRepository;
+   private HierarchicalRepository<QueueSettings> queueSettingsRepository = new HierarchicalObjectRepository<QueueSettings>();;
    private ScheduledExecutorService scheduledExecutor;   
    private QueueFactory queueFactory;
    private PostOffice postOffice;
@@ -174,7 +166,6 @@ public class MessagingServerImpl implements MessagingServer
       ConnectionManagerImpl cm = new ConnectionManagerImpl();
       this.connectionManager = cm;
       this.sessionListener = cm;   
-      queueSettingsRepository = new HierarchicalObjectRepository<QueueSettings>();
       queueSettingsRepository.setDefault(new QueueSettings());
       scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(), new JBMThreadFactory("JBM-scheduled-threads"));                  
       queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository);      
