@@ -204,6 +204,8 @@ public class MessagingServerImplTest extends UnitTestCase
       
       EasyMock.reset(sm, rs, pd);
       
+      assertNotNull(server.getQueueSettingsRepository());
+      
       //Starting again should do nothing
       
       EasyMock.replay(sm, rs, pd);
@@ -275,6 +277,42 @@ public class MessagingServerImplTest extends UnitTestCase
       
       EasyMock.replay(sm, rs, pd);
       
+      server.stop();
+      
+      assertFalse(server.isStarted());
+      
+      EasyMock.verify(sm, rs, pd);
+      
+      EasyMock.reset(sm, rs, pd);
+      
+      EasyMock.expect(rs.getDispatcher()).andReturn(pd);
+      EasyMock.expect(sm.isStarted()).andStubReturn(true);
+      EasyMock.expect(rs.isStarted()).andStubReturn(true);
+      rs.addRemotingSessionListener(EasyMock.isA(ConnectionManagerImpl.class));
+      sm.loadBindings(EasyMock.isA(QueueFactoryImpl.class), EasyMock.isA(ArrayList.class), EasyMock.isA(ArrayList.class));
+      sm.loadMessages(EasyMock.isA(PostOfficeImpl.class), EasyMock.isA(Map.class));
+            
+      pd.register(EasyMock.isA(MessagingServerPacketHandler.class));
+      
+      EasyMock.replay(sm, rs, pd);
+                 
+      //Should be able to start again
+      server.start();
+      
+      EasyMock.verify(sm, rs, pd);
+      
+      assertTrue(server.isStarted());
+      
+      assertNotNull(server.getQueueSettingsRepository());
+      
+      EasyMock.reset(sm, rs, pd);
+      
+      pd.unregister(0);
+      rs.removeRemotingSessionListener(EasyMock.isA(ConnectionManagerImpl.class));
+      
+      EasyMock.replay(sm, rs, pd);
+      
+      //And stop
       server.stop();
       
       assertFalse(server.isStarted());
