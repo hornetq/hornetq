@@ -540,56 +540,6 @@ public class ClientConsumerImplTest extends UnitTestCase
       }      
    }
    
-   public void testSetHandlerWhileReceiving() throws Exception
-   {
-      ClientSessionInternal session = EasyMock.createStrictMock(ClientSessionInternal.class);
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      ExecutorService executor = EasyMock.createStrictMock(ExecutorService.class);
-      PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);  
-             
-      final ClientConsumerInternal consumer =
-         new ClientConsumerImpl(session, 675765, 67565, 787, false, rc, pd, executor, 878787);
-      
-      MessageHandler handler = new MessageHandler()
-      {
-         public void onMessage(ClientMessage msg)
-         {            
-         }
-      };
-      
-      Thread t = new Thread()
-      {
-         public void run()
-         {
-            try
-            {
-               consumer.receive(1000);
-            }
-            catch (Exception e)
-            {
-            }
-         }
-      };
-      
-      t.start();
-      
-      Thread.sleep(100);
-      
-      try
-      {
-         consumer.setMessageHandler(handler);
-         
-         fail("Should throw exception");
-      }
-      catch (MessagingException e)
-      {
-         assertEquals(MessagingException.ILLEGAL_STATE, e.getCode());
-      } 
-      finally
-      {
-         t.interrupt();
-      }
-   }
 
    public void testClose() throws Exception
    {

@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */ 
 
-package org.jboss.messaging.tests.unit.core.util;
+package org.jboss.messaging.tests.timing.core.util;
 
 import junit.framework.TestCase;
 
