@@ -57,7 +57,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private static final boolean trace = log.isTraceEnabled();
    
-   private static final long CLOSE_TIMEOUT_MILLISECONDS = 10000;
+   public static final long CLOSE_TIMEOUT_MILLISECONDS = 10000;
 
    // Attributes
    // -----------------------------------------------------------------------------------
@@ -414,7 +414,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       if (clientWindowSize > 0)
       {
          creditsToSend += messageBytes;
-   
+         
          if (creditsToSend >= clientWindowSize)
          {            
             remotingConnection.sendOneWay(targetID, sessionTargetID, new ConsumerFlowCreditMessage(creditsToSend));
@@ -510,7 +510,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 		}
    }
 
-   public void doCleanUp(boolean sendCloseMessage) throws MessagingException
+   private void doCleanUp(final boolean sendCloseMessage) throws MessagingException
    {
       if (closed)
       {
@@ -537,7 +537,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
          receiverThread = null;
 
-         if(sendCloseMessage)
+         if (sendCloseMessage)
          {
             remotingConnection.sendBlocking(targetID, sessionTargetID, new PacketImpl(PacketImpl.CLOSE));
          }

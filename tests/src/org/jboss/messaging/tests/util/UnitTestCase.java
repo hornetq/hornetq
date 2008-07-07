@@ -33,6 +33,8 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.AbstractExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.transaction.xa.Xid;
 
@@ -257,6 +259,39 @@ public class UnitTestCase extends TestCase
       });
       
       return null;
+   }
+   
+   public static class DirectExecutorService extends AbstractExecutorService
+   {
+      public boolean awaitTermination(long timeout, TimeUnit unit)
+            throws InterruptedException
+      {
+         return false;
+      }
+
+      public boolean isShutdown()
+      {
+         return false;
+      }
+
+      public void shutdown()
+      { 
+      }
+
+      public boolean isTerminated()
+      {
+         return false;
+      }
+
+      public List<Runnable> shutdownNow()
+      {
+         return null;
+      }
+
+      public void execute(Runnable command)
+      {
+         command.run();
+      }
    }
 
    
