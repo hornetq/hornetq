@@ -23,7 +23,6 @@
 package org.jboss.messaging.tests.unit.core.server.impl;
 
 import org.easymock.EasyMock;
-import org.easymock.IAnswer;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.server.*;
@@ -1397,56 +1396,7 @@ public class QueueImplTest extends UnitTestCase
 
    }
 
-   public void testDeliveryScheduled() throws Exception
-   {
-      Consumer consumer = EasyMock.createStrictMock(Consumer.class);
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
-      MessageReference messageReference = generateReference(queue, 1);
-      final CountDownLatch countDownLatch = new CountDownLatch(1);
-      EasyMock.expect(consumer.handle(messageReference)).andAnswer(new IAnswer<HandleStatus>()
-      {
-         public HandleStatus answer() throws Throwable
-         {
-            countDownLatch.countDown();
-            return HandleStatus.HANDLED;
-         }
-      });
-      EasyMock.replay(consumer);
-      queue.addConsumer(consumer);
-      messageReference.setScheduledDeliveryTime(System.currentTimeMillis() + 2000);
-      queue.addFirst(messageReference);
 
-      countDownLatch.await(3000, TimeUnit.MILLISECONDS);
-
-      EasyMock.verify(consumer);
-
-   }
-
-   public void testDeliveryScheduledBusyConsumer() throws Exception
-   {
-      Consumer consumer = EasyMock.createStrictMock(Consumer.class);
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
-      MessageReference messageReference = generateReference(queue, 1);
-      final CountDownLatch countDownLatch = new CountDownLatch(1);
-      EasyMock.expect(consumer.handle(messageReference)).andAnswer(new IAnswer<HandleStatus>()
-      {
-         public HandleStatus answer() throws Throwable
-         {
-            countDownLatch.countDown();
-            return HandleStatus.BUSY;
-         }
-      });
-      EasyMock.expect(consumer.handle(messageReference)).andReturn(HandleStatus.HANDLED);
-      EasyMock.replay(consumer);
-      queue.addConsumer(consumer);
-      messageReference.setScheduledDeliveryTime(System.currentTimeMillis() + 2000);
-      queue.addFirst(messageReference);
-
-      countDownLatch.await(3000, TimeUnit.MILLISECONDS);
-
-      EasyMock.verify(consumer);
-
-   }
    // Inner classes ---------------------------------------------------------------
 
    class AddtoQueueRunner implements Runnable

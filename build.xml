@@ -117,6 +117,19 @@
       <ant antfile="build-messaging.xml" target="unit-tests"/>
    </target>
 
+    <target name="timing-tests" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="timing-tests"/>
+   </target>
+
+    <target name="integration-tests" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="integration-tests"/>
+   </target>
+
+    <target name="performance-tests" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="performance-tests"/>
+   </target>
+   
+
    <target name="jms-tests" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="jms-tests"/>
    </target>

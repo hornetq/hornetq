@@ -625,7 +625,31 @@
       </javac>
    </target>
 
+   <target name="performance-tests" depends="jar, compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/jboss/messaging/tests/performance/**/*${test-mask}.class"/>
+      </antcall>
+   </target>
+
+   <target name="integration-tests" depends="jar, compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/jboss/messaging/tests/integration/**/*${test-mask}.class"/>
+      </antcall>
+   </target>
+
    <target name="unit-tests" depends="jar, compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/jboss/messaging/tests/unit/**/*${test-mask}.class"/>
+      </antcall>
+   </target>
+
+   <target name="timing-tests" depends="jar, compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/jboss/messaging/tests/timing/**/*${test-mask}.class"/>
+      </antcall>
+   </target>
+
+   <target name="tests" depends="jar, compile-unit-tests">
       <echo message=""/>
       <echo message="Running unit tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
       <echo message="classpath is:${toString:unit.test.execution.classpath}"/>
@@ -652,10 +676,7 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${test.classes.dir}">
-               <include name="**/org/jboss/messaging/tests/integration/**/*${test-mask}.class"/>
-               <include name="**/org/jboss/messaging/tests/unit/**/*${test-mask}.class"/>
-               <exclude name="**/org/jboss/messaging/tests/local/**/*${test-mask}.class"/>
-               <exclude name="**/org/jboss/messaging/tests/performance/**/*${test-mask}.class"/>
+               <include name="${tests.param}"/>
             </fileset>
          </batchtest>
       </junit>
@@ -740,7 +761,7 @@
       <antcall target="compile-reports"/>
    </target>
 
-   <target name="all-tests" depends="unit-tests, jms-tests"/>
+   <target name="all-tests" depends="unit-tests, integration-tests, timing-tests, performance-tests, jms-tests"/>
 
    <target name="compile-reports">
       <mkdir dir="${test.stylesheets.dir}"/>
