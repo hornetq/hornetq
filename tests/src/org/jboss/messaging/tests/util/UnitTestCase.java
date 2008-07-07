@@ -58,6 +58,12 @@ import org.jboss.messaging.util.ByteBufferWrapper;
  */
 public class UnitTestCase extends TestCase
 {
+   // Constants -----------------------------------------------------
+   
+   // Attributes ----------------------------------------------------
+   
+   // Static --------------------------------------------------------
+   
    public static String dumpBytes(byte[] bytes)
    {
       StringBuffer buff = new StringBuffer();
@@ -79,6 +85,77 @@ public class UnitTestCase extends TestCase
       return buff.toString();      
    }
    
+   public static void assertEqualsByteArrays(byte[] expected, byte[] actual)
+   {
+      assertEquals(expected.length, actual.length);
+      for (int i = 0; i < expected.length; i++)
+      {
+         assertEquals("byte at index " + i, expected[i], actual[i]);
+      }
+   }
+
+   public static void assertEqualsByteArrays(int length, byte[] expected, byte[] actual)
+   {
+      // we check only for the given length (the arrays might be
+      // larger)
+      assertTrue(expected.length >= length);
+      assertTrue(actual.length >= length);
+      for (int i = 0; i < length; i++)
+      {
+         assertEquals("byte at index " + i, expected[i], actual[i]);
+      }
+   }
+
+   public static void assertSameXids(List<Xid> expected, List<Xid> actual)
+   {
+      assertNotNull(expected);
+      assertNotNull(actual);
+      assertEquals(expected.size(), actual.size());
+   
+      for (int i = 0; i < expected.size(); i++)
+      {
+         Xid expectedXid = expected.get(i);
+         Xid actualXid = actual.get(i);
+         UnitTestCase.assertEqualsByteArrays(expectedXid.getBranchQualifier(), actualXid
+               .getBranchQualifier());
+         assertEquals(expectedXid.getFormatId(), actualXid.getFormatId());
+         UnitTestCase.assertEqualsByteArrays(expectedXid.getGlobalTransactionId(), actualXid
+               .getGlobalTransactionId());
+      }
+   }
+
+   
+   public static MessagingException messagingExceptionMatch(final int errorID)
+   {
+      EasyMock.reportMatcher(new IArgumentMatcher()
+      {
+
+         public void appendTo(StringBuffer buffer)
+         {
+            buffer.append(errorID);
+         }
+
+         public boolean matches(Object argument)
+         {
+            MessagingException ex = (MessagingException) argument;
+            
+            return ex.getCode() == errorID;
+         }
+         
+      });
+      
+      return null;
+   }
+   
+   // Constructors --------------------------------------------------
+   
+   // Public --------------------------------------------------------
+   
+   // Package protected ---------------------------------------------
+   
+   // Protected -----------------------------------------------------
+   
+
    protected boolean deleteDirectory(File directory)
    {
       if (directory.isDirectory())
@@ -199,67 +276,9 @@ public class UnitTestCase extends TestCase
       return ((size / alignment) + (size % alignment != 0 ? 1 : 0)) * alignment;
    }
 
-   public static void assertEqualsByteArrays(byte[] expected, byte[] actual)
-   {
-      assertEquals(expected.length, actual.length);
-      for (int i = 0; i < expected.length; i++)
-      {
-         assertEquals("byte at index " + i, expected[i], actual[i]);
-      }
-   }
-
-   public static void assertEqualsByteArrays(int length, byte[] expected, byte[] actual)
-   {
-      // we check only for the given length (the arrays might be
-      // larger)
-      assertTrue(expected.length >= length);
-      assertTrue(actual.length >= length);
-      for (int i = 0; i < length; i++)
-      {
-         assertEquals("byte at index " + i, expected[i], actual[i]);
-      }
-   }
-
-   public static void assertSameXids(List<Xid> expected, List<Xid> actual)
-   {
-      assertNotNull(expected);
-      assertNotNull(actual);
-      assertEquals(expected.size(), actual.size());
+   // Private -------------------------------------------------------
    
-      for (int i = 0; i < expected.size(); i++)
-      {
-         Xid expectedXid = expected.get(i);
-         Xid actualXid = actual.get(i);
-         UnitTestCase.assertEqualsByteArrays(expectedXid.getBranchQualifier(), actualXid
-               .getBranchQualifier());
-         assertEquals(expectedXid.getFormatId(), actualXid.getFormatId());
-         UnitTestCase.assertEqualsByteArrays(expectedXid.getGlobalTransactionId(), actualXid
-               .getGlobalTransactionId());
-      }
-   }
-
-   
-   public static MessagingException messagingExceptionMatch(final int errorID)
-   {
-      EasyMock.reportMatcher(new IArgumentMatcher()
-      {
-
-         public void appendTo(StringBuffer buffer)
-         {
-            buffer.append(errorID);
-         }
-
-         public boolean matches(Object argument)
-         {
-            MessagingException ex = (MessagingException) argument;
-            
-            return ex.getCode() == errorID;
-         }
-         
-      });
-      
-      return null;
-   }
+   // Inner classes -------------------------------------------------
    
    public static class DirectExecutorService extends AbstractExecutorService
    {
