@@ -29,8 +29,6 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.*;
 import org.jboss.messaging.core.remoting.impl.RemotingServiceImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
-import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 import java.util.ArrayList;
@@ -302,55 +300,7 @@ public class RemotingServiceImplTest extends UnitTestCase
       EasyMock.verify(interceptor, interceptor2, interceptor3);
    }
 
-   public void testPingerAddedAndCalled()
-   {
-      ConfigurationImpl config = new ConfigurationImpl();
-      config.setTransport(TransportType.INVM);
-      config.getConnectionParams().setPingInterval(100);
-      RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
-      DummySession dummySession = new DummySession(remotingService.getDispatcher());
-      remotingService.registerPinger(dummySession);
-      try
-      {
-         Thread.sleep(1100);
-      }
-      catch (InterruptedException e)
-      {
-         e.printStackTrace();
-      }
-      assertTrue(remotingService.isSession(1l));
-      remotingService.unregisterPinger(1l);
-      assertTrue(dummySession.count > 10);
-   }
 
-   public void testPingerAddedAndRemoved()
-   {
-      ConfigurationImpl config = new ConfigurationImpl();
-      config.setTransport(TransportType.INVM);
-      config.getConnectionParams().setPingInterval(100);
-      RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
-      DummySession dummySession = new DummySession(remotingService.getDispatcher());
-      remotingService.registerPinger(dummySession);
-      try
-      {
-         Thread.sleep(1100);
-      }
-      catch (InterruptedException e)
-      {
-         e.printStackTrace();
-      }
-      remotingService.unregisterPinger(1l);
-      int count = dummySession.count;
-      try
-      {
-         Thread.sleep(config.getConnectionParams().getPingInterval() + 2);
-      }
-      catch (InterruptedException e)
-      {
-         e.printStackTrace();
-      }
-      assertEquals(count, dummySession.count);
-   }
 
    public void testListenerAdded()
    {
@@ -436,35 +386,5 @@ public class RemotingServiceImplTest extends UnitTestCase
       EasyMock.verify(listener, listener2, listener3);
    }
 
-   class DummySession implements RemotingSession
-   {
-      PacketDispatcher dispatcher;
-      int count = 0;
 
-      public DummySession(PacketDispatcher dispatcher)
-      {
-         this.dispatcher = dispatcher;
-      }
-
-      public long getID()
-      {
-         return 1;
-      }
-
-      public void write(Packet packet) throws Exception
-      {
-         count++;
-         Ping ping = (Ping) packet;
-
-         Pong pong = new Pong(ping.getSessionID(), false);
-         pong.setTargetID(1);
-         dispatcher.dispatch(pong, null);
-
-      }
-
-      public boolean isConnected()
-      {
-         return true;
-      }
-   }
 }

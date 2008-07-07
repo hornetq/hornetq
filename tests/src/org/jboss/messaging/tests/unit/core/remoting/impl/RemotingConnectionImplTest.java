@@ -28,17 +28,7 @@ import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.ConnectorRegistry;
-import org.jboss.messaging.core.remoting.ConnectorRegistryFactory;
-import org.jboss.messaging.core.remoting.ConnectorRegistryLocator;
-import org.jboss.messaging.core.remoting.Interceptor;
-import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.PacketHandler;
-import org.jboss.messaging.core.remoting.PacketHandlerRegistrationListener;
-import org.jboss.messaging.core.remoting.PacketReturner;
-import org.jboss.messaging.core.remoting.RemotingConnector;
-import org.jboss.messaging.core.remoting.RemotingSession;
+import org.jboss.messaging.core.remoting.*;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -48,7 +38,7 @@ import org.jboss.messaging.util.MessagingBuffer;
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
-public class RemotingConnectionTest extends UnitTestCase
+public class RemotingConnectionImplTest extends UnitTestCase
 {
    protected void tearDown() throws Exception
    {
@@ -450,54 +440,6 @@ public class RemotingConnectionTest extends UnitTestCase
       assertNotNull(nioSession.getPacketDispatched());
    }
 
-   public void testConnectionSendBlockingWithTimeout() throws Throwable
-   {
-      final ConnectorRegistry connectorRegistry = EasyMock.createStrictMock(ConnectorRegistry.class);
-      RemotingConnector connector = EasyMock.createStrictMock(RemotingConnector.class);
-      ConnectorRegistryFactory.setRegisteryLocator(new ConnectorRegistryLocator()
-      {
-         public ConnectorRegistry locate()
-         {
-            return connectorRegistry;
-         }
-      });
-      Location location = EasyMock.createNiceMock(Location.class);
-      ConnectionParams connectionParams = new ConnectionParamsImpl();
-      connectionParams.setCallTimeout(1000);
-      DummyDispatcher dispatcher = new DummyDispatcher();
-      DummySession nioSession = new DummySession(dispatcher, 2000, null, false);
-      PacketHandler handler = null;
-
-      Packet packet = EasyMock.createStrictMock(Packet.class);
-
-      EasyMock.expect(connectorRegistry.getConnector(location, connectionParams)).andReturn(connector);
-      EasyMock.replay(connectorRegistry);
-      EasyMock.expect(connector.connect()).andReturn(nioSession);
-      EasyMock.expect(connector.getDispatcher()).andReturn(dispatcher);
-      EasyMock.expect(connector.getDispatcher()).andReturn(dispatcher);
-      EasyMock.expect(connector.getDispatcher()).andReturn(dispatcher);
-      EasyMock.replay(connector);
-      packet.setTargetID(1);
-      packet.setExecutorID(2);
-      packet.setResponseTargetID(0);
-      EasyMock.replay(packet);
-
-      RemotingConnectionImpl remotingConnection = new RemotingConnectionImpl(location, connectionParams);
-      remotingConnection.start();
-      try
-      {
-         remotingConnection.sendBlocking(1, 2, packet);
-         fail("should have timed out");
-      }
-      catch (IllegalStateException e)
-      {
-         //pass
-      }
-      EasyMock.verify(connector);
-      EasyMock.verify(connectorRegistry);
-      EasyMock.verify(packet);
-      assertNull(nioSession.getPacketDispatched());
-   }
 
    public void testConnectionSendBlockingErrorOnWrite() throws Throwable
    {
