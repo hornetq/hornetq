@@ -37,6 +37,7 @@ import org.jboss.messaging.tests.unit.core.journal.impl.JournalImplTestBase;
  * A RealJournalImplTest
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:Clebert.Suconic@jboss.com">Clebert Suconic</a>
  *
  */
 public abstract class JournalImplTestUnit extends JournalImplTestBase
@@ -52,11 +53,11 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    
    public void testAddUpdateDeleteManyLargeFileSize() throws Exception
    {
-      final int numberAdds = 10000;
+      final int numberAdds = 1000;
       
-      final int numberUpdates = 5000;
+      final int numberUpdates = 500;
       
-      final int numberDeletes = 3000;
+      final int numberDeletes = 300;
                   
       long[] adds = new long[numberAdds];
       
@@ -79,8 +80,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
          deletes[i] = i;
       }
       
-      // This would take a long time with sync=true, and still validates the file. 
-      setup(10, 10 * 1024 * 1024, false);
+      setup(10, 10 * 1024 * 1024, true);
       createJournal();
       startJournal();
       load();
@@ -96,11 +96,11 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    
    public void testAddUpdateDeleteManySmallFileSize() throws Exception
    {
-      final int numberAdds = 10000;
+      final int numberAdds = 1000;
       
-      final int numberUpdates = 5000;
+      final int numberUpdates = 500;
       
-      final int numberDeletes = 3000;
+      final int numberDeletes = 300;
                   
       long[] adds = new long[numberAdds];
       
@@ -123,7 +123,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
          deletes[i] = i;
       }
       
-      setup(10, 10 * 1024, false);
+      setup(10, 10 * 1024, true);
       createJournal();
       startJournal();
       load();
@@ -199,58 +199,6 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       }
    }
    
-   public void internaltestSpeedNonTransactional() throws Exception
-   {      
-      final long numMessages = 10000;
-      
-      int numFiles =  (int)(((numMessages * 1024 + 512) / (10 * 1024 * 1024)) * 1.3);
-      
-      if (numFiles<2) numFiles = 2;
-      
-      log.debug("num Files=" + numFiles);
-
-      Journal journal =
-         new JournalImpl(10 * 1024 * 1024,  numFiles, true, true, getFileFactory(),
-               5000, "jbm-data", "jbm", 5000, 120);
-      
-      journal.start();
-      
-      journal.load(new ArrayList<RecordInfo>(), null);
-            
-      log.debug("Adding data");
-      byte[] data = new byte[700];
-      
-      long start = System.currentTimeMillis();
-      
-      for (int i = 0; i < numMessages; i++)
-      {
-         journal.appendAddRecord(i, (byte)0, data);
-      }
-      
-      long end = System.currentTimeMillis();
-      
-      double rate = 1000 * (double)numMessages / (end - start);
-      
-      boolean failed = false;
-      
-      // If this fails it is probably because JournalImpl it is closing the files without waiting all the completes to arrive first
-      assertFalse(failed);
-      
-      
-      log.debug("Rate " + rate + " records/sec");
-
-      journal.stop();
-      
-      journal =
-         new JournalImpl(10 * 1024 * 1024,  numFiles, true, true, getFileFactory(),
-               5000, "jbm-data", "jbm", 5000, 120);
-      
-      journal.start();
-      journal.load(new ArrayList<RecordInfo>(), null);
-      journal.stop();
-      
-   }
-   
    public void testSpeedTransactional() throws Exception
    {
       Journal journal =
@@ -303,6 +251,52 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
          journal.stop();
       }
 
+   }
+   
+   private void internaltestSpeedNonTransactional() throws Exception
+   {      
+      final long numMessages = 10000;
+      
+      int numFiles =  (int)(((numMessages * 1024 + 512) / (10 * 1024 * 1024)) * 1.3);
+      
+      if (numFiles<2) numFiles = 2;
+      
+      log.debug("num Files=" + numFiles);
+
+      Journal journal =
+         new JournalImpl(10 * 1024 * 1024,  numFiles, true, true, getFileFactory(),
+               5000, "jbm-data", "jbm", 5000, 120);
+      
+      journal.start();
+      
+      journal.load(new ArrayList<RecordInfo>(), null);
+            
+      log.debug("Adding data");
+      byte[] data = new byte[700];
+      
+      long start = System.currentTimeMillis();
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         journal.appendAddRecord(i, (byte)0, data);
+      }
+      
+      long end = System.currentTimeMillis();
+      
+      double rate = 1000 * (double)numMessages / (end - start);
+      
+      log.debug("Rate " + rate + " records/sec");
+
+      journal.stop();
+      
+      journal =
+         new JournalImpl(10 * 1024 * 1024,  numFiles, true, true, getFileFactory(),
+               5000, "jbm-data", "jbm", 5000, 120);
+      
+      journal.start();
+      journal.load(new ArrayList<RecordInfo>(), null);
+      journal.stop();
+      
    }
    
    

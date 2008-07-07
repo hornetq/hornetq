@@ -36,9 +36,9 @@ import org.jboss.messaging.core.logging.Logger;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public class RealJournalImplTest extends JournalImplTestUnit
+public class RealJournalImplNIOTest extends JournalImplTestUnit
 {
-	private static final Logger log = Logger.getLogger(RealJournalImplTest.class);
+	private static final Logger log = Logger.getLogger(RealJournalImplNIOTest.class);
 	
 	protected String journalDir = System.getProperty("user.home") + "/journal-test";
 		
