@@ -636,6 +636,13 @@
          <param name="tests.param" value="**/org/jboss/messaging/tests/integration/**/*${test-mask}.class"/>
       </antcall>
    </target>
+   
+   <target name="concurrent-tests" depends="jar, compile-unit-tests">
+	   <antcall inheritall="true" inheritrefs="true" target="tests">
+	      <param name="tests.param" value="**/org/jboss/messaging/tests/concurrent/**/*${test-mask}.class"/>
+	   </antcall>
+   </target>
+
 
    <target name="unit-tests" depends="jar, compile-unit-tests">
       <antcall inheritall="true" inheritrefs="true" target="tests">
@@ -761,7 +768,7 @@
       <antcall target="compile-reports"/>
    </target>
 
-   <target name="all-tests" depends="unit-tests, integration-tests, timing-tests, performance-tests, jms-tests"/>
+   <target name="all-tests" depends="unit-tests, integration-tests, timing-tests, performance-tests, concurrent-tests, jms-tests"/>
 
    <target name="compile-reports">
       <mkdir dir="${test.stylesheets.dir}"/>

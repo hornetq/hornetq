@@ -117,12 +117,16 @@
       <ant antfile="build-messaging.xml" target="unit-tests"/>
    </target>
 
-    <target name="timing-tests" depends="createthirdparty">
+   <target name="timing-tests" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="timing-tests"/>
    </target>
 
-    <target name="integration-tests" depends="createthirdparty">
+   <target name="integration-tests" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="integration-tests"/>
+   </target>
+
+    <target name="concurrent-tests" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="concurrent-tests"/>
    </target>
 
     <target name="performance-tests" depends="createthirdparty">
