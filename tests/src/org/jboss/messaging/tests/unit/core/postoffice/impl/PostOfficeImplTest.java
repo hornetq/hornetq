@@ -119,11 +119,11 @@ public class PostOfficeImplTest extends UnitTestCase
    {
       ArrayList<Binding> bindingArrayList = new ArrayList<Binding>();
 
-      Binding[] bindings = new Binding[1000];
-      Queue[] queues = new Queue[1000];
-      SimpleString[] addresses = new SimpleString[1000];
-      SimpleString[] queueNames = new SimpleString[1000];
-      for (int i = 0; i < 1000; i++)
+      Binding[] bindings = new Binding[100];
+      Queue[] queues = new Queue[100];
+      SimpleString[] addresses = new SimpleString[100];
+      SimpleString[] queueNames = new SimpleString[100];
+      for (int i = 0; i < 100; i++)
       {
          bindings[i] = EasyMock.createStrictMock(Binding.class);
          bindingArrayList.add(bindings[i]);
@@ -155,7 +155,7 @@ public class PostOfficeImplTest extends UnitTestCase
       EasyMock.verify(pm, qf);
 
       assertTrue(postOffice.isStarted());
-      for (int i = 0; i < 1000; i++)
+      for (int i = 0; i < 100; i++)
       {
          assertEquals(postOffice.getBinding(queueNames[i]), bindings[i]);
          assertEquals(postOffice.getBindingsForAddress(addresses[i]).size(), 1);
@@ -292,11 +292,11 @@ public class PostOfficeImplTest extends UnitTestCase
       PostOffice postOffice = new PostOfficeImpl(pm, qf, true);
       ArrayList<Binding> bindingArrayList = new ArrayList<Binding>();
       List<SimpleString> dests = new ArrayList<SimpleString>();
-      Binding[] bindings = new Binding[1000];
-      Queue[] queues = new Queue[1000];
-      SimpleString[] addresses = new SimpleString[1000];
-      SimpleString[] queueNames = new SimpleString[1000];
-      for (int i = 0; i < 1000; i++)
+      Binding[] bindings = new Binding[100];
+      Queue[] queues = new Queue[100];
+      SimpleString[] addresses = new SimpleString[100];
+      SimpleString[] queueNames = new SimpleString[100];
+      for (int i = 0; i < 100; i++)
       {
          bindings[i] = EasyMock.createStrictMock(Binding.class);
          bindingArrayList.add(bindings[i]);
@@ -315,7 +315,7 @@ public class PostOfficeImplTest extends UnitTestCase
 
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       EasyMock.expectLastCall().andAnswer(new LoadBindingsIAnswer(bindingArrayList, dests));
-      for (int i = 0; i < 1000; i++)
+      for (int i = 0; i < 100; i++)
       {
          EasyMock.expect(pm.addDestination(addresses[i])).andReturn(true);
       }
@@ -328,7 +328,7 @@ public class PostOfficeImplTest extends UnitTestCase
       EasyMock.verify(pm, qf);
 
       assertTrue(postOffice.isStarted());
-      for (int i = 0; i < 1000; i++)
+      for (int i = 0; i < 100; i++)
       {
          assertEquals(postOffice.getBinding(queueNames[i]), bindings[i]);
          assertEquals(postOffice.getBindingsForAddress(addresses[i]).size(), 1);
@@ -344,11 +344,11 @@ public class PostOfficeImplTest extends UnitTestCase
       PostOffice postOffice = new PostOfficeImpl(pm, qf, true);
       ArrayList<Binding> bindingArrayList = new ArrayList<Binding>();
       List<SimpleString> dests = new ArrayList<SimpleString>();
-      Binding[] bindings = new Binding[1000];
-      Queue[] queues = new Queue[1000];
-      SimpleString[] addresses = new SimpleString[1000];
-      SimpleString[] queueNames = new SimpleString[1000];
-      for (int i = 0; i < 1000; i++)
+      Binding[] bindings = new Binding[100];
+      Queue[] queues = new Queue[100];
+      SimpleString[] addresses = new SimpleString[100];
+      SimpleString[] queueNames = new SimpleString[100];
+      for (int i = 0; i < 100; i++)
       {
          bindings[i] = EasyMock.createStrictMock(Binding.class);
          bindingArrayList.add(bindings[i]);
@@ -367,7 +367,7 @@ public class PostOfficeImplTest extends UnitTestCase
 
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       EasyMock.expectLastCall().andAnswer(new LoadBindingsIAnswer(bindingArrayList, dests));
-      for (int i = 0; i < 1000; i++)
+      for (int i = 0; i < 100; i++)
       {
          EasyMock.expect(pm.addDestination(addresses[i])).andReturn(true);
       }
@@ -380,7 +380,7 @@ public class PostOfficeImplTest extends UnitTestCase
       EasyMock.verify(pm, qf);
 
       assertFalse(postOffice.isStarted());
-      for (int i = 0; i < 1000; i++)
+      for (int i = 0; i < 100; i++)
       {
          assertNull(postOffice.getBinding(queueNames[i]));
          assertEquals(postOffice.getBindingsForAddress(addresses[i]).size(), 0);
@@ -396,11 +396,11 @@ public class PostOfficeImplTest extends UnitTestCase
       PostOffice postOffice = new PostOfficeImpl(pm, qf, true);
       ArrayList<Binding> bindingArrayList = new ArrayList<Binding>();
       List<SimpleString> dests = new ArrayList<SimpleString>();
-      Binding[] bindings = new Binding[1000];
-      Queue[] queues = new Queue[1000];
-      SimpleString[] addresses = new SimpleString[1000];
-      SimpleString[] queueNames = new SimpleString[1000];
-      for (int i = 0; i < 1000; i++)
+      Binding[] bindings = new Binding[100];
+      Queue[] queues = new Queue[100];
+      SimpleString[] addresses = new SimpleString[100];
+      SimpleString[] queueNames = new SimpleString[100];
+      for (int i = 0; i < 100; i++)
       {
          bindings[i] = EasyMock.createStrictMock(Binding.class);
          bindingArrayList.add(bindings[i]);
@@ -419,7 +419,7 @@ public class PostOfficeImplTest extends UnitTestCase
 
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       EasyMock.expectLastCall().andAnswer(new LoadBindingsIAnswer(bindingArrayList, dests));
-      for (int i = 0; i < 1000; i++)
+      for (int i = 0; i < 100; i++)
       {
          EasyMock.expect(pm.addDestination(addresses[i])).andReturn(true);
       }
@@ -432,7 +432,7 @@ public class PostOfficeImplTest extends UnitTestCase
       EasyMock.verify(pm, qf);
 
       assertTrue(postOffice.isStarted());
-      for (int i = 0; i < 1000; i++)
+      for (int i = 0; i < 100; i++)
       {
          FlowController flowController = postOffice.getFlowController(addresses[i]);
          assertNotNull(flowController);
@@ -447,11 +447,11 @@ public class PostOfficeImplTest extends UnitTestCase
       PostOffice postOffice = new PostOfficeImpl(pm, qf, true);
       ArrayList<Binding> bindingArrayList = new ArrayList<Binding>();
       List<SimpleString> dests = new ArrayList<SimpleString>();
-      Binding[] bindings = new Binding[1000];
-      Queue[] queues = new Queue[1000];
-      SimpleString[] addresses = new SimpleString[1000];
-      SimpleString[] queueNames = new SimpleString[1000];
-      for (int i = 0; i < 1000; i++)
+      Binding[] bindings = new Binding[100];
+      Queue[] queues = new Queue[100];
+      SimpleString[] addresses = new SimpleString[100];
+      SimpleString[] queueNames = new SimpleString[100];
+      for (int i = 0; i < 100; i++)
       {
          bindings[i] = EasyMock.createStrictMock(Binding.class);
          bindingArrayList.add(bindings[i]);
@@ -470,7 +470,7 @@ public class PostOfficeImplTest extends UnitTestCase
 
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       EasyMock.expectLastCall().andAnswer(new LoadBindingsIAnswer(bindingArrayList, dests));
-      for (int i = 0; i < 1000; i++)
+      for (int i = 0; i < 100; i++)
       {
          EasyMock.expect(pm.addDestination(addresses[i])).andReturn(true);
       }

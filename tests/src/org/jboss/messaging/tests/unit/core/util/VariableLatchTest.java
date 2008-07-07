@@ -22,12 +22,11 @@
 
 package org.jboss.messaging.tests.unit.core.util;
 
-import java.util.concurrent.CountDownLatch;
-
 import junit.framework.TestCase;
-
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.util.VariableLatch;
+
+import java.util.concurrent.CountDownLatch;
 
 /**
  * 
@@ -56,26 +55,6 @@ public class VariableLatchTest extends TestCase
       }
       
       latch.waitCompletion();
-   }
-   
-   public void testTimeout() throws Exception
-   {
-      VariableLatch latch = new VariableLatch();
-      
-      latch.up();
-      
-      long start = System.currentTimeMillis();
-      try
-      {
-         latch.waitCompletion(1000);
-         fail("It was suppsoed to throw an exception");
-      } catch (Exception ignored)
-      {
-      }
-      long end = System.currentTimeMillis();
-      
-      assertTrue("Timeout didn't work correctly", end - start >= 1000
-            && end - start < 2000);
    }
    
    /**
