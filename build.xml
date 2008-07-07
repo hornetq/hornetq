@@ -148,8 +148,8 @@
       <ant antfile="build-messaging.xml" target="topicExample"/>
    </target>
 
-   <target name="DurSubExample" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="DurSubExample"/>
+   <target name="durSubExample" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="durSubExample"/>
    </target>
 
    <target name="perfListener" depends="createthirdparty">
