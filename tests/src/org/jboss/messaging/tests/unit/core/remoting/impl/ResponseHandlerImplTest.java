@@ -80,25 +80,7 @@ public class ResponseHandlerImplTest extends TestCase
       assertNotNull(receivedPacket.get());
    }
 
-   public void testReceiveResponseTooLate() throws Exception
-   {
-      final ResponseHandler handler = new ResponseHandlerImpl(randomLong());
-      final AtomicReference<Packet> receivedPacket = new AtomicReference<Packet>();
 
-      Executors.newSingleThreadExecutor().execute(new Runnable() {
-
-         public void run()
-         {
-            Packet response = handler.waitForResponse(TIMEOUT);
-            receivedPacket.set(response);
-         }         
-      });
-      // pause for twice the timeout before handling the packet
-      Thread.sleep(TIMEOUT * 2);
-      handler.handle(new Ping(handler.getID()), null);
-
-      assertNull(receivedPacket.get());
-   }
 
    public void testSetFailed() throws Exception
    {

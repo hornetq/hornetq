@@ -18,17 +18,17 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
-package org.jboss.messaging.tests.unit.core.journal.impl.timing;
-
-import java.util.ArrayList;
+package org.jboss.messaging.tests.timing.core.journal.impl;
 
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.tests.unit.core.journal.impl.JournalImplTestBase;
+
+import java.util.ArrayList;
 
 /**
  * 

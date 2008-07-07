@@ -18,50 +18,43 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
-package org.jboss.messaging.tests.unit.core.journal.impl.timing;
-
-import java.io.File;
+package org.jboss.messaging.tests.timing.core.journal.impl;
 
 import org.jboss.messaging.core.journal.SequentialFileFactory;
-import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
+import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
+
+import java.io.File;
 
 /**
  * 
  * A RealJournalImplTest
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public class RealJournalImplAIOTest extends JournalImplTestUnit
+public class RealJournalImplTest extends JournalImplTestUnit
 {
-   private static final Logger log = Logger.getLogger(RealJournalImplAIOTest.class);
-   
-   // Need to run the test over a local disk (no NFS)
-   protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/journal-test";
-   
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-      
-      deleteDirectory(new File(journalDir));
-   }
-
-      
-   protected SequentialFileFactory getFileFactory() throws Exception
-   {
-      File file = new File(journalDir);
-      
-      log.info("deleting directory " + journalDir);
-      
-      deleteDirectory(file);
-      
-      file.mkdir();     
-      
-      return new AIOSequentialFileFactory(journalDir);
-   }
-   
+	private static final Logger log = Logger.getLogger(RealJournalImplTest.class);
+	
+	protected String journalDir = System.getProperty("user.home") + "/journal-test";
+		
+	protected SequentialFileFactory getFileFactory() throws Exception
+	{
+		File file = new File(journalDir);
+		
+		log.info("deleting directory " + journalDir);
+		
+		deleteDirectory(file);
+		
+		file.mkdir();		
+		
+		return new NIOSequentialFileFactory(journalDir);
+	}
+	
+	
 }
 
