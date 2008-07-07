@@ -138,6 +138,10 @@
       <ant antfile="build-messaging.xml" target="all-tests"/>
    </target>
 
+   <target name="tests" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="tests"/>
+   </target>
+
    <target name="compile-reports" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="compile-reports"/>
    </target>
