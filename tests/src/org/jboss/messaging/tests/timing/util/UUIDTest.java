@@ -18,63 +18,42 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
-package org.jboss.messaging.tests.unit.util;
 
-import java.net.InetAddress;
-import java.util.HashSet;
-import java.util.Set;
-
-import junit.framework.TestCase;
-
-import org.jboss.messaging.util.UUIDGenerator;
-
+package org.jboss.messaging.tests.timing.util;
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- * @version <tt>$Revision$</tt>
+ * 
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public class UUIDTest extends TestCase
+public class UUIDTest extends org.jboss.messaging.tests.unit.util.UUIDTest
 {
+
    // Constants -----------------------------------------------------
-
+   
    // Attributes ----------------------------------------------------
-
+   
    // Static --------------------------------------------------------
-
+   
    // Constructors --------------------------------------------------
-
+   
    // Public --------------------------------------------------------
-
-   public void testManyUUIDs() throws Exception
-   {
-      final int MANY_TIMES = getTimes();
-      Set<String> uuidsSet = new HashSet<String>();
-      
-      UUIDGenerator gen = UUIDGenerator.getInstance();
-      InetAddress addr = InetAddress.getLocalHost();
-      
-      for (int i = 0; i < MANY_TIMES; i++)
-      {
-         uuidsSet.add(gen.generateTimeBasedUUID(addr).toString());
-      }
-      
-      // we put them in a set to check duplicates
-      assertEquals(MANY_TIMES, uuidsSet.size());
-   }
    
    // Package protected ---------------------------------------------
-
+   
    // Protected -----------------------------------------------------
 
+   @Override
    protected int getTimes()
    {
-      return 1000;
+      return 1000000;
    }
    
+  
+   
    // Private -------------------------------------------------------
-
+   
    // Inner classes -------------------------------------------------
+   
 }
