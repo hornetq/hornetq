@@ -284,7 +284,8 @@ public class MinaConnector implements RemotingConnector, CleanUpNotifier
          try
          {
             sslFilter.stopSsl(session).awaitUninterruptibly();
-            Thread.sleep(500);
+            
+            //FIXME - don't add thread.sleeps - fix the underlying issue!
          }
          catch (Exception e)
          {
