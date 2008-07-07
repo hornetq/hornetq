@@ -41,7 +41,7 @@ public class UUIDTest extends TestCase
 {
    // Constants -----------------------------------------------------
 
-   private static final int MANY_TIMES = 100000;
+   private static final int MANY_TIMES = 1000;
    
    // Attributes ----------------------------------------------------
 
