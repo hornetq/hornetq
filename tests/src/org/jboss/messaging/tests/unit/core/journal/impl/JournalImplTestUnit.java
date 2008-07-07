@@ -2108,7 +2108,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		startJournal();
 		load();
 		
-		for (int i = 0; i < 1000; i++)
+		for (int i = 0; i < 100; i++)
 		{
 			byte[] record = generateRecord(10 + (int)(1500 * Math.random()));
 			
@@ -2117,7 +2117,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 			records.add(new RecordInfo(i, (byte)0, record, false));
 		}
 		
-		for (int i = 0; i < 1000; i++)
+		for (int i = 0; i < 100; i++)
 		{
 			byte[] record = generateRecord(10 + (int)(1024 * Math.random()));
 			
@@ -2126,7 +2126,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 			records.add(new RecordInfo(i, (byte)0, record, true));
 		}
 		
-		for (int i = 0; i < 1000; i++)
+		for (int i = 0; i < 100; i++)
 		{
 			journal.appendDeleteRecord(i);
 			
