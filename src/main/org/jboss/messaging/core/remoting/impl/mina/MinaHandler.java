@@ -190,7 +190,7 @@ public class MinaHandler extends IoHandlerAdapter implements
 
    // Private -------------------------------------------------------
 
-   private void messageReceivedInternal(final IoSession session, Packet packet)
+   private void messageReceivedInternal(final IoSession session, final Packet packet)
            throws Exception
    {
       PacketReturner returner;

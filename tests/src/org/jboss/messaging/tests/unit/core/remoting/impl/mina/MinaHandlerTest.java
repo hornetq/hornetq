@@ -27,10 +27,15 @@ import java.util.concurrent.ExecutorService;
 
 import org.apache.mina.common.IoSession;
 import org.easymock.EasyMock;
+import org.easymock.IAnswer;
+import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.CleanUpNotifier;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.mina.MinaHandler;
+import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
@@ -117,10 +122,73 @@ public class MinaHandlerTest extends UnitTestCase
       
    }
    
-   public void testMessageReceived() throws Exception
+   public void testMessageReceivedWithExecutor() throws Exception
    {
-      
+      internalTestMessageReceived(true);
    }
+   
+   public void testMessageReceivedWithoutExecutor() throws Exception
+   {
+      internalTestMessageReceived(false);
+   }
+   
+   private void internalTestMessageReceived(boolean useExecutor) throws Exception
+   {
+      MinaHandler handler = newMinaHandler(useExecutor);
+      
+      IoSession session = EasyMock.createNiceMock(IoSession.class);
+      
+      ClientMessage msg = EasyMock.createNiceMock(ClientMessage.class);
+      
+      ReceiveMessage rcvMessage = new ReceiveMessage(msg);
+      
+      setupExecutorService();
+
+      dispatcher.dispatch(EasyMock.isA(ReceiveMessage.class), (PacketReturner)EasyMock.anyObject());
+      
+      EasyMock.replay(dispatcher, failureNotifier, executorService, session);
+
+      handler.messageReceived(session, rcvMessage);
+      
+      EasyMock.verify(dispatcher, failureNotifier, executorService, session);
+      
+      EasyMock.reset(dispatcher, failureNotifier, executorService, session);
+      
+      setupExecutorService();
+      
+      
+      rcvMessage.setResponseTargetID(33);
+      
+      assertEquals(33, rcvMessage.getResponseTargetID());
+      
+      dispatcher.callFilters(EasyMock.isA(ReceiveMessage.class));
+
+      dispatcher.dispatch(EasyMock.isA(ReceiveMessage.class), (PacketReturner)EasyMock.anyObject());
+      
+      EasyMock.expectLastCall().andAnswer(new IAnswer<Object>(){
+
+         public Object answer() throws Throwable
+         {
+            Packet response = (Packet) EasyMock.getCurrentArguments()[0];
+            PacketReturner returner = (PacketReturner)EasyMock.getCurrentArguments()[1];
+            if (returner != null)
+            {
+               returner.send(response);
+            }
+            return null;
+         }});
+      
+      EasyMock.expect(session.write(EasyMock.isA(ReceiveMessage.class))).andStubReturn(null);
+      
+      EasyMock.replay(dispatcher, failureNotifier, executorService, session);
+
+      handler.messageReceived(session, rcvMessage);
+      
+      EasyMock.verify(dispatcher, failureNotifier, executorService, session);
+      
+   
+   }
+
 
 
    // Package protected ---------------------------------------------
@@ -129,7 +197,7 @@ public class MinaHandlerTest extends UnitTestCase
    
    // Private -------------------------------------------------------
    
-   private MinaHandler newMinaHandler(boolean closeSessionOnExceptionCaught)
+   private MinaHandler newMinaHandler(boolean useExecutor)
    {
       dispatcher = EasyMock.createMock(PacketDispatcher.class);
          
@@ -144,13 +212,30 @@ public class MinaHandlerTest extends UnitTestCase
       
       EasyMock.replay(dispatcher, failureNotifier, executorService);
       
-      MinaHandler handler = new MinaHandler(dispatcher, executorService, failureNotifier, closeSessionOnExceptionCaught, true);
+      MinaHandler handler = new MinaHandler(dispatcher, executorService, failureNotifier, true, useExecutor);
       
       EasyMock.verify(dispatcher, failureNotifier, executorService);
       
       EasyMock.reset(dispatcher, failureNotifier, executorService);
       return handler;
    }
+
+   private void setupExecutorService()
+   {
+      executorService.execute(EasyMock.isA(Runnable.class));
+      
+      EasyMock.expectLastCall().andAnswer(new IAnswer<Object>() {
+
+         public Object answer() throws Throwable
+         {
+            Runnable run = (Runnable)EasyMock.getCurrentArguments()[0];
+            run.run();
+            return null;
+         }});
+      
+      EasyMock.expectLastCall().anyTimes();
+   }
+
    
    // Inner classes -------------------------------------------------
    

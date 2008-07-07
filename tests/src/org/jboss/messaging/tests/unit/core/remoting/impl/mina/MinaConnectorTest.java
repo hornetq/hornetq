@@ -514,7 +514,7 @@ public class MinaConnectorTest extends UnitTestCase
       return null;
    }
       
-   private void connect(MinaConnector minaConnector) throws IOException
+   private void connect(final MinaConnector minaConnector) throws IOException
    {
       connect(minaConnector, false);
    }
@@ -627,7 +627,7 @@ public class MinaConnectorTest extends UnitTestCase
 
 
    
-   private MinaConnector construct(boolean ssl) throws Exception
+   private MinaConnector construct(final boolean ssl) throws Exception
    {
       location = new LocationImpl(TransportType.TCP, TestSupport.HOST, TestSupport.PORT);
       
