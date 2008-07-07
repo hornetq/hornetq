@@ -22,18 +22,13 @@
 
 package org.jboss.messaging.core.settings.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.Mergeable;
-import org.jboss.messaging.core.settings.HierarchicalRepositoryChangeListener;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.HierarchicalRepositoryChangeListener;
+import org.jboss.messaging.core.settings.Mergeable;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -181,6 +176,13 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
    {
       cache.clear();
       defaultmatch = defaultValue;
+   }
+
+   public void clear()
+   {
+      cache.clear();
+      listeners.clear();
+      matches.clear();
    }
 
    private void onChange()

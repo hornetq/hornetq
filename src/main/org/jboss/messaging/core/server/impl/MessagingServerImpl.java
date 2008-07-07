@@ -84,7 +84,7 @@ public class MessagingServerImpl implements MessagingServer
    private SecurityStore securityStore;
    private ConnectionManager connectionManager;
    private RemotingSessionListener sessionListener; 
-   private HierarchicalRepository<QueueSettings> queueSettingsRepository = new HierarchicalObjectRepository<QueueSettings>();;
+   private HierarchicalRepository<QueueSettings> queueSettingsRepository = new HierarchicalObjectRepository<QueueSettings>();
    private ScheduledExecutorService scheduledExecutor;   
    private QueueFactory queueFactory;
    private PostOffice postOffice;
@@ -222,7 +222,7 @@ public class MessagingServerImpl implements MessagingServer
       executorFactory = null;
       securityRepository = null;
       securityStore = null;
-      queueSettingsRepository = null;
+      queueSettingsRepository.clear();
       scheduledExecutor.shutdown();
       queueFactory = null;
       resourceManager = null;

@@ -67,4 +67,9 @@ public interface HierarchicalRepository<T>
     * @param listener
     */
    void unRegisterListener(HierarchicalRepositoryChangeListener listener);
+
+   /**
+    * clear the repository
+    */
+   void clear();
 }
