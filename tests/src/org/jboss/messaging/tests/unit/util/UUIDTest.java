@@ -20,17 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */ 
 
-package org.jboss.messaging.tests.unit.core.util;
+package org.jboss.messaging.tests.unit.util;
+
+import junit.framework.TestCase;
+import org.jboss.messaging.util.UUIDGenerator;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import junit.framework.TestCase;
-
-import org.jboss.messaging.util.UUIDGenerator;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

@@ -20,16 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */ 
 
-package org.jboss.messaging.tests.unit.core.util;
-
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-
-import java.util.Iterator;
+package org.jboss.messaging.tests.unit.util;
 
 import junit.framework.TestCase;
-
+import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.ConcurrentSet;
+
+import java.util.Iterator;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
