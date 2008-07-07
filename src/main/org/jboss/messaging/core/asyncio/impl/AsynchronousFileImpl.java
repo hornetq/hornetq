@@ -247,7 +247,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	}
 	
 	@SuppressWarnings("unused") // Called by the JNI layer.. just ignore the warning
-	private void callbackError(final AIOCallback callback, int errorCode, String errorMessage)
+	private void callbackError(final AIOCallback callback, final int errorCode, final String errorMessage)
 	{
       writeSemaphore.release();
       writeLatch.down();

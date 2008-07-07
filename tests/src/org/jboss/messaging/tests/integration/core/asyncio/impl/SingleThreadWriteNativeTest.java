@@ -504,7 +504,6 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
       try
       {
          log.debug("++testDirectDataNoPage");
-         System.out.flush();
          CountDownLatch latchDone = new CountDownLatch(numberOfLines);
          
          ByteBuffer block = controller.newBuffer(size);
@@ -534,8 +533,6 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
             }
             
          }
-         
-         System.out.print("waiting...");
          
          latchDone.await();
          
@@ -574,7 +571,6 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
       try
       {
          log.debug("++testDirectDataNoPage");
-         System.out.flush();
          final int NUMBER_LINES = 3000;
          final int SIZE = 1024;
          

@@ -82,17 +82,7 @@ public abstract class AIOTestBase extends UnitTestCase
    
    protected void preAlloc(AsynchronousFileImpl controller, long size)
    {
-      System.out.println("Pre allocating");
-      System.out.flush();
-      long startPreAllocate = System.currentTimeMillis();
       controller.fill(0l, 1, size, (byte) 0);
-      long endPreAllocate = System.currentTimeMillis() - startPreAllocate;
-      if (endPreAllocate != 0)
-      {
-         System.out.println("PreAllocated the file (size = " + size
-               + " bytes) in " + endPreAllocate + " Milliseconds, What means "
-               + (size / endPreAllocate) + " bytes per millisecond");
-      }
    }
 
    protected static class CountDownCallback implements AIOCallback
@@ -126,8 +116,6 @@ public abstract class AIOTestBase extends UnitTestCase
                // even thought an error happened, we need to inform the latch, or the test won't finish
                latch.countDown();
            }
-           System.out.println("Received an Error - " + errorCode + " message=" + errorMessage);
-          
        }
    }
 
