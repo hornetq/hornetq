@@ -40,7 +40,8 @@ public class VariableLatchTest extends UnitTestCase
       {
          latch.waitCompletion(1000);
          fail("It was suppsoed to throw an exception");
-      } catch (Exception ignored)
+      } 
+      catch (Exception ignored)
       {
       }
       long end = System.currentTimeMillis();
