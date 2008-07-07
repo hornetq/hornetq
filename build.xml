@@ -35,7 +35,7 @@
 <!-- =========================================================================================== -->
 
 
-<project default="jar" name="JBoss Messaging">
+<project default="unit-tests" name="JBoss Messaging">
 
    <!--
         Setting "external.project" to true makes jbossbuild use the current directory, and not its
@@ -115,35 +115,43 @@
 
    <target name="unit-tests" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="unit-tests"/>
+      <ant antfile="build-messaging.xml" target="compile-reports"/>
    </target>
 
    <target name="timing-tests" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="timing-tests"/>
+      <ant antfile="build-messaging.xml" target="compile-reports"/>
    </target>
 
    <target name="integration-tests" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="integration-tests"/>
+      <ant antfile="build-messaging.xml" target="compile-reports"/>
    </target>
 
     <target name="concurrent-tests" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="concurrent-tests"/>
+      <ant antfile="build-messaging.xml" target="compile-reports"/>
    </target>
 
     <target name="performance-tests" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="performance-tests"/>
+      <ant antfile="build-messaging.xml" target="compile-reports"/>
    </target>
    
 
    <target name="jms-tests" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="jms-tests"/>
+      <ant antfile="build-messaging.xml" target="compile-reports"/>
    </target>
 
    <target name="all-tests" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="all-tests"/>
+      <ant antfile="build-messaging.xml" target="compile-reports"/>
    </target>
 
    <target name="tests" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="tests"/>
+      <ant antfile="build-messaging.xml" target="compile-reports"/>
    </target>
 
    <target name="compile-reports" depends="createthirdparty">

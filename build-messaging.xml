@@ -687,7 +687,6 @@
             </fileset>
          </batchtest>
       </junit>
-      <antcall target="compile-reports"/>
    </target>
 
    <target name="jms-tests" depends="jar, compile-jms-tests">
@@ -733,7 +732,6 @@
             </fileset>
          </batchtest>
       </junit>
-      <antcall target="compile-reports"/>
    </target>
 
    <target name="stress-tests" depends="jar, compile-unit-tests">
@@ -765,7 +763,6 @@
             </fileset>
          </batchtest>
       </junit>
-      <antcall target="compile-reports"/>
    </target>
 
    <target name="all-tests" depends="unit-tests, integration-tests, timing-tests, performance-tests, concurrent-tests, jms-tests"/>
