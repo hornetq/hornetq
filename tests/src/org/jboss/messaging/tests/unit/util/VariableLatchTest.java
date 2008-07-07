@@ -41,13 +41,13 @@ public class VariableLatchTest extends TestCase
    {
       VariableLatch latch = new VariableLatch();
       
-      for (int i = 1; i <= 10000; i++)
+      for (int i = 1; i <= 100; i++)
       {
          latch.up();
          assertEquals(i, latch.getCount());
       }
       
-      for (int i = 10000; i > 0; i--)
+      for (int i = 100; i > 0; i--)
       {
          assertEquals(i, latch.getCount());
          latch.down();
@@ -75,7 +75,7 @@ public class VariableLatchTest extends TestCase
       latch.up(); // We hold at least one, so ThreadWaits won't go away
       
       final int numberOfThreads = 100;
-      final int numberOfAdds = 1000;
+      final int numberOfAdds = 100;
       
       class ThreadWait extends Thread
       {
@@ -86,7 +86,8 @@ public class VariableLatchTest extends TestCase
             try
             {
                latch.waitCompletion(5000);
-            } catch (Exception e)
+            } 
+            catch (Exception e)
             {
                log.error(e);
             }
@@ -117,7 +118,8 @@ public class VariableLatchTest extends TestCase
                {
                   latch.up();
                }
-            } catch (Exception e)
+            } 
+            catch (Exception e)
             {
                log.error(e.getMessage(), e);
             }
@@ -176,7 +178,8 @@ public class VariableLatchTest extends TestCase
                {
                   latch.down();
                }
-            } catch (Exception e)
+            } 
+            catch (Exception e)
             {
                log.error(e.getMessage(), e);
             }
@@ -242,7 +245,8 @@ public class VariableLatchTest extends TestCase
             try
             {
                latch.waitCompletion(1000);
-            } catch (Exception e)
+            } 
+            catch (Exception e)
             {
                log.error(e);
                this.e = e;
