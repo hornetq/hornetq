@@ -103,6 +103,7 @@ public class BasicSecurityDeployerTest  extends TestCase
       deployer.setJbmSecurityManager(securityManager);
       EasyMock.replay(securityManager);
       deploy(simpleSecurityXml);
+      EasyMock.verify(securityManager);
    }
 
    public void testSingleUserDeploySecurity() throws Exception
@@ -113,6 +114,7 @@ public class BasicSecurityDeployerTest  extends TestCase
       securityManager.addRole("guest", "guest");
       EasyMock.replay(securityManager);
       deploy(singleUserXml);
+      EasyMock.verify(securityManager);
    }
 
     public void testMultipleUserDeploySecurity() throws Exception
@@ -129,6 +131,7 @@ public class BasicSecurityDeployerTest  extends TestCase
 
       EasyMock.replay(securityManager);
       deploy(multipleUserXml);
+      EasyMock.verify(securityManager);
    }
 
    public void testUndeploy() throws Exception
@@ -140,5 +143,6 @@ public class BasicSecurityDeployerTest  extends TestCase
 
       EasyMock.replay(securityManager);
       undeploy(multipleUserXml);
+      EasyMock.verify(securityManager);
    }
 }

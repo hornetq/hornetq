@@ -32,6 +32,7 @@ import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
 
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -56,13 +57,13 @@ public class SecurityDeployerTest extends TestCase
    private String noRoles =
            "   <securityfoo match=\"queues.testQueue\">\n" +
            "   </securityfoo>";
-   private HierarchicalRepository<HashSet<Role>> repository;
+   private HierarchicalRepository<Set<Role>> repository;
 
    protected void setUp() throws Exception
    {
       repository = EasyMock.createStrictMock(HierarchicalRepository.class);
       DeploymentManager deploymentManager = EasyMock.createNiceMock(DeploymentManager.class);
-      deployer = new SecurityDeployer(deploymentManager, EasyMock.createStrictMock(HierarchicalRepository.class));
+      deployer = new SecurityDeployer(deploymentManager, repository);
    }
 
    public void testSingle() throws Exception
@@ -77,7 +78,8 @@ public class SecurityDeployerTest extends TestCase
       roles.add(role3);
       repository.addMatch("topics.testTopic", roles);
       EasyMock.replay(repository);
-      deployer.deploy(e);      
+      deployer.deploy(e);
+      EasyMock.verify(repository);
    }
 
    public void testMultiple() throws Exception
@@ -94,6 +96,7 @@ public class SecurityDeployerTest extends TestCase
       EasyMock.replay(repository);
       deployer.deploy(XMLUtil.stringToElement(conf));
       deployer.deploy(XMLUtil.stringToElement(conf2));
+      EasyMock.verify(repository);
    }
    
    public void testNoRolesAdded() throws Exception
@@ -102,6 +105,6 @@ public class SecurityDeployerTest extends TestCase
       repository.addMatch("queues.testQueue", roles);
       EasyMock.replay(repository);
       deployer.deploy(XMLUtil.stringToElement(noRoles));
-
+      EasyMock.verify(repository);
    }
 }

@@ -24,7 +24,7 @@ package org.jboss.messaging.tests.unit.core.deployers.impl;
 
 import junit.framework.TestCase;
 import org.easymock.EasyMock;
-import org.easymock.IArgumentMatcher;
+import org.easymock.IAnswer;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.QueueSettingsDeployer;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
@@ -60,7 +60,7 @@ public class QueueSettingsDeployerTest extends TestCase
 
    public void testDeploy() throws Exception
    {
-      QueueSettings queueSettings = new QueueSettings();
+      final QueueSettings queueSettings = new QueueSettings();
       queueSettings.setClustered(false);
       queueSettings.setRedeliveryDelay((long) 100);
       queueSettings.setMaxSizeBytes(-100);
@@ -69,55 +69,34 @@ public class QueueSettingsDeployerTest extends TestCase
       queueSettings.setDLQ(new SimpleString("DLQtest"));
       queueSettings.setExpiryQueue(new SimpleString("ExpiryQueueTest"));
 
-      repository.addMatch(EasyMock.eq("queues.*"), settings(queueSettings));
-
+      repository.addMatch(EasyMock.eq("queues.*"),(QueueSettings) EasyMock.anyObject());
+      EasyMock.expectLastCall().andAnswer(new IAnswer<Object>()
+      {
+         public Object answer() throws Throwable
+         {
+            QueueSettings q = (QueueSettings) EasyMock.getCurrentArguments()[1];
+            assertFalse(q.isClustered());
+            assertEquals(q.getRedeliveryDelay(), queueSettings.getRedeliveryDelay());
+            assertEquals(q.getMaxSizeBytes(), queueSettings.getMaxSizeBytes());
+            assertEquals(q.getDistributionPolicyClass(), queueSettings.getDistributionPolicyClass());
+            assertEquals(q.getMessageCounterHistoryDayLimit(), queueSettings.getMessageCounterHistoryDayLimit());
+            assertEquals(q.getDLQ(), queueSettings.getDLQ());
+            assertEquals(q.getExpiryQueue(), queueSettings.getExpiryQueue());
+            return null;
+         }
+      });
       EasyMock.replay(repository);
-      EasyMock.reportMatcher(new QueueSettingsMatcher(queueSettings));
       queueSettingsDeployer.deploy(XMLUtil.stringToElement(conf));
+      EasyMock.verify(repository);
    }
 
-   public void testUndeploy()
+   public void testUndeploy() throws Exception
    {
-      repository.removeMatch(conf);
+      repository.removeMatch("queues.*");
       EasyMock.replay(repository);
-
+      queueSettingsDeployer.undeploy(XMLUtil.stringToElement(conf));
+      EasyMock.verify(repository);
    }
 
-   public static QueueSettings settings(QueueSettings queueSettings)
-   {
-      EasyMock.reportMatcher(new QueueSettingsMatcher(queueSettings));
-      return queueSettings;
-   }
 
-   static class QueueSettingsMatcher implements IArgumentMatcher
-   {
-      QueueSettings queueSettings;
-
-      public QueueSettingsMatcher(QueueSettings queueSettings)
-      {
-         this.queueSettings = queueSettings;
-      }
-
-      public boolean matches(Object o)
-      {
-         QueueSettings that = (QueueSettings) o;
-
-         if (!queueSettings.getDLQ().equals(that.getDLQ())) return false;
-         if (!queueSettings.getExpiryQueue().equals(that.getExpiryQueue())) return false;
-         if (!queueSettings.isClustered().equals(that.isClustered())) return false;
-         if (!queueSettings.getDistributionPolicyClass().equals(that.getDistributionPolicyClass())) return false;
-         if (!queueSettings.getMaxDeliveryAttempts().equals(that.getMaxDeliveryAttempts())) return false;
-         if (!queueSettings.getMaxSizeBytes().equals(that.getMaxSizeBytes())) return false;
-         if (!queueSettings.getMessageCounterHistoryDayLimit().equals(that.getMessageCounterHistoryDayLimit()))
-            return false;
-         if (!queueSettings.getRedeliveryDelay().equals(that.getRedeliveryDelay())) return false;
-
-         return true;
-      }
-
-      public void appendTo(StringBuffer stringBuffer)
-      {
-         stringBuffer.append("Invalid Queue Settings created");
-      }
-   }
 }
