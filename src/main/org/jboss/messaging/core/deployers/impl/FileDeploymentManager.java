@@ -108,9 +108,9 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
          
          String filename = deployer.getConfigFileName();
          
-         log.info("the filename is " + filename);
+         log.debug("the filename is " + filename);
          
-         log.info(System.getProperty("java.class.path"));
+         log.debug(System.getProperty("java.class.path"));
          
          Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(filename);
          
@@ -118,11 +118,11 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
          {
             URL url = urls.nextElement();
             
-            log.info("Got url " + url);
+            log.debug("Got url " + url);
                                  
             try
             {
-               log.info("Deploying " + deployer + " with url " + url);
+               log.debug("Deploying " + deployer + " with url " + url);
                deployer.deploy(url);
             }
             catch (Exception e)
@@ -134,7 +134,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
          }
       }      
       
-      log.info("Done register");
+      log.debug("Done register");
    }
 
    public synchronized void unregisterDeployer(final Deployer deployer) throws Exception
@@ -184,7 +184,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
                {                              
                   try
                   {
-                     log.info("Deploying " + deployer + " with url " + url);
+                     log.debug("Deploying " + deployer + " with url " + url);
                      
                      deployer.deploy(url);
                      
@@ -199,7 +199,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
                {                              
                   try
                   {
-                     log.info("Redeploying " + deployer + " with url " + url);
+                     log.debug("Redeploying " + deployer + " with url " + url);
                      
                      deployer.redeploy(url);
                      
@@ -220,7 +220,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
                try
                {
                   Deployer deployer = entry.getValue().deployer;
-                  log.info("Undeploying " + deployer + " with url" + entry.getKey());
+                  log.debug("Undeploying " + deployer + " with url" + entry.getKey());
                   deployer.undeploy(entry.getKey());
                   
                   deployed.remove(entry.getKey());
