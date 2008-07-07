@@ -52,7 +52,7 @@ public class CoreClientOverSSL
    {
       try
       {
-         log.info("args = " + Arrays.asList(args));
+         log.debug("args = " + Arrays.asList(args));
 
          if (args.length != 3)
          {

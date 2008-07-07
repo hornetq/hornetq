@@ -130,7 +130,7 @@ public class PacketFilterTest  extends TestCase
          assertTrue(DummyInterceptorB.getCounter() > 0);
          assertTrue(interceptorA.getCounter() == 0);
          
-         log.info("Undeploying server");
+         log.debug("Undeploying server");
          messagingService.getServer().getRemotingService().removeInterceptor(interceptorB);
          interceptorB = null;
          interceptorA.clearCounter();

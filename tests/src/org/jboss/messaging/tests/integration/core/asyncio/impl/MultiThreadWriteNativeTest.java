@@ -82,7 +82,7 @@ public class MultiThreadWriteNativeTest extends AIOTestBase
    
    private void executeTest(boolean sync) throws Throwable
    {
-       log.info(sync?"Sync test:":"Async test");
+       log.debug(sync?"Sync test:":"Async test");
        AsynchronousFileImpl jlibAIO = new AsynchronousFileImpl();
        jlibAIO.open(FILE_NAME, 21000, 120);
        try

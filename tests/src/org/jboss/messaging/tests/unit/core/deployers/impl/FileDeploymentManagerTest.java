@@ -72,11 +72,11 @@ public class FileDeploymentManagerTest extends UnitTestCase
       
       String filename = "fdm_test_file.xml";
       
-      log.info("Filename is " + filename);
+      log.debug("Filename is " + filename);
       
       File file = new File("tests/tmpfiles/" + filename);
       
-      log.info(file.getAbsoluteFile());
+      log.debug(file.getAbsoluteFile());
       
       file.createNewFile();
 

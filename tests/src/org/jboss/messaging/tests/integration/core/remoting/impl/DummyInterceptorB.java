@@ -54,7 +54,7 @@ public class DummyInterceptorB implements Interceptor
    public void intercept(final Packet packet) throws MessagingException
    {
       syncCounter.addAndGet(1);
-      log.info("DummyFilter packet = " + packet);
+      log.debug("DummyFilter packet = " + packet);
    }
 
 }

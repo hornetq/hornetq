@@ -54,7 +54,7 @@ public class DummyInterceptor implements Interceptor
    
    public void intercept(final Packet packet) throws MessagingException
    {
-      log.info("DummyFilter packet = " + packet.getClass().getName());
+      log.debug("DummyFilter packet = " + packet.getClass().getName());
       syncCounter.addAndGet(1);
       if (sendException)
       {
@@ -65,7 +65,7 @@ public class DummyInterceptor implements Interceptor
          if (packet instanceof ReceiveMessage)
          {
             ReceiveMessage deliver = (ReceiveMessage)packet;
-            log.info("msg = " + deliver.getServerMessage().getClass().getName());
+            log.debug("msg = " + deliver.getServerMessage().getClass().getName());
             deliver.getServerMessage().putStringProperty(new SimpleString("DummyInterceptor"), new SimpleString("was here"));
          }
       }

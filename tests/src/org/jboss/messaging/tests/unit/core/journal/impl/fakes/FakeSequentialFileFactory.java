@@ -60,7 +60,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       {     
          sf.data.position(0);
          
-         //log.info("positioning data to 0");
+         //log.debug("positioning data to 0");
       }
                   
       return sf;
@@ -121,7 +121,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       
       public boolean isOpen()
       {
-         //log.info("is open" + System.identityHashCode(this) +" open is now " + open);
+         //log.debug("is open" + System.identityHashCode(this) +" open is now " + open);
          return open;
       }
       
@@ -170,13 +170,13 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          
          checkAndResize(pos + size);
          
-         //log.info("size is " + size + " pos is " + pos);
+         //log.debug("size is " + size + " pos is " + pos);
          
          for (int i = pos; i < size + pos; i++)
          {
             data.array()[i] = fillCharacter;
             
-            //log.info("Filling " + pos + " with char " + fillCharacter);
+            //log.debug("Filling " + pos + " with char " + fillCharacter);
          }                 
       }
       
@@ -192,11 +192,11 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
             throw new IllegalStateException("Is closed");
          }
          
-         //log.info("read called " + bytes.array().length);
+         //log.debug("read called " + bytes.array().length);
          
          byte[] bytesRead = new byte[bytes.array().length];
          
-         //log.info("reading, data pos is " + data.position() + " data size is " + data.array().length);
+         //log.debug("reading, data pos is " + data.position() + " data size is " + data.array().length);
          
          data.get(bytesRead);
          
@@ -216,7 +216,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
             throw new IllegalStateException("Is closed");
          }
          
-         //log.info("reset called");
+         //log.debug("reset called");
          
          data.position(pos);
       }
@@ -232,7 +232,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          
          checkAndResize(bytes.capacity() + position);
          
-         //log.info("write called, position is " + data.position() + " bytes is " + bytes.array().length);
+         //log.debug("write called, position is " + data.position() + " bytes is " + bytes.array().length);
          
          data.put(bytes);
          

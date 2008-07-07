@@ -120,7 +120,7 @@ public class TokenBucketLimiterImplTest extends TestCase
 		
 		double actualRate = ((double)(1000 * count)) / ( end - start);
     
-      log.info("Desired rate: " + rate + " Actual rate " + actualRate + " invs/sec");
+      log.debug("Desired rate: " + rate + " Actual rate " + actualRate + " invs/sec");
       
       assertTrue(actualRate > rate * (1 - error));
       

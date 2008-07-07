@@ -960,8 +960,8 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		assertEquals(4, files3.size());
 		assertEquals(1, journal.getOpenedFilesCount());
 		
-		log.info("data files count "+ journal.getDataFilesCount());
-		log.info("free files count "+ journal.getFreeFilesCount());
+		log.debug("data files count "+ journal.getDataFilesCount());
+		log.debug("free files count "+ journal.getFreeFilesCount());
 		
 		assertEquals(2, journal.getDataFilesCount());
 		assertEquals(0, journal.getFreeFilesCount());
@@ -1871,7 +1871,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		
 		List<String> files14 = fileFactory.listFiles(fileExtension);
 		
-		log.info("Debug journal on testPrepareReclaim ->\n" + debugJournal());
+		log.debug("Debug journal on testPrepareReclaim ->\n" + debugJournal());
 		
 		assertEquals(5, files14.size());
 		
@@ -2758,7 +2758,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		addTx(4, 31);
 		commit(3);
 
-		log.info("Debug on Journal before stopJournal - \n" + debugJournal());
+		log.debug("Debug on Journal before stopJournal - \n" + debugJournal());
 
 		stopJournal();
 		createJournal();

@@ -355,7 +355,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       
       for (int i = 0; i < size; i++)
       {
-         //log.info(" i is " + i);
+         //log.debug(" i is " + i);
          assertEquals(fillChar, bb.get(i));
       }
             

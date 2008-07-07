@@ -91,7 +91,7 @@ public class ClientExitTest extends TestCase
 
       // the client VM should exit by itself. If it doesn't, that means we have a problem
       // and the test will timeout
-      log.info("waiting for the client VM to exit ...");
+      log.debug("waiting for the client VM to exit ...");
       p.waitFor();
 
       assertEquals(0, p.exitValue());

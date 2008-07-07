@@ -87,7 +87,7 @@ public class CoreClientOverSSLTest extends TestCase
       assertNotNull(m);
       assertEquals(MESSAGE_TEXT_FROM_CLIENT, m.getBody().getString());
 
-      log.info("waiting for the client VM to exit ...");
+      log.debug("waiting for the client VM to exit ...");
       SpawnedVMSupport.assertProcessExits(true, 0, p);
    }
 
@@ -100,7 +100,7 @@ public class CoreClientOverSSLTest extends TestCase
       Message m = consumer.receive(5000);
       assertNull(m);
 
-      log.info("waiting for the client VM to exit ...");
+      log.debug("waiting for the client VM to exit ...");
       SpawnedVMSupport.assertProcessExits(false, 0, p);
    }
 
@@ -112,7 +112,7 @@ public class CoreClientOverSSLTest extends TestCase
       Message m = consumer.receive(5000);
       assertNull(m);
 
-      log.info("waiting for the client VM to exit ...");
+      log.debug("waiting for the client VM to exit ...");
       SpawnedVMSupport.assertProcessExits(false, 0, p);
    }
 

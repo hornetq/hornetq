@@ -118,7 +118,7 @@ public class ClientCrashTest extends TestCase
          message.getBody().putString(ClientCrashTest.MESSAGE_TEXT_FROM_SERVER);
          producer.send(message);
 
-         log.info("waiting for the client VM to crash ...");
+         log.debug("waiting for the client VM to crash ...");
          p.waitFor();
 
          assertEquals(9, p.exitValue());

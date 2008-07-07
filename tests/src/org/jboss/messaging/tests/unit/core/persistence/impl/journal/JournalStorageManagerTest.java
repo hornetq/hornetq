@@ -446,8 +446,8 @@ public class JournalStorageManagerTest extends UnitTestCase
       daos.flush();
       byte[] data = baos.toByteArray();
       
-      log.info("** data length is " + data.length);
-      log.info(UnitTestCase.dumpBytes(data));
+      log.debug("** data length is " + data.length);
+      log.debug(UnitTestCase.dumpBytes(data));
        
       bindingsJournal.appendAddRecord(EasyMock.eq(0L), EasyMock.eq(JournalStorageManager.BINDING_RECORD), EasyMock.aryEq(data));
       

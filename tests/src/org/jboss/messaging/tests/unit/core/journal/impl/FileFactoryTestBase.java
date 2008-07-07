@@ -75,7 +75,7 @@ public abstract class FileFactoryTestBase extends UnitTestCase
       
       for (int i = 0; i < size; i++)
       {
-         //log.info(" i is " + i);
+         //log.debug(" i is " + i);
          assertEquals(fillChar, bytes[i]);
       }
             

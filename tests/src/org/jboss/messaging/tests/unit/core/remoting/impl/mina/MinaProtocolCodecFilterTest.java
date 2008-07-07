@@ -276,7 +276,7 @@ public class MinaProtocolCodecFilterTest extends UnitTestCase
       Object message = out.getMessage();
       assertTrue(message instanceof Packet);
 
-      log.info("encoded and decoded " + packet);
+      log.debug("encoded and decoded " + packet);
 
       return (Packet) message;
    }

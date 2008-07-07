@@ -131,7 +131,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       update(updates);
       delete(deletes);
 
-      log.info("Debug journal:" + debugJournal());
+      log.debug("Debug journal:" + debugJournal());
       stopJournal(false);
       createJournal();
       startJournal();
@@ -166,7 +166,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
          
          if (count % 100 == 0)
          {
-            log.info("Done: " + count);
+            log.debug("Done: " + count);
          }
       }
       
@@ -174,9 +174,9 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       
       double rate = 1000 * ((double)NUMBER_OF_RECORDS) / (end - start);
       
-      log.info("Rate of " + rate + " adds/removes per sec");
+      log.debug("Rate of " + rate + " adds/removes per sec");
       
-      log.info("Reclaim status = " + debugJournal());
+      log.debug("Reclaim status = " + debugJournal());
                
       stopJournal();
       createJournal();
@@ -207,7 +207,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       
       if (numFiles<2) numFiles = 2;
       
-      log.info("num Files=" + numFiles);
+      log.debug("num Files=" + numFiles);
 
       Journal journal =
          new JournalImpl(10 * 1024 * 1024,  numFiles, true, true, getFileFactory(),
@@ -217,7 +217,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       
       journal.load(new ArrayList<RecordInfo>(), null);
             
-      log.info("Adding data");
+      log.debug("Adding data");
       byte[] data = new byte[700];
       
       long start = System.currentTimeMillis();
@@ -237,7 +237,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       assertFalse(failed);
       
       
-      log.info("Rate " + rate + " records/sec");
+      log.debug("Rate " + rate + " records/sec");
 
       journal.stop();
       
@@ -290,13 +290,13 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
          
          for (double rate: rates)
          {
-            log.info("Transaction Rate = " + rate + " records/sec");
+            log.debug("Transaction Rate = " + rate + " records/sec");
             
          }
          
          double rate = 1000 * (double)numMessages / (end - start);
          
-         log.info("Rate " + rate + " records/sec");
+         log.debug("Rate " + rate + " records/sec");
       }
       finally
       {

@@ -268,8 +268,8 @@ public class StorageManagerTimingTest extends UnitTestCase
    {
       double rate = 0;
       
-      log.info("*************************************************************************");
-      log.info(" " + msg + " ");
+      log.debug("*************************************************************************");
+      log.debug(" " + msg + " ");
       
       double totalRate = 0;
       for (int i=0; i<rates.length; i++)
@@ -278,11 +278,11 @@ public class StorageManagerTimingTest extends UnitTestCase
          totalRate += rate;
          if (rates.length>1)
          {
-            log.info( " Thread " + i + ": = " + rate + " inserts/sec (including commits)");
+            log.debug( " Thread " + i + ": = " + rate + " inserts/sec (including commits)");
          }
       }
       
-      log.info( " Total rate     : = " + totalRate + " inserts/sec (including commits)");
-      log.info("*************************************************************************");
+      log.debug( " Total rate     : = " + totalRate + " inserts/sec (including commits)");
+      log.debug("*************************************************************************");
    }
 }

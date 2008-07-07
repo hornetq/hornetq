@@ -47,7 +47,7 @@ public class RealNIOJournalImplTest extends JournalImplTestUnit
    {
       File file = new File(journalDir);
       
-      log.info("deleting directory " + journalDir);
+      log.debug("deleting directory " + journalDir);
       
       deleteDirectory(file);
       

@@ -97,7 +97,7 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
       
       try
       {
-         log.info("++testDirectDataNoPage");
+         log.debug("++testDirectDataNoPage");
          CountDownLatch latchDone = new CountDownLatch(numberOfLines);
          CountDownLatch latchDone2 = new CountDownLatch(numberOfLines);
          
@@ -130,7 +130,7 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
             controller.write(counter * size, size, block, tmp2);
             if (++counter % 5000 == 0)
             {
-               log.info(5000 * 1000 / (System.currentTimeMillis() - lastTime)
+               log.debug(5000 * 1000 / (System.currentTimeMillis() - lastTime)
                      + " rec/sec (Async)");
                lastTime = System.currentTimeMillis();
             }
@@ -139,7 +139,7 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          
          long timeTotal = System.currentTimeMillis() - valueInitial;
          
-         log.info("Asynchronous time = " + timeTotal + " for " + numberOfLines
+         log.debug("Asynchronous time = " + timeTotal + " for " + numberOfLines
                + " registers " + " size each line = " + size + " Records/Sec="
                + (numberOfLines * 1000 / timeTotal) + " (Assynchronous)");
          
@@ -147,7 +147,7 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          latchDone2.await();
          
          timeTotal = System.currentTimeMillis() - valueInitial;
-         log.info("After completions time = " + timeTotal + " for "
+         log.debug("After completions time = " + timeTotal + " for "
                + numberOfLines + " registers " + " size each line = " + size
                + " Records/Sec=" + (numberOfLines * 1000 / timeTotal)
                + " (Assynchronous)");
@@ -314,13 +314,13 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          
          controller.open(FILE_NAME, 10, 1200);
          
-         log.info("Filling file");
+         log.debug("Filling file");
          
          controller.fill(0, 1, NUMBER_LINES * SIZE, (byte) 'j');
          
          ByteBuffer buffer = controller.newBuffer(SIZE);
          
-         log.info("Writing file");
+         log.debug("Writing file");
          
          for (int i = 0; i < NUMBER_LINES; i++)
          {
@@ -341,9 +341,9 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          }
          
          // If you call close you're supposed to wait events to finish before closing it
-         log.info("Closing file");
+         log.debug("Closing file");
          controller.close();
-         log.info("Reading file");
+         log.debug("Reading file");
          controller.open(FILE_NAME, 10, 1200);
          
          ByteBuffer newBuffer = ByteBuffer.allocateDirect(SIZE);
@@ -412,11 +412,11 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          
          controller.open(FILE_NAME, 10000, 1200);
          
-         log.info("Filling file");
+         log.debug("Filling file");
          
          controller.fill(0, 1, NUMBER_LINES * SIZE, (byte) 'j');
          
-         log.info("Writing file");
+         log.debug("Writing file");
          
          for (int i = 0; i < NUMBER_LINES; i++)
          {
@@ -438,11 +438,11 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          // If you call close you're supposed to wait events to finish before
          // closing it
          controller.close();
-         log.info("Closed file with counter = " + counter);
+         log.debug("Closed file with counter = " + counter);
          
          assertEquals(0, readLatch.getCount());
          readLatch.await();
-         log.info("Reading file");
+         log.debug("Reading file");
          controller.open(FILE_NAME, 10, 1200);
          
          ByteBuffer newBuffer = ByteBuffer.allocateDirect(SIZE);
@@ -503,7 +503,7 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
       
       try
       {
-         log.info("++testDirectDataNoPage");
+         log.debug("++testDirectDataNoPage");
          System.out.flush();
          CountDownLatch latchDone = new CountDownLatch(numberOfLines);
          
@@ -528,7 +528,7 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
             controller.write(counter * size, size, block, tmp);
             if (++counter % 20000 == 0)
             {
-               log.info(20000 * 1000 / (System.currentTimeMillis() - lastTime)
+               log.debug(20000 * 1000 / (System.currentTimeMillis() - lastTime)
                      + " rec/sec (Async)");
                lastTime = System.currentTimeMillis();
             }
@@ -539,10 +539,10 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          
          latchDone.await();
          
-         log.info("done");
+         log.debug("done");
          
          long timeTotal = System.currentTimeMillis() - valueInitial;
-         log.info("After completions time = " + timeTotal + " for "
+         log.debug("After completions time = " + timeTotal + " for "
                + numberOfLines + " registers " + " size each line = " + size
                + ", Records/Sec=" + (numberOfLines * 1000 / timeTotal)
                + " (Assynchronous)");
@@ -573,7 +573,7 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
    {
       try
       {
-         log.info("++testDirectDataNoPage");
+         log.debug("++testDirectDataNoPage");
          System.out.flush();
          final int NUMBER_LINES = 3000;
          final int SIZE = 1024;
@@ -599,7 +599,7 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          }
          
          long timeTotal = System.currentTimeMillis() - startTime;
-         log.info("time = " + timeTotal + " for " + NUMBER_LINES
+         log.debug("time = " + timeTotal + " for " + NUMBER_LINES
                + " registers " + " size each line = " + SIZE + " Records/Sec="
                + (NUMBER_LINES * 1000 / timeTotal) + " Synchronous");
          

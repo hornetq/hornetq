@@ -163,7 +163,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
          
          if (count % 100 == 0)
          {
-            log.info("Done: " + count);
+            log.debug("Done: " + count);
          }
       }
       
@@ -171,9 +171,9 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       
       double rate = 1000 * ((double)NUMBER_OF_RECORDS) / (end - start);
       
-      log.info("Rate of " + rate + " adds/removes per sec");
+      log.debug("Rate of " + rate + " adds/removes per sec");
       
-      log.info("Reclaim status = " + debugJournal());
+      log.debug("Reclaim status = " + debugJournal());
                
       stopJournal();
       createJournal();
