@@ -27,6 +27,7 @@ import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tlee@redhat.com">Trustin Lee</a>
  *
  * @version <tt>$Revision$</tt>
  *
