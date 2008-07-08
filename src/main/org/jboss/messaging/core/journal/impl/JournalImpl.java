@@ -285,7 +285,7 @@ public class JournalImpl implements TestableJournal
       bb.putByte(DONE);        
       bb.rewind();
       
-      JournalFile usedFile = appendRecord(bb.getBuffer(), syncNonTransactional);
+      JournalFile usedFile = appendRecord(bb.getBuffer(), syncNonTransactional, null);
      
       posFilesMap.put(id, new PosFiles(usedFile));
    }
@@ -309,7 +309,7 @@ public class JournalImpl implements TestableJournal
 		bb.put(DONE);			
 		bb.rewind();
 		
-      JournalFile usedFile = appendRecord(bb, syncNonTransactional);
+      JournalFile usedFile = appendRecord(bb, syncNonTransactional, null);
 		
 		posFilesMap.put(id, new PosFiles(usedFile));
 	}
@@ -340,7 +340,7 @@ public class JournalImpl implements TestableJournal
 		bb.put(DONE);     
 		bb.rewind();
 		   
-      JournalFile usedFile = appendRecord(bb, syncNonTransactional);
+      JournalFile usedFile = appendRecord(bb, syncNonTransactional, null);
       		
 		posFiles.addUpdateFile(usedFile);
 	}
@@ -370,7 +370,7 @@ public class JournalImpl implements TestableJournal
 		bb.put(DONE);     
 		bb.rewind();
 		
-      appendRecord(bb, syncNonTransactional);      
+      appendRecord(bb, syncNonTransactional, null);      
 	}     
 	
 	public long getTransactionID()
@@ -403,16 +403,7 @@ public class JournalImpl implements TestableJournal
       
       JournalFile usedFile;
 
-      if (fileFactory.isSupportsCallbacks() && syncTransactional)
-      {
-         TransactionCallback callback = getTransactionCallback(txID);
-         callback.countUp();
-         usedFile = appendRecord(bb.getBuffer(), callback);
-      }
-      else
-      {
-         usedFile = appendRecord(bb.getBuffer(), false);
-      }
+      usedFile = appendRecord(bb.getBuffer(), false, getTransactionCallback(txID));
       
       TransactionNegPos tx = getTransactionInfo(txID);
       
@@ -441,16 +432,7 @@ public class JournalImpl implements TestableJournal
 	   
 	   JournalFile usedFile;
 	   
-	   if (fileFactory.isSupportsCallbacks() && syncTransactional)
-      {
-         TransactionCallback callback = getTransactionCallback(txID);
-         callback.countUp();
-         usedFile = appendRecord(bb, callback);
-      }
-      else
-      {
-         usedFile = appendRecord(bb, false);
-      }
+      usedFile = appendRecord(bb, false, getTransactionCallback(txID));
 	   
 	   TransactionNegPos tx = getTransactionInfo(txID);
 	   
@@ -479,16 +461,7 @@ public class JournalImpl implements TestableJournal
 		
       JournalFile usedFile;
       
-      if (fileFactory.isSupportsCallbacks() && syncTransactional)
-      {
-         TransactionCallback callback = getTransactionCallback(txID);
-         callback.countUp();
-         usedFile = appendRecord(bb, callback);
-      }
-      else
-      {
-         usedFile = appendRecord(bb, false);
-      }
+      usedFile = appendRecord(bb, false, getTransactionCallback(txID));
 		
       TransactionNegPos tx = getTransactionInfo(txID);
       
@@ -514,17 +487,8 @@ public class JournalImpl implements TestableJournal
 		
       JournalFile usedFile;
       
-      if (fileFactory.isSupportsCallbacks() && syncTransactional)
-      {
-         TransactionCallback callback = getTransactionCallback(txID);
-         callback.countUp();
-         usedFile = appendRecord(bb, callback);
-      }
-      else
-      {
-         usedFile = appendRecord(bb, false);
-      }
-      
+      usedFile = appendRecord(bb, false, getTransactionCallback(txID));
+
       TransactionNegPos tx = getTransactionInfo(txID);
 		
 		tx.addNeg(usedFile, id);      
@@ -555,17 +519,7 @@ public class JournalImpl implements TestableJournal
 							
 		JournalFile usedFile;
       
-      if (fileFactory.isSupportsCallbacks() && syncTransactional)
-      {
-         TransactionCallback callback = getTransactionCallback(txID);
-         callback.countUp();
-         usedFile = appendRecord(bb, callback);
-         callback.waitCompletion(aioTimeout);     
-      }
-      else
-      {
-         usedFile = appendRecord(bb, syncTransactional);
-      }
+      usedFile = appendRecord(bb, syncTransactional, getTransactionCallback(txID));
       
 		tx.prepare(usedFile);
 	}
@@ -595,17 +549,7 @@ public class JournalImpl implements TestableJournal
 		
 		JournalFile usedFile;
       
-      if (fileFactory.isSupportsCallbacks() && syncTransactional)
-      {
-         TransactionCallback callback = getTransactionCallback(txID);
-         callback.countUp();
-         usedFile = appendRecord(bb, callback);
-         callback.waitCompletion(aioTimeout);
-      }
-      else
-      {
-         usedFile = appendRecord(bb, syncTransactional);
-      }
+      usedFile = appendRecord(bb, syncTransactional, getTransactionCallback(txID));
 		
 		transactionCallbacks.remove(txID);
 		
@@ -637,17 +581,8 @@ public class JournalImpl implements TestableJournal
 		bb.rewind();
 		
 		JournalFile usedFile;
-		if (fileFactory.isSupportsCallbacks() && syncTransactional)
-		{
-		   TransactionCallback callback = getTransactionCallback(txID);
-         callback.countUp();
-         usedFile = appendRecord(bb, callback);
-         callback.waitCompletion(aioTimeout);
-		}
-		else
-		{
-		   usedFile = appendRecord(bb, syncTransactional);      
-		}
+
+		usedFile = appendRecord(bb, syncTransactional, getTransactionCallback(txID));      
 		
 		transactionCallbacks.remove(txID);
 				
@@ -1484,8 +1419,8 @@ public class JournalImpl implements TestableJournal
 	// Public -----------------------------------------------------------------------------
 	
 	// Private -----------------------------------------------------------------------------
-	
-	private JournalFile appendRecord(final ByteBuffer bb, final boolean sync) throws Exception
+
+	private JournalFile appendRecord(final ByteBuffer bb, final boolean sync, final TransactionCallback callback) throws Exception
 	{
 		lock.acquire();
 		
@@ -1494,26 +1429,18 @@ public class JournalImpl implements TestableJournal
 		try
 		{                 
 			checkFile(size);
-			currentFile.getFile().write(bb, sync);       
-			currentFile.extendOffset(size);
-			return currentFile;
-		}
-		finally
-		{
-			lock.release();
-		}
-	}
-	
-	private JournalFile appendRecord(final ByteBuffer bb, final IOCallback callback) throws Exception
-	{
-		lock.acquire();
-		
-		int size = bb.capacity();
-		
-		try
-		{                 
-			checkFile(size);
-			currentFile.getFile().write(bb, callback);       
+			if (callback != null)
+			{
+			   currentFile.getFile().write(bb, callback);
+			   if (sync)
+			   {
+			      callback.waitCompletion(aioTimeout);
+			   }
+			}
+			else
+			{
+	         currentFile.getFile().write(bb, sync);       
+			}
 			currentFile.extendOffset(size);
 			return currentFile;
 		}
@@ -1705,15 +1632,23 @@ public class JournalImpl implements TestableJournal
 	
    private TransactionCallback getTransactionCallback(final long transactionId)
    {
-      TransactionCallback callback = this.transactionCallbacks.get(transactionId);
-      
-      if (callback == null)
+      if (fileFactory.isSupportsCallbacks() && syncTransactional)
       {
-         callback = new TransactionCallback();
-         transactionCallbacks.put(transactionId, callback);
+         TransactionCallback callback = this.transactionCallbacks.get(transactionId);
+         
+         if (callback == null)
+         {
+            callback = new TransactionCallback();
+            transactionCallbacks.put(transactionId, callback);
+         }
+
+         callback.countUp();
+         return callback;
       }
-      
-      return callback;
+      else
+      {
+         return null;
+      }
    }
    
 	// Inner classes ---------------------------------------------------------------------------
