@@ -96,7 +96,7 @@ public class VariableLatch
       }
    }
    
-   private CountSync control = new CountSync();
+   private final CountSync control = new CountSync();
       
    public int getCount()
    {
