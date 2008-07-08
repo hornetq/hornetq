@@ -63,7 +63,7 @@
 	<classpathentry kind="lib" path="thirdparty/easymock-classextension/lib/easymockclassextension.jar"/>
 	<classpathentry kind="lib" path="thirdparty/cglib/lib/cglib.jar"/>
 	<classpathentry kind="lib" path="tests/tmpfiles"/>
-	<classpathentry kind="lib" path="thirdparty/netty/lib/netty-3.0.0.M3.jar" sourcepath="thirdparty/netty/lib/netty-3.0.0.M3-sources.jar">
+	<classpathentry kind="lib" path="thirdparty/netty/lib/netty-3.0.0.M4.jar" sourcepath="thirdparty/netty/lib/netty-3.0.0.M4-sources.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="http://netty.googlecode.com/svn/site/api/3.0/"/>
 		</attributes>
