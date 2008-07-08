@@ -647,9 +647,11 @@
    <target name="unit-tests" depends="jar, compile-unit-tests">
       <antcall inheritall="true" inheritrefs="true" target="tests">
          <param name="tests.param" value="**/org/jboss/messaging/tests/unit/**/*${test-mask}.class"/>
+      	 <!-- if tests.validate.error is defined, it will fail the build in case of any test failure -->
+      	 <param name="tests.validate.error" value="Defined!"/>
       </antcall>
    </target>
-
+	
    <target name="timing-tests" depends="jar, compile-unit-tests">
       <antcall inheritall="true" inheritrefs="true" target="tests">
          <param name="tests.param" value="**/org/jboss/messaging/tests/timing/**/*${test-mask}.class"/>
@@ -680,13 +682,26 @@
          <formatter type="xml" usefile="${junit.formatter.usefile}"/>
          <batchtest todir="${junit.batchtest.todir}"
                     haltonfailure="${junit.batchtest.haltonfailure}"
-                    haltonerror="${junit.batchtest.haltonerror}">
+                    haltonerror="${junit.batchtest.haltonerror}"
+         	        failureproperty="tests.failed">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${test.classes.dir}">
                <include name="${tests.param}"/>
             </fileset>
          </batchtest>
       </junit>
+   	  <antcall target="tests-validate-error" inheritall="true" inheritrefs="true"/>
+   </target>
+
+   <!-- ifs on ant are convoluted by definition... this will throw a BUILD FAILED if tests.validate.error was defined and if a error (tests.failed) happened -->
+   <target name="tests-validate-error" if="tests.validate.error">
+     <antcall target="tests-onerror"  inheritall="true" inheritrefs="true"/>
+   </target>
+	
+   <!-- ifs on ant are convoluted by definition... this will throw a BUILD FAILED if tests.validate.error was defined and if a error (tests.failed) happened -->
+   <target name="tests-onerror" if="tests.failed">
+   	 <antcall target="compile-reports"/>
+   	 <fail message="Test suite failed!"/>
    </target>
 
    <target name="jms-tests" depends="jar, compile-jms-tests">
@@ -799,7 +814,7 @@
       <echo message="${test.execution.classpath.unix}" file="${test.execution.classpath.file}"/>
    </target>
 
-   <target name="emma" depends="compile, compile-unit-tests">
+   <target name="emma" depends="jar, compile-unit-tests">
       <property name="emma.dir" location="${build.dir}/emma"/>
 
       <path id="emma.lib">
