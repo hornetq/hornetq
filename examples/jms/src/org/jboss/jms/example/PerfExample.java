@@ -253,13 +253,18 @@ public class PerfExample
    private void drainQueue(final MessageConsumer consumer) throws JMSException
    {
       log.info("draining queue");
+      int msgs = 0;
       while (true)
       {
          Message m = consumer.receive(5000);
          if (m == null)
          {
-            log.info("queue is drained");
+            log.info("queue is drained(" + msgs + " messages)");
             break;
+         }
+         else
+         {
+            msgs ++;
          }
       }
    }
