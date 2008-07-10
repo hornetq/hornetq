@@ -379,26 +379,9 @@
         <root url="jar://$PROJECT_DIR$/thirdparty/apache-log4j/lib/log4j.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/apache-logging/lib/commons-logging-src.zip!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/apache-logging/lib/commons-logging.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-modeler/lib/commons-modeler.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-tomcat/lib/catalina-manager.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-tomcat/lib/catalina-optional.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-tomcat/lib/catalina.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-tomcat/lib/jasper-compiler-jdt.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-tomcat/lib/jasper-compiler.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-tomcat/lib/jasper-runtime.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-tomcat/lib/naming-resources.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-tomcat/lib/servlets-default.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-tomcat/lib/servlets-invoker.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-tomcat/lib/servlets-webdav.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-tomcat/lib/tomcat-ajp.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-tomcat/lib/tomcat-apr.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-tomcat/lib/tomcat-coyote.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-tomcat/lib/tomcat-http.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-tomcat/lib/tomcat-util.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/apache-xerces/lib/xercesImpl.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/apache-xml-commons/lib/resolver.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/apache-xml-commons/lib/xml-apis.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/commons-el/lib/commons-el.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/dom4j/lib/dom4j.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/javassist/lib/javassist.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/jboss/aop/lib/jboss-aop-as4-deployer.jar!/" />
@@ -474,10 +457,12 @@
         <root url="jar://$PROJECT_DIR$/thirdparty/easymock/lib/easymock.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/easymock-classextension/lib/easymockclassextension.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/cglib/lib/cglib.jar!/" />
+        <root url="jar://$PROJECT_DIR$/tools/lib/jbossbuild.jar!/" />
+        <root url="jar:///home/andy/devtools/apache-ant-1.7.0/lib/ant-junit.jar!/" />
+        <root url="jar:///home/andy/devtools/apache-ant-1.7.0/lib/ant.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="file:///home/andy/projects/jboss-aop/aop/src/main" />
         <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jnpserver/lib/jnpserver-sources.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/apache-mina/lib/mina-core-2.0.0-M2-20080520.004618-19-sources.jar!/" />
       </SOURCES>
