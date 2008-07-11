@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.tests.timing.core.journal.impl;
 
+import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
@@ -41,6 +42,20 @@ public class RealJournalImplAIOTest extends JournalImplTestUnit
    
    // Need to run the test over a local disk (no NFS)
    protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/journal-test";
+   
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      
+      if (!AsynchronousFileImpl.isLoaded())
+      {
+         fail(String.format("libAIO is not loaded on %s %s %s", 
+               System.getProperty("os.name"), 
+               System.getProperty("os.arch"), 
+               System.getProperty("os.version")));
+      }
+   }
    
    protected void tearDown() throws Exception
    {

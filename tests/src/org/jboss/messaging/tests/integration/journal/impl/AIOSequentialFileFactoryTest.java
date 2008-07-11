@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.core.journal.IOCallback;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
@@ -49,6 +50,14 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
    {
       super.setUp();
 
+      if (!AsynchronousFileImpl.isLoaded())
+      {
+         fail(String.format("libAIO is not loaded on %s %s %s", 
+               System.getProperty("os.name"), 
+               System.getProperty("os.arch"), 
+               System.getProperty("os.version")));
+      }
+      
       File file = new File(journalDir);
       
       deleteDirectory(file);
