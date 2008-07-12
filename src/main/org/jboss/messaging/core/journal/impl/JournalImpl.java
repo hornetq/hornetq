@@ -1295,7 +1295,6 @@ public class JournalImpl implements TestableJournal
             //File can be reclaimed or deleted
             
             if (trace) log.trace("Reclaiming file " + file);
-            log.info("Reclaiming file " + file); // remove this
             
             dataFiles.remove(file);
             
@@ -1307,8 +1306,6 @@ public class JournalImpl implements TestableJournal
                long newOrderingID = generateOrderingID();
                
                SequentialFile sf = file.getFile();
-               
-               log.info("Adding " + sf + "to freeFiles");  // remove this
                
                sf.open();
                
@@ -1336,8 +1333,6 @@ public class JournalImpl implements TestableJournal
             }
             else
             {
-               log.info("Deleting " + file.getFile());  // remove this
-               
                file.getFile().open();
                
                file.getFile().delete();
