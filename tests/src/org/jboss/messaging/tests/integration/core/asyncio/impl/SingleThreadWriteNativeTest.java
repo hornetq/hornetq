@@ -309,22 +309,25 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
       try
       {
          
-         final int NUMBER_LINES = 1000;
+         final int NUMBER_LINES = 5000;
          final int SIZE = 1024;
          
-         controller.open(FILE_NAME, 10, 1200);
+         controller.open(FILE_NAME, 1000, 1200);
          
          log.debug("Filling file");
          
          controller.fill(0, 1, NUMBER_LINES * SIZE, (byte) 'j');
          
-         ByteBuffer buffer = controller.newBuffer(SIZE);
          
          log.debug("Writing file");
          
+         {
+         CountDownLatch latch = new CountDownLatch(NUMBER_LINES);
+         CountDownCallback aio = new CountDownCallback(latch);
+
          for (int i = 0; i < NUMBER_LINES; i++)
          {
-            buffer.clear();
+            ByteBuffer buffer = ByteBuffer.allocateDirect(SIZE);
             addString("Str value " + i + "\n", buffer);
             for (int j = buffer.position(); j < buffer.capacity() - 1; j++)
             {
@@ -332,14 +335,14 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
             }
             buffer.put((byte) '\n');
             
-            CountDownLatch latch = new CountDownLatch(1);
-            CountDownCallback aio = new CountDownCallback(latch);
             controller.write(i * SIZE, SIZE, buffer, aio);
-            latch.await();
-            assertFalse(aio.errorCalled);
-            assertTrue(aio.doneCalled);
          }
          
+         latch.await();
+         assertFalse(aio.errorCalled);
+         assertEquals(NUMBER_LINES, aio.timesDoneCalled.get());
+         }
+ 
          // If you call close you're supposed to wait events to finish before closing it
          log.debug("Closing file");
          controller.close();
@@ -360,6 +363,9 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
             
             CountDownLatch latch = new CountDownLatch(1);
             CountDownCallback aio = new CountDownCallback(latch);
+            
+            ByteBuffer buffer = ByteBuffer.allocateDirect(SIZE);
+            
             controller.read(i * SIZE, SIZE, buffer, aio);
             latch.await();
             assertFalse(aio.errorCalled);
@@ -381,8 +387,6 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
             
             assertTrue(buffer.equals(newBuffer));
          }
-         
-         controller.destroyBuffer(buffer);
       } finally
       {
          try
