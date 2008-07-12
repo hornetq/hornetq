@@ -367,6 +367,112 @@ public class AlignedJournalImplTest extends UnitTestCase
       
    }
    
+   public void testReclaimWithCompletedTransaction() throws Exception
+   {
+      final int JOURNAL_SIZE = 51 * 1024;
+      
+      setupJournal(JOURNAL_SIZE, 1024);
+      
+      assertEquals(0, records.size());
+      assertEquals(0, transactions.size());
+      
+      for (int i = 0; i < 10; i++)
+      {
+         journalImpl.appendAddRecordTransactional(1, 1, (byte) 1, new SimpleEncoding(50,(byte) 1));
+         journalImpl.forceMoveNextFile();
+      }
+      
+      journalImpl.debugWait();
+      
+      //System.out.println("files = " + journalImpl.debug());
+      
+      journalImpl.appendCommitRecord(1l);
+
+      assertEquals(12, factory.listFiles("tt").size());
+
+      setupJournal(JOURNAL_SIZE, 1024);
+
+      assertEquals(10, records.size());
+      assertEquals(0, transactions.size());
+      
+      journalImpl.checkAndReclaimFiles();
+      
+      assertEquals(10, journalImpl.getDataFilesCount());
+      
+      assertEquals(12, factory.listFiles("tt").size());
+      
+   }
+   
+   public void testReclaimWithPreparedTransaction() throws Exception
+   {
+      final int JOURNAL_SIZE = 51 * 1024;
+      
+      setupJournal(JOURNAL_SIZE, 1);
+      
+      assertEquals(0, records.size());
+      assertEquals(0, transactions.size());
+      
+      for (int i = 0; i < 10; i++)
+      {
+         journalImpl.appendAddRecordTransactional(1, 1, (byte) 1, new SimpleEncoding(50,(byte) 1));
+         journalImpl.forceMoveNextFile();
+      }
+      
+      journalImpl.debugWait();
+      
+      //System.out.println("files = " + journalImpl.debug());
+      
+      journalImpl.appendPrepareRecord(1l);
+
+      assertEquals(12, factory.listFiles("tt").size());
+
+      setupJournal(JOURNAL_SIZE, 1024);
+
+      assertEquals(0, records.size());
+      assertEquals(1, transactions.size());
+      
+      journalImpl.checkAndReclaimFiles();
+      
+      assertEquals(10, journalImpl.getDataFilesCount());
+      
+      assertEquals(12, factory.listFiles("tt").size());
+      
+      journalImpl.appendCommitRecord(1l);
+      
+      setupJournal(JOURNAL_SIZE, 1024);
+
+      assertEquals(10, records.size());
+      
+      journalImpl.checkAndReclaimFiles();
+      
+      for (int i = 0; i < 10; i++)
+      {
+         journalImpl.appendDeleteRecordTransactional(2l, (long)i);
+      }
+      
+      journalImpl.appendPrepareRecord(2l);
+      
+      setupJournal(JOURNAL_SIZE, 1);
+      
+      assertEquals(10, journalImpl.getDataFilesCount());
+
+      assertEquals(12, factory.listFiles("tt").size());
+      
+      journalImpl.appendCommitRecord(2l);
+      
+      setupJournal(JOURNAL_SIZE, 1);
+      
+      assertEquals(0, records.size());
+      assertEquals(0, transactions.size());
+
+      journalImpl.forceMoveNextFile();
+      journalImpl.checkAndReclaimFiles();
+      
+      assertEquals(2, factory.listFiles("tt").size());
+
+      
+   }
+   
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
