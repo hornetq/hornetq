@@ -35,6 +35,7 @@ import org.easymock.IArgumentMatcher;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.filter.Filter;
+import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.journal.Journal;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
@@ -96,7 +97,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       bb.putLong(queueID);      
       bb.putLong(messageID);
       
-      messageJournal.appendUpdateRecord(EasyMock.eq(messageID), EasyMock.eq(JournalStorageManager.ACKNOWLEDGE_REF), EasyMock.aryEq(record));  
+      messageJournal.appendUpdateRecord(EasyMock.eq(messageID), EasyMock.eq(JournalStorageManager.ACKNOWLEDGE_REF), encodingMatch(record));  
       EasyMock.replay(messageJournal, bindingsJournal);      
       jsm.storeAcknowledge(queueID, messageID);     
       EasyMock.verify(messageJournal, bindingsJournal);
@@ -147,7 +148,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       bb.putLong(messageID);
       
       final long txID = 12091921;
-      messageJournal.appendUpdateRecordTransactional(EasyMock.eq(txID), EasyMock.eq(messageID), EasyMock.eq(JournalStorageManager.ACKNOWLEDGE_REF), EasyMock.aryEq(record));  
+      messageJournal.appendUpdateRecordTransactional(EasyMock.eq(txID), EasyMock.eq(messageID), EasyMock.eq(JournalStorageManager.ACKNOWLEDGE_REF), encodingMatch(record));  
       EasyMock.replay(messageJournal, bindingsJournal);      
       jsm.storeAcknowledgeTransactional(txID, queueID, messageID);     
       EasyMock.verify(messageJournal, bindingsJournal);
@@ -819,6 +820,53 @@ public class JournalStorageManagerTest extends UnitTestCase
       assertEquals(1, bindingsJournal.getMaxAIO());
       assertEquals(1, bindingsJournal.getAIOTimeout());
    }
+   
+   private EncodingSupport encodingMatch(final byte expectedRecord[])
+   {
+      
+      EasyMock.reportMatcher(new IArgumentMatcher()
+      {
+
+         public void appendTo(StringBuffer buffer)
+         {
+         }
+
+         public boolean matches(Object argument)
+         {
+            EncodingSupport support = (EncodingSupport)argument;
+            
+            if (support.getEncodeSize() != expectedRecord.length)
+            {
+               return false;
+            }
+
+            byte newByte[] = new byte[expectedRecord.length];
+            
+            ByteBuffer buffer = ByteBuffer.wrap(newByte);
+            
+            ByteBufferWrapper wrapper = new ByteBufferWrapper(buffer);
+            
+            support.encode(wrapper);
+            
+            byte encodingBytes[] = wrapper.array();
+            
+            for (int i = 0; i < encodingBytes.length; i++)
+            {
+               if (encodingBytes[i] != expectedRecord[i])
+               {
+                  return false;
+               }
+            }
+            
+            return true;
+         }
+         
+      });
+      
+      return null;
+   }
+   
+
    
    public static ServerMessage eqServerMessage(ServerMessage serverMessage)
    {

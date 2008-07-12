@@ -38,6 +38,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
+import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.journal.Journal;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
@@ -199,7 +200,7 @@ public class JournalStorageManager implements StorageManager
 
 	public void storeAcknowledge(final long queueID, final long messageID) throws Exception
 	{		
-		byte[] record = ackBytes(queueID, messageID);
+	   EncodingSupport record = ackBytes(queueID, messageID);
 		
 		messageJournal.appendUpdateRecord(messageID, ACKNOWLEDGE_REF, record);					
 	}
@@ -218,7 +219,7 @@ public class JournalStorageManager implements StorageManager
    
    public void storeAcknowledgeTransactional(long txID, long queueID, long messageID) throws Exception
    {
-   	byte[] record = ackBytes(queueID, messageID);
+   	EncodingSupport record = ackBytes(queueID, messageID);
 		
 		messageJournal.appendUpdateRecordTransactional(txID, messageID, ACKNOWLEDGE_REF, record);	
    }
@@ -601,17 +602,9 @@ public class JournalStorageManager implements StorageManager
 	
 	// Private ----------------------------------------------------------------------------------
 	
-	private byte[] ackBytes(final long queueID, final long messageID)
+	private EncodingSupport ackBytes(final long queueID, final long messageID)
    {
-      byte[] record = new byte[SIZE_LONG + SIZE_LONG];
-      
-      ByteBuffer bb = ByteBuffer.wrap(record);
-      
-      bb.putLong(queueID);
-      
-      bb.putLong(messageID);
-      
-      return record;
+      return new ACKRecord(queueID, messageID);
    }
 	
 	private void checkAndCreateDir(String dir, boolean create)
@@ -643,5 +636,40 @@ public class JournalStorageManager implements StorageManager
 			log.info("Directory " + dir + " already exists");
 		}
 	}
+	
+   // Inner Classes ----------------------------------------------------------------------------
+
+	class ACKRecord implements EncodingSupport
+   {
+      private long queueID;
+      private long messageID;
+      
+      
+
+      public ACKRecord(long queueID, long messageID)
+      {
+         super();
+         this.queueID = queueID;
+         this.messageID = messageID;
+      }
+
+      public void decode(MessagingBuffer buffer)
+      {
+         throw new UnsupportedOperationException();
+      }
+
+      public void encode(MessagingBuffer buffer)
+      {
+         buffer.putLong(queueID);
+         buffer.putLong(messageID);
+      }
+
+      public int getEncodeSize()
+      {
+         return SIZE_LONG * 2;
+      }
+      
+   }
+   
 
 }

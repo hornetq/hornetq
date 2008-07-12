@@ -115,6 +115,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 	{
 	   journal.debugWait();
 	   journal.checkAndReclaimFiles();
+      journal.debugWait();
 	}
 	
 	protected abstract SequentialFileFactory getFileFactory() throws Exception;

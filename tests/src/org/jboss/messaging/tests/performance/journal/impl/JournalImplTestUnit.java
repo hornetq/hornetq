@@ -174,7 +174,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       
       double rate = 1000 * ((double)NUMBER_OF_RECORDS) / (end - start);
       
-      log.debug("Rate of " + rate + " adds/removes per sec");
+      log.info("Rate of " + rate + " adds/removes per sec");
       
       log.debug("Reclaim status = " + debugJournal());
                
@@ -238,13 +238,13 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
          
          for (double rate: rates)
          {
-            log.debug("Transaction Rate = " + rate + " records/sec");
+            log.info("Transaction Rate = " + rate + " records/sec");
             
          }
          
          double rate = 1000 * (double)numMessages / (end - start);
          
-         log.debug("Rate " + rate + " records/sec");
+         log.info("Rate " + rate + " records/sec");
       }
       finally
       {
@@ -285,7 +285,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       
       double rate = 1000 * (double)numMessages / (end - start);
       
-      log.debug("Rate " + rate + " records/sec");
+      log.info("Rate " + rate + " records/sec");
 
       journal.stop();
       

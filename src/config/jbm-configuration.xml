@@ -101,8 +101,9 @@
            - closing Asynchronous files
            - Transaction awaits
            - Awaits on non transactional writes
+           This shouldn't be higher than the remoting timeout
       -->
-      <journal-aio-timeout>60000</journal-aio-timeout>
+      <journal-aio-timeout>4000</journal-aio-timeout>
 
       <journal-task-period>5000</journal-task-period>
       

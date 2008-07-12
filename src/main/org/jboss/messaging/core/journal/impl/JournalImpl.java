@@ -173,13 +173,13 @@ public class JournalImpl implements TestableJournal
 
 	private final ConcurrentMap<Long, TransactionCallback> transactionCallbacks = new ConcurrentHashMap<Long, TransactionCallback>();
 	
-   private final ExecutorService closingExecutor = Executors.newSingleThreadExecutor();
+   private ExecutorService closingExecutor = null;
    
    /** 
     * We have a separated executor for open, as if we used the same executor this would still represent
     * a point of wait between the closing and open.
     * */
-   private final ExecutorService openExecutor = Executors.newSingleThreadExecutor();
+   private ExecutorService openExecutor = null;
    
 	/*
     * We use a semaphore rather than synchronized since it performs better when
@@ -187,6 +187,7 @@ public class JournalImpl implements TestableJournal
     */
 	
 	//TODO - improve concurrency by allowing concurrent accesses if doesn't change current file
+   // this locks access to currentFile
 	private final Semaphore lock = new Semaphore(1, true);
 	
 	private volatile JournalFile currentFile ;
@@ -314,37 +315,68 @@ public class JournalImpl implements TestableJournal
 		posFilesMap.put(id, new PosFiles(usedFile));
 	}
 	
-	public void appendUpdateRecord(final long id, final byte recordType, final byte[] record) throws Exception
-	{
-		if (state != STATE_LOADED)
-		{
-			throw new IllegalStateException("Journal must be loaded first");
-		}
-		
-		PosFiles posFiles = posFilesMap.get(id);
-		
-		if (posFiles == null)
-		{
-			throw new IllegalStateException("Cannot find add info " + id);
-		}
-		
-		int size = SIZE_UPDATE_RECORD + record.length;
-		
-		ByteBuffer bb = fileFactory.newBuffer(size); 
-		
-		bb.put(UPDATE_RECORD);     
-		bb.putLong(id);      
-		bb.put(recordType);
-		bb.putInt(record.length);     
-		bb.put(record);      
-		bb.put(DONE);     
-		bb.rewind();
-		   
+   public void appendUpdateRecord(final long id, final byte recordType, final byte[] record) throws Exception
+   {
+      if (state != STATE_LOADED)
+      {
+         throw new IllegalStateException("Journal must be loaded first");
+      }
+      
+      PosFiles posFiles = posFilesMap.get(id);
+      
+      if (posFiles == null)
+      {
+         throw new IllegalStateException("Cannot find add info " + id);
+      }
+      
+      int size = SIZE_UPDATE_RECORD + record.length;
+      
+      ByteBuffer bb = fileFactory.newBuffer(size); 
+      
+      bb.put(UPDATE_RECORD);     
+      bb.putLong(id);      
+      bb.put(recordType);
+      bb.putInt(record.length);     
+      bb.put(record);      
+      bb.put(DONE);     
+      bb.rewind();
+         
       JournalFile usedFile = appendRecord(bb, syncNonTransactional, null);
-      		
-		posFiles.addUpdateFile(usedFile);
-	}
-	
+            
+      posFiles.addUpdateFile(usedFile);
+   }
+   
+   public void appendUpdateRecord(final long id, final byte recordType, final EncodingSupport record) throws Exception
+   {
+      if (state != STATE_LOADED)
+      {
+         throw new IllegalStateException("Journal must be loaded first");
+      }
+      
+      PosFiles posFiles = posFilesMap.get(id);
+      
+      if (posFiles == null)
+      {
+         throw new IllegalStateException("Cannot find add info " + id);
+      }
+      
+      int size = SIZE_UPDATE_RECORD + record.getEncodeSize();
+      
+      ByteBufferWrapper bb = new ByteBufferWrapper(fileFactory.newBuffer(size));
+      
+      bb.putByte(UPDATE_RECORD);     
+      bb.putLong(id);      
+      bb.putByte(recordType);
+      bb.putInt(record.getEncodeSize());
+      record.encode(bb);
+      bb.putByte(DONE);     
+      bb.rewind();
+         
+      JournalFile usedFile = appendRecord(bb.getBuffer(), syncNonTransactional, null);
+            
+      posFiles.addUpdateFile(usedFile);
+   }
+   
 	public void appendDeleteRecord(long id) throws Exception
 	{
 		if (state != STATE_LOADED)
@@ -359,8 +391,6 @@ public class JournalImpl implements TestableJournal
 			throw new IllegalStateException("Cannot find add info " + id);
 		}
 		
-		posFiles.addDelete(currentFile);
-		
 		int size = SIZE_DELETE_RECORD;
 		
 		ByteBuffer bb = fileFactory.newBuffer(size); 
@@ -370,7 +400,8 @@ public class JournalImpl implements TestableJournal
 		bb.put(DONE);     
 		bb.rewind();
 		
-      appendRecord(bb, syncNonTransactional, null);      
+      JournalFile usedFile = appendRecord(bb, syncNonTransactional, null);
+      posFiles.addDelete(usedFile);
 	}     
 	
 	public long getTransactionID()
@@ -439,35 +470,65 @@ public class JournalImpl implements TestableJournal
 	   tx.addPos(usedFile, id);
    }
 	
-	public void appendUpdateRecordTransactional(final long txID, final long id, byte recordType, final byte[] record) throws Exception
-	{
-		if (state != STATE_LOADED)
-		{
-			throw new IllegalStateException("Journal must be loaded first");
-		}
-		
-		int size = SIZE_UPDATE_RECORD_TX + record.length; 
-		
-		ByteBuffer bb = fileFactory.newBuffer(size); 
-		
-		bb.put(UPDATE_RECORD_TX);     
-		bb.putLong(txID);
-		bb.put(recordType);
-		bb.putLong(id);      
-		bb.putInt(record.length);     
-		bb.put(record);
-		bb.put(DONE);     
-		bb.rewind();
-		
+   public void appendUpdateRecordTransactional(final long txID, final long id, byte recordType, final byte[] record) throws Exception
+   {
+      if (state != STATE_LOADED)
+      {
+         throw new IllegalStateException("Journal must be loaded first");
+      }
+      
+      int size = SIZE_UPDATE_RECORD_TX + record.length; 
+      
+      ByteBuffer bb = fileFactory.newBuffer(size); 
+      
+      bb.put(UPDATE_RECORD_TX);     
+      bb.putLong(txID);
+      bb.put(recordType);
+      bb.putLong(id);      
+      bb.putInt(record.length);     
+      bb.put(record);
+      bb.put(DONE);     
+      bb.rewind();
+      
       JournalFile usedFile;
       
       usedFile = appendRecord(bb, false, getTransactionCallback(txID));
-		
+      
       TransactionNegPos tx = getTransactionInfo(txID);
       
-		tx.addPos(usedFile, id);
-	}
-	
+      tx.addPos(usedFile, id);
+   }
+   
+   public void appendUpdateRecordTransactional(final long txID, final long id, byte recordType, EncodingSupport record) throws Exception
+   {
+      if (state != STATE_LOADED)
+      {
+         throw new IllegalStateException("Journal must be loaded first");
+      }
+      
+      int size = SIZE_UPDATE_RECORD_TX + record.getEncodeSize(); 
+      
+      ByteBufferWrapper bb = new ByteBufferWrapper(fileFactory.newBuffer(size)); 
+      
+      
+      bb.putByte(UPDATE_RECORD_TX);     
+      bb.putLong(txID);
+      bb.putByte(recordType);
+      bb.putLong(id);      
+      bb.putInt(record.getEncodeSize());
+      record.encode(bb);
+      bb.putByte(DONE);     
+      bb.rewind();
+      
+      JournalFile usedFile;
+      
+      usedFile = appendRecord(bb.getBuffer(), false, getTransactionCallback(txID));
+      
+      TransactionNegPos tx = getTransactionInfo(txID);
+      
+      tx.addPos(usedFile, id);
+   }
+   
 	public void appendDeleteRecordTransactional(final long txID, final long id) throws Exception
 	{
 		if (state != STATE_LOADED)
@@ -647,7 +708,7 @@ public class JournalImpl implements TestableJournal
       
       for (JournalFile file: orderedFiles)
       {  
-         file.getFile().open();//aki
+         file.getFile().open();
             
          ByteBuffer bb = fileFactory.newBuffer(fileSize);
          
@@ -1112,6 +1173,9 @@ public class JournalImpl implements TestableJournal
             
             //Reverse the refs
             transactionInfo.forget();
+            
+            // Remove the transactionInfo
+            transactionInfos.remove(transaction.transactionID);
          }
          else
          {
@@ -1132,7 +1196,7 @@ public class JournalImpl implements TestableJournal
 
 	public int getAlignment() throws Exception
 	{
-		return this.currentFile.getFile().getAlignment();
+		return this.fileFactory.getAlignment();
 	}
 	
 	public synchronized void checkReclaimStatus() throws Exception
@@ -1158,12 +1222,25 @@ public class JournalImpl implements TestableJournal
          }
       }
       
+      for (JournalFile file: freeFiles)
+      {
+         builder.append("FreeFile:" + file + "\n");
+      }
+      
       builder.append("CurrentFile:" + currentFile+ " posCounter = " + currentFile.getPosCount() + "\n");
-      builder.append(((JournalFileImpl)currentFile).debug());
+      
+      if (currentFile instanceof JournalFileImpl)
+      {
+         builder.append(((JournalFileImpl)currentFile).debug());
+      }
+      
+      builder.append("#Opened Files:" + this.openedFiles.size());
             
       return builder.toString();
    }
    
+   // TestableJournal implementation --------------------------------------------------------------
+	
    /** Method for use on testcases.
     *  It will call waitComplete on every transaction, so any assertions on the file system will be correct after this */
    public void debugWait() throws Exception
@@ -1173,7 +1250,7 @@ public class JournalImpl implements TestableJournal
          callback.waitCompletion(aioTimeout);
       }
       
-      if (!closingExecutor.isShutdown())
+      if (closingExecutor != null && !closingExecutor.isShutdown())
       {
          // Send something to the closingExecutor, just to make sure we went until its end
          final CountDownLatch latch = new CountDownLatch(1);
@@ -1189,7 +1266,7 @@ public class JournalImpl implements TestableJournal
          latch.await();
       }
 
-      if (!openExecutor.isShutdown())
+      if (openExecutor != null && !openExecutor.isShutdown())
       {
          // Send something to the closingExecutor, just to make sure we went until its end
          final CountDownLatch latch = new CountDownLatch(1);
@@ -1207,8 +1284,6 @@ public class JournalImpl implements TestableJournal
    
    }
 
-   // TestableJournal implementation --------------------------------------------------------------
-	
 	public synchronized void checkAndReclaimFiles() throws Exception
 	{
 		checkReclaimStatus();
@@ -1219,20 +1294,23 @@ public class JournalImpl implements TestableJournal
 			{
 				//File can be reclaimed or deleted
 				
-				if (trace) log.trace("Reclaiming file " + file);
+            if (trace) log.trace("Reclaiming file " + file);
+            log.info("Reclaiming file " + file); // remove this
 				
 				dataFiles.remove(file);
 				
 				//FIXME - size() involves a scan!!!
-				if (freeFiles.size() + dataFiles.size() + 1 < minFiles)
-				{              
+				if (freeFiles.size() + dataFiles.size() + 1 + openedFiles.size() < minFiles)
+				{
 					//Re-initialise it
 					
 					long newOrderingID = generateOrderingID();
 					
 					SequentialFile sf = file.getFile();
 					
-					sf.open();
+               log.info("Adding " + sf + "to freeFiles");  // remove this
+
+               sf.open();
 					
 					ByteBuffer bb = fileFactory.newBuffer(SIZE_LONG); 
 					
@@ -1258,6 +1336,8 @@ public class JournalImpl implements TestableJournal
 				}
 				else
 				{
+               log.info("Deleting " + file.getFile());  // remove this
+
 					file.getFile().open();
 					
 					file.getFile().delete();
@@ -1330,7 +1410,24 @@ public class JournalImpl implements TestableJournal
    {
       return aioTimeout;
    }
-	
+   
+   // In some tests we need to force the journal to move to a next file
+   public void forceMoveNextFile() throws Exception
+   {
+      lock.acquire();
+      
+      try
+      {
+         moveNextFile();
+      }
+      finally
+      {
+         lock.release();
+      }
+      
+      debugWait();
+   }
+
 	// MessagingComponent implementation ---------------------------------------------------
 	
 	public synchronized boolean isStarted()
@@ -1345,6 +1442,9 @@ public class JournalImpl implements TestableJournal
 			throw new IllegalStateException("Journal is not stopped");
 		}
 		
+		this.openExecutor =  Executors.newSingleThreadExecutor();
+		this.closingExecutor = Executors.newSingleThreadExecutor();
+		
 		state = STATE_STARTED;
 	}
 	
@@ -1358,7 +1458,7 @@ public class JournalImpl implements TestableJournal
 		stopReclaimer();
 		
 		closingExecutor.shutdown();
-		if (!closingExecutor.awaitTermination(aioTimeout, TimeUnit.SECONDS))
+		if (!closingExecutor.awaitTermination(aioTimeout, TimeUnit.MILLISECONDS))
 		{
 		   throw new IllegalStateException("Time out waiting for closing executor to finish");
 		}
@@ -1369,12 +1469,11 @@ public class JournalImpl implements TestableJournal
 		}
 
 		openExecutor.shutdown();
-      if (!closingExecutor.awaitTermination(aioTimeout, TimeUnit.SECONDS))
+      if (!openExecutor.awaitTermination(aioTimeout, TimeUnit.MILLISECONDS))
       {
          throw new IllegalStateException("Time out waiting for open executor to finish");
       }
       
-
 		for (JournalFile file: openedFiles)
 		{
 			file.getFile().close();
@@ -1522,6 +1621,7 @@ public class JournalImpl implements TestableJournal
 		return orderingID;
 	}
 
+	// You need to guarantee lock.acquire() over currentFile before calling this method
 	private void checkFile(final int size) throws Exception
 	{		
 		if (size % currentFile.getFile().getAlignment() != 0)
@@ -1537,21 +1637,21 @@ public class JournalImpl implements TestableJournal
 		
 		if (currentFile == null || fileSize - currentFile.getOffset() < size)
 		{
-		   closeFile(currentFile);
-
-		   enqueueOpenFile();
-		   
-		   currentFile = openedFiles.poll(aioTimeout, TimeUnit.SECONDS);
-		   
-		   if (currentFile == null)
-		   {
-		      throw new IllegalStateException("Timed out waiting for an opened file");
-		   }
+		   moveNextFile();
 
 		}     
 	}
 	
-	private void enqueueOpenFile()
+	// You need to guarantee lock.acquire() before calling this method
+   private void moveNextFile() throws InterruptedException
+   {
+      closeFile(currentFile);
+
+      currentFile = enqueueOpenFile();
+   }
+	
+   // You need to guarantee lock.acquire() before calling this method
+	private JournalFile enqueueOpenFile() throws InterruptedException
 	{
 	   if (trace) log.trace("enqueueOpenFile with openedFiles.size=" + openedFiles.size());
 	   openExecutor.execute(new Runnable()
@@ -1568,12 +1668,21 @@ public class JournalImpl implements TestableJournal
             }
          }
       });
+	   
+	   JournalFile nextFile = openedFiles.poll(aioTimeout, TimeUnit.SECONDS);
+	   
+	   if (nextFile == null)
+	   {
+         throw new IllegalStateException("Timed out waiting for an opened file");
+	   }
+	   
+	   return nextFile;
 	}
 	
 	
    /** 
     * 
-    * Open a file an place it into the openedFiles queue
+    * Open a file and place it into the openedFiles queue
     * */
    private void pushOpenedFile() throws Exception
    {

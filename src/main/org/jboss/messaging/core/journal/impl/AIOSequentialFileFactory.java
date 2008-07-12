@@ -65,11 +65,16 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
       return ByteBuffer.allocateDirect(size);
    }
    
+   public int getAlignment()
+   {
+      return 512;
+   }
+   
    // For tests only
    public ByteBuffer wrapBuffer(final byte[] bytes)
    {
       ByteBuffer newbuffer = newBuffer(bytes.length);
       newbuffer.put(bytes);
       return newbuffer;
-   };
    }
+}

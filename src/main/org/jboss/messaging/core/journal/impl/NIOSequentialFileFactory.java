@@ -63,5 +63,10 @@ public class NIOSequentialFileFactory extends AbstractSequentialFactory implemen
       return ByteBuffer.wrap(bytes);
    }
    
+   public int getAlignment()
+   {
+      return 1;
+   }
+   
 	
 }

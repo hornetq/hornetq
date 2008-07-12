@@ -45,5 +45,7 @@ public interface SequentialFileFactory
 
    // Avoid using this method in production as it creates an unecessary copy 
    ByteBuffer wrapBuffer(byte[] bytes);
+   
+   int getAlignment();
 
 }

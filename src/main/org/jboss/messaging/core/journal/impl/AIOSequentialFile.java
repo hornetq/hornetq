@@ -238,6 +238,10 @@ public class AIOSequentialFile implements SequentialFile
 	   }		
 	}
 
+	public String toString()
+	{
+	   return "AIOSequentialFile:" + this.journalDir + "/" + this.fileName;
+	}
 	
 	// Private methods
 	// -----------------------------------------------------------------------------------------------------
