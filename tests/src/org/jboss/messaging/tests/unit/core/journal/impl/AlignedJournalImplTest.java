@@ -133,16 +133,16 @@ public class AlignedJournalImplTest extends UnitTestCase
    public void testAppendAndUpdateRecords() throws Exception
    {
       
-      final int JOURNAL_SIZE = 51 * 1024;
+      final int JOURNAL_SIZE = 10000;
       
-      setupJournal(JOURNAL_SIZE, 1024);
+      setupJournal(JOURNAL_SIZE, 100);
       
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
 
       for (int i = 0; i < 25; i++)
       {
-         byte[] bytes = new byte[100];
+         byte[] bytes = new byte[5];
          for (int j=0; j<bytes.length; j++)
          {
             bytes[j] = (byte)i;
@@ -152,7 +152,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       
       for (int i = 25; i < 50; i++)
       {
-         EncodingSupport support = new SimpleEncoding(100, (byte) i);
+         EncodingSupport support = new SimpleEncoding(5, (byte) i);
          journalImpl.appendAddRecord(i * 100l, (byte)i, support);
       }
       
@@ -165,8 +165,8 @@ public class AlignedJournalImplTest extends UnitTestCase
       {
          assertEquals(i * 100l, recordItem.id);
          assertEquals(i, recordItem.getUserRecordType());
-         assertEquals(100, recordItem.data.length);
-         for (int j=0;j<100;j++)
+         assertEquals(5, recordItem.data.length);
+         for (int j=0;j<5;j++)
          {
             assertEquals((byte)i, recordItem.data[j]);
          }
@@ -195,8 +195,8 @@ public class AlignedJournalImplTest extends UnitTestCase
          {
             assertEquals(i * 100l, recordItem.id);
             assertEquals(i, recordItem.getUserRecordType());
-            assertEquals(100, recordItem.data.length);
-            for (int j=0;j<100;j++)
+            assertEquals(5, recordItem.data.length);
+            for (int j=0;j<5;j++)
             {
                assertEquals((byte)i, recordItem.data[j]);
             }
@@ -279,16 +279,16 @@ public class AlignedJournalImplTest extends UnitTestCase
 
    public void testReloadWithTransaction() throws Exception
    {
-      final int JOURNAL_SIZE = 51 * 1024;
+      final int JOURNAL_SIZE = 2000;
       
-      setupJournal(JOURNAL_SIZE, 1024);
+      setupJournal(JOURNAL_SIZE, 100);
       
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
       
       journalImpl.appendAddRecordTransactional(1, 1, (byte) 1, new SimpleEncoding(1,(byte) 1));
       
-      setupJournal(JOURNAL_SIZE, 1024);
+      setupJournal(JOURNAL_SIZE, 100);
       
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
@@ -304,7 +304,7 @@ public class AlignedJournalImplTest extends UnitTestCase
          log.warn(e);
       }
 
-      setupJournal(JOURNAL_SIZE, 1024);
+      setupJournal(JOURNAL_SIZE, 100);
       
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
@@ -313,30 +313,30 @@ public class AlignedJournalImplTest extends UnitTestCase
    
    public void testReclaimWithInterruptedTransaction() throws Exception
    {
-      final int JOURNAL_SIZE = 51 * 1024;
+      final int JOURNAL_SIZE = 1100;
       
-      setupJournal(JOURNAL_SIZE, 1024);
+      setupJournal(JOURNAL_SIZE, 100);
       
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
       
       for (int i = 0; i < 10; i++)
       {
-         journalImpl.appendAddRecordTransactional(1, 1, (byte) 1, new SimpleEncoding(50,(byte) 1));
+         journalImpl.appendAddRecordTransactional(1, 1, (byte) 1, new SimpleEncoding(1,(byte) 1));
          journalImpl.forceMoveNextFile();
       }
       
       journalImpl.debugWait();
       
-      //System.out.println("files = " + journalImpl.debug());
+      System.out.println("files = " + journalImpl.debug());
       
       assertEquals(12, factory.listFiles("tt").size());
       
-      journalImpl.appendAddRecordTransactional(2, 1, (byte) 1, new SimpleEncoding(200,(byte) 1));
+      journalImpl.appendAddRecordTransactional(2, 1, (byte) 1, new SimpleEncoding(1,(byte) 1));
 
       assertEquals(12, factory.listFiles("tt").size());
       
-      setupJournal(JOURNAL_SIZE, 1024);
+      setupJournal(JOURNAL_SIZE, 100);
       
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
@@ -354,7 +354,7 @@ public class AlignedJournalImplTest extends UnitTestCase
          log.debug("Expected exception " + e, e);
       }
 
-      setupJournal(JOURNAL_SIZE, 1024);
+      setupJournal(JOURNAL_SIZE, 100);
       
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
@@ -369,28 +369,26 @@ public class AlignedJournalImplTest extends UnitTestCase
    
    public void testReclaimWithCompletedTransaction() throws Exception
    {
-      final int JOURNAL_SIZE = 51 * 1024;
+      final int JOURNAL_SIZE = 2000;
       
-      setupJournal(JOURNAL_SIZE, 1024);
+      setupJournal(JOURNAL_SIZE, 100);
       
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
       
       for (int i = 0; i < 10; i++)
       {
-         journalImpl.appendAddRecordTransactional(1, 1, (byte) 1, new SimpleEncoding(50,(byte) 1));
+         journalImpl.appendAddRecordTransactional(1, 1, (byte) 1, new SimpleEncoding(1,(byte) 1));
          journalImpl.forceMoveNextFile();
       }
       
-      journalImpl.debugWait();
-      
-      //System.out.println("files = " + journalImpl.debug());
-      
       journalImpl.appendCommitRecord(1l);
+
+      journalImpl.debugWait();
 
       assertEquals(12, factory.listFiles("tt").size());
 
-      setupJournal(JOURNAL_SIZE, 1024);
+      setupJournal(JOURNAL_SIZE, 100);
 
       assertEquals(10, records.size());
       assertEquals(0, transactions.size());
@@ -401,11 +399,35 @@ public class AlignedJournalImplTest extends UnitTestCase
       
       assertEquals(12, factory.listFiles("tt").size());
       
+      for (int i = 0; i < 10; i++)
+      {
+         journalImpl.appendDeleteRecordTransactional(2l, (long)i);
+         journalImpl.forceMoveNextFile();
+      }
+      
+      journalImpl.appendCommitRecord(2l);
+      
+      journalImpl.appendAddRecord(100, (byte)1, new SimpleEncoding(5, (byte)1));
+      
+      journalImpl.forceMoveNextFile();
+      
+      journalImpl.appendAddRecord(101, (byte)1, new SimpleEncoding(5, (byte)1));
+      
+      journalImpl.checkAndReclaimFiles();
+      
+      assertEquals(1, journalImpl.getDataFilesCount());
+      
+      setupJournal(JOURNAL_SIZE, 100);
+      
+      assertEquals(1, journalImpl.getDataFilesCount());
+      
+      assertEquals(3, factory.listFiles("tt").size());
    }
+   
    
    public void testReclaimWithPreparedTransaction() throws Exception
    {
-      final int JOURNAL_SIZE = 51 * 1024;
+      final int JOURNAL_SIZE = 3 * 1024;
       
       setupJournal(JOURNAL_SIZE, 1);
       
