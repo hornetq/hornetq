@@ -604,7 +604,27 @@ public class JournalStorageManager implements StorageManager
 	
 	private EncodingSupport ackBytes(final long queueID, final long messageID)
    {
-      return new ACKRecord(queueID, messageID);
+	   // Using an EncodingSupport, to avoid some byteArrayCopy
+      return new EncodingSupport()
+      {
+
+         public void decode(MessagingBuffer buffer)
+         {
+            throw new UnsupportedOperationException();
+         }
+
+         public void encode(MessagingBuffer buffer)
+         {
+            buffer.putLong(queueID);
+            buffer.putLong(messageID);
+         }
+
+         public int getEncodeSize()
+         {
+            return SIZE_LONG * 2;
+         }
+       
+      };
    }
 	
 	private void checkAndCreateDir(String dir, boolean create)
@@ -638,38 +658,5 @@ public class JournalStorageManager implements StorageManager
 	}
 	
    // Inner Classes ----------------------------------------------------------------------------
-
-	class ACKRecord implements EncodingSupport
-   {
-      private long queueID;
-      private long messageID;
-      
-      
-
-      public ACKRecord(long queueID, long messageID)
-      {
-         super();
-         this.queueID = queueID;
-         this.messageID = messageID;
-      }
-
-      public void decode(MessagingBuffer buffer)
-      {
-         throw new UnsupportedOperationException();
-      }
-
-      public void encode(MessagingBuffer buffer)
-      {
-         buffer.putLong(queueID);
-         buffer.putLong(messageID);
-      }
-
-      public int getEncodeSize()
-      {
-         return SIZE_LONG * 2;
-      }
-      
-   }
-   
 
 }
