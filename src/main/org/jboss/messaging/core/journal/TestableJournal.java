@@ -54,8 +54,6 @@ public interface TestableJournal extends Journal
    
    boolean isSyncNonTransactional();
    
-   long getTaskPeriod();
-   
    String getFilePrefix();
    
    String getFileExtension();
@@ -65,4 +63,6 @@ public interface TestableJournal extends Journal
    long getAIOTimeout();
    
    void forceMoveNextFile() throws Exception;
+   
+   void disableAutoReclaiming();
 }

@@ -26,13 +26,17 @@ package org.jboss.messaging.tests.unit.core.journal.impl;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
+import org.easymock.EasyMock;
+import org.easymock.IAnswer;
 import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.SequentialFile;
+import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
+import org.jboss.messaging.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.MessagingBuffer;
 
@@ -50,7 +54,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    
    private int alignment = 0;
    
-   private FakeSequentialFileFactory factory;
+   private SequentialFileFactory factory;
 
    JournalImpl journalImpl = null;
    
@@ -220,11 +224,13 @@ public class AlignedJournalImplTest extends UnitTestCase
       
    }
    
-   public void testAddAndDeleteReclaimWithoutTransactions() throws Exception
+   public void testPartialDelete() throws Exception
    {
-      final int JOURNAL_SIZE = 51 * 1024;
+      final int JOURNAL_SIZE = 10000;
       
-      setupJournal(JOURNAL_SIZE, 1024);
+      setupJournal(JOURNAL_SIZE, 100);
+      
+      journalImpl.disableAutoReclaiming();
       
       journalImpl.checkAndReclaimFiles();
       
@@ -238,7 +244,52 @@ public class AlignedJournalImplTest extends UnitTestCase
       
       for (int i = 0; i < 50; i++)
       {
-         journalImpl.appendAddRecord((long)i, (byte)1, new SimpleEncoding(200, (byte) 'x'));
+         journalImpl.appendAddRecord((long)i, (byte)1, new SimpleEncoding(1, (byte) 'x'));
+      }
+      
+      journalImpl.forceMoveNextFile();
+   
+      // as the request to a new file is asynchronous, we need to make sure the async requests are done
+      journalImpl.debugWait();
+      
+      assertEquals(3, factory.listFiles("tt").size());
+      
+      for (int i = 10; i < 50; i++)
+      {
+         journalImpl.appendDeleteRecord((long)i);
+      }
+      
+      journalImpl.debugWait();
+      
+      setupJournal(JOURNAL_SIZE, 100);
+      
+      assertEquals(10, this.records.size());
+      
+      assertEquals(3, factory.listFiles("tt").size());
+
+   }
+
+   public void testAddAndDeleteReclaimWithoutTransactions() throws Exception
+   {
+      final int JOURNAL_SIZE = 10000;
+      
+      setupJournal(JOURNAL_SIZE, 100);
+      
+      journalImpl.disableAutoReclaiming();
+      
+      journalImpl.checkAndReclaimFiles();
+      
+      journalImpl.debugWait();
+      
+      assertEquals(2, factory.listFiles("tt").size());
+      
+      log.debug("Initial:--> " + journalImpl.debug());
+      
+      log.debug("_______________________________");
+      
+      for (int i = 0; i < 50; i++)
+      {
+         journalImpl.appendAddRecord((long)i, (byte)1, new SimpleEncoding(1, (byte) 'x'));
       }
    
       // as the request to a new file is asynchronous, we need to make sure the async requests are done
@@ -251,15 +302,20 @@ public class AlignedJournalImplTest extends UnitTestCase
          journalImpl.appendDeleteRecord((long)i);
       }
       
-      journalImpl.appendAddRecord((long)1000, (byte)1, new SimpleEncoding(200, (byte) 'x'));
+      journalImpl.forceMoveNextFile();
+      
+      journalImpl.appendAddRecord((long)1000, (byte)1, new SimpleEncoding(1, (byte) 'x'));
       
       journalImpl.debugWait();
       
       assertEquals(4, factory.listFiles("tt").size());
 
-      journalImpl.checkReclaimStatus();
 
-      log.debug(journalImpl.debug());
+      setupJournal(JOURNAL_SIZE, 100);
+      
+      assertEquals(1, records.size());
+      
+      assertEquals(1000, records.get(0).id);
       
       journalImpl.checkAndReclaimFiles();
       
@@ -311,28 +367,28 @@ public class AlignedJournalImplTest extends UnitTestCase
       
    }
    
-   public void testReclaimWithInterruptedTransaction() throws Exception
+   public void testReloadWithInterruptedTransaction() throws Exception
    {
       final int JOURNAL_SIZE = 1100;
       
       setupJournal(JOURNAL_SIZE, 100);
+      
+      journalImpl.disableAutoReclaiming();
       
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
       
       for (int i = 0; i < 10; i++)
       {
-         journalImpl.appendAddRecordTransactional(1, 1, (byte) 1, new SimpleEncoding(1,(byte) 1));
+         journalImpl.appendAddRecordTransactional(77l, 1, (byte) 1, new SimpleEncoding(1,(byte) 1));
          journalImpl.forceMoveNextFile();
       }
       
       journalImpl.debugWait();
       
-      System.out.println("files = " + journalImpl.debug());
-      
       assertEquals(12, factory.listFiles("tt").size());
       
-      journalImpl.appendAddRecordTransactional(2, 1, (byte) 1, new SimpleEncoding(1,(byte) 1));
+      journalImpl.appendAddRecordTransactional(78l, 1, (byte) 1, new SimpleEncoding(1,(byte) 1));
 
       assertEquals(12, factory.listFiles("tt").size());
       
@@ -340,12 +396,10 @@ public class AlignedJournalImplTest extends UnitTestCase
       
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
-      
-      //System.out.println("Journal - " + journalImpl.debug());
 
       try
       {
-         journalImpl.appendCommitRecord(1l);
+         journalImpl.appendCommitRecord(77l);
          // This was supposed to throw an exception, as the transaction was forgotten (interrupted by a reload).
          fail("Supposed to throw exception");
       }
@@ -363,11 +417,13 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.checkAndReclaimFiles();
       
+      System.out.println("Journal: " + journalImpl.debug());
+      
       assertEquals(2, factory.listFiles("tt").size());
       
    }
    
-   public void testReclaimWithCompletedTransaction() throws Exception
+   public void testReloadWithCompletedTransaction() throws Exception
    {
       final int JOURNAL_SIZE = 2000;
       
@@ -425,7 +481,30 @@ public class AlignedJournalImplTest extends UnitTestCase
    }
    
    
-   public void testReclaimWithPreparedTransaction() throws Exception
+   
+   public void testTotalSize() throws Exception
+   {
+      final int JOURNAL_SIZE = 2000;
+      
+      setupJournal(JOURNAL_SIZE, 100);
+      
+      assertEquals(0, records.size());
+      assertEquals(0, transactions.size());
+      
+      journalImpl.appendAddRecordTransactional(1l, 2l, (byte)3, new SimpleEncoding(1900 - JournalImpl.SIZE_ADD_RECORD_TX, (byte)4));
+      
+      journalImpl.appendCommitRecord(1l);
+      
+      journalImpl.debugWait();
+      
+      setupJournal(JOURNAL_SIZE, 100);
+      
+      assertEquals(1, records.size());
+      
+   }
+   
+   
+   public void testReloadWithPreparedTransaction() throws Exception
    {
       final int JOURNAL_SIZE = 3 * 1024;
       
@@ -495,6 +574,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       
    }
    
+   
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
@@ -540,8 +620,8 @@ public class AlignedJournalImplTest extends UnitTestCase
       
       journalImpl = new JournalImpl(journalSize, 2,
             true, true,
-            factory, 1000,
-            "tt", "tt", 1000, 1000);
+            factory, 
+            "tt", "tt", 1000, 10000);
       
       journalImpl.start();
       
@@ -554,37 +634,5 @@ public class AlignedJournalImplTest extends UnitTestCase
 
    // Inner classes -------------------------------------------------
    
-   private class SimpleEncoding implements EncodingSupport
-   {
-
-      private final int size;
-      private final byte bytetosend;
-      
-      public SimpleEncoding(int size, byte bytetosend)
-      {
-         this.size = size;
-         this.bytetosend = bytetosend;
-      }
-      
-      public void decode(MessagingBuffer buffer)
-      {
-         throw new UnsupportedOperationException();
-         
-      }
-
-      public void encode(MessagingBuffer buffer)
-      {
-         for (int i = 0; i < size; i++)
-         {
-            buffer.putByte(bytetosend);
-         }
-      }
-
-      public int getEncodeSize()
-      {
-         return size;
-      }
-      
-   }
    
 }

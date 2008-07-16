@@ -155,6 +155,85 @@ public class UnitTestCase extends TestCase
    
    // Protected -----------------------------------------------------
    
+   protected byte[] autoEncode(Object... args)
+   {
+      
+      int size = 0;
+      
+      for (Object arg : args)
+      {
+         if (arg instanceof Byte)
+         {
+            size++;
+         }
+         else if (arg instanceof Boolean)
+         {
+            size++;
+         }
+         else if (arg instanceof Integer)
+         {
+            size += 4;
+         }
+         else if (arg instanceof Long)
+         {
+            size += 8;
+         }
+         else if (arg instanceof Float)
+         {
+            size += 4;
+         }
+         else if (arg instanceof Double)
+         {
+            size += 8;
+         }
+         else
+         {
+            throw new IllegalArgumentException(
+                  "method autoEncode doesn't know how to convert "
+                        + arg.getClass() + " yet");
+         }
+      }
+      
+      ByteBuffer buffer = ByteBuffer.allocate(size);
+      
+      for (Object arg : args)
+      {
+         if (arg instanceof Byte)
+         {
+            buffer.put(((Byte) arg).byteValue());
+         }
+         else if (arg instanceof Boolean)
+         {
+            Boolean b = (Boolean) arg;
+            buffer.put((byte) (b.booleanValue() ? 1 : 0));
+         }
+         else if (arg instanceof Integer)
+         {
+            buffer.putInt(((Integer) arg).intValue());
+         }
+         else if (arg instanceof Long)
+         {
+            buffer.putLong(((Long) arg).longValue());
+         }
+         else if (arg instanceof Float)
+         {
+            buffer.putFloat(((Float) arg).floatValue());
+         }
+         else if (arg instanceof Double)
+         {
+            buffer.putDouble(((Double) arg).doubleValue());
+         }
+         else
+         {
+            throw new IllegalArgumentException(
+                  "method autoEncode doesn't know how to convert "
+                        + arg.getClass() + " yet");
+         }
+      }
+      
+      return buffer.array();
+   }
+   
 
    protected boolean deleteDirectory(File directory)
    {

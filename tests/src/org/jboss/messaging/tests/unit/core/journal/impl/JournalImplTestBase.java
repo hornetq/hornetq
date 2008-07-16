@@ -141,7 +141,8 @@ public abstract class JournalImplTestBase extends UnitTestCase
 	public void createJournal() throws Exception
 	{     
 		journal =
-			new JournalImpl(fileSize, minFiles, sync, sync, fileFactory, 1000, filePrefix, fileExtension, maxAIO, 120000);
+			new JournalImpl(fileSize, minFiles, sync, sync, fileFactory, filePrefix, fileExtension, maxAIO, 120000);
+		journal.disableAutoReclaiming();
 	}
 	
 	protected void startJournal() throws Exception

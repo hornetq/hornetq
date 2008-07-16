@@ -53,7 +53,7 @@ public interface JournalFile
 	
 	int getOffset();
 	
-	long getOrderingID();
+	int getOrderingID();
 	
 	void setOffset(final int offset);
 	

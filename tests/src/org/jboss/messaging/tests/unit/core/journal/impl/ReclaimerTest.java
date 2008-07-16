@@ -768,7 +768,7 @@ public class ReclaimerTest extends UnitTestCase
 			return 0;
 		}
 
-		public long getOrderingID()
+		public int getOrderingID()
 		{
 			return 0;
 		}

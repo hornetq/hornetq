@@ -43,7 +43,7 @@ public class JournalFileImpl implements JournalFile
 		
 	private final SequentialFile file;
 	
-	private final long orderingID;
+	private final int orderingID;
 	
 	private int offset;
 			
@@ -53,7 +53,7 @@ public class JournalFileImpl implements JournalFile
 	
 	private Map<JournalFile, Integer> negCounts = new HashMap<JournalFile, Integer>();
 	
-	public JournalFileImpl(final SequentialFile file, final long orderingID)
+	public JournalFileImpl(final SequentialFile file, final int orderingID)
 	{
 		this.file = file;
 		
@@ -118,7 +118,7 @@ public class JournalFileImpl implements JournalFile
 		return offset;
 	}
 	
-	public long getOrderingID()
+	public int getOrderingID()
 	{
 		return orderingID;
 	}

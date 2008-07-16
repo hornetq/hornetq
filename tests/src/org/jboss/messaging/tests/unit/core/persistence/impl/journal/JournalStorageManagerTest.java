@@ -800,7 +800,6 @@ public class JournalStorageManagerTest extends UnitTestCase
       assertEquals(config.getJournalMinFiles(), messageJournal.getMinFiles());
       assertEquals(config.isJournalSyncTransactional(), messageJournal.isSyncTransactional());
       assertEquals(config.isJournalSyncNonTransactional(), messageJournal.isSyncNonTransactional());
-      assertEquals(config.getJournalTaskPeriod(), messageJournal.getTaskPeriod());
       assertEquals("jbm-data", messageJournal.getFilePrefix());
       assertEquals("jbm", messageJournal.getFileExtension());
       assertEquals(config.getJournalMaxAIO(), messageJournal.getMaxAIO());
@@ -814,7 +813,6 @@ public class JournalStorageManagerTest extends UnitTestCase
       assertEquals(2, bindingsJournal.getMinFiles());
       assertEquals(true, bindingsJournal.isSyncTransactional());
       assertEquals(true, bindingsJournal.isSyncNonTransactional());
-      assertEquals(10000, bindingsJournal.getTaskPeriod());
       assertEquals("jbm-bindings", bindingsJournal.getFilePrefix());
       assertEquals("bindings", bindingsJournal.getFileExtension());
       assertEquals(1, bindingsJournal.getMaxAIO());
