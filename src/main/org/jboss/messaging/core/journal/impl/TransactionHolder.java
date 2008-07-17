@@ -34,6 +34,7 @@ import org.jboss.messaging.core.journal.RecordInfo;
  * A TransactionHolder
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
 
@@ -51,5 +52,7 @@ public class TransactionHolder
 	public final Set<Long> recordsToDelete = new HashSet<Long>();
 	
 	public boolean prepared;
+	
+	public boolean invalid;
 	
 }

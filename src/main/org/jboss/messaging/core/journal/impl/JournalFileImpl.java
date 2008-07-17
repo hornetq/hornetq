@@ -25,6 +25,7 @@ package org.jboss.messaging.core.journal.impl;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.logging.Logger;
@@ -51,7 +52,7 @@ public class JournalFileImpl implements JournalFile
 	
 	private boolean canReclaim;
 	
-	private Map<JournalFile, Integer> negCounts = new HashMap<JournalFile, Integer>();
+	private Map<JournalFile, Integer> negCounts = new ConcurrentHashMap<JournalFile, Integer>();
 	
 	public JournalFileImpl(final SequentialFile file, final int orderingID)
 	{

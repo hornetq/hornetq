@@ -82,8 +82,6 @@ public class JournalImpl implements TestableJournal
    private static final int SIZE_LONG = 8;
    
    private static final int SIZE_INT = 4;
-
-   private static final int SIZE_SHORT = 2;
    
    private static final int SIZE_BYTE = 1;
    
@@ -120,16 +118,15 @@ public class JournalImpl implements TestableJournal
    
    public static final byte DELETE_RECORD_TX = 16;
    
-   public static final int SIZE_PREPARE_RECORD = BASIC_SIZE + SIZE_LONG;
+   public static final int SIZE_PREPARE_RECORD = BASIC_SIZE + SIZE_LONG + SIZE_INT;
    
    public static final byte PREPARE_RECORD = 17;
    
-   
-   public static final int SIZE_COMMIT_RECORD = BASIC_SIZE + SIZE_LONG;
+   public static final int SIZE_COMMIT_RECORD = BASIC_SIZE + SIZE_LONG + SIZE_INT;
    
    public static final byte COMMIT_RECORD = 18;
    
-   public static final int SIZE_ROLLBACK_RECORD = BASIC_SIZE + SIZE_LONG;
+   public static final int SIZE_ROLLBACK_RECORD = BASIC_SIZE + SIZE_LONG + SIZE_INT;
    
    public static final byte ROLLBACK_RECORD = 19;
    
@@ -170,7 +167,7 @@ public class JournalImpl implements TestableJournal
    
    private final Map<Long, PosFiles> posFilesMap = new ConcurrentHashMap<Long, PosFiles>();
    
-   private final Map<Long, TransactionNegPos> transactionInfos = new ConcurrentHashMap<Long, TransactionNegPos>();
+   private final Map<Long, JournalTransaction> transactionInfos = new ConcurrentHashMap<Long, JournalTransaction>();
    
    private final ConcurrentMap<Long, TransactionCallback> transactionCallbacks = new ConcurrentHashMap<Long, TransactionCallback>();
    
@@ -195,11 +192,11 @@ public class JournalImpl implements TestableJournal
    
    private volatile int state;
    
-   private volatile long lastOrderingID;
-   
    private final AtomicLong transactionIDSequence = new AtomicLong(0);
    
    private Reclaimer reclaimer = new Reclaimer();
+   
+   private Thread shutdownHook = null;
    
    // Static --------------------------------------------------------
    
@@ -438,13 +435,11 @@ public class JournalImpl implements TestableJournal
       bb.putInt(size);     
       bb.rewind();
       
-      JournalFile usedFile;
+      JournalFile usedFile = appendRecord(bb.getBuffer(), false, getTransactionCallback(txID));
       
-      usedFile = appendRecord(bb.getBuffer(), false, getTransactionCallback(txID));
+      JournalTransaction tx = getTransactionInfo(txID);
       
-      TransactionNegPos tx = getTransactionInfo(txID);
-      
-      tx.addPos(usedFile, id);
+      tx.addPositive(usedFile, id);
    }
    
    public void appendAddRecordTransactional(final long txID, final long id, final byte recordType, final byte[] record) throws Exception
@@ -468,13 +463,11 @@ public class JournalImpl implements TestableJournal
       bb.putInt(size);
       bb.rewind();
       
-      JournalFile usedFile;
+      JournalFile usedFile = appendRecord(bb, false, getTransactionCallback(txID));
       
-      usedFile = appendRecord(bb, false, getTransactionCallback(txID));
+      JournalTransaction tx = getTransactionInfo(txID);
       
-      TransactionNegPos tx = getTransactionInfo(txID);
-      
-      tx.addPos(usedFile, id);
+      tx.addPositive(usedFile, id);
    }
    
    public void appendUpdateRecordTransactional(final long txID, final long id, byte recordType, final byte[] record) throws Exception
@@ -498,13 +491,11 @@ public class JournalImpl implements TestableJournal
       bb.putInt(size);     
       bb.rewind();
       
-      JournalFile usedFile;
+      JournalFile usedFile = appendRecord(bb, false, getTransactionCallback(txID));
       
-      usedFile = appendRecord(bb, false, getTransactionCallback(txID));
+      JournalTransaction tx = getTransactionInfo(txID);
       
-      TransactionNegPos tx = getTransactionInfo(txID);
-      
-      tx.addPos(usedFile, id);
+      tx.addPositive(usedFile, id);
    }
    
    public void appendUpdateRecordTransactional(final long txID, final long id, byte recordType, EncodingSupport record) throws Exception
@@ -529,13 +520,11 @@ public class JournalImpl implements TestableJournal
       bb.putInt(size);     
       bb.rewind();
       
-      JournalFile usedFile;
+      JournalFile usedFile = appendRecord(bb.getBuffer(), false, getTransactionCallback(txID));
       
-      usedFile = appendRecord(bb.getBuffer(), false, getTransactionCallback(txID));
+      JournalTransaction tx = getTransactionInfo(txID);
       
-      TransactionNegPos tx = getTransactionInfo(txID);
-      
-      tx.addPos(usedFile, id);
+      tx.addPositive(usedFile, id);
    }
    
    public void appendDeleteRecordTransactional(final long txID, final long id) throws Exception
@@ -556,13 +545,11 @@ public class JournalImpl implements TestableJournal
       bb.putInt(size);     
       bb.rewind();
       
-      JournalFile usedFile;
+      JournalFile usedFile = appendRecord(bb, false, getTransactionCallback(txID));
       
-      usedFile = appendRecord(bb, false, getTransactionCallback(txID));
+      JournalTransaction tx = getTransactionInfo(txID);
       
-      TransactionNegPos tx = getTransactionInfo(txID);
-      
-      tx.addNeg(usedFile, id);      
+      tx.addNegative(usedFile, id);      
    }  
    
    public void appendPrepareRecord(final long txID) throws Exception
@@ -572,7 +559,7 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Journal must be loaded first");
       }
       
-      TransactionNegPos tx = transactionInfos.get(txID);
+      JournalTransaction tx = transactionInfos.get(txID);
       
       if (tx == null)
       {
@@ -586,12 +573,11 @@ public class JournalImpl implements TestableJournal
       bb.put(PREPARE_RECORD);    
       bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
       bb.putLong(txID);
+      bb.putInt(tx.getNumberOfElements());
       bb.putInt(size);           
       bb.rewind();
       
-      JournalFile usedFile;
-      
-      usedFile = appendRecord(bb, syncTransactional, getTransactionCallback(txID));
+      JournalFile usedFile = appendRecord(bb, syncTransactional, getTransactionCallback(txID));
       
       tx.prepare(usedFile);
    }
@@ -603,7 +589,7 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Journal must be loaded first");
       }		
       
-      TransactionNegPos tx = transactionInfos.remove(txID);
+      JournalTransaction tx = transactionInfos.remove(txID);
       
       if (tx == null)
       {
@@ -616,13 +602,12 @@ public class JournalImpl implements TestableJournal
       
       bb.put(COMMIT_RECORD);     
       bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
-      bb.putLong(txID);    
+      bb.putLong(txID);
+      bb.putInt(tx.getNumberOfElements());
       bb.putInt(size);           
       bb.rewind();
       
-      JournalFile usedFile;
-      
-      usedFile = appendRecord(bb, syncTransactional, getTransactionCallback(txID));
+      JournalFile usedFile = appendRecord(bb, syncTransactional, getTransactionCallback(txID));
       
       transactionCallbacks.remove(txID);
       
@@ -637,7 +622,7 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Journal must be loaded first");
       }
       
-      TransactionNegPos tx = transactionInfos.remove(txID);
+      JournalTransaction tx = transactionInfos.remove(txID);
       
       if (tx == null)
       {
@@ -651,12 +636,11 @@ public class JournalImpl implements TestableJournal
       bb.put(ROLLBACK_RECORD);      
       bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
       bb.putLong(txID);
+      bb.putInt(tx.getNumberOfElements());
       bb.putInt(size);        
       bb.rewind();
       
-      JournalFile usedFile;
-      
-      usedFile = appendRecord(bb, syncTransactional, getTransactionCallback(txID));      
+      JournalFile usedFile = appendRecord(bb, syncTransactional, getTransactionCallback(txID));      
       
       transactionCallbacks.remove(txID);
       
@@ -670,6 +654,8 @@ public class JournalImpl implements TestableJournal
       {
          throw new IllegalStateException("Journal must be in started state");
       }
+      
+      addShutdownHook();
       
       Set<Long> recordsToDelete = new HashSet<Long>();
       
@@ -934,16 +920,16 @@ public class JournalImpl implements TestableJournal
                   
                   tx.recordInfos.add(new RecordInfo(id, userRecordType, record, false));                     
                   
-                  TransactionNegPos tnp = transactionInfos.get(txID);
+                  JournalTransaction tnp = transactionInfos.get(txID);
                   
                   if (tnp == null)
                   {
-                     tnp = new TransactionNegPos();
+                     tnp = new JournalTransaction();
                      
                      transactionInfos.put(txID, tnp);
                   }
                   
-                  tnp.addPos(file, id);
+                  tnp.addPositive(file, id);
                   
                   hasData = true;                                          
                   
@@ -972,16 +958,16 @@ public class JournalImpl implements TestableJournal
                   
                   tx.recordInfos.add(new RecordInfo(id, userRecordType, record, true));
                   
-                  TransactionNegPos tnp = transactionInfos.get(txID);
+                  JournalTransaction tnp = transactionInfos.get(txID);
                   
                   if (tnp == null)
                   {
-                     tnp = new TransactionNegPos();
+                     tnp = new JournalTransaction();
                      
                      transactionInfos.put(txID, tnp);
                   }
                   
-                  tnp.addPos(file, id);
+                  tnp.addPositive(file, id);
                   
                   hasData = true;                     
                   
@@ -1004,16 +990,16 @@ public class JournalImpl implements TestableJournal
                   
                   tx.recordsToDelete.add(id);                     
                   
-                  TransactionNegPos tnp = transactionInfos.get(txID);
+                  JournalTransaction tnp = transactionInfos.get(txID);
                   
                   if (tnp == null)
                   {
-                     tnp = new TransactionNegPos();
+                     tnp = new JournalTransaction();
                      
                      transactionInfos.put(txID, tnp);
                   }
                   
-                  tnp.addNeg(file, id);
+                  tnp.addNegative(file, id);
                   
                   hasData = true;                     
                   
@@ -1021,7 +1007,8 @@ public class JournalImpl implements TestableJournal
                }  
                case PREPARE_RECORD:
                {
-                  long txID = bb.getLong();           
+                  long txID = bb.getLong();
+                  int numberOfElements = bb.getInt();
                   
                   maxTransactionID = Math.max(maxTransactionID, txID);                 
 
@@ -1034,14 +1021,22 @@ public class JournalImpl implements TestableJournal
                   
                   tx.prepared = true;
                   
-                  TransactionNegPos tnp = transactionInfos.get(txID);
+                  JournalTransaction journalTransaction = transactionInfos.get(txID);
                   
-                  if (tnp == null)
+                  if (journalTransaction == null)
                   {
                      throw new IllegalStateException("Cannot find tx " + txID);
                   }
-                  
-                  tnp.prepare(file);   
+
+                  if (numberOfElements == journalTransaction.getNumberOfElements())
+                  {
+                     journalTransaction.prepare(file);
+                  }
+                  else
+                  {
+                     journalTransaction.setInvalid(true);
+                     tx.invalid = true;
+                  }
                   
                   hasData = true;         
                   
@@ -1049,24 +1044,33 @@ public class JournalImpl implements TestableJournal
                }
                case COMMIT_RECORD:
                {
-                  long txID = bb.getLong();  
+                  long txID = bb.getLong();
+                  int numberOfElements = bb.getInt();
                   
                   maxTransactionID = Math.max(maxTransactionID, txID);
                   TransactionHolder tx = transactions.remove(txID);
                   
                   if (tx != null)
                   {
-                     records.addAll(tx.recordInfos);                    
-                     recordsToDelete.addAll(tx.recordsToDelete);  
                      
-                     TransactionNegPos tnp = transactionInfos.remove(txID);
+                     JournalTransaction tnp = transactionInfos.remove(txID);
                      
                      if (tnp == null)
                      {
                         throw new IllegalStateException("Cannot find tx " + txID);
                      }
                      
-                     tnp.commit(file);       
+                     if (numberOfElements == tnp.getNumberOfElements())
+                     {
+                        records.addAll(tx.recordInfos);                    
+                        recordsToDelete.addAll(tx.recordsToDelete);  
+                        tnp.commit(file);       
+                     }
+                     else
+                     {
+                        log.warn("Transaction " + txID + " is missing " + (numberOfElements - tnp.getNumberOfElements()) + " so the transaction is being ignored");
+                        tnp.rollback(file);
+                     }
                      
                      hasData = true;         
                   }
@@ -1075,7 +1079,8 @@ public class JournalImpl implements TestableJournal
                }
                case ROLLBACK_RECORD:
                {
-                  long txID = bb.getLong();     
+                  long txID = bb.getLong();
+                  /* int numberOfElements = */ bb.getInt(); // Not being currently used
                   
                   maxTransactionID = Math.max(maxTransactionID, txID);                 
                   
@@ -1083,7 +1088,7 @@ public class JournalImpl implements TestableJournal
                   
                   if (tx != null)
                   {                       
-                     TransactionNegPos tnp = transactionInfos.remove(txID);
+                     JournalTransaction tnp = transactionInfos.remove(txID);
                      
                      if (tnp == null)
                      {
@@ -1185,11 +1190,11 @@ public class JournalImpl implements TestableJournal
       
       for (TransactionHolder transaction: transactions.values())
       {
-         if (!transaction.prepared)
+         if (!transaction.prepared || transaction.invalid)
          {
             log.warn("Uncommitted transaction with id " + transaction.transactionID + " found and discarded");
             
-            TransactionNegPos transactionInfo = this.transactionInfos.get(transaction.transactionID);
+            JournalTransaction transactionInfo = this.transactionInfos.get(transaction.transactionID);
             
             if (transactionInfo == null)
             {
@@ -1224,7 +1229,7 @@ public class JournalImpl implements TestableJournal
       return this.fileFactory.getAlignment();
    }
    
-   public synchronized void checkReclaimStatus() throws Exception
+   public void checkReclaimStatus() throws Exception
    {
       JournalFile[] files = new JournalFile[dataFiles.size()];
       
@@ -1465,10 +1470,13 @@ public class JournalImpl implements TestableJournal
       this.closingExecutor = Executors.newSingleThreadExecutor();
       
       state = STATE_STARTED;
+
    }
    
    public synchronized void stop() throws Exception
    {
+      clearShutdownHook();
+
       if (state == STATE_STOPPED)
       {
          throw new IllegalStateException("Journal is already stopped");
@@ -1529,6 +1537,46 @@ public class JournalImpl implements TestableJournal
    
    // Private -----------------------------------------------------------------------------
    
+   private void clearShutdownHook()
+   {
+      if (shutdownHook != null)
+      {
+         try
+         {
+            Runtime.getRuntime().removeShutdownHook(shutdownHook);
+         }
+         catch (Throwable e)
+         {
+         }
+         shutdownHook = null;
+      }
+   }
+   
+   private void addShutdownHook()
+   {
+      
+      clearShutdownHook();
+      
+      
+      shutdownHook = new Thread()
+      {
+        public void run()
+        {
+           try
+           {
+              log.info("Journal being stopped");
+              JournalImpl.this.stop();
+           }
+           catch (Exception e)
+           {
+              log.warn(e, e);
+           }
+        }
+      };
+      Runtime.getRuntime().addShutdownHook(shutdownHook);
+
+   }
+   
    private JournalFile appendRecord(final ByteBuffer bb, final boolean sync, final TransactionCallback callback) throws Exception
    {
       lock.acquire();
@@ -1560,17 +1608,6 @@ public class JournalImpl implements TestableJournal
       {
          lock.release();
       }
-   }
-   
-   private void repairFrom(final int pos, final JournalFile file) throws Exception
-   {
-      log.warn("Corruption has been detected in file: " + file.getFile().getFileName() +
-            " in the record that starts at position " + pos + ". " + 
-      "The most likely cause is that a crash occurred in the previous run. The corrupt record will be discarded.");
-      
-      file.getFile().fill(pos, fileSize - pos, FILL_CHARACTER);
-      
-      file.getFile().position(pos);
    }
    
    private JournalFile createFile(boolean keepOpened) throws Exception
@@ -1658,10 +1695,6 @@ public class JournalImpl implements TestableJournal
             try
             {
                pushOpenedFile();
-               if (autoReclaim)
-               {
-                  checkAndReclaimFiles();
-               }
             }
             catch (Exception e)
             {
@@ -1669,6 +1702,23 @@ public class JournalImpl implements TestableJournal
             }
          }
       });
+      if (autoReclaim)
+      {
+         openExecutor.execute(new Runnable()
+         {
+            public void run()
+            {
+               try
+               {
+                     checkAndReclaimFiles();
+               }
+               catch (Exception e)
+               {
+                  log.error(e.getMessage(), e);
+               }
+            }
+         });
+      }
       
       JournalFile nextFile = openedFiles.poll(aioTimeout, TimeUnit.SECONDS);
       
@@ -1726,13 +1776,13 @@ public class JournalImpl implements TestableJournal
       });
    }
    
-   private TransactionNegPos getTransactionInfo(final long txID)
+   private JournalTransaction getTransactionInfo(final long txID)
    {
-      TransactionNegPos tx = transactionInfos.get(txID);
+      JournalTransaction tx = transactionInfos.get(txID);
       
       if (tx == null)
       {
-         tx = new TransactionNegPos();
+         tx = new JournalTransaction();
          
          transactionInfos.put(txID, tx);
       }
@@ -1839,7 +1889,7 @@ public class JournalImpl implements TestableJournal
       }
    }
    
-   private class TransactionNegPos
+   private class JournalTransaction
    {
       private List<Pair<JournalFile, Long>> pos;
       
@@ -1847,25 +1897,31 @@ public class JournalImpl implements TestableJournal
       
       private Set<JournalFile> transactionPos;
       
-      void addTXPosCount(final JournalFile file)
+      // Number of elements participating on the transaction
+      // Used to verify completion on reload
+      private final AtomicInteger numberOfElements = new AtomicInteger(0);
+      
+      private boolean invalid = false;
+      
+      public int getNumberOfElements()
       {
-         if (transactionPos == null)
-         {
-            transactionPos = new HashSet<JournalFile>();
-         }
-         
-         if (!transactionPos.contains(file))
-         {
-            transactionPos.add(file);
-            
-            //We add a pos for the transaction itself in the file - this prevents any transactional operations
-            //being deleted before a commit or rollback is written
-            file.incPosCount();
-         }  
+         return numberOfElements.get();
       }
       
-      void addPos(final JournalFile file, final long id)
-      {     
+      public void setInvalid(boolean b)
+      {
+         this.invalid = b;
+      }
+      
+      public boolean isInvalid()
+      {
+         return this.invalid;
+      }
+
+      public void addPositive(final JournalFile file, final long id)
+      {
+         numberOfElements.incrementAndGet();
+
          addTXPosCount(file);          
          
          if (pos == null)
@@ -1876,8 +1932,10 @@ public class JournalImpl implements TestableJournal
          pos.add(new Pair<JournalFile, Long>(file, id));
       }
       
-      void addNeg(final JournalFile file, final long id)
+      public void addNegative(final JournalFile file, final long id)
       {        
+         numberOfElements.incrementAndGet();
+
          addTXPosCount(file);    
          
          if (neg == null)
@@ -1888,7 +1946,7 @@ public class JournalImpl implements TestableJournal
          neg.add(new Pair<JournalFile, Long>(file, id));       
       }
       
-      void commit(final JournalFile file)
+      public void commit(final JournalFile file)
       {        
          if (pos != null)
          {
@@ -1932,7 +1990,7 @@ public class JournalImpl implements TestableJournal
          }        
       }
       
-      void rollback(JournalFile file)
+      public void rollback(JournalFile file)
       {     
          //Now add negs for the pos we added in each file in which there were transactional operations
          //Note that we do this on rollback as we do on commit, since we need to ensure the file containing
@@ -1946,14 +2004,14 @@ public class JournalImpl implements TestableJournal
          }
       }
       
-      void prepare(JournalFile file)
+      public void prepare(JournalFile file)
       {
          //We don't want the prepare record getting deleted before time
          
          addTXPosCount(file);
       }
       
-      void forget()
+      public void forget()
       {
          //The transaction was not committed or rolled back in the file, so we reverse any pos counts we added
          
@@ -1962,6 +2020,25 @@ public class JournalImpl implements TestableJournal
             jf.decPosCount();
          }
       }
+      
+      private void addTXPosCount(final JournalFile file)
+      {
+         if (transactionPos == null)
+         {
+            transactionPos = new HashSet<JournalFile>();
+         }
+         
+         if (!transactionPos.contains(file))
+         {
+            transactionPos.add(file);
+            
+            //We add a pos for the transaction itself in the file - this prevents any transactional operations
+            //being deleted before a commit or rollback is written
+            file.incPosCount();
+         }  
+      }
+      
+      
    }
 
 }

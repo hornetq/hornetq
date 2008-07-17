@@ -24,6 +24,7 @@ package org.jboss.messaging.core.asyncio.impl;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -32,7 +33,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.jboss.messaging.core.asyncio.AIOCallback;
 import org.jboss.messaging.core.asyncio.AsynchronousFile;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.util.VariableLatch;
 
 
 /**
@@ -116,7 +116,6 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	private String fileName;
 	private Thread poller;	
 	private int maxIO;	
-	private VariableLatch writeLatch = new VariableLatch();	
 	private ReadWriteLock lock = new ReentrantReadWriteLock();
 	private Lock writeLock = lock.writeLock();
    private Semaphore writeSemaphore;   
@@ -164,7 +163,10 @@ public class AsynchronousFileImpl implements AsynchronousFile
 		try
 		{
 	      writeLock.lock();
-	      writeLatch.waitCompletion(timeout);
+	      if (!writeSemaphore.tryAcquire(maxIO, timeout, TimeUnit.MILLISECONDS))
+	      {
+	         throw new IllegalStateException("Timeout!");
+	      }
 	      writeSemaphore = null;
 	      stopPoller(handler);
 	      // We need to make sure we won't call close until Poller is completely done, or we might get beautiful GPFs
@@ -184,7 +186,6 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	public void write(final long position, final long size, final ByteBuffer directByteBuffer, final AIOCallback aioPackage)
 	{
 		checkOpened();
-		writeLatch.up();
       writeSemaphore.acquireUninterruptibly();
 		try
 		{
@@ -193,7 +194,6 @@ public class AsynchronousFileImpl implements AsynchronousFile
 		catch (RuntimeException e)
 		{
          writeSemaphore.release();
-	      writeLatch.down();
 			throw e;
 		}
 		
@@ -202,7 +202,6 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	public void read(final long position, final long size, final ByteBuffer directByteBuffer, final AIOCallback aioPackage)
 	{
 		checkOpened();
-		writeLatch.up();
       writeSemaphore.acquireUninterruptibly();
 		try
 		{
@@ -211,7 +210,6 @@ public class AsynchronousFileImpl implements AsynchronousFile
 		catch (RuntimeException e)
 		{
          writeSemaphore.release();
-		   writeLatch.down();
 			throw e;
 		}		
 	}
@@ -242,15 +240,14 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	private void callbackDone(final AIOCallback callback)
 	{
       writeSemaphore.release();
-		writeLatch.down();
 		callback.done();
 	}
 	
 	@SuppressWarnings("unused") // Called by the JNI layer.. just ignore the warning
 	private void callbackError(final AIOCallback callback, final int errorCode, final String errorMessage)
 	{
+	   log.warn("CallbackError: " + errorMessage);
       writeSemaphore.release();
-      writeLatch.down();
 		callback.onError(errorCode, errorMessage);
 	}
 	
