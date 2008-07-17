@@ -504,6 +504,34 @@ public class AlignedJournalImplTest extends UnitTestCase
    }
    
    
+   public void testReloadInvalidVariableSize() throws Exception
+   {
+      // Test to be written
+   }
+   
+   public void testReloadIncompleteTransaction() throws Exception
+   {
+      // We should miss one record (hole) on the transaction
+   }
+   
+   public void testAsynchronousCommit() throws Exception
+   {
+      // We should miss one record (hole) on the transaction
+   }
+   
+   public void testAsynchronousRollback() throws Exception
+   {
+      // We should miss one record (hole) on the transaction
+   }
+   
+   public void testGarbageBetweenRecords() throws Exception
+   {
+      // We should miss one record (hole) on the transaction
+   }
+   
+   
+   
+   
    public void testReloadWithPreparedTransaction() throws Exception
    {
       final int JOURNAL_SIZE = 3 * 1024;
@@ -598,6 +626,17 @@ public class AlignedJournalImplTest extends UnitTestCase
    protected void tearDown() throws Exception
    {
       super.tearDown();
+      
+      if (journalImpl != null)
+      {
+         try
+         {
+            journalImpl.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
    }
    
   

@@ -46,6 +46,7 @@ public class EasyMockJournalTest extends UnitTestCase
    SequentialFileFactory mockFactory = null;
    SequentialFile file1 = null;
    SequentialFile file2 = null;
+   JournalImpl journalImpl = null;
    
    // Static --------------------------------------------------------
 
@@ -57,8 +58,6 @@ public class EasyMockJournalTest extends UnitTestCase
 
    public void testAppendRecord() throws Exception
    {
-      JournalImpl journalImpl = newJournal();
-
       EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD, 
                                                /*FileID*/1, 
                                                /*RecordLength*/1, 
@@ -97,8 +96,6 @@ public class EasyMockJournalTest extends UnitTestCase
 
    public void testDeleteRecord() throws Exception
    {
-      JournalImpl journalImpl = newJournal();
-
       EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD, 
                                                /*FileID*/1, 
                                                /*RecordLength*/1, 
@@ -124,8 +121,6 @@ public class EasyMockJournalTest extends UnitTestCase
    
    public void testDeleteTransRecord() throws Exception
    {
-      JournalImpl journalImpl = newJournal();
-
       EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD, 
             /*FileID*/1, 
             /*RecordLength*/1, 
@@ -164,16 +159,10 @@ public class EasyMockJournalTest extends UnitTestCase
       journalImpl.appendCommitRecord(100l);
       
       EasyMock.verify(mockFactory, file1, file2);
-      
-
-
-
    }
 
    public void testAppendAndCommitRecord() throws Exception
    {
-      JournalImpl journalImpl = newJournal();
-
       EasyMock.expect(
             file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD_TX,
             /* FileID */1,
@@ -223,8 +212,6 @@ public class EasyMockJournalTest extends UnitTestCase
 
    public void testAppendAndRollbacktRecord() throws Exception
    {
-      JournalImpl journalImpl = newJournal();
-
       EasyMock.expect(
             file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD_TX,
             /* FileID */1,
@@ -253,8 +240,6 @@ public class EasyMockJournalTest extends UnitTestCase
    
    public void testupdateRecordNonTrans() throws Exception
    {
-      JournalImpl journalImpl = newJournal();
-
       EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD, 
             /* FileID */1, 
             /* RecordLength */1, 
@@ -294,8 +279,6 @@ public class EasyMockJournalTest extends UnitTestCase
    
    public void testupdateRecordTrans() throws Exception
    {
-      JournalImpl journalImpl = newJournal();
-
       EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD, 
             /* FileID */1, 
             /* RecordLength */1, 
@@ -342,6 +325,26 @@ public class EasyMockJournalTest extends UnitTestCase
 
    }
 
+   // Protected -----------------------------------------------------
+   
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();
+      
+      if (journalImpl != null)
+      {
+         EasyMock.reset(mockFactory, file1, file2);
+         stubValues();
+         try {journalImpl.stop();} catch (Throwable ignored) {}
+      }
+      
+   }
+   
+   protected void setUp() throws Exception
+   {
+      journalImpl = newJournal();
+   }
+   
    // Private -------------------------------------------------------
    
    private JournalImpl newJournal() throws Exception
@@ -492,8 +495,6 @@ public class EasyMockJournalTest extends UnitTestCase
    }
 
    // Package protected ---------------------------------------------
-   
-   // Protected -----------------------------------------------------
    
    // Inner classes -------------------------------------------------
    

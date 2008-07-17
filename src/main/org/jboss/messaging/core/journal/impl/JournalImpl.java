@@ -1341,7 +1341,7 @@ public class JournalImpl implements TestableJournal
                
                sf.open();
                
-               ByteBuffer bb = fileFactory.newBuffer(SIZE_LONG); 
+               ByteBuffer bb = fileFactory.newBuffer(SIZE_INT); 
                
                bb.putInt(newOrderingID);
                
