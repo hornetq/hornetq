@@ -70,8 +70,11 @@ public interface Journal extends MessagingComponent
 	
 	// Load
 	
-	long load(List<RecordInfo> committedRecords,
-			    List<PreparedTransactionInfo> preparedTransactions) throws Exception;
+   long load(List<RecordInfo> committedRecords,
+         List<PreparedTransactionInfo> preparedTransactions) throws Exception;
+
+   long load(LoadManager reloadManager) throws Exception;
+
 	
 	// Start and stop reclaimer
 	

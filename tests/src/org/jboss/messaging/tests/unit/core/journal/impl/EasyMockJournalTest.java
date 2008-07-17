@@ -60,8 +60,8 @@ public class EasyMockJournalTest extends UnitTestCase
    {
       EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD, 
                                                /*FileID*/1, 
-                                               /*RecordLength*/1, 
                                                /* ID */14l, 
+                                               /*RecordLength*/1, 
                                                /*RecordType*/(byte)33, 
                                                /* body */(byte)10, 
                                                JournalImpl.SIZE_ADD_RECORD + 1)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_ADD_RECORD + 1);
@@ -79,8 +79,8 @@ public class EasyMockJournalTest extends UnitTestCase
 
       EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD, 
             /*FileID*/1, 
-            /*RecordLength*/1, 
             /* ID */14l, 
+            /*RecordLength*/1, 
             /*RecordType*/(byte)33, 
             /* body */(byte)10, 
             JournalImpl.SIZE_ADD_RECORD + 1)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_ADD_RECORD + 1);
@@ -98,8 +98,8 @@ public class EasyMockJournalTest extends UnitTestCase
    {
       EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD, 
                                                /*FileID*/1, 
-                                               /*RecordLength*/1, 
                                                /* ID */14l, 
+                                               /*RecordLength*/1, 
                                                /*RecordType*/(byte)33, 
                                                /* body */(byte)10, 
                                                JournalImpl.SIZE_ADD_RECORD + 1)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_ADD_RECORD + 1);
@@ -123,8 +123,8 @@ public class EasyMockJournalTest extends UnitTestCase
    {
       EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD, 
             /*FileID*/1, 
-            /*RecordLength*/1, 
             /* ID */15l, 
+            /*RecordLength*/1, 
             /*RecordType*/(byte)33, 
             /* body */(byte)10, 
             JournalImpl.SIZE_ADD_RECORD + 1)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_ADD_RECORD + 1);
@@ -166,10 +166,10 @@ public class EasyMockJournalTest extends UnitTestCase
       EasyMock.expect(
             file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD_TX,
             /* FileID */1,
-            /* RecordLength */1,
             /* TXID */3l,
-            /* RecordType */(byte) 33,
             /* ID */14l,
+            /* RecordLength */1,
+            /* RecordType */(byte) 33,
             /* body */(byte) 10, JournalImpl.SIZE_ADD_RECORD_TX + 1)),
                   EasyMock.eq(false))).andReturn(
             JournalImpl.SIZE_ADD_RECORD_TX + 1);
@@ -177,10 +177,10 @@ public class EasyMockJournalTest extends UnitTestCase
       EasyMock.expect(
             file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD_TX,
             /* FileID */1,
-            /* RecordLength */1,
             /* TXID */3l,
-            /* RecordType */(byte) 33,
             /* ID */15l,
+            /* RecordLength */1,
+            /* RecordType */(byte) 33,
             /* body */(byte) 10, JournalImpl.SIZE_ADD_RECORD_TX + 1)),
                   EasyMock.eq(false))).andReturn(
             JournalImpl.SIZE_ADD_RECORD_TX + 1);
@@ -215,10 +215,10 @@ public class EasyMockJournalTest extends UnitTestCase
       EasyMock.expect(
             file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD_TX,
             /* FileID */1,
-            /* RecordLength */1,
             /* TXID */3l,
-            /* RecordType */(byte) 33,
             /* ID */14l,
+            /* RecordLength */1,
+            /* RecordType */(byte) 33,
             /* body */(byte) 10, JournalImpl.SIZE_ADD_RECORD_TX + 1)),
                   EasyMock.eq(false))).andReturn(
             JournalImpl.SIZE_ADD_RECORD_TX + 1);
@@ -242,24 +242,24 @@ public class EasyMockJournalTest extends UnitTestCase
    {
       EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD, 
             /* FileID */1, 
-            /* RecordLength */1, 
             /* ID */15l, 
+            /* RecordLength */1, 
             /* RecordType */(byte)33, 
             /* body */(byte)10, 
             JournalImpl.SIZE_ADD_RECORD + 1)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_ADD_RECORD + 1);
 
       EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.UPDATE_RECORD, 
             /* FileID */1, 
-            /* RecordLength */1, 
             /* ID */15l, 
+            /* RecordLength */1, 
             /* RecordType */(byte)34, 
             /* body */(byte)11, 
             JournalImpl.SIZE_UPDATE_RECORD + 1)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_UPDATE_RECORD + 1);
       
       EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.UPDATE_RECORD, 
             /* FileID */1, 
-            /* RecordLength */1, 
             /* ID */15l, 
+            /* RecordLength */1, 
             /* RecordType */(byte)35, 
             /* body */(byte)12, 
             JournalImpl.SIZE_UPDATE_RECORD + 1)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_UPDATE_RECORD + 1);
@@ -281,27 +281,27 @@ public class EasyMockJournalTest extends UnitTestCase
    {
       EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD, 
             /* FileID */1, 
-            /* RecordLength */1, 
             /* ID */15l, 
+            /* RecordLength */1, 
             /* RecordType */(byte)33, 
             /* body */(byte)10, 
             JournalImpl.SIZE_ADD_RECORD + 1)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_ADD_RECORD + 1);
 
       EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.UPDATE_RECORD_TX, 
             /* FileID */1, 
-            /* RecordLength */1,
             /* TransactionID */33l,
-            /* RecordType */ (byte)34,
             /* ID */15l, 
+            /* RecordLength */1,
+            /* RecordType */ (byte)34,
             /* body */(byte)11, 
             JournalImpl.SIZE_UPDATE_RECORD_TX + 1)), EasyMock.eq(false))).andReturn(JournalImpl.SIZE_UPDATE_RECORD_TX + 1);
       
       EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.UPDATE_RECORD_TX, 
             /* FileID */1, 
-            /* RecordLength */1,
             /* TransactionID */33l,
-            /* RecordType */ (byte)35,
             /* ID */15l, 
+            /* RecordLength */1,
+            /* RecordType */ (byte)35,
             /* body */(byte)12, 
             JournalImpl.SIZE_UPDATE_RECORD_TX + 1)), EasyMock.eq(false))).andReturn(JournalImpl.SIZE_UPDATE_RECORD_TX + 1);
       

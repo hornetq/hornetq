@@ -272,6 +272,7 @@ public class JournalStorageManager implements StorageManager
 		messageIDSequence.set(maxMessageID + 1);
 		
 		//TODO - recover prepared transactions
+		//TODO - Use load(ReloadManager) instead of Load(lists)
       
 		for (RecordInfo record: records)
 		{
