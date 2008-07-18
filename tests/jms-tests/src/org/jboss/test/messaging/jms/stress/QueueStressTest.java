@@ -39,7 +39,7 @@ import javax.jms.XASession;
  *
  * $Id: StressTest.java 2349 2007-02-19 14:15:53Z timfox $
  */
-public class QueueStressTest extends StressTestBase
+public class QueueStressTest extends JMSStressTestBase
 {
    public QueueStressTest(String name)
    {

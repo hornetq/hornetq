@@ -38,7 +38,7 @@ import org.jboss.test.messaging.JBMServerTestCase;
  *
  * $Id$
 */
-public class StressTestBase extends JBMServerTestCase
+public class JMSStressTestBase extends JBMServerTestCase
 {
    protected static final int NUM_PERSISTENT_MESSAGES = 4000;
    
@@ -62,7 +62,7 @@ public class StressTestBase extends JBMServerTestCase
    protected Topic topic3;
    protected Topic topic4;
 
-   public StressTestBase(String name)
+   public JMSStressTestBase(String name)
    {
       super(name);
    }

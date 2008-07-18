@@ -36,7 +36,7 @@ import javax.jms.Session;
  *
  * $Id: StressTest.java 2349 2007-02-19 14:15:53Z timfox $
  */
-public class ConnectionConsumerStressTest extends StressTestBase
+public class ConnectionConsumerStressTest extends JMSStressTestBase
 {
    public ConnectionConsumerStressTest(String name)
    {
