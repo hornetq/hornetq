@@ -882,10 +882,6 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 			rollback(1);
 		}
 		
-		// If this change, we need to consider commit or rollback size on the test
-		assertEquals(JournalImpl.SIZE_ROLLBACK_RECORD, JournalImpl.SIZE_COMMIT_RECORD);
-		assertEquals(calculateNumberOfFiles(fileSize , journal.getAlignment(), 200, recordLength, 200, JournalImpl.SIZE_DELETE_RECORD_TX, 1, JournalImpl.SIZE_COMMIT_RECORD), journal.getDataFilesCount());
-		
 		//Add more records to make sure we get to the next file
 		
 		for (int i = 200; i < 210; i++)

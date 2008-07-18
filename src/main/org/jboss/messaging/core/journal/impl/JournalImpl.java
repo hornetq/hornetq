@@ -26,6 +26,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -119,15 +120,17 @@ public class JournalImpl implements TestableJournal
    
    public static final byte DELETE_RECORD_TX = 16;
    
-   public static final int SIZE_PREPARE_RECORD = BASIC_SIZE + SIZE_LONG + SIZE_INT;
+   public static final int SIZE_COMPLETE_TRANSACTION_RECORD = BASIC_SIZE + SIZE_INT + SIZE_LONG; // + NumerOfElements*SIZE_INT*2
+   
+   public static final int SIZE_PREPARE_RECORD = SIZE_COMPLETE_TRANSACTION_RECORD;
    
    public static final byte PREPARE_RECORD = 17;
    
-   public static final int SIZE_COMMIT_RECORD = BASIC_SIZE + SIZE_LONG + SIZE_INT;
+   public static final int SIZE_COMMIT_RECORD = SIZE_PREPARE_RECORD;
    
    public static final byte COMMIT_RECORD = 18;
    
-   public static final int SIZE_ROLLBACK_RECORD = BASIC_SIZE + SIZE_LONG + SIZE_INT;
+   public static final int SIZE_ROLLBACK_RECORD = BASIC_SIZE + SIZE_LONG;
    
    public static final byte ROLLBACK_RECORD = 19;
    
@@ -567,22 +570,11 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Cannot find tx with id " + txID);
       }
       
-      int size = SIZE_PREPARE_RECORD;
-      
-      ByteBuffer bb = fileFactory.newBuffer(size); 
-      
-      bb.put(PREPARE_RECORD);    
-      bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
-      bb.putLong(txID);
-      bb.putInt(tx.getNumberOfElements());
-      bb.putInt(size);           
-      bb.rewind();
-      
-      JournalFile usedFile = appendRecord(bb, syncTransactional, getTransactionCallback(txID));
+      JournalFile usedFile = writeTransaction(PREPARE_RECORD, txID, tx);
       
       tx.prepare(usedFile);
    }
-   
+
    public void appendCommitRecord(final long txID) throws Exception
    {
       if (state != STATE_LOADED)
@@ -597,18 +589,7 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Cannot find tx with id " + txID);
       }
       
-      int size = SIZE_COMMIT_RECORD;
-      
-      ByteBuffer bb = fileFactory.newBuffer(size); 
-      
-      bb.put(COMMIT_RECORD);     
-      bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
-      bb.putLong(txID);
-      bb.putInt(tx.getNumberOfElements());
-      bb.putInt(size);           
-      bb.rewind();
-      
-      JournalFile usedFile = appendRecord(bb, syncTransactional, getTransactionCallback(txID));
+      JournalFile usedFile = writeTransaction(COMMIT_RECORD, txID, tx);
       
       transactionCallbacks.remove(txID);
       
@@ -637,7 +618,6 @@ public class JournalImpl implements TestableJournal
       bb.put(ROLLBACK_RECORD);      
       bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
       bb.putLong(txID);
-      bb.putInt(tx.getNumberOfElements());
       bb.putInt(size);        
       bb.rewind();
       
@@ -740,7 +720,6 @@ public class JournalImpl implements TestableJournal
             final int pos = bb.position();
             
             byte recordType = bb.get();
-            
             if (recordType < ADD_RECORD || recordType > ROLLBACK_RECORD)
             {
                if (trace)
@@ -774,7 +753,6 @@ public class JournalImpl implements TestableJournal
                }
                transactionID = bb.getLong();
                maxTransactionID = Math.max(maxTransactionID, transactionID); 
-               
             }
             
             long recordID = 0;
@@ -786,9 +764,7 @@ public class JournalImpl implements TestableJournal
                }
                recordID = bb.getLong();
                maxMessageID = Math.max(maxMessageID, recordID);
-               
             }
-            
             
             // The variable record portion used on Updates and Appends
             int variableSize = 0;
@@ -813,6 +789,11 @@ public class JournalImpl implements TestableJournal
                
                record = new byte[variableSize];
                bb.get(record);
+            }
+            
+            if (recordType == PREPARE_RECORD || recordType == COMMIT_RECORD)
+            {
+               variableSize = bb.getInt() * SIZE_INT * 2;
             }
             
             int recordSize = getRecordSize(recordType);
@@ -938,55 +919,67 @@ public class JournalImpl implements TestableJournal
                }  
                case PREPARE_RECORD:
                {
-                  int numberOfElements = bb.getInt();
-                  
                   TransactionHolder tx = transactions.get(transactionID);
                   
-                  if (tx == null)
-                  {
-                     throw new IllegalStateException("Cannot find tx with id " + transactionID);
-                  }
-                  
-                  tx.prepared = true;
-                  
-                  JournalTransaction journalTransaction = transactionInfos.get(transactionID);
-                  
-                  if (journalTransaction == null)
-                  {
-                     throw new IllegalStateException("Cannot find tx " + transactionID);
-                  }
+                  // We need to read it even if transaction was not found, or the reading checks would fail
+                  // Pair <OrderId, NumberOfElements>
+                  Pair<Integer, Integer>[] values = readReferencesOnTransaction(variableSize, bb);
 
-                  if (numberOfElements == journalTransaction.getNumberOfElements())
+                  if (tx != null)
                   {
-                     journalTransaction.prepare(file);
+                     
+                     tx.prepared = true;
+                     
+                     JournalTransaction journalTransaction = transactionInfos.get(transactionID);
+                     
+                     if (journalTransaction == null)
+                     {
+                        throw new IllegalStateException("Cannot find tx " + transactionID);
+                     }
+                     
+                     
+                     boolean healthy = checkTransactionHealth(
+                           journalTransaction, orderedFiles, values);
+                     
+                     if (healthy)
+                     {
+                        journalTransaction.prepare(file);
+                     }
+                     else
+                     {
+                        log.warn("Prepared transaction " + healthy + " wasn't considered completed, it will be ignored");
+                        journalTransaction.setInvalid(true);
+                        tx.invalid = true;
+                     }
+                     
+                     hasData = true;
                   }
-                  else
-                  {
-                     journalTransaction.setInvalid(true);
-                     tx.invalid = true;
-                  }
-                  
-                  hasData = true;         
                   
                   break;
                }
                case COMMIT_RECORD:
                {
-                  int numberOfElements = bb.getInt();
-                  
                   TransactionHolder tx = transactions.remove(transactionID);
                   
+                  // We need to read it even if transaction was not found, or the reading checks would fail
+                  // Pair <OrderId, NumberOfElements>
+                  Pair<Integer, Integer>[] values = readReferencesOnTransaction(variableSize, bb);
+
                   if (tx != null)
                   {
                      
-                     JournalTransaction tnp = transactionInfos.remove(transactionID);
+                     JournalTransaction journalTransaction = transactionInfos.remove(transactionID);
                      
-                     if (tnp == null)
+                     if (journalTransaction == null)
                      {
                         throw new IllegalStateException("Cannot find tx " + transactionID);
                      }
+
+                     boolean healthy = checkTransactionHealth(
+                           journalTransaction, orderedFiles, values);
                      
-                     if (numberOfElements == tnp.getNumberOfElements())
+                     
+                     if (healthy)
                      {
                         for (RecordInfo txRecord: tx.recordInfos)
                         {
@@ -1004,12 +997,12 @@ public class JournalImpl implements TestableJournal
                         {
                            loadManager.deleteRecord(deleteValue);
                         }
-                        tnp.commit(file);       
+                        journalTransaction.commit(file);       
                      }
                      else
                      {
-                        log.warn("Transaction " + transactionID + " is missing " + (numberOfElements - tnp.getNumberOfElements()) + " so the transaction is being ignored");
-                        tnp.rollback(file);
+                        log.warn("Transaction " + transactionID + " is missing elements so the transaction is being ignored");
+                        journalTransaction.rollback(file);
                      }
                      
                      hasData = true;         
@@ -1019,8 +1012,6 @@ public class JournalImpl implements TestableJournal
                }
                case ROLLBACK_RECORD:
                {
-                  /* int numberOfElements = */ bb.getInt(); // Not being currently used
-                  
                   TransactionHolder tx = transactions.remove(transactionID);
                   
                   if (tx != null)
@@ -1465,6 +1456,83 @@ public class JournalImpl implements TestableJournal
    // Public -----------------------------------------------------------------------------
    
    // Private -----------------------------------------------------------------------------
+
+   @SuppressWarnings("unchecked")
+   private Pair<Integer, Integer>[] readReferencesOnTransaction(int variableSize, ByteBuffer bb)
+   {
+      int numberOfFiles = variableSize / (SIZE_INT * 2);
+      Pair<Integer, Integer> values[] = (Pair<Integer, Integer> [])new Pair[numberOfFiles];
+      for (int i = 0; i < numberOfFiles; i++)
+      {
+         values[i] = new Pair(bb.getInt(), bb.getInt());
+      }
+      return values;
+   }
+
+   private boolean checkTransactionHealth(
+         JournalTransaction journalTransaction, List<JournalFile> orderedFiles,
+         Pair<Integer, Integer>[] readReferences)
+   {
+      boolean healthy = true;
+      Map<Integer, AtomicInteger> refMap = journalTransaction.getElementsSummary();
+      
+      for (Pair<Integer, Integer> ref: readReferences)
+      {
+         AtomicInteger counter = refMap.get(ref.a);
+         if (counter == null)
+         {
+            // Couldn't find the counter, but if part of the transaction was reclaimed it is ok!
+            boolean found = false;
+            for (JournalFile lookupFile: orderedFiles)
+            {
+               if (lookupFile.getOrderingID() == ref.a)
+               {
+                  found = true;
+               }
+            }
+            if (found)
+            {
+               healthy = false;
+               break;
+            }
+         }
+         else
+         {
+            if (counter.get() != ref.b)
+            {
+               healthy = false;
+               break;
+            }
+         }
+      }
+      return healthy;
+   }
+
+   /** a method that shares the logic of writing a complete transaction between COMMIT and PREPARE */
+   private JournalFile writeTransaction(final byte recordType, final long txID, final JournalTransaction tx) throws Exception
+   {
+      int size = SIZE_COMPLETE_TRANSACTION_RECORD + tx.getElementsSummary().size() * SIZE_INT * 2;
+      
+      ByteBuffer bb = fileFactory.newBuffer(size); 
+      
+      bb.put(recordType);    
+      bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
+      bb.putLong(txID);
+      
+      bb.putInt(tx.getElementsSummary().size());
+      
+      for (Map.Entry<Integer, AtomicInteger> entry: tx.getElementsSummary().entrySet())
+      {
+         bb.putInt(entry.getKey());
+         bb.putInt(entry.getValue().get());
+      }
+      
+      bb.putInt(size);           
+      bb.rewind();
+      
+      JournalFile usedFile = appendRecord(bb, syncTransactional, getTransactionCallback(txID));
+      return usedFile;
+   }
    
    private boolean isTransaction(final byte recordType)
    {
@@ -1930,14 +1998,9 @@ public class JournalImpl implements TestableJournal
       
       // Number of elements participating on the transaction
       // Used to verify completion on reload
-      private final AtomicInteger numberOfElements = new AtomicInteger(0);
+      private final Map<Integer, AtomicInteger> numberOfElements = new HashMap<Integer, AtomicInteger>();
       
       private boolean invalid = false;
-      
-      public int getNumberOfElements()
-      {
-         return numberOfElements.get();
-      }
       
       public void setInvalid(boolean b)
       {
@@ -1949,9 +2012,15 @@ public class JournalImpl implements TestableJournal
          return this.invalid;
       }
 
+      
+      public Map<Integer, AtomicInteger> getElementsSummary()
+      {
+         return numberOfElements;
+      }
+
       public void addPositive(final JournalFile file, final long id)
       {
-         numberOfElements.incrementAndGet();
+         getCounter(file).incrementAndGet();
 
          addTXPosCount(file);          
          
@@ -1964,8 +2033,8 @@ public class JournalImpl implements TestableJournal
       }
       
       public void addNegative(final JournalFile file, final long id)
-      {        
-         numberOfElements.incrementAndGet();
+      {
+         getCounter(file).incrementAndGet();
 
          addTXPosCount(file);    
          
@@ -2069,6 +2138,19 @@ public class JournalImpl implements TestableJournal
          }  
       }
       
+      private AtomicInteger getCounter(JournalFile file)
+      {
+         AtomicInteger value = numberOfElements.get(file.getOrderingID());
+         
+         if (value == null)
+         {
+            value = new AtomicInteger();
+            numberOfElements.put(file.getOrderingID(), value);
+            
+         }
+         
+         return value;
+      }
       
    }
 
