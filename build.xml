@@ -138,6 +138,11 @@
       <ant antfile="build-messaging.xml" target="compile-reports"/>
    </target>
    
+   <target name="stress-tests" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="stress-tests"/>
+      <ant antfile="build-messaging.xml" target="compile-reports"/>
+   </target>
+   
 
    <target name="jms-tests" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="jms-tests"/>
