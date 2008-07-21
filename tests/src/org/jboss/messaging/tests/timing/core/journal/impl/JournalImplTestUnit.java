@@ -143,8 +143,6 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       startJournal();
       load();
       
-      journal.startReclaimer();
-      
       long start = System.currentTimeMillis();
       
                   

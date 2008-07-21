@@ -75,13 +75,6 @@ public interface Journal extends MessagingComponent
 
    long load(LoadManager reloadManager) throws Exception;
 
-	
-	// Start and stop reclaimer
-	
-	void startReclaimer();
-	
-	void stopReclaimer();
-	
 	int getAlignment() throws Exception;
 	
 }

@@ -219,7 +219,13 @@ public class PerfExample
          if (perfParams.isDrainQueue())
          {
             drainQueue(messageConsumer);
+            if (perfParams.isSessionTransacted())
+            {
+               log.info("commit on drainQueue");
+               session.commit();
+            }
          }
+         
 
          log.info("READY!!!");
 

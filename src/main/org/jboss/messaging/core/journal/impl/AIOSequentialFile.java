@@ -287,6 +287,7 @@ public class AIOSequentialFile implements SequentialFile
 
       public void onError(int errorCode, String errorMessage)
       {
+         log.warn("Error on writing data!" + errorMessage + " code - " + errorCode, new Exception (errorMessage));
       }	   
 	}
 	

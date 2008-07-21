@@ -561,11 +561,7 @@ public class JournalStorageManager implements StorageManager
 		
 		bindingsJournal.start();
 		
-		bindingsJournal.startReclaimer();
-		
 		messageJournal.start();
-		
-		messageJournal.startReclaimer();
 		
 		started = true;
 	}

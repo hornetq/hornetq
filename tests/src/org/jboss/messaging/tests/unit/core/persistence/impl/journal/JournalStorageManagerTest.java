@@ -708,9 +708,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       
       assertFalse(jsm.isStarted());
       bindingsJournal.start();
-      bindingsJournal.startReclaimer();
       messageJournal.start();
-      messageJournal.startReclaimer();
       
       EasyMock.replay(messageJournal, bindingsJournal);
       

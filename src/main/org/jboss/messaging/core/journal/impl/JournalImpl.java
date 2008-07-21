@@ -175,13 +175,7 @@ public class JournalImpl implements TestableJournal
    
    private final ConcurrentMap<Long, TransactionCallback> transactionCallbacks = new ConcurrentHashMap<Long, TransactionCallback>();
    
-   private ExecutorService closingExecutor = null;
-   
-   /** 
-    * We have a separated executor for open, as if we used the same executor this would still represent
-    * a point of wait between the closing and open.
-    * */
-   private ExecutorService openExecutor = null;
+   private ExecutorService filesExecutor = null;
    
    /*
     * We use a semaphore rather than synchronized since it performs better when
@@ -199,8 +193,6 @@ public class JournalImpl implements TestableJournal
    private final AtomicLong transactionIDSequence = new AtomicLong(0);
    
    private Reclaimer reclaimer = new Reclaimer();
-   
-   private Thread shutdownHook = null;
    
    // Static --------------------------------------------------------
    
@@ -681,8 +673,6 @@ public class JournalImpl implements TestableJournal
       {
          throw new IllegalStateException("Journal must be in started state");
       }
-      
-      addShutdownHook();
       
       Map<Long, TransactionHolder> transactions = new LinkedHashMap<Long, TransactionHolder>();
       
@@ -1200,28 +1190,12 @@ public class JournalImpl implements TestableJournal
          callback.waitCompletion(aioTimeout);
       }
       
-      if (closingExecutor != null && !closingExecutor.isShutdown())
+      if (filesExecutor != null && !filesExecutor.isShutdown())
       {
          // Send something to the closingExecutor, just to make sure we went until its end
          final CountDownLatch latch = new CountDownLatch(1);
          
-         this.closingExecutor.execute(new Runnable()
-         {
-            public void run()
-            {
-               latch.countDown();
-            }
-         });
-         
-         latch.await();
-      }
-      
-      if (openExecutor != null && !openExecutor.isShutdown())
-      {
-         // Send something to the closingExecutor, just to make sure we went until its end
-         final CountDownLatch latch = new CountDownLatch(1);
-         
-         this.openExecutor.execute(new Runnable()
+         this.filesExecutor.execute(new Runnable()
          {
             public void run()
             {
@@ -1234,7 +1208,7 @@ public class JournalImpl implements TestableJournal
       
    }
    
-   public synchronized void checkAndReclaimFiles() throws Exception
+   public void checkAndReclaimFiles() throws Exception
    {
       checkReclaimStatus();
       
@@ -1386,8 +1360,7 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Journal is not stopped");
       }
       
-      this.openExecutor =  Executors.newSingleThreadExecutor();
-      this.closingExecutor = Executors.newSingleThreadExecutor();
+      this.filesExecutor =  Executors.newSingleThreadExecutor();
       
       state = STATE_STARTED;
 
@@ -1395,19 +1368,9 @@ public class JournalImpl implements TestableJournal
    
    public synchronized void stop() throws Exception
    {
-      clearShutdownHook();
-
       if (state == STATE_STOPPED)
       {
          throw new IllegalStateException("Journal is already stopped");
-      }
-      
-      stopReclaimer();
-      
-      closingExecutor.shutdown();
-      if (!closingExecutor.awaitTermination(aioTimeout, TimeUnit.MILLISECONDS))
-      {
-         throw new IllegalStateException("Time out waiting for closing executor to finish");
       }
       
       if (currentFile != null)
@@ -1415,8 +1378,8 @@ public class JournalImpl implements TestableJournal
          currentFile.getFile().close();
       }
       
-      openExecutor.shutdown();
-      if (!openExecutor.awaitTermination(aioTimeout, TimeUnit.MILLISECONDS))
+      filesExecutor.shutdown();
+      if (!filesExecutor.awaitTermination(aioTimeout, TimeUnit.MILLISECONDS))
       {
          throw new IllegalStateException("Time out waiting for open executor to finish");
       }
@@ -1435,22 +1398,6 @@ public class JournalImpl implements TestableJournal
       openedFiles.clear();
       
       state = STATE_STOPPED;
-   }
-   
-   public void startReclaimer()
-   {
-      if (state == STATE_STOPPED)
-      {
-         throw new IllegalStateException("Journal is stopped");
-      }
-   }
-   
-   public void stopReclaimer()
-   {
-      if (state == STATE_STOPPED)
-      {
-         throw new IllegalStateException("Journal is already stopped");
-      }
    }
    
    // Public -----------------------------------------------------------------------------
@@ -1636,46 +1583,6 @@ public class JournalImpl implements TestableJournal
       return orderedFiles;
    }
    
-   private void clearShutdownHook()
-   {
-      if (shutdownHook != null)
-      {
-         try
-         {
-            Runtime.getRuntime().removeShutdownHook(shutdownHook);
-         }
-         catch (Throwable e)
-         {
-         }
-         shutdownHook = null;
-      }
-   }
-   
-   private void addShutdownHook()
-   {
-      
-      clearShutdownHook();
-      
-      
-      shutdownHook = new Thread()
-      {
-        public void run()
-        {
-           try
-           {
-              log.info("Journal being stopped");
-              JournalImpl.this.stop();
-           }
-           catch (Exception e)
-           {
-              log.warn(e, e);
-           }
-        }
-      };
-      Runtime.getRuntime().addShutdownHook(shutdownHook);
-
-   }
-   
    private JournalFile appendRecord(final ByteBuffer bb, final boolean sync, final TransactionCallback callback) throws Exception
    {
       lock.acquire();
@@ -1787,7 +1694,7 @@ public class JournalImpl implements TestableJournal
    private JournalFile enqueueOpenFile() throws InterruptedException
    {
       if (trace) log.trace("enqueueOpenFile with openedFiles.size=" + openedFiles.size());
-      openExecutor.execute(new Runnable()
+      filesExecutor.execute(new Runnable()
       {
          public void run()
          {
@@ -1803,7 +1710,7 @@ public class JournalImpl implements TestableJournal
       });
       if (autoReclaim)
       {
-         openExecutor.execute(new Runnable()
+         filesExecutor.execute(new Runnable()
          {
             public void run()
             {
@@ -1860,7 +1767,7 @@ public class JournalImpl implements TestableJournal
    
    private void closeFile(final JournalFile file)
    {
-      this.closingExecutor.execute(new Runnable() { public void run()
+      this.filesExecutor.execute(new Runnable() { public void run()
       {
          try
          {
