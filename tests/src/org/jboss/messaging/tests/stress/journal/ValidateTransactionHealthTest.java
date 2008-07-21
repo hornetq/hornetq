@@ -48,27 +48,42 @@ public class ValidateTransactionHealthTest extends StressTestBase
    
    public void testAIO() throws Exception
    {
-      internalTest("aio", "/tmp/aiojournal", 100000, 100, true, true);
+      internalTest("aio", "/tmp/aiojournal", 100000, 100, true, true, 1);
+   }
+   
+   public void testAIOHugeTransaction() throws Exception
+   {
+      internalTest("aio", "/tmp/aiojournal", 100000, 100000, true, true, 1);
+   }
+   
+   public void testAIOMultiThread() throws Exception
+   {
+      internalTest("aio", "/tmp/aiojournal", 10000, 100, true, true, 10);
    }
    
    public void testAIONonTransactional() throws Exception
    {
-      internalTest("aio", "/tmp/aiojournal", 100000, 0, true, true);
+      internalTest("aio", "/tmp/aiojournal", 100000, 0, true, true, 1);
    }
    
    public void testAIONonTransactionalNoExternalProcess() throws Exception
    {
-      internalTest("aio", "/tmp/aiojournal", 100000, 0, true, false);
+      internalTest("aio", "/tmp/aiojournal", 10000, 0, true, false, 10);
    }
    
    public void testNIO() throws Exception
    {
-      internalTest("nio", "/tmp/niojournal", 100000, 100, true, true);
+      internalTest("nio", "/tmp/niojournal", 100000, 100, true, true, 1);
+   }
+   
+   public void testNIOMultiThread() throws Exception
+   {
+      internalTest("nio", "/tmp/niojournal", 10000, 100, true, true, 10);
    }
    
    public void testNIONonTransactional() throws Exception
    {
-      internalTest("nio", "/tmp/niojournal", 100000, 0, true, true);
+      internalTest("nio", "/tmp/niojournal", 100000, 0, true, true, 1);
    }
    
    // Package protected ---------------------------------------------
@@ -78,7 +93,7 @@ public class ValidateTransactionHealthTest extends StressTestBase
    // Private -------------------------------------------------------
    
    private void internalTest(String type, String journalDir,
-         long numberOfRecords, int transactionSize, boolean append, boolean externalProcess) throws Exception
+         long numberOfRecords, int transactionSize, boolean append, boolean externalProcess, int numberOfThreads) throws Exception
    {
       if (type.equals("aio") && !AsynchronousFileImpl.isLoaded())
       {
@@ -98,21 +113,21 @@ public class ValidateTransactionHealthTest extends StressTestBase
          {
             RemoteProcess process = startProcess(true, RemoteJournalAppender.class
                   .getCanonicalName(), type, journalDir, Long
-                  .toString(numberOfRecords), Integer.toString(transactionSize));
+                  .toString(numberOfRecords), Integer.toString(transactionSize), Integer.toString(numberOfThreads));
             process.getProcess().waitFor();
             assertEquals(RemoteJournalAppender.OK, process.getProcess().exitValue());
          }
          else
          {
-            JournalImpl journal = RemoteJournalAppender.appendData(type, journalDir, numberOfRecords, transactionSize);
+            JournalImpl journal = RemoteJournalAppender.appendData(type, journalDir, numberOfRecords, transactionSize, numberOfThreads);
             journal.stop();
          }
       }
       
-      //reload(type, journalDir, numberOfRecords);
+      reload(type, journalDir, numberOfRecords, numberOfThreads);
    }
    
-   private void reload(String type, String journalDir, long numberOfRecords)
+   private void reload(String type, String journalDir, long numberOfRecords, int numberOfThreads)
          throws Exception
    {
       JournalImpl journal = RemoteJournalAppender.createJournal(type,
@@ -121,7 +136,7 @@ public class ValidateTransactionHealthTest extends StressTestBase
       journal.start();
       Loader loadTest = new Loader(numberOfRecords);
       journal.load(loadTest);
-      assertEquals(numberOfRecords, loadTest.numberOfAdds);
+      assertEquals(numberOfRecords * numberOfThreads, loadTest.numberOfAdds);
       assertEquals(0, loadTest.numberOfPreparedTransactions);
       assertEquals(0, loadTest.numberOfUpdates);
       assertEquals(0, loadTest.numberOfDeletes);
@@ -160,7 +175,7 @@ public class ValidateTransactionHealthTest extends StressTestBase
       
       public void addRecord(RecordInfo info)
       {
-         if (info.id - lastID > 1)
+         if (info.id == lastID)
          {
             System.out.println("id = " + info.id + " last id = " + lastID);
          }
@@ -168,7 +183,7 @@ public class ValidateTransactionHealthTest extends StressTestBase
          ByteBuffer buffer = ByteBuffer.wrap(info.data);
          long recordValue = buffer.getLong();
          
-         if (recordValue != (expectedRecords - info.id))
+         if (recordValue != info.id)
          {
             ex = new Exception("Content not as expected (" + recordValue
                   + " != " + info.id + ")");

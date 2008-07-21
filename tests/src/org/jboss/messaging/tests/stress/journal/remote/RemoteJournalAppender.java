@@ -23,6 +23,8 @@
 package org.jboss.messaging.tests.stress.journal.remote;
 
 import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.jboss.messaging.core.journal.LoadManager;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
@@ -45,26 +47,27 @@ public class RemoteJournalAppender
    public static void main(String args[]) throws Exception
    {
       
-      if (args.length != 4)
+      if (args.length != 5)
       {
          System.err
                .println("Use: java -cp <classpath> "
                      + RemoteJournalAppender.class.getCanonicalName()
-                     + " aio|nio <journalDirectory> <NumberOfElements> <TransactionSize>");
+                     + " aio|nio <journalDirectory> <NumberOfElements> <TransactionSize> <NumberOfThreads>");
          System.exit(-1);
       }
       String journalType = args[0];
       String journalDir = args[1];
       long numberOfElements = Long.parseLong(args[2]);
       int transactionSize = Integer.parseInt(args[3]);
+      int numberOfThreads = Integer.parseInt(args[4]);
       
 
       try
       {
          JournalImpl journal = appendData(journalType, journalDir,
-               numberOfElements, transactionSize);
+               numberOfElements, transactionSize, numberOfThreads);
          
-         journal.stop();
+         journal.stop(); // TODO: Remove this stop (for transactional tests at least)
          
       }
       catch (Exception e)
@@ -77,9 +80,9 @@ public class RemoteJournalAppender
    }
 
    public static JournalImpl appendData(String journalType, String journalDir,
-         long numberOfElements, int transactionSize) throws Exception
+         long numberOfElements, int transactionSize, int numberOfThreads) throws Exception
    {
-      JournalImpl journal = createJournal(journalType, journalDir);
+      final JournalImpl journal = createJournal(journalType, journalDir);
       
       journal.start();
       journal.load(new LoadManager()
@@ -103,38 +106,33 @@ public class RemoteJournalAppender
          }
       });
       
-      int transactionCounter = 0;
       
-      long transactionId = 1;
+      LocalThreads threads[] = new LocalThreads[numberOfThreads];
+      final AtomicLong nextInteger = new AtomicLong();
       
-      for (long i = 0; i < numberOfElements; i++)
+      for (int i = 0; i < numberOfThreads; i++)
       {
-         
-         ByteBuffer buffer = ByteBuffer.allocate(512*3);
-         buffer.putLong(numberOfElements - i);
-         
-         if (transactionSize != 0)
-         {
-            journal.appendAddRecordTransactional(transactionId, i, (byte)99, buffer.array());
-  
-            if (++transactionCounter == transactionSize)
-            {
-               System.out.println("Commit transaction " + transactionId);
-               journal.appendCommitRecord(transactionId);
-               transactionCounter = 0;
-               transactionId ++;
-            }
-         }
-         else
-         {
-            journal.appendAddRecord(i, (byte)99, buffer.array());
-         }
+         threads[i] = new LocalThreads(journal, numberOfElements, transactionSize, nextInteger);
+         threads[i].start();
       }
 
-      if (transactionCounter != 0)
+      Exception e = null;
+      for (LocalThreads t: threads)
       {
-         journal.appendCommitRecord(transactionId);
+         t.join();
+         
+         if (t.e != null)
+         {
+            e = t.e;
+         }
       }
+      
+      if (e != null)
+      {
+         throw e;
+      }
+      
+      
       return journal;
    }
 
@@ -170,5 +168,74 @@ public class RemoteJournalAppender
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------
+   
+   
+   static class LocalThreads extends Thread
+   {
+      final JournalImpl journal;
+      final long numberOfElements;
+      final int transactionSize;
+      final AtomicLong nextID;
+      
+      Exception e;
+      
+      public LocalThreads(JournalImpl journal, long numberOfElements, int transactionSize, AtomicLong nextID)
+      {
+         super();
+         this.journal = journal;
+         this.numberOfElements = numberOfElements;
+         this.transactionSize = transactionSize;
+         this.nextID = nextID;
+      }
+
+
+
+
+      public void run()
+      {
+         try
+         {
+            int transactionCounter = 0;
+            
+            long transactionId = nextID.incrementAndGet();
+            
+            for (long i = 0; i < numberOfElements; i++)
+            {
+               
+               long id = nextID.incrementAndGet();
+               
+               ByteBuffer buffer = ByteBuffer.allocate(512*3);
+               buffer.putLong(id);
+               
+               if (transactionSize != 0)
+               {
+                  journal.appendAddRecordTransactional(transactionId, id, (byte)99, buffer.array());
+        
+                  if (++transactionCounter == transactionSize)
+                  {
+                     System.out.println("Commit transaction " + transactionId);
+                     journal.appendCommitRecord(transactionId);
+                     transactionCounter = 0;
+                     transactionId = nextID.incrementAndGet();
+                  }
+               }
+               else
+               {
+                  journal.appendAddRecord(id, (byte)99, buffer.array());
+               }
+            }
+   
+            if (transactionCounter != 0)
+            {
+               journal.appendCommitRecord(transactionId);
+            }
+         }
+         catch (Exception e)
+         {
+            this.e = e;
+         }
+         
+      }
+   }
    
 }
