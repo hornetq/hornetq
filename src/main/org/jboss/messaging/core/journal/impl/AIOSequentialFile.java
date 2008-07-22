@@ -310,6 +310,8 @@ public class AIOSequentialFile implements SequentialFile
 			
 			this.errorMessage = errorMessage;
 			
+			log.warn("Error Message " + errorMessage);
+			
 			latch.countDown();			
 		}
 		

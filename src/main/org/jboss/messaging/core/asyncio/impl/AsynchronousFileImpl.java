@@ -232,6 +232,11 @@ public class AsynchronousFileImpl implements AsynchronousFile
 		return 512;
 	}
 	
+	public String getFileName()
+	{
+	   return fileName;
+	}
+	
 	// Private
 	// ---------------------------------------------------------------------------------
 	

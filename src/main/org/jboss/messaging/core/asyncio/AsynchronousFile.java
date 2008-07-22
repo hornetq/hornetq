@@ -58,4 +58,6 @@ public interface AsynchronousFile
 	
 	int getBlockSize();
 	
+	String getFileName();
+	
 }

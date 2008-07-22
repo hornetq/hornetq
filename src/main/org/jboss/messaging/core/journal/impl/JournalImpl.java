@@ -801,7 +801,7 @@ public class JournalImpl implements TestableJournal
             
             if (checkSize != variableSize + recordSize)
             {
-               log.warn("Record at position " + pos + " is corrupted and it is being ignored");
+               log.warn("Record at position " + pos + " file:" + file.getFile().getFileName() + " is corrupted and it is being ignored");
                bb.position(pos + SIZE_BYTE);
                continue;
             }
