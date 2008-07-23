@@ -27,20 +27,22 @@ import org.jboss.messaging.core.logging.Logger;
 
 /**
  * 
- * A ReclaimerTest
+ * <p>A ReclaimerTest</p>
  * 
- * The journal consists of an ordered list of journal files Fn where 0 <= n <= N
+ * <p>The journal consists of an ordered list of journal files Fn where 0 <= n <= N</p>
  * 
- * A journal file can contain either positives (pos) or negatives (neg)
+ * <p>A journal file can contain either positives (pos) or negatives (neg)</p>
  * 
- * (Positives correspond either to adds or updates, and negatives correspond to deletes).
+ * <p>(Positives correspond either to adds or updates, and negatives correspond to deletes).</p>
  * 
- * A file Fn can be deleted if, and only if the following criteria are satisified
+ * <p>A file Fn can be deleted if, and only if the following criteria are satisified</p>
  * 
- * 1) All pos in a file Fn, must have corresponding neg in any file Fm where m >= n.
+ * <p>1) All pos in a file Fn, must have corresponding neg in any file Fm where m >= n.</p>
  * 
- * 2) All pos that correspond to any neg in file Fn, must all live in any file Fm where 0 <= m <= n
- * which are also marked for deletion in the same pass of the algorithm.
+ * <p>2) All pos that correspond to any neg in file Fn, must all live in any file Fm where 0 <= m <= n
+ * which are also marked for deletion in the same pass of the algorithm.</p>
+ * 
+ * <p>WIKI Page: <a href="http://wiki.jboss.org/wiki/JBossMessaging2Reclaiming">http://wiki.jboss.org/wiki/JBossMessaging2Reclaiming</a></p>
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *

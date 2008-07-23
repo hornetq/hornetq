@@ -25,6 +25,7 @@ package org.jboss.messaging.tests.unit.core.journal.impl;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
@@ -70,8 +71,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    public void testBasicAlignment() throws Exception
    {
       
-      FakeSequentialFileFactory factory = new FakeSequentialFileFactory(200,
-            true, false);
+      FakeSequentialFileFactory factory = new FakeSequentialFileFactory(200, true);
       
       SequentialFile file = factory.createSequentialFile("test1", 100, 10000);
 
@@ -438,8 +438,6 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.checkAndReclaimFiles();
       
-      System.out.println("Journal: " + journalImpl.debug());
-      
       assertEquals(2, factory.listFiles("tt").size());
       
    }
@@ -570,27 +568,277 @@ public class AlignedJournalImplTest extends UnitTestCase
    }
    
    
-   public void testReloadInvalidVariableSize() throws Exception
+   public void testReloadInvalidCheckSizeOnTransaction() throws Exception
    {
-      // Test to be written
+      final int JOURNAL_SIZE = 20000;
+      
+      setupJournal(JOURNAL_SIZE, 100);
+      
+      assertEquals(2, factory.listFiles("tt").size());
+      
+      
+      assertEquals(0, records.size());
+      assertEquals(0, transactions.size());
+      
+      for (int i = 0; i < 20 ; i++)
+      {
+         journalImpl.appendAddRecordTransactional(1l, (long)i, (byte)0, new SimpleEncoding(1, (byte)15));
+         journalImpl.forceMoveNextFile();
+      }
+      
+      journalImpl.forceMoveNextFile();
+      
+      journalImpl.appendCommitRecord(1l);
+      
+      SequentialFile file = factory.createSequentialFile("tt-1.tt", 10000, 5000);
+      
+      file.open();
+      
+      ByteBuffer buffer = ByteBuffer.allocate(100);
+      
+      // Messing up with the first record (removing the position)
+      file.position(100);
+      
+      file.read(buffer);
+
+      // jumping RecordType, FileId, TransactionID, RecordID, VariableSize, RecordType, RecordBody (that we know it is 1 )
+      buffer.position(1 + 4 + 8 + 8 + 4 + 1 + 1); 
+      
+      int posCheckSize = buffer.position();
+      
+      assertEquals(JournalImpl.SIZE_ADD_RECORD_TX + 1, buffer.getInt());
+      
+      buffer.position(posCheckSize);
+      
+      buffer.putInt(-1);
+      
+      buffer.rewind();
+      
+      // Changing the check size, so reload will ignore this record
+      file.position(100);
+
+      file.write(buffer, true);
+      
+      file.close();
+
+      setupJournal(JOURNAL_SIZE, 100);
+      
+      assertEquals(0, records.size());
+      
+      journalImpl.checkAndReclaimFiles();
+      
+      assertEquals(0, journalImpl.getDataFilesCount());
+      
+      assertEquals(2, factory.listFiles("tt").size());
+      
    }
+
+   public void testPartiallyBrokenFile() throws Exception
+   {
+      final int JOURNAL_SIZE = 20000;
+      
+      setupJournal(JOURNAL_SIZE, 100);
+      
+      assertEquals(2, factory.listFiles("tt").size());
+      
+      
+      assertEquals(0, records.size());
+      assertEquals(0, transactions.size());
+      
+      for (int i = 0; i < 20 ; i++)
+      {
+         journalImpl.appendAddRecordTransactional(1l, (long)i, (byte)0, new SimpleEncoding(1, (byte)15));
+         journalImpl.appendAddRecordTransactional(2l, (long)i + 20l, (byte)0, new SimpleEncoding(1, (byte)15));
+         journalImpl.forceMoveNextFile();
+      }
+      
+      
+      journalImpl.forceMoveNextFile();
+      
+      journalImpl.appendCommitRecord(1l);
+      
+      journalImpl.appendCommitRecord(2l);
+      
+      SequentialFile file = factory.createSequentialFile("tt-1.tt", 10000, 5000);
+      
+      file.open();
+      
+      ByteBuffer buffer = ByteBuffer.allocate(100);
+      
+      // Messing up with the first record (removing the position)
+      file.position(100);
+      
+      file.read(buffer);
+
+      // jumping RecordType, FileId, TransactionID, RecordID, VariableSize, RecordType, RecordBody (that we know it is 1 )
+      buffer.position(1 + 4 + 8 + 8 + 4 + 1 + 1); 
+      
+      int posCheckSize = buffer.position();
+      
+      assertEquals(JournalImpl.SIZE_ADD_RECORD_TX + 1, buffer.getInt());
+      
+      buffer.position(posCheckSize);
+      
+      buffer.putInt(-1);
+      
+      buffer.rewind();
+      
+      // Changing the check size, so reload will ignore this record
+      file.position(100);
+
+      file.write(buffer, true);
+      
+      file.close();
+
+      setupJournal(JOURNAL_SIZE, 100);
+      
+      assertEquals(20, records.size());
+      
+      journalImpl.checkAndReclaimFiles();
+      
+      assertEquals(20, journalImpl.getDataFilesCount());
+      
+      assertEquals(22, factory.listFiles("tt").size());
+      
+   }
+
+   public void testReduceFreeFiles() throws Exception
+   {
+      final int JOURNAL_SIZE = 20000;
+      
+      setupJournal(JOURNAL_SIZE, 100, 10);
+      
+      assertEquals(10, factory.listFiles("tt").size());
+      
+      setupJournal(JOURNAL_SIZE, 100, 2);
+      
+      assertEquals(10, factory.listFiles("tt").size());
+      
+      for (int i = 0; i < 10; i++)
+      {
+         journalImpl.appendAddRecord(i, (byte)0, new SimpleEncoding(1,(byte)0));
+         journalImpl.forceMoveNextFile();
+      }
+      
+      setupJournal(JOURNAL_SIZE, 100, 2);
+      
+      assertEquals(10, records.size());
+      
+      assertEquals(12, factory.listFiles("tt").size());
+      
+      for (int i = 0; i < 10; i++)
+      {
+         journalImpl.appendDeleteRecord(i);
+      }
+      
+      journalImpl.forceMoveNextFile();
+      
+      journalImpl.checkAndReclaimFiles();
+      
+      setupJournal(JOURNAL_SIZE, 100, 2);
+
+      assertEquals(0, records.size());
+      
+      assertEquals(2, factory.listFiles("tt").size());
+   }
+
    
    public void testReloadIncompleteTransaction() throws Exception
    {
-      // We should miss one record (hole) on the transaction
+      final int JOURNAL_SIZE = 20000;
+      
+      setupJournal(JOURNAL_SIZE, 100);
+      
+      assertEquals(2, factory.listFiles("tt").size());
+      
+      
+      assertEquals(0, records.size());
+      assertEquals(0, transactions.size());
+      
+      for (int i = 0; i < 10 ; i++)
+      {
+         journalImpl.appendAddRecordTransactional(1l, (long)i, (byte)0, new SimpleEncoding(1, (byte)15));
+         journalImpl.forceMoveNextFile();
+      }
+      
+      
+      for (int i = 10; i < 20 ; i++)
+      {
+         journalImpl.appendAddRecordTransactional(1l, (long)i, (byte)0, new SimpleEncoding(1, (byte)15));
+         journalImpl.forceMoveNextFile();
+      }
+      
+      journalImpl.forceMoveNextFile();
+      
+      journalImpl.appendCommitRecord(1l);
+      
+      SequentialFile file = factory.createSequentialFile("tt-1.tt", 10000, 5000);
+      
+      file.open();
+      
+      ByteBuffer buffer = ByteBuffer.allocate(100);
+      
+      // Messing up with the first record (removing the position)
+      file.position(100);
+      
+      file.read(buffer);
+
+      buffer.position(1);
+      
+      buffer.putInt(-1);
+      
+      buffer.rewind();
+      
+      // Messing up with the first record (changing the fileID, so Journal reload will think the record came from a different journal usage)
+      file.position(100);
+
+      file.write(buffer, true);
+      
+      file.close();
+
+      setupJournal(JOURNAL_SIZE, 100);
+      
+      assertEquals(0, records.size());
+      
+      journalImpl.checkAndReclaimFiles();
+      
+      assertEquals(0, journalImpl.getDataFilesCount());
+      
+      assertEquals(2, factory.listFiles("tt").size());
+      
    }
    
    public void testAsynchronousCommit() throws Exception
    {
-      // We should miss one record (hole) on the transaction
+//      final int JOURNAL_SIZE = 20000;
+//      
+//      setupJournal(JOURNAL_SIZE, 100, 5);
+//      
+//      assertEquals(2, factory.listFiles("tt").size());
+//      
+//      assertEquals(0, records.size());
+//      assertEquals(0, transactions.size());
+//      
+//      for (int i = 0; i < 10 ; i++)
+//      {
+//         journalImpl.appendAddRecordTransactional(1l, (long)i, (byte)0, new SimpleEncoding(1, (byte)15));
+//         journalImpl.forceMoveNextFile();
+//      }
+//      
+//      
+//      for (int i = 10; i < 20 ; i++)
+//      {
+//         journalImpl.appendAddRecordTransactional(1l, (long)i, (byte)0, new SimpleEncoding(1, (byte)15));
+//         journalImpl.forceMoveNextFile();
+//      }
+//      
+//      journalImpl.forceMoveNextFile();
+//      
+//      journalImpl.appendCommitRecord(1l);
+//      
    }
    
    public void testAsynchronousRollback() throws Exception
-   {
-      // We should miss one record (hole) on the transaction
-   }
-   
-   public void testGarbageBetweenRecords() throws Exception
    {
       // We should miss one record (hole) on the transaction
    }
@@ -599,7 +847,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
       final int JOURNAL_SIZE = 20000;
       
-      setupJournal(JOURNAL_SIZE, 100, 5);
+      setupJournal(JOURNAL_SIZE, 100);
       
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
@@ -624,7 +872,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       journalImpl.forceMoveNextFile();
       journalImpl.checkAndReclaimFiles();
 
-      setupJournal(JOURNAL_SIZE, 100, 5);
+      setupJournal(JOURNAL_SIZE, 100);
       
       assertEquals(1, records.size());
    }
@@ -633,7 +881,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
       final int JOURNAL_SIZE = 20000;
       
-      setupJournal(JOURNAL_SIZE, 100, 5);
+      setupJournal(JOURNAL_SIZE, 100);
       
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
@@ -662,7 +910,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       journalImpl.forceMoveNextFile();
       journalImpl.checkAndReclaimFiles();
 
-      setupJournal(JOURNAL_SIZE, 100, 5);
+      setupJournal(JOURNAL_SIZE, 100);
       
       assertEquals(40, records.size());
       
@@ -686,8 +934,6 @@ public class AlignedJournalImplTest extends UnitTestCase
       }
       
       journalImpl.debugWait();
-      
-      //System.out.println("files = " + journalImpl.debug());
       
       journalImpl.appendPrepareRecord(1l);
 
@@ -733,6 +979,8 @@ public class AlignedJournalImplTest extends UnitTestCase
       assertEquals(0, transactions.size());
 
       journalImpl.forceMoveNextFile();
+
+      // Reclaiming should still be able to reclaim a file if a transaction was ignored
       journalImpl.checkAndReclaimFiles();
       
       assertEquals(2, factory.listFiles("tt").size());
@@ -790,7 +1038,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       if (factory == null)
       {
          factory = new FakeSequentialFileFactory(alignment,
-               true, false);
+               true);
       }
       
       if (journalImpl != null)

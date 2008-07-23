@@ -781,7 +781,7 @@
       </junit>
    </target>
 
-   <target name="all-tests" depends="unit-tests, integration-tests, timing-tests, performance-tests, concurrent-tests, jms-tests"/>
+   <target name="all-tests" depends="unit-tests, integration-tests, timing-tests, performance-tests, concurrent-tests, stress-tests, jms-tests"/>
 
    <target name="compile-reports">
       <mkdir dir="${test.stylesheets.dir}"/>

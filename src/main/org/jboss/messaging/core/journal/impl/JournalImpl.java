@@ -63,7 +63,9 @@ import org.jboss.messaging.util.VariableLatch;
 
 /**
  * 
- * A JournalImpl
+ * <p>A JournalImpl</p
+ * 
+ * <p>WIKI Page: <a href="http://wiki.jboss.org/auth/wiki/JBossMessaging2Journal"> http://wiki.jboss.org/auth/wiki/JBossMessaging2Journal</a></p>
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
@@ -183,7 +185,6 @@ public class JournalImpl implements TestableJournal
     */
    
    //TODO - improve concurrency by allowing concurrent accesses if doesn't change current file
-   // this locks access to currentFile
    private final Semaphore lock = new Semaphore(1, true);
    
    private volatile JournalFile currentFile ;
@@ -728,6 +729,9 @@ public class JournalImpl implements TestableJournal
             
             if (readFileId != file.getOrderingID())
             {
+               // If a file has damaged records, we make it a dataFile, and the next reclaiming will fix it
+               hasData = true;
+
                bb.position(pos + 1);
                //log.info("Record read at position " + pos + " doesn't belong to this current journal file, ignoring it!");
                continue;
@@ -802,6 +806,8 @@ public class JournalImpl implements TestableJournal
             if (checkSize != variableSize + recordSize)
             {
                log.warn("Record at position " + pos + " file:" + file.getFile().getFileName() + " is corrupted and it is being ignored");
+               // If a file has damaged records, we make it a dataFile, and the next reclaiming will fix it
+               hasData = true;
                bb.position(pos + SIZE_BYTE);
                continue;
             }
@@ -992,7 +998,7 @@ public class JournalImpl implements TestableJournal
                      else
                      {
                         log.warn("Transaction " + transactionID + " is missing elements so the transaction is being ignored");
-                        journalTransaction.rollback(file);
+                        journalTransaction.forget();
                      }
                      
                      hasData = true;         
@@ -1062,10 +1068,13 @@ public class JournalImpl implements TestableJournal
       //FIXME - size() involves a scan
       int filesToCreate = minFiles - (dataFiles.size() + freeFiles.size());
       
-      for (int i = 0; i < filesToCreate; i++)
+      if (filesToCreate > 0)
       {
-         // Keeping all files opened can be very costly (mainly on AIO)
-         freeFiles.add(createFile(false));
+         for (int i = 0; i < filesToCreate; i++)
+         {
+            // Keeping all files opened can be very costly (mainly on AIO)
+            freeFiles.add(createFile(false));
+         }
       }
       
       //The current file is the last one
@@ -1167,11 +1176,18 @@ public class JournalImpl implements TestableJournal
          builder.append("FreeFile:" + file + "\n");
       }
       
-      builder.append("CurrentFile:" + currentFile+ " posCounter = " + currentFile.getPosCount() + "\n");
-      
-      if (currentFile instanceof JournalFileImpl)
+      if (currentFile != null)
       {
-         builder.append(((JournalFileImpl)currentFile).debug());
+         builder.append("CurrentFile:" + currentFile+ " posCounter = " + currentFile.getPosCount() + "\n");
+         
+         if (currentFile instanceof JournalFileImpl)
+         {
+            builder.append(((JournalFileImpl)currentFile).debug());
+         }
+      }
+      else
+      {
+         builder.append("CurrentFile: No current file at this point!");
       }
       
       builder.append("#Opened Files:" + this.openedFiles.size());
@@ -1229,25 +1245,7 @@ public class JournalImpl implements TestableJournal
             {
                //Re-initialise it
                
-               int newOrderingID = generateOrderingID();
-               
-               SequentialFile sf = file.getFile();
-               
-               sf.open();
-               
-               ByteBuffer bb = fileFactory.newBuffer(SIZE_INT); 
-               
-               bb.putInt(newOrderingID);
-               
-               int bytesWritten = sf.write(bb, true);
-               
-               JournalFile jf = new JournalFileImpl(sf, newOrderingID);
-               
-               sf.position(bytesWritten);
-               
-               jf.setOffset(bytesWritten);
-               
-               sf.close();
+               JournalFile jf = reinitializeFile(file);
                
                freeFiles.add(jf);  
             }
@@ -1262,7 +1260,7 @@ public class JournalImpl implements TestableJournal
          }
       }
    }
-   
+
    public int getDataFilesCount()
    {
       return dataFiles.size();
@@ -1404,6 +1402,31 @@ public class JournalImpl implements TestableJournal
    
    // Private -----------------------------------------------------------------------------
 
+   // Discard the old JournalFile and set it with a new ID
+   private JournalFile reinitializeFile(JournalFile file) throws Exception
+   {
+      int newOrderingID = generateOrderingID();
+      
+      SequentialFile sf = file.getFile();
+      
+      sf.open();
+      
+      ByteBuffer bb = fileFactory.newBuffer(SIZE_INT); 
+      
+      bb.putInt(newOrderingID);
+      
+      int bytesWritten = sf.write(bb, true);
+      
+      JournalFile jf = new JournalFileImpl(sf, newOrderingID);
+      
+      sf.position(bytesWritten);
+      
+      jf.setOffset(bytesWritten);
+      
+      sf.close();
+      return jf;
+   }
+   
    @SuppressWarnings("unchecked")
    private Pair<Integer, Integer>[] readReferencesOnTransaction(int variableSize, ByteBuffer bb)
    {

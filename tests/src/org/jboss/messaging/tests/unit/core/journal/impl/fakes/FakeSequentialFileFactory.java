@@ -55,7 +55,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    
    private final boolean supportsCallback; 
    
-   private final boolean holdCallbacks;
+   private volatile boolean holdCallbacks;
    
    private final List<Runnable> callbacksInHold;
    
@@ -63,24 +63,16 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    
    // Constructors --------------------------------------------------
    
-   public FakeSequentialFileFactory(final int alignment, final boolean supportsCallback, final boolean holdCallback)
+   public FakeSequentialFileFactory(final int alignment, final boolean supportsCallback)
    {
       this.alignment = alignment;
       this.supportsCallback = supportsCallback;
-      this.holdCallbacks = holdCallback;
-      if (holdCallbacks)
-      {
-         callbacksInHold = new ArrayList<Runnable>();
-      }
-      else
-      {
-         callbacksInHold = null;
-      }
+      callbacksInHold = new ArrayList<Runnable>();
    }
 
    public FakeSequentialFileFactory()
    {
-      this(1, false, false);
+      this(1, false);
    }
 
    
@@ -151,6 +143,16 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       return ByteBuffer.wrap(bytes);
    }
    
+   public boolean isHoldCallbacks()
+   {
+      return holdCallbacks;
+   }
+
+   public void setHoldCallbacks(boolean holdCallbacks)
+   {
+      this.holdCallbacks = holdCallbacks;
+   }
+
    public void flushAllCallbacks()
    {
       for (Runnable action : callbacksInHold)
