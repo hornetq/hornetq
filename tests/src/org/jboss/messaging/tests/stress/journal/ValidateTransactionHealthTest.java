@@ -46,7 +46,8 @@ public class ValidateTransactionHealthTest extends StressTestBase
    // Constants -----------------------------------------------------
    
    // Attributes ----------------------------------------------------
-   
+   protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/journal-test";
+
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
@@ -55,47 +56,47 @@ public class ValidateTransactionHealthTest extends StressTestBase
    
    public void testAIO() throws Exception
    {
-      internalTest("aio", "/tmp/aiojournal", 10000, 100, true, true, 1);
+      internalTest("aio", journalDir, 10000, 100, true, true, 1);
    }
    
    public void testAIOHugeTransaction() throws Exception
    {
-      internalTest("aio", "/tmp/aiojournal", 10000, 10000, true, true, 1);
+      internalTest("aio", journalDir, 10000, 10000, true, true, 1);
    }
    
    public void testAIOMultiThread() throws Exception
    {
-      internalTest("aio", "/tmp/aiojournal", 1000, 100, true, true, 10);
+      internalTest("aio", journalDir, 1000, 100, true, true, 10);
    }
    
    public void testAIONonTransactional() throws Exception
    {
-      internalTest("aio", "/tmp/aiojournal", 10000, 0, true, true, 1);
+      internalTest("aio", journalDir, 10000, 0, true, true, 1);
    }
    
    public void testAIONonTransactionalNoExternalProcess() throws Exception
    {
-      internalTest("aio", "/tmp/aiojournal", 1000, 0, true, false, 10);
+      internalTest("aio", journalDir, 1000, 0, true, false, 10);
    }
    
    public void testNIO() throws Exception
    {
-      internalTest("nio", "/tmp/niojournal", 10000, 100, true, true, 1);
+      internalTest("nio", journalDir, 10000, 100, true, true, 1);
    }
    
    public void testNIOHugeTransaction() throws Exception
    {
-      internalTest("nio", "/tmp/aiojournal", 10000, 10000, true, true, 1);
+      internalTest("nio", journalDir, 10000, 10000, true, true, 1);
    }
    
    public void testNIOMultiThread() throws Exception
    {
-      internalTest("nio", "/tmp/niojournal", 1000, 100, true, true, 10);
+      internalTest("nio", journalDir, 1000, 100, true, true, 10);
    }
    
    public void testNIONonTransactional() throws Exception
    {
-      internalTest("nio", "/tmp/niojournal", 10000, 0, true, true, 1);
+      internalTest("nio", journalDir, 10000, 0, true, true, 1);
    }
    
    // Package protected ---------------------------------------------
@@ -107,36 +108,44 @@ public class ValidateTransactionHealthTest extends StressTestBase
    private void internalTest(String type, String journalDir,
          long numberOfRecords, int transactionSize, boolean append, boolean externalProcess, int numberOfThreads) throws Exception
    {
-      if (type.equals("aio") && !AsynchronousFileImpl.isLoaded())
+      try
       {
-         // Using System.out as this output will go towards junit report
-         System.out.println("AIO not found, test being ignored on this platform");
-         return;
+         if (type.equals("aio") && !AsynchronousFileImpl.isLoaded())
+         {
+            // Using System.out as this output will go towards junit report
+            System.out.println("AIO not found, test being ignored on this platform");
+            return;
+         }
+         
+         // This property could be set to false for debug purposes.
+         if (append)
+         {
+            File file = new File(journalDir);
+            deleteDirectory(file);
+            file.mkdir();
+            
+            if (externalProcess)
+            {
+               RemoteProcess process = startProcess(true, RemoteJournalAppender.class
+                     .getCanonicalName(), type, journalDir, Long
+                     .toString(numberOfRecords), Integer.toString(transactionSize), Integer.toString(numberOfThreads));
+               process.getProcess().waitFor();
+               assertEquals(RemoteJournalAppender.OK, process.getProcess().exitValue());
+            }
+            else
+            {
+               JournalImpl journal = RemoteJournalAppender.appendData(type, journalDir, numberOfRecords, transactionSize, numberOfThreads);
+               journal.stop();
+            }
+         }
+         
+         reload(type, journalDir, numberOfRecords, numberOfThreads);
       }
-      
-      // This property could be set to false for debug purposes.
-      if (append)
+      finally
       {
          File file = new File(journalDir);
          deleteDirectory(file);
-         file.mkdir();
-         
-         if (externalProcess)
-         {
-            RemoteProcess process = startProcess(true, RemoteJournalAppender.class
-                  .getCanonicalName(), type, journalDir, Long
-                  .toString(numberOfRecords), Integer.toString(transactionSize), Integer.toString(numberOfThreads));
-            process.getProcess().waitFor();
-            assertEquals(RemoteJournalAppender.OK, process.getProcess().exitValue());
-         }
-         else
-         {
-            JournalImpl journal = RemoteJournalAppender.appendData(type, journalDir, numberOfRecords, transactionSize, numberOfThreads);
-            journal.stop();
-         }
       }
-      
-      reload(type, journalDir, numberOfRecords, numberOfThreads);
    }
    
    private void reload(String type, String journalDir, long numberOfRecords, int numberOfThreads)
