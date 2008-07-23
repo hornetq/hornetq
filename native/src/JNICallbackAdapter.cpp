@@ -22,11 +22,12 @@
 #include <iostream>
 #include "JavaUtilities.h"
 
-JNICallbackAdapter::JNICallbackAdapter(AIOController * _controller, jobject _callback, jobject _fileController) : CallbackAdapter(), refs(1)
+JNICallbackAdapter::JNICallbackAdapter(AIOController * _controller, jobject _callback, jobject _fileController, jobject _bufferReference) : CallbackAdapter(), refs(1)
 {
 	controller = _controller;
 	callback = _callback;
 	fileController = _fileController;
+	bufferReference = _bufferReference;
 }
 
 JNICallbackAdapter::~JNICallbackAdapter()
@@ -50,4 +51,5 @@ void JNICallbackAdapter::destroy(THREAD_CONTEXT threadContext)
 {
 	JNI_ENV(threadContext)->DeleteGlobalRef(callback);
 	JNI_ENV(threadContext)->DeleteGlobalRef(fileController);
+	JNI_ENV(threadContext)->DeleteGlobalRef(bufferReference);
 }

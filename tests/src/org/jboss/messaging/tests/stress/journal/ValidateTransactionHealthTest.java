@@ -33,6 +33,13 @@ import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.tests.stress.StressTestBase;
 import org.jboss.messaging.tests.stress.journal.remote.RemoteJournalAppender;
 
+/**
+ * 
+ * This test spawns a remote VM, as we want to "crash" the VM right after the journal is filled with data
+ * 
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ *
+ */
 public class ValidateTransactionHealthTest extends StressTestBase
 {
    
@@ -48,42 +55,47 @@ public class ValidateTransactionHealthTest extends StressTestBase
    
    public void testAIO() throws Exception
    {
-      internalTest("aio", "/tmp/aiojournal", 100000, 100, true, true, 1);
+      internalTest("aio", "/tmp/aiojournal", 10000, 100, true, true, 1);
    }
    
    public void testAIOHugeTransaction() throws Exception
    {
-      internalTest("aio", "/tmp/aiojournal", 100000, 100000, true, true, 1);
+      internalTest("aio", "/tmp/aiojournal", 10000, 10000, true, true, 1);
    }
    
    public void testAIOMultiThread() throws Exception
    {
-      internalTest("aio", "/tmp/aiojournal", 10000, 100, true, true, 10);
+      internalTest("aio", "/tmp/aiojournal", 1000, 100, true, true, 10);
    }
    
    public void testAIONonTransactional() throws Exception
    {
-      internalTest("aio", "/tmp/aiojournal", 100000, 0, true, true, 1);
+      internalTest("aio", "/tmp/aiojournal", 10000, 0, true, true, 1);
    }
    
    public void testAIONonTransactionalNoExternalProcess() throws Exception
    {
-      internalTest("aio", "/tmp/aiojournal", 10000, 0, true, false, 10);
+      internalTest("aio", "/tmp/aiojournal", 1000, 0, true, false, 10);
    }
    
    public void testNIO() throws Exception
    {
-      internalTest("nio", "/tmp/niojournal", 100000, 100, true, true, 1);
+      internalTest("nio", "/tmp/niojournal", 10000, 100, true, true, 1);
+   }
+   
+   public void testNIOHugeTransaction() throws Exception
+   {
+      internalTest("nio", "/tmp/aiojournal", 10000, 10000, true, true, 1);
    }
    
    public void testNIOMultiThread() throws Exception
    {
-      internalTest("nio", "/tmp/niojournal", 10000, 100, true, true, 10);
+      internalTest("nio", "/tmp/niojournal", 1000, 100, true, true, 10);
    }
    
    public void testNIONonTransactional() throws Exception
    {
-      internalTest("nio", "/tmp/niojournal", 100000, 0, true, true, 1);
+      internalTest("nio", "/tmp/niojournal", 10000, 0, true, true, 1);
    }
    
    // Package protected ---------------------------------------------

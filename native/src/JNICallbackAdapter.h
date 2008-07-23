@@ -33,12 +33,13 @@ private:
 	AIOController * controller;
 	jobject callback;
 	jobject fileController;
+	jobject bufferReference;
 	int refs;
     void destroy(THREAD_CONTEXT threadContext);
 	
 public:
 	// _ob must be a global Reference (use createGloblReferente before calling the constructor)
-	JNICallbackAdapter(AIOController * _controller, jobject _callback, jobject _fileController);
+	JNICallbackAdapter(AIOController * _controller, jobject _callback, jobject _fileController, jobject _bufferReference);
 	virtual ~JNICallbackAdapter();
 	void done(THREAD_CONTEXT threadContext);
 	void onError(THREAD_CONTEXT threadContext, long error, std::string error);

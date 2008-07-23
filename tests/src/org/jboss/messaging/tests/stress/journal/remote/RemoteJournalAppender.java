@@ -23,7 +23,6 @@
 package org.jboss.messaging.tests.stress.journal.remote;
 
 import java.nio.ByteBuffer;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.jboss.messaging.core.journal.LoadManager;
@@ -34,6 +33,11 @@ import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 
+/**
+ * 
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ *
+ */
 public class RemoteJournalAppender
 {
    
@@ -55,6 +59,7 @@ public class RemoteJournalAppender
                      + " aio|nio <journalDirectory> <NumberOfElements> <TransactionSize> <NumberOfThreads>");
          System.exit(-1);
       }
+      System.out.println("Running");
       String journalType = args[0];
       String journalDir = args[1];
       long numberOfElements = Long.parseLong(args[2]);
@@ -64,10 +69,8 @@ public class RemoteJournalAppender
 
       try
       {
-         JournalImpl journal = appendData(journalType, journalDir,
+         appendData(journalType, journalDir,
                numberOfElements, transactionSize, numberOfThreads);
-         
-         journal.stop(); // TODO: Remove this stop (for transactional tests at least)
          
       }
       catch (Exception e)
@@ -228,6 +231,11 @@ public class RemoteJournalAppender
             if (transactionCounter != 0)
             {
                journal.appendCommitRecord(transactionId);
+            }
+            
+            if (transactionSize == 0)
+            {
+               journal.debugWait();
             }
          }
          catch (Exception e)
