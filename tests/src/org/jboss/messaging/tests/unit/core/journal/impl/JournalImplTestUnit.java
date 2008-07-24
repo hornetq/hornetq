@@ -2122,7 +2122,6 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		
 		for (int i = 0; i < 100; i++)
 		{
-		   System.out.println("i=" + i);
 			byte[] record = generateRecord(10 + (int)(1500 * Math.random()));
 			
 			journal.appendAddRecord(i, (byte)0, record);
