@@ -906,6 +906,33 @@ public class AlignedJournalImplTest extends UnitTestCase
       
    }
    
+   public void testReclaimAfterRollabck() throws Exception
+   {
+      final int JOURNAL_SIZE = 2000;
+      
+      setupJournal(JOURNAL_SIZE, 1);
+      
+      
+      for (int i = 0; i < 10; i++)
+      {
+         journalImpl.appendAddRecordTransactional(1l, i, (byte)0, new SimpleEncoding(1, (byte)0) );
+         journalImpl.forceMoveNextFile();
+      }
+      
+      journalImpl.appendRollbackRecord(1l);
+      
+      journalImpl.forceMoveNextFile();
+      
+      journalImpl.checkAndReclaimFiles();
+      
+      setupJournal(JOURNAL_SIZE, 1);
+      
+      assertEquals(0, journalImpl.getDataFilesCount());
+      
+      assertEquals(2, factory.listFiles("tt").size());
+      
+   }
+   
    
    // Package protected ---------------------------------------------
    

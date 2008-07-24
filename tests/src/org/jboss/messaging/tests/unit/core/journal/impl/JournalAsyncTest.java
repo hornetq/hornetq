@@ -219,6 +219,16 @@ public class JournalAsyncTest extends UnitTestCase
       t.join();
       
       assertNotNull (t.e);
+      
+      try
+      {
+         journalImpl.appendRollbackRecord(1l);
+         fail("Supposed to throw an exception");
+      }
+      catch (Exception e)
+      {
+         
+      }
    }
    
    // If a callback error already arrived, we should just throw the exception right away

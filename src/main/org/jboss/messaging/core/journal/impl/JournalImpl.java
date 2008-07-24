@@ -567,7 +567,7 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Journal must be loaded first");
       }		
       
-      JournalTransaction tx = transactionInfos.remove(txID);
+      JournalTransaction tx = transactionInfos.get(txID);
       
       if (tx == null)
       {
@@ -576,6 +576,7 @@ public class JournalImpl implements TestableJournal
       
       JournalFile usedFile = writeTransaction(COMMIT_RECORD, txID, tx);
       
+      transactionInfos.remove(txID);
       transactionCallbacks.remove(txID);
       
       tx.commit(usedFile);
@@ -705,10 +706,6 @@ public class JournalImpl implements TestableJournal
             byte recordType = bb.get();
             if (recordType < ADD_RECORD || recordType > ROLLBACK_RECORD)
             {
-               if (trace)
-               {
-                  log.trace("Invalid record type at " + bb.position() + " file:" + file);
-               }
                continue;
             }
 

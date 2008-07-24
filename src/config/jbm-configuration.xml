@@ -95,8 +95,6 @@
       -->
       <journal-max-aio>5000</journal-max-aio>
 
-      <journal-task-period>5000</journal-task-period>
-      
    </configuration>
 
 </deployment>

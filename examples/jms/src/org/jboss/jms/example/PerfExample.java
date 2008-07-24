@@ -218,10 +218,9 @@ public class PerfExample
 
          if (perfParams.isDrainQueue())
          {
-            drainQueue(messageConsumer);
+            drainQueue(messageConsumer, perfParams);
             if (perfParams.isSessionTransacted())
             {
-               log.info("commit on drainQueue");
                session.commit();
             }
          }
@@ -256,7 +255,7 @@ public class PerfExample
       }
    }
 
-   private void drainQueue(final MessageConsumer consumer) throws JMSException
+   private void drainQueue(final MessageConsumer consumer, PerfParams perfParams) throws JMSException
    {
       log.info("draining queue");
       int msgs = 0;
@@ -271,6 +270,11 @@ public class PerfExample
          else
          {
             msgs ++;
+         }
+         
+         if (perfParams.isSessionTransacted() &&  msgs % perfParams.getTransactionBatchSize() == 0)
+         {
+            session.commit();
          }
       }
    }
