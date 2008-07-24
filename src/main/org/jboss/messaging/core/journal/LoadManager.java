@@ -36,4 +36,14 @@ public interface LoadManager
    void updateRecord(RecordInfo info);
    
    void addPreparedTransaction(PreparedTransactionInfo preparedTransaction);
+   
+   /** 
+    * 
+    * This may happen in a rare situation where a transaction commit timed out on AIO,
+    * And right after that a rollback was fired but the previous transaction was completed when the TransactionCallback was already forgotten.
+    * 
+    * This is because libaio's forget method is not working, so we have to come up with this "hack"
+    * 
+    * */
+   void restart();
 }

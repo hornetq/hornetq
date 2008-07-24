@@ -107,6 +107,10 @@ public class RemoteJournalAppender
          public void updateRecord(RecordInfo info)
          {
          }
+
+         public void restart()
+         {
+         }
       });
       
       

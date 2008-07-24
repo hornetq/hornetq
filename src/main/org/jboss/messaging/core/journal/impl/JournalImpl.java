@@ -575,7 +575,7 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Journal must be loaded first");
       }		
       
-      JournalTransaction tx = transactionInfos.remove(txID);
+      JournalTransaction tx = transactionInfos.get(txID);
       
       if (tx == null)
       {
@@ -584,6 +584,7 @@ public class JournalImpl implements TestableJournal
       
       JournalFile usedFile = writeTransaction(COMMIT_RECORD, txID, tx);
       
+      transactionInfos.remove(txID);
       transactionCallbacks.remove(txID);
       
       tx.commit(usedFile);
@@ -597,7 +598,7 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Journal must be loaded first");
       }
       
-      JournalTransaction tx = transactionInfos.remove(txID);
+      JournalTransaction tx = transactionInfos.get(txID);
       
       if (tx == null)
       {
@@ -616,6 +617,7 @@ public class JournalImpl implements TestableJournal
       
       JournalFile usedFile = appendRecord(bb, syncTransactional, getTransactionCallback(txID));      
       
+      transactionInfos.remove(txID);
       transactionCallbacks.remove(txID);
       
       tx.rollback(usedFile);
@@ -652,6 +654,12 @@ public class JournalImpl implements TestableJournal
          {
             recordsToDelete.add(id);
          }
+
+         public void restart()
+         {
+            recordsToDelete.clear();
+            records.clear();            
+         }
          
       });
       
@@ -675,393 +683,440 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Journal must be in started state");
       }
       
-      Map<Long, TransactionHolder> transactions = new LinkedHashMap<Long, TransactionHolder>();
+      boolean fileConsistent = true;
       
-      List<JournalFile> orderedFiles = orderFiles();
+      Map<Long, TransactionHolder> transactions = null;
       
       int lastDataPos = -1;
-      
+
+      long maxMessageID = -1;
+
       long maxTransactionID = -1;
       
-      long maxMessageID = -1;
-      
-      for (JournalFile file: orderedFiles)
-      {  
-         file.getFile().open();
-         
-         ByteBuffer bb = fileFactory.newBuffer(fileSize);
-         
-         int bytesRead = file.getFile().read(bb);
-         
-         if (bytesRead != fileSize)
+      HashSet<Long> commitsToForget = new HashSet<Long>();
+      HashSet<Long> performedCommits = new HashSet<Long>();
+
+      do
+      {
+
+         if (!fileConsistent)
          {
-            //deal with this better
-            
-            throw new IllegalStateException("File is wrong size " + bytesRead +
-                  " expected " + fileSize + " : " + file.getFile().getFileName());
+            loadManager.restart();
          }
          
-         //First long is the ordering timestamp, we just jump its position
-         bb.position(file.getFile().calculateBlockStart(SIZE_HEADER));
+         fileConsistent = true;
          
-         boolean hasData = false;
+         performedCommits.clear();
          
-         while (bb.hasRemaining())
-         {
-            final int pos = bb.position();
+         dataFiles.clear();
+         freeFiles.clear();
+         currentFile = null;
+         
+         transactions = new LinkedHashMap<Long, TransactionHolder>();
+         
+         List<JournalFile> orderedFiles = orderFiles();
+         
+         lastDataPos = -1;
+         
+         maxTransactionID = -1;
+         
+         maxMessageID = -1;
+         
+         for (JournalFile file: orderedFiles)
+         {  
+            file.getFile().open();
             
-            byte recordType = bb.get();
-            if (recordType < ADD_RECORD || recordType > ROLLBACK_RECORD)
+            ByteBuffer bb = fileFactory.newBuffer(fileSize);
+            
+            int bytesRead = file.getFile().read(bb);
+            
+            if (bytesRead != fileSize)
             {
-               if (trace)
+               //deal with this better
+               
+               throw new IllegalStateException("File is wrong size " + bytesRead +
+                     " expected " + fileSize + " : " + file.getFile().getFileName());
+            }
+            
+            //First long is the ordering timestamp, we just jump its position
+            bb.position(file.getFile().calculateBlockStart(SIZE_HEADER));
+            
+            boolean hasData = false;
+            
+            while (bb.hasRemaining())
+            {
+               final int pos = bb.position();
+               
+               byte recordType = bb.get();
+               if (recordType < ADD_RECORD || recordType > ROLLBACK_RECORD)
                {
-                  log.trace("Invalid record type at " + bb.position() + " file:" + file);
-               }
-               continue;
-            }
-
-            if (bb.position() + SIZE_INT > fileSize)
-            {
-               continue;
-            }
-
-            int readFileId = bb.getInt();
-            
-            if (readFileId != file.getOrderingID())
-            {
-               // If a file has damaged records, we make it a dataFile, and the next reclaiming will fix it
-               hasData = true;
-
-               bb.position(pos + 1);
-               //log.info("Record read at position " + pos + " doesn't belong to this current journal file, ignoring it!");
-               continue;
-            }
-            
-            long transactionID = 0;
-            
-            if (isTransaction(recordType))
-            {
-               if (bb.position() + SIZE_LONG > fileSize)
-               {
+                  if (trace)
+                  {
+                     log.trace("Invalid record type at " + bb.position() + " file:" + file);
+                  }
                   continue;
                }
-               transactionID = bb.getLong();
-               maxTransactionID = Math.max(maxTransactionID, transactionID); 
-            }
-            
-            long recordID = 0;
-            if (!isCompleteTransaction(recordType))
-            {
-               if (bb.position() + SIZE_LONG > fileSize)
-               {
-                  continue;
-               }
-               recordID = bb.getLong();
-               maxMessageID = Math.max(maxMessageID, recordID);
-            }
-            
-            // The variable record portion used on Updates and Appends
-            int variableSize = 0;
-            byte userRecordType = 0;
-            byte record[] = null;
-            
-            if (isContainsBody(recordType))
-            {
+   
                if (bb.position() + SIZE_INT > fileSize)
                {
                   continue;
                }
+   
+               int readFileId = bb.getInt();
                
-               variableSize = bb.getInt();
+               if (readFileId != file.getOrderingID())
+               {
+                  // If a file has damaged records, we make it a dataFile, and the next reclaiming will fix it
+                  hasData = true;
+   
+                  bb.position(pos + 1);
+                  //log.info("Record read at position " + pos + " doesn't belong to this current journal file, ignoring it!");
+                  continue;
+               }
                
-               if (bb.position() + variableSize > fileSize)
+               long transactionID = 0;
+               
+               if (isTransaction(recordType))
+               {
+                  if (bb.position() + SIZE_LONG > fileSize)
+                  {
+                     continue;
+                  }
+                  transactionID = bb.getLong();
+                  maxTransactionID = Math.max(maxTransactionID, transactionID); 
+               }
+               
+               long recordID = 0;
+               if (!isCompleteTransaction(recordType))
+               {
+                  if (bb.position() + SIZE_LONG > fileSize)
+                  {
+                     continue;
+                  }
+                  recordID = bb.getLong();
+                  maxMessageID = Math.max(maxMessageID, recordID);
+               }
+               
+               // The variable record portion used on Updates and Appends
+               int variableSize = 0;
+               byte userRecordType = 0;
+               byte record[] = null;
+               
+               if (isContainsBody(recordType))
+               {
+                  if (bb.position() + SIZE_INT > fileSize)
+                  {
+                     continue;
+                  }
+                  
+                  variableSize = bb.getInt();
+                  
+                  if (bb.position() + variableSize > fileSize)
+                  {
+                     continue;
+                  }
+                  
+                  userRecordType = bb.get();
+                  
+                  record = new byte[variableSize];
+                  bb.get(record);
+               }
+               
+               if (recordType == PREPARE_RECORD || recordType == COMMIT_RECORD)
+               {
+                  variableSize = bb.getInt() * SIZE_INT * 2;
+               }
+               
+               int recordSize = getRecordSize(recordType);
+               
+               if (pos + recordSize + variableSize > fileSize)
                {
                   continue;
                }
                
-               userRecordType = bb.get();
+               int oldPos = bb.position();
                
-               record = new byte[variableSize];
-               bb.get(record);
-            }
-            
-            if (recordType == PREPARE_RECORD || recordType == COMMIT_RECORD)
-            {
-               variableSize = bb.getInt() * SIZE_INT * 2;
-            }
-            
-            int recordSize = getRecordSize(recordType);
-            
-            if (pos + recordSize + variableSize > fileSize)
-            {
-               continue;
-            }
-            
-            int oldPos = bb.position();
-            
-            bb.position(pos + variableSize + recordSize - SIZE_INT);
-            
-            int checkSize = bb.getInt();
-            
-            if (checkSize != variableSize + recordSize)
-            {
-               log.warn("Record at position " + pos + " file:" + file.getFile().getFileName() + " is corrupted and it is being ignored");
-               // If a file has damaged records, we make it a dataFile, and the next reclaiming will fix it
-               hasData = true;
-               bb.position(pos + SIZE_BYTE);
-               continue;
-            }
-            
-            bb.position(oldPos);
-            
-            switch(recordType)
-            {
-               case ADD_RECORD:
-               {                          
-                  loadManager.addRecord(new RecordInfo(recordID, userRecordType, record, false));
-                  
-                  posFilesMap.put(recordID, new PosFiles(file));
-                  
-                  hasData = true;                  
-
-                  break;
-               }                             
-               case UPDATE_RECORD:                 
+               bb.position(pos + variableSize + recordSize - SIZE_INT);
+               
+               int checkSize = bb.getInt();
+               
+               if (checkSize != variableSize + recordSize)
                {
-                  loadManager.updateRecord(new RecordInfo(recordID, userRecordType, record, true));
-                  hasData = true;      
-                  file.incPosCount();
-                  
-                  PosFiles posFiles = posFilesMap.get(recordID);
-                  
-                  if (posFiles != null)
-                  {
-                     //It's legal for this to be null. The file(s) with the  may have been deleted
-                     //just leaving some updates in this file
-                     
-                     posFiles.addUpdateFile(file);
-                  }
-                  
-                  break;
-               }              
-               case DELETE_RECORD:                 
-               {
-                  loadManager.deleteRecord(recordID);
+                  log.warn("Record at position " + pos + " file:" + file.getFile().getFileName() + " is corrupted and it is being ignored");
+                  // If a file has damaged records, we make it a dataFile, and the next reclaiming will fix it
                   hasData = true;
-                  
-                  PosFiles posFiles = posFilesMap.remove(recordID);
-                  
-                  if (posFiles != null)
-                  {
-                     posFiles.addDelete(file);
-                  }                    
-                  
-                  break;
-               }              
-               case ADD_RECORD_TX:
-               case UPDATE_RECORD_TX:
-               {              
-                  TransactionHolder tx = transactions.get(transactionID);
-                  
-                  if (tx == null)
-                  {
-                     tx = new TransactionHolder(transactionID);                        
-                     transactions.put(transactionID, tx);
-                  }
-                  
-                  tx.recordInfos.add(new RecordInfo(recordID, userRecordType, record, recordType==UPDATE_RECORD_TX?true:false));                     
-                  
-                  JournalTransaction tnp = transactionInfos.get(transactionID);
-                  
-                  if (tnp == null)
-                  {
-                     tnp = new JournalTransaction();
-                     
-                     transactionInfos.put(transactionID, tnp);
-                  }
-                  
-                  tnp.addPositive(file, recordID);
-                  
-                  hasData = true;                                          
-                  
-                  break;
-               }     
-               case DELETE_RECORD_TX:
-               {              
-                  TransactionHolder tx = transactions.get(transactionID);
-                  
-                  if (tx == null)
-                  {
-                     tx = new TransactionHolder(transactionID);                        
-                     transactions.put(transactionID, tx);
-                  }
-                  
-                  tx.recordsToDelete.add(recordID);                     
-                  
-                  JournalTransaction tnp = transactionInfos.get(transactionID);
-                  
-                  if (tnp == null)
-                  {
-                     tnp = new JournalTransaction();
-                     
-                     transactionInfos.put(transactionID, tnp);
-                  }
-                  
-                  tnp.addNegative(file, recordID);
-                  
-                  hasData = true;                     
-                  
-                  break;
-               }  
-               case PREPARE_RECORD:
-               {
-                  TransactionHolder tx = transactions.get(transactionID);
-                  
-                  // We need to read it even if transaction was not found, or the reading checks would fail
-                  // Pair <OrderId, NumberOfElements>
-                  Pair<Integer, Integer>[] values = readReferencesOnTransaction(variableSize, bb);
-
-                  if (tx != null)
-                  {
-                     
-                     tx.prepared = true;
-                     
-                     JournalTransaction journalTransaction = transactionInfos.get(transactionID);
-                     
-                     if (journalTransaction == null)
-                     {
-                        throw new IllegalStateException("Cannot find tx " + transactionID);
-                     }
-                     
-                     
-                     boolean healthy = checkTransactionHealth(
-                           journalTransaction, orderedFiles, values);
-                     
-                     if (healthy)
-                     {
-                        journalTransaction.prepare(file);
-                     }
-                     else
-                     {
-                        log.warn("Prepared transaction " + healthy + " wasn't considered completed, it will be ignored");
-                        journalTransaction.setInvalid(true);
-                        tx.invalid = true;
-                     }
-                     
-                     hasData = true;
-                  }
-                  
-                  break;
+                  bb.position(pos + SIZE_BYTE);
+                  continue;
                }
-               case COMMIT_RECORD:
+               
+               bb.position(oldPos);
+               
+               switch(recordType)
                {
-                  TransactionHolder tx = transactions.remove(transactionID);
-                  
-                  // We need to read it even if transaction was not found, or the reading checks would fail
-                  // Pair <OrderId, NumberOfElements>
-                  Pair<Integer, Integer>[] values = readReferencesOnTransaction(variableSize, bb);
-
-                  if (tx != null)
+                  case ADD_RECORD:
+                  {                          
+                     loadManager.addRecord(new RecordInfo(recordID, userRecordType, record, false));
+                     
+                     posFilesMap.put(recordID, new PosFiles(file));
+                     
+                     hasData = true;                  
+   
+                     break;
+                  }                             
+                  case UPDATE_RECORD:                 
                   {
+                     loadManager.updateRecord(new RecordInfo(recordID, userRecordType, record, true));
+                     hasData = true;      
+                     file.incPosCount();
                      
-                     JournalTransaction journalTransaction = transactionInfos.remove(transactionID);
+                     PosFiles posFiles = posFilesMap.get(recordID);
                      
-                     if (journalTransaction == null)
+                     if (posFiles != null)
                      {
-                        throw new IllegalStateException("Cannot find tx " + transactionID);
-                     }
-
-                     boolean healthy = checkTransactionHealth(
-                           journalTransaction, orderedFiles, values);
-                     
-                     
-                     if (healthy)
-                     {
-                        for (RecordInfo txRecord: tx.recordInfos)
-                        {
-                           if (txRecord.isUpdate)
-                           {
-                              loadManager.updateRecord(txRecord);
-                           }
-                           else
-                           {
-                              loadManager.addRecord(txRecord);
-                           }
-                        }
+                        //It's legal for this to be null. The file(s) with the  may have been deleted
+                        //just leaving some updates in this file
                         
-                        for (Long deleteValue: tx.recordsToDelete)
-                        {
-                           loadManager.deleteRecord(deleteValue);
-                        }
-                        journalTransaction.commit(file);       
-                     }
-                     else
-                     {
-                        log.warn("Transaction " + transactionID + " is missing elements so the transaction is being ignored");
-                        journalTransaction.forget();
+                        posFiles.addUpdateFile(file);
                      }
                      
-                     hasData = true;         
-                  }
-                  
-                  break;
-               }
-               case ROLLBACK_RECORD:
-               {
-                  TransactionHolder tx = transactions.remove(transactionID);
-                  
-                  if (tx != null)
-                  {                       
-                     JournalTransaction tnp = transactionInfos.remove(transactionID);
+                     break;
+                  }              
+                  case DELETE_RECORD:                 
+                  {
+                     loadManager.deleteRecord(recordID);
+                     hasData = true;
+                     
+                     PosFiles posFiles = posFilesMap.remove(recordID);
+                     
+                     if (posFiles != null)
+                     {
+                        posFiles.addDelete(file);
+                     }                    
+                     
+                     break;
+                  }              
+                  case ADD_RECORD_TX:
+                  case UPDATE_RECORD_TX:
+                  {              
+                     TransactionHolder tx = transactions.get(transactionID);
+                     
+                     if (tx == null)
+                     {
+                        tx = new TransactionHolder(transactionID);                        
+                        transactions.put(transactionID, tx);
+                     }
+                     
+                     tx.recordInfos.add(new RecordInfo(recordID, userRecordType, record, recordType==UPDATE_RECORD_TX?true:false));                     
+                     
+                     JournalTransaction tnp = transactionInfos.get(transactionID);
                      
                      if (tnp == null)
                      {
-                        throw new IllegalStateException("Cannot find tx " + transactionID);
+                        tnp = new JournalTransaction();
+                        
+                        transactionInfos.put(transactionID, tnp);
                      }
                      
-                     tnp.rollback(file);  
+                     tnp.addPositive(file, recordID);
                      
-                     hasData = true;         
+                     hasData = true;                                          
+                     
+                     break;
+                  }     
+                  case DELETE_RECORD_TX:
+                  {              
+                     TransactionHolder tx = transactions.get(transactionID);
+                     
+                     if (tx == null)
+                     {
+                        tx = new TransactionHolder(transactionID);                        
+                        transactions.put(transactionID, tx);
+                     }
+                     
+                     tx.recordsToDelete.add(recordID);                     
+                     
+                     JournalTransaction tnp = transactionInfos.get(transactionID);
+                     
+                     if (tnp == null)
+                     {
+                        tnp = new JournalTransaction();
+                        
+                        transactionInfos.put(transactionID, tnp);
+                     }
+                     
+                     tnp.addNegative(file, recordID);
+                     
+                     hasData = true;                     
+                     
+                     break;
+                  }  
+                  case PREPARE_RECORD:
+                  {
+                     TransactionHolder tx = transactions.get(transactionID);
+                     
+                     // We need to read it even if transaction was not found, or the reading checks would fail
+                     // Pair <OrderId, NumberOfElements>
+                     Pair<Integer, Integer>[] values = readReferencesOnTransaction(variableSize, bb);
+   
+                     if (tx != null)
+                     {
+                        
+                        tx.prepared = true;
+                        
+                        JournalTransaction journalTransaction = transactionInfos.get(transactionID);
+                        
+                        if (journalTransaction == null)
+                        {
+                           throw new IllegalStateException("Cannot find tx " + transactionID);
+                        }
+                        
+                        
+                        boolean healthy = checkTransactionHealth(
+                              journalTransaction, orderedFiles, values);
+                        
+                        if (healthy)
+                        {
+                           journalTransaction.prepare(file);
+                        }
+                        else
+                        {
+                           log.warn("Prepared transaction " + healthy + " wasn't considered completed, it will be ignored");
+                           journalTransaction.setInvalid(true);
+                           tx.invalid = true;
+                        }
+                        
+                        hasData = true;
+                     }
+                     
+                     break;
                   }
-                  
-                  break;
+                  case COMMIT_RECORD:
+                  {
+                     TransactionHolder tx = transactions.remove(transactionID);
+                     
+                     // We need to read it even if transaction was not found, or the reading checks would fail
+                     // Pair <OrderId, NumberOfElements>
+                     Pair<Integer, Integer>[] values = readReferencesOnTransaction(variableSize, bb);
+   
+                     if (tx != null)
+                     {
+                        
+                        JournalTransaction journalTransaction = transactionInfos.remove(transactionID);
+                        
+                        if (journalTransaction == null)
+                        {
+                           throw new IllegalStateException("Cannot find tx " + transactionID);
+                        }
+   
+                        boolean healthy = checkTransactionHealth(
+                              journalTransaction, orderedFiles, values);
+                        
+                        
+                        if (commitsToForget.contains(transactionID))
+                        {
+                           log.warn("Transaction being ignored because of a post rollback");
+                           journalTransaction.forget();
+                        }
+                        else
+                        if (healthy)
+                        {
+                           performedCommits.add(transactionID);
+
+                           for (RecordInfo txRecord: tx.recordInfos)
+                           {
+                              if (txRecord.isUpdate)
+                              {
+                                 loadManager.updateRecord(txRecord);
+                              }
+                              else
+                              {
+                                 loadManager.addRecord(txRecord);
+                              }
+                           }
+                           
+                           for (Long deleteValue: tx.recordsToDelete)
+                           {
+                              loadManager.deleteRecord(deleteValue);
+                           }
+                           journalTransaction.commit(file);  
+                        }
+                        else
+                        {
+                           log.warn("Transaction " + transactionID + " is missing elements so the transaction is being ignored");
+                           journalTransaction.forget();
+                        }
+                        
+                        hasData = true;         
+                     }
+                     
+                     break;
+                  }
+                  case ROLLBACK_RECORD:
+                  {
+                     TransactionHolder tx = transactions.remove(transactionID);
+                     
+                     if (performedCommits.contains(transactionID) && !commitsToForget.contains(transactionID))
+                     {
+                        log.warn("Transaction " + transactionID + " was rolled back after its commit! Reload will need to be restarted with that transaction being ignored");
+                        commitsToForget.add(transactionID);
+                        fileConsistent = false;
+                     }
+                     
+                     
+                     if (tx != null)
+                     {                       
+                        JournalTransaction tnp = transactionInfos.remove(transactionID);
+                        
+                        if (tnp == null)
+                        {
+                           throw new IllegalStateException("Cannot find tx " + transactionID);
+                        }
+                        
+                        tnp.rollback(file);  
+                        
+                        hasData = true;         
+                     }
+                     
+                     break;
+                  }
+                  default:                
+                  {
+                     throw new IllegalStateException("Journal " + file.getFile().getFileName() +
+                           " is corrupt, invalid record type " + recordType);
+                  }
                }
-               default:                
+               
+               checkSize = bb.getInt();
+               
+               if (checkSize != variableSize + recordSize)
                {
-                  throw new IllegalStateException("Journal " + file.getFile().getFileName() +
-                        " is corrupt, invalid record type " + recordType);
+                  throw new IllegalStateException("Internal error on loading file. Position doesn't match with checkSize");
+               }
+               
+               bb.position(file.getFile().calculateBlockStart(bb.position()));
+               
+               if (recordType != FILL_CHARACTER)
+               {
+                  lastDataPos = bb.position();
                }
             }
             
-            checkSize = bb.getInt();
+            file.getFile().close();          
             
-            if (checkSize != variableSize + recordSize)
-            {
-               throw new IllegalStateException("Internal error on loading file. Position doesn't match with checkSize");
+            if (hasData)
+            {        
+               dataFiles.add(file);
             }
-            
-            bb.position(file.getFile().calculateBlockStart(bb.position()));
-            
-            if (recordType != FILL_CHARACTER)
-            {
-               lastDataPos = bb.position();
-            }
+            else
+            {           
+               //Empty dataFiles with no data
+               freeFiles.add(file);
+            }                       
          }
-         
-         file.getFile().close();          
-         
-         if (hasData)
-         {        
-            dataFiles.add(file);
-         }
-         else
-         {           
-            //Empty dataFiles with no data
-            freeFiles.add(file);
-         }                       
-      }        
+         transactionIDSequence.set(maxTransactionID + 1);
+      } 
+      while (!fileConsistent);
       
-      transactionIDSequence.set(maxTransactionID + 1);
       
       //Create any more files we need
       
