@@ -25,7 +25,6 @@ package org.jboss.messaging.tests.unit.core.journal.impl;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.List;
 
 import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
@@ -158,9 +157,9 @@ public class AlignedJournalImplTest extends UnitTestCase
    public void testAppendAndUpdateRecords() throws Exception
    {
       
-      final int JOURNAL_SIZE = 10000;
+      final int JOURNAL_SIZE = 1060;
       
-      setupJournal(JOURNAL_SIZE, 100);
+      setupJournal(JOURNAL_SIZE, 10);
       
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
@@ -570,7 +569,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    
    public void testReloadInvalidCheckSizeOnTransaction() throws Exception
    {
-      final int JOURNAL_SIZE = 20000;
+      final int JOURNAL_SIZE = 2000;
       
       setupJournal(JOURNAL_SIZE, 100);
       
@@ -635,7 +634,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
    public void testPartiallyBrokenFile() throws Exception
    {
-      final int JOURNAL_SIZE = 20000;
+      final int JOURNAL_SIZE = 2000;
       
       setupJournal(JOURNAL_SIZE, 100);
       
@@ -704,7 +703,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
    public void testReduceFreeFiles() throws Exception
    {
-      final int JOURNAL_SIZE = 20000;
+      final int JOURNAL_SIZE = 2000;
       
       setupJournal(JOURNAL_SIZE, 100, 10);
       
@@ -745,7 +744,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    
    public void testReloadIncompleteTransaction() throws Exception
    {
-      final int JOURNAL_SIZE = 20000;
+      final int JOURNAL_SIZE = 2000;
       
       setupJournal(JOURNAL_SIZE, 100);
       
@@ -806,41 +805,6 @@ public class AlignedJournalImplTest extends UnitTestCase
       
       assertEquals(2, factory.listFiles("tt").size());
       
-   }
-   
-   public void testAsynchronousCommit() throws Exception
-   {
-//      final int JOURNAL_SIZE = 20000;
-//      
-//      setupJournal(JOURNAL_SIZE, 100, 5);
-//      
-//      assertEquals(2, factory.listFiles("tt").size());
-//      
-//      assertEquals(0, records.size());
-//      assertEquals(0, transactions.size());
-//      
-//      for (int i = 0; i < 10 ; i++)
-//      {
-//         journalImpl.appendAddRecordTransactional(1l, (long)i, (byte)0, new SimpleEncoding(1, (byte)15));
-//         journalImpl.forceMoveNextFile();
-//      }
-//      
-//      
-//      for (int i = 10; i < 20 ; i++)
-//      {
-//         journalImpl.appendAddRecordTransactional(1l, (long)i, (byte)0, new SimpleEncoding(1, (byte)15));
-//         journalImpl.forceMoveNextFile();
-//      }
-//      
-//      journalImpl.forceMoveNextFile();
-//      
-//      journalImpl.appendCommitRecord(1l);
-//      
-   }
-   
-   public void testAsynchronousRollback() throws Exception
-   {
-      // We should miss one record (hole) on the transaction
    }
    
    public void testPrepareAloneOnSeparatedFile() throws Exception
