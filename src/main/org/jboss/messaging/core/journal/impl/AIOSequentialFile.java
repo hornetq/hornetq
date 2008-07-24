@@ -56,8 +56,6 @@ public class AIOSequentialFile implements SequentialFile
 	
 	private final int maxIO;
 	
-	private final long timeout;
-	
    private AsynchronousFile aioFile;
 	
 	private AtomicLong position = new AtomicLong(0);
@@ -66,12 +64,11 @@ public class AIOSequentialFile implements SequentialFile
 	// serious performance problems. Because of that we make all the writes on AIO using a single thread.
 	private ExecutorService executor;
 	
-	public AIOSequentialFile(final String journalDir, final String fileName, final int maxIO, final long timeout) throws Exception
+	public AIOSequentialFile(final String journalDir, final String fileName, final int maxIO) throws Exception
 	{
 		this.journalDir = journalDir;		
 		this.fileName = fileName;
 		this.maxIO = maxIO;
-		this.timeout = timeout;
 	}
 	
 	public int getAlignment() throws Exception
@@ -95,17 +92,13 @@ public class AIOSequentialFile implements SequentialFile
 		checkOpened();
 		opened = false;
       executor.shutdown();
-      if (!executor.awaitTermination(timeout, TimeUnit.MILLISECONDS))
+      
+      while (!executor.awaitTermination(60, TimeUnit.SECONDS))
       {
-         try
-         {
-            aioFile.close();
-         }
-         catch (Exception ignored)
-         {
-         }
-         throw new Exception("Timeout!");
+         log.warn("Executor on file " + this.fileName + " couldn't complete its tasks in 60 seconds.",
+                  new Exception ("Warning: Executor on file " + this.fileName + " couldn't complete its tasks in 60 seconds.") );
       }
+      
 		aioFile.close();
 		aioFile = null;		
 	}
@@ -174,7 +167,7 @@ public class AIOSequentialFile implements SequentialFile
 	   opened = true;
 	   executor = Executors.newSingleThreadExecutor();
 		aioFile = new AsynchronousFileImpl();
-		aioFile.open(journalDir + "/" + fileName, maxIO, timeout);
+		aioFile.open(journalDir + "/" + fileName, maxIO);
 		position.set(0);
 		
 	}
@@ -203,7 +196,7 @@ public class AIOSequentialFile implements SequentialFile
 		
 		int bytesRead = read (bytes, waitCompletion);
 		
-		waitCompletion.waitLatch(timeout);
+		waitCompletion.waitLatch();
 		
 		return bytesRead;
 	}
@@ -228,7 +221,7 @@ public class AIOSequentialFile implements SequentialFile
 	      
 	      int bytesWritten = write(bytes, completion);
 	      
-	      completion.waitLatch(timeout);
+	      completion.waitLatch();
 	      
 	      return bytesWritten;
 	   }
@@ -315,20 +308,14 @@ public class AIOSequentialFile implements SequentialFile
 			latch.countDown();			
 		}
 		
-		public boolean waitLatch(long timeout) throws Exception
+		public void waitLatch() throws Exception
 		{
-			if (latch.await(timeout, TimeUnit.MILLISECONDS))
-			{
-   	      if (errorMessage != null)
-   	      {
-   	         throw new MessagingException(errorCode, errorMessage);
-   	      }
-   	      return true;
-			}
-			else
-			{
-			   return false;
-			}
+		   latch.await();
+	      if (errorMessage != null)
+	      {
+	         throw new MessagingException(errorCode, errorMessage);
+	      }
+	      return;
 		}		
 	}	
 }

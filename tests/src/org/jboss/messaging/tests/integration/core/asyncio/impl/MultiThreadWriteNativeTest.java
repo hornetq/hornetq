@@ -84,7 +84,7 @@ public class MultiThreadWriteNativeTest extends AIOTestBase
    {
        log.debug(sync?"Sync test:":"Async test");
        AsynchronousFileImpl jlibAIO = new AsynchronousFileImpl();
-       jlibAIO.open(FILE_NAME, 21000, 120);
+       jlibAIO.open(FILE_NAME, 21000);
        try
        {
           log.debug("Preallocating file");

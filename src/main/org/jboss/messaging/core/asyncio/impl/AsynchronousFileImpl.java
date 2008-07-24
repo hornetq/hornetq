@@ -119,7 +119,6 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	private ReadWriteLock lock = new ReentrantReadWriteLock();
 	private Lock writeLock = lock.writeLock();
    private Semaphore writeSemaphore;   
-   private long timeout;
 	
 	/**
 	 *  Warning: Beware of the C++ pointer! It will bite you! :-)
@@ -131,12 +130,11 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	// AsynchronousFile implementation
 	// ------------------------------------------------------------------------------------
 			
-	public void open(final String fileName, final int maxIO, final long timeout)
+	public void open(final String fileName, final int maxIO)
 	{
 		try
 		{
 			writeLock.lock();
-			this.timeout = timeout;
          this.maxIO = maxIO;
  			writeSemaphore = new Semaphore(this.maxIO);
 			
@@ -163,9 +161,10 @@ public class AsynchronousFileImpl implements AsynchronousFile
 		try
 		{
 	      writeLock.lock();
-	      if (!writeSemaphore.tryAcquire(maxIO, timeout, TimeUnit.MILLISECONDS))
+	      
+	      while (!writeSemaphore.tryAcquire(maxIO, 60, TimeUnit.SECONDS))
 	      {
-	         throw new IllegalStateException("Timeout!");
+	         log.warn("Couldn't acquire lock after 60 seconds on AIO", new Exception ("Warning: Couldn't acquire lock after 60 seconds on AIO"));
 	      }
 	      writeSemaphore = null;
 	      stopPoller(handler);

@@ -42,8 +42,8 @@ public class NIOSequentialFileFactory extends AbstractSequentialFactory implemen
 		super(journalDir);
 	}	
 	
-	// The timeout is ignored on NIO
-	public SequentialFile createSequentialFile(final String fileName, final int maxIO, final long timeout)
+	// maxIO is ignored on NIO
+	public SequentialFile createSequentialFile(final String fileName, final int maxIO)
 	{
 		return new NIOSequentialFile(journalDir, fileName);
 	}

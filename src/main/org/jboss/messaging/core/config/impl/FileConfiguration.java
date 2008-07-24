@@ -168,11 +168,7 @@ public class FileConfiguration extends ConfigurationImpl
 
       journalMinFiles = getInteger(e, "journal-min-files", journalMinFiles);
 
-      journalTaskPeriod = getLong(e, "journal-task-period", journalTaskPeriod);
-
       journalMaxAIO = getInteger(e, "journal-max-aio", journalMaxAIO);
-
-      journalAIOTimeout = getLong(e, "journal-aio-timeout", journalAIOTimeout);
       
       NodeList defaultInterceptors = e.getElementsByTagName("default-interceptors-config");
 

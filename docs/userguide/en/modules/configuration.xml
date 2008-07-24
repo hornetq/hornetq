@@ -126,16 +126,6 @@
               (parameter ignored on NIO) -->
          <journal-max-aio>9000</journal-max-aio>
 
-         <!--  Maximum time in milliseconds an AIO operation could take.
-               This includes:
-               - closing Asynchronous files
-               - Transaction awaits
-               - Awaits on non transactional writes
-          -->
-         <journal-aio-timeout>90000</journal-aio-timeout>
-
-         <journal-task-period>5000</journal-task-period>
-
          <security-enabled>true</security-enabled>
 
       </configuration>
@@ -267,17 +257,6 @@
                Messaging with other systems that are using libaio (e.g. Oracle) you might need to increase this value on
                the OS. This parameter is only available on AIO which is only available on Linux at the moment.
             </para>
-         </listitem>
-         <listitem>
-            <para>journal-aio-timeout</para>
-            <para>Maximum amount of time any asynchronous operation can take in milliseconds. If any operation takes
-               more than this amount a timeout exception will be logged. This parameter is only available on AIO which
-               is only available on Linux.
-            </para>
-         </listitem>
-         <listitem>
-            <para>journal-task-period</para>
-            <para>How frequently to reclaim unused journal data files, in milliseconds.</para>
          </listitem>
          <listitem>
             <para>security-enabled</para>

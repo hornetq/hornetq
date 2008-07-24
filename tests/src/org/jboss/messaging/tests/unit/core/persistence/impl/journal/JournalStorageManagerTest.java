@@ -801,8 +801,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       assertEquals("jbm-data", messageJournal.getFilePrefix());
       assertEquals("jbm", messageJournal.getFileExtension());
       assertEquals(config.getJournalMaxAIO(), messageJournal.getMaxAIO());
-      assertEquals(config.getJournalAIOTimeout(), messageJournal.getAIOTimeout());
-      
+       
       assertNotNull(jsm.getBindingsJournal());
       
       TestableJournal bindingsJournal = (TestableJournal)jsm.getBindingsJournal();
@@ -814,7 +813,6 @@ public class JournalStorageManagerTest extends UnitTestCase
       assertEquals("jbm-bindings", bindingsJournal.getFilePrefix());
       assertEquals("bindings", bindingsJournal.getFileExtension());
       assertEquals(1, bindingsJournal.getMaxAIO());
-      assertEquals(1, bindingsJournal.getAIOTimeout());
    }
    
    private EncodingSupport encodingMatch(final byte expectedRecord[])

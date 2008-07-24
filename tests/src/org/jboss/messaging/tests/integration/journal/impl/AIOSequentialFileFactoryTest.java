@@ -79,7 +79,7 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
    
    public void testBuffer() throws Exception
    {
-      SequentialFile file = factory.createSequentialFile("filtetmp.log", 10, 120);
+      SequentialFile file = factory.createSequentialFile("filtetmp.log", 10);
       file.open();
       ByteBuffer buff = factory.newBuffer(10);
       assertEquals(512, buff.limit());
@@ -137,7 +137,7 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
       
       final int NUMBER_OF_RECORDS = 10000;
       
-      SequentialFile file = factory.createSequentialFile("callbackBlock.log", 1000, 12000);
+      SequentialFile file = factory.createSequentialFile("callbackBlock.log", 1000);
       file.open();
       file.fill(0, 512 * NUMBER_OF_RECORDS, (byte)'a');
 

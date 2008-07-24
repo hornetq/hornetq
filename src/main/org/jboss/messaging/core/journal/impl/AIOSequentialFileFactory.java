@@ -41,9 +41,9 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
 		super(journalDir);
 	}
 	
-	public SequentialFile createSequentialFile(final String fileName, final int maxIO, final long timeout) throws Exception
+	public SequentialFile createSequentialFile(final String fileName, final int maxIO) throws Exception
 	{
-		return new AIOSequentialFile(journalDir, fileName, maxIO, timeout);
+		return new AIOSequentialFile(journalDir, fileName, maxIO);
 	}
 	
    public boolean isSupportsCallbacks()

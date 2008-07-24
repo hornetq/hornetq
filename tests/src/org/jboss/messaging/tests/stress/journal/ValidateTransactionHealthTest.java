@@ -227,11 +227,6 @@ public class ValidateTransactionHealthTest extends StressTestBase
          numberOfUpdates++;
          
       }
-
-      public void restart()
-      {
-         ex = new Exception ("Journal was restarted");
-      }
       
    }
    

@@ -78,8 +78,6 @@ public class ConfigurationImplTest extends TestCase
       assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE, conf.getJournalFileSize());
       assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_MIN_FILES, conf.getJournalMinFiles());      
       assertEquals(ConfigurationImpl.DEFAULT_MAX_AIO, conf.getJournalMaxAIO());
-      assertEquals(ConfigurationImpl.DEFAULT_AIO_TIMEOUT, conf.getJournalAIOTimeout());
-      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_TASK_PERIOD, conf.getJournalTaskPeriod());
    }
    
    public void testSetGetAttributes()
@@ -183,14 +181,6 @@ public class ConfigurationImplTest extends TestCase
          i = randomInt();
          conf.setJournalMaxAIO(i);
          assertEquals(i, conf.getJournalMaxAIO());
-         
-         l = randomLong();
-         conf.setJournalAIOTimeout(l);
-         assertEquals(l, conf.getJournalAIOTimeout());
-         
-         l = randomLong();
-         conf.setJournalTaskPeriod(l);
-         assertEquals(l, conf.getJournalTaskPeriod());
          
          i = randomInt();
          conf.setServerID(i);
@@ -313,12 +303,6 @@ public class ConfigurationImplTest extends TestCase
       i = randomInt();
       conf.setJournalMaxAIO(i);
   
-      l = randomLong();
-      conf.setJournalAIOTimeout(l);
-  
-      l = randomLong();
-      conf.setJournalTaskPeriod(l);
- 
       i = randomInt();
       conf.setServerID(i);
 

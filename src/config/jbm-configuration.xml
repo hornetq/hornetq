@@ -95,16 +95,6 @@
       -->
       <journal-max-aio>5000</journal-max-aio>
 
-
-      <!--  Maximum time in milliseconds an AIO operation could take.
-           This includes:
-           - closing Asynchronous files
-           - Transaction awaits
-           - Awaits on non transactional writes
-           This shouldn't be higher than the remoting timeout
-      -->
-      <journal-aio-timeout>4000</journal-aio-timeout>
-
       <journal-task-period>5000</journal-task-period>
       
    </configuration>

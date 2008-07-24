@@ -118,11 +118,8 @@ public class VariableLatch
       control.acquireSharedInterruptibly(1);
    }
    
-   public void waitCompletion(final long milliseconds) throws InterruptedException
+   public boolean waitCompletion(final long milliseconds) throws InterruptedException
    {
-      if (!control.tryAcquireSharedNanos(1, TimeUnit.MILLISECONDS.toNanos(milliseconds)))
-      {
-         throw new IllegalStateException("Timeout!");
-      }
+      return control.tryAcquireSharedNanos(1, TimeUnit.MILLISECONDS.toNanos(milliseconds));
    }
 }

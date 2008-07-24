@@ -59,8 +59,6 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(12345678, conf.getJournalFileSize());
       assertEquals(100, conf.getJournalMinFiles());      
       assertEquals(56546, conf.getJournalMaxAIO());
-      assertEquals(432323, conf.getJournalAIOTimeout());
-      assertEquals(6544, conf.getJournalTaskPeriod());
       
       assertEquals(false, conf.getConnectionParams().isInVMOptimisationEnabled());
       assertEquals(7654, conf.getConnectionParams().getCallTimeout());

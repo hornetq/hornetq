@@ -85,7 +85,10 @@ public class VariableLatchTest extends TestCase
          {
             try
             {
-               latch.waitCompletion(5000);
+               if (!latch.waitCompletion(5000))
+               {
+                  log.error("Latch timed out");
+               }
             } 
             catch (Exception e)
             {
@@ -244,7 +247,10 @@ public class VariableLatchTest extends TestCase
             readyLatch.countDown();
             try
             {
-               latch.waitCompletion(1000);
+               if (!latch.waitCompletion(1000))
+               {
+                  log.error("Latch timed out!", new Exception ("trace"));
+               }
             } 
             catch (Exception e)
             {
@@ -287,7 +293,7 @@ public class VariableLatchTest extends TestCase
       
       assertNull(t.e);
       
-      latch.waitCompletion(1000);
+      assertTrue(latch.waitCompletion(1000));
       
       assertEquals(0, latch.getCount());
       

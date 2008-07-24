@@ -143,14 +143,6 @@ public interface Configuration extends Serializable
    
    void setJournalMaxAIO(int maxAIO);
    
-   long getJournalAIOTimeout();
-   
-   void setJournalAIOTimeout(long timeout);
-   
-   long getJournalTaskPeriod();
-   
-   void setJournalTaskPeriod(long period);
-
    boolean isCreateBindingsDir();
    
    void setCreateBindingsDir(boolean create);

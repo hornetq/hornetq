@@ -35,7 +35,7 @@ import java.util.List;
  */
 public interface SequentialFileFactory
 {
-	SequentialFile createSequentialFile(String fileName, int maxIO, long timeout) throws Exception;
+	SequentialFile createSequentialFile(String fileName, int maxIO) throws Exception;
 	
 	List<String> listFiles(String extension) throws Exception;
 	

@@ -60,8 +60,6 @@ public interface TestableJournal extends Journal
    
    int getMaxAIO();
    
-   long getAIOTimeout();
-   
    void forceMoveNextFile() throws Exception;
    
    void disableAutoReclaiming();

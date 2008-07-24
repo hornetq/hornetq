@@ -57,7 +57,9 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    
    private volatile boolean holdCallbacks;
    
-   private final List<Runnable> callbacksInHold;
+   private volatile boolean generateErrors;
+   
+   private final List<CallbackRunnable> callbacksInHold;
    
    // Static --------------------------------------------------------
    
@@ -67,7 +69,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    {
       this.alignment = alignment;
       this.supportsCallback = supportsCallback;
-      callbacksInHold = new ArrayList<Runnable>();
+      callbacksInHold = new ArrayList<CallbackRunnable>();
    }
 
    public FakeSequentialFileFactory()
@@ -79,7 +81,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    
    // Public --------------------------------------------------------
    
-   public SequentialFile createSequentialFile(final String fileName, final int maxAIO, final long timeout) throws Exception
+   public SequentialFile createSequentialFile(final String fileName, final int maxAIO) throws Exception
    {
       FakeSequentialFile sf = fileMap.get(fileName);
       
@@ -152,6 +154,16 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    {
       this.holdCallbacks = holdCallbacks;
    }
+   
+   public boolean isGenerateErrors()
+   {
+      return generateErrors;
+   }
+
+   public void setGenerateErrors(boolean generateErrors)
+   {
+      this.generateErrors = generateErrors;
+   }
 
    public void flushAllCallbacks()
    {
@@ -168,6 +180,11 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       Runnable run = callbacksInHold.get(position);
       run.run();
       callbacksInHold.remove(run);
+   }
+   
+   public void setCallbackAsError(int position)
+   {
+      callbacksInHold.get(position).setSendError(true);
    }
    
    public int getNumberOfCallbacks()
@@ -194,6 +211,47 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------
+
+   private class CallbackRunnable implements Runnable
+   {
+      
+      final FakeSequentialFile file;
+      final ByteBuffer bytes;
+      final IOCallback callback;
+      volatile boolean sendError;
+      
+      CallbackRunnable(FakeSequentialFile file, ByteBuffer bytes, IOCallback callback)
+      {
+         this.file = file;
+         this.bytes = bytes;
+         this.callback = callback;
+      }
+
+      public void run()
+      {
+         
+         if (sendError)
+         {
+            callback.onError(1, "Fake aio error");
+         }
+         else
+         {
+            file.data.put(bytes);
+            if (callback!=null) callback.done();
+         }
+      }
+
+      public boolean isSendError()
+      {
+         return sendError;
+      }
+
+      public void setSendError(boolean sendError)
+      {
+         this.sendError = sendError;
+      }
+   }
+   
    
    public class FakeSequentialFile implements SequentialFile
    {
@@ -321,20 +379,14 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          
          checkAndResize(bytes.capacity() + position);
          
-         Runnable action = new Runnable()
-         {
-
-            public void run()
-            {
-               
-               data.put(bytes);
-               
-               if (callback!=null) callback.done();
-            }
-            
-         };
+         CallbackRunnable action = new CallbackRunnable(this, bytes, callback);
          
-         if (holdCallbacks && callback != null)
+         if (generateErrors)
+         {
+            action.setSendError(true);
+         }
+
+         if (holdCallbacks)
          {
             FakeSequentialFileFactory.this.callbacksInHold.add(action);
          }

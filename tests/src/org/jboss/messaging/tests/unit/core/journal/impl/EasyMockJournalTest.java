@@ -363,9 +363,9 @@ public class EasyMockJournalTest extends UnitTestCase
       
       stubValues();
       
-      EasyMock.expect(mockFactory.createSequentialFile(EasyMock.isA(String.class), EasyMock.anyInt(), EasyMock.anyLong())).andReturn(file1);
+      EasyMock.expect(mockFactory.createSequentialFile(EasyMock.isA(String.class), EasyMock.anyInt())).andReturn(file1);
       
-      EasyMock.expect(mockFactory.createSequentialFile(EasyMock.isA(String.class), EasyMock.anyInt(), EasyMock.anyLong())).andReturn(file2);
+      EasyMock.expect(mockFactory.createSequentialFile(EasyMock.isA(String.class), EasyMock.anyInt())).andReturn(file2);
       
       file1.open();
       
@@ -399,7 +399,7 @@ public class EasyMockJournalTest extends UnitTestCase
       JournalImpl journalImpl = new JournalImpl(100 * 1024, 2,
             true, true,
             mockFactory,
-            "tt", "tt", 1000, 1000);
+            "tt", "tt", 1000);
       
       journalImpl.start();
       

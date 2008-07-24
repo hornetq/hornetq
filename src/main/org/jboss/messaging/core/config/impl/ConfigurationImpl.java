@@ -91,12 +91,6 @@ public class ConfigurationImpl implements Configuration
    
    public static final int DEFAULT_MAX_AIO = 5000;
    
-   public static final long DEFAULT_AIO_TIMEOUT = 60000; // in ms
-   
-   public static final long DEFAULT_JOURNAL_TASK_PERIOD = 5000;
-   
-   
-   
    private static final long serialVersionUID = 4077088945050267843L;
 
    
@@ -138,10 +132,6 @@ public class ConfigurationImpl implements Configuration
    protected int journalMinFiles = DEFAULT_JOURNAL_MIN_FILES;
    
    protected int journalMaxAIO = DEFAULT_MAX_AIO;
-   
-   protected long journalAIOTimeout = DEFAULT_AIO_TIMEOUT;
-   
-   protected long journalTaskPeriod = DEFAULT_JOURNAL_TASK_PERIOD;
    
    // remoting config
    
@@ -401,16 +391,6 @@ public class ConfigurationImpl implements Configuration
       this.journalMaxAIO = maxAIO;
    }
 	
-	public long getJournalAIOTimeout()
-   {
-      return journalAIOTimeout;
-   }
-	
-	public void setJournalAIOTimeout(long timeout)
-   {
-      this.journalAIOTimeout = timeout;
-   }
-
    public int getJournalMinFiles()
 	{
 		return journalMinFiles;
@@ -419,16 +399,6 @@ public class ConfigurationImpl implements Configuration
    public void setJournalMinFiles(int files)
    {
       this.journalMinFiles = files;
-   }
-
-	public long getJournalTaskPeriod()
-	{
-		return journalTaskPeriod;
-	}
-	
-	public void setJournalTaskPeriod(long period)
-   {
-      this.journalTaskPeriod = period;
    }
 
 	public boolean isCreateBindingsDir()
@@ -491,12 +461,10 @@ public class ConfigurationImpl implements Configuration
              cother.getBindingsDirectory().equals(this.getBindingsDirectory()) &&
              cother.getConnectionParams().equals(this.getConnectionParams()) &&
              cother.getHost().equals(this.getHost()) &&
-             cother.getJournalAIOTimeout() == this.getJournalAIOTimeout() &&
              cother.getJournalDirectory().equals(this.getJournalDirectory()) &&
              cother.getJournalFileSize() == this.getJournalFileSize() &&
              cother.getJournalMaxAIO() == this.getJournalMaxAIO() &&
              cother.getJournalMinFiles() == this.getJournalMinFiles() &&
-             cother.getJournalTaskPeriod() == this.getJournalTaskPeriod() &&
              cother.getJournalType() == this.getJournalType() &&
              cother.getKeyStorePassword() == null ?
                    this.getKeyStorePassword() == null : cother.getKeyStorePassword().equals(this.getKeyStorePassword()) && 
