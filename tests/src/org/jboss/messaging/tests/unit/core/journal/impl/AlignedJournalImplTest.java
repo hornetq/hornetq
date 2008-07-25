@@ -451,10 +451,6 @@ public class AlignedJournalImplTest extends UnitTestCase
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
       
-      assertEquals(12, factory.listFiles("tt").size());
-
-      journalImpl.checkAndReclaimFiles();
-      
       assertEquals(2, factory.listFiles("tt").size());
       
    }

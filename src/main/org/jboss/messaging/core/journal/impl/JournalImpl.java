@@ -1128,6 +1128,8 @@ public class JournalImpl implements TestableJournal
       
       state = STATE_LOADED;
       
+      checkAndReclaimFiles();
+      
       return maxMessageID;
    }
 
