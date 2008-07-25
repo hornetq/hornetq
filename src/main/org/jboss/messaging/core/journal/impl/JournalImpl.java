@@ -210,6 +210,10 @@ public class JournalImpl implements TestableJournal
       {
          throw new IllegalArgumentException("File size cannot be less than " + MIN_FILE_SIZE + " bytes");
       }
+      if (fileSize % fileFactory.getAlignment() != 0)
+      {
+         throw new IllegalArgumentException("Invalid journal-file-size " + fileSize + ", It should be multiple of " + fileFactory.getAlignment());
+      }
       if (minFiles < 2)
       {
          throw new IllegalArgumentException("minFiles cannot be less than 2");
@@ -693,9 +697,9 @@ public class JournalImpl implements TestableJournal
             throw new IllegalStateException("File is wrong size " + bytesRead +
                   " expected " + fileSize + " : " + file.getFile().getFileName());
          }
-         
+
          //First long is the ordering timestamp, we just jump its position
-         bb.position(file.getFile().calculateBlockStart(SIZE_HEADER));
+         bb.position(SIZE_HEADER);
          
          boolean hasData = false;
          
@@ -1029,12 +1033,7 @@ public class JournalImpl implements TestableJournal
                throw new IllegalStateException("Internal error on loading file. Position doesn't match with checkSize");
             }
             
-            bb.position(file.getFile().calculateBlockStart(bb.position()));
-            
-            if (recordType != FILL_CHARACTER)
-            {
-               lastDataPos = bb.position();
-            }
+            lastDataPos = bb.position();
          }
          
          file.getFile().close();          
@@ -1084,7 +1083,7 @@ public class JournalImpl implements TestableJournal
       {     
          currentFile.getFile().open();
          
-         currentFile.getFile().position(lastDataPos);
+         currentFile.getFile().position(currentFile.getFile().calculateBlockStart(lastDataPos));
          
          currentFile.setOffset(lastDataPos);
       }

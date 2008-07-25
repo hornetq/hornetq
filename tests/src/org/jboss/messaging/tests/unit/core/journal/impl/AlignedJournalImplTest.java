@@ -128,6 +128,24 @@ public class AlignedJournalImplTest extends UnitTestCase
       }
    }
    
+   public void testInconsistentAlignment() throws Exception
+   {
+      factory = new FakeSequentialFileFactory(512, true);
+
+      try
+      {
+         journalImpl = new JournalImpl(2000, 2,
+            true, true,
+            factory, 
+            "tt", "tt", 1000);
+         fail ("Supposed to throw an exception");
+      }
+      catch (Exception ignored)
+      {
+      }
+
+   }
+      
    public void testSimpleAdd() throws Exception
    {
       final int JOURNAL_SIZE = 1060;
@@ -925,12 +943,60 @@ public class AlignedJournalImplTest extends UnitTestCase
       
       journalImpl.checkAndReclaimFiles();
       
+      assertEquals(0, journalImpl.getDataFilesCount());
+      
       setupJournal(JOURNAL_SIZE, 1);
       
       assertEquals(0, journalImpl.getDataFilesCount());
       
       assertEquals(2, factory.listFiles("tt").size());
       
+   }
+   
+   // It should be ok to write records on AIO, and later read then on NIO
+   public void testDecreaseAlignment() throws Exception
+   {
+      final int JOURNAL_SIZE = 512 * 4;
+      
+      setupJournal(JOURNAL_SIZE, 512);
+      
+      for (int i = 0; i < 10; i++)
+      {
+         journalImpl.appendAddRecordTransactional(1l, i, (byte)0, new SimpleEncoding(1, (byte)0) );
+      }
+      
+      journalImpl.appendCommitRecord(1l);
+      
+      setupJournal(JOURNAL_SIZE, 100);
+      
+      assertEquals(10, records.size());
+      
+      setupJournal(JOURNAL_SIZE, 1);
+      
+      assertEquals(10, records.size());
+   }
+   
+   // It should be ok to write records on NIO, and later read then on AIO
+   public void testIncreaseAlignment() throws Exception
+   {
+      final int JOURNAL_SIZE = 512 * 4;
+      
+      setupJournal(JOURNAL_SIZE, 1);
+      
+      for (int i = 0; i < 10; i++)
+      {
+         journalImpl.appendAddRecordTransactional(1l, i, (byte)0, new SimpleEncoding(1, (byte)0) );
+      }
+      
+      journalImpl.appendCommitRecord(1l);
+      
+      setupJournal(JOURNAL_SIZE, 100);
+      
+      assertEquals(10, records.size());
+      
+      setupJournal(JOURNAL_SIZE, 512);
+      
+      assertEquals(10, records.size());
    }
    
    
