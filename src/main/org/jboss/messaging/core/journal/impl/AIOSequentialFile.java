@@ -115,11 +115,13 @@ public class AIOSequentialFile implements SequentialFile
       file.delete();
    }
    
-   public void fill(int position, final int size, final byte fillCharacter) throws Exception
+   public void fill(final int position, final int size, final byte fillCharacter) throws Exception
    {
       checkOpened();
       
-      int blockSize = aioFile.getBlockSize();
+      int fileblockSize = aioFile.getBlockSize();
+      
+      int blockSize = fileblockSize;
       
       if (size % (100*1024*1024) == 0)
       {
@@ -139,7 +141,7 @@ public class AIOSequentialFile implements SequentialFile
       }
       else
       {
-         blockSize = aioFile.getBlockSize();
+         blockSize = fileblockSize;
       }
       
       int blocks = size / blockSize;
@@ -149,12 +151,14 @@ public class AIOSequentialFile implements SequentialFile
          blocks++;
       }
       
-      if (position % aioFile.getBlockSize() != 0)
+      int filePosition = position;
+      
+      if (position % fileblockSize != 0)
       {
-         position = ((position / aioFile.getBlockSize()) + 1) * aioFile.getBlockSize();
+         filePosition = ((position / fileblockSize) + 1) * fileblockSize;
       }
       
-      aioFile.fill((long)position, blocks, blockSize, (byte)fillCharacter);		
+      aioFile.fill((long)filePosition, blocks, blockSize, (byte)fillCharacter);		
    }
    
    public String getFileName()
@@ -166,12 +170,11 @@ public class AIOSequentialFile implements SequentialFile
    {
       opened = true;
       executor = Executors.newSingleThreadExecutor();
-      aioFile = new AsynchronousFileImpl();
+      aioFile = newFile();
       aioFile.open(journalDir + "/" + fileName, maxIO);
       position.set(0);
       
    }
-   
    public void position(final int pos) throws Exception
    {
       position.set(pos);		
@@ -234,6 +237,17 @@ public class AIOSequentialFile implements SequentialFile
    public String toString()
    {
       return "AIOSequentialFile:" + this.journalDir + "/" + this.fileName;
+   }
+
+   // Protected methods
+   // -----------------------------------------------------------------------------------------------------
+
+   /**
+    * An extension point for tests
+    */
+   protected AsynchronousFile newFile()
+   {
+      return new AsynchronousFileImpl();
    }
    
    // Private methods
