@@ -35,27 +35,27 @@ import org.jboss.messaging.core.journal.SequentialFile;
  */
 public interface JournalFile
 {
-	int getNegCount(JournalFile file);
-	
-	void incNegCount(JournalFile file);
-	
-	int getPosCount();
-
-	void incPosCount();
-	
-	void decPosCount();
-		
-	void setCanReclaim(boolean canDelete);
-	
-	boolean isCanReclaim();
-	
-	void extendOffset(final int delta);
-	
-	int getOffset();
-	
-	int getOrderingID();
-	
-	void setOffset(final int offset);
-	
-	SequentialFile getFile();
+   int getNegCount(JournalFile file);
+   
+   void incNegCount(JournalFile file);
+   
+   int getPosCount();
+   
+   void incPosCount();
+   
+   void decPosCount();
+   
+   void setCanReclaim(boolean canDelete);
+   
+   boolean isCanReclaim();
+   
+   void extendOffset(final int delta);
+   
+   int getOffset();
+   
+   int getOrderingID();
+   
+   void setOffset(final int offset);
+   
+   SequentialFile getFile();
 }

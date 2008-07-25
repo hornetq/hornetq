@@ -41,120 +41,120 @@ import org.jboss.messaging.core.logging.Logger;
  */
 public class NIOSequentialFile implements SequentialFile
 {
-	private static final Logger log = Logger.getLogger(NIOSequentialFile.class);
-	
-	private String journalDir;
-	
-	private String fileName;
-	
-	private File file;
-	
-	private FileChannel channel;
-	
-	private RandomAccessFile rfile;
-	
-	public NIOSequentialFile(final String journalDir, final String fileName)
-	{
-		this.journalDir = journalDir;
-		
-		this.fileName = fileName;   
-	}
-	
-	public int getAlignment()
-	{
-		return 1;
-	}
-	
-	public int calculateBlockStart(final int position) throws Exception
-	{
-		return position;
-	}	
-	
-	public String getFileName()
-	{
-		return fileName;
-	}
-	
-	public void open() throws Exception
-	{     
-		file = new File(journalDir + "/" + fileName);
-		
-		rfile = new RandomAccessFile(file, "rw");
-		
-		channel = rfile.getChannel();    
-	}
-	
-	public void fill(final int position, final int size, final byte fillCharacter) throws Exception
-	{
-		ByteBuffer bb = ByteBuffer.allocateDirect(size);
-		
-		for (int i = 0; i < size; i++)
-		{
-			bb.put(fillCharacter);        
-		}
-		
-		bb.flip();
-		
-		channel.position(position);
-		
-		channel.write(bb);
-		
-		channel.force(false);   
-		
-		channel.position(0);
-	}
-	
-	public void close() throws Exception
-	{
-		channel.close();
-		
-		rfile.close();
-		
-		channel = null;
-		
-		rfile = null;
-		
-		file = null;
-	}
-	
-	public void delete() throws Exception
-	{     
-		file.delete();
-		
-		close();    
-	}
-	
-	public int read(final ByteBuffer bytes) throws Exception
-	{
-		return read(bytes, null);
-	}
-	
-	public int read(final ByteBuffer bytes, final IOCallback callback) throws Exception
-	{
-		try
-		{
-			int bytesRead = channel.read(bytes);
-			if (callback != null)
-			{
-				callback.done();
-			}
-			bytes.flip();
-			return bytesRead;
-		}
-		catch (Exception e)
-		{
-			if (callback != null)
-			{
-				callback.onError(-1, e.getLocalizedMessage());
-			}
-			
-			throw e;
-		}
-		
-	}
-	
-	public int write(final ByteBuffer bytes, final boolean sync) throws Exception
-	{
+   private static final Logger log = Logger.getLogger(NIOSequentialFile.class);
+   
+   private String journalDir;
+   
+   private String fileName;
+   
+   private File file;
+   
+   private FileChannel channel;
+   
+   private RandomAccessFile rfile;
+   
+   public NIOSequentialFile(final String journalDir, final String fileName)
+   {
+      this.journalDir = journalDir;
+      
+      this.fileName = fileName;   
+   }
+   
+   public int getAlignment()
+   {
+      return 1;
+   }
+   
+   public int calculateBlockStart(final int position) throws Exception
+   {
+      return position;
+   }	
+   
+   public String getFileName()
+   {
+      return fileName;
+   }
+   
+   public void open() throws Exception
+   {     
+      file = new File(journalDir + "/" + fileName);
+      
+      rfile = new RandomAccessFile(file, "rw");
+      
+      channel = rfile.getChannel();    
+   }
+   
+   public void fill(final int position, final int size, final byte fillCharacter) throws Exception
+   {
+      ByteBuffer bb = ByteBuffer.allocateDirect(size);
+      
+      for (int i = 0; i < size; i++)
+      {
+         bb.put(fillCharacter);        
+      }
+      
+      bb.flip();
+      
+      channel.position(position);
+      
+      channel.write(bb);
+      
+      channel.force(false);   
+      
+      channel.position(0);
+   }
+   
+   public void close() throws Exception
+   {
+      channel.close();
+      
+      rfile.close();
+      
+      channel = null;
+      
+      rfile = null;
+      
+      file = null;
+   }
+   
+   public void delete() throws Exception
+   {     
+      file.delete();
+      
+      close();    
+   }
+   
+   public int read(final ByteBuffer bytes) throws Exception
+   {
+      return read(bytes, null);
+   }
+   
+   public int read(final ByteBuffer bytes, final IOCallback callback) throws Exception
+   {
+      try
+      {
+         int bytesRead = channel.read(bytes);
+         if (callback != null)
+         {
+            callback.done();
+         }
+         bytes.flip();
+         return bytesRead;
+      }
+      catch (Exception e)
+      {
+         if (callback != null)
+         {
+            callback.onError(-1, e.getLocalizedMessage());
+         }
+         
+         throw e;
+      }
+      
+   }
+   
+   public int write(final ByteBuffer bytes, final boolean sync) throws Exception
+   {
       int bytesRead = channel.write(bytes);
       
       if (sync)
@@ -163,12 +163,12 @@ public class NIOSequentialFile implements SequentialFile
       }
       
       return bytesRead;
-	}
-	
-	public int write(final ByteBuffer bytes, final IOCallback callback) throws Exception
-	{
-	   try
-	   {
+   }
+   
+   public int write(final ByteBuffer bytes, final IOCallback callback) throws Exception
+   {
+      try
+      {
          int bytesRead = channel.write(bytes);
          
          if (callback != null)
@@ -177,17 +177,17 @@ public class NIOSequentialFile implements SequentialFile
          }
          
          return bytesRead;
-	   }
-	   catch (Exception e)
-	   {
-	      callback.onError(-1, e.getMessage());
-	      throw e;
-	   }
-	}
-	
-	public void position(final int pos) throws Exception
-	{
-		channel.position(pos);
-	}
-	
+      }
+      catch (Exception e)
+      {
+         callback.onError(-1, e.getMessage());
+         throw e;
+      }
+   }
+   
+   public void position(final int pos) throws Exception
+   {
+      channel.position(pos);
+   }
+   
 }

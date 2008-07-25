@@ -40,33 +40,33 @@ import org.jboss.messaging.core.journal.SequentialFileFactory;
  */
 public abstract class AbstractSequentialFactory implements SequentialFileFactory
 {
-	protected final String journalDir;
-	
-	public AbstractSequentialFactory(final String journalDir)
-	{
-		this.journalDir = journalDir;
-	}
-	
-	public List<String> listFiles(final String extension) throws Exception
-	{
-		File dir = new File(journalDir);
-		
-		FilenameFilter fnf = new FilenameFilter()
-		{
-			public boolean accept(File file, String name)
-			{
-				return name.endsWith("." + extension);
-			}
-		};
-		
-		String[] fileNames = dir.list(fnf);
-		
-		if (fileNames == null)
-		{
-			throw new IOException("Failed to list: " + journalDir);
-		}
-		
-		return Arrays.asList(fileNames);
-	}
-	
+   protected final String journalDir;
+   
+   public AbstractSequentialFactory(final String journalDir)
+   {
+      this.journalDir = journalDir;
+   }
+   
+   public List<String> listFiles(final String extension) throws Exception
+   {
+      File dir = new File(journalDir);
+      
+      FilenameFilter fnf = new FilenameFilter()
+      {
+         public boolean accept(File file, String name)
+         {
+            return name.endsWith("." + extension);
+         }
+      };
+      
+      String[] fileNames = dir.list(fnf);
+      
+      if (fileNames == null)
+      {
+         throw new IOException("Failed to list: " + journalDir);
+      }
+      
+      return Arrays.asList(fileNames);
+   }
+   
 }

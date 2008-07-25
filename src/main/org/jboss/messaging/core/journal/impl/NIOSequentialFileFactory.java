@@ -37,17 +37,17 @@ import org.jboss.messaging.core.journal.SequentialFileFactory;
  */
 public class NIOSequentialFileFactory extends AbstractSequentialFactory implements SequentialFileFactory 
 {
-	public NIOSequentialFileFactory(final String journalDir)
-	{
-		super(journalDir);
-	}	
-	
-	// maxIO is ignored on NIO
-	public SequentialFile createSequentialFile(final String fileName, final int maxIO)
-	{
-		return new NIOSequentialFile(journalDir, fileName);
-	}
-
+   public NIOSequentialFileFactory(final String journalDir)
+   {
+      super(journalDir);
+   }	
+   
+   // maxIO is ignored on NIO
+   public SequentialFile createSequentialFile(final String fileName, final int maxIO)
+   {
+      return new NIOSequentialFile(journalDir, fileName);
+   }
+   
    public boolean isSupportsCallbacks()
    {
       return false;
@@ -68,5 +68,5 @@ public class NIOSequentialFileFactory extends AbstractSequentialFactory implemen
       return 1;
    }
    
-	
+   
 }

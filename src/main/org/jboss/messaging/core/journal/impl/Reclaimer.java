@@ -49,56 +49,56 @@ import org.jboss.messaging.core.logging.Logger;
  */
 public class Reclaimer
 {
-	private static final Logger log = Logger.getLogger(Reclaimer.class);
-		
-	public void scan(final JournalFile[] files)
-	{
-		for (int i = 0; i < files.length; i++)
-		{
-			//First we evaluate criterion 1)
-			
-			JournalFile currentFile = files[i];
-
-			int posCount = currentFile.getPosCount();
-
-			int totNeg = 0;
-								
-			for (int j = i; j < files.length; j++)
-			{
-				totNeg += files[j].getNegCount(currentFile);
-			}
-			
-			currentFile.setCanReclaim(true);
-			
-			if (posCount <= totNeg)
-			{   		
-	   		//Now we evaluate criterion 2)
-				
-	   		for (int j = 0; j <= i; j++)
-	   		{
-	   			JournalFile file = files[j];
-	   			
-	   			int negCount = currentFile.getNegCount(file);
-	   			
-	   			if (negCount != 0)
-	   			{
-	   				if (file.isCanReclaim())
-	   				{
-	   					//Ok
-	   				}
-	   				else
-	   				{
-	   					currentFile.setCanReclaim(false);
-	   					
-	   					break;
-	   				}
-	   			}
-	   		}   		
-			}
-			else
-			{
-				currentFile.setCanReclaim(false);
-			}			
-		}			
-	}
+   private static final Logger log = Logger.getLogger(Reclaimer.class);
+   
+   public void scan(final JournalFile[] files)
+   {
+      for (int i = 0; i < files.length; i++)
+      {
+         //First we evaluate criterion 1)
+         
+         JournalFile currentFile = files[i];
+         
+         int posCount = currentFile.getPosCount();
+         
+         int totNeg = 0;
+         
+         for (int j = i; j < files.length; j++)
+         {
+            totNeg += files[j].getNegCount(currentFile);
+         }
+         
+         currentFile.setCanReclaim(true);
+         
+         if (posCount <= totNeg)
+         {   		
+            //Now we evaluate criterion 2)
+            
+            for (int j = 0; j <= i; j++)
+            {
+               JournalFile file = files[j];
+               
+               int negCount = currentFile.getNegCount(file);
+               
+               if (negCount != 0)
+               {
+                  if (file.isCanReclaim())
+                  {
+                     //Ok
+                  }
+                  else
+                  {
+                     currentFile.setCanReclaim(false);
+                     
+                     break;
+                  }
+               }
+            }   		
+         }
+         else
+         {
+            currentFile.setCanReclaim(false);
+         }			
+      }			
+   }
 }

@@ -35,17 +35,17 @@ import java.util.List;
  */
 public interface SequentialFileFactory
 {
-	SequentialFile createSequentialFile(String fileName, int maxIO) throws Exception;
-	
-	List<String> listFiles(String extension) throws Exception;
-	
-	boolean isSupportsCallbacks();
-	
+   SequentialFile createSequentialFile(String fileName, int maxIO) throws Exception;
+   
+   List<String> listFiles(String extension) throws Exception;
+   
+   boolean isSupportsCallbacks();
+   
    ByteBuffer newBuffer(int size);
-
+   
    // Avoid using this method in production as it creates an unecessary copy 
    ByteBuffer wrapBuffer(byte[] bytes);
    
    int getAlignment();
-
+   
 }

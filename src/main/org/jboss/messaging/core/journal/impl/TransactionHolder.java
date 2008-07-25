@@ -40,19 +40,19 @@ import org.jboss.messaging.core.journal.RecordInfo;
 
 public class TransactionHolder
 {
-	public TransactionHolder(final long id)
-	{
-		this.transactionID = id;
-	}
-	
-	public final long transactionID;
-	
-	public final List<RecordInfo> recordInfos = new ArrayList<RecordInfo>();
-	
-	public final Set<Long> recordsToDelete = new HashSet<Long>();
-	
-	public boolean prepared;
-	
-	public boolean invalid;
-	
+   public TransactionHolder(final long id)
+   {
+      this.transactionID = id;
+   }
+   
+   public final long transactionID;
+   
+   public final List<RecordInfo> recordInfos = new ArrayList<RecordInfo>();
+   
+   public final Set<Long> recordsToDelete = new HashSet<Long>();
+   
+   public boolean prepared;
+   
+   public boolean invalid;
+   
 }

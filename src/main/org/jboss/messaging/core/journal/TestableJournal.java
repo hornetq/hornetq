@@ -32,20 +32,20 @@ package org.jboss.messaging.core.journal;
  */
 public interface TestableJournal extends Journal
 {
-	void checkAndReclaimFiles() throws Exception;
-	
-	int getDataFilesCount();
-	
-	int getFreeFilesCount();
-	
-	int getOpenedFilesCount();
-	
-	int getIDMapSize();
-	
+   void checkAndReclaimFiles() throws Exception;
+   
+   int getDataFilesCount();
+   
+   int getFreeFilesCount();
+   
+   int getOpenedFilesCount();
+   
+   int getIDMapSize();
+   
    String debug() throws Exception;
-
+   
    void debugWait() throws Exception;
-	
+   
    int getFileSize();
    
    int getMinFiles();

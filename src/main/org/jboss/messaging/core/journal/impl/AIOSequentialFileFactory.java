@@ -36,26 +36,26 @@ import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
  */
 public class AIOSequentialFileFactory extends AbstractSequentialFactory
 {	
-	public AIOSequentialFileFactory(final String journalDir)
-	{
-		super(journalDir);
-	}
-	
-	public SequentialFile createSequentialFile(final String fileName, final int maxIO) throws Exception
-	{
-		return new AIOSequentialFile(journalDir, fileName, maxIO);
-	}
-	
+   public AIOSequentialFileFactory(final String journalDir)
+   {
+      super(journalDir);
+   }
+   
+   public SequentialFile createSequentialFile(final String fileName, final int maxIO) throws Exception
+   {
+      return new AIOSequentialFile(journalDir, fileName, maxIO);
+   }
+   
    public boolean isSupportsCallbacks()
    {
       return true;
    }
    
-	public static boolean isSupported()
-	{
-		return AsynchronousFileImpl.isLoaded();
-	}
-	
+   public static boolean isSupported()
+   {
+      return AsynchronousFileImpl.isLoaded();
+   }
+   
    public ByteBuffer newBuffer(int size)
    {
       if (size % 512 != 0)

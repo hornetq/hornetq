@@ -37,14 +37,14 @@ import java.util.Set;
  */
 public class PreparedTransactionInfo
 {
-	public final long id;
-	
-	public final List<RecordInfo> records = new ArrayList<RecordInfo>();
-	
-	public final Set<Long> recordsToDelete = new HashSet<Long>();
-	
-	public PreparedTransactionInfo(final long id)
-	{
-		this.id = id;
-	}
+   public final long id;
+   
+   public final List<RecordInfo> records = new ArrayList<RecordInfo>();
+   
+   public final Set<Long> recordsToDelete = new HashSet<Long>();
+   
+   public PreparedTransactionInfo(final long id)
+   {
+      this.id = id;
+   }
 }
