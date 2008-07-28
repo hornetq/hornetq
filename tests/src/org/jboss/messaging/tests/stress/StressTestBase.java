@@ -30,6 +30,11 @@ import java.io.Reader;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
+/**
+ * 
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ *
+ */
 public class StressTestBase extends UnitTestCase
 {
    
