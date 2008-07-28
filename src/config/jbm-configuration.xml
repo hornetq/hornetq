@@ -70,13 +70,6 @@
       </remoting-interceptors>
       -->
       
-      <remoting-connector-factories>
-         <mapping>
-            <transport>TCP</transport>
-            <class-name>org.jboss.messaging.core.remoting.impl.mina.MinaConnectorFactory</class-name>
-         </mapping>
-      </remoting-connector-factories>
-      
       <remoting-acceptor-factories>         
 	      <class-name>org.jboss.messaging.core.remoting.impl.mina.MinaAcceptorFactory</class-name>         
       </remoting-acceptor-factories>
