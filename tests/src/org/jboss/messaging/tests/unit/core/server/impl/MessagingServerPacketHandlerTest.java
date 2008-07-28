@@ -25,12 +25,12 @@ import org.easymock.EasyMock;
 import org.easymock.IAnswer;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
-import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
-import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
+import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerPacketHandler;
 import org.jboss.messaging.core.version.Version;
@@ -38,104 +38,92 @@ import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
 public class MessagingServerPacketHandlerTest extends UnitTestCase
 {
    public void testIdIsZero()
    {
       MessagingServer server = EasyMock.createStrictMock(MessagingServer.class);
-      MessagingServerPacketHandler messagingServerPacketHandler = new MessagingServerPacketHandler(server);
-      EasyMock.replay(server);
+      RemotingService rs = EasyMock.createStrictMock(RemotingService.class);
+      MessagingServerPacketHandler messagingServerPacketHandler = new MessagingServerPacketHandler(server, rs);
+      EasyMock.replay(server, rs);
       assertEquals(0, messagingServerPacketHandler.getID());
-      EasyMock.verify(server);
+      EasyMock.verify(server, rs);
    }
 
    public void testHandleCreateConnection() throws Exception
    {
       MessagingServer server = EasyMock.createStrictMock(MessagingServer.class);
+      RemotingService rs = EasyMock.createStrictMock(RemotingService.class);
       Version serverVersion = EasyMock.createStrictMock(Version.class);
       CreateConnectionRequest packet = new CreateConnectionRequest(123, "andy", "taylor");
       CreateConnectionResponse createConnectionResponse = new CreateConnectionResponse(1, serverVersion );
-      PacketReturner sender = EasyMock.createStrictMock(PacketReturner.class);
-      MessagingServerPacketHandler messagingServerPacketHandler = new MessagingServerPacketHandler(server);
-      EasyMock.expect(server.createConnection("andy", "taylor", 123, sender)).andReturn(createConnectionResponse);
-      EasyMock.replay(server, sender);
-      assertEquals(createConnectionResponse, messagingServerPacketHandler.doHandle(packet, sender));
-      EasyMock.verify(server, sender);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      MessagingServerPacketHandler messagingServerPacketHandler = new MessagingServerPacketHandler(server, rs);
+      final long connectionID = 23982893;
+      EasyMock.expect(rs.getConnection(connectionID)).andReturn(rc);
+      EasyMock.expect(server.createConnection("andy", "taylor", 123, rc)).andReturn(createConnectionResponse);
+      rc.sendOneWay(createConnectionResponse);
+      EasyMock.replay(server, rc, rs, serverVersion);
+      messagingServerPacketHandler.handle(connectionID, packet);
+      EasyMock.verify(server, rc, rs, serverVersion);
    }
 
    public void testHandlePing() throws Exception
    {
       MessagingServer server = EasyMock.createStrictMock(MessagingServer.class);
-      RemotingService remotingService = EasyMock.createStrictMock(RemotingService.class);
-      final Ping packet = new Ping(456);
-      PacketReturner sender = EasyMock.createStrictMock(PacketReturner.class);
-      MessagingServerPacketHandler messagingServerPacketHandler = new MessagingServerPacketHandler(server);
-      EasyMock.expect(server.getRemotingService()).andStubReturn(remotingService);
-      EasyMock.expect(remotingService.isSession(789l)).andReturn(true);
-      EasyMock.expect(sender.getSessionID()).andStubReturn(789);
-      sender.send((Packet) EasyMock.anyObject());
+      RemotingService rs = EasyMock.createStrictMock(RemotingService.class);
+      final Packet ping = new PacketImpl(PacketImpl.PING);
+      final long responseTargetID = 282828;
+      ping.setResponseTargetID(responseTargetID);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      MessagingServerPacketHandler messagingServerPacketHandler = new MessagingServerPacketHandler(server, rs);
+      final long connectionID = 23982893;
+      EasyMock.expect(rs.getConnection(connectionID)).andReturn(rc);
+      rc.sendOneWay((Packet) EasyMock.anyObject());
       EasyMock.expectLastCall().andAnswer(new IAnswer<Object>()
       {
          public Object answer() throws Throwable
          {
-            Pong decodedPong = (Pong) EasyMock.getCurrentArguments()[0];
-            assertEquals(decodedPong.getSessionID(), 456);
-            assertEquals(decodedPong.getTargetID(), packet.getResponseTargetID());
-            assertEquals(decodedPong.isSessionFailed(), false);
+            Packet decodedPong = (PacketImpl) EasyMock.getCurrentArguments()[0];
+            assertEquals(PacketImpl.PONG, decodedPong.getType()); 
+            assertEquals(decodedPong.getTargetID(), responseTargetID);
             return null;
          }
       });
-      EasyMock.replay(server, sender, remotingService);
-      messagingServerPacketHandler.doHandle(packet, sender);
-      EasyMock.verify(server, sender, remotingService);
-   }
-
-   public void testHandlePingNoSession() throws Exception
-   {
-      MessagingServer server = EasyMock.createStrictMock(MessagingServer.class);
-      RemotingService remotingService = EasyMock.createStrictMock(RemotingService.class);
-      final Ping packet = new Ping(456);
-      PacketReturner sender = EasyMock.createStrictMock(PacketReturner.class);
-      MessagingServerPacketHandler messagingServerPacketHandler = new MessagingServerPacketHandler(server);
-      EasyMock.expect(server.getRemotingService()).andStubReturn(remotingService);
-      EasyMock.expect(remotingService.isSession(789l)).andReturn(false);
-      EasyMock.expect(sender.getSessionID()).andStubReturn(789);
-      sender.send((Packet) EasyMock.anyObject());
-      EasyMock.expectLastCall().andAnswer(new IAnswer<Object>()
-      {
-         public Object answer() throws Throwable
-         {
-            Pong decodedPong = (Pong) EasyMock.getCurrentArguments()[0];
-            assertEquals(decodedPong.getSessionID(), 456);
-            assertEquals(decodedPong.getTargetID(), packet.getResponseTargetID());
-            assertEquals(decodedPong.isSessionFailed(), true);
-            return null;
-         }
-      });
-      EasyMock.replay(server, sender, remotingService);
-      messagingServerPacketHandler.doHandle(packet, sender);
-      EasyMock.verify(server, sender, remotingService);
+      EasyMock.replay(server, rs, rc);
+      messagingServerPacketHandler.handle(connectionID, ping);
+      EasyMock.verify(server, rs, rc);
    }
 
    public void testUnsupportedPacket() throws Exception
    {
       MessagingServer server = EasyMock.createStrictMock(MessagingServer.class);
+      RemotingService rs = EasyMock.createStrictMock(RemotingService.class);          
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      MessagingServerPacketHandler messagingServerPacketHandler = new MessagingServerPacketHandler(server, rs);
+      final long connectionID = 23982893;
+      EasyMock.expect(rs.getConnection(connectionID)).andReturn(rc);     
       Packet packet = EasyMock.createStrictMock(Packet.class);
-      PacketReturner sender = EasyMock.createStrictMock(PacketReturner.class);
-      MessagingServerPacketHandler messagingServerPacketHandler = new MessagingServerPacketHandler(server);
+     
       EasyMock.expect(packet.getType()).andReturn(Byte.MAX_VALUE);
-      EasyMock.replay(server, packet, sender);
-      try
+      final long responseTargetID = 283782374;
+      EasyMock.expect(packet.getResponseTargetID()).andReturn(responseTargetID);
+      rc.sendOneWay(EasyMock.isA(MessagingExceptionMessage.class));
+      EasyMock.expectLastCall().andAnswer(new IAnswer<Object>()
       {
-         messagingServerPacketHandler.doHandle(packet, sender);
-         fail("should throw exception");
-      }
-      catch (Exception e)
-      {
-         MessagingException messagingException = (MessagingException) e;
-         assertEquals(messagingException.getCode(), MessagingException.UNSUPPORTED_PACKET);
-      }
-      EasyMock.verify(server, packet, sender);
+         public Object answer() throws Throwable
+         {
+            MessagingExceptionMessage me = (MessagingExceptionMessage) EasyMock.getCurrentArguments()[0];
+            assertEquals(MessagingException.UNSUPPORTED_PACKET, me.getException().getCode());
+            return null;
+         }
+      });
+      EasyMock.replay(server, packet, rs, rc);
+  
+      messagingServerPacketHandler.handle(connectionID, packet);
+      
+      EasyMock.verify(server, packet, rs, rc);
    }
 }

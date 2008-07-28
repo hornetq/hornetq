@@ -37,7 +37,6 @@ public class FileConfigurationTest extends ConfigurationImplTest
       //Check they match the values from the test file
       assertEquals(true, conf.isClustered());
       assertEquals(12345, conf.getScheduledThreadPoolMaxSize());
-      assertEquals(54321, conf.getThreadPoolMaxSize());
       assertEquals("blahhost", conf.getHost());
       assertEquals(TransportType.HTTP, conf.getTransport());
       assertEquals(6540, conf.getPort());
@@ -66,7 +65,12 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(987654, conf.getConnectionParams().getTcpReceiveBufferSize());
       assertEquals(2345676, conf.getConnectionParams().getTcpSendBufferSize());
       assertEquals(123123, conf.getConnectionParams().getPingInterval());
-      assertEquals(321321, conf.getConnectionParams().getPingTimeout());
+      assertEquals(2, conf.getInterceptorClassNames().size());
+      assertTrue(conf.getInterceptorClassNames().contains("org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor1"));
+      assertTrue(conf.getInterceptorClassNames().contains("org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor2"));
+      assertEquals(2, conf.getAcceptorFactoryClassNames().size());
+      assertTrue(conf.getAcceptorFactoryClassNames().contains("org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory1"));
+      assertTrue(conf.getAcceptorFactoryClassNames().contains("org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory2")); 
    }
    
    public void testSetGetConfigurationURL()

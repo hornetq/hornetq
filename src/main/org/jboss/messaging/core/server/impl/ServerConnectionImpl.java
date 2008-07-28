@@ -26,15 +26,16 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.security.SecurityStore;
-import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.server.ServerSession;
@@ -54,10 +55,10 @@ import org.jboss.messaging.util.SimpleString;
  *
  * $Id: ServerConnectionImpl.java 3789 2008-02-25 15:34:18Z ataylor $
  */
-public class ServerConnectionImpl implements ServerConnection
+public class ServerConnectionImpl implements ServerConnection, FailureListener
 {
    // Constants ------------------------------------------------------------------------------------
-
+  
    private static final Logger log = Logger.getLogger(ServerConnectionImpl.class);
 
    // Static ---------------------------------------------------------------------------------------
@@ -70,7 +71,7 @@ public class ServerConnectionImpl implements ServerConnection
    
    private final String password;
 
-   private final long remotingClientSessionID;
+   private final RemotingConnection remotingConnection;
    
    private final Set<ServerSession> sessions = new ConcurrentHashSet<ServerSession>();
 
@@ -81,8 +82,6 @@ public class ServerConnectionImpl implements ServerConnection
    private volatile boolean started;
    
    private final PostOffice postOffice;
-
-   private final ConnectionManager connectionManager;
 
    private final PacketDispatcher dispatcher;
    
@@ -101,9 +100,8 @@ public class ServerConnectionImpl implements ServerConnection
    // Constructors ---------------------------------------------------------------------------------
       
    public ServerConnectionImpl(final String username, final String password,
-                               final long remotingClientSessionID,
+                               final RemotingConnection remotingConnection,
                                final PostOffice postOffice,
-                               final ConnectionManager connectionManager,
                                final PacketDispatcher packetDispatcher,
                                final StorageManager storageManager,
                                final HierarchicalRepository<QueueSettings> queueSettingsRepository,
@@ -115,11 +113,9 @@ public class ServerConnectionImpl implements ServerConnection
       
       this.password = password;
       
-      this.remotingClientSessionID = remotingClientSessionID;
+      this.remotingConnection = remotingConnection;
 
       this.postOffice = postOffice;
-      
-      this.connectionManager = connectionManager;
       
       this.dispatcher = packetDispatcher;
       
@@ -144,25 +140,24 @@ public class ServerConnectionImpl implements ServerConnection
    }
    
    public ConnectionCreateSessionResponseMessage createSession(final boolean xa, final boolean autoCommitSends,
-   		                                                      final boolean autoCommitAcks,
-                                                               final PacketReturner returner) throws Exception
+   		                                                      final boolean autoCommitAcks) throws Exception
    {            
-      ServerSession session = doCreateSession(autoCommitSends, autoCommitAcks, xa, returner);
+      ServerSession session = doCreateSession(autoCommitSends, autoCommitAcks, xa);
 
       sessions.add(session);
       
-      dispatcher.register(new ServerSessionPacketHandler(session));
+      dispatcher.register(new ServerSessionPacketHandler(session, remotingConnection));
       
       return new ConnectionCreateSessionResponseMessage(session.getID());
    }
    
    protected ServerSession doCreateSession(final boolean autoCommitSends, final boolean autoCommitAcks,
-                                           final boolean xa, final PacketReturner returner)
+                                           final boolean xa)
       throws Exception
    {
       Executor executor = executorFactory.getExecutor();
             
-      return new ServerSessionImpl(this, autoCommitSends, autoCommitAcks, xa, returner,
+      return new ServerSessionImpl(this, autoCommitSends, autoCommitAcks, xa, remotingConnection,
                                    storageManager, postOffice, queueSettingsRepository,
                                    resourceManager, securityStore, dispatcher,
                                    executor);
@@ -221,8 +216,8 @@ public class ServerConnectionImpl implements ServerConnection
       
       temporaryDestinations.clear();
 
-      connectionManager.unregisterConnection(remotingClientSessionID, this);
-
+      remotingConnection.removeFailureListener(this);
+      
       dispatcher.unregister(id);
       
       closed = true;
@@ -294,11 +289,20 @@ public class ServerConnectionImpl implements ServerConnection
       return started;
    }
    
-   public long getClientSessionID()
+   // FailureListener implementation -----------------------------------------------------
+   
+   public void connectionFailed(final MessagingException me)
    {
-      return remotingClientSessionID;
+      try
+      {
+         close();
+      }
+      catch (Throwable t)
+      {
+         log.error("Failed to close connection " + this);
+      }
    }
-         
+   
    // Public ---------------------------------------------------------------------------------------
     
    public void addSession(final ServerSession session)

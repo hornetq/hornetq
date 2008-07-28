@@ -22,6 +22,24 @@
       <remoting-ssl-keystore-password>wibble123</remoting-ssl-keystore-password>
       <remoting-ssl-truststore-path>blahtruststore</remoting-ssl-truststore-path>
       <remoting-ssl-truststore-password>eek123</remoting-ssl-truststore-password>
+      <remoting-interceptors>
+         <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor1</class-name>
+         <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor2</class-name>
+      </remoting-interceptors>
+      <remoting-connector-factories>
+         <mapping>
+            <transport>TCP</transport>
+            <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestConnectorFactory1</class-name>
+         </mapping>
+         <mapping>
+            <transport>HTTP</transport>
+            <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestConnectorFactory2</class-name>
+         </mapping>
+      </remoting-connector-factories>
+      <remoting-acceptor-factories>
+         <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory1</class-name>
+         <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory2</class-name>
+      </remoting-acceptor-factories>
       <bindings-directory>somedir</bindings-directory>
       <create-bindings-dir>false</create-bindings-dir>
       <journal-directory>somedir2</journal-directory>

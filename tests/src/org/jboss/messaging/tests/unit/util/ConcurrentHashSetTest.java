@@ -22,12 +22,14 @@
 
 package org.jboss.messaging.tests.unit.util;
 
-import junit.framework.TestCase;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-import org.jboss.messaging.util.ConcurrentHashSet;
-import org.jboss.messaging.util.ConcurrentSet;
 
 import java.util.Iterator;
+
+import junit.framework.TestCase;
+
+import org.jboss.messaging.util.ConcurrentHashSet;
+import org.jboss.messaging.util.ConcurrentSet;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

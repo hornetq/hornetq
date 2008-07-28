@@ -22,11 +22,12 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NO_ID_SET;
-
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.PacketHandler;
+import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
 import org.jboss.messaging.core.server.ServerProducer;
@@ -38,13 +39,19 @@ import org.jboss.messaging.core.server.ServerProducer;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class ServerProducerPacketHandler extends ServerPacketHandlerSupport
+public class ServerProducerPacketHandler implements PacketHandler
 {
+   private static final Logger log = Logger.getLogger(ServerProducerPacketHandler.class);
+  
 	private final ServerProducer producer;
 	
-	public ServerProducerPacketHandler(final ServerProducer producer)
+	private final RemotingConnection remotingConnection;
+	
+	public ServerProducerPacketHandler(final ServerProducer producer, final RemotingConnection remotingConnection)
 	{
 		this.producer = producer;
+		
+		this.remotingConnection = remotingConnection;
 	}
 
    public long getID()
@@ -52,31 +59,56 @@ public class ServerProducerPacketHandler extends ServerPacketHandlerSupport
       return producer.getID();
    }
 
-   public Packet doHandle(final Packet packet, final PacketReturner sender) throws Exception
+   public void handle(final long remotingConnectionID, final Packet packet)
    {
       Packet response = null;
 
       byte type = packet.getType();
-      switch (type)
+      
+      try
+      {      
+         switch (type)
+         {
+         case PacketImpl.PROD_SEND:
+            ProducerSendMessage message = (ProducerSendMessage) packet;
+            producer.send(message.getServerMessage());
+            if (packet.getResponseTargetID() != PacketImpl.NO_ID_SET)
+            {
+               response = new PacketImpl(PacketImpl.NULL);
+            }
+            break;
+         case PacketImpl.CLOSE:
+            producer.close();
+            response = new PacketImpl(PacketImpl.NULL);
+            break;
+         default:
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.UNSUPPORTED_PACKET,
+                                                     "Unsupported packet " + type));
+         }
+      }
+      catch (Throwable t)
       {
-      case PacketImpl.PROD_SEND:
-         ProducerSendMessage message = (ProducerSendMessage) packet;
-         producer.send(message.getServerMessage());
-         break;
-      case PacketImpl.CLOSE:
-         producer.close();
-         break;
-      default:
-         throw new MessagingException(MessagingException.UNSUPPORTED_PACKET,
-               "Unsupported packet " + type);
+         MessagingException me;
+         
+         log.error("Caught unexpected exception", t);         
+         
+         if (t instanceof MessagingException)
+         {
+            me = (MessagingException)t;
+         }
+         else
+         {            
+            me = new MessagingException(MessagingException.INTERNAL_ERROR);
+         }
+                  
+         response = new MessagingExceptionMessage(me);    
       }
 
-      // reply if necessary
-      if (response == null && packet.getResponseTargetID() != NO_ID_SET)
+      if (response != null)
       {
-         response = new PacketImpl(PacketImpl.NULL);               
+         response.normalize(packet);
+         
+         remotingConnection.sendOneWay(response);    
       }
-      
-      return response;
    }
 }

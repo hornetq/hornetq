@@ -24,8 +24,8 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import javax.transaction.xa.Xid;
 
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
-import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.core.remoting;
 
-import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * 
@@ -35,6 +34,10 @@ import org.jboss.messaging.util.MessagingBuffer;
 public interface Packet
 {
    // Public --------------------------------------------------------
+   
+   void setCommandID(int commandID);
+   
+   int getCommandID();
    
    void setResponseTargetID(long responseTargetID);
 
@@ -52,7 +55,7 @@ public interface Packet
    
    void normalize(Packet other);
 
-   void encode(MessagingBuffer buffer) throws Exception;
+   void encode(MessagingBuffer buffer);
       
-   void decode(MessagingBuffer buffer) throws Exception;
+   void decode(MessagingBuffer buffer);
 }

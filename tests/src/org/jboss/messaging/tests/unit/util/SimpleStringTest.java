@@ -22,8 +22,9 @@
 
 package org.jboss.messaging.tests.unit.util;
 
-import junit.framework.TestCase;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
+import junit.framework.TestCase;
+
 import org.jboss.messaging.util.DataConstants;
 import org.jboss.messaging.util.SimpleString;
 

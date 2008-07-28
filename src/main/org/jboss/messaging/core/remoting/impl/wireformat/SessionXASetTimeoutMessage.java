@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 
 
 
@@ -82,7 +82,7 @@ public class SessionXASetTimeoutMessage extends PacketImpl
             
       SessionXASetTimeoutMessage r = (SessionXASetTimeoutMessage)other;
       
-      return this.timeoutSeconds == r.timeoutSeconds;
+      return super.equals(other) && this.timeoutSeconds == r.timeoutSeconds;
    }
 
    // Package protected ---------------------------------------------

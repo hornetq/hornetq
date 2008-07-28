@@ -23,7 +23,9 @@
 package org.jboss.messaging.core.config.impl;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.Location;
@@ -46,8 +48,6 @@ public class ConfigurationImpl implements Configuration
    public static final boolean DEFAULT_CLUSTERED = false;
    
    public static final int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 30;
-   
-   public static final int DEFAULT_THREAD_POOL_MAX_SIZE = 30;
    
    public static final String DEFAULT_HOST = "localhost";
    
@@ -95,14 +95,10 @@ public class ConfigurationImpl implements Configuration
 
    
    // Attributes -----------------------------------------------------------------------------
-   
-   protected List<String> interceptorClassNames = new ArrayList<String>();
-
+      
    protected boolean clustered = DEFAULT_CLUSTERED;
    
    protected int scheduledThreadPoolMaxSize = DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
-   
-   protected int threadPoolMaxSize = DEFAULT_THREAD_POOL_MAX_SIZE;
    
    protected long securityInvalidationInterval = DEFAULT_SECURITY_INVALIDATION_INTERVAL;
 
@@ -134,10 +130,7 @@ public class ConfigurationImpl implements Configuration
    protected int journalMaxAIO = DEFAULT_MAX_AIO;
    
    // remoting config
-   
-   //TODO  - do we really need this sever id??? I don't see why
-   protected int serverID = 0;
-         
+       
    protected TransportType transport = DEFAULT_TRANSPORT;
    
    protected String host = DEFAULT_HOST;
@@ -156,12 +149,11 @@ public class ConfigurationImpl implements Configuration
    
    protected String trustStorePassword = DEFAULT_TRUSTSTORE_PASSWORD;
    
-   
-   public List<String> getInterceptorClassNames()
-   {
-      return interceptorClassNames;
-   }
+   protected List<String> interceptorClassNames = new ArrayList<String>();
 
+   protected Set<String> acceptorFactoryClassNames = new HashSet<String>();
+   
+      
    public boolean isClustered()
    {
       return clustered;
@@ -182,16 +174,6 @@ public class ConfigurationImpl implements Configuration
       this.scheduledThreadPoolMaxSize = maxSize;
    }
    
-   public int getThreadPoolMaxSize()
-   {
-      return threadPoolMaxSize;
-   }
-   
-   public void setThreadPoolMaxSize(int maxSize)
-   {
-      this.threadPoolMaxSize = maxSize;
-   }
-      
    public long getSecurityInvalidationInterval()
    {
    	return this.securityInvalidationInterval;
@@ -210,17 +192,7 @@ public class ConfigurationImpl implements Configuration
    public void setRequireDestinations(boolean require)
    {
       this.requireDestinations = require;
-   }
-   
-   public int getServerID()
-   {
-      return serverID;
-   }
-
-   public void setServerID(int id)
-   {
-      this.serverID = id;
-   }
+   }   
    
    public TransportType getTransport()
    {
@@ -254,14 +226,7 @@ public class ConfigurationImpl implements Configuration
    
    public Location getLocation()
    {
-      if (transport == TransportType.INVM)
-      {
-         return new LocationImpl(serverID);
-      }
-      else
-      {
-         return new LocationImpl(transport, host, port);
-      }
+      return new LocationImpl(transport, host, port);      
    }
    
    public String getKeyStorePath()
@@ -319,6 +284,16 @@ public class ConfigurationImpl implements Configuration
    public void setSSLEnabled(boolean enabled)
    {
       this.sslEnabled = enabled;
+   }
+   
+   public List<String> getInterceptorClassNames()
+   {
+      return interceptorClassNames;
+   }
+   
+   public Set<String> getAcceptorFactoryClassNames()
+   {
+      return acceptorFactoryClassNames;
    }
   
 	public String getBindingsDirectory()
@@ -474,8 +449,6 @@ public class ConfigurationImpl implements Configuration
              cother.getPort() == this.getPort() &&
              cother.getScheduledThreadPoolMaxSize() == this.getScheduledThreadPoolMaxSize() &&
              cother.getSecurityInvalidationInterval() == this.getSecurityInvalidationInterval() &&
-             cother.getServerID() == this.getServerID() &&
-             cother.getThreadPoolMaxSize() == this.getThreadPoolMaxSize() &&
              cother.getTransport() == this.getTransport() &&
              cother.getTrustStorePassword() == null ?
                    this.getTrustStorePassword() == null : cother.getTrustStorePassword().equals(this.getTrustStorePassword()) && 

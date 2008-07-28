@@ -107,6 +107,8 @@ public class QueueImpl implements Queue
    
    private final Lock lock = new ReentrantLock(false);
    
+   private boolean backup;
+         
    public QueueImpl(final long persistenceID, final SimpleString name,
          final Filter filter, final boolean clustered, final boolean durable,
          final boolean temporary, final int maxSizeBytes,
@@ -155,7 +157,7 @@ public class QueueImpl implements Queue
    }
    
    public HandleStatus addLast(final MessageReference ref)
-   {
+   {     
       lock.lock();
       try
       {         
@@ -198,7 +200,7 @@ public class QueueImpl implements Queue
    public void deliverAsync(final Executor executor)
    {
       //Prevent too many executors running at once
-      
+                  
       if (waitingToDeliver.compareAndSet(false, true))
       {
          executor.execute(deliverRunner);
@@ -207,69 +209,78 @@ public class QueueImpl implements Queue
       
    /*
     * Attempt to deliver all the messages in the queue
-    * 
-    * @see org.jboss.messaging.newcore.intf.Queue#deliver()
     */
-   public synchronized void deliver()
+   public void deliver()
    {
-      MessageReference reference;
-
-      Iterator<MessageReference> iterator = null;
-
-      while (true)
+      //TODO - we need to lock during delivery since otherwise delivery could occur while we're rolling back a transction
+      //which would mean messages got delivered in the wrong order
+      //We need to revise this for better concurrency
+      lock.lock();
+      try
+      {  
+         MessageReference reference;
+   
+         Iterator<MessageReference> iterator = null;
+   
+         while (true)
+         {
+            if (iterator == null)
+            {
+               reference = messageReferences.peekFirst();
+            }
+            else
+            {
+               if (iterator.hasNext())
+               {
+                  reference = iterator.next();
+               }
+               else
+               {
+                  reference = null;
+               }
+            }
+   
+            if (reference == null)
+            {
+               if (iterator == null)
+               {
+                  // We delivered all the messages - go into direct delivery
+                  direct = true;
+                  
+                  promptDelivery = false;
+               }
+               return;
+            }
+   
+            HandleStatus status = deliver(reference);
+   
+            if (status == HandleStatus.HANDLED)
+            {
+               if (iterator == null)
+               {
+                  messageReferences.removeFirst();              
+               }
+               else
+               {
+                  iterator.remove();
+               }
+            }
+            else if (status == HandleStatus.BUSY)
+            {
+               // All consumers busy - give up
+               break;
+            }
+            else if (status == HandleStatus.NO_MATCH && iterator == null)
+            {
+               // Consumers not all busy - but filter not accepting - iterate back
+               // through the queue
+               iterator = messageReferences.iterator();
+            }
+         }
+      }
+      finally
       {
-         if (iterator == null)
-         {
-            reference = messageReferences.peekFirst();
-         }
-         else
-         {
-            if (iterator.hasNext())
-            {
-               reference = iterator.next();
-            }
-            else
-            {
-               reference = null;
-            }
-         }
-
-         if (reference == null)
-         {
-            if (iterator == null)
-            {
-               // We delivered all the messages - go into direct delivery
-               direct = true;
-               
-               promptDelivery = false;
-            }
-            return;
-         }
-
-         HandleStatus status = deliver(reference);
-
-         if (status == HandleStatus.HANDLED)
-         {
-            if (iterator == null)
-            {
-               messageReferences.removeFirst();              
-            }
-            else
-            {
-               iterator.remove();
-            }
-         }
-         else if (status == HandleStatus.BUSY)
-         {
-            // All consumers busy - give up
-            break;
-         }
-         else if (status == HandleStatus.NO_MATCH && iterator == null)
-         {
-            // Consumers not all busy - but filter not accepting - iterate back
-            // through the queue
-            iterator = messageReferences.iterator();
-         }
+         lock.unlock();
       }
    }
 
@@ -380,10 +391,8 @@ public class QueueImpl implements Queue
    }
 
    public synchronized int getMessageCount()
-   {
-      //log.info("mr: " + messageReferences.size() + " sc:" + getScheduledCount() + " dc:" + getDeliveringCount());
-      return messageReferences.size() + getScheduledCount()
-            + getDeliveringCount();
+   {    
+      return messageReferences.size() + getScheduledCount() + getDeliveringCount();
    }
 
    public synchronized int getScheduledCount()
@@ -489,9 +498,19 @@ public class QueueImpl implements Queue
    
    public void unlock()
    {            
-      lock.unlock();          
+      lock.unlock();     
    }
 
+   public synchronized boolean isBackup()
+   {
+      return backup;
+   }
+   
+   public synchronized void setBackup(final boolean backup)
+   {
+      this.backup = backup;
+   }
+   
    // Public
    // -----------------------------------------------------------------------------
 

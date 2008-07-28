@@ -25,6 +25,7 @@ package org.jboss.messaging.tests.concurrent.server.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
@@ -46,6 +47,9 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class QueueTest extends UnitTestCase
 {
+   private static final Logger log = Logger.getLogger(QueueTest.class);
+
+   
    private QueueFactory queueFactory = new FakeQueueFactory();
    
    /*
@@ -89,9 +93,9 @@ public class QueueTest extends UnitTestCase
       
       assertRefListsIdenticalRefs(sender.getReferences(), consumer.getReferences());
       
-      System.out.println("num refs: " + sender.getReferences().size());
+      log.info("num refs: " + sender.getReferences().size());
       
-      System.out.println("num toggles: " + toggler.getNumToggles());
+      log.info("num toggles: " + toggler.getNumToggles());
       
    }
    

@@ -21,14 +21,21 @@
  */
 package org.jboss.messaging.tests.unit.core.server.impl;
 
+import static org.easymock.EasyMock.createStrictMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.getCurrentArguments;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
+
 import org.easymock.EasyMock;
-import static org.easymock.EasyMock.*;
 import org.easymock.IAnswer;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.server.impl.ServerConnectionPacketHandler;
@@ -39,10 +46,14 @@ import org.jboss.messaging.tests.util.UnitTestCase;
  */
 public class ServerConnectionPacketHandlerTest extends UnitTestCase
 {
+   private static final Logger log = Logger.getLogger(ServerConnectionPacketHandlerTest.class);
+   
+   
    public void testGetId()
    {
       ServerConnection connection = createStrictMock(ServerConnection.class);
-      ServerConnectionPacketHandler handler = new ServerConnectionPacketHandler(connection);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      ServerConnectionPacketHandler handler = new ServerConnectionPacketHandler(connection, rc);
       expect(connection.getID()).andReturn(12345l);
       replay(connection);
       assertEquals(handler.getID(), 12345l);
@@ -50,116 +61,141 @@ public class ServerConnectionPacketHandlerTest extends UnitTestCase
    }
 
    public void testCreateSession() throws Exception
-   {
-      final PacketReturner returner = createStrictMock(PacketReturner.class);
+   {      
       ServerConnection connection = createStrictMock(ServerConnection.class);
-      ServerConnectionPacketHandler handler = new ServerConnectionPacketHandler(connection);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      ServerConnectionPacketHandler handler = new ServerConnectionPacketHandler(connection, rc);
       ConnectionCreateSessionMessage request = new ConnectionCreateSessionMessage(true, true, true);
 
-      expect(connection.createSession(true, true, true, returner)).andAnswer(new IAnswer<ConnectionCreateSessionResponseMessage>()
+      final ConnectionCreateSessionResponseMessage response = new ConnectionCreateSessionResponseMessage(12345);
+      
+      expect(connection.createSession(true, true, true)).andAnswer(new IAnswer<ConnectionCreateSessionResponseMessage>()
       {
          public ConnectionCreateSessionResponseMessage answer() throws Throwable
          {
             boolean isXa = (Boolean) getCurrentArguments()[0];
             boolean isSends = (Boolean) getCurrentArguments()[1];
-            boolean isAcks = (Boolean) getCurrentArguments()[2];
-            PacketReturner packetReturner = (PacketReturner) getCurrentArguments()[3];
+            boolean isAcks = (Boolean) getCurrentArguments()[2];           
             assertTrue(isXa);
             assertTrue(isSends);
-            assertTrue(isAcks);
-            assertEquals(returner, packetReturner);
-            return new ConnectionCreateSessionResponseMessage(12345);
+            assertTrue(isAcks);           
+            return response;
          }
       });
-      replay(connection, returner);
-      handler.doHandle(request, returner);
-      verify(connection, returner);
+      rc.sendOneWay(response);      
+      replay(connection, rc);
+      handler.handle(1254, request);
+      verify(connection, rc);
    }
 
    public void testCreateSession2() throws Exception
-   {
-      final PacketReturner returner = createStrictMock(PacketReturner.class);
+   {      
       ServerConnection connection = createStrictMock(ServerConnection.class);
-      ServerConnectionPacketHandler handler = new ServerConnectionPacketHandler(connection);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      ServerConnectionPacketHandler handler = new ServerConnectionPacketHandler(connection, rc);
       ConnectionCreateSessionMessage request = new ConnectionCreateSessionMessage(false, false, false);
 
-      expect(connection.createSession(false, false, false, returner)).andAnswer(new IAnswer<ConnectionCreateSessionResponseMessage>()
+      final ConnectionCreateSessionResponseMessage response = new ConnectionCreateSessionResponseMessage(12345);
+            
+      expect(connection.createSession(false, false, false)).andAnswer(new IAnswer<ConnectionCreateSessionResponseMessage>()
       {
          public ConnectionCreateSessionResponseMessage answer() throws Throwable
          {
             boolean isXa = (Boolean) getCurrentArguments()[0];
             boolean isSends = (Boolean) getCurrentArguments()[1];
-            boolean isAcks = (Boolean) getCurrentArguments()[2];
-            PacketReturner packetReturner = (PacketReturner) getCurrentArguments()[3];
+            boolean isAcks = (Boolean) getCurrentArguments()[2];           
             assertFalse(isXa);
             assertFalse(isSends);
             assertFalse(isAcks);
-            assertEquals(returner, packetReturner);
-            return new ConnectionCreateSessionResponseMessage(12345);
+            return response;
          }
       });
-      replay(connection, returner);
-      handler.doHandle(request, returner);
-      verify(connection, returner);
+      rc.sendOneWay(response);  
+      replay(connection, rc);
+      handler.handle(82712, request);
+      verify(connection, rc);
    }
 
    public void testConnectionStart() throws Exception
    {
-      final PacketReturner returner = createStrictMock(PacketReturner.class);
       ServerConnection connection = createStrictMock(ServerConnection.class);
-      ServerConnectionPacketHandler handler = new ServerConnectionPacketHandler(connection);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      ServerConnectionPacketHandler handler = new ServerConnectionPacketHandler(connection, rc);
       Packet packet = new PacketImpl(PacketImpl.CONN_START);
-      connection.start();
-      replay(connection, returner);
-      handler.doHandle(packet, returner);
-      verify(connection, returner);
+      connection.start();      
+      replay(connection, rc);
+      handler.handle(17261, packet);
+      verify(connection, rc);
    }
 
    public void testConnectionStop() throws Exception
-   {
-      final PacketReturner returner = createStrictMock(PacketReturner.class);
+   {      
       ServerConnection connection = createStrictMock(ServerConnection.class);
-      ServerConnectionPacketHandler handler = new ServerConnectionPacketHandler(connection);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      ServerConnectionPacketHandler handler = new ServerConnectionPacketHandler(connection, rc);
       Packet packet = new PacketImpl(PacketImpl.CONN_STOP);
       connection.stop();
-      replay(connection, returner);
-      handler.doHandle(packet, returner);
-      verify(connection, returner);
+      rc.sendOneWay(EasyMock.isA(PacketImpl.class));
+      EasyMock.expectLastCall().andAnswer(new IAnswer<Object>()
+      {
+         public Object answer() throws Throwable
+         {
+            Packet packet = (Packet) getCurrentArguments()[0];
+            assertEquals(PacketImpl.NULL, packet.getType());
+            return null;
+         }
+      });
+      replay(connection, rc);
+      handler.handle(71626, packet);
+      verify(connection, rc);
    }
 
    public void testConnectionClose() throws Exception
-   {
-      final PacketReturner returner = createStrictMock(PacketReturner.class);
+   {      
       ServerConnection connection = createStrictMock(ServerConnection.class);
-      ServerConnectionPacketHandler handler = new ServerConnectionPacketHandler(connection);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      ServerConnectionPacketHandler handler = new ServerConnectionPacketHandler(connection, rc);
       Packet packet = new PacketImpl(PacketImpl.CLOSE);
       packet.setResponseTargetID(123);
       connection.close();
-      replay(connection, returner);
-      assertNotNull(handler.doHandle(packet, returner));
-      verify(connection, returner);
+      rc.sendOneWay(EasyMock.isA(PacketImpl.class));
+      EasyMock.expectLastCall().andAnswer(new IAnswer<Object>()
+      {
+         public Object answer() throws Throwable
+         {
+            Packet packet = (Packet) getCurrentArguments()[0];
+            assertEquals(PacketImpl.NULL, packet.getType());
+            return null;
+         }
+      });
+      replay(connection, rc);
+      handler.handle(1212, packet);
+      verify(connection, rc);
    }
 
    public void testUnsupportedPacket() throws Exception
-   {
-      final PacketReturner returner = createStrictMock(PacketReturner.class);
+   {      
       ServerConnection connection = createStrictMock(ServerConnection.class);
-      ServerConnectionPacketHandler handler = new ServerConnectionPacketHandler(connection);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      ServerConnectionPacketHandler handler = new ServerConnectionPacketHandler(connection, rc);
       Packet packet = EasyMock.createStrictMock(Packet.class);
       expect(packet.getType()).andReturn(Byte.MAX_VALUE);
-      replay(connection, returner);
+      final long responseTargetID = 283782374;
+      EasyMock.expect(packet.getResponseTargetID()).andReturn(responseTargetID);
+      rc.sendOneWay(EasyMock.isA(PacketImpl.class));
+      EasyMock.expectLastCall().andAnswer(new IAnswer<Object>()
+      {
+         public Object answer() throws Throwable
+         {
+            MessagingExceptionMessage me = (MessagingExceptionMessage)EasyMock.getCurrentArguments()[0];
+            assertEquals(MessagingException.UNSUPPORTED_PACKET, me.getException().getCode());
+            return null;
+         }
+      });
+      replay(connection, rc, packet);
       
-      try
-      {
-         handler.doHandle(packet, returner);
-         fail("should throw exception");
-      }
-      catch (Exception e)
-      {
-         MessagingException messagingException = (MessagingException) e;
-         assertEquals(messagingException.getCode(), MessagingException.UNSUPPORTED_PACKET);
-      }
-
-      verify(connection, returner);
+      handler.handle(1212, packet);
+      
+      verify(connection, rc, packet);
    }
 }

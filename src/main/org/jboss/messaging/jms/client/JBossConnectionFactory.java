@@ -47,7 +47,6 @@ import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.RemotingConnectionFactoryImpl;
 import org.jboss.messaging.jms.referenceable.ConnectionFactoryObjectFactory;
 import org.jboss.messaging.jms.referenceable.SerializableObjectRefAddr;
 
@@ -246,7 +245,6 @@ public class JBossConnectionFactory implements
       if (connectionFactory == null)
       {
          connectionFactory = new ClientConnectionFactoryImpl(
-               new RemotingConnectionFactoryImpl(),
                location,
                connectionParams,
                defaultConsumerWindowSize,

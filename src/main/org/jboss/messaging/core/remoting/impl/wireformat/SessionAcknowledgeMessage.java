@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 
 
 /**
@@ -97,7 +97,7 @@ public class SessionAcknowledgeMessage extends PacketImpl
             
       SessionAcknowledgeMessage r = (SessionAcknowledgeMessage)other;
       
-      return this.deliveryID == r.deliveryID &&
+      return super.equals(other) && this.deliveryID == r.deliveryID &&
              this.allUpTo == r.allUpTo;
    }
 

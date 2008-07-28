@@ -23,7 +23,6 @@
 package org.jboss.messaging.tests.unit.core.client.impl;
 
 import static org.jboss.messaging.core.remoting.TransportType.HTTP;
-import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 
 import java.io.ByteArrayInputStream;
@@ -34,7 +33,6 @@ import java.io.ObjectOutputStream;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.Location;
-import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.TransportType;
@@ -59,18 +57,6 @@ public class LocationImplTest extends TestCase
 
    // Public --------------------------------------------------------
 
-   // FIXME - I don't like this weird constructor that's only used for INVM
-   public void testINVMConstructor() throws Exception
-   {
-      final int serverID = 12091;
-      
-      Location location = new LocationImpl(serverID);
-      
-      assertEquals(INVM, location.getTransport());
-      assertEquals(serverID, location.getServerID());
-      assertEquals("invm://" + serverID, location.getLocation());
-   }
-   
    public void testTransportTypeHostPortConstructor() throws Exception
    {
       testTransportTypeHostPortConstructor(TransportType.TCP);
@@ -83,13 +69,6 @@ public class LocationImplTest extends TestCase
       testTransportTypeHostConstructor(TransportType.HTTP);
    }
      
-   public void testINVMLocationEquality() throws Exception
-   {
-      assertEquals(new LocationImpl(0), new LocationImpl(0));
-      assertNotSame(new LocationImpl(0), new LocationImpl(1));
-      assertNotSame(new LocationImpl(0), new LocationImpl(TCP, "localhost", 9000));
-      assertNotSame(new LocationImpl(0), new LocationImpl(HTTP, "localhost", 9000));
-   }
 
    public void testTCPLocationEquality() throws Exception
    {
@@ -98,7 +77,6 @@ public class LocationImplTest extends TestCase
       assertNotSame(new LocationImpl(TCP, "localhost", 9001), new LocationImpl(TCP, "localhost", 9000));
       assertNotSame(new LocationImpl(TCP, "anotherhost", 9000), new LocationImpl(TCP, "localhost", 9000));
       assertNotSame(new LocationImpl(HTTP, "localhost", 9000), new LocationImpl(TCP, "localhost", 9000));
-      assertNotSame(new LocationImpl(HTTP, "localhost", 9000), new LocationImpl(43));
    }
    
    public void testSerialize() throws Exception

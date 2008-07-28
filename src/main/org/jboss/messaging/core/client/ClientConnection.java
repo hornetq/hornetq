@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.client;
 
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.version.Version;
 
 /**
@@ -43,7 +44,7 @@ public interface ClientConnection
 
    void stop() throws MessagingException;
 
-   void setRemotingSessionListener(RemotingSessionListener listener) throws MessagingException;
+   void setFailureListener(FailureListener listener) throws MessagingException;
   
    void close() throws MessagingException;
    

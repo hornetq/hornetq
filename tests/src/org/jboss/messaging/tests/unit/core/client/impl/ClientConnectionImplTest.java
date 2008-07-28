@@ -22,15 +22,22 @@
 
 package org.jboss.messaging.tests.unit.core.client.impl;
 
+import java.util.Set;
+
 import org.easymock.EasyMock;
 import org.easymock.IAnswer;
 import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.Location;
-import org.jboss.messaging.core.client.RemotingSessionListener;
-import org.jboss.messaging.core.client.impl.*;
+import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.client.impl.ClientConnectionImpl;
+import org.jboss.messaging.core.client.impl.ClientConnectionInternal;
+import org.jboss.messaging.core.client.impl.ClientSessionInternal;
+import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.ConnectionRegistry;
+import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.TransportType;
@@ -40,8 +47,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.core.version.impl.VersionImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
-
-import java.util.Set;
 
 /**
  * A ClientConnectionImplTest
@@ -65,7 +70,7 @@ public class ClientConnectionImplTest extends UnitTestCase
       final long serverTargetID = 12091092;
 
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
-      rc.addRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
+      rc.addFailureListener((FailureListener) EasyMock.anyObject());
       EasyMock.replay(rc, pd);
 
       ClientConnectionInternal conn = new ClientConnectionImpl(cf, serverTargetID, rc, version, pd);
@@ -87,7 +92,7 @@ public class ClientConnectionImplTest extends UnitTestCase
    public void testStartStop() throws Exception
    {
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      rc.addRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
+      rc.addFailureListener((FailureListener) EasyMock.anyObject());
       Version version = new VersionImpl("tyfytfytf", 1, 1, 1, 12, "yttyft");
 
       Location location = new LocationImpl(TransportType.TCP, "ftftf");
@@ -116,7 +121,7 @@ public class ClientConnectionImplTest extends UnitTestCase
    public void testSetRemotingSessionListener() throws Exception
    {
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      rc.addRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
+      rc.addFailureListener((FailureListener) EasyMock.anyObject());
       Version version = new VersionImpl("tyfytfytf", 1, 1, 1, 12, "yttyft");
 
       Location location = new LocationImpl(TransportType.TCP, "ftftf");
@@ -129,18 +134,18 @@ public class ClientConnectionImplTest extends UnitTestCase
 
 
 
-      RemotingSessionListener listener = new RemotingSessionListener()
+      FailureListener listener = new FailureListener()
       {
-         public void sessionDestroyed(long sessionID, MessagingException me)
+         public void connectionFailed(MessagingException me)
          {
          }
       };
 
-      rc.addRemotingSessionListener(listener);
+      rc.addFailureListener(listener);
 
       EasyMock.replay(rc, pd);
       ClientConnectionInternal conn = new ClientConnectionImpl(cf, serverTargetID, rc, version, pd);
-      conn.setRemotingSessionListener(listener);
+      conn.setFailureListener(listener);
 
       EasyMock.verify(rc, pd);
    }
@@ -148,7 +153,7 @@ public class ClientConnectionImplTest extends UnitTestCase
    public void testClose() throws Exception
    {
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      rc.addRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
+      rc.addFailureListener((FailureListener) EasyMock.anyObject());
       Version version = new VersionImpl("tyfytfytf", 1, 1, 1, 12, "yttyft");
 
       Location location = new LocationImpl(TransportType.TCP, "ftftf");
@@ -159,7 +164,13 @@ public class ClientConnectionImplTest extends UnitTestCase
 
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
       EasyMock.replay(rc);
-      ClientConnectionInternal conn = new ClientConnectionImpl(cf, serverTargetID, rc, version, pd);
+      
+      ConnectionRegistry cr = EasyMock.createStrictMock(ConnectionRegistry.class);
+      
+      ClientConnectionImpl conn = new ClientConnectionImpl(cf, serverTargetID, rc, version, pd);
+      
+      conn.setConnectionRegistry(cr);
+      
       EasyMock.reset(rc);
       assertFalse(conn.isClosed());
 
@@ -181,26 +192,28 @@ public class ClientConnectionImplTest extends UnitTestCase
 
       EasyMock.expect(rc.sendBlocking(serverTargetID, serverTargetID, new PacketImpl(PacketImpl.CLOSE))).andReturn(null);
 
-      rc.stop();
-
-      EasyMock.replay(rc, pd, sess1, sess2, sess3);
+      EasyMock.expect(rc.getLocation()).andReturn(location);
+      
+      cr.returnConnection(location);
+      
+      EasyMock.replay(rc, pd, sess1, sess2, sess3, cr);
 
       conn.close();
 
-      EasyMock.verify(rc, pd, sess1, sess2, sess3);
+      EasyMock.verify(rc, pd, sess1, sess2, sess3, cr);
 
       assertTrue(conn.isClosed());
 
       assertSame(conn.getRemotingConnection(), rc);
 
       //Close again should do nothing
-      EasyMock.reset(rc, pd, sess1, sess2, sess3);
+      EasyMock.reset(rc, pd, sess1, sess2, sess3, cr);
 
-      EasyMock.replay(rc, pd, sess1, sess2, sess3);
+      EasyMock.replay(rc, pd, sess1, sess2, sess3, cr);
 
       conn.close();
 
-      EasyMock.verify(rc, pd, sess1, sess2, sess3);
+      EasyMock.verify(rc, pd, sess1, sess2, sess3, cr);
 
       try
       {
@@ -244,9 +257,9 @@ public class ClientConnectionImplTest extends UnitTestCase
 
       try
       {
-         conn.setRemotingSessionListener(new RemotingSessionListener()
+         conn.setFailureListener(new FailureListener()
          {
-            public void sessionDestroyed(long sessionID, MessagingException me)
+            public void connectionFailed(MessagingException me)
             {
             }
          });
@@ -314,7 +327,7 @@ public class ClientConnectionImplTest extends UnitTestCase
    public void testSessionCleanedUp() throws Exception
    {
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      rc.addRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
+      rc.addFailureListener((FailureListener) EasyMock.anyObject());
       Location location = new LocationImpl(TransportType.TCP, "oranges");
 
       ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location);
@@ -348,7 +361,7 @@ public class ClientConnectionImplTest extends UnitTestCase
    public void testSessionsCleanedUp() throws Exception
    {
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      rc.addRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
+      rc.addFailureListener((FailureListener) EasyMock.anyObject());
       Location location = new LocationImpl(TransportType.TCP, "oranges");
 
       ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location);
@@ -391,7 +404,7 @@ public class ClientConnectionImplTest extends UnitTestCase
                                   final boolean cacheProducers, final boolean useDefaults) throws Exception
    {
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      rc.addRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
+      rc.addFailureListener((FailureListener) EasyMock.anyObject());
       Location location = new LocationImpl(TransportType.TCP, "oranges");
 
       ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location);
@@ -453,7 +466,7 @@ public class ClientConnectionImplTest extends UnitTestCase
       Version version = new VersionImpl("uqysuyqs", 1, 1, 1, 12, "uqysuays");
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
       final int serverTargetID = 17267162;
-      rc.addRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
+      rc.addFailureListener((FailureListener) EasyMock.anyObject());
       SetRemotingSessionListenerAnswer answer = new SetRemotingSessionListenerAnswer();
       EasyMock.expectLastCall().andAnswer(answer);
 
@@ -468,16 +481,16 @@ public class ClientConnectionImplTest extends UnitTestCase
       ClientConnectionInternal conn = new ClientConnectionImpl(cf, serverTargetID, rc, version, pd);
       assertNotNull(answer.listener);
       ClientSession session = conn.createClientSession(false, true, true, 1);
-      answer.listener.sessionDestroyed(serverTargetID, new MessagingException());
+      answer.listener.connectionFailed(new MessagingException());
       assertTrue(session.isClosed());
    }
 
    class SetRemotingSessionListenerAnswer implements IAnswer
    {
-      RemotingSessionListener listener = null;
+      FailureListener listener = null;
       public Object answer() throws Throwable
       {
-         listener = (RemotingSessionListener) EasyMock.getCurrentArguments()[0];
+         listener = (FailureListener) EasyMock.getCurrentArguments()[0];
          return null;
       }
    }

@@ -23,10 +23,10 @@
 package org.jboss.messaging.core.server.impl;
 
 import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.util.MessagingBuffer;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

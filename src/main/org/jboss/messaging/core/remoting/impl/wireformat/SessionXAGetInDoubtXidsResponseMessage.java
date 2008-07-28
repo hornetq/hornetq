@@ -27,7 +27,7 @@ import java.util.List;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 
 
 /**
@@ -86,6 +86,35 @@ public class SessionXAGetInDoubtXidsResponseMessage extends PacketImpl
          
          xids.add(xid);
       }      
+   }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionXAGetInDoubtXidsResponseMessage == false)
+      {
+         return false;
+      }
+            
+      SessionXAGetInDoubtXidsResponseMessage r = (SessionXAGetInDoubtXidsResponseMessage)other;
+      
+      if (super.equals(other))
+      {
+         if (this.xids.size() == r.xids.size())
+         {
+            for (int i = 0; i < xids.size(); i++)
+            {
+               if (!xids.get(i).equals(r.xids.get(i)))
+               {
+                  return false;
+               }
+            }
+         }
+      }
+      else
+      {
+         return false;
+      }
+      return true;
    }
    
    // Package protected ---------------------------------------------

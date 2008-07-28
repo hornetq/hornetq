@@ -22,7 +22,12 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import org.jboss.messaging.core.client.RemotingSessionListener;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -31,16 +36,17 @@ import org.jboss.messaging.core.management.impl.MessagingServerManagementImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
-import org.jboss.messaging.core.remoting.*;
+import org.jboss.messaging.core.remoting.Interceptor;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
-import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.QueueFactory;
-import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -48,12 +54,9 @@ import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.impl.ResourceManagerImpl;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.ExecutorFactory;
+import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 import org.jboss.messaging.util.VersionLoader;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.*;
 
 
 /**
@@ -82,14 +85,11 @@ public class MessagingServerImpl implements MessagingServer
    // wired components
 
    private SecurityStore securityStore;
-   private ConnectionManager connectionManager;
-   private RemotingSessionListener sessionListener; 
    private HierarchicalRepository<QueueSettings> queueSettingsRepository = new HierarchicalObjectRepository<QueueSettings>();
    private ScheduledExecutorService scheduledExecutor;   
    private QueueFactory queueFactory;
    private PostOffice postOffice;
-   private ExecutorService threadPool;
-   private ExecutorFactory executorFactory;   
+   private ExecutorFactory executorFactory = new OrderedExecutorFactory(Executors.newCachedThreadPool(new JBMThreadFactory("JBM-async-session-delivery-threads")));
    private HierarchicalRepository<Set<Role>> securityRepository;
    private ResourceManager resourceManager;   
    private MessagingServerPacketHandler serverPacketHandler;
@@ -162,41 +162,23 @@ public class MessagingServerImpl implements MessagingServer
                  
       //The rest of the components are not pluggable and created and started here
 
-      securityStore = new SecurityStoreImpl(configuration.getSecurityInvalidationInterval(), configuration.isSecurityEnabled());
-      ConnectionManagerImpl cm = new ConnectionManagerImpl();
-      this.connectionManager = cm;
-      this.sessionListener = cm;   
+      securityStore = new SecurityStoreImpl(configuration.getSecurityInvalidationInterval(), configuration.isSecurityEnabled());  
       queueSettingsRepository.setDefault(new QueueSettings());
       scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(), new JBMThreadFactory("JBM-scheduled-threads"));                  
       queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository);      
       postOffice = new PostOfficeImpl(storageManager, queueFactory, configuration.isRequireDestinations());
-      threadPool = Executors.newFixedThreadPool(configuration.getThreadPoolMaxSize(), new JBMThreadFactory("JBM-session-threads"));
-      executorFactory = new OrderedExecutorFactory(threadPool);                 
+                       
       securityRepository = new HierarchicalObjectRepository<Set<Role>>();
       securityRepository.setDefault(new HashSet<Role>());
       securityStore.setSecurityRepository(securityRepository);
-      securityStore.setSecurityManager(securityManager);      
-      scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(), new JBMThreadFactory("JBM-scheduled-threads"));            
+      securityStore.setSecurityManager(securityManager);                       
       resourceManager = new ResourceManagerImpl(0);                           
-      remotingService.addRemotingSessionListener(sessionListener);  
       dispatcher = remotingService.getDispatcher();
       postOffice.start();
-      serverPacketHandler = new MessagingServerPacketHandler(this);          
-      ClassLoader loader = Thread.currentThread().getContextClassLoader();
-      for (String interceptorClass : configuration.getInterceptorClassNames())
-      {
-         try
-         {
-            Class<?> clazz = loader.loadClass(interceptorClass);
-            getRemotingService().addInterceptor((Interceptor) clazz.newInstance());
-         }
-         catch (Exception e)
-         {
-            log.warn("Error instantiating interceptor \"" + interceptorClass + "\"", e);
-         }
-      }
+      serverPacketHandler = new MessagingServerPacketHandler(this, remotingService);          
+     
       serverManagement = new MessagingServerManagementImpl(postOffice, storageManager, configuration,
-                                                           connectionManager, securityRepository,
+                                                           securityRepository,
                                                            queueSettingsRepository, this);
       //Register the handler as the last thing - since after that users will be able to connect
       started = true;
@@ -211,15 +193,9 @@ public class MessagingServerImpl implements MessagingServer
       }
       
       dispatcher.unregister(serverPacketHandler.getID());       
-      remotingService.removeRemotingSessionListener(sessionListener);
-      
       securityStore = null;
-      connectionManager = null;
-      sessionListener = null;
       postOffice.stop();
       postOffice = null;
-      threadPool.shutdown();
-      executorFactory = null;
       securityRepository = null;
       securityStore = null;
       queueSettingsRepository.clear();
@@ -228,8 +204,7 @@ public class MessagingServerImpl implements MessagingServer
       resourceManager = null;
       serverPacketHandler = null;
       serverManagement = null;
-      ConnectorRegistryFactory.getRegistry().clear();
-      
+
       started = false;
    }
 
@@ -320,7 +295,7 @@ public class MessagingServerImpl implements MessagingServer
 
    public CreateConnectionResponse createConnection(final String username, final String password,                                  
                                                     final int incrementingVersion,
-                                                    final PacketReturner returner)
+                                                    final RemotingConnection remotingConnection)
            throws Exception
    {
       if (version.getIncrementingVersion() < incrementingVersion)
@@ -336,18 +311,16 @@ public class MessagingServerImpl implements MessagingServer
 
       securityStore.authenticate(username, password);
 
-      long sessionID = returner.getSessionID();
-      
-      final ServerConnection connection =
-              new ServerConnectionImpl(username, password, sessionID,
-                                       postOffice, connectionManager,
+      final ServerConnectionImpl connection =
+              new ServerConnectionImpl(username, password, remotingConnection,
+                                       postOffice,
                                        dispatcher, storageManager,
                                        queueSettingsRepository, resourceManager,
                                        securityStore, executorFactory);
       
-      connectionManager.registerConnection(sessionID, connection);
+      remotingConnection.addFailureListener(connection);
 
-      dispatcher.register(new ServerConnectionPacketHandler(connection));
+      dispatcher.register(new ServerConnectionPacketHandler(connection, remotingConnection));
 
       return new CreateConnectionResponse(connection.getID(), version);
    }
@@ -355,6 +328,11 @@ public class MessagingServerImpl implements MessagingServer
    public MessagingServerManagement getServerManagement()
    {
       return serverManagement;
+   }
+   
+   public int getConnectionCount()
+   {
+      return this.remotingService.getConnections().size();
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -366,20 +344,4 @@ public class MessagingServerImpl implements MessagingServer
    // Private --------------------------------------------------------------------------------------
 
    // Inner classes --------------------------------------------------------------------------------
-
-   private static class JBMThreadFactory implements ThreadFactory
-   {
-      private ThreadGroup group;
-
-      JBMThreadFactory(final String groupName)
-      {
-         this.group = new ThreadGroup(groupName);
-      }
-
-      public Thread newThread(Runnable command)
-      {
-         return new Thread(group, command);
-      }
-   }
-
 }

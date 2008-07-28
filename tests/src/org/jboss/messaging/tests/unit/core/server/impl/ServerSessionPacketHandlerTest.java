@@ -21,20 +21,56 @@
  */
 package org.jboss.messaging.tests.unit.core.server.impl;
 
-import static org.easymock.EasyMock.*;
+import static org.easymock.EasyMock.createStrictMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.transaction.xa.Xid;
+
+import org.easymock.IAnswer;
 import org.easymock.classextension.EasyMock;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.PacketReturner;
-import org.jboss.messaging.core.remoting.impl.wireformat.*;
+import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCancelMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAForgetMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetInDoubtXidsResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetTimeoutResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAJoinMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAPrepareMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResumeMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.server.impl.ServerSessionPacketHandler;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
-
-import javax.transaction.xa.Xid;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -43,15 +79,15 @@ public class ServerSessionPacketHandlerTest extends UnitTestCase
 {
    private ServerSession session;
    private ServerSessionPacketHandler handler;
-   private PacketReturner sender;
+   private RemotingConnection rc;
    private SimpleString queueName;
    private SimpleString filterString;
 
    protected void setUp() throws Exception
    {
       session = createStrictMock(ServerSession.class);
-      sender = createStrictMock(PacketReturner.class);
-      handler = new ServerSessionPacketHandler(session);
+      rc = createStrictMock(RemotingConnection.class);
+      handler = new ServerSessionPacketHandler(session, rc);
       queueName = new SimpleString("qname");
       filterString = new SimpleString("test = 'foo'");
    }
@@ -74,113 +110,123 @@ public class ServerSessionPacketHandlerTest extends UnitTestCase
    {
       SessionCreateConsumerResponseMessage resp = EasyMock.createStrictMock(SessionCreateConsumerResponseMessage.class);
       expect(session.createConsumer(1, queueName, filterString, true, true, 10, 100)).andReturn(resp);
-      replay(session, sender);
+      rc.sendOneWay(resp);     
+      replay(session, rc);
       SessionCreateConsumerMessage request = new SessionCreateConsumerMessage(1, queueName, filterString, true, true, 10, 100);
-      handler.doHandle(request, sender);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
    public void testCreateQueue() throws Exception
    {
       session.createQueue(queueName, queueName, filterString, true, true);
-      replay(session, sender);
+      rc.sendOneWay(new PacketImpl(PacketImpl.NULL)); 
+      replay(session, rc);
       SessionCreateQueueMessage request = new SessionCreateQueueMessage(queueName, queueName, filterString, true, true);
-      handler.doHandle(request, sender);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
    public void testDeleteQueue() throws Exception
    {
       session.deleteQueue(queueName);
-      replay(session, sender);
+      rc.sendOneWay(new PacketImpl(PacketImpl.NULL)); 
+      replay(session, rc);
       SessionDeleteQueueMessage request = new SessionDeleteQueueMessage(queueName);
-      handler.doHandle(request, sender);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
    public void testQueueQuery() throws Exception
    {
       SessionQueueQueryResponseMessage resp = EasyMock.createStrictMock(SessionQueueQueryResponseMessage.class);
       expect(session.executeQueueQuery(queueName)).andReturn(resp);
-      replay(session, sender);
+      rc.sendOneWay(resp);
+      replay(session, rc);
       SessionQueueQueryMessage request = new SessionQueueQueryMessage(queueName);
-      handler.doHandle(request, sender);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
    public void testBindingQuery() throws Exception
    {
       SessionBindingQueryResponseMessage resp = EasyMock.createStrictMock(SessionBindingQueryResponseMessage.class);
       expect(session.executeBindingQuery(queueName)).andReturn(resp);
-      replay(session, sender);
+      rc.sendOneWay(resp);
+      replay(session, rc);
       SessionBindingQueryMessage request = new SessionBindingQueryMessage(queueName);
-      handler.doHandle(request, sender);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
    public void testCreateBrowser() throws Exception
    {
       SessionCreateBrowserResponseMessage resp = EasyMock.createStrictMock(SessionCreateBrowserResponseMessage.class);
       expect(session.createBrowser(queueName, filterString)).andReturn(resp);
-      replay(session, sender);
+      rc.sendOneWay(resp);
+      replay(session, rc);
       SessionCreateBrowserMessage request = new SessionCreateBrowserMessage(queueName, filterString);
-      handler.doHandle(request, sender);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
    public void testCreateProducer() throws Exception
    {
       SessionCreateProducerResponseMessage resp = EasyMock.createStrictMock(SessionCreateProducerResponseMessage.class);
       expect(session.createProducer(4, queueName, 33, 44)).andReturn(resp);
-      replay(session, sender);
+      rc.sendOneWay(resp);
+      replay(session, rc);
       SessionCreateProducerMessage request = new SessionCreateProducerMessage(4, queueName, 33, 44);
-      handler.doHandle(request, sender);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
    public void testClose() throws Exception
    {
       session.close();
-      replay(session, sender);
+      rc.sendOneWay(new PacketImpl(PacketImpl.NULL));
+      replay(session, rc);
       PacketImpl request = new PacketImpl(PacketImpl.CLOSE);
-      handler.doHandle(request, sender);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
    public void testSessionAck() throws Exception
    {
       session.acknowledge(44, true);
-      replay(session, sender);
+      replay(session, rc);
       SessionAcknowledgeMessage request = new SessionAcknowledgeMessage(44, true);
-      handler.doHandle(request, sender);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
    public void testCommit() throws Exception
    {
       session.commit();
-      replay(session, sender);
+      rc.sendOneWay(new PacketImpl(PacketImpl.NULL));
+      replay(session, rc);
       PacketImpl request = new PacketImpl(PacketImpl.SESS_COMMIT);
-      handler.doHandle(request, sender);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
    public void testRollback() throws Exception
    {
       session.rollback();
-      replay(session, sender);
+      rc.sendOneWay(new PacketImpl(PacketImpl.NULL));
+      replay(session, rc);
       PacketImpl request = new PacketImpl(PacketImpl.SESS_ROLLBACK);
-      handler.doHandle(request, sender);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
    public void testCancel() throws Exception
    {
-      session.cancel(55, true);
-      replay(session, sender);
+      session.cancel(55, true);     
+      replay(session, rc);
       SessionCancelMessage request = new SessionCancelMessage(55, true);
-      handler.doHandle(request, sender);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
    public void testXaCommit() throws Exception
@@ -188,10 +234,11 @@ public class ServerSessionPacketHandlerTest extends UnitTestCase
       Xid xid = createStrictMock(Xid.class);
       SessionXAResponseMessage resp = EasyMock.createStrictMock(SessionXAResponseMessage.class);
       expect(session.XACommit(true, xid)).andReturn(resp);
-      replay(session, sender);
+      rc.sendOneWay(resp);
+      replay(session, rc);
       SessionXACommitMessage request = new SessionXACommitMessage(xid, true);
-      handler.doHandle(request, sender);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
    public void testXaEnd() throws Exception
@@ -199,10 +246,11 @@ public class ServerSessionPacketHandlerTest extends UnitTestCase
       Xid xid = createStrictMock(Xid.class);
       SessionXAResponseMessage resp = EasyMock.createStrictMock(SessionXAResponseMessage.class);
       expect(session.XAEnd(xid, true)).andReturn(resp);
-      replay(session, sender);
+      rc.sendOneWay(resp);
+      replay(session, rc);
       SessionXAEndMessage request = new SessionXAEndMessage(xid, true);
-      handler.doHandle(request, sender);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
    public void testXaForget() throws Exception
@@ -210,10 +258,11 @@ public class ServerSessionPacketHandlerTest extends UnitTestCase
       Xid xid = createStrictMock(Xid.class);
       SessionXAResponseMessage resp = EasyMock.createStrictMock(SessionXAResponseMessage.class);
       expect(session.XAForget(xid)).andReturn(resp);
-      replay(session, sender);
+      rc.sendOneWay(resp);
+      replay(session, rc);
       SessionXAForgetMessage request = new SessionXAForgetMessage(xid);
-      handler.doHandle(request, sender);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
    public void testXaJoin() throws Exception
@@ -221,10 +270,11 @@ public class ServerSessionPacketHandlerTest extends UnitTestCase
       Xid xid = createStrictMock(Xid.class);
       SessionXAResponseMessage resp = EasyMock.createStrictMock(SessionXAResponseMessage.class);
       expect(session.XAJoin(xid)).andReturn(resp);
-      replay(session, sender);
+      rc.sendOneWay(resp);
+      replay(session, rc);
       SessionXAJoinMessage request = new SessionXAJoinMessage(xid);
-      handler.doHandle(request, sender);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
    public void testXaResume() throws Exception
@@ -232,10 +282,11 @@ public class ServerSessionPacketHandlerTest extends UnitTestCase
       Xid xid = createStrictMock(Xid.class);
       SessionXAResponseMessage resp = EasyMock.createStrictMock(SessionXAResponseMessage.class);
       expect(session.XAResume(xid)).andReturn(resp);
-      replay(session, sender);
+      rc.sendOneWay(resp);
+      replay(session, rc);
       SessionXAResumeMessage request = new SessionXAResumeMessage(xid);
-      handler.doHandle(request, sender);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
    public void testXaRollback() throws Exception
@@ -243,10 +294,11 @@ public class ServerSessionPacketHandlerTest extends UnitTestCase
       Xid xid = createStrictMock(Xid.class);
       SessionXAResponseMessage resp = EasyMock.createStrictMock(SessionXAResponseMessage.class);
       expect(session.XARollback(xid)).andReturn(resp);
-      replay(session, sender);
+      rc.sendOneWay(resp);
+      replay(session, rc);
       SessionXARollbackMessage request = new SessionXARollbackMessage(xid);
-      handler.doHandle(request, sender);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
    public void testXaStart() throws Exception
@@ -254,20 +306,22 @@ public class ServerSessionPacketHandlerTest extends UnitTestCase
       Xid xid = createStrictMock(Xid.class);
       SessionXAResponseMessage resp = EasyMock.createStrictMock(SessionXAResponseMessage.class);
       expect(session.XAStart(xid)).andReturn(resp);
-      replay(session, sender);
+      rc.sendOneWay(resp);
+      replay(session, rc);
       SessionXAStartMessage request = new SessionXAStartMessage(xid);
-      handler.doHandle(request, sender);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
    public void testXaSuspend() throws Exception
    {
       SessionXAResponseMessage resp = EasyMock.createStrictMock(SessionXAResponseMessage.class);
       expect(session.XASuspend()).andReturn(resp);
-      replay(session, sender);
+      rc.sendOneWay(resp);
+      replay(session, rc);
       PacketImpl request = new PacketImpl(PacketImpl.SESS_XA_SUSPEND);
-      handler.doHandle(request, sender);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
    public void testXaPrepare() throws Exception
@@ -275,10 +329,11 @@ public class ServerSessionPacketHandlerTest extends UnitTestCase
       Xid xid = createStrictMock(Xid.class);
       SessionXAResponseMessage resp = EasyMock.createStrictMock(SessionXAResponseMessage.class);
       expect(session.XAPrepare(xid)).andReturn(resp);
-      replay(session, sender);
+      rc.sendOneWay(resp);
+      replay(session, rc);
       SessionXAPrepareMessage request = new SessionXAPrepareMessage(xid);
-      handler.doHandle(request, sender);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
    public void testXaInDoubt() throws Exception
@@ -289,71 +344,72 @@ public class ServerSessionPacketHandlerTest extends UnitTestCase
       xids.add(xid);
       xids.add(xid2);
       expect(session.getInDoubtXids()).andReturn(xids);
-      replay(session, sender);
+      rc.sendOneWay(new SessionXAGetInDoubtXidsResponseMessage(xids));
+      replay(session, rc);
       PacketImpl request = new PacketImpl(PacketImpl.SESS_XA_INDOUBT_XIDS);
-      SessionXAGetInDoubtXidsResponseMessage resp = (SessionXAGetInDoubtXidsResponseMessage) handler.doHandle(request, sender);
-      assertEquals(resp.getXids().size(), 2);
-      assertEquals(resp.getXids().get(0), xid);
-      assertEquals(resp.getXids().get(1), xid2);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
    public void testXaGetTimeout() throws Exception
    {
-      expect(session.getXATimeout()).andReturn(2000);
-      replay(session, sender);
+      final int timeout = 2000;
+      expect(session.getXATimeout()).andReturn(timeout);
+      rc.sendOneWay(new SessionXAGetTimeoutResponseMessage(timeout));
+      replay(session, rc);
       PacketImpl request = new PacketImpl(PacketImpl.SESS_XA_GET_TIMEOUT);
-      SessionXAGetTimeoutResponseMessage resp = (SessionXAGetTimeoutResponseMessage) handler.doHandle(request, sender);
-      assertEquals(resp.getTimeoutSeconds(), 2000);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
    public void testXaSetTimeout() throws Exception
    {
       expect(session.setXATimeout(5000)).andReturn(true);
-      replay(session, sender);
+      rc.sendOneWay(new SessionXASetTimeoutResponseMessage(true));
+      replay(session, rc);
       SessionXASetTimeoutMessage request = new SessionXASetTimeoutMessage(5000);
-      SessionXASetTimeoutResponseMessage resp = (SessionXASetTimeoutResponseMessage) handler.doHandle(request, sender);
-      assertEquals(resp.isOK(), true);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
-   public void testXaAddDestination() throws Exception
+   public void testAddDestination() throws Exception
    {
       session.addDestination(queueName, true);
-      replay(session, sender);
-      SessionAddDestinationMessage request = new SessionAddDestinationMessage(queueName, true);
-      request.setResponseTargetID(12345);
-      handler.doHandle(request, sender);
-      verify(session, sender);
+      rc.sendOneWay(new PacketImpl(PacketImpl.NULL));
+      replay(session, rc);
+      SessionAddDestinationMessage request = new SessionAddDestinationMessage(queueName, true);      
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
-   public void testXaRemoveDestination() throws Exception
+   public void testRemoveDestination() throws Exception
    {
       session.removeDestination(queueName, true);
-      replay(session, sender);
+      rc.sendOneWay(new PacketImpl(PacketImpl.NULL));
+      replay(session, rc);
       SessionRemoveDestinationMessage request = new SessionRemoveDestinationMessage(queueName, true);
-      request.setResponseTargetID(12345);
-      handler.doHandle(request, sender);
-      verify(session, sender);
+      handler.handle(123123, request);
+      verify(session, rc);
    }
 
-    public void testUnsupportedPacket() throws Exception
+   public void testUnsupportedPacket() throws Exception
    {
       Packet packet = EasyMock.createStrictMock(Packet.class);
       expect(packet.getType()).andReturn(Byte.MAX_VALUE);
-      replay(session, sender);
-      try
+      final long responseTargetID = 1212;
+      EasyMock.expect(packet.getResponseTargetID()).andReturn(responseTargetID);
+      rc.sendOneWay(EasyMock.isA(PacketImpl.class));
+      EasyMock.expectLastCall().andAnswer(new IAnswer<Object>()
       {
-         handler.doHandle(packet, sender);
-         fail("should throw exception");
-      }
-      catch (Exception e)
-      {
-         MessagingException messagingException = (MessagingException) e;
-         assertEquals(messagingException.getCode(), MessagingException.UNSUPPORTED_PACKET);
-      }
-
-      verify(session, sender);
+         public Object answer() throws Throwable
+         {
+            MessagingExceptionMessage me = (MessagingExceptionMessage)EasyMock.getCurrentArguments()[0];
+            assertEquals(MessagingException.UNSUPPORTED_PACKET, me.getException().getCode());
+            return null;
+         }
+      });
+      replay(session, rc, packet);
+      handler.handle(1212, packet);     
+      verify(session, rc, packet);
    }
 }

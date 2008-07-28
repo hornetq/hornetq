@@ -41,10 +41,6 @@ public interface ConnectionParams extends Serializable
 
    void setPingInterval(long pingInterval);
 
-   long getPingTimeout();
-
-   void setPingTimeout(long pingTimeout);
-
    boolean isInVMOptimisationEnabled();
 
    void setInVMOptimisationEnabled(boolean enabled);

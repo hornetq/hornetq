@@ -24,163 +24,148 @@ package org.jboss.messaging.core.remoting.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
-import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.Location;
-import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.ConnectorRegistryFactory;
+import org.jboss.messaging.core.remoting.FailureListener;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.RemotingConnector;
-import org.jboss.messaging.core.remoting.RemotingSession;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
-import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.spi.Connection;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * @version <tt>$Revision$</tt>
- *          $Id$
+ * @version <tt>$Revision$</tt> $Id: RemotingConnectionImpl.java 4633
+ *          2008-07-04 11:43:34Z timfox $
  */
 public class RemotingConnectionImpl implements RemotingConnection
 {
-   // Constants ------------------------------------------------------------------------------------
+   // Constants
+   // ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(RemotingConnectionImpl.class);
 
-   // Static ---------------------------------------------------------------------------------------
+   // Static
+   // ---------------------------------------------------------------------------------------
 
-   // Attributes -----------------------------------------------------------------------------------
+   // Attributes
+   // -----------------------------------------------------------------------------------
+
+   private final Connection transportConnection;
+
+   private final List<FailureListener> failureListeners = new ArrayList<FailureListener>();
+
+   private final PacketDispatcher dispatcher;
 
    private final Location location;
 
-   private final ConnectionParams connectionParams;
+   private final long blockingCallTimeout;
 
-   private RemotingConnector connector;
+   private ScheduledFuture<?> future;
 
-   private RemotingSession session;
+   private boolean firstTime = true;
 
-   private List<RemotingSessionListener> sessionListeners = new ArrayList<RemotingSessionListener>();
+   private volatile boolean gotPong;
 
-   // Constructors ---------------------------------------------------------------------------------
+   private Runnable pinger;
 
-   public RemotingConnectionImpl(final Location location, ConnectionParams connectionParams) throws IllegalArgumentException
+   private volatile PacketHandler pongHandler;
+
+   private volatile boolean destroyed;
+
+   // Constructors
+   // ---------------------------------------------------------------------------------
+
+   public RemotingConnectionImpl(final Connection transportConnection,
+         final PacketDispatcher dispatcher, final Location location,
+         final long blockingCallTimeout, final long pingPeriod,
+         final ScheduledExecutorService pingExecutor)
    {
-      if (location == null)
-      {
-         throw new IllegalArgumentException("location must not be null");
-      }
-      if (connectionParams == null)
-      {
-         throw new IllegalArgumentException("connection params must not be null");
-      }
+      this.transportConnection = transportConnection;
+
+      this.dispatcher = dispatcher;
 
       this.location = location;
-      this.connectionParams = connectionParams;
 
-      log.trace(this + " created with configuration " + location);
+      this.blockingCallTimeout = blockingCallTimeout;
+
+      pinger = new Pinger();
+
+      pongHandler = new PongHandler(dispatcher.generateID());
+
+      dispatcher.register(pongHandler);
+
+      future = pingExecutor.scheduleWithFixedDelay(pinger, pingPeriod, pingPeriod,
+                                                   TimeUnit.MILLISECONDS);
    }
 
-   // Public ---------------------------------------------------------------------------------------
-
-   // RemotingConnection implementation ------------------------------------------------------------
-
-   public void start() throws Throwable
+   public RemotingConnectionImpl(final Connection transportConnection,
+         final PacketDispatcher dispatcher, final Location location,
+         final long blockingCallTimeout)
    {
-      if (log.isTraceEnabled())
-      {
-         log.trace(this + " started remoting connection");
-      }
+      this.transportConnection = transportConnection;
 
-      connector = ConnectorRegistryFactory.getRegistry().getConnector(location, connectionParams);
+      this.dispatcher = dispatcher;
 
-      session = connector.connect();
+      this.location = location;
 
-      if (log.isDebugEnabled())
-         log.debug("Using " + connector + " to connect to " + location);
-
-      log.trace(this + " started");
+      this.blockingCallTimeout = blockingCallTimeout;
    }
 
+   // Public
+   // ---------------------------------------------------------------------------------------
 
-   public void stop()
+   // RemotingConnection implementation
+   // ------------------------------------------------------------
+
+   public long getID()
    {
-      log.trace(this + " stop");
-
-      try
-      {
-         if (connector != null)
-         {
-            for (RemotingSessionListener sessionListener : sessionListeners)
-            {
-               connector.removeSessionListener(sessionListener);
-            }
-
-            RemotingConnector connectorFromRegistry = ConnectorRegistryFactory.getRegistry().removeConnector(location);
-
-            if (connectorFromRegistry != null)
-            {
-               connectorFromRegistry.disconnect();
-            }
-         }
-      }
-      catch (Throwable ignore)
-      {
-         log.trace(this + " failed to disconnect the new client", ignore);
-      }
-
-      connector = null;
-      log.trace(this + " closed");
-   }
-
-   public long getSessionID()
-   {
-      if (session == null || !session.isConnected())
-      {
-         return -1;
-      }
-      return session.getID();
+      return transportConnection.getID();
    }
 
    /**
-    * send the packet and block until a response is received (<code>oneWay</code> is set to <code>false</code>)
+    * send the packet and block until a response is received (<code>oneWay</code>
+    * is set to <code>false</code>)
     */
    public Packet sendBlocking(final long targetID, final long executorID, final Packet packet) throws MessagingException
    {
-      checkConnected();
+      packet.setTargetID(targetID);
+      packet.setExecutorID(executorID);
 
-      long handlerID = connector.getDispatcher().generateID();
+      return sendBlocking(packet);
+   }
+
+   public Packet sendBlocking(final Packet packet) throws MessagingException
+   {
+      long handlerID = dispatcher.generateID();
 
       ResponseHandlerImpl handler = new ResponseHandlerImpl(handlerID);
 
-      connector.getDispatcher().register(handler);
+      dispatcher.register(handler);
 
       try
       {
-         packet.setTargetID(targetID);
-         packet.setExecutorID(executorID);
          packet.setResponseTargetID(handlerID);
 
-         try
-         {
-            session.write(packet);
-         }
-         catch (Exception e)
-         {
-            log.error("Caught unexpected exception", e);
+         doWrite(packet);
 
-            throw new MessagingException(MessagingException.INTERNAL_ERROR);
-         }
-
-         Packet response = handler.waitForResponse(connectionParams.getCallTimeout());
+         Packet response = handler.waitForResponse(blockingCallTimeout);
 
          if (response == null)
          {
-            throw new IllegalStateException("No response received for " + packet);
+            MessagingException me = new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
+               "No response received for " + packet);
+            fail(me);
+            throw me;
          }
 
          if (response instanceof MessagingExceptionMessage)
@@ -196,86 +181,181 @@ public class RemotingConnectionImpl implements RemotingConnection
       }
       finally
       {
-         connector.getDispatcher().unregister(handlerID);
+         dispatcher.unregister(handlerID);
       }
    }
 
-   public void sendOneWay(final long targetID, final long executorID, final Packet packet) throws MessagingException
+   public void sendOneWay(final long targetID, final long executorID,
+         final Packet packet)
    {
-      checkConnected();
-
       packet.setTargetID(targetID);
       packet.setExecutorID(executorID);
 
-      try
-      {
-         session.write(packet);
-      }
-      catch (Exception e)
-      {
-         log.error("Caught unexpected exception", e);
-
-         throw new MessagingException(MessagingException.INTERNAL_ERROR);
-      }
+      doWrite(packet);
    }
 
-   public synchronized void addRemotingSessionListener(final RemotingSessionListener newListener)
+   public void sendOneWay(final Packet packet)
    {
-      if (newListener == null)
+      doWrite(packet);
+   }
+
+   public synchronized void addFailureListener(final FailureListener listener)
+   {
+      if (listener == null)
       {
          throw new IllegalStateException("FailureListener cannot be null");
       }
 
-      if (sessionListeners.contains(newListener))
+      if (failureListeners.contains(listener))
       {
          throw new IllegalStateException("FailureListener already set");
       }
 
-      if (newListener != null)
-      {
-         sessionListeners.add(newListener);
-         connector.addSessionListener(newListener);
-      }
+      failureListeners.add(listener);
    }
 
-   public synchronized void removeRemotingSessionListener(final RemotingSessionListener listener)
+   public synchronized boolean removeFailureListener(final FailureListener listener)
    {
-      sessionListeners.remove(listener);
-      connector.removeSessionListener(listener);
-   }
+      if (listener == null)
+      {
+         throw new IllegalStateException("FailureListener cannot be null");
+      }
 
+      return failureListeners.remove(listener);
+   }
 
    public PacketDispatcher getPacketDispatcher()
    {
-      return connector.getDispatcher();
+      return dispatcher;
    }
 
    public Location getLocation()
    {
       return location;
    }
-   
+
    public MessagingBuffer createBuffer(final int size)
    {
-      return connector.createBuffer(size);
+      return transportConnection.createBuffer(size);
    }
 
-   // Package protected ----------------------------------------------------------------------------
+   public synchronized void fail(final MessagingException me)
+   {  
+      log.warn(me.getMessage());
+      
+      destroy();
 
-   // Protected ------------------------------------------------------------------------------------
+      // Then call the listeners
+      for (FailureListener listener : failureListeners)
+      {
+         try
+         {
+            listener.connectionFailed(me);
+         }
+         catch (Throwable t)
+         {
+            // Failure of one listener to execute shouldn't prevent others from
+            // executing
+            log.error("Failed to execute failure listener", t);
+         }
+      }      
+   }
 
-   // Private --------------------------------------------------------------------------------------
-
-   private void checkConnected() throws MessagingException
+   public synchronized void destroy()
    {
-      if (session == null)
+      if (destroyed)
       {
-         throw new IllegalStateException("Client " + this
-                 + " is not connected.");
+         return;
       }
-      if (!session.isConnected())
+
+      if (future != null)
       {
-         throw new MessagingException(MessagingException.NOT_CONNECTED);
+         future.cancel(false);
+      }
+
+      if (pongHandler != null)
+      {
+         dispatcher.unregister(pongHandler.getID());
+      }
+
+      // We close the underlying transport connection
+      transportConnection.close();
+
+      destroyed = true;
+   }
+
+   // Package protected
+   // ----------------------------------------------------------------------------
+
+   // Protected
+   // ------------------------------------------------------------------------------------
+
+   // Private
+   // --------------------------------------------------------------------------------------
+      
+   private void doWrite(final Packet packet)
+   {
+      if (destroyed)
+      {
+         throw new IllegalStateException("Cannot write packet to connection, it is destroyed");
+      }
+      
+      MessagingBuffer buffer = transportConnection.createBuffer(PacketImpl.INITIAL_BUFFER_SIZE);
+
+      packet.encode(buffer);
+
+      transportConnection.write(buffer);
+   }
+  
+
+   // Inner classes
+   // --------------------------------------------------------------------------------
+
+   private class Pinger implements Runnable
+   {
+      public synchronized void run()
+      {
+         if (!firstTime && !gotPong)
+         {
+            // Error - didn't get pong back
+            MessagingException me = new MessagingException(MessagingException.NOT_CONNECTED,
+                  "Did not receive pong from server");
+
+            fail(me);
+         }
+     
+         gotPong = false;
+         firstTime = false;
+
+         // Send ping
+         Packet ping = new PacketImpl(PacketImpl.PING);
+         ping.setTargetID(0);
+         ping.setExecutorID(0);
+         ping.setResponseTargetID(pongHandler.getID());
+
+         doWrite(ping);
       }
    }
+
+   private class PongHandler implements PacketHandler
+   {
+      private final long id;
+
+      PongHandler(final long id)
+      {
+         this.id = id;
+      }
+
+      public long getID()
+      {
+         return id;
+      }
+
+      public void handle(long connectionID, Packet packet)
+      {
+         gotPong = true;         
+      }
+
+   }
+
 }

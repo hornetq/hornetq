@@ -26,7 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import javax.transaction.xa.XAException;
@@ -40,6 +40,7 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
@@ -74,7 +75,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessag
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
-import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TokenBucketLimiterImpl;
 
@@ -111,7 +111,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    private final boolean cacheProducers;
 
-   private final ExecutorService executorService;
+   private final Executor executor;
 
    private final RemotingConnection remotingConnection;
 
@@ -161,7 +161,8 @@ public class ClientSessionImpl implements ClientSessionInternal
                             final boolean blockOnAcknowledge,
                             final RemotingConnection remotingConnection,
                             final ClientConnectionFactory connectionFactory,
-                            final PacketDispatcher dispatcher) throws MessagingException
+                            final PacketDispatcher dispatcher,
+                            final Executor executor) throws MessagingException
    {
    	if (lazyAckBatchSize < -1 || lazyAckBatchSize == 0)
    	{
@@ -180,8 +181,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       this.cacheProducers = cacheProducers;
 
-      //TODO - we should use OrderedExecutorFactory and a pool here
-      executorService = Executors.newSingleThreadExecutor();
+      this.executor = executor;
 
       this.xa = xa;
 
@@ -321,7 +321,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       ClientConsumerInternal consumer =
          new ClientConsumerImpl(this, response.getConsumerTargetID(), clientTargetID, clientWindowSize, direct,
-                                remotingConnection, dispatcher, executorService, serverTargetID);
+                                remotingConnection, dispatcher, executor, serverTargetID);
 
       addConsumer(consumer);
 
@@ -465,7 +465,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       //Flush any acks to the server
       acknowledgeInternal(false);
-
+      
       toAckCount = 0;
 
       remotingConnection.sendBlocking(serverTargetID, serverTargetID, new PacketImpl(PacketImpl.SESS_ROLLBACK));
@@ -668,11 +668,6 @@ public class ClientSessionImpl implements ClientSessionInternal
       return new HashMap<SimpleString, ClientProducerInternal>(producerCache);
    }
 
-   public ExecutorService getExecutorService()
-   {
-      return executorService;
-   }
-   
    public synchronized void cleanUp() throws Exception
    {
       if (closed)
@@ -812,8 +807,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       ClientSessionImpl other = (ClientSessionImpl)xares;
       
-      return remotingConnection.getLocation()
-                .equals(other.remotingConnection.getLocation());
+      return remotingConnection == other.remotingConnection;
    }
 
    public int prepare(final Xid xid) throws XAException
@@ -1060,8 +1054,6 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    private void doCleanup()
    {
-      executorService.shutdown();
-      
       connection.removeSession(this);
       
       if (cacheProducers)

@@ -24,7 +24,6 @@ package org.jboss.messaging.tests.unit.jms.bridge.impl;
 
 import static org.easymock.EasyMock.anyBoolean;
 import static org.easymock.EasyMock.anyInt;
-import static org.easymock.EasyMock.anyLong;
 import static org.easymock.EasyMock.createNiceMock;
 import static org.easymock.EasyMock.createStrictMock;
 import static org.easymock.EasyMock.expect;
@@ -56,7 +55,6 @@ import javax.transaction.xa.XAResource;
 
 import junit.framework.TestCase;
 
-import org.easymock.EasyMock;
 import org.easymock.IAnswer;
 import org.jboss.messaging.jms.bridge.Bridge;
 import org.jboss.messaging.jms.bridge.ConnectionFactoryFactory;

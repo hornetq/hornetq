@@ -24,7 +24,12 @@ package org.jboss.messaging.tests.unit.core.message.impl;
 
 import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
 import static org.jboss.messaging.tests.util.RandomUtil.randomByte;
+import static org.jboss.messaging.tests.util.RandomUtil.randomBytes;
+import static org.jboss.messaging.tests.util.RandomUtil.randomDouble;
+import static org.jboss.messaging.tests.util.RandomUtil.randomFloat;
+import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
+import static org.jboss.messaging.tests.util.RandomUtil.randomShort;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.nio.ByteBuffer;
@@ -33,14 +38,12 @@ import java.util.Set;
 import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
+import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.ByteBufferWrapper;
-import org.jboss.messaging.util.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
-
-import static org.jboss.messaging.tests.util.RandomUtil.*;
 
 /**
  * 

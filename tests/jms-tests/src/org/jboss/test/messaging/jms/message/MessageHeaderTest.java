@@ -26,8 +26,8 @@ import static org.easymock.EasyMock.expect;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
+import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.jms.client.*;
-import org.jboss.messaging.util.ByteBufferWrapper;
 
 import javax.jms.*;
 import java.io.Serializable;

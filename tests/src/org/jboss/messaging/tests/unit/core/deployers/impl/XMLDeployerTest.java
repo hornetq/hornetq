@@ -23,15 +23,16 @@
 package org.jboss.messaging.tests.unit.core.deployers.impl;
 
 
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import junit.framework.TestCase;
+
 import org.jboss.messaging.core.deployers.impl.XmlDeployer;
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * tests the abstract xml deployer class

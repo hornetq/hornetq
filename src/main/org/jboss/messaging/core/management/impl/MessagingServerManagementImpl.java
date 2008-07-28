@@ -32,7 +32,6 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
@@ -68,8 +67,6 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
    
    private final Configuration configuration;
    
-   private final ConnectionManager connectionManager;
-   
    private final MessagingServer server;
    
    private HierarchicalRepository<Set<Role>> securityRepository;
@@ -79,8 +76,7 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
    
    
    public MessagingServerManagementImpl(final PostOffice postOffice, final StorageManager storageManager,
-                                        final Configuration configuration,
-                                        final ConnectionManager connectionManager,                                        
+                                        final Configuration configuration,                                                                             
                                         final HierarchicalRepository<Set<Role>> securityRepository,
                                         final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                                         final MessagingServer server)
@@ -90,8 +86,6 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
       this.storageManager = storageManager;
       
       this.configuration = configuration;
-      
-      this.connectionManager = connectionManager;
       
       this.server = server;
       
@@ -115,7 +109,7 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
    
    public int getConnectionCount()
    {
-      return connectionManager.size();
+      return server.getConnectionCount();
    }
 
    public void destroyQueue(SimpleString name) throws Exception

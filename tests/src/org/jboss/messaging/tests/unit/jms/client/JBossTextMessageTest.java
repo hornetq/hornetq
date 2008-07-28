@@ -22,21 +22,27 @@
 
 package org.jboss.messaging.tests.unit.jms.client;
 
-import junit.framework.TestCase;
-import org.easymock.EasyMock;
-import static org.easymock.EasyMock.*;
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.impl.ClientMessageImpl;
-import org.jboss.messaging.jms.client.JBossTextMessage;
+import static org.easymock.EasyMock.createNiceMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-import org.jboss.messaging.util.ByteBufferWrapper;
-import org.jboss.messaging.util.MessagingBuffer;
+
+import java.nio.ByteBuffer;
+import java.util.Collections;
 
 import javax.jms.DeliveryMode;
 import javax.jms.TextMessage;
-import java.nio.ByteBuffer;
-import java.util.Collections;
+
+import junit.framework.TestCase;
+
+import org.easymock.EasyMock;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.impl.ClientMessageImpl;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
+import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
+import org.jboss.messaging.jms.client.JBossTextMessage;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

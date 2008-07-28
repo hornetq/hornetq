@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.journal;
 
-import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 
 /**
  * 

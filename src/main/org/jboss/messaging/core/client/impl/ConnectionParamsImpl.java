@@ -33,9 +33,7 @@ public class ConnectionParamsImpl implements ConnectionParams
    //Constants ---------------------------------------------------------------------------------------
       
    public static final int DEFAULT_PING_INTERVAL = 10000; // in ms
-   
-   public static final int DEFAULT_PING_TIMEOUT = 5000; // ms
-   
+     
    public static final int DEFAULT_CALL_TIMEOUT = 5000; // in ms
    
    public static final boolean DEFAULT_INVM_OPTIMISATION_ENABLED = true;
@@ -67,8 +65,6 @@ public class ConnectionParamsImpl implements ConnectionParams
    private long callTimeout = DEFAULT_CALL_TIMEOUT;
    
    private long pingInterval = DEFAULT_PING_INTERVAL;
-   
-   private long pingTimeout = DEFAULT_PING_TIMEOUT;
    
    private boolean inVMOptimisationEnabled = DEFAULT_INVM_OPTIMISATION_ENABLED;
    
@@ -107,17 +103,6 @@ public class ConnectionParamsImpl implements ConnectionParams
    {
       this.pingInterval = pingInterval;
    }
-
-   public long getPingTimeout()
-   {
-      return pingTimeout;
-   }
-
-   public void setPingTimeout(final long pingTimeout)
-   {
-      this.pingTimeout = pingTimeout;
-   }
-
    public boolean isInVMOptimisationEnabled()
    {
       return inVMOptimisationEnabled;
@@ -228,7 +213,6 @@ public class ConnectionParamsImpl implements ConnectionParams
       ConnectionParams cp = (ConnectionParams)other;
       
       return cp.getCallTimeout() == callTimeout &&
-             cp.getPingTimeout() == this.pingTimeout &&
              cp.getPingInterval() == this.pingInterval &&
              cp.isInVMOptimisationEnabled() == this.isInVMOptimisationEnabled() &&
              cp.isTcpNoDelay() == this.isTcpNoDelay() &&

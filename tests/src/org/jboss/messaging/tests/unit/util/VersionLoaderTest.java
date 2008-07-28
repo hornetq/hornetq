@@ -22,12 +22,14 @@
 
 package org.jboss.messaging.tests.unit.util;
 
+import static java.lang.Integer.parseInt;
+
+import java.util.Properties;
+
 import junit.framework.TestCase;
+
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.VersionLoader;
-
-import static java.lang.Integer.parseInt;
-import java.util.Properties;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

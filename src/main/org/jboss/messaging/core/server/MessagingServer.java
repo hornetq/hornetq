@@ -27,7 +27,7 @@ import java.util.Set;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.management.MessagingServerManagement;
 import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.security.JBMSecurityManager;
@@ -70,7 +70,7 @@ public interface MessagingServer extends MessagingComponent
   
    CreateConnectionResponse createConnection(String username, String password,                                          
                                              int incrementingVersion,
-                                             PacketReturner returner) throws Exception;
+                                             RemotingConnection remotingConnection) throws Exception;
         
    boolean isStarted();
    
@@ -79,4 +79,6 @@ public interface MessagingServer extends MessagingComponent
    HierarchicalRepository<Set<Role>> getSecurityRepository();
    
    HierarchicalRepository<QueueSettings> getQueueSettingsRepository();
+   
+   int getConnectionCount();
 }

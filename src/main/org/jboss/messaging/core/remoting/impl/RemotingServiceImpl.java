@@ -22,135 +22,173 @@
 
 package org.jboss.messaging.core.remoting.impl;
 
-import org.jboss.beans.metadata.api.annotations.Install;
-import org.jboss.beans.metadata.api.annotations.Uninstall;
-import org.jboss.messaging.core.client.RemotingSessionListener;
+import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.ping.Pinger;
-import org.jboss.messaging.core.ping.impl.PingerImpl;
-import org.jboss.messaging.core.remoting.*;
-import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.*;
+import org.jboss.messaging.core.remoting.ConnectionLifeCycleListener;
+import org.jboss.messaging.core.remoting.Interceptor;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.RemotingHandler;
+import org.jboss.messaging.core.remoting.RemotingService;
+import org.jboss.messaging.core.remoting.spi.Acceptor;
+import org.jboss.messaging.core.remoting.spi.AcceptorFactory;
+import org.jboss.messaging.core.remoting.spi.Connection;
+import org.jboss.messaging.util.JBMThreadFactory;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ *  
  * @version <tt>$Revision$</tt>
  */
-public class RemotingServiceImpl implements RemotingService, CleanUpNotifier
+public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycleListener
 {
    // Constants -----------------------------------------------------
-
+  
    private static final Logger log = Logger.getLogger(RemotingServiceImpl.class);
 
    // Attributes ----------------------------------------------------
 
    private volatile boolean started = false;
 
-   private Configuration config;
+   private final Configuration config;
 
-   private List<Acceptor> acceptors = null;
+   private final Set<Acceptor> acceptors = new HashSet<Acceptor>();
 
    private final PacketDispatcher dispatcher;
 
-   private List<RemotingSessionListener> listeners = new ArrayList<RemotingSessionListener>();
-
-   private ScheduledExecutorService scheduledExecutor;
-
-   private Map<Long, ScheduledFuture<?>> currentScheduledPingers;
-
-   private Map<Long, Pinger> currentPingers;
-
-   private AcceptorFactory acceptorFactory = new AcceptorFactoryImpl();
-
-   private List<Long> sessions = new ArrayList<Long>();
-
+   private final ExecutorService remotingExecutor;
+   
+   private RemotingHandler handler;
+   
+   private final long connectionExpirePeriod;
+   
+   private final Map<Long, RemotingConnection> connections = new ConcurrentHashMap<Long, RemotingConnection>();
+   
+   private final Set<AcceptorFactory> acceptorFactories = new HashSet<AcceptorFactory>();
+   
+   private final Timer failedConnectionTimer = new Timer(true);
+   
+   private TimerTask failedConnectionsTask;
+      
    // Static --------------------------------------------------------
-
+   
    // Constructors --------------------------------------------------
-
-   public RemotingServiceImpl(Configuration config)
+      
+   public RemotingServiceImpl(final Configuration config)
    {
       validate(config);
 
       this.config = config;
+      
       dispatcher = new PacketDispatcherImpl(null);
 
-      scheduledExecutor = new ScheduledThreadPoolExecutor(config.getScheduledThreadPoolMaxSize());
-      currentScheduledPingers = new ConcurrentHashMap<Long, ScheduledFuture<?>>();
-      currentPingers = new ConcurrentHashMap<Long, Pinger>();
-   }
-
-
-   @Install
-   public void addInterceptor(Interceptor filter)
-   {
-      dispatcher.addInterceptor(filter);
-   }
-
-   @Uninstall
-   public void removeInterceptor(Interceptor filter)
-   {
-      dispatcher.removeInterceptor(filter);
-   }
-
-   public void addRemotingSessionListener(RemotingSessionListener listener)
-   {
-      if(listener == null)
+      remotingExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-session-ordering-threads"));
+      
+      handler = new RemotingHandlerImpl(dispatcher, remotingExecutor);
+      
+      long pingPeriod = config.getConnectionParams().getPingInterval();
+      
+      if (pingPeriod != -1)
       {
-         throw new IllegalArgumentException("listener can not be null");
+         connectionExpirePeriod = (long)(1.5 * pingPeriod);
       }
-
-      listeners.add(listener);
-   }
-
-   public void removeRemotingSessionListener(RemotingSessionListener listener)
-   {
-      if(listener == null)
+      else
       {
-         throw new IllegalArgumentException("listener can not be null");
+         connectionExpirePeriod = -1;
+      }         
+      
+      ClassLoader loader = Thread.currentThread().getContextClassLoader();
+      for (String interceptorClass : config.getInterceptorClassNames())
+      {
+         try
+         {
+            Class<?> clazz = loader.loadClass(interceptorClass);
+            dispatcher.addInterceptor((Interceptor) clazz.newInstance());
+         }
+         catch (Exception e)
+         {
+            log.warn("Error instantiating interceptor \"" + interceptorClass + "\"", e);
+         }
       }
-
-      listeners.remove(listener);
+      
+      for (String factoryClass: config.getAcceptorFactoryClassNames())
+      {
+         try
+         {
+            Class<?> clazz = loader.loadClass(factoryClass);            
+            acceptorFactories.add((AcceptorFactory)clazz.newInstance());
+         }
+         catch (Exception e)
+         {
+            log.warn("Error instantiating interceptor \"" + factoryClass + "\"", e);
+         }
+      }
    }
+   
+   // RemotingService implementation -------------------------------
 
-   // TransportService implementation -------------------------------
-
-   public void start() throws Exception
+   public synchronized void start() throws Exception
    {
       if (started)
       {
          return;
       }
-      if (log.isDebugEnabled())
+                  
+      for (AcceptorFactory factory: acceptorFactories)
       {
-         log.debug("Start RemotingServiceImpl with configuration:" + config);
+         Acceptor acceptor = factory.createAcceptor(config, handler, this);
+         
+         acceptors.add(acceptor);
       }
-
-      acceptors = acceptorFactory.createAcceptors(config);
-      for (Acceptor acceptor : acceptors)
+      
+      for (Acceptor a : acceptors)
       {
-         acceptor.startAccepting(this, this);
+         a.start();
+      }
+      
+      if (connectionExpirePeriod != -1)
+      {
+         failedConnectionsTask = new FailedConnectionsTask();
+         
+         failedConnectionTimer.schedule(failedConnectionsTask, 0, 1000);
       }
 
       started = true;
    }
 
-   public void stop()
+   public synchronized void stop()
    {
+      if (!started)
+      {
+         return;
+      }
+      
+      if (failedConnectionsTask != null)
+      {
+         failedConnectionsTask.cancel();
+         
+         failedConnectionsTask = null;
+      }
+      
       for (Acceptor acceptor : acceptors)
       {
-         acceptor.stopAccepting();
+         acceptor.stop();
       }
-
-      ConnectorRegistryFactory.getRegistry().unregister(config.getLocation());
-
+      
       started = false;
    }
    
@@ -164,73 +202,71 @@ public class RemotingServiceImpl implements RemotingService, CleanUpNotifier
       return dispatcher;
    }
 
-   public Configuration getConfiguration()
-   {
-      return config;
-   }
-
-   public List<Acceptor> getAcceptors()
+   public Set<Acceptor> getAcceptors()
    {
       return acceptors;
    }
-
-   public void setAcceptorFactory(AcceptorFactory acceptorFactory)
+   
+   public RemotingConnection getConnection(final long remotingConnectionID)
    {
-      this.acceptorFactory = acceptorFactory;
-   }
-
-   public void registerPinger(RemotingSession session)
-   {
-      ResponseHandler pongHandler = new ResponseHandlerImpl(dispatcher.generateID());
-      Pinger pinger = new PingerImpl(getDispatcher(), session, config.getConnectionParams().getPingTimeout(), pongHandler, RemotingServiceImpl.this);
-      ScheduledFuture<?> future =
-         scheduledExecutor.scheduleAtFixedRate(pinger, config.getConnectionParams().getPingInterval(),
-                                                       config.getConnectionParams().getPingInterval(),
-                                                       TimeUnit.MILLISECONDS);
-      currentScheduledPingers.put(session.getID(), future);
-      currentPingers.put(session.getID(), pinger);
-      sessions.add(session.getID());
-   }
-
-   public void unregisterPinger(Long id)
-   {
-      ScheduledFuture<?> future = currentScheduledPingers.remove(id);
-      if (future != null)
-      {
-         future.cancel(true);
-      }
-      Pinger pinger = currentPingers.remove(id);
-      if (pinger != null)
-      {
-         pinger.close();
-      }
-   }
-
-   public boolean isSession(Long sessionID)
-   {
-      return sessions.contains(sessionID);
+      return connections.get(remotingConnectionID);
    }
    
+   public synchronized void registerAcceptorFactory(final AcceptorFactory factory)
+   {
+      acceptorFactories.add(factory);
+   }
+
+   public synchronized void unregisterAcceptorFactory(final AcceptorFactory factory)
+   {
+      acceptorFactories.remove(factory);
+   }
    
-   // FailureNotifier implementation -------------------------------
+   public synchronized Set<RemotingConnection> getConnections()
+   {
+      return new HashSet<RemotingConnection>(connections.values());
+   }
+
+   // ConnectionLifeCycleListener implementation -----------------------------------
+   
+   public void connectionCreated(final Connection connection)
+   {
+      RemotingConnection rc =
+         new RemotingConnectionImpl(connection, dispatcher, null, config.getConnectionParams().getCallTimeout());
       
-   public void fireCleanup(long sessionID, MessagingException me)
-   {
-      if (sessions.contains(sessionID))
-      {
-         for (RemotingSessionListener listener : listeners)
-         {
-            listener.sessionDestroyed(sessionID, me);
-         }
-         sessions.remove(sessionID);
-      }
+      this.connections.put(connection.getID(), rc);
    }
 
-   // Public --------------------------------------------------------
-
-   public List<Long> getSessions()
+   public void connectionDestroyed(long connectionID)
    {
-      return sessions;
+      handler.removeLastPing(connectionID);
+      
+      if (connections.remove(connectionID) == null)
+      {
+         throw new IllegalStateException("Cannot find connection with id " + connectionID);
+      }            
+   }
+
+   public void connectionException(long connectionID, MessagingException me)
+   {
+      RemotingConnection rc = connections.remove(connectionID);
+      
+      if (rc == null)
+      {
+         throw new IllegalStateException("Cannot find connection with id " + connectionID);
+      }
+      
+      rc.fail(me);
+   }
+   
+   // Public --------------------------------------------------------
+   
+   /*
+    * Used in testing
+    */
+   public void setHandler(final RemotingHandler handler)
+   {
+      this.handler = handler;
    }
 
    // Package protected ---------------------------------------------
@@ -240,5 +276,44 @@ public class RemotingServiceImpl implements RemotingService, CleanUpNotifier
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
+   
+   private class FailedConnectionsTask extends TimerTask
+   {
+      private boolean cancelled;
+      
+      public synchronized void run()
+      {
+         if (cancelled)
+         {
+            return;
+         }
+         
+         Set<Long> failedIDs = handler.scanForFailedConnections(connectionExpirePeriod);
+ 
+         for (long id: failedIDs)
+         {
+            RemotingConnection conn = connections.get(id);
+            
+            if (conn == null)
+            {
+               throw new IllegalStateException("Cannot find connection with id " + id);
+            }
+            
+            MessagingException me = new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
+                  "Did not receive ping on connection. It is likely a client has exited or crashed without " +
+                  "closing its connection, or the network between the server and client has failed. The connection will now be closed.");
+            
+            conn.fail(me);
+         }
+      }
+      
+      public synchronized boolean cancel()
+      {
+         cancelled = true;
+         
+         return super.cancel();
+      }
+      
+   }
 
 }

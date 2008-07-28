@@ -21,11 +21,18 @@
  */ 
 package org.jboss.messaging.core.client.impl;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.ConnectionRegistry;
+import org.jboss.messaging.core.remoting.ConnectionRegistryLocator;
+import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
@@ -33,9 +40,9 @@ import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSession
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.ConcurrentHashSet;
-
-import java.util.HashSet;
-import java.util.Set;
+import org.jboss.messaging.util.ExecutorFactory;
+import org.jboss.messaging.util.JBMThreadFactory;
+import org.jboss.messaging.util.OrderedExecutorFactory;
 
 /**
  * The client-side Connection connectionFactory class.
@@ -72,10 +79,15 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    
    private final PacketDispatcher dispatcher;
    
+   private ConnectionRegistry connectionRegistry;
+   
    private volatile boolean closed;
       
    // Static ---------------------------------------------------------------------------------------
 
+   private static final ExecutorFactory executorFactory
+      = new OrderedExecutorFactory(Executors.newCachedThreadPool(new JBMThreadFactory("jbm-client-session-threads")));
+   
    // Constructors ---------------------------------------------------------------------------------
 
    public ClientConnectionImpl(final ClientConnectionFactory connectionFactory,
@@ -90,13 +102,15 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       
       this.remotingConnection = connection;
 
-      this.remotingConnection.addRemotingSessionListener(new JBMFailureListener());
+      this.remotingConnection.addFailureListener(new JBMFailureListener());
       
       this.serverVersion = serverVersion;
       
       this.dispatcher = dispatcher;
+      
+      this.connectionRegistry = ConnectionRegistryLocator.getRegistry();
    }
-   
+         
    // ClientConnection implementation --------------------------------------------------------------
 
    public ClientSession createClientSession(final boolean xa, final boolean autoCommitSends, final boolean autoCommitAcks,
@@ -110,10 +124,12 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       ConnectionCreateSessionResponseMessage response =
          (ConnectionCreateSessionResponseMessage)remotingConnection.sendBlocking(serverTargetID, serverTargetID, request);   
 
+      Executor executor = executorFactory.getExecutor();
+      
       ClientSessionInternal session =
       	new ClientSessionImpl(this, response.getSessionID(), xa, ackBatchSize, cacheProducers,
       			                autoCommitSends, autoCommitAcks, blockOnAcknowledge,
-      			                remotingConnection, connectionFactory, dispatcher);
+      			                remotingConnection, connectionFactory, dispatcher, executor);
 
       addSession(session);
 
@@ -142,11 +158,11 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       remotingConnection.sendBlocking(serverTargetID, serverTargetID, new PacketImpl(PacketImpl.CONN_STOP));
    }
 
-   public void setRemotingSessionListener(final RemotingSessionListener listener) throws MessagingException
+   public void setFailureListener(final FailureListener listener) throws MessagingException
    {
       checkClosed();
       
-      remotingConnection.addRemotingSessionListener(listener);
+      remotingConnection.addFailureListener(listener);
    }
    
    public synchronized void close() throws MessagingException
@@ -164,8 +180,7 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       }
       finally
       {
-         // Finished with the connection - we need to shutdown callback server
-         remotingConnection.stop();
+         connectionRegistry.returnConnection(remotingConnection.getLocation());
 
          closed = true;
       }
@@ -221,6 +236,11 @@ public class ClientConnectionImpl implements ClientConnectionInternal
    }
    
    // Public ---------------------------------------------------------------------------------------
+   
+   public void setConnectionRegistry(final ConnectionRegistry registry)
+   {
+      this.connectionRegistry = registry;
+   }
 
    // Protected ------------------------------------------------------------------------------------
       
@@ -260,9 +280,9 @@ public class ClientConnectionImpl implements ClientConnectionInternal
       }
    }
 
-   private class JBMFailureListener implements RemotingSessionListener
+   private class JBMFailureListener implements FailureListener
    {
-      public void sessionDestroyed(long sessionID, MessagingException me)
+      public void connectionFailed(final MessagingException me)
       {
          try
          {

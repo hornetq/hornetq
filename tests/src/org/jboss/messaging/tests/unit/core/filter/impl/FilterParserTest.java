@@ -26,9 +26,9 @@ import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.messaging.core.filter.impl.FilterParser;
 import org.jboss.messaging.core.filter.impl.Identifier;
 import org.jboss.messaging.core.filter.impl.Operator;
-import org.jboss.messaging.core.filter.impl.FilterParser;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.tests.util.UnitTestCase;
 

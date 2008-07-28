@@ -23,9 +23,15 @@
 package org.jboss.messaging.core.remoting.impl;
 
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.ResponseHandler;
 
+/**
+ * 
+ * A ResponseHandlerImpl
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ *
+ */
 public class ResponseHandlerImpl implements ResponseHandler
 {
    private final long id;
@@ -44,7 +50,7 @@ public class ResponseHandlerImpl implements ResponseHandler
       return id;
    }
 
-   public synchronized void handle(final Packet packet, final PacketReturner sender)
+   public synchronized void handle(final long remotingConnectionID, final Packet packet)
    {
       if (failed)
       {

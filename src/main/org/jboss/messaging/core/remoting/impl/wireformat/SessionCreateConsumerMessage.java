@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 
@@ -157,7 +157,7 @@ public class SessionCreateConsumerMessage extends PacketImpl
             
       SessionCreateConsumerMessage r = (SessionCreateConsumerMessage)other;
       
-      return this.clientTargetID == r.clientTargetID &&
+      return super.equals(other) && this.clientTargetID == r.clientTargetID &&
              this.queueName.equals(r.queueName) &&
              this.filterString == null ? r.filterString == null : this.filterString.equals(r.filterString) &&
              this.noLocal == r.noLocal &&

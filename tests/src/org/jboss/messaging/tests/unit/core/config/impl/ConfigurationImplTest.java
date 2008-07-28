@@ -56,7 +56,6 @@ public class ConfigurationImplTest extends TestCase
    {      
       assertEquals(ConfigurationImpl.DEFAULT_CLUSTERED, conf.isClustered());
       assertEquals(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE, conf.getScheduledThreadPoolMaxSize());
-      assertEquals(ConfigurationImpl.DEFAULT_THREAD_POOL_MAX_SIZE, conf.getThreadPoolMaxSize());
       assertEquals(ConfigurationImpl.DEFAULT_HOST, conf.getHost());
       assertEquals(ConfigurationImpl.DEFAULT_TRANSPORT, conf.getTransport());
       assertEquals(ConfigurationImpl.DEFAULT_PORT, conf.getPort());
@@ -91,10 +90,6 @@ public class ConfigurationImplTest extends TestCase
          int i = randomInt();
          conf.setScheduledThreadPoolMaxSize(i);
          assertEquals(i, conf.getScheduledThreadPoolMaxSize());
-         
-         i = randomInt();
-         conf.setThreadPoolMaxSize(i);
-         assertEquals(i, conf.getThreadPoolMaxSize());
          
          String s = randomString();
          conf.setHost(s);
@@ -182,10 +177,6 @@ public class ConfigurationImplTest extends TestCase
          conf.setJournalMaxAIO(i);
          assertEquals(i, conf.getJournalMaxAIO());
          
-         i = randomInt();
-         conf.setServerID(i);
-         assertEquals(i, conf.getServerID());
-         
          ConnectionParams params = conf.getConnectionParams();         
          assertNotNull(params);         
       }
@@ -193,11 +184,6 @@ public class ConfigurationImplTest extends TestCase
    
    public void testGetLocation()
    {
-      conf.setTransport(TransportType.INVM);
-      final int serverID = 76127612;
-      conf.setServerID(serverID);
-      assertEquals("invm://" + serverID, conf.getLocation().getLocation());
-      
       conf.setTransport(TransportType.TCP);
       conf.setHost("blahhost");
       conf.setPort(1234);
@@ -207,8 +193,6 @@ public class ConfigurationImplTest extends TestCase
    public void testGetSetInterceptors()
    {
       List<String> interceptors = conf.getInterceptorClassNames();
-      
-      assertTrue(interceptors.isEmpty());
       
       final String name1 = "uqwyuqywuy";
       final String name2 = "yugyugyguyg";
@@ -235,14 +219,11 @@ public class ConfigurationImplTest extends TestCase
       int i = randomInt();
       conf.setScheduledThreadPoolMaxSize(i);
    
-      i = randomInt();
-      conf.setThreadPoolMaxSize(i);
-
       String s = randomString();
       conf.setHost(s);
 
-      i = randomInt() % 3;
-      TransportType transport = i == 0 ? TransportType.TCP : i == 1 ? TransportType.HTTP : i == 2 ? TransportType.INVM : TransportType.INVM;
+      i = randomInt() % 2;
+      TransportType transport = i == 0 ? TransportType.TCP : TransportType.HTTP;
       conf.setTransport(transport);
 
       i = randomInt();
@@ -303,9 +284,6 @@ public class ConfigurationImplTest extends TestCase
       i = randomInt();
       conf.setJournalMaxAIO(i);
   
-      i = randomInt();
-      conf.setServerID(i);
-
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       ObjectOutputStream oos = new ObjectOutputStream(baos);
       oos.writeObject(conf);

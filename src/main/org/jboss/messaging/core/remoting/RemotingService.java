@@ -22,38 +22,26 @@
 
 package org.jboss.messaging.core.remoting;
 
-import org.jboss.messaging.core.client.RemotingSessionListener;
-import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.server.MessagingComponent;
+import java.util.Set;
 
-import java.util.List;
+import org.jboss.messaging.core.remoting.spi.AcceptorFactory;
+import org.jboss.messaging.core.server.MessagingComponent;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
 public interface RemotingService extends MessagingComponent
 {
    PacketDispatcher getDispatcher();
 
-   Configuration getConfiguration();
-
-   List<Acceptor> getAcceptors();
-
-   void setAcceptorFactory(AcceptorFactory acceptorFactory);
-
-   void addInterceptor(Interceptor interceptor);
-
-   void removeInterceptor(Interceptor interceptor);
-
-   void addRemotingSessionListener(RemotingSessionListener listener);
-
-   void removeRemotingSessionListener(RemotingSessionListener listener);
-
-   void registerPinger(RemotingSession session);
-
-   void unregisterPinger(Long id);
-
-   boolean isSession(Long sessionID);
+   RemotingConnection getConnection(long remotingConnectionID);  
+   
+   Set<RemotingConnection> getConnections();
+   
+   void registerAcceptorFactory(AcceptorFactory factory);
+   
+   void unregisterAcceptorFactory(AcceptorFactory factory);
 }

@@ -24,12 +24,10 @@ package org.jboss.messaging.tests.unit.jms;
 
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
-import javax.jms.Destination;
 import javax.jms.Queue;
 import javax.jms.TemporaryQueue;
 import javax.jms.TemporaryTopic;
 import javax.jms.Topic;
-import javax.naming.Reference;
 
 import junit.framework.TestCase;
 
@@ -38,7 +36,6 @@ import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTemporaryQueue;
 import org.jboss.messaging.jms.JBossTemporaryTopic;
 import org.jboss.messaging.jms.JBossTopic;
-import org.jboss.messaging.jms.referenceable.DestinationObjectFactory;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

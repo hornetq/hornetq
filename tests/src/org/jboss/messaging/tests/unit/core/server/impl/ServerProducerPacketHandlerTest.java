@@ -21,11 +21,18 @@
  */
 package org.jboss.messaging.tests.unit.core.server.impl;
 
+import static org.easymock.EasyMock.createStrictMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.getCurrentArguments;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
+
 import org.easymock.EasyMock;
-import static org.easymock.EasyMock.*;
+import org.easymock.IAnswer;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -41,62 +48,71 @@ public class ServerProducerPacketHandlerTest extends UnitTestCase
    public void testGetId()
    {
       ServerProducer producer = createStrictMock(ServerProducer.class);
-      ServerProducerPacketHandler handler = new ServerProducerPacketHandler(producer);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      ServerProducerPacketHandler handler = new ServerProducerPacketHandler(producer, rc);
       expect(producer.getID()).andReturn(999l);
-      replay(producer);
+      replay(producer, rc);
       assertEquals(handler.getID(), 999);
-      verify(producer);
+      verify(producer, rc);
    }
 
    public void testSend() throws Exception
    {
       ServerMessage serverMessage = createStrictMock(ServerMessage.class);
-      PacketReturner returner = createStrictMock(PacketReturner.class);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
       ServerProducer producer = createStrictMock(ServerProducer.class);
-      ServerProducerPacketHandler handler = new ServerProducerPacketHandler(producer);
+      ServerProducerPacketHandler handler = new ServerProducerPacketHandler(producer, rc);
       producer.send(serverMessage);
-      //expect(producer.getID()).andReturn(999l);
       ProducerSendMessage message = new ProducerSendMessage(serverMessage);
-      replay(producer, returner, serverMessage);
-      handler.doHandle(message, returner);
-      verify(producer, returner, serverMessage);
+      replay(producer, rc, serverMessage);
+      handler.handle(1212, message);
+      verify(producer, rc, serverMessage);
    }
 
-    public void testClose() throws Exception
+   public void testClose() throws Exception
    {
-      ServerMessage serverMessage = createStrictMock(ServerMessage.class);
-      PacketReturner returner = createStrictMock(PacketReturner.class);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
       ServerProducer producer = createStrictMock(ServerProducer.class);
-      ServerProducerPacketHandler handler = new ServerProducerPacketHandler(producer);
+      ServerProducerPacketHandler handler = new ServerProducerPacketHandler(producer, rc);
       producer.close();
+      rc.sendOneWay(EasyMock.isA(PacketImpl.class));
+      EasyMock.expectLastCall().andAnswer(new IAnswer<Object>()
+      {
+         public Object answer() throws Throwable
+         {
+            Packet packet = (Packet) getCurrentArguments()[0];
+            assertEquals(PacketImpl.NULL, packet.getType());
+            return null;
+         }
+      });
       PacketImpl message = new PacketImpl(PacketImpl.CLOSE);
       message.setResponseTargetID(1);
-      replay(producer, returner, serverMessage);
-      assertNotNull(handler.doHandle(message, returner));
-      verify(producer, returner, serverMessage);
+      replay(producer, rc);
+      handler.handle(1726172, message);
+      verify(producer, rc);
    }
 
    public void testUnsupportedPacket() throws Exception
    {
-      ServerMessage serverMessage = createStrictMock(ServerMessage.class);
-      PacketReturner returner = createStrictMock(PacketReturner.class);
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
       ServerProducer producer = createStrictMock(ServerProducer.class);
-      ServerProducerPacketHandler handler = new ServerProducerPacketHandler(producer);
+      ServerProducerPacketHandler handler = new ServerProducerPacketHandler(producer, rc);
       Packet packet = EasyMock.createStrictMock(Packet.class);
       expect(packet.getType()).andReturn(Byte.MAX_VALUE);
-      replay(producer, returner, serverMessage);
-
-      try
+      final long responseTargetID = 283782374;
+      EasyMock.expect(packet.getResponseTargetID()).andReturn(responseTargetID);
+      rc.sendOneWay(EasyMock.isA(PacketImpl.class));
+      EasyMock.expectLastCall().andAnswer(new IAnswer<Object>()
       {
-         handler.doHandle(packet, returner);
-         fail("should throw exception");
-      }
-      catch (Exception e)
-      {
-         MessagingException messagingException = (MessagingException) e;
-         assertEquals(messagingException.getCode(), MessagingException.UNSUPPORTED_PACKET);
-      }
-
-      verify(producer, returner, serverMessage);
+         public Object answer() throws Throwable
+         {
+            MessagingExceptionMessage me = (MessagingExceptionMessage)EasyMock.getCurrentArguments()[0];
+            assertEquals(MessagingException.UNSUPPORTED_PACKET, me.getException().getCode());
+            return null;
+         }
+      });
+      replay(producer, rc, packet);
+      handler.handle(1212, packet);
+      verify(producer, rc, packet);
    }
 }

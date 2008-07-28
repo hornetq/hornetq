@@ -27,10 +27,11 @@ import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.ConnectionRegistry;
+import org.jboss.messaging.core.remoting.ConnectionRegistryLocator;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.RemotingConnectionFactory;
-import org.jboss.messaging.core.remoting.impl.RemotingConnectionFactoryImpl;
+import org.jboss.messaging.core.remoting.TransportType;
+import org.jboss.messaging.core.remoting.impl.mina.MinaConnectorFactory;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.version.Version;
@@ -75,10 +76,10 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
    public static final boolean DEFAULT_DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND = false;
 
    // Attributes -----------------------------------------------------------------------------------
-   
-   private final RemotingConnectionFactory remotingConnectionFactory;
-      
+     
    private final Location location;
+   
+   private ConnectionRegistry connectionRegistry;
    
    //These attributes are mutable and can be updated by different threads so must be volatile
 
@@ -100,22 +101,18 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
         
    // Static ---------------------------------------------------------------------------------------
    
-  
-   
    // Constructors ---------------------------------------------------------------------------------
 
    /**
     * Create a ClientConnectionFactoryImpl specifying all attributes
     */
-   public ClientConnectionFactoryImpl(final RemotingConnectionFactory remotingConnectionFactory,
-                                      final Location location, final ConnectionParams connectionParams,
+   public ClientConnectionFactoryImpl(final Location location, final ConnectionParams connectionParams,
                                       final int defaultConsumerWindowSize, final int defaultConsumerMaxRate,
                                       final int defaultProducerWindowSize, final int defaultProducerMaxRate,
                                       final boolean defaultBlockOnAcknowledge,
                                       final boolean defaultSendNonPersistentMessagesBlocking,
                                       final boolean defaultSendPersistentMessagesBlocking)
-   {
-      this.remotingConnectionFactory = remotingConnectionFactory;
+   {      
       this.location = location;
       this.defaultConsumerWindowSize = defaultConsumerWindowSize;  
       this.defaultConsumerMaxRate = defaultConsumerMaxRate;
@@ -125,6 +122,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
       this.defaultBlockOnNonPersistentSend = defaultSendNonPersistentMessagesBlocking;
       this.defaultBlockOnPersistentSend = defaultSendPersistentMessagesBlocking;
       this.connectionParams = connectionParams;
+      this.connectionRegistry = ConnectionRegistryLocator.getRegistry();
    }
    
    /**
@@ -159,7 +157,7 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
       defaultBlockOnNonPersistentSend = DEFAULT_DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;      
       this.location = location;
       this.connectionParams = connectionParams;
-      this.remotingConnectionFactory = new RemotingConnectionFactoryImpl();
+      this.connectionRegistry = ConnectionRegistryLocator.getRegistry();
    }
          
    // ClientConnectionFactory implementation ---------------------------------------------
@@ -176,10 +174,8 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
       RemotingConnection remotingConnection = null;
       try
       {
-         remotingConnection = remotingConnectionFactory.createRemotingConnection(location, connectionParams);
-       
-         remotingConnection.start();
-            
+         remotingConnection = connectionRegistry.getConnection(location, connectionParams);
+         
          CreateConnectionRequest request =
             new CreateConnectionRequest(clientVersion.getIncrementingVersion(), username, password);
          
@@ -195,10 +191,10 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
          {
             try
             {
-               remotingConnection.stop();
+               connectionRegistry.returnConnection(location);  
             }
             catch (Throwable ignore)
-            {
+            {               
             }
          }
          
@@ -303,6 +299,11 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
    }
 		  
    // Public ---------------------------------------------------------------------------------------
+   
+   public void setConnectionRegistry(final ConnectionRegistry registry)
+   {
+      this.connectionRegistry = registry;
+   }
       
    // Protected ------------------------------------------------------------------------------------
 

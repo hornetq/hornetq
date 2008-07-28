@@ -51,7 +51,6 @@ public class ConnectionParamsImplTest extends UnitTestCase
       assertEquals(ConnectionParamsImpl.DEFAULT_TCP_NODELAY, cp.isTcpNoDelay());
       assertEquals(ConnectionParamsImpl.DEFAULT_CALL_TIMEOUT, cp.getCallTimeout());
       assertEquals(ConnectionParamsImpl.DEFAULT_PING_INTERVAL, cp.getPingInterval());
-      assertEquals(ConnectionParamsImpl.DEFAULT_PING_TIMEOUT, cp.getPingTimeout());
       assertEquals(ConnectionParamsImpl.DEFAULT_TCP_RECEIVE_BUFFER_SIZE, cp.getTcpReceiveBufferSize());
       assertEquals(ConnectionParamsImpl.DEFAULT_TCP_SEND_BUFFER_SIZE, cp.getTcpSendBufferSize());
       assertEquals(null, cp.getKeyStorePath());
@@ -85,10 +84,6 @@ public class ConnectionParamsImplTest extends UnitTestCase
          long l = RandomUtil.randomLong();
          cp.setPingInterval(l);
          assertEquals(l, cp.getPingInterval());
-         
-         l = RandomUtil.randomLong();
-         cp.setPingTimeout(l);
-         assertEquals(l, cp.getPingTimeout());
          
          i = RandomUtil.randomInt();
          cp.setTcpReceiveBufferSize(i);
@@ -175,9 +170,6 @@ public class ConnectionParamsImplTest extends UnitTestCase
       long l = RandomUtil.randomLong();
       cp.setPingInterval(l);
       
-      l = RandomUtil.randomLong();
-      cp.setPingTimeout(l);
-    
       i = RandomUtil.randomInt();
       cp.setTcpReceiveBufferSize(i);
 

@@ -21,16 +21,17 @@
  */ 
 package org.jboss.messaging.tests.unit.core.server.impl;
 
+import java.util.concurrent.Executor;
+
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.security.SecurityStore;
-import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.server.impl.ServerConnectionImpl;
@@ -41,8 +42,6 @@ import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.ExecutorFactory;
 import org.jboss.messaging.util.SimpleString;
-
-import java.util.concurrent.Executor;
 
 /**
  * 
@@ -57,12 +56,12 @@ public class ServerConnectionImplTest extends UnitTestCase
    
    public void testConstructor() throws Exception
    {
-      createConnection(91821982, "oaksaoks", "asokdasod", 9120912);                  
+      createConnection(91821982, "oaksaoks", "asokdasod");                  
    }
          
    public void testAddRemoveTemporaryDestinations() throws Exception
    {
-      ServerConnectionImpl conn = createConnection(8172817, "okooko", "oaksaoks", 812981);   
+      ServerConnectionImpl conn = createConnection(8172817, "okooko", "oaksaoks");   
       
       final SimpleString address1 = new SimpleString("ashaijsaisj");
       final SimpleString address2 = new SimpleString("iuhasiasa");
@@ -125,7 +124,7 @@ public class ServerConnectionImplTest extends UnitTestCase
    
    public void testAddRemoveTemporaryQueues() throws Exception
    {
-      ServerConnectionImpl conn = createConnection(8172178, "ijijji", "aoksoaks", 99182);   
+      ServerConnectionImpl conn = createConnection(8172178, "ijijji", "aoksoaks");   
       
       final Queue queue1 = EasyMock.createStrictMock(Queue.class);
       final Queue queue2 = EasyMock.createStrictMock(Queue.class);
@@ -195,8 +194,8 @@ public class ServerConnectionImplTest extends UnitTestCase
    
    public void testStartStop() throws Exception
    {      
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
       PostOffice po = EasyMock.createStrictMock(PostOffice.class);
-      ConnectionManager cm = EasyMock.createStrictMock(ConnectionManager.class);
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
       StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
       HierarchicalRepository<QueueSettings> qs = EasyMock.createStrictMock(HierarchicalRepository.class);
@@ -208,12 +207,12 @@ public class ServerConnectionImplTest extends UnitTestCase
       
       EasyMock.expect(pd.generateID()).andReturn(id);
       
-      EasyMock.replay(po, cm, pd, sm, qs, rm, ss, ef);
+      EasyMock.replay(po, pd, sm, qs, rm, ss, ef, rc);
        
       ServerConnectionImpl conn = new ServerConnectionImpl("huihuh", "ookkok",
-                     192818, po, cm, pd, sm, qs, rm, ss, ef);
+                     rc, po, pd, sm, qs, rm, ss, ef);
       
-      EasyMock.verify(po, cm, pd, sm, qs, rm, ss, ef);
+      EasyMock.verify(po, pd, sm, qs, rm, ss, ef, rc);
       
       ServerSession session1 = EasyMock.createStrictMock(ServerSession.class);
       ServerSession session2 = EasyMock.createStrictMock(ServerSession.class);
@@ -227,39 +226,39 @@ public class ServerConnectionImplTest extends UnitTestCase
       
       assertFalse(conn.isStarted());
       
-      EasyMock.reset(po, cm, pd, sm, qs, rm, ss, ef, session1, session2, session3);
+      EasyMock.reset(rc, po, pd, sm, qs, rm, ss, ef, session1, session2, session3);
       
       session1.setStarted(true);
       session2.setStarted(true);
       session3.setStarted(true);
       
-      EasyMock.replay(po, cm, pd, sm, qs, rm, ss, ef, session1, session2, session3);
+      EasyMock.replay(rc, po, pd, sm, qs, rm, ss, ef, session1, session2, session3);
       
       conn.start();
       
       assertTrue(conn.isStarted());
       
-      EasyMock.verify(po, cm, pd, sm, qs, rm, ss, ef, session1, session2, session3);
+      EasyMock.verify(rc, po, pd, sm, qs, rm, ss, ef, session1, session2, session3);
       
-      EasyMock.reset(po, cm, pd, sm, qs, rm, ss, ef, session1, session2, session3);
+      EasyMock.reset(rc, po, pd, sm, qs, rm, ss, ef, session1, session2, session3);
       
       session1.setStarted(false);
       session2.setStarted(false);
       session3.setStarted(false);
       
-      EasyMock.replay(po, cm, pd, sm, qs, rm, ss, ef, session1, session2, session3);
+      EasyMock.replay(rc, po, pd, sm, qs, rm, ss, ef, session1, session2, session3);
             
       conn.stop();
       
-      EasyMock.verify(po, cm, pd, sm, qs, rm, ss, ef, session1, session2, session3);
+      EasyMock.verify(rc, po, pd, sm, qs, rm, ss, ef, session1, session2, session3);
       
       assertFalse(conn.isStarted());      
    }
    
    public void testClose() throws Exception
    {
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
       PostOffice po = EasyMock.createStrictMock(PostOffice.class);
-      ConnectionManager cm = EasyMock.createStrictMock(ConnectionManager.class);
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
       StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
       HierarchicalRepository<QueueSettings> qs = EasyMock.createStrictMock(HierarchicalRepository.class);
@@ -274,14 +273,12 @@ public class ServerConnectionImplTest extends UnitTestCase
       final long id = 91829182;
       EasyMock.expect(pd.generateID()).andReturn(id);
       
-      EasyMock.replay(po, cm, pd, sm, qs, rm, ss, ef, session1, session2, session3);
-      
-      final long remotingClientSessionID = 81728172;
-      
+      EasyMock.replay(rc, po, pd, sm, qs, rm, ss, ef, session1, session2, session3);
+
       ServerConnectionImpl conn = new ServerConnectionImpl("huihuh", "ookkok",
-            remotingClientSessionID, po, cm, pd, sm, qs, rm, ss, ef);
+            rc, po, pd, sm, qs, rm, ss, ef);
       
-      EasyMock.verify(po, cm, pd, sm, qs, rm, ss, ef, session1, session2, session3);
+      EasyMock.verify(rc, po, pd, sm, qs, rm, ss, ef, session1, session2, session3);
       
       conn.addSession(session1);
       conn.addSession(session2);
@@ -307,7 +304,7 @@ public class ServerConnectionImplTest extends UnitTestCase
       
       assertFalse(conn.isClosed());
       
-      EasyMock.reset(po, cm, pd, sm, qs, rm, ss, ef, session1, session2, session3);
+      EasyMock.reset(rc, po, pd, sm, qs, rm, ss, ef, session1, session2, session3);
       
       session1.close();
       session2.close();
@@ -343,33 +340,33 @@ public class ServerConnectionImplTest extends UnitTestCase
       EasyMock.expect(po.removeDestination(address2, true)).andReturn(true);
       EasyMock.expect(po.removeDestination(address3, true)).andReturn(true);
       
-      EasyMock.expect(cm.unregisterConnection(remotingClientSessionID, conn)).andReturn(null);
-      
       pd.unregister(id);
       
-      EasyMock.replay(po, cm, pd, sm, qs, rm, ss, ef, session1, session2, session3, queue1, queue2, queue3,
+      EasyMock.expect(rc.removeFailureListener(conn)).andReturn(true);
+      
+      EasyMock.replay(rc, po, pd, sm, qs, rm, ss, ef, session1, session2, session3, queue1, queue2, queue3,
             binding1, binding2, binding3);
       
       conn.close();
       
       assertTrue(conn.isClosed());
       
-      EasyMock.verify(po, cm, pd, sm, qs, rm, ss, ef, session1, session2, session3, queue1, queue2, queue3,
+      EasyMock.verify(rc, po, pd, sm, qs, rm, ss, ef, session1, session2, session3, queue1, queue2, queue3,
             binding1, binding2, binding3);
       
-      EasyMock.reset(po, cm, pd, sm, qs, rm, ss, ef, session1, session2, session3, queue1, queue2, queue3,
+      EasyMock.reset(rc, po, pd, sm, qs, rm, ss, ef, session1, session2, session3, queue1, queue2, queue3,
             binding1, binding2, binding3);  
       
       //Closing again should do nothing
       
-      EasyMock.replay(po, cm, pd, sm, qs, rm, ss, ef, session1, session2, session3, queue1, queue2, queue3,
+      EasyMock.replay(rc, po, pd, sm, qs, rm, ss, ef, session1, session2, session3, queue1, queue2, queue3,
             binding1, binding2, binding3);
       
       conn.close();
       
       assertTrue(conn.isClosed());
       
-      EasyMock.verify(po, cm, pd, sm, qs, rm, ss, ef, session1, session2, session3, queue1, queue2, queue3,
+      EasyMock.verify(rc, po, pd, sm, qs, rm, ss, ef, session1, session2, session3, queue1, queue2, queue3,
             binding1, binding2, binding3);
    }
    
@@ -377,8 +374,8 @@ public class ServerConnectionImplTest extends UnitTestCase
    
    private void testCreateSession(final boolean xa, final boolean autoCommitSends, final boolean autoCommitAcks) throws Exception
    {
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
       PostOffice po = EasyMock.createStrictMock(PostOffice.class);
-      ConnectionManager cm = EasyMock.createStrictMock(ConnectionManager.class);
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
       StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
       HierarchicalRepository<QueueSettings> qs = EasyMock.createStrictMock(HierarchicalRepository.class);
@@ -403,27 +400,24 @@ public class ServerConnectionImplTest extends UnitTestCase
       
       pd.register(EasyMock.isA(ServerSessionPacketHandler.class));
       
-      EasyMock.replay(po, cm, pd, sm, qs, rm, ss, ef);
+      EasyMock.replay(rc, po, pd, sm, qs, rm, ss, ef);
     
       ServerConnectionImpl conn = new ServerConnectionImpl("huihuh", "ookkok",
-            8172718, po, cm, pd, sm, qs, rm, ss, ef);
+            rc, po, pd, sm, qs, rm, ss, ef);
       
-      PacketReturner returner = EasyMock.createStrictMock(PacketReturner.class);
-    
-      ConnectionCreateSessionResponseMessage resp = conn.createSession(xa, autoCommitSends, autoCommitAcks, returner);
+      ConnectionCreateSessionResponseMessage resp = conn.createSession(xa, autoCommitSends, autoCommitAcks);
       
-      EasyMock.verify(po, cm, pd, sm, qs, rm, ss, ef);      
+      EasyMock.verify(rc, po, pd, sm, qs, rm, ss, ef);      
       
       assertEquals(sessionID, resp.getSessionID());
       
       assertEquals(1, conn.getSessions().size());     
    }
    
-   private ServerConnectionImpl createConnection(final long id, final String username, final String password,
-         final long clientSessionID)
+   private ServerConnectionImpl createConnection(final long id, final String username, final String password)
    {
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
       PostOffice po = EasyMock.createStrictMock(PostOffice.class);
-      ConnectionManager cm = EasyMock.createStrictMock(ConnectionManager.class);
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
       StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
       HierarchicalRepository<QueueSettings> qs = EasyMock.createStrictMock(HierarchicalRepository.class);
@@ -433,16 +427,15 @@ public class ServerConnectionImplTest extends UnitTestCase
       
       EasyMock.expect(pd.generateID()).andReturn(id);
       
-      EasyMock.replay(po, cm, pd, sm, qs, rm, ss, ef);
+      EasyMock.replay(rc, po, pd, sm, qs, rm, ss, ef);
        
       ServerConnectionImpl conn = new ServerConnectionImpl(username, password,
-                     clientSessionID, po, cm, pd, sm, qs, rm, ss, ef);
+                     rc, po, pd, sm, qs, rm, ss, ef);
       
-      EasyMock.verify(po, cm, pd, sm, qs, rm, ss, ef);
+      EasyMock.verify(rc, po, pd, sm, qs, rm, ss, ef);
       
       assertEquals(username, conn.getUsername());
-      assertEquals(password, conn.getPassword());
-      assertEquals(clientSessionID, conn.getClientSessionID());
+      assertEquals(password, conn.getPassword());     
       assertEquals(id, conn.getID());
       
       assertTrue(conn.getSessions().isEmpty());

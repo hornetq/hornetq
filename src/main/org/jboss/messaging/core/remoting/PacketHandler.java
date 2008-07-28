@@ -41,5 +41,5 @@ public interface PacketHandler
 {
    long getID();
 
-   void handle(Packet packet, PacketReturner sender);
+   void handle(long connectionID, Packet packet);
 }

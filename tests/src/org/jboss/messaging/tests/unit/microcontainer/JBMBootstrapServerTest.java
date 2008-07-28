@@ -21,12 +21,12 @@
  */
 package org.jboss.messaging.tests.unit.microcontainer;
 
+import java.util.Properties;
+
 import org.jboss.kernel.plugins.config.property.PropertyKernelConfig;
 import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.microcontainer.JBMBootstrapServer;
 import org.jboss.messaging.tests.util.UnitTestCase;
-
-import java.util.Properties;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>

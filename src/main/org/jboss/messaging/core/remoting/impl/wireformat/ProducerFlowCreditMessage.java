@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 
 /**
  * 
@@ -79,6 +79,18 @@ public class ProducerFlowCreditMessage extends PacketImpl
       buf.append(", credits=" + credits);
       buf.append("]");
       return buf.toString();
+   }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof ProducerFlowCreditMessage == false)
+      {
+         return false;
+      }
+            
+      ProducerFlowCreditMessage r = (ProducerFlowCreditMessage)other;
+      
+      return super.equals(other) && this.credits == r.credits;
    }
 
    // Package protected ---------------------------------------------

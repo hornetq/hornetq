@@ -22,11 +22,12 @@
 
 package org.jboss.messaging.tests.unit.util;
 
+import java.util.concurrent.CountDownLatch;
+
 import junit.framework.TestCase;
+
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.util.VariableLatch;
-
-import java.util.concurrent.CountDownLatch;
 
 /**
  * 

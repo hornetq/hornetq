@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 
@@ -100,7 +100,7 @@ public class SessionRemoveDestinationMessage extends PacketImpl
             
       SessionRemoveDestinationMessage r = (SessionRemoveDestinationMessage)other;
       
-      return this.address.equals(r.address) &&
+      return super.equals(other) && this.address.equals(r.address) &&
              this.temporary == r.temporary;
    }
    

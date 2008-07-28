@@ -120,4 +120,8 @@ public interface Queue
    void lock();
    
    void unlock();
+   
+   void setBackup(boolean backup);
+   
+   boolean isBackup();
 }

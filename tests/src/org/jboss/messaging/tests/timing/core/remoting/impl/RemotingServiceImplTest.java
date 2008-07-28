@@ -21,100 +21,120 @@
  */
 package org.jboss.messaging.tests.timing.core.remoting.impl;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.easymock.EasyMock;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.RemotingSession;
-import org.jboss.messaging.core.remoting.TransportType;
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.FailureListener;
+import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.impl.RemotingServiceImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
-import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
+import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
- * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * 
+ * A RemotingServiceImplTest
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ *
  */
 public class RemotingServiceImplTest extends UnitTestCase
 {
-    public void testPingerAddedAndCalled()
-   {
-      ConfigurationImpl config = new ConfigurationImpl();
-      config.setTransport(TransportType.INVM);
-      config.getConnectionParams().setPingInterval(100);
-      RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
-      DummySession dummySession = new DummySession(remotingService.getDispatcher());
-      remotingService.registerPinger(dummySession);
-      try
-      {
-         Thread.sleep(1100);
-      }
-      catch (InterruptedException e)
-      {
-         e.printStackTrace();
-      }
-      assertTrue(remotingService.isSession(1l));
-      remotingService.unregisterPinger(1l);
-      assertTrue(dummySession.count > 10);
-   }
+    public void testScanForFailedConnectionsNonefailed() throws Exception
+    {
+       ConfigurationImpl config = new ConfigurationImpl();
+       final long interval = 100;
+       config.getConnectionParams().setPingInterval(interval);
+       RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
+       
+       RemotingHandler handler = EasyMock.createStrictMock(RemotingHandler.class);
+       remotingService.setHandler(handler);
+       
+       Set<Long> failed = new HashSet<Long>();
+       
+       EasyMock.expect(handler.scanForFailedConnections((long)(1.5 * interval))).andReturn(failed);
+              
+       EasyMock.replay(handler);
+       
+       remotingService.start();
+       
+       Thread.sleep(interval * 2);
+              
+       EasyMock.verify(handler);
+                     
+    }
+    
+    public void testScanForFailedConnectionsFailed() throws Exception
+    {
+       ConfigurationImpl config = new ConfigurationImpl();
+       final long interval = 100;
+       config.getConnectionParams().setPingInterval(interval);
+       RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
+       
+       RemotingHandler handler = EasyMock.createStrictMock(RemotingHandler.class);
+       remotingService.setHandler(handler);
+       
+       Set<Long> failed = new HashSet<Long>();
+       failed.add(2L);
+       failed.add(3L);
+       
+       EasyMock.expect(handler.scanForFailedConnections((long)(1.5 * interval))).andReturn(failed);
+       
+       Connection conn1 = EasyMock.createStrictMock(Connection.class);
+       Connection conn2 = EasyMock.createStrictMock(Connection.class);
+       Connection conn3 = EasyMock.createStrictMock(Connection.class);
+                                   
+       EasyMock.expect(conn1.getID()).andStubReturn(1);
+       EasyMock.expect(conn2.getID()).andStubReturn(2);
+       EasyMock.expect(conn3.getID()).andStubReturn(3);
+       
+       conn2.close();
+       conn3.close();       
+       
+       class Listener implements FailureListener
+       {
+          volatile MessagingException me;
+          public void connectionFailed(MessagingException me)
+          {
+             this.me = me;
+          }
+       }
+                           
+       EasyMock.replay(handler, conn1, conn2, conn3);
+       
+       remotingService.start();
+       
+       remotingService.connectionCreated(conn1);
+       remotingService.connectionCreated(conn2);
+       remotingService.connectionCreated(conn3);
+       
+       RemotingConnection rc1 = remotingService.getConnection(1);
+       RemotingConnection rc2 = remotingService.getConnection(2);
+       RemotingConnection rc3 = remotingService.getConnection(3);
+       
+       Listener listener1 = new Listener();
+       rc1.addFailureListener(listener1);
+       
+       Listener listener2 = new Listener();
+       rc2.addFailureListener(listener2);
+       
+       Listener listener3 = new Listener();
+       rc3.addFailureListener(listener3);
+       
+       Thread.sleep(interval * 2);
+              
+       EasyMock.verify(handler, conn1, conn2, conn3);
+       
+       assertNull(listener1.me);
+       assertNotNull(listener2.me);
+       assertNotNull(listener3.me);
+       
+       assertEquals(MessagingException.CONNECTION_TIMEDOUT, listener2.me.getCode());
+       assertEquals(MessagingException.CONNECTION_TIMEDOUT, listener3.me.getCode());
+                     
+    }
 
-   public void testPingerAddedAndRemoved()
-   {
-      ConfigurationImpl config = new ConfigurationImpl();
-      config.setTransport(TransportType.INVM);
-      config.getConnectionParams().setPingInterval(100);
-      RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
-      DummySession dummySession = new DummySession(remotingService.getDispatcher());
-      remotingService.registerPinger(dummySession);
-      try
-      {
-         Thread.sleep(1100);
-      }
-      catch (InterruptedException e)
-      {
-         e.printStackTrace();
-      }
-      remotingService.unregisterPinger(1l);
-      int count = dummySession.count;
-      try
-      {
-         Thread.sleep(config.getConnectionParams().getPingInterval() + 2);
-      }
-      catch (InterruptedException e)
-      {
-         e.printStackTrace();
-      }
-      assertEquals(count, dummySession.count);
-   }
-
-   class DummySession implements RemotingSession
-   {
-      PacketDispatcher dispatcher;
-      int count = 0;
-
-      public DummySession(PacketDispatcher dispatcher)
-      {
-         this.dispatcher = dispatcher;
-      }
-
-      public long getID()
-      {
-         return 1;
-      }
-
-      public void write(Packet packet) throws Exception
-      {
-         count++;
-         Ping ping = (Ping) packet;
-
-         Pong pong = new Pong(ping.getSessionID(), false);
-         pong.setTargetID(1);
-         dispatcher.dispatch(pong, null);
-
-      }
-
-      public boolean isConnected()
-      {
-         return true;
-      }
-   }
 }

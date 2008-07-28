@@ -22,68 +22,87 @@
 
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import org.apache.mina.common.*;
+import java.net.InetSocketAddress;
+
+import org.apache.mina.common.DefaultIoFilterChainBuilder;
+import org.apache.mina.common.IdleStatus;
+import org.apache.mina.common.IoBuffer;
+import org.apache.mina.common.IoHandlerAdapter;
+import org.apache.mina.common.IoService;
+import org.apache.mina.common.IoServiceListener;
+import org.apache.mina.common.IoSession;
 import org.apache.mina.transport.socket.SocketAcceptor;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.Acceptor;
-import org.jboss.messaging.core.remoting.CleanUpNotifier;
-import org.jboss.messaging.core.remoting.RemotingService;
-
-import java.net.InetSocketAddress;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import org.jboss.messaging.core.remoting.ConnectionLifeCycleListener;
+import org.jboss.messaging.core.remoting.RemotingHandler;
+import org.jboss.messaging.core.remoting.spi.Acceptor;
+import org.jboss.messaging.core.remoting.spi.Connection;
 
 /**
  * A Mina TCP Acceptor that supports SSL
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
 public class MinaAcceptor implements Acceptor
 {
    private static final Logger log = Logger.getLogger(MinaAcceptor.class);
 
-   private ExecutorService threadPool;
    private SocketAcceptor acceptor;
+   
    private IoServiceListener acceptorListener;
-   private CleanUpNotifier cleanupNotifier;
-   private RemotingService remotingService;
-   private FilterChainSupport chainSupport = new FilterChainSupportImpl();
-
-   public void startAccepting(RemotingService remotingService, CleanUpNotifier cleanupNotifier) throws Exception
+   
+   private final Configuration configuration;
+   
+   private final RemotingHandler handler;
+   
+   private ConnectionLifeCycleListener listener;
+   
+   public MinaAcceptor(final Configuration configuration, final RemotingHandler handler,
+                       final ConnectionLifeCycleListener listener)
    {
-      this.remotingService = remotingService;
-      this.cleanupNotifier = cleanupNotifier;
-      this.acceptor = createAcceptor();
+      this.configuration = configuration;
+      
+      this.handler = handler;
+      
+      this.listener = listener;
+   }
+
+   public synchronized void start() throws Exception
+   {
+      if (acceptor != null)
+      {
+         //Already started
+         return;
+      }
+      
+      acceptor = new NioSocketAcceptor();
 
       acceptor.setSessionDataStructureFactory(new MessagingIOSessionDataStructureFactory());
 
       DefaultIoFilterChainBuilder filterChain = acceptor.getFilterChain();
       
-      Configuration config = remotingService.getConfiguration();
-      
-      log.info(config.getHost());
-
-      // addMDCFilter(filterChain);
-      if (config.isSSLEnabled())
-      {
-         chainSupport.addSSLFilter(filterChain, false, remotingService.getConfiguration().getKeyStorePath(),
-                 remotingService.getConfiguration().getKeyStorePassword(), remotingService.getConfiguration()
-                 .getTrustStorePath(), remotingService.getConfiguration()
-                 .getTrustStorePassword());
+      if (configuration.isSSLEnabled())
+      {         
+         FilterChainSupport.addSSLFilter(filterChain, false, configuration.getKeyStorePath(),
+                 configuration.getKeyStorePassword(),
+                 configuration.getTrustStorePath(),
+                 configuration.getTrustStorePassword());
       }
-      chainSupport.addCodecFilter(filterChain);
+      FilterChainSupport.addCodecFilter(filterChain, handler);
 
       // Bind
-      acceptor.setDefaultLocalAddress(new InetSocketAddress(remotingService.getConfiguration().getHost(), remotingService.getConfiguration().getPort()));
-      acceptor.getSessionConfig().setTcpNoDelay(remotingService.getConfiguration().getConnectionParams().isTcpNoDelay());
-      int receiveBufferSize = remotingService.getConfiguration().getConnectionParams().getTcpReceiveBufferSize();
+      acceptor.setDefaultLocalAddress(new InetSocketAddress(configuration.getHost(), configuration.getPort()));      
+      acceptor.getSessionConfig().setTcpNoDelay(configuration.getConnectionParams().isTcpNoDelay());
+      int receiveBufferSize = configuration.getConnectionParams().getTcpReceiveBufferSize();
       if (receiveBufferSize != -1)
       {
          acceptor.getSessionConfig().setReceiveBufferSize(receiveBufferSize);
       }
-      int sendBufferSize = remotingService.getConfiguration().getConnectionParams().getTcpSendBufferSize();
+      int sendBufferSize = configuration.getConnectionParams().getTcpSendBufferSize();
       if (sendBufferSize != -1)
       {
          acceptor.getSessionConfig().setSendBufferSize(sendBufferSize);
@@ -93,85 +112,82 @@ public class MinaAcceptor implements Acceptor
       acceptor.getSessionConfig().setKeepAlive(true);
       acceptor.setCloseOnDeactivation(false);
 
-      threadPool = Executors.newCachedThreadPool();
-      acceptor.setHandler(new MinaHandler(remotingService.getDispatcher(), threadPool, cleanupNotifier, true, true));
+      acceptor.setHandler(new MinaHandler());
       acceptor.bind();
       acceptorListener = new MinaSessionListener();
       acceptor.addListener(acceptorListener);
    }
 
-   public void stopAccepting()
+   public synchronized void stop()
    {
-      if (acceptor != null)
+      if (acceptor == null)
       {
-         // remove the listener before disposing the acceptor
-         // so that we're not notified when the sessions are destroyed
-         acceptor.removeListener(acceptorListener);
-         acceptor.unbind();
-         acceptor.dispose();
-         acceptor = null;
-         threadPool.shutdown();
+         return;
       }
+      
+      // remove the listener before disposing the acceptor
+      // so that we're not notified when the sessions are destroyed
+      acceptor.removeListener(acceptorListener);
+      acceptor.unbind();
+      acceptor.dispose();
+      acceptor = null;      
    }
-
-   /**
-    * This method must only be called by tests which requires
-    * to insert Filters (e.g. to simulate network failures)
-    */
+   
    public DefaultIoFilterChainBuilder getFilterChain()
    {
-      // TODO: get rid of this assert (Validate this condition on tests)
-      assert acceptor != null;
-
       return acceptor.getFilterChain();
    }
    
+   // Inner classes -----------------------------------------------------------------------------
 
-   // This could be used in Override for tests (to replace an EasyMock for instance)
-   protected SocketAcceptor createAcceptor()
+   private final class MinaHandler extends IoHandlerAdapter
    {
-      return new NioSocketAcceptor();
+      public void exceptionCaught(final IoSession session, final Throwable cause)
+              throws Exception
+      {
+         log.error("caught exception " + cause + " for session " + session, cause);
+                           
+         MessagingException me = new MessagingException(MessagingException.INTERNAL_ERROR, "MINA exception");
+       
+         me.initCause(cause);
+         
+         listener.connectionException(session.getId(), me);
+      }
+
+      public void messageReceived(final IoSession session, final Object message)
+              throws Exception
+      {
+         IoBuffer buffer = (IoBuffer) message;
+         
+         handler.bufferReceived(session.getId(), new IoBufferWrapper(buffer));
+      }
    }
 
    private final class MinaSessionListener implements IoServiceListener
    {
 
-      public void serviceActivated(IoService service)
+      public void serviceActivated(final IoService service)
       {
       }
 
-      public void serviceDeactivated(IoService service)
+      public void serviceDeactivated(final IoService service)
       {
       }
 
-      public void serviceIdle(IoService service, IdleStatus idleStatus)
+      public void serviceIdle(final IoService service, final IdleStatus idleStatus)
       {
       }
 
-      /**
-       * register a pinger for the new client
-       *
-       * @param session
-       */
-      public void sessionCreated(IoSession session)
+      public void sessionCreated(final IoSession session)
       {
-         log.info("session id " + session.getId());
-         //register pinger
-         if (remotingService.getConfiguration().getConnectionParams().getPingInterval() > 0)
-         {
-            remotingService.registerPinger(new MinaSession(session));
-         }
+         Connection tc = new MinaConnection(session);
+         
+         listener.connectionCreated(tc);
       }
 
-      /**
-       * unregister the pinger
-       *
-       * @param session
-       */
-      public void sessionDestroyed(IoSession session)
-      {
-         remotingService.unregisterPinger(session.getId());
-         cleanupNotifier.fireCleanup(session.getId(), null);
+      public void sessionDestroyed(final IoSession session)
+      {         
+         listener.connectionDestroyed(session.getId());
       }
    }
 

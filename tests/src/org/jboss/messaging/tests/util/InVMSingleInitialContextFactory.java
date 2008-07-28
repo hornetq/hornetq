@@ -22,10 +22,11 @@
 
 package org.jboss.messaging.tests.util;
 
-import javax.naming.spi.InitialContextFactory;
+import java.util.Hashtable;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
-import java.util.Hashtable;
+import javax.naming.spi.InitialContextFactory;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>

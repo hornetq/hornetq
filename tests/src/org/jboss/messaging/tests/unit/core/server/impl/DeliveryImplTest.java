@@ -24,7 +24,7 @@ package org.jboss.messaging.tests.unit.core.server.impl;
 import org.easymock.EasyMock;
 import org.easymock.IAnswer;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -39,12 +39,12 @@ public class DeliveryImplTest extends UnitTestCase
    public void testDeliver() throws Exception
    {
       ServerMessage message = EasyMock.createStrictMock(ServerMessage.class);
-      MessageReference messageReference = EasyMock.createStrictMock(MessageReference.class);
-      PacketReturner sender = EasyMock.createStrictMock(PacketReturner.class);
-      DeliveryImpl delivery = new DeliveryImpl(messageReference, 1, 2 ,3 , sender);
+      MessageReference messageReference = EasyMock.createStrictMock(MessageReference.class);     
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      DeliveryImpl delivery = new DeliveryImpl(messageReference, 1, 2 ,3 , rc);
       EasyMock.expect(messageReference.getMessage()).andStubReturn(message);
       EasyMock.expect(messageReference.getDeliveryCount()).andReturn(1);
-      sender.send((Packet) EasyMock.anyObject());
+      rc.sendOneWay((Packet) EasyMock.anyObject());
       EasyMock.expectLastCall().andAnswer(new IAnswer<Object>()
       {
          public Object answer() throws Throwable
@@ -58,8 +58,8 @@ public class DeliveryImplTest extends UnitTestCase
       });
       assertEquals(delivery.getDeliveryID(), 3);
       assertEquals(delivery.getReference(), messageReference);
-      EasyMock.replay(messageReference, sender, message);
+      EasyMock.replay(messageReference, rc, message);
       delivery.deliver();
-      EasyMock.verify(messageReference, sender, message);
+      EasyMock.verify(messageReference, rc, message);
    }
 }

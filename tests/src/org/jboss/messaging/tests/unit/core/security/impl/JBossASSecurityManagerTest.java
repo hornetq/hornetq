@@ -22,14 +22,10 @@
 
 package org.jboss.messaging.tests.unit.core.security.impl;
 
-import java.security.Principal;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
-import javax.naming.InitialContext;
 import javax.security.auth.Subject;
-import javax.security.auth.message.MessageInfo;
 
 import junit.framework.TestCase;
 

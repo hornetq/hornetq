@@ -121,7 +121,9 @@ public class SecurityDeployer extends XmlDeployer
                   read.add(role);
                }
                if (!allRoles.contains(role.trim()))
+               {
                   allRoles.add(role.trim());
+               }
             }
          }
 

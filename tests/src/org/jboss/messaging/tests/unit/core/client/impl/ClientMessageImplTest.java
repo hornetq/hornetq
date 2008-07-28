@@ -21,17 +21,15 @@
  */ 
 package org.jboss.messaging.tests.unit.core.client.impl;
 
-import static org.jboss.messaging.tests.util.RandomUtil.randomByte;
-
 import java.nio.ByteBuffer;
 
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
+import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.tests.unit.core.message.impl.MessageImplTestBase;
 import org.jboss.messaging.tests.util.RandomUtil;
-import org.jboss.messaging.util.ByteBufferWrapper;
-import org.jboss.messaging.util.MessagingBuffer;
 
 
 /**

@@ -21,7 +21,28 @@
  */
 package org.jboss.messaging.tests.unit.core.server.impl;
 
-import static org.easymock.EasyMock.*;
+import static org.easymock.EasyMock.anyObject;
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.createNiceMock;
+import static org.easymock.EasyMock.createStrictMock;
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.EasyMock.getCurrentArguments;
+import static org.easymock.EasyMock.isA;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.reset;
+import static org.easymock.EasyMock.verify;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.Executor;
+
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import org.easymock.IAnswer;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
@@ -32,11 +53,27 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
-import org.jboss.messaging.core.remoting.PacketReturner;
-import org.jboss.messaging.core.remoting.impl.wireformat.*;
+import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.SecurityStore;
-import org.jboss.messaging.core.server.*;
+import org.jboss.messaging.core.server.Consumer;
+import org.jboss.messaging.core.server.Delivery;
+import org.jboss.messaging.core.server.HandleStatus;
+import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.ServerConnection;
+import org.jboss.messaging.core.server.ServerConsumer;
+import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.ServerProducer;
 import org.jboss.messaging.core.server.impl.ServerBrowserImpl;
 import org.jboss.messaging.core.server.impl.ServerSessionImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
@@ -47,30 +84,16 @@ import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.Executor;
-
 /**
  * A ServerSessionImplTest
- * <p/>
- * Think of the things you can do with a session
- * <p/>
- * test open close
- * test start stop
- * test constructor
- * test send some messages - both tx and not
- *
+
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  */
 public class ServerSessionImplTest extends UnitTestCase
 {
    private ServerConnection conn;
-   private PacketReturner returner;
+   private RemotingConnection returner;
    private StorageManager sm;
    private PostOffice po;
    private HierarchicalRepository<QueueSettings> qs;
@@ -102,7 +125,7 @@ public class ServerSessionImplTest extends UnitTestCase
    public void testAutoCommitSendFailsSecurity() throws Exception
    {
       ServerConnection conn = createStrictMock(ServerConnection.class);
-      PacketReturner returner = createStrictMock(PacketReturner.class);
+      RemotingConnection returner = createStrictMock(RemotingConnection.class);
       StorageManager sm = createStrictMock(StorageManager.class);
       PostOffice po = createStrictMock(PostOffice.class);
       HierarchicalRepository<QueueSettings> qs = createStrictMock(HierarchicalRepository.class);
@@ -143,7 +166,7 @@ public class ServerSessionImplTest extends UnitTestCase
    public void testNotAutoCommitSendFailsSecurity() throws Exception
    {
       ServerConnection conn = createStrictMock(ServerConnection.class);
-      PacketReturner returner = createStrictMock(PacketReturner.class);
+      RemotingConnection returner = createStrictMock(RemotingConnection.class);
       StorageManager sm = createStrictMock(StorageManager.class);
       PostOffice po = createStrictMock(PostOffice.class);
       HierarchicalRepository<QueueSettings> qs = createStrictMock(HierarchicalRepository.class);
@@ -289,7 +312,7 @@ public class ServerSessionImplTest extends UnitTestCase
       SessionCreateBrowserResponseMessage message = session.createBrowser(address, null);
       try
       {
-         session.removeBrowser(new ServerBrowserImpl(session, queue, null, pd));
+         session.removeBrowser(new ServerBrowserImpl(session, queue, null, pd, returner));
          fail("should throw exception");
       }
       catch (IllegalStateException e)
@@ -557,7 +580,7 @@ public class ServerSessionImplTest extends UnitTestCase
       queue.addConsumer((Consumer) anyObject());
       for (int i = 0; i < 10; i++)
       {
-         returner.send((Packet) anyObject());
+         returner.sendOneWay((Packet) anyObject());
       }
 
       queue.lock();
@@ -618,7 +641,7 @@ public class ServerSessionImplTest extends UnitTestCase
       queue.addConsumer((Consumer) anyObject());
       for (int i = 0; i < 10; i++)
       {
-         returner.send((Packet) anyObject());
+         returner.sendOneWay((Packet) anyObject());
       }
 
       queue.lock();
@@ -679,7 +702,7 @@ public class ServerSessionImplTest extends UnitTestCase
       queue.addConsumer((Consumer) anyObject());
       for (int i = 0; i < 10; i++)
       {
-         returner.send((Packet) anyObject());
+         returner.sendOneWay((Packet) anyObject());
       }
 
       references[5].expire(sm, po, qs);
@@ -733,7 +756,7 @@ public class ServerSessionImplTest extends UnitTestCase
       queue.addConsumer((Consumer) anyObject());
       for (int i = 0; i < 10; i++)
       {
-         returner.send((Packet) anyObject());
+         returner.sendOneWay((Packet) anyObject());
          queue.referenceAcknowledged(references[i]);
       }
       expect(sm.generateTransactionID()).andReturn(10l);
@@ -1648,7 +1671,7 @@ public class ServerSessionImplTest extends UnitTestCase
            throws Exception
    {
       conn = createStrictMock(ServerConnection.class);
-      returner = createStrictMock(PacketReturner.class);
+      returner = createStrictMock(RemotingConnection.class);
       sm = createStrictMock(StorageManager.class);
       po = createStrictMock(PostOffice.class);
       qs = createStrictMock(HierarchicalRepository.class);
@@ -1673,7 +1696,7 @@ public class ServerSessionImplTest extends UnitTestCase
    private void testAcknowledgeAllUpToNotAutoCommitAck(final boolean durableMsg, final boolean durableQueue) throws Exception
    {
       ServerConnection conn = createStrictMock(ServerConnection.class);
-      PacketReturner returner = createStrictMock(PacketReturner.class);
+      RemotingConnection returner = createStrictMock(RemotingConnection.class);
       StorageManager sm = createStrictMock(StorageManager.class);
       PostOffice po = createStrictMock(PostOffice.class);
       HierarchicalRepository<QueueSettings> qs = createStrictMock(HierarchicalRepository.class);
@@ -1700,7 +1723,7 @@ public class ServerSessionImplTest extends UnitTestCase
          expect(consumer.getClientTargetID()).andReturn(76767L);
          expect(ref.getMessage()).andReturn(createMock(ServerMessage.class));
          expect(ref.getDeliveryCount()).andReturn(0);
-         returner.send(isA(ReceiveMessage.class));
+         returner.sendOneWay(isA(ReceiveMessage.class));
          refs.add(ref);
       }
 
@@ -1817,7 +1840,7 @@ public class ServerSessionImplTest extends UnitTestCase
    private void testAcknowledgeNotAllUpToNotAutoCommitAck(final boolean durableMsg, final boolean durableQueue) throws Exception
    {
       ServerConnection conn = createStrictMock(ServerConnection.class);
-      PacketReturner returner = createStrictMock(PacketReturner.class);
+      RemotingConnection returner = createStrictMock(RemotingConnection.class);
       StorageManager sm = createStrictMock(StorageManager.class);
       PostOffice po = createStrictMock(PostOffice.class);
       HierarchicalRepository<QueueSettings> qs = createStrictMock(HierarchicalRepository.class);
@@ -1844,7 +1867,7 @@ public class ServerSessionImplTest extends UnitTestCase
          expect(consumer.getClientTargetID()).andReturn(76767L);
          expect(ref.getMessage()).andReturn(createMock(ServerMessage.class));
          expect(ref.getDeliveryCount()).andReturn(0);
-         returner.send(isA(ReceiveMessage.class));
+         returner.sendOneWay(isA(ReceiveMessage.class));
          refs.add(ref);
       }
 
@@ -1967,7 +1990,7 @@ public class ServerSessionImplTest extends UnitTestCase
    private void testAcknowledgeAllUpToAutoCommitAck(final boolean durableMsg, final boolean durableQueue) throws Exception
    {
       ServerConnection conn = createStrictMock(ServerConnection.class);
-      PacketReturner returner = createStrictMock(PacketReturner.class);
+      RemotingConnection returner = createStrictMock(RemotingConnection.class);
       StorageManager sm = createStrictMock(StorageManager.class);
       PostOffice po = createStrictMock(PostOffice.class);
       HierarchicalRepository<QueueSettings> qs = createStrictMock(HierarchicalRepository.class);
@@ -1992,7 +2015,7 @@ public class ServerSessionImplTest extends UnitTestCase
          expect(consumer.getClientTargetID()).andReturn(76767L);
          expect(ref.getMessage()).andReturn(createMock(ServerMessage.class));
          expect(ref.getDeliveryCount()).andReturn(0);
-         returner.send(isA(ReceiveMessage.class));
+         returner.sendOneWay(isA(ReceiveMessage.class));
          refs.add(ref);
       }
 
@@ -2106,7 +2129,7 @@ public class ServerSessionImplTest extends UnitTestCase
    private void testAcknowledgeNotAllUpToAutoCommitAck(final boolean durableMsg, final boolean durableQueue) throws Exception
    {
       ServerConnection conn = createStrictMock(ServerConnection.class);
-      PacketReturner returner = createStrictMock(PacketReturner.class);
+      RemotingConnection returner = createStrictMock(RemotingConnection.class);
       StorageManager sm = createStrictMock(StorageManager.class);
       PostOffice po = createStrictMock(PostOffice.class);
       HierarchicalRepository<QueueSettings> qs = createStrictMock(HierarchicalRepository.class);
@@ -2131,7 +2154,7 @@ public class ServerSessionImplTest extends UnitTestCase
          expect(consumer.getClientTargetID()).andReturn(76767L);
          expect(ref.getMessage()).andReturn(createMock(ServerMessage.class));
          expect(ref.getDeliveryCount()).andReturn(0);
-         returner.send(isA(ReceiveMessage.class));
+         returner.sendOneWay(isA(ReceiveMessage.class));
          refs.add(ref);
       }
 
@@ -2251,7 +2274,7 @@ public class ServerSessionImplTest extends UnitTestCase
    private void testAutoCommitSend(final boolean persistent) throws Exception
    {
       ServerConnection conn = createStrictMock(ServerConnection.class);
-      PacketReturner returner = createStrictMock(PacketReturner.class);
+      RemotingConnection returner = createStrictMock(RemotingConnection.class);
       StorageManager sm = createStrictMock(StorageManager.class);
       PostOffice po = createStrictMock(PostOffice.class);
       HierarchicalRepository<QueueSettings> qs = createStrictMock(HierarchicalRepository.class);
@@ -2314,7 +2337,7 @@ public class ServerSessionImplTest extends UnitTestCase
    private void testNotAutoCommitSend(final boolean persistent) throws Exception
    {
       ServerConnection conn = createStrictMock(ServerConnection.class);
-      PacketReturner returner = createStrictMock(PacketReturner.class);
+      RemotingConnection returner = createStrictMock(RemotingConnection.class);
       StorageManager sm = createStrictMock(StorageManager.class);
       PostOffice po = createStrictMock(PostOffice.class);
       HierarchicalRepository<QueueSettings> qs = createStrictMock(HierarchicalRepository.class);
@@ -2371,7 +2394,7 @@ public class ServerSessionImplTest extends UnitTestCase
    private void testConstructor(final boolean xa) throws Exception
    {
       ServerConnection conn = createStrictMock(ServerConnection.class);
-      PacketReturner returner = createStrictMock(PacketReturner.class);
+      RemotingConnection returner = createStrictMock(RemotingConnection.class);
       StorageManager sm = createStrictMock(StorageManager.class);
       PostOffice po = createStrictMock(PostOffice.class);
       HierarchicalRepository<QueueSettings> qs = createStrictMock(HierarchicalRepository.class);

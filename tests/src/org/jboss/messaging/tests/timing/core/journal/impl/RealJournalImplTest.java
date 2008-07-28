@@ -22,11 +22,11 @@
 
 package org.jboss.messaging.tests.timing.core.journal.impl;
 
+import java.io.File;
+
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
-
-import java.io.File;
 
 /**
  * 

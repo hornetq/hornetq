@@ -24,8 +24,9 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -37,6 +38,9 @@ import org.jboss.messaging.util.MessagingBuffer;
 public class ReceiveMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(ReceiveMessage.class);
+
 
    // Attributes ----------------------------------------------------
 

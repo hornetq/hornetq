@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -146,6 +146,25 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
       messageCount = buffer.getInt();
       filterString  = buffer.getNullableSimpleString();
       address = buffer.getNullableSimpleString();
+   }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionQueueQueryResponseMessage == false)
+      {
+         return false;
+      }
+            
+      SessionQueueQueryResponseMessage r = (SessionQueueQueryResponseMessage)other;
+      
+      return super.equals(other) && this.exists == r.exists &&
+               this.durable == r.durable &&
+               this.temporary == r.temporary &&
+               this.maxSize == r.maxSize &&
+               this.consumerCount == r.consumerCount &&
+               this.messageCount == r.messageCount &&
+               this.filterString == null ? r.filterString == null : this.filterString.equals(r.filterString) &&
+               this.address == null ? r.address == null : this.address.equals(r.address);
    }
    
 }

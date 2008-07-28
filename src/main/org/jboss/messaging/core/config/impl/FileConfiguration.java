@@ -26,6 +26,10 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.logging.Logger;
@@ -71,8 +75,6 @@ public class FileConfiguration extends ConfigurationImpl
       
       scheduledThreadPoolMaxSize = getInteger(e, "scheduled-max-pool-size", scheduledThreadPoolMaxSize);
       
-      threadPoolMaxSize = getInteger(e, "max-pool-size", threadPoolMaxSize);
-      
       requireDestinations = getBoolean(e, "require-destinations", requireDestinations);
       
       securityEnabled = getBoolean(e, "security-enabled", securityEnabled);
@@ -86,7 +88,9 @@ public class FileConfiguration extends ConfigurationImpl
       host = getString(e, "remoting-host", host);
 
       if (System.getProperty("java.rmi.server.hostname") == null)
+      {
          System.setProperty("java.rmi.server.hostname", host);
+      }
 
       port = getInteger(e, "remoting-port", port);
 
@@ -101,8 +105,6 @@ public class FileConfiguration extends ConfigurationImpl
       int tcpSendBufferSize = getInteger(e, "remoting-tcp-send-buffer-size", ConnectionParamsImpl.DEFAULT_TCP_SEND_BUFFER_SIZE);
 
       int pingInterval = getInteger(e, "remoting-ping-interval", ConnectionParamsImpl.DEFAULT_PING_INTERVAL);
-
-      int pingTimeout = getInteger(e, "remoting-ping-timeout", ConnectionParamsImpl.DEFAULT_PING_TIMEOUT);
 
       sslEnabled = getBoolean(e, "remoting-enable-ssl", ConnectionParamsImpl.DEFAULT_SSL_ENABLED);
 
@@ -126,10 +128,49 @@ public class FileConfiguration extends ConfigurationImpl
       
       defaultConnectionParams.setPingInterval(pingInterval);
       
-      defaultConnectionParams.setPingTimeout(pingTimeout);
-      
       defaultConnectionParams.setSSLEnabled(sslEnabled);
       
+      NodeList interceptorNodes = e.getElementsByTagName("remoting-interceptors");
+
+      ArrayList<String> interceptorList = new ArrayList<String>();
+
+      if (interceptorNodes.getLength() > 0)
+      {
+         NodeList interceptors = interceptorNodes.item(0).getChildNodes();
+
+         for (int k = 0; k < interceptors.getLength(); k++)
+         {
+            if ("class-name".equalsIgnoreCase(interceptors.item(k).getNodeName()))
+            {
+               String clazz = interceptors.item(k).getTextContent();
+               
+               interceptorList.add(clazz);
+            }
+         }
+      }
+      this.interceptorClassNames = interceptorList;
+      
+      NodeList acceptorFactoryNodes = e.getElementsByTagName("remoting-acceptor-factories");
+      
+      Set<String> acceptorFactories = new HashSet<String>();
+
+      if (acceptorFactoryNodes.getLength() > 0)
+      {
+         NodeList factories = acceptorFactoryNodes.item(0).getChildNodes();
+
+         for (int k = 0; k < factories.getLength(); k++)
+         {
+            if ("class-name".equalsIgnoreCase(factories.item(k).getNodeName()))
+            {
+               String clazz = factories.item(k).getTextContent();
+               
+               acceptorFactories.add(clazz);
+            }
+         }
+      }
+      this.acceptorFactoryClassNames = acceptorFactories;
+      
+    
       // Persistence config
 
       bindingsDirectory = getString(e, "bindings-directory", bindingsDirectory);
@@ -170,24 +211,7 @@ public class FileConfiguration extends ConfigurationImpl
 
       journalMaxAIO = getInteger(e, "journal-max-aio", journalMaxAIO);
       
-      NodeList defaultInterceptors = e.getElementsByTagName("default-interceptors-config");
-
-      ArrayList<String> interceptorList = new ArrayList<String>();
-
-      if (defaultInterceptors.getLength() > 0)
-      {
-         NodeList interceptors = defaultInterceptors.item(0).getChildNodes();
-
-         for (int k = 0; k < interceptors.getLength(); k++)
-         {
-            if ("interceptor".equalsIgnoreCase(interceptors.item(k).getNodeName()))
-            {
-               String clazz = interceptors.item(k).getAttributes().getNamedItem("class").getNodeValue();
-               interceptorList.add(clazz);
-            }
-         }
-      }
-      this.interceptorClassNames = interceptorList;
+      
    }
 
    public String getConfigurationUrl()
@@ -207,9 +231,7 @@ public class FileConfiguration extends ConfigurationImpl
       NodeList nl = e.getElementsByTagName(name);
       if (nl.getLength() > 0)
       {         
-         boolean b = Boolean.valueOf(nl.item(0).getTextContent().trim());
-         log.info(name + ": found boolean: " + b);
-         return b;
+         return Boolean.valueOf(nl.item(0).getTextContent().trim());
       }
       return def;
    }

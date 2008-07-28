@@ -22,14 +22,34 @@
 
 package org.jboss.messaging.jms.client;
 
+import javax.jms.Connection;
+import javax.jms.ConnectionConsumer;
+import javax.jms.ConnectionMetaData;
+import javax.jms.Destination;
+import javax.jms.ExceptionListener;
+import javax.jms.IllegalStateException;
+import javax.jms.JMSException;
+import javax.jms.Queue;
+import javax.jms.QueueConnection;
+import javax.jms.QueueSession;
+import javax.jms.ServerSessionPool;
+import javax.jms.Session;
+import javax.jms.Topic;
+import javax.jms.TopicConnection;
+import javax.jms.TopicSession;
+import javax.jms.XAConnection;
+import javax.jms.XAQueueConnection;
+import javax.jms.XAQueueSession;
+import javax.jms.XASession;
+import javax.jms.XATopicConnection;
+import javax.jms.XATopicSession;
+
 import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-
-import javax.jms.*;
-import javax.jms.IllegalStateException;
+import org.jboss.messaging.core.remoting.FailureListener;
+import org.jboss.messaging.core.remoting.RemotingConnection;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -86,7 +106,7 @@ public class JBossConnection implements
 
       try
       {
-         connection.setRemotingSessionListener(new JMSFailureListener());
+         connection.setFailureListener(new JMSFailureListener());
       }
       catch (MessagingException e)
       {
@@ -387,9 +407,9 @@ public class JBossConnection implements
 
    // Inner classes --------------------------------------------------------------------------------
    
-   private class JMSFailureListener implements RemotingSessionListener
+   private class JMSFailureListener implements FailureListener
    {
-      public void sessionDestroyed(long sessionID, MessagingException me)
+      public void connectionFailed(final MessagingException me)
       {
          if (me == null)
          {

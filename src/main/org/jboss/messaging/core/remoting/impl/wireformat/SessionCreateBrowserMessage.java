@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -99,7 +99,7 @@ public class SessionCreateBrowserMessage extends PacketImpl
             
       SessionCreateBrowserMessage r = (SessionCreateBrowserMessage)other;
       
-      return this.queueName.equals(r.queueName) &&
+      return super.equals(other) && this.queueName.equals(r.queueName) &&
              this.filterString == null ? r.filterString == null : this.filterString.equals(r.filterString);
    }
 

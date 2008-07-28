@@ -22,14 +22,18 @@
 
 package org.jboss.messaging.core.remoting.impl.mina;
 
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+
 import org.apache.mina.common.IoBuffer;
 import org.apache.mina.common.IoSession;
-import org.apache.mina.filter.codec.*;
+import org.apache.mina.filter.codec.CumulativeProtocolDecoder;
+import org.apache.mina.filter.codec.ProtocolCodecFactory;
+import org.apache.mina.filter.codec.ProtocolDecoder;
+import org.apache.mina.filter.codec.ProtocolDecoderOutput;
+import org.apache.mina.filter.codec.ProtocolEncoder;
+import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.MessagingCodec;
-import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.impl.MessagingCodecImpl;
-import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.core.remoting.RemotingHandler;
 
 /**
  * A Mina ProtocolEncoder used to encode/decode messages.
@@ -40,11 +44,17 @@ import org.jboss.messaging.util.MessagingBuffer;
 public class MinaProtocolCodecFilter extends CumulativeProtocolDecoder
         implements ProtocolEncoder, ProtocolCodecFactory
 {
-   private static final Logger log = Logger.getLogger(MessagingCodecImpl.class);
+   private static final Logger log = Logger.getLogger(MinaProtocolCodecFilter.class);
+   
+   private final RemotingHandler handler;
+   
+   public MinaProtocolCodecFilter(final RemotingHandler handler)
+   {
+      this.handler = handler;
+   }
 
    // ProtocolCodecFactory implementation
    // -----------------------------------------------------------------------------------
-   private MessagingCodec messagingCodec = new MessagingCodecImpl();
 
    public ProtocolDecoder getDecoder(final IoSession session)
    {
@@ -65,16 +75,7 @@ public class MinaProtocolCodecFilter extends CumulativeProtocolDecoder
    public void encode(final IoSession session, final Object message,
                       final ProtocolEncoderOutput out) throws Exception
    {
-
-      IoBuffer iobuf = IoBuffer.allocate(1024, false);
-
-      iobuf.setAutoExpand(true);
-
-      MessagingBuffer buffer = new IoBufferWrapper(iobuf);
-
-      messagingCodec.encode(buffer, message);
-
-      out.write(iobuf);
+      out.write(message);
    }
 
    // CumulativeProtocolDecoder overrides
@@ -82,14 +83,33 @@ public class MinaProtocolCodecFilter extends CumulativeProtocolDecoder
 
    public boolean doDecode(final IoSession session, final IoBuffer in, final ProtocolDecoderOutput out) throws Exception
    {
-      MessagingBuffer buff = new IoBufferWrapper(in);
-
-      Packet packet = messagingCodec.decode(buff);
-      if(packet != null)
-      {
-         out.write(packet);
+      //TODO - we can avoid this entirely if we maintain fragmented packets in the handler
+      
+      int start = in.position();
+      
+      int length = handler.isReadyToHandle(new IoBufferWrapper(in));
+      
+      if (length == -1)
+      {         
+         in.position(start);
+         
+         return false;
       }
-      return packet != null;
+
+      //We need to make a copy due to possible bug in MINA.
+      IoBuffer copied = IoBuffer.allocate(in.remaining());
+      copied.put(in);
+      copied.setAutoExpand(true);
+      copied.flip();
+      
+      in.position(start + length + SIZE_INT);
+      
+      out.write(copied);      
+      
+      return true;    
    }
 }
+
+
+
 

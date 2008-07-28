@@ -28,7 +28,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerFlowCreditMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerProducer;
@@ -58,7 +58,7 @@ public class ServerProducerImpl implements ServerProducer
 	
 	private final int windowSize;
 	
-	private final PacketReturner sender;
+	private final RemotingConnection remotingConnection;
 	
 	private volatile boolean waiting;
 	
@@ -68,7 +68,7 @@ public class ServerProducerImpl implements ServerProducer
 	
 	public ServerProducerImpl(final ServerSession session, final long clientTargetID,
 	                          final SimpleString address, 
-			                    final PacketReturner sender,
+			                    final RemotingConnection remotingConnection,
 			                    final FlowController flowController,
 			                    final int windowSize,
 			                    final PacketDispatcher dispatcher) throws Exception
@@ -81,7 +81,7 @@ public class ServerProducerImpl implements ServerProducer
 		
 		this.address = address;
 		
-		this.sender = sender;
+		this.remotingConnection = remotingConnection;
 		
 		this.flowController = flowController;		
 		
@@ -136,7 +136,7 @@ public class ServerProducerImpl implements ServerProducer
 		
 		packet.setTargetID(clientTargetID);
 		packet.setExecutorID(session.getID());
-		sender.send(packet);		
+		remotingConnection.sendOneWay(packet);		
 	}
 	
 	public void setWaiting(final boolean waiting)

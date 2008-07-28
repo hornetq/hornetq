@@ -22,6 +22,10 @@
 
 package org.jboss.messaging.core.client.impl;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -32,10 +36,7 @@ import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -68,7 +69,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    
    private final long clientTargetID;
    
-   private final ExecutorService sessionExecutor;
+   private final Executor sessionExecutor;
    
    private final long sessionTargetID;
    
@@ -115,7 +116,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                              final boolean direct,
                              final RemotingConnection remotingConnection,
                              final PacketDispatcher dispatcher,
-                             final ExecutorService executorService,
+                             final Executor executor,
                              final long sessionTargetID)
    {
       this.targetID = targetID;
@@ -126,7 +127,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       
       this.sessionTargetID = sessionTargetID;
       
-      this.sessionExecutor = executorService;
+      this.sessionExecutor = executor;
       
       this.remotingConnection = remotingConnection;
       
@@ -324,6 +325,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          }
       }
       
+      
+      
       if (handler != null)
       {
          if (direct)
@@ -346,7 +349,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          	//Execute using executor
          	
          	synchronized (this)
-         	{
+         	{   
          		buffer.addLast(message, message.getPriority());         		
          	}
          	            	
@@ -357,7 +360,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
       	 // Add it to the buffer
       	synchronized (this)
-      	{
+      	{      	         	   
       		buffer.addLast(message, message.getPriority());
          	      		
       		notify();
@@ -436,26 +439,19 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // If called from inside onMessage then return immediately - otherwise would block
          return;
       }
-
-      Future<?> future = sessionExecutor.submit(new Runnable() { public void run() {} });
-
-      long start = System.currentTimeMillis();
-      try
-      {
-      	future.get(CLOSE_TIMEOUT_MILLISECONDS, TimeUnit.MILLISECONDS);
-      }
-      catch (Exception e)
-      {
-      	//Ignore
-      }
-      long end = System.currentTimeMillis();
       
-      if (end - start >= CLOSE_TIMEOUT_MILLISECONDS)
+      Future future = new Future();
+
+      sessionExecutor.execute(future);
+      
+      boolean ok = future.await(CLOSE_TIMEOUT_MILLISECONDS);
+
+      if (!ok)
       {
       	log.warn("Timed out waiting for handler to complete processing");
       }
    }
-
+     
    private void checkClosed() throws MessagingException
    {
       if (closed)
@@ -559,6 +555,28 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          callOnMessage();
       } 
+   }
+   
+   private static class Future implements Runnable
+   {
+      private CountDownLatch latch = new CountDownLatch(1);
+      
+      public boolean await(long timeout)
+      {
+         try
+         {
+            return latch.await(timeout, TimeUnit.MILLISECONDS);
+         }
+         catch (Exception e)
+         {
+            return false;
+         }
+      }
+      
+      public void run()
+      {
+         latch.countDown();
+      }
    }
    
 

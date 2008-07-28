@@ -23,104 +23,33 @@
 package org.jboss.messaging.tests.unit.core.remoting.impl.mina;
 
 import org.easymock.EasyMock;
-import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.Location;
-import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
-import org.jboss.messaging.core.client.impl.LocationImpl;
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.*;
-import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
+import org.jboss.messaging.core.remoting.ConnectionLifeCycleListener;
+import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.impl.mina.MinaAcceptor;
-import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
- * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * 
+ * A MinaAcceptorTest
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ *
  */
 public class MinaAcceptorTest extends UnitTestCase
 {
-   public void testStartAccepting() throws Exception
+   public void testStartStop() throws Exception
    {
-      MinaAcceptor acceptor = new MinaAcceptor();
-      ConfigurationImpl conf = new ConfigurationImpl();
-      conf.setTransport(TransportType.TCP);
-      conf.setPort(5400);
-      conf.setHost("localhost");
-      try
-      {
-         RemotingService remotingService = EasyMock.createStrictMock(RemotingService.class);
-         CleanUpNotifier cleanUpNotifier = EasyMock.createStrictMock(CleanUpNotifier.class);
-         PacketDispatcher packetDispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
-         EasyMock.expect(remotingService.getConfiguration()).andReturn(conf).anyTimes();
-         EasyMock.expect(remotingService.getDispatcher()).andReturn(packetDispatcher);
-         EasyMock.expect(remotingService.getConfiguration()).andReturn(conf).anyTimes();
-         remotingService.registerPinger((RemotingSession) EasyMock.anyObject());
-         remotingService.unregisterPinger(EasyMock.anyLong());
-         cleanUpNotifier.fireCleanup(EasyMock.anyLong(), (MessagingException) EasyMock.isNull());
-         EasyMock.replay(remotingService, cleanUpNotifier);
-         acceptor.startAccepting(remotingService, cleanUpNotifier);
-         Location location = new LocationImpl(TransportType.TCP, "localhost", 5400);
-         MinaConnector minaConnector = new MinaConnector(location, new PacketDispatcherImpl(null));
-         minaConnector.connect();
-         minaConnector.disconnect();
-         EasyMock.verify(remotingService, cleanUpNotifier);
-      }
-      finally
-      {
-         acceptor.stopAccepting();
-      }
-   }
-
-   /**
-    * todo this is an underlying mina problem when SSL is used. 
-    * @throws Exception
-    */
-   public void _testStartAcceptingUsingSSL() throws Exception
-   {
-      MinaAcceptor acceptor = new MinaAcceptor();
-      ConfigurationImpl conf = new ConfigurationImpl();
-      conf.setTransport(TransportType.TCP);
-      conf.setPort(5402);
-      conf.setHost("localhost");
-      conf.setSSLEnabled(true);
-      conf.setKeyStorePath("messaging.keystore");
-      conf.setKeyStorePassword("secureexample");
-      conf.setTrustStorePath("messaging.truststore");
-      conf.setTrustStorePassword("secureexample");
-      try
-      {
-         RemotingService remotingService = EasyMock.createStrictMock(RemotingService.class);
-         CleanUpNotifier cleanUpNotifier = EasyMock.createStrictMock(CleanUpNotifier.class);
-         PacketDispatcher packetDispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
-         EasyMock.expect(remotingService.getConfiguration()).andReturn(conf).anyTimes();
-         EasyMock.expect(remotingService.getDispatcher()).andReturn(packetDispatcher);
-         EasyMock.expect(remotingService.getConfiguration()).andReturn(conf).anyTimes();
-         remotingService.registerPinger((RemotingSession) EasyMock.anyObject());
-         remotingService.unregisterPinger(EasyMock.anyLong());
-         cleanUpNotifier.fireCleanup(EasyMock.anyLong(), (MessagingException) EasyMock.isNull());
-         EasyMock.replay(remotingService, cleanUpNotifier);
-         acceptor.startAccepting(remotingService, cleanUpNotifier);
-         ConnectionParams connectionParams = new ConnectionParamsImpl();
-         connectionParams.setSSLEnabled(true);
-         connectionParams.setKeyStorePath("messaging.keystore");
-         connectionParams.setKeyStorePassword("secureexample");
-         connectionParams.setTrustStorePath("messaging.truststore");
-         connectionParams.setTrustStorePassword("secureexample");
-         MinaConnector minaConnector = new MinaConnector(conf.getLocation(), connectionParams, new PacketDispatcherImpl(null));
-         minaConnector.connect();
-         //Please don't add Thread.sleeps to fudge the problem so the test passes!
-         //Instead - fix the underlying issue
-         minaConnector.disconnect();
-         EasyMock.verify(remotingService, cleanUpNotifier);
-      }
-      catch(Exception e)
-      {
-         e.printStackTrace();
-      }
-      finally
-      {
-         acceptor.stopAccepting();
-      }
+      RemotingHandler handler = EasyMock.createStrictMock(RemotingHandler.class);
+      Configuration config = new ConfigurationImpl();
+      ConnectionLifeCycleListener listener = EasyMock.createStrictMock(ConnectionLifeCycleListener.class);
+      MinaAcceptor acceptor = new MinaAcceptor(config, handler, listener);
+      
+      acceptor.start();
+      acceptor.stop();
+      acceptor.start();
+      acceptor.stop();
+      
    }
 }

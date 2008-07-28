@@ -36,5 +36,5 @@ import org.jboss.messaging.core.exception.MessagingException;
  */
 public interface Interceptor
 {   
-   void intercept(Packet packet) throws MessagingException;
+   boolean intercept(Packet packet) throws MessagingException;
 }

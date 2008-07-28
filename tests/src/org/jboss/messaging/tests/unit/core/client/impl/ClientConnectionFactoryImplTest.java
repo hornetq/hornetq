@@ -23,16 +23,20 @@
 package org.jboss.messaging.tests.unit.core.client.impl;
 
 import org.easymock.EasyMock;
-import org.jboss.messaging.core.client.*;
+import org.jboss.messaging.core.client.ClientConnection;
+import org.jboss.messaging.core.client.ClientConnectionFactory;
+import org.jboss.messaging.core.client.ConnectionParams;
+import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientConnectionImpl;
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.ConnectionRegistry;
+import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.RemotingConnectionFactory;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
@@ -114,81 +118,38 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
       testCreateConnectionWithUsernameAndPassword("bob", "wibble");
    }
    
-   public void testMessagingExceptionOnStart() throws Throwable
-   {
-      final Location location = new LocationImpl(TransportType.TCP, "apple pie");
-      
-      final ConnectionParams params = new ConnectionParamsImpl();
-      
-      RemotingConnectionFactory rcf = EasyMock.createStrictMock(RemotingConnectionFactory.class);
-      
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
-      
-      ClientConnectionFactory cf =
-         new ClientConnectionFactoryImpl(rcf, location, params,
-               32432, 4323,
-               453453, 54543, false,
-               false, false);
-      
-      MessagingException me = new MessagingException(MessagingException.INTERNAL_ERROR, "giraffe");
-      
-      EasyMock.expect(rcf.createRemotingConnection(location, params)).andReturn(rc);
-      
-      //Exception on start
-      rc.start();
-      
-      EasyMock.expectLastCall().andThrow(me);
-      
-      //Stop should be called
-      
-      rc.stop();
-      
-      EasyMock.replay(rcf, rc);
-      
-      try
-      {
-         cf.createConnection();
-         
-         fail("Should throw exception");
-      }
-      catch (MessagingException e)
-      {
-         assertEquals(me.getMessage(), e.getMessage());
-      }
-      
-      EasyMock.verify(rcf, rc);
-   }
-   
-   public void testThrowableOnStart() throws Throwable
+   public void testMessagingExceptionOnCreateConnection() throws Throwable
    {
       final Location location = new LocationImpl(TransportType.TCP, "baked beans");
       
       final ConnectionParams params = new ConnectionParamsImpl();
       
-      RemotingConnectionFactory rcf = EasyMock.createStrictMock(RemotingConnectionFactory.class);
-      
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
       
-      ClientConnectionFactory cf =
-         new ClientConnectionFactoryImpl(rcf, location, params,
+      ConnectionRegistry cr = EasyMock.createStrictMock(ConnectionRegistry.class);
+      
+      ClientConnectionFactoryImpl cf =
+         new ClientConnectionFactoryImpl(location, params,
                32432, 4323,
                453453, 54543, false,
                false, false);
       
-      Throwable t = new Throwable();
+      cf.setConnectionRegistry(cr);
       
-      EasyMock.expect(rcf.createRemotingConnection(location, params)).andReturn(rc);
+      MessagingException me = new MessagingException(1234, "blahblah");
       
-      //Exception on start
-      rc.start();
+      EasyMock.expect(cr.getConnection(location, params)).andReturn(rc);
       
-      EasyMock.expectLastCall().andThrow(t);
+      Version clientVersion = VersionLoader.load();
       
-      //Stop should be called
+      CreateConnectionRequest request =
+         new CreateConnectionRequest(clientVersion.getIncrementingVersion(), null, null);
+        
+      EasyMock.expect(rc.sendBlocking(0, 0, request)).andThrow(me);
       
-      rc.stop();
+      cr.returnConnection(location);
       
-      EasyMock.replay(rcf, rc);
+      EasyMock.replay(cr, rc);
       
       try
       {
@@ -198,12 +159,10 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
       }
       catch (MessagingException e)
       {
-         assertTrue(e.getCause() == t);
-         
-         assertEquals(MessagingException.INTERNAL_ERROR, e.getCode());
+         assertTrue(e == me);
       }
       
-      EasyMock.verify(rcf, rc);
+      EasyMock.verify(cr, rc);
    }
    
    // Private -----------------------------------------------------------------------------------------------------------
@@ -214,21 +173,21 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
       
       final ConnectionParams params = new ConnectionParamsImpl();
       
-      RemotingConnectionFactory rcf = EasyMock.createStrictMock(RemotingConnectionFactory.class);
+      ConnectionRegistry cr = EasyMock.createStrictMock(ConnectionRegistry.class);
       
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
       PacketDispatcher dispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
       
-      ClientConnectionFactory cf =
-         new ClientConnectionFactoryImpl(rcf, location, params,
+      ClientConnectionFactoryImpl cf =
+         new ClientConnectionFactoryImpl(location, params,
                32432, 4323,
                453453, 54543, false,
                false, false);
       
-      EasyMock.expect(rcf.createRemotingConnection(location, params)).andReturn(rc);
+      cf.setConnectionRegistry(cr);
+            
+      EasyMock.expect(cr.getConnection(location, params)).andReturn(rc);
       
-      rc.start();
-
       Version clientVersion = VersionLoader.load();
       
       CreateConnectionRequest request =
@@ -244,8 +203,8 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
       EasyMock.expect(rc.sendBlocking(0, 0, request)).andReturn(response);
 
       EasyMock.expect(rc.getPacketDispatcher()).andReturn(dispatcher);
-      rc.addRemotingSessionListener((RemotingSessionListener) EasyMock.anyObject());
-      EasyMock.replay(rcf, rc, dispatcher);
+      rc.addFailureListener((FailureListener) EasyMock.anyObject());
+      EasyMock.replay(cr, rc, dispatcher);
       
       ClientConnection conn;
       
@@ -258,7 +217,7 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
          conn = cf.createConnection(username, password);
       }
          
-      EasyMock.verify(rcf, rc, dispatcher);
+      EasyMock.verify(cr, rc, dispatcher);
       
       assertTrue(conn instanceof ClientConnectionImpl);
       
@@ -273,7 +232,7 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
          final boolean defaultSendPersistentMessagesBlocking) throws Exception
    {
       ClientConnectionFactory cf =
-         new ClientConnectionFactoryImpl(EasyMock.createMock(RemotingConnectionFactory.class), location, params, defaultConsumerWindowSize, defaultConsumerMaxRate,
+         new ClientConnectionFactoryImpl(location, params, defaultConsumerWindowSize, defaultConsumerMaxRate,
                defaultProducerWindowSize, defaultProducerMaxRate, defaultBlockOnAcknowledge,
                defaultSendNonPersistentMessagesBlocking, defaultSendPersistentMessagesBlocking);
       

@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.core.server;
 
-import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.util.SimpleString;
 
@@ -38,8 +37,7 @@ public interface ServerConnection
 {
 	long getID();
 	
-	ConnectionCreateSessionResponseMessage createSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks,
-                                                        PacketReturner returner) throws Exception;
+	ConnectionCreateSessionResponseMessage createSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks) throws Exception;
 	
 	void start() throws Exception;
 	
@@ -62,8 +60,6 @@ public interface ServerConnection
 	void removeTemporaryDestination(SimpleString destination);
 	
 	boolean isStarted();
-	
-	long getClientSessionID();
 	
 	boolean isClosed();
 }

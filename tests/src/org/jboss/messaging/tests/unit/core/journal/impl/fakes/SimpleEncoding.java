@@ -20,11 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.tests.unit.core.journal.impl.fakes;
 
 import org.jboss.messaging.core.journal.EncodingSupport;
-import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 
 /**
  * Provides a SimpleEncoding with a Fake Payload

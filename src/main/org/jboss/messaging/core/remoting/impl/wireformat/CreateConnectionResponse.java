@@ -22,9 +22,9 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.core.version.impl.VersionImpl;
-import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -98,6 +98,22 @@ public class CreateConnectionResponse extends PacketImpl
    public String toString()
    {
       return getParentString() + ", connectionID" + connectionTargetID + "]";
+   }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof CreateConnectionResponse == false)
+      {
+         return false;
+      }
+            
+      CreateConnectionResponse r = (CreateConnectionResponse)other;
+      
+      boolean matches = super.equals(other) &&
+                        this.connectionTargetID == r.connectionTargetID &&
+                        this.serverVersion.equals(r.serverVersion);
+      
+      return matches;
    }
 
    // Package protected ---------------------------------------------

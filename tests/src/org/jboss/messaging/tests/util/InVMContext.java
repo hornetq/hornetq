@@ -43,7 +43,6 @@ import javax.naming.RefAddr;
 import javax.naming.Reference;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.tests.util.NonSerializableFactory;
 
 
 /**

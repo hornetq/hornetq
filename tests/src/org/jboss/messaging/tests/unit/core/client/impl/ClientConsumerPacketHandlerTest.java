@@ -26,7 +26,6 @@ import org.easymock.EasyMock;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.impl.ClientConsumerInternal;
 import org.jboss.messaging.core.client.impl.ClientConsumerPacketHandler;
-import org.jboss.messaging.core.remoting.PacketReturner;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -58,13 +57,13 @@ public class ClientConsumerPacketHandlerTest extends UnitTestCase
       
       EasyMock.replay(consumer, msg);
       
-      handler.handle(rm, EasyMock.createStrictMock(PacketReturner.class));
+      handler.handle(123123, rm);
       
       EasyMock.verify(consumer, msg);
       
       try
       {
-         handler.handle(new PacketImpl(PacketImpl.CONN_START), EasyMock.createStrictMock(PacketReturner.class));
+         handler.handle(1212, new PacketImpl(PacketImpl.CONN_START));
          fail("Should throw Exception");
       }
       catch (IllegalStateException e)

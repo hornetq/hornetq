@@ -22,13 +22,13 @@
 
 package org.jboss.messaging.tests.timing.core.journal.impl;
 
+import java.util.ArrayList;
+
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.tests.unit.core.journal.impl.JournalImplTestBase;
-
-import java.util.ArrayList;
 
 /**
  * 

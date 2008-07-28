@@ -22,15 +22,21 @@
 
 package org.jboss.messaging.tests.unit.util;
 
-import junit.framework.TestCase;
-import org.jboss.messaging.util.ObjectInputStreamWithClassLoader;
-
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+
+import junit.framework.TestCase;
+
+import org.jboss.messaging.util.ObjectInputStreamWithClassLoader;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

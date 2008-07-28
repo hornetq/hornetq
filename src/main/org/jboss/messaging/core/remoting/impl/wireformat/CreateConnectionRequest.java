@@ -23,7 +23,7 @@
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -114,7 +114,8 @@ public class CreateConnectionRequest extends PacketImpl
             
       CreateConnectionRequest r = (CreateConnectionRequest)other;
       
-      boolean matches = this.version == r.version &&                     
+      boolean matches = super.equals(other) &&
+                        this.version == r.version &&                     
                         this.username == null ? r.username == null : this.username.equals(r.username) &&
                         this.password == null ? r.password == null : this.password.equals(r.password);
       

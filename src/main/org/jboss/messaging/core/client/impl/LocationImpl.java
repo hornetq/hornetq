@@ -39,14 +39,6 @@ public class LocationImpl implements Location
    
    private int port = ConfigurationImpl.DEFAULT_PORT;
    
-   private int serverID;
-   
-   public LocationImpl(final int serverID)
-   {
-      this.transport = TransportType.INVM;
-      this.serverID = serverID;
-   }
-
    public LocationImpl(final TransportType transport, final String host, final int port)
    {
       if (transport != TransportType.TCP && transport != TransportType.HTTP)
@@ -66,14 +58,7 @@ public class LocationImpl implements Location
 
    public String getLocation()
    {
-      if (transport == TransportType.INVM)
-      {
-         return "invm://" + serverID;
-      }
-      else
-      {
-         return transport +  "://" + host + ":" + port;
-      }
+      return transport +  "://" + host + ":" + port;      
    }
 
    public TransportType getTransport()
@@ -89,11 +74,6 @@ public class LocationImpl implements Location
    public int getPort()
    {
       return port;
-   }
-   
-   public int getServerID()
-   {
-      return serverID;
    }
    
    @Override
@@ -115,15 +95,15 @@ public class LocationImpl implements Location
    	   return false;
    	}
    	
-   	if (transport == TransportType.INVM)
-   	{
-   	   return serverID == lother.getServerID();
-   	}
-   	else
-   	{
+//   	if (transport == TransportType.INVM)
+//   	{
+//   	   return serverID == lother.getServerID();
+//   	}
+//   	else
+//   	{
    	   return this.transport.equals(lother.getTransport()) &&
    	          this.host.equals(lother.getHost()) &&
    	          this.port == lother.getPort();
-   	}
+   //	}
    }
 }

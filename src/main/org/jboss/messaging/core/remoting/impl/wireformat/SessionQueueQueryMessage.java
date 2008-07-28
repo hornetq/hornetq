@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 
@@ -73,7 +73,7 @@ public class SessionQueueQueryMessage extends PacketImpl
             
       SessionQueueQueryMessage r = (SessionQueueQueryMessage)other;
       
-      return r.queueName.equals(this.queueName);
+      return super.equals(other) && r.queueName.equals(this.queueName);
    }
    
 }

@@ -22,9 +22,9 @@
 
 package org.jboss.messaging.core.client;
 
-import org.jboss.messaging.core.remoting.TransportType;
-
 import java.io.Serializable;
+
+import org.jboss.messaging.core.remoting.TransportType;
 
 /**
  * The location of a JBM server and the type of transport to use. Used by clients when creating a connection factory
@@ -41,5 +41,5 @@ public interface Location extends Serializable
 
    int getPort();
 
-   public int getServerID();
+ //  public int getServerID();
 }

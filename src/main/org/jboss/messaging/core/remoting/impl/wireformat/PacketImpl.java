@@ -24,9 +24,9 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.util.DataConstants;
-import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -41,6 +41,10 @@ public class PacketImpl implements Packet
    private static final Logger log = Logger.getLogger(PacketImpl.class);
 
    public static final long NO_ID_SET = -1L;
+   
+   public static final int INITIAL_BUFFER_SIZE = 1024;
+   
+   private int commandID;
 
    private long responseTargetID = NO_ID_SET;
 
@@ -134,6 +138,16 @@ public class PacketImpl implements Packet
    {
       return type;
    }
+   
+   public void setCommandID(int commandID)
+   {
+      this.commandID = commandID;
+   }
+
+   public int getCommandID()
+   {
+      return commandID;
+   }
 
    public void setResponseTargetID(long responseTargetID)
    {
@@ -177,6 +191,7 @@ public class PacketImpl implements Packet
       //The standard header fields
       buffer.putInt(0); //The length gets filled in at the end
       buffer.putByte(type); 
+      buffer.putInt(commandID);
       buffer.putLong(responseTargetID);
       buffer.putLong(targetID);
       buffer.putLong(executorID);
@@ -191,8 +206,9 @@ public class PacketImpl implements Packet
       buffer.flip();
    }
 
-   public void decode(final MessagingBuffer buffer) throws Exception
+   public void decode(final MessagingBuffer buffer)
    {
+      commandID = buffer.getInt();
       responseTargetID = buffer.getLong();
       targetID = buffer.getLong();
       executorID = buffer.getLong();
@@ -223,7 +239,11 @@ public class PacketImpl implements Packet
             
       PacketImpl r = (PacketImpl)other;
       
-      return r.type == this.type;      
+      return r.type == this.type &&
+             r.responseTargetID == this.responseTargetID &&
+             r.commandID == this.commandID &&
+             r.executorID == this.executorID &&
+             r.targetID == this.targetID;
    }
    
    // Package protected ---------------------------------------------

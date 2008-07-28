@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -102,6 +102,21 @@ public class SessionCreateProducerResponseMessage extends PacketImpl
       buf.append(", maxRate=" + maxRate);
       buf.append("]");
       return buf.toString();
+   }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionCreateProducerResponseMessage == false)
+      {
+         return false;
+      }
+            
+      SessionCreateProducerResponseMessage r = (SessionCreateProducerResponseMessage)other;
+      
+      return super.equals(other) && this.producerTargetID == r.producerTargetID &&
+         this.initialCredits == r.initialCredits &&
+         this.maxRate == r.maxRate;
+      
    }
 
    // Package protected ---------------------------------------------

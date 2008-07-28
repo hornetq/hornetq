@@ -22,20 +22,22 @@
 
 package org.jboss.messaging.tests.unit.core.remoting.impl;
 
-import junit.framework.TestCase;
-import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.ResponseHandler;
-import org.jboss.messaging.core.remoting.impl.ResponseHandlerImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import java.util.concurrent.atomic.AtomicReference;
+
+import junit.framework.TestCase;
+
+import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.ResponseHandler;
+import org.jboss.messaging.core.remoting.impl.ResponseHandlerImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  * @version <tt>$Revision$</tt>
  * 
@@ -54,7 +56,6 @@ public class ResponseHandlerImplTest extends TestCase
 
    protected static final long TIMEOUT = 500;
 
-
    public void testReceiveResponseInTime() throws Exception
    {
       long id = randomLong();
@@ -63,33 +64,36 @@ public class ResponseHandlerImplTest extends TestCase
       final AtomicReference<Packet> receivedPacket = new AtomicReference<Packet>();
       final CountDownLatch latch = new CountDownLatch(1);
 
-      Executors.newSingleThreadExecutor().execute(new Runnable() {
+      Thread t = new Thread() {
          public void run()
          {
             Packet response = handler.waitForResponse(TIMEOUT);
             receivedPacket.set(response);
             latch.countDown();
          }         
-      });
+      };
+      
+      t.start();
 
-      Packet ping = new Ping(id);
-      handler.handle(ping, null);
+      Packet ping = new PacketImpl(PacketImpl.PING);
+      handler.handle(1243, ping);
 
       boolean gotPacketBeforeTimeout = latch.await(TIMEOUT, MILLISECONDS);
       assertTrue(gotPacketBeforeTimeout);
       assertNotNull(receivedPacket.get());
+      t.join();
    }
-
-
 
    public void testSetFailed() throws Exception
    {
       ResponseHandler handler = new ResponseHandlerImpl(randomLong());
       handler.setFailed();
-      try {
+      try
+      {
          handler.waitForResponse(TIMEOUT);
          fail("should throw a IllegalStateException");
-      } catch (IllegalStateException e)
+      }
+      catch (IllegalStateException e)
       {
       }
    }

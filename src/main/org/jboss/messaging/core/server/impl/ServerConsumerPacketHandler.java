@@ -22,13 +22,13 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NO_ID_SET;
-
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.PacketHandler;
+import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.server.ServerConsumer;
 
@@ -40,15 +40,19 @@ import org.jboss.messaging.core.server.ServerConsumer;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class ServerConsumerPacketHandler extends ServerPacketHandlerSupport
+public class ServerConsumerPacketHandler implements PacketHandler
 {
    private static final Logger log = Logger.getLogger(ServerConsumerPacketHandler.class);
 
 	private final ServerConsumer consumer;
 	
-	public ServerConsumerPacketHandler(final ServerConsumer consumer)
+	private final RemotingConnection remotingConnection;
+	
+	public ServerConsumerPacketHandler(final ServerConsumer consumer, final RemotingConnection remotingConnection)
 	{
 		this.consumer = consumer;
+		
+		this.remotingConnection = remotingConnection;
 	}
 
    public long getID()
@@ -56,31 +60,52 @@ public class ServerConsumerPacketHandler extends ServerPacketHandlerSupport
       return consumer.getID();
    }
 
-   public Packet doHandle(final Packet packet, final PacketReturner sender) throws Exception
+   public void handle(final long remotingConnectionID, final Packet packet)
    {
       Packet response = null;
 
       byte type = packet.getType();
-      switch (type)
+      
+      try
       {
-      case PacketImpl.CONS_FLOWTOKEN:
-         ConsumerFlowCreditMessage message = (ConsumerFlowCreditMessage) packet;
-         consumer.receiveCredits(message.getTokens());
-         break;
-      case PacketImpl.CLOSE:
-         consumer.close();
-         break;
-      default:
-         throw new MessagingException(MessagingException.UNSUPPORTED_PACKET,
-               "Unsupported packet " + type);
+         switch (type)
+         {
+         case PacketImpl.CONS_FLOWTOKEN:
+            ConsumerFlowCreditMessage message = (ConsumerFlowCreditMessage) packet;
+            consumer.receiveCredits(message.getTokens());
+            break;
+         case PacketImpl.CLOSE:
+            consumer.close();
+            response = new PacketImpl(PacketImpl.NULL);     
+            break;
+         default:
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.UNSUPPORTED_PACKET,
+                  "Unsupported packet " + type));
+         }
+      }
+      catch (Throwable t)
+      {
+         MessagingException me;
+         
+         log.error("Caught unexpected exception", t);         
+         
+         if (t instanceof MessagingException)
+         {
+            me = (MessagingException)t;
+         }
+         else
+         {            
+            me = new MessagingException(MessagingException.INTERNAL_ERROR);
+         }
+                  
+         response = new MessagingExceptionMessage(me);    
       }
 
-      // reply if necessary
-      if (response == null && packet.getResponseTargetID() != NO_ID_SET)
+      if (response != null)
       {
-         response = new PacketImpl(PacketImpl.NULL);               
+         response.normalize(packet);
+         
+         remotingConnection.sendOneWay(response);    
       }
-      
-      return response;
    }
 }

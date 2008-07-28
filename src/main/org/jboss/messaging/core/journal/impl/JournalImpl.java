@@ -58,7 +58,7 @@ import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.TestableJournal;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.util.ByteBufferWrapper;
+import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.VariableLatch;
 
@@ -726,7 +726,7 @@ public class JournalImpl implements TestableJournal
                hasData = true;
 
                bb.position(pos + 1);
-               //log.info("Record read at position " + pos + " doesn't belong to this current journal file, ignoring it!");
+        
                continue;
             }
             
@@ -1225,9 +1225,7 @@ public class JournalImpl implements TestableJournal
             //File can be reclaimed or deleted
             
             if (trace) log.trace("Reclaiming file " + file);
-            
-            log.info("Reclaiming file " + file);
-            
+              
             dataFiles.remove(file);
             
             //FIXME - size() involves a scan!!!
@@ -1245,8 +1243,6 @@ public class JournalImpl implements TestableJournal
                
                file.getFile().delete();
             }
-            
-            log.info("Done reclaiming");
          }
       }
    }

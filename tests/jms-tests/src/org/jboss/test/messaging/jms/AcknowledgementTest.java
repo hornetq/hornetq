@@ -610,9 +610,8 @@ public class AcknowledgementTest extends JMSTestCase
 
       try
       {
-
          conn = cf.createConnection();
-
+ 
          Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer producer = producerSess.createProducer(queue1);
 
@@ -665,6 +664,8 @@ public class AcknowledgementTest extends JMSTestCase
          log.trace("Message is:" + m);
 
          assertNull(m);
+         
+        // Thread.sleep(3000000);
       }
       finally
       {
@@ -1221,8 +1222,6 @@ public class AcknowledgementTest extends JMSTestCase
 
             TextMessage tm = (TextMessage) m;
 
-            log.info("Got message: " + tm.getText());
-
             // Receive first three messages then recover() session
             // Only last message should be redelivered
             if (count == 1)
@@ -1293,8 +1292,6 @@ public class AcknowledgementTest extends JMSTestCase
             count++;
 
             TextMessage tm = (TextMessage) m;
-            
-            log.info("got message " + tm.getText());
 
             // Receive first three messages then recover() session
             // Only last message should be redelivered

@@ -22,11 +22,12 @@
 
 package org.jboss.messaging.tests.unit.core.remoting.impl;
 
-import junit.framework.TestCase;
-import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
+import junit.framework.TestCase;
+
+import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -66,7 +67,8 @@ public class RemotingConfigurationValidatorTest extends TestCase
 
    public void testNegativePort()
    {
-      Configuration config = ConfigurationHelper.newTCPConfiguration("localhost", -1);
+      Configuration config = new ConfigurationImpl();
+      config.setPort(-1);
 
       try
       {
@@ -80,7 +82,7 @@ public class RemotingConfigurationValidatorTest extends TestCase
 
    public void test_TcpReceiveBufferSize_to_0()
    {
-      ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", 9000);
+      ConfigurationImpl config = new ConfigurationImpl();
       config.getConnectionParams().setTcpReceiveBufferSize(0);
       try
       {
@@ -94,14 +96,14 @@ public class RemotingConfigurationValidatorTest extends TestCase
 
    public void test_TcpReceiveBufferSize_to_minusOne()
    {
-      ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", 9000);
+      ConfigurationImpl config = new ConfigurationImpl();
       config.getConnectionParams().setTcpReceiveBufferSize(-1);
       validate(config);
    }
 
    public void test_TcpReceiveBufferSize_to_NegativeNumber()
    {
-      ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", 9000);
+      ConfigurationImpl config = new ConfigurationImpl();
       config.getConnectionParams().setTcpReceiveBufferSize(-2);
       try
       {
@@ -115,7 +117,7 @@ public class RemotingConfigurationValidatorTest extends TestCase
 
    public void test_TcpSendBufferSize_to_0()
    {
-      ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", 9000);
+      ConfigurationImpl config = new ConfigurationImpl();
       config.getConnectionParams().setTcpSendBufferSize(0);
       try
       {
@@ -129,14 +131,14 @@ public class RemotingConfigurationValidatorTest extends TestCase
 
    public void test_TcpSendBufferSize_to_minusOne()
    {
-      ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", 9000);
+      ConfigurationImpl config = new ConfigurationImpl();
       config.getConnectionParams().setTcpSendBufferSize(-1);
       validate(config);
    }
 
    public void test_TcpSendBufferSize_to_NegativeNumber()
    {
-      ConfigurationImpl config = ConfigurationHelper.newTCPConfiguration("localhost", 9000);
+      ConfigurationImpl config = new ConfigurationImpl();
       config.getConnectionParams().setTcpSendBufferSize(-2);
       try
       {

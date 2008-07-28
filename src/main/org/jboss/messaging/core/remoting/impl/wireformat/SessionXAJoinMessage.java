@@ -24,7 +24,7 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 
 
 /**
@@ -82,7 +82,7 @@ public class SessionXAJoinMessage extends PacketImpl
             
       SessionXAJoinMessage r = (SessionXAJoinMessage)other;
       
-      return this.xid.equals(r.xid);
+      return super.equals(other) && this.xid.equals(r.xid);
    }
    
    // Package protected ---------------------------------------------

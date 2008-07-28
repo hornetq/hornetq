@@ -22,13 +22,16 @@
 
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import org.apache.mina.common.IoBuffer;
-import org.jboss.messaging.core.logging.Logger;
-import static org.jboss.messaging.util.DataConstants.*;
-import org.jboss.messaging.util.MessagingBuffer;
-import org.jboss.messaging.util.SimpleString;
+import static org.jboss.messaging.util.DataConstants.FALSE;
+import static org.jboss.messaging.util.DataConstants.NOT_NULL;
+import static org.jboss.messaging.util.DataConstants.NULL;
+import static org.jboss.messaging.util.DataConstants.TRUE;
 
 import java.nio.charset.Charset;
+
+import org.apache.mina.common.IoBuffer;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -43,8 +46,6 @@ public class IoBufferWrapper implements MessagingBuffer
    // Constants -----------------------------------------------------
 
    private static final Charset utf8 = Charset.forName("UTF-8");
-   
-   private static final Logger log = Logger.getLogger(IoBufferWrapper.class);
    
    // Attributes ----------------------------------------------------
 
@@ -351,6 +352,11 @@ public class IoBufferWrapper implements MessagingBuffer
    public String getUTF() throws Exception
    {
       return buffer.getPrefixedString(utf8.newDecoder());
+   }
+   
+   public Object getUnderlyingBuffer()
+   {
+      return buffer;
    }
          
    // Package protected ---------------------------------------------

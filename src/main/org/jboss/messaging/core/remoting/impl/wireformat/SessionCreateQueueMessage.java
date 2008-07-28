@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -130,7 +130,7 @@ public class SessionCreateQueueMessage extends PacketImpl
             
       SessionCreateQueueMessage r = (SessionCreateQueueMessage)other;
       
-      return r.address.equals(this.address) && 
+      return super.equals(other) && r.address.equals(this.address) && 
              r.queueName.equals(this.queueName) &&
              (r.filterString == null ? this.filterString == null : r.filterString.equals(this.filterString)) &&
              r.durable == this.durable &&

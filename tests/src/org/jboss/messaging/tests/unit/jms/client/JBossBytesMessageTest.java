@@ -6,22 +6,34 @@
  */
 package org.jboss.messaging.tests.unit.jms.client;
 
-import junit.framework.TestCase;
-import org.easymock.EasyMock;
 import static org.easymock.EasyMock.expect;
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.impl.ClientMessageImpl;
-import org.jboss.messaging.jms.client.JBossBytesMessage;
-import static org.jboss.messaging.tests.util.RandomUtil.*;
+import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
+import static org.jboss.messaging.tests.util.RandomUtil.randomByte;
+import static org.jboss.messaging.tests.util.RandomUtil.randomBytes;
+import static org.jboss.messaging.tests.util.RandomUtil.randomChar;
+import static org.jboss.messaging.tests.util.RandomUtil.randomDouble;
+import static org.jboss.messaging.tests.util.RandomUtil.randomFloat;
+import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
+import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
+import static org.jboss.messaging.tests.util.RandomUtil.randomShort;
+import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import static org.jboss.messaging.tests.util.UnitTestCase.assertEqualsByteArrays;
-import org.jboss.messaging.util.ByteBufferWrapper;
-import org.jboss.messaging.util.MessagingBuffer;
+
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
 import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
+
+import junit.framework.TestCase;
+
+import org.easymock.EasyMock;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.impl.ClientMessageImpl;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
+import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
+import org.jboss.messaging.jms.client.JBossBytesMessage;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

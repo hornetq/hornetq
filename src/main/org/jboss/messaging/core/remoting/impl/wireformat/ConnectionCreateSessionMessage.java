@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -102,7 +102,8 @@ public class ConnectionCreateSessionMessage extends PacketImpl
             
       ConnectionCreateSessionMessage r = (ConnectionCreateSessionMessage)other;
       
-      boolean matches = this.xa == r.xa &&
+      boolean matches = super.equals(other) &&
+                        this.xa == r.xa &&
                         this.autoCommitSends == r.autoCommitSends &&
                         this.autoCommitAcks == r.autoCommitAcks;
       

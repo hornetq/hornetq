@@ -22,12 +22,19 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATECONNECTION;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PING;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PONG;
+
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.PacketReturner;
-import org.jboss.messaging.core.remoting.impl.wireformat.*;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATECONNECTION;
+import org.jboss.messaging.core.remoting.PacketHandler;
+import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.RemotingService;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
+import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.server.MessagingServer;
 
 /**
@@ -37,64 +44,77 @@ import org.jboss.messaging.core.server.MessagingServer;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class MessagingServerPacketHandler extends ServerPacketHandlerSupport
+public class MessagingServerPacketHandler implements PacketHandler
 {
    private static final Logger log = Logger.getLogger(MessagingServerPacketHandler.class);
 
    private final MessagingServer server;
+   
+   private final RemotingService remotingService;
 
-
-   public MessagingServerPacketHandler(final MessagingServer server)
+   public MessagingServerPacketHandler(final MessagingServer server, final RemotingService remotingService)
    {
       this.server = server;
-
+      
+      this.remotingService = remotingService;
    }
 
-   /*
-   * The advantage to use String as ID is that we can leverage Java 5 UUID to
-   * generate these IDs. However theses IDs are 128 bite long and it increases
-   * the size of a packet (compared to integer or long).
-   *
-   * By switching to Long, we could reduce the size of the packet and maybe
-   * increase the performance (to check after some performance tests)
-   */
    public long getID()
    {
       //0 is reserved for this handler
       return 0;
    }
-
-   public Packet doHandle(final Packet packet, final PacketReturner sender) throws Exception
+   
+   public void handle(final long connectionID, final Packet packet)
    {
       Packet response = null;
+            
+      RemotingConnection connection = remotingService.getConnection(connectionID);
 
       byte type = packet.getType();
-
-      if (type == CREATECONNECTION)
+      
+      try
       {
-         CreateConnectionRequest request = (CreateConnectionRequest) packet;
-
-         CreateConnectionResponse createConnectionResponse =
-            server.createConnection(request.getUsername(), request.getPassword(),                             
-                                    request.getVersion(),
-                                    sender);
-         response = createConnectionResponse;
-
+         if (type == PING)
+         {
+            response = new PacketImpl(PONG);
+         }
+         else if (type == CREATECONNECTION)
+         {            
+            CreateConnectionRequest request = (CreateConnectionRequest) packet;
+   
+            response =
+               server.createConnection(request.getUsername(), request.getPassword(),                             
+                                       request.getVersion(),
+                                       connection);               
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.UNSUPPORTED_PACKET,
+                    "Unsupported packet " + type));
+         }
       }
-      else if (type == PacketImpl.PING)
+      catch (Throwable t)
       {
-         Ping decodedPing = (Ping) packet;
-         Pong pong = new Pong(decodedPing.getSessionID(), !server.getRemotingService().isSession(sender.getSessionID()));
-         pong.setTargetID(decodedPing.getResponseTargetID());
-         sender.send(pong);
+         MessagingException me;
+         
+         log.error("Caught unexpected exception", t);         
+         
+         if (t instanceof MessagingException)
+         {
+            me = (MessagingException)t;
+         }
+         else
+         {            
+            me = new MessagingException(MessagingException.INTERNAL_ERROR);
+         }
+                  
+         response = new MessagingExceptionMessage(me);    
       }
-      else
-      {
-         throw new MessagingException(MessagingException.UNSUPPORTED_PACKET,
-                 "Unsupported packet " + type);
-      }
-
-      return response;
+      
+      response.normalize(packet);
+      
+      connection.sendOneWay(response);
    }
 
 }

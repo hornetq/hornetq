@@ -22,16 +22,19 @@
 
 package org.jboss.messaging.core.remoting.impl;
 
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.*;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NO_ID_SET;
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.Interceptor;
+import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.PacketHandler;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -43,8 +46,6 @@ public class PacketDispatcherImpl implements PacketDispatcher
 
    // Constants -----------------------------------------------------
 
-   private static final long serialVersionUID = -4626926952268528384L;
-
    public static final Logger log = Logger.getLogger(PacketDispatcherImpl.class);
 
    private static boolean trace = log.isTraceEnabled();
@@ -53,11 +54,9 @@ public class PacketDispatcherImpl implements PacketDispatcher
 
    private final Map<Long, PacketHandler> handlers;
 
-   private transient PacketHandlerRegistrationListener listener;
-
    private final AtomicLong idSequence = new AtomicLong(0);
 
-   private List<Interceptor> filters = new CopyOnWriteArrayList<Interceptor>();
+   private List<Interceptor> interceptors = new CopyOnWriteArrayList<Interceptor>();
 
    // Static --------------------------------------------------------
 
@@ -68,7 +67,7 @@ public class PacketDispatcherImpl implements PacketDispatcher
       handlers = new ConcurrentHashMap<Long, PacketHandler>();
       if (filters != null)
       {
-         this.filters.addAll(filters);
+         this.interceptors.addAll(filters);
       }
    }
 
@@ -90,17 +89,6 @@ public class PacketDispatcherImpl implements PacketDispatcher
    public void register(final PacketHandler handler)
    {
       handlers.put(handler.getID(), handler);
-
-      if (trace)
-      {
-         log.trace("registered " + handler + " with ID " + handler.getID()
-                 + " (" + this + ")");
-      }
-
-      if (listener != null)
-      {
-         listener.handlerRegistered(handler.getID());
-      }
    }
 
    public void unregister(final long handlerID)
@@ -111,20 +99,6 @@ public class PacketDispatcherImpl implements PacketDispatcher
       {
          throw new IllegalArgumentException("Failed to unregister handler " + handlerID);
       }
-      if (trace)
-      {
-         log.trace("unregistered " + handler);
-      }
-
-      if (listener != null)
-      {
-         listener.handlerUnregistered(handlerID);
-      }
-   }
-
-   public void setListener(final PacketHandlerRegistrationListener listener)
-   {
-      this.listener = listener;
    }
 
    public PacketHandler getHandler(final long handlerID)
@@ -134,31 +108,31 @@ public class PacketDispatcherImpl implements PacketDispatcher
 
    public void addInterceptor(Interceptor filter)
    {
-      filters.add(filter);
+      interceptors.add(filter);
    }
 
    public void removeInterceptor(Interceptor filter)
    {
-      filters.remove(filter);
+      interceptors.remove(filter);
+   }
+   
+   public List<Interceptor> getInterceptors()
+   {
+      return new ArrayList<Interceptor>(interceptors);
    }
 
-   public void dispatch(final Packet packet, final PacketReturner sender)
-           throws Exception
+   public void dispatch(final long connectionID, final Packet packet) throws Exception
    {
       long targetID = packet.getTargetID();
-      if (NO_ID_SET == targetID)
-      {
-         log.error("Packet is not handled, it has no targetID: " + packet
-                 + ": " + System.identityHashCode(packet));
-         return;
-      }
+      
       PacketHandler handler = getHandler(targetID);
+      
       if (handler != null)
       {
-         if (trace) log.trace(handler + " handles " + packet);
-
-         callFilters(packet);
-         handler.handle(packet, sender);
+         if (callInterceptors(packet))                  
+         {
+            handler.handle(connectionID, packet);
+         }
       }
       else
       {
@@ -170,25 +144,26 @@ public class PacketDispatcherImpl implements PacketDispatcher
       }
    }
 
-   /**
-    * Call filters on a package
-    */
-   public void callFilters(Packet packet) throws Exception
+   public boolean callInterceptors(final Packet packet) throws Exception
    {
-      if (filters != null)
+      if (interceptors != null)
       {
-         for (Interceptor filter : filters)
+         for (Interceptor interceptor : interceptors)
          {
             try
             {
-               filter.intercept(packet);
+               if (!interceptor.intercept(packet))
+               {
+                  return false;
+               }
             }
             catch (Throwable e)
             {
-               log.warn("unable to call interceptor: " + filter, e);
+               log.warn("Failed in calling interceptor: " + interceptor, e);
             }
-         }
+         }         
       }
+      return true;
    }
 
    // Package protected ---------------------------------------------

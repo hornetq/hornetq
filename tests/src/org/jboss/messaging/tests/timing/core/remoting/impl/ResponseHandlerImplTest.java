@@ -21,15 +21,15 @@
  */
 package org.jboss.messaging.tests.timing.core.remoting.impl;
 
+import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
+
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.ResponseHandler;
 import org.jboss.messaging.core.remoting.impl.ResponseHandlerImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
-import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
-
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -43,18 +43,23 @@ public class ResponseHandlerImplTest extends UnitTestCase
       final ResponseHandler handler = new ResponseHandlerImpl(randomLong());
       final AtomicReference<Packet> receivedPacket = new AtomicReference<Packet>();
 
-      Executors.newSingleThreadExecutor().execute(new Runnable() {
+      Thread t = new Thread() { 
 
          public void run()
          {
             Packet response = handler.waitForResponse(TIMEOUT);
             receivedPacket.set(response);
          }
-      });
+      };
+      
+      t.start();
+      
       // pause for twice the timeout before handling the packet
       Thread.sleep(TIMEOUT * 2);
-      handler.handle(new Ping(handler.getID()), null);
+      handler.handle(1234, new PacketImpl(PacketImpl.PING));
 
       assertNull(receivedPacket.get());
+      
+      t.join();
    }
 }

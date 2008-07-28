@@ -22,6 +22,17 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CLOSE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NO_ID_SET;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NULL;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_HASNEXTMESSAGE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_NEXTMESSAGE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_RESET;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
@@ -30,9 +41,9 @@ import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
-import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.*;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
 import org.jboss.messaging.core.server.MessageReference;
@@ -40,10 +51,6 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.util.SimpleString;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * Concrete implementation of BrowserEndpoint.
@@ -69,12 +76,14 @@ public class ServerBrowserImpl
    private final Queue destination;
    private final Filter filter;
    private Iterator<ServerMessage> iterator;
+   private final RemotingConnection remotingConnection;
    
    // Constructors ---------------------------------------------------------------------------------
 
    public ServerBrowserImpl(final ServerSession session,
                             final Queue destination, final String messageFilter,
-                            final PacketDispatcher dispatcher) throws MessagingException
+                            final PacketDispatcher dispatcher,
+                            final RemotingConnection remotingConnection) throws MessagingException
    {     
       this.session = session;
       
@@ -90,6 +99,8 @@ public class ServerBrowserImpl
 		{
 		   filter = null;
 		}
+		
+		this.remotingConnection = remotingConnection;
    }
 
    // BrowserEndpoint implementation ---------------------------------------------------------------
@@ -198,45 +209,63 @@ public class ServerBrowserImpl
 
    // Inner classes --------------------------------------------------------------------------------
    
-   private class ServerBrowserEndpointHandler extends ServerPacketHandlerSupport
+   private class ServerBrowserEndpointHandler implements PacketHandler
    {
       public long getID()
       {
          return ServerBrowserImpl.this.id;
       }
       
-      public Packet doHandle(Packet packet, PacketReturner sender) throws Exception
+      public void handle(final long connectionID, final Packet packet)
       {
          Packet response = null;
 
-         byte type = packet.getType();
-         switch (type)
+         try
          {
-         case SESS_BROWSER_HASNEXTMESSAGE:
-            response = new SessionBrowserHasNextMessageResponseMessage(hasNextMessage());            
-            break;
-         case SESS_BROWSER_NEXTMESSAGE:
-            ServerMessage message = nextMessage();               
-            response = new ReceiveMessage(message, 0, 0);
-            break;
-         case SESS_BROWSER_RESET:            
-            reset();
-            break;
-         case CLOSE:
-            close();
-            break;
-         default:
-            throw new MessagingException(MessagingException.UNSUPPORTED_PACKET,
-                  "Unsupported packet " + type);
+            byte type = packet.getType();
+            switch (type)
+            {
+            case SESS_BROWSER_HASNEXTMESSAGE:
+               response = new SessionBrowserHasNextMessageResponseMessage(hasNextMessage());            
+               break;
+            case SESS_BROWSER_NEXTMESSAGE:
+               ServerMessage message = nextMessage();               
+               response = new ReceiveMessage(message, 0, 0);
+               break;
+            case SESS_BROWSER_RESET:            
+               reset();
+               response = new PacketImpl(NULL); 
+               break;
+            case CLOSE:
+               close();
+               response = new PacketImpl(NULL); 
+               break;
+            default:
+               response = new MessagingExceptionMessage(new MessagingException(MessagingException.UNSUPPORTED_PACKET,
+                     "Unsupported packet " + type));
+            }
          }
-
-         // reply if necessary
-         if (response == null && packet.getResponseTargetID() != NO_ID_SET)
+         catch (Throwable t)
          {
-            response = new PacketImpl(NULL);               
-         }            
+            MessagingException me;
+            
+            log.error("Caught unexpected exception", t);         
+            
+            if (t instanceof MessagingException)
+            {
+               me = (MessagingException)t;
+            }
+            else
+            {            
+               me = new MessagingException(MessagingException.INTERNAL_ERROR);
+            }
+                     
+            response = new MessagingExceptionMessage(me);    
+         }
          
-         return response;
+         response.normalize(packet);
+         
+         remotingConnection.sendOneWay(response);         
       }
    }
 }

@@ -170,7 +170,7 @@
       <path refid="jboss.jboss.jaspi.api.classpath"/>
       <path refid="jgroups.jgroups.classpath"/>
       <path refid="apache.mina.classpath"/>
-   	  <path refid="jpa.api.classpath"/>
+   	<path refid="jpa.api.classpath"/>
       <path location="${build.classes.dir}"/>
    </path>
 	
@@ -302,10 +302,10 @@
       <mkdir dir="${build.src.dir}/org/jboss/messaging/core/filter/impl"/>
       <echo message="${sun.javacc.lib}"/>
       <javacc target="${src.main.dir}/org/jboss/messaging/core/filter/impl/FilterParser.jj"
-	          outputdirectory="${build.src.dir}/org/jboss/messaging/core/filter/impl"
+	           outputdirectory="${build.src.dir}/org/jboss/messaging/core/filter/impl"
               javacchome="${sun.javacc.lib}"
-      	      static="false"/>
-   	  <javac destdir="${build.classes.dir}"
+      	     static="false"/>
+   	<javac destdir="${build.classes.dir}"
              target="${javac.target}"
              source="${javac.source}"
              optimize="${javac.optimize}"
@@ -325,11 +325,18 @@
          <include name="**/messaging/util/**/*.java"/>
          <classpath refid="core.compilation.classpath"/>
       </javac>
-   	  <javah class="org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl"
-   	         classpathref="core.compilation.classpath" destdir="./native/src"/>
+   	<javah class="org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl"
+   	       classpathref="core.compilation.classpath" destdir="./native/src"/>
 
+   	<copy file="${src.config.dir}/jbm-connector-factories.properties"
+   	      tofile="${build.classes.dir}/jbm-connector-factories.properties"/>
+      <copy file="${src.config.dir}/version.properties"
+         	tofile="${build.classes.dir}/version.properties"/>
+      
+      <!--
       <echo message="messaging.version.versionName=${messaging.version.name}${line.separator}messaging.version.majorVersion=${messaging.version.major}${line.separator}messaging.version.minorVersion=${messaging.version.minor}${line.separator}messaging.version.microVersion=${messaging.version.micro}${line.separator}messaging.version.incrementingVersion=${messaging.version.incrementing}${line.separator}messaging.version.versionSuffix=${messaging.version.suffix}${line.separator}"
       	    file="${build.classes.dir}/version.properties"/>
+      	    -->
    </target>
 
    <target name="compile-jms" depends="compile-core">
@@ -378,11 +385,11 @@
 
    </target>
 
-   <target name="client-jar" depends="compile">
-
+   <target name="client-jar" depends="compile">      
       <jar jarfile="${build.jars.dir}/jboss-${module.name}-client.jar">
          <fileset dir="${build.classes.dir}">
             <include name="version.properties"/>
+            <include name="jbm-connector-factories.properties"/>
             <include name="org/jboss/messaging/jms/**/*.class"/>
             <include name="org/jboss/messaging/core/client/**/*.class"/>
             <include name="org/jboss/messaging/core/exception/**/*.class"/>

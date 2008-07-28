@@ -22,12 +22,12 @@
 
 package org.jboss.messaging.tests.timing.core.journal.impl;
 
+import java.io.File;
+
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
-
-import java.io.File;
 
 /**
  * 

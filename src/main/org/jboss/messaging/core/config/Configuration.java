@@ -24,6 +24,7 @@ package org.jboss.messaging.core.config;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.Location;
@@ -41,8 +42,6 @@ public interface Configuration extends Serializable
 {
    // General attributes -------------------------------------------------------------------
    
-   List<String> getInterceptorClassNames();
-
    boolean isClustered();
    
    void setClustered(boolean clustered);
@@ -51,10 +50,6 @@ public interface Configuration extends Serializable
    
    void setScheduledThreadPoolMaxSize(int maxSize);
    
-   int getThreadPoolMaxSize();
-   
-   void setThreadPoolMaxSize(int maxSize);
-
    long getSecurityInvalidationInterval();
    
    void setSecurityInvalidationInterval(long interval);
@@ -69,9 +64,9 @@ public interface Configuration extends Serializable
 
    // Remoting related attributes ----------------------------------------------------------
    
-   int getServerID();
+   List<String> getInterceptorClassNames();
    
-   void setServerID(int id);
+   Set<String> getAcceptorFactoryClassNames();
    
    ConnectionParams getConnectionParams();
    

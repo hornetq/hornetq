@@ -32,7 +32,6 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
@@ -55,7 +54,6 @@ public class MessagingServerManagementImplTest extends UnitTestCase
    private PostOffice mockPostOffice;
    private StorageManager mockStorageManager;
    private Configuration mockConfiguration;
-   private ConnectionManager mockConnectionManager;
    private HierarchicalRepository<Set<Role>> mockSecurityRepository;
    private HierarchicalRepository<QueueSettings> mockQueueSettingsRepository;
    private MessagingServer mockServer;
@@ -71,7 +69,6 @@ public class MessagingServerManagementImplTest extends UnitTestCase
       
       mockPostOffice = EasyMock.createNiceMock(PostOffice.class);
       mockStorageManager = EasyMock.createNiceMock(StorageManager.class);
-      mockConnectionManager = EasyMock.createNiceMock(ConnectionManager.class);
       mockConfiguration = EasyMock.createNiceMock(Configuration.class);
       mockSecurityRepository = EasyMock.createNiceMock(HierarchicalRepository.class);
       mockQueueSettingsRepository = EasyMock.createNiceMock(HierarchicalRepository.class);
@@ -111,17 +108,10 @@ public class MessagingServerManagementImplTest extends UnitTestCase
    }
 
    public void testConnectionCount() throws Exception
-   {
-      
-      mockConnectionManager = EasyMock.createMock(ConnectionManager.class);
-      EasyMock.expect(mockConnectionManager.size()).andReturn(123);
-      
-      EasyMock.replay(mockConnectionManager);
-      
+   {      
       MessagingServerManagementImpl impl = createImpl();
       
-      assertEquals(impl.getConnectionCount(), 123);
-      
+      assertEquals(impl.getConnectionCount(), 0);      
    }
    
    public void testDestroyQueue() throws Exception
@@ -312,7 +302,7 @@ public class MessagingServerManagementImplTest extends UnitTestCase
    private MessagingServerManagementImpl createImpl()
    {
       return new MessagingServerManagementImpl(mockPostOffice,
-            mockStorageManager, mockConfiguration, mockConnectionManager,
+            mockStorageManager, mockConfiguration, 
             mockSecurityRepository, mockQueueSettingsRepository, mockServer);
    }
 

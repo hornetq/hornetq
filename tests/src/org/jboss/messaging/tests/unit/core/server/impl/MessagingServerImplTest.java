@@ -33,17 +33,17 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.PacketReturner;
+import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.impl.ConnectionManagerImpl;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.core.server.impl.MessagingServerPacketHandler;
 import org.jboss.messaging.core.server.impl.QueueFactoryImpl;
+import org.jboss.messaging.core.server.impl.ServerConnectionImpl;
 import org.jboss.messaging.core.server.impl.ServerConnectionPacketHandler;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -186,7 +186,6 @@ public class MessagingServerImplTest extends UnitTestCase
       EasyMock.expect(rs.getDispatcher()).andReturn(pd);
       EasyMock.expect(sm.isStarted()).andStubReturn(true);
       EasyMock.expect(rs.isStarted()).andStubReturn(true);
-      rs.addRemotingSessionListener(EasyMock.isA(ConnectionManagerImpl.class));
       sm.loadBindings(EasyMock.isA(QueueFactoryImpl.class), EasyMock.isA(ArrayList.class), EasyMock.isA(ArrayList.class));
       sm.loadMessages(EasyMock.isA(PostOfficeImpl.class), EasyMock.isA(Map.class));
             
@@ -261,7 +260,6 @@ public class MessagingServerImplTest extends UnitTestCase
       }
       
       pd.unregister(0);
-      rs.removeRemotingSessionListener(EasyMock.isA(ConnectionManagerImpl.class));
       
       EasyMock.replay(sm, rs, pd);
       
@@ -288,7 +286,6 @@ public class MessagingServerImplTest extends UnitTestCase
       EasyMock.expect(rs.getDispatcher()).andReturn(pd);
       EasyMock.expect(sm.isStarted()).andStubReturn(true);
       EasyMock.expect(rs.isStarted()).andStubReturn(true);
-      rs.addRemotingSessionListener(EasyMock.isA(ConnectionManagerImpl.class));
       sm.loadBindings(EasyMock.isA(QueueFactoryImpl.class), EasyMock.isA(ArrayList.class), EasyMock.isA(ArrayList.class));
       sm.loadMessages(EasyMock.isA(PostOfficeImpl.class), EasyMock.isA(Map.class));
             
@@ -308,8 +305,7 @@ public class MessagingServerImplTest extends UnitTestCase
       EasyMock.reset(sm, rs, pd);
       
       pd.unregister(0);
-      rs.removeRemotingSessionListener(EasyMock.isA(ConnectionManagerImpl.class));
-      
+  
       EasyMock.replay(sm, rs, pd);
       
       //And stop
@@ -366,7 +362,6 @@ public class MessagingServerImplTest extends UnitTestCase
       
       server.setSecurityManager(sem);
       
-      rs.addRemotingSessionListener(EasyMock.isA(ConnectionManagerImpl.class));
       sm.loadBindings(EasyMock.isA(QueueFactoryImpl.class), EasyMock.isA(ArrayList.class), EasyMock.isA(ArrayList.class));
       sm.loadMessages(EasyMock.isA(PostOfficeImpl.class), EasyMock.isA(Map.class));
       PacketDispatcher pd = EasyMock.createMock(PacketDispatcher.class);
@@ -420,7 +415,6 @@ public class MessagingServerImplTest extends UnitTestCase
       PacketDispatcher pd = EasyMock.createMock(PacketDispatcher.class);
       EasyMock.expect(rs.getDispatcher()).andReturn(pd);
       
-      rs.addRemotingSessionListener(EasyMock.isA(ConnectionManagerImpl.class));
       sm.loadBindings(EasyMock.isA(QueueFactoryImpl.class), EasyMock.isA(ArrayList.class), EasyMock.isA(ArrayList.class));
       sm.loadMessages(EasyMock.isA(PostOfficeImpl.class), EasyMock.isA(Map.class));
       
@@ -433,25 +427,22 @@ public class MessagingServerImplTest extends UnitTestCase
       EasyMock.expect(pd.generateID()).andReturn(id);
 
       pd.register(EasyMock.isA(ServerConnectionPacketHandler.class));
+            
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);    
+      rc.addFailureListener(EasyMock.isA(ServerConnectionImpl.class));
       
-      PacketReturner returner = EasyMock.createStrictMock(PacketReturner.class);
-      final long sessionID = 1092812;
-      EasyMock.expect(returner.getSessionID()).andReturn(sessionID);
-      
-      EasyMock.replay(rs, sm, pd, returner);
+      EasyMock.replay(rs, sm, pd, rc);
       
       server.start();
       final String username = "okasokas";
       final String password = "oksokasws";
  
-      CreateConnectionResponse resp = server.createConnection(username, password, 43, returner);
+      CreateConnectionResponse resp = server.createConnection(username, password, 43, rc);
       
-      EasyMock.verify(rs, sm, pd, returner);
+      EasyMock.verify(rs, sm, pd, rc);
       
       assertEquals(VersionLoader.load(), resp.getServerVersion());
-      assertEquals(id, resp.getConnectionTargetID());     
-      
-      assertEquals(1, server.getServerManagement().getConnectionCount());
+      assertEquals(id, resp.getConnectionTargetID());          
    }
    
   

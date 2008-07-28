@@ -23,6 +23,7 @@
 package org.jboss.messaging.tests.unit.util;
 
 import junit.framework.TestCase;
+
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

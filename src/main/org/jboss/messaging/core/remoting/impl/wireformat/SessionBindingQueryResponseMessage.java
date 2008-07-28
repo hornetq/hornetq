@@ -25,7 +25,7 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -85,5 +85,39 @@ public class SessionBindingQueryResponseMessage extends PacketImpl
          queueNames.add(buffer.getSimpleString());
       }          
    }
-
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionBindingQueryResponseMessage == false)
+      {
+         return false;
+      }
+            
+      SessionBindingQueryResponseMessage r = (SessionBindingQueryResponseMessage)other;
+      
+      if (super.equals(other) && this.exists == r.exists)
+      {
+         if (this.queueNames.size() == r.queueNames.size())
+         {
+            for (int i = 0; i < queueNames.size(); i++)
+            {
+               if (!this.queueNames.get(i).equals(r.queueNames.get(i)))
+               {
+                  return false;
+               }
+            }
+         }
+         else
+         {
+            return false;
+         }
+      }
+      else
+      {
+         return false;
+      }
+      
+      return true;
+   }
+   
 }

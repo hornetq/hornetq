@@ -23,7 +23,7 @@
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -81,6 +81,19 @@ public class MessagingExceptionMessage extends PacketImpl
    {
       return getParentString() + ", exception= " + exception + "]";
    }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof MessagingExceptionMessage == false)
+      {
+         return false;
+      }
+            
+      MessagingExceptionMessage r = (MessagingExceptionMessage)other;
+      
+      return super.equals(other) && this.exception.equals(r.exception);
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

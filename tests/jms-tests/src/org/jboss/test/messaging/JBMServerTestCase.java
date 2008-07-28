@@ -38,11 +38,9 @@ import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
 import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.core.server.ConnectionManager;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.JMSServerManager;
-import org.jboss.messaging.microcontainer.JBMBootstrapServer;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.DatabaseClearer;
 import org.jboss.test.messaging.tools.container.Server;

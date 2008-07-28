@@ -23,34 +23,39 @@
 package org.jboss.messaging.core.remoting;
 
 import org.jboss.messaging.core.client.Location;
-import org.jboss.messaging.core.client.RemotingSessionListener;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.util.MessagingBuffer;
 
 /**
  * 
  * A RemotingConnection
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
 public interface RemotingConnection
 {
-	public void start() throws Throwable;
-
-   public void stop();
-   
-   public long getSessionID();
- 
+   long getID();
+      
    Packet sendBlocking(long targetID, long executorID, Packet packet) throws MessagingException;
    
-   void sendOneWay(long targetID, long executorID, Packet packet) throws MessagingException;
+   void sendOneWay(long targetID, long executorID, Packet packet);
    
-   void addRemotingSessionListener(RemotingSessionListener newListener);
+   Packet sendBlocking(Packet packet) throws MessagingException;
+   
+   void sendOneWay(Packet packet);
+   
+   void addFailureListener(FailureListener listener);
+   
+   boolean removeFailureListener(FailureListener listener);
    
    PacketDispatcher getPacketDispatcher();
    
-   public Location getLocation();
+   Location getLocation();
    
-   public MessagingBuffer createBuffer(int size);
+   MessagingBuffer createBuffer(int size);
+   
+   void fail(MessagingException me);
+   
+   void destroy();
 }

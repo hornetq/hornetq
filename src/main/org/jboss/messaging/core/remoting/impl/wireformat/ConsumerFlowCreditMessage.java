@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -86,7 +86,7 @@ public class ConsumerFlowCreditMessage extends PacketImpl
             
       ConsumerFlowCreditMessage r = (ConsumerFlowCreditMessage)other;
       
-      return this.credits == r.credits;
+      return super.equals(other) && this.credits == r.credits;
    }
    // Package protected ---------------------------------------------
 

@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 
 
 /**
@@ -77,6 +77,21 @@ public class ConnectionCreateSessionResponseMessage extends PacketImpl
    {
       return getParentString() + ", sessionTargetID=" + sessionTargetID
             + "]";
+   }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof ConnectionCreateSessionResponseMessage == false)
+      {
+         return false;
+      }
+            
+      ConnectionCreateSessionResponseMessage r = (ConnectionCreateSessionResponseMessage)other;
+      
+      boolean matches = super.equals(other) &&
+                        this.sessionTargetID == r.sessionTargetID;
+      
+      return matches;
    }
 
    // Package protected ---------------------------------------------

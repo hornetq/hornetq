@@ -6,9 +6,6 @@
       <!-- Maximum number of threads to use for scheduled deliveries -->
       <scheduled-max-pool-size>30</scheduled-max-pool-size>
 
-      <!-- Maximum number of threads to use for sessions on the server side -->      
-      <max-pool-size>30</max-pool-size>
-
       <require-destinations>true</require-destinations>
       
       <security-enabled>true</security-enabled>
@@ -65,6 +62,24 @@
       <remoting-ssl-truststore-path>messaging.truststore</remoting-ssl-truststore-path>
 
       <remoting-ssl-truststore-password>secureexample</remoting-ssl-truststore-password>
+      
+      <!-- Example interceptors 
+      <remoting-interceptors>
+         <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor1</class-name>
+         <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor2</class-name>
+      </remoting-interceptors>
+      -->
+      
+      <remoting-connector-factories>
+         <mapping>
+            <transport>TCP</transport>
+            <class-name>org.jboss.messaging.core.remoting.impl.mina.MinaConnectorFactory</class-name>
+         </mapping>
+      </remoting-connector-factories>
+      
+      <remoting-acceptor-factories>         
+	      <class-name>org.jboss.messaging.core.remoting.impl.mina.MinaAcceptorFactory</class-name>         
+      </remoting-acceptor-factories>
 
       <!-- Storage configuration -->
 

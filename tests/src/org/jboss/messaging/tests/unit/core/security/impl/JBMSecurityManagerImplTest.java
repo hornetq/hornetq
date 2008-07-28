@@ -22,12 +22,13 @@
 
 package org.jboss.messaging.tests.unit.core.security.impl;
 
+import java.util.HashSet;
+
 import junit.framework.TestCase;
+
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
-
-import java.util.HashSet;
 
 /**
  * tests JBMSecurityManagerImpl

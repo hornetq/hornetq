@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.util.MessagingBuffer;
+import org.jboss.messaging.core.remoting.MessagingBuffer;
 
 
 /**
@@ -91,6 +91,19 @@ public class SessionXAResponseMessage extends PacketImpl
       error = buffer.getBoolean();      
       responseCode = buffer.getInt();      
       message = buffer.getNullableString();
+   }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionXAResponseMessage == false)
+      {
+         return false;
+      }
+            
+      SessionXAResponseMessage r = (SessionXAResponseMessage)other;
+      
+      return super.equals(other) && this.error == r.error && this.responseCode == r.responseCode &&
+         this.message.equals(r.message);
    }
 
    // Package protected ---------------------------------------------
