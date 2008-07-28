@@ -245,10 +245,13 @@ public class JournalAsyncTest extends UnitTestCase
       
       factory.flushAllCallbacks();
       
+      factory.setGenerateErrors(false);
+      factory.setHoldCallbacks(false);
+
       try
       {
          journalImpl.appendAddRecordTransactional(1l, 2, (byte)1, new SimpleEncoding(1,(byte)0));
-         fail("Exception expected");
+         fail("Exception expected"); // An exception already happened in one of the elements on this transaction. We can't accept any more elements on the transaction
       }
       catch (Exception ignored)
       {
