@@ -267,8 +267,8 @@ public class StorageManagerTimingTest extends UnitTestCase
    {
       double rate = 0;
       
-      log.debug("*************************************************************************");
-      log.debug(" " + msg + " ");
+      log.info("*************************************************************************");
+      log.info(" " + msg + " ");
       
       double totalRate = 0;
       for (int i=0; i<rates.length; i++)
