@@ -25,6 +25,11 @@ package org.jboss.messaging.tests.unit.core.journal.impl;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
@@ -33,7 +38,6 @@ import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -862,7 +866,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       
       for (int i = 0; i < 10; i++)
       {
-         journalImpl.appendAddRecordTransactional(1, 1, (byte) 1, new SimpleEncoding(50,(byte) 1));
+         journalImpl.appendAddRecordTransactional(1, i, (byte) 1, new SimpleEncoding(50,(byte) 1));
          journalImpl.forceMoveNextFile();
       }
       
@@ -995,6 +999,96 @@ public class AlignedJournalImplTest extends UnitTestCase
       
       assertEquals(10, records.size());
    }
+   
+   
+   public void testReclaimingAfterConcurrentAddsAndDeletes() throws Exception
+   {
+      final int JOURNAL_SIZE = 10 * 1024;
+      
+      setupJournal(JOURNAL_SIZE, 1);
+      
+      assertEquals(0, records.size());
+      assertEquals(0, transactions.size());
+      
+      final CountDownLatch latchReady = new CountDownLatch(2);
+      final CountDownLatch latchStart = new CountDownLatch(1);
+      final AtomicInteger finishedOK = new AtomicInteger(0);
+      final BlockingQueue<Integer> queueDelete = new LinkedBlockingQueue<Integer>();
+      
+      final int NUMBER_OF_ELEMENTS = 500;
+      
+      
+      Thread t1 = new Thread()
+      {
+         public void run()
+         {
+            try
+            {
+               latchReady.countDown();
+               latchStart.await();
+               for (int i = 0; i < NUMBER_OF_ELEMENTS; i++)
+               {
+                  journalImpl.appendAddRecordTransactional((long)i, i, (byte) 1, new SimpleEncoding(50,(byte) 1));
+                  journalImpl.appendCommitRecord((long)i);
+                  queueDelete.offer(i);
+               }
+               finishedOK.incrementAndGet();
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+         }
+      };
+      
+      Thread t2 = new Thread()
+      {
+         public void run()
+         {
+            try
+            {
+               latchReady.countDown();
+               latchStart.await();
+               for (int i = 0; i < NUMBER_OF_ELEMENTS; i++)
+               {
+                  Integer toDelete = queueDelete.poll(10, TimeUnit.SECONDS);
+                  if (toDelete == null)
+                  {
+                     break;
+                  }
+                  journalImpl.appendDeleteRecord(toDelete);
+               }
+               finishedOK.incrementAndGet();
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+         }
+      };
+
+      t1.start();
+      t2.start();
+      
+      latchReady.await();
+      latchStart.countDown();
+      
+      t1.join();
+      t2.join();
+      
+      assertEquals(2, finishedOK.intValue());
+
+      journalImpl.forceMoveNextFile();
+      
+      journalImpl.checkAndReclaimFiles();
+      
+      assertEquals(0, journalImpl.getDataFilesCount());
+
+      assertEquals(2, factory.listFiles("tt").size());
+
+      
+   }
+   
    
    
    // Package protected ---------------------------------------------

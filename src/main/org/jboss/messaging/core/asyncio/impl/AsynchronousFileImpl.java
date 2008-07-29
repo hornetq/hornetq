@@ -290,7 +290,6 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	// Native
 	// ------------------------------------------------------------------------------------------
 	
-	@SuppressWarnings("unchecked")
 	private static native long init(String fileName, int maxIO, Logger logger);
 	
 	private native void write(long handle, long position, long size, ByteBuffer buffer, AIOCallback aioPackage);

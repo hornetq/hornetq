@@ -74,14 +74,19 @@ public class NIOSequentialFile implements SequentialFile
    {
       return fileName;
    }
-   
-   public void open() throws Exception
-   {     
+
+   public synchronized void open() throws Exception
+   {
       file = new File(journalDir + "/" + fileName);
       
       rfile = new RandomAccessFile(file, "rw");
       
       channel = rfile.getChannel();    
+   }
+   
+   public void open(int currentMaxIO) throws Exception
+   {
+      open();
    }
    
    public void fill(final int position, final int size, final byte fillCharacter) throws Exception
@@ -188,6 +193,11 @@ public class NIOSequentialFile implements SequentialFile
    public void position(final int pos) throws Exception
    {
       channel.position(pos);
+   }
+   
+   public int position() throws Exception
+   {
+      return (int) channel.position();
    }
    
 }

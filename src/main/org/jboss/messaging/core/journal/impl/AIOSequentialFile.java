@@ -166,18 +166,29 @@ public class AIOSequentialFile implements SequentialFile
       return fileName;
    }
    
-   public synchronized void open() throws Exception
+   public void open() throws Exception
+   {
+     open(maxIO);
+   }
+   
+   public synchronized void open(int currentMaxIO) throws Exception
    {
       opened = true;
       executor = Executors.newSingleThreadExecutor();
       aioFile = newFile();
-      aioFile.open(journalDir + "/" + fileName, maxIO);
+      aioFile.open(journalDir + "/" + fileName, currentMaxIO);
       position.set(0);
       
    }
+   
    public void position(final int pos) throws Exception
    {
       position.set(pos);		
+   }
+   
+   public int position() throws Exception
+   {
+      return (int)position.get();
    }
    
    public int read(final ByteBuffer bytes, final IOCallback callback) throws Exception

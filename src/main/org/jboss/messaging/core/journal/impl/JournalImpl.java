@@ -199,6 +199,13 @@ public class JournalImpl implements TestableJournal
    
    private static final boolean trace = log.isTraceEnabled();
    
+   // This method exists just to make debug easier.
+   // I could replace log.trace by log.info temporarily while I was debugging Journal 
+   private static final void trace(String message)
+   {
+      log.trace(message);
+   }
+   
    // Constructors --------------------------------------------------
    
    public JournalImpl(final int fileSize, final int minFiles,
@@ -276,9 +283,18 @@ public class JournalImpl implements TestableJournal
       bb.putInt(size);        
       bb.rewind();
       
-      JournalFile usedFile = appendRecord(bb.getBuffer(), syncNonTransactional, null);
-      
-      posFilesMap.put(id, new PosFiles(usedFile));
+      try
+      {                 
+         lock.acquire();
+
+         JournalFile usedFile = appendRecord(bb.getBuffer(), syncNonTransactional, null);
+         
+         posFilesMap.put(id, new PosFiles(usedFile));
+      }
+      finally
+      {
+         lock.release();
+      }
    }
    
    public void appendAddRecord(final long id, final byte recordType, final byte[] record) throws Exception
@@ -302,9 +318,20 @@ public class JournalImpl implements TestableJournal
       bb.putInt(size);			
       bb.rewind();
       
-      JournalFile usedFile = appendRecord(bb, syncNonTransactional, null);
       
-      posFilesMap.put(id, new PosFiles(usedFile));
+      try
+      {                 
+         lock.acquire();
+
+         JournalFile usedFile = appendRecord(bb, syncNonTransactional, null);
+         
+         posFilesMap.put(id, new PosFiles(usedFile));
+      }
+      finally
+      {
+         lock.release();
+      }
+      
    }
    
    public void appendUpdateRecord(final long id, final byte recordType, final byte[] record) throws Exception
@@ -334,9 +361,18 @@ public class JournalImpl implements TestableJournal
       bb.putInt(size);     
       bb.rewind();
       
-      JournalFile usedFile = appendRecord(bb, syncNonTransactional, null);
-      
-      posFiles.addUpdateFile(usedFile);
+      try
+      {                 
+         lock.acquire();
+
+         JournalFile usedFile = appendRecord(bb, syncNonTransactional, null);
+         
+         posFiles.addUpdateFile(usedFile);
+      }
+      finally
+      {
+         lock.release();
+      }
    }
    
    public void appendUpdateRecord(final long id, final byte recordType, final EncodingSupport record) throws Exception
@@ -366,9 +402,18 @@ public class JournalImpl implements TestableJournal
       bb.putInt(size);     
       bb.rewind();
       
-      JournalFile usedFile = appendRecord(bb.getBuffer(), syncNonTransactional, null);
-      
-      posFiles.addUpdateFile(usedFile);
+      try
+      {                 
+         lock.acquire();
+
+         JournalFile usedFile = appendRecord(bb.getBuffer(), syncNonTransactional, null);
+         
+         posFiles.addUpdateFile(usedFile);
+      }
+      finally
+      {
+         lock.release();
+      }
    }
    
    public void appendDeleteRecord(long id) throws Exception
@@ -395,8 +440,18 @@ public class JournalImpl implements TestableJournal
       bb.putInt(size);     
       bb.rewind();
       
-      JournalFile usedFile = appendRecord(bb, syncNonTransactional, null);
-      posFiles.addDelete(usedFile);
+      try
+      {                 
+         lock.acquire();
+         
+         JournalFile usedFile = appendRecord(bb, syncNonTransactional, null);
+         
+         posFiles.addDelete(usedFile);
+      }
+      finally
+      {
+         lock.release();
+      }
    }     
    
    public long getTransactionID()
@@ -428,11 +483,21 @@ public class JournalImpl implements TestableJournal
       bb.putInt(size);     
       bb.rewind();
       
-      JournalFile usedFile = appendRecord(bb.getBuffer(), false, getTransactionCallback(txID));
-      
-      JournalTransaction tx = getTransactionInfo(txID);
-      
-      tx.addPositive(usedFile, id);
+      try
+      {                 
+         lock.acquire();
+         
+         JournalFile usedFile = appendRecord(bb.getBuffer(), false, getTransactionCallback(txID));
+         
+         JournalTransaction tx = getTransactionInfo(txID);
+         
+         tx.addPositive(usedFile, id);
+         
+      }
+      finally
+      {
+         lock.release();
+      }
    }
    
    public void appendAddRecordTransactional(final long txID, final long id, final byte recordType, final byte[] record) throws Exception
@@ -456,11 +521,21 @@ public class JournalImpl implements TestableJournal
       bb.putInt(size);
       bb.rewind();
       
-      JournalFile usedFile = appendRecord(bb, false, getTransactionCallback(txID));
-      
-      JournalTransaction tx = getTransactionInfo(txID);
-      
-      tx.addPositive(usedFile, id);
+      try
+      {                 
+         lock.acquire();
+
+         JournalFile usedFile = appendRecord(bb, false, getTransactionCallback(txID));
+         
+         JournalTransaction tx = getTransactionInfo(txID);
+         
+         tx.addPositive(usedFile, id);
+
+      }
+      finally
+      {
+         lock.release();
+      }
    }
    
    public void appendUpdateRecordTransactional(final long txID, final long id, byte recordType, final byte[] record) throws Exception
@@ -484,11 +559,21 @@ public class JournalImpl implements TestableJournal
       bb.putInt(size);     
       bb.rewind();
       
-      JournalFile usedFile = appendRecord(bb, false, getTransactionCallback(txID));
-      
-      JournalTransaction tx = getTransactionInfo(txID);
-      
-      tx.addPositive(usedFile, id);
+      try
+      {                 
+         lock.acquire();
+
+         JournalFile usedFile = appendRecord(bb, false, getTransactionCallback(txID));
+         
+         JournalTransaction tx = getTransactionInfo(txID);
+         
+         tx.addPositive(usedFile, id);
+
+      }
+      finally
+      {
+         lock.release();
+      }
    }
    
    public void appendUpdateRecordTransactional(final long txID, final long id, byte recordType, EncodingSupport record) throws Exception
@@ -513,11 +598,21 @@ public class JournalImpl implements TestableJournal
       bb.putInt(size);     
       bb.rewind();
       
-      JournalFile usedFile = appendRecord(bb.getBuffer(), false, getTransactionCallback(txID));
-      
-      JournalTransaction tx = getTransactionInfo(txID);
-      
-      tx.addPositive(usedFile, id);
+      try
+      {                 
+         lock.acquire();
+
+         JournalFile usedFile = appendRecord(bb.getBuffer(), false, getTransactionCallback(txID));
+         
+         JournalTransaction tx = getTransactionInfo(txID);
+         
+         tx.addPositive(usedFile, id);
+
+      }
+      finally
+      {
+         lock.release();
+      }
    }
    
    public void appendDeleteRecordTransactional(final long txID, final long id) throws Exception
@@ -538,11 +633,21 @@ public class JournalImpl implements TestableJournal
       bb.putInt(size);     
       bb.rewind();
       
-      JournalFile usedFile = appendRecord(bb, false, getTransactionCallback(txID));
-      
-      JournalTransaction tx = getTransactionInfo(txID);
-      
-      tx.addNegative(usedFile, id);      
+      try
+      {                 
+         lock.acquire();
+
+         JournalFile usedFile = appendRecord(bb, false, getTransactionCallback(txID));
+         
+         JournalTransaction tx = getTransactionInfo(txID);
+         
+         tx.addNegative(usedFile, id);      
+
+      }
+      finally
+      {
+         lock.release();
+      }
    }  
    
    public void appendPrepareRecord(final long txID) throws Exception
@@ -559,9 +664,22 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Cannot find tx with id " + txID);
       }
       
-      JournalFile usedFile = writeTransaction(PREPARE_RECORD, txID, tx);
+      ByteBuffer bb = writeTransaction(PREPARE_RECORD, txID, tx);
       
-      tx.prepare(usedFile);
+      
+      try
+      {                 
+         lock.acquire();
+
+         JournalFile usedFile = appendRecord(bb, syncTransactional, getTransactionCallback(txID));
+         
+         tx.prepare(usedFile);
+
+      }
+      finally
+      {
+         lock.release();
+      }
    }
 
    public void appendCommitRecord(final long txID) throws Exception
@@ -571,19 +689,34 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Journal must be loaded first");
       }		
       
-      JournalTransaction tx = transactionInfos.get(txID);
+      JournalTransaction tx = transactionInfos.remove(txID);
       
       if (tx == null)
       {
          throw new IllegalStateException("Cannot find tx with id " + txID);
       }
       
-      JournalFile usedFile = writeTransaction(COMMIT_RECORD, txID, tx);
+      ByteBuffer bb = writeTransaction(COMMIT_RECORD, txID, tx);
       
-      transactionInfos.remove(txID);
-      transactionCallbacks.remove(txID);
       
-      tx.commit(usedFile);
+      try
+      {                 
+         lock.acquire();
+
+         JournalFile usedFile = appendRecord(bb, syncTransactional, getTransactionCallback(txID));
+         
+         transactionCallbacks.remove(txID);
+         
+         tx.commit(usedFile);
+
+      }
+      finally
+      {
+         lock.release();
+      }
+      
+      
+      
       
    }
    
@@ -611,11 +744,21 @@ public class JournalImpl implements TestableJournal
       bb.putInt(size);        
       bb.rewind();
       
-      JournalFile usedFile = appendRecord(bb, syncTransactional, getTransactionCallback(txID));      
-      
-      transactionCallbacks.remove(txID);
-      
-      tx.rollback(usedFile);
+      try
+      {                 
+         lock.acquire();
+
+         JournalFile usedFile = appendRecord(bb, syncTransactional, getTransactionCallback(txID));      
+         
+         transactionCallbacks.remove(txID);
+         
+         tx.rollback(usedFile);
+
+      }
+      finally
+      {
+         lock.release();
+      }
    }
    
    public synchronized long load(final List<RecordInfo> committedRecords,
@@ -676,7 +819,7 @@ public class JournalImpl implements TestableJournal
       
       List<JournalFile> orderedFiles = orderFiles();
       
-      int lastDataPos = -1;
+      int lastDataPos = SIZE_HEADER;
       
       long maxTransactionID = -1;
       
@@ -684,7 +827,7 @@ public class JournalImpl implements TestableJournal
       
       for (JournalFile file: orderedFiles)
       {  
-         file.getFile().open();
+         file.getFile().open(1);
          
          ByteBuffer bb = fileFactory.newBuffer(fileSize);
          
@@ -1224,7 +1367,7 @@ public class JournalImpl implements TestableJournal
          {
             //File can be reclaimed or deleted
             
-            if (trace) log.trace("Reclaiming file " + file);
+            if (trace) trace("Reclaiming file " + file);
               
             dataFiles.remove(file);
             
@@ -1239,7 +1382,7 @@ public class JournalImpl implements TestableJournal
             }
             else
             {
-               file.getFile().open();
+               file.getFile().open(1);
                
                file.getFile().delete();
             }
@@ -1390,7 +1533,7 @@ public class JournalImpl implements TestableJournal
       
       SequentialFile sf = file.getFile();
       
-      sf.open();
+      sf.open(1);
       
       ByteBuffer bb = fileFactory.newBuffer(SIZE_INT); 
       
@@ -1460,7 +1603,7 @@ public class JournalImpl implements TestableJournal
    }
 
    /** a method that shares the logic of writing a complete transaction between COMMIT and PREPARE */
-   private JournalFile writeTransaction(final byte recordType, final long txID, final JournalTransaction tx) throws Exception
+   private ByteBuffer writeTransaction(final byte recordType, final long txID, final JournalTransaction tx) throws Exception
    {
       int size = SIZE_COMPLETE_TRANSACTION_RECORD + tx.getElementsSummary().size() * SIZE_INT * 2;
       
@@ -1481,8 +1624,7 @@ public class JournalImpl implements TestableJournal
       bb.putInt(size);           
       bb.rewind();
       
-      JournalFile usedFile = appendRecord(bb, syncTransactional, getTransactionCallback(txID));
-      return usedFile;
+      return bb;
    }
    
    private boolean isTransaction(final byte recordType)
@@ -1552,7 +1694,7 @@ public class JournalImpl implements TestableJournal
       {
          SequentialFile file = fileFactory.createSequentialFile(fileName, maxAIO);
          
-         file.open();
+         file.open(1);
          
          ByteBuffer bb = fileFactory.newBuffer(SIZE_INT);
          
@@ -1587,41 +1729,35 @@ public class JournalImpl implements TestableJournal
       return orderedFiles;
    }
    
+   /** 
+    * You need to call lock.acquire before calling this method
+    * */
    private JournalFile appendRecord(final ByteBuffer bb, final boolean sync, final TransactionCallback callback) throws Exception
    {
-      lock.acquire();
       
       int size = bb.capacity();
-      
-      try
-      {                 
-         checkFile(size);
-         bb.position(SIZE_BYTE);
-         if (currentFile == null)
-         {
-            throw new Exception ("Current file = null");
-         }
-         bb.putInt(currentFile.getOrderingID());
-         bb.rewind();
-         if (callback != null)
-         {
-            currentFile.getFile().write(bb, callback);
-            if (sync)
-            {
-               callback.waitCompletion();
-            }
-         }
-         else
-         {
-            currentFile.getFile().write(bb, sync);       
-         }
-         currentFile.extendOffset(size);
-         return currentFile;
-      }
-      finally
+      checkFile(size);
+      bb.position(SIZE_BYTE);
+      if (currentFile == null)
       {
-         lock.release();
+         throw new Exception ("Current file = null");
       }
+      bb.putInt(currentFile.getOrderingID());
+      bb.rewind();
+      if (callback != null)
+      {
+         currentFile.getFile().write(bb, callback);
+         if (sync)
+         {
+            callback.waitCompletion();
+         }
+      }
+      else
+      {
+         currentFile.getFile().write(bb, sync);       
+      }
+      currentFile.extendOffset(size);
+      return currentFile;
    }
    
    private JournalFile createFile(boolean keepOpened) throws Exception
@@ -1724,7 +1860,7 @@ public class JournalImpl implements TestableJournal
             {
                try
                {
-                     checkAndReclaimFiles();
+                   checkAndReclaimFiles();
                }
                catch (Exception e)
                {

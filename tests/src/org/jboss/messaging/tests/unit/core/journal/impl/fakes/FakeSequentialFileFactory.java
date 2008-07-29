@@ -302,8 +302,13 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       {
          return fileName;
       }
-      
+
       public void open() throws Exception
+      {
+        open(0);
+      }
+      
+      public synchronized void open(int currentMaxIO) throws Exception
       {
          open = true;
       }
@@ -362,6 +367,11 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          checkAlignment(pos);
          
          data.position(pos);
+      }
+      
+      public int position() throws Exception
+      {
+         return data.position();
       }
 
       public int write(final ByteBuffer bytes, final IOCallback callback) throws Exception

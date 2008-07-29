@@ -25,6 +25,7 @@ package org.jboss.messaging.core.journal.impl;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.logging.Logger;
@@ -47,11 +48,11 @@ public class JournalFileImpl implements JournalFile
    
    private int offset;
    
-   private int posCount;
+   private final AtomicInteger posCount = new AtomicInteger(0);
    
    private boolean canReclaim;
    
-   private Map<JournalFile, Integer> negCounts = new ConcurrentHashMap<JournalFile, Integer>();
+   private Map<JournalFile, AtomicInteger> negCounts = new ConcurrentHashMap<JournalFile, AtomicInteger>();
    
    public JournalFileImpl(final SequentialFile file, final int orderingID)
    {
@@ -62,7 +63,7 @@ public class JournalFileImpl implements JournalFile
    
    public int getPosCount()
    {
-      return posCount;
+      return posCount.intValue();
    }
    
    public boolean isCanReclaim()
@@ -77,16 +78,12 @@ public class JournalFileImpl implements JournalFile
    
    public void incNegCount(final JournalFile file)
    {
-      Integer count = negCounts.get(file);
-      
-      int c = count == null ? 1 : count.intValue() + 1;
-      
-      negCounts.put(file, c);
+      getOrCreateNegCount(file).incrementAndGet();
    }
    
    public int getNegCount(final JournalFile file)
    {		
-      Integer count =  negCounts.get(file);
+      AtomicInteger count =  negCounts.get(file);
       
       if (count == null)
       {
@@ -100,12 +97,12 @@ public class JournalFileImpl implements JournalFile
    
    public void incPosCount()
    {
-      posCount++;
+      posCount.incrementAndGet();
    }
    
    public void decPosCount()
    {
-      posCount--;
+      posCount.decrementAndGet();
    }
    
    public void extendOffset(final int delta)
@@ -151,12 +148,26 @@ public class JournalFileImpl implements JournalFile
    {
       StringBuilder builder = new StringBuilder();
       
-      for (Entry<JournalFile, Integer> entry: negCounts.entrySet())
+      for (Entry<JournalFile, AtomicInteger> entry: negCounts.entrySet())
       {
          builder.append(" file = " + entry.getKey() + " negcount value = " + entry.getValue() + "\n");
       }
       
       return builder.toString();
+   }
+
+   
+   private synchronized AtomicInteger getOrCreateNegCount(final JournalFile file)
+   {
+      AtomicInteger count = negCounts.get(file);
+      
+      if (count == null)
+      {
+         count = new AtomicInteger();
+         negCounts.put(file, count);
+      }
+      
+      return count;
    }
    
    

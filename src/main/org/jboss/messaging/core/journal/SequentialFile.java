@@ -39,6 +39,13 @@ public interface SequentialFile
     */
    void open() throws Exception;
    
+   /**
+    * For certain operations (like loading) we don't need open the file with full maxIO
+    * @param maxIO
+    * @throws Exception
+    */
+   void open(int maxIO) throws Exception;
+   
    int getAlignment() throws Exception;
    
    int calculateBlockStart(int position) throws Exception;
@@ -58,6 +65,8 @@ public interface SequentialFile
    int read(ByteBuffer bytes) throws Exception;
    
    void position(int pos) throws Exception;
+   
+   int position() throws Exception;
    
    void close() throws Exception;
    
