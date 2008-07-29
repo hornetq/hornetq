@@ -119,8 +119,6 @@ public class MinaConnector implements Connector
 
       connector.setSessionDataStructureFactory(new MessagingIOSessionDataStructureFactory());
 
-      FilterChainSupport.addCodecFilter(filterChain, handler);
-      
       connectorConfig.setTcpNoDelay(params.isTcpNoDelay());
       if (params.getTcpReceiveBufferSize() != -1)
       {
@@ -146,7 +144,7 @@ public class MinaConnector implements Connector
             throw ise;
          }
       }
-
+      FilterChainSupport.addCodecFilter(filterChain, handler);
       
       connector.setHandler(new MinaHandler());   
       
