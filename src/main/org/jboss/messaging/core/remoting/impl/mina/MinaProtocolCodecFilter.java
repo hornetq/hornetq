@@ -98,15 +98,11 @@ public class MinaProtocolCodecFilter extends CumulativeProtocolDecoder
          return false;
       }
 
-      //We need to make a copy due to possible bug in MINA.
-      IoBuffer copied = IoBuffer.allocate(in.remaining());
-      copied.put(in);
-      copied.setAutoExpand(true);
-      copied.flip();
-
+      IoBuffer sliced = in.slice();
+      
       in.position(start + length + SIZE_INT);
 
-      out.write(copied);
+      out.write(sliced);
 
       return true;
    }
