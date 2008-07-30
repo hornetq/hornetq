@@ -18,19 +18,19 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl.mina;
 
 import java.net.InetSocketAddress;
 
-import org.apache.mina.common.DefaultIoFilterChainBuilder;
-import org.apache.mina.common.IdleStatus;
-import org.apache.mina.common.IoBuffer;
-import org.apache.mina.common.IoHandlerAdapter;
-import org.apache.mina.common.IoService;
-import org.apache.mina.common.IoServiceListener;
-import org.apache.mina.common.IoSession;
+import org.apache.mina.core.buffer.IoBuffer;
+import org.apache.mina.core.filterchain.DefaultIoFilterChainBuilder;
+import org.apache.mina.core.service.IoHandlerAdapter;
+import org.apache.mina.core.service.IoService;
+import org.apache.mina.core.service.IoServiceListener;
+import org.apache.mina.core.session.IdleStatus;
+import org.apache.mina.core.session.IoSession;
 import org.apache.mina.transport.socket.SocketAcceptor;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.jboss.messaging.core.config.Configuration;
@@ -52,22 +52,22 @@ public class MinaAcceptor implements Acceptor
    private static final Logger log = Logger.getLogger(MinaAcceptor.class);
 
    private SocketAcceptor acceptor;
-   
+
    private IoServiceListener acceptorListener;
-   
+
    private final Configuration configuration;
-   
+
    private final RemotingHandler handler;
-   
-   private ConnectionLifeCycleListener listener;
-   
+
+   private final ConnectionLifeCycleListener listener;
+
    public MinaAcceptor(final Configuration configuration, final RemotingHandler handler,
                        final ConnectionLifeCycleListener listener)
    {
       this.configuration = configuration;
-      
+
       this.handler = handler;
-      
+
       this.listener = listener;
    }
 
@@ -78,15 +78,15 @@ public class MinaAcceptor implements Acceptor
          //Already started
          return;
       }
-      
+
       acceptor = new NioSocketAcceptor();
 
       acceptor.setSessionDataStructureFactory(new MessagingIOSessionDataStructureFactory());
 
       DefaultIoFilterChainBuilder filterChain = acceptor.getFilterChain();
-      
+
       if (configuration.isSSLEnabled())
-      {         
+      {
          FilterChainSupport.addSSLFilter(filterChain, false, configuration.getKeyStorePath(),
                  configuration.getKeyStorePassword(),
                  configuration.getTrustStorePath(),
@@ -95,7 +95,7 @@ public class MinaAcceptor implements Acceptor
       FilterChainSupport.addCodecFilter(filterChain, handler);
 
       // Bind
-      acceptor.setDefaultLocalAddress(new InetSocketAddress(configuration.getHost(), configuration.getPort()));      
+      acceptor.setDefaultLocalAddress(new InetSocketAddress(configuration.getHost(), configuration.getPort()));
       acceptor.getSessionConfig().setTcpNoDelay(configuration.getConnectionParams().isTcpNoDelay());
       int receiveBufferSize = configuration.getConnectionParams().getTcpReceiveBufferSize();
       if (receiveBufferSize != -1)
@@ -124,41 +124,43 @@ public class MinaAcceptor implements Acceptor
       {
          return;
       }
-      
+
       // remove the listener before disposing the acceptor
       // so that we're not notified when the sessions are destroyed
       acceptor.removeListener(acceptorListener);
       acceptor.unbind();
       acceptor.dispose();
-      acceptor = null;      
+      acceptor = null;
    }
-   
+
    public DefaultIoFilterChainBuilder getFilterChain()
    {
       return acceptor.getFilterChain();
    }
-   
+
    // Inner classes -----------------------------------------------------------------------------
 
    private final class MinaHandler extends IoHandlerAdapter
    {
+      @Override
       public void exceptionCaught(final IoSession session, final Throwable cause)
               throws Exception
       {
          log.error("caught exception " + cause + " for session " + session, cause);
-                           
+
          MessagingException me = new MessagingException(MessagingException.INTERNAL_ERROR, "MINA exception");
-       
+
          me.initCause(cause);
-         
+
          listener.connectionException(session.getId(), me);
       }
 
+      @Override
       public void messageReceived(final IoSession session, final Object message)
               throws Exception
       {
          IoBuffer buffer = (IoBuffer) message;
-         
+
          handler.bufferReceived(session.getId(), new IoBufferWrapper(buffer));
       }
    }
@@ -181,12 +183,12 @@ public class MinaAcceptor implements Acceptor
       public void sessionCreated(final IoSession session)
       {
          Connection tc = new MinaConnection(session);
-         
+
          listener.connectionCreated(tc);
       }
 
       public void sessionDestroyed(final IoSession session)
-      {         
+      {
          listener.connectionDestroyed(session.getId());
       }
    }

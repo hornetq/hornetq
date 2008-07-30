@@ -18,11 +18,11 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.tests.unit.core.remoting.impl.mina;
 
-import org.apache.mina.common.IoBuffer;
+import org.apache.mina.core.buffer.IoBuffer;
 import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
 import org.jboss.messaging.tests.unit.core.remoting.MessagingBufferTestBase;
@@ -47,7 +47,7 @@ public class IoBufferWrapperTest extends MessagingBufferTestBase
    // Public --------------------------------------------------------
 
    // BufferWrapperBase overrides -----------------------------------
-   
+
    @Override
    protected MessagingBuffer createBuffer()
    {

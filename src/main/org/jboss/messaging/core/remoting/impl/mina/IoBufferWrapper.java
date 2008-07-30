@@ -18,25 +18,22 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import static org.jboss.messaging.util.DataConstants.FALSE;
-import static org.jboss.messaging.util.DataConstants.NOT_NULL;
-import static org.jboss.messaging.util.DataConstants.NULL;
-import static org.jboss.messaging.util.DataConstants.TRUE;
+import static org.jboss.messaging.util.DataConstants.*;
 
 import java.nio.charset.Charset;
 
-import org.apache.mina.common.IoBuffer;
+import org.apache.mina.core.buffer.IoBuffer;
 import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 /**
- * 
+ *
  * A BufferWrapper
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
@@ -46,7 +43,7 @@ public class IoBufferWrapper implements MessagingBuffer
    // Constants -----------------------------------------------------
 
    private static final Charset utf8 = Charset.forName("UTF-8");
-   
+
    // Attributes ----------------------------------------------------
 
    private final IoBuffer buffer;
@@ -58,15 +55,15 @@ public class IoBufferWrapper implements MessagingBuffer
    public IoBufferWrapper(final int size)
    {
       buffer = IoBuffer.allocate(size);
-      
+
       buffer.setAutoExpand(true);
    }
-         
+
    public IoBufferWrapper(final IoBuffer buffer)
    {
       this.buffer = buffer;
    }
-   
+
    // Public --------------------------------------------------------
 
    // MessagingBuffer implementation ----------------------------------------------
@@ -75,37 +72,37 @@ public class IoBufferWrapper implements MessagingBuffer
    {
       return buffer.array();
    }
-      
+
    public int position()
    {
       return buffer.position();
    }
-   
+
    public void position(final int position)
    {
       buffer.position(position);
    }
-   
+
    public int limit()
    {
       return buffer.limit();
    }
-   
+
    public void limit(final int limit)
    {
       buffer.limit(limit);
    }
-   
+
    public int capacity()
    {
       return buffer.capacity();
    }
-   
+
    public void flip()
    {
       buffer.flip();
    }
-   
+
    public MessagingBuffer slice()
    {
       return new IoBufferWrapper(buffer.slice());
@@ -120,7 +117,7 @@ public class IoBufferWrapper implements MessagingBuffer
    {
       return buffer.remaining();
    }
-   
+
    public void rewind()
    {
       buffer.rewind();
@@ -135,7 +132,7 @@ public class IoBufferWrapper implements MessagingBuffer
    {
       buffer.put(byteArray);
    }
-   
+
    public void putBytes(final byte[] bytes, int offset, int length)
    {
       buffer.put(bytes, offset, length);
@@ -145,7 +142,7 @@ public class IoBufferWrapper implements MessagingBuffer
    {
       buffer.putInt(intValue);
    }
-   
+
    public void putInt(final int pos, final int intValue)
    {
       buffer.putInt(pos, intValue);
@@ -160,27 +157,27 @@ public class IoBufferWrapper implements MessagingBuffer
    {
       buffer.putFloat(floatValue);
    }
-   
+
    public void putDouble(final double d)
    {
       buffer.putDouble(d);
    }
-   
+
    public void putShort(final short s)
    {
       buffer.putShort(s);
    }
-   
+
    public void putChar(final char chr)
    {
       buffer.putChar(chr);
-   }   
-   
+   }
+
    public byte getByte()
-   {      
+   {
       return buffer.get();
    }
-   
+
    public short getUnsignedByte()
    {
       return buffer.getUnsigned();
@@ -190,7 +187,7 @@ public class IoBufferWrapper implements MessagingBuffer
    {
       buffer.get(b);
    }
-   
+
    public void getBytes(final byte[] b, final int offset, final int length)
    {
       buffer.get(b, offset, length);
@@ -200,7 +197,7 @@ public class IoBufferWrapper implements MessagingBuffer
    {
       return buffer.getInt();
    }
-   
+
    public long getLong()
    {
       return buffer.getLong();
@@ -210,22 +207,22 @@ public class IoBufferWrapper implements MessagingBuffer
    {
       return buffer.getFloat();
    }
-   
+
    public short getShort()
    {
       return buffer.getShort();
    }
-   
+
    public int getUnsignedShort()
    {
       return buffer.getUnsignedShort();
    }
-   
+
    public double getDouble()
    {
       return buffer.getDouble();
    }
-   
+
    public char getChar()
    {
       return buffer.getChar();
@@ -245,19 +242,19 @@ public class IoBufferWrapper implements MessagingBuffer
    public boolean getBoolean()
    {
       byte b = buffer.get();
-      return (b == TRUE);
+      return b == TRUE;
    }
 
    public void putString(final String nullableString)
    {
       buffer.putInt(nullableString.length());
-      
+
       for (int i = 0; i < nullableString.length(); i++)
       {
          buffer.putChar(nullableString.charAt(i));
-      }      
+      }
    }
-   
+
    public void putNullableString(final String nullableString)
    {
       if (nullableString == null)
@@ -267,7 +264,7 @@ public class IoBufferWrapper implements MessagingBuffer
       else
       {
          buffer.put(NOT_NULL);
-         
+
          putString(nullableString);
       }
    }
@@ -275,21 +272,21 @@ public class IoBufferWrapper implements MessagingBuffer
    public String getString()
    {
       int len = buffer.getInt();
-         
+
       char[] chars = new char[len];
-      
+
       for (int i = 0; i < len; i++)
       {
          chars[i] = buffer.getChar();
       }
-      
-      return new String(chars);               
+
+      return new String(chars);
    }
-   
+
    public String getNullableString()
    {
       byte check = buffer.get();
-      
+
       if (check == NULL)
       {
          return null;
@@ -299,12 +296,12 @@ public class IoBufferWrapper implements MessagingBuffer
          return getString();
       }
    }
-         
+
    public void putUTF(final String str) throws Exception
    {
       buffer.putPrefixedString(str, utf8.newEncoder());
    }
-      
+
    public void putNullableSimpleString(final SimpleString string)
    {
       if (string == null)
@@ -317,25 +314,25 @@ public class IoBufferWrapper implements MessagingBuffer
          putSimpleString(string);
       }
    }
-   
+
    public void putSimpleString(final SimpleString string)
    {
       byte[] data = string.getData();
-      
+
       buffer.putInt(data.length);
       buffer.put(data);
    }
-   
+
    public SimpleString getSimpleString()
    {
       int len = buffer.getInt();
-      
+
       byte[] data = new byte[len];
       buffer.get(data);
-      
+
       return new SimpleString(data);
    }
-   
+
    public SimpleString getNullableSimpleString()
    {
       int b = buffer.get();
@@ -348,17 +345,17 @@ public class IoBufferWrapper implements MessagingBuffer
          return getSimpleString();
       }
    }
-   
+
    public String getUTF() throws Exception
    {
       return buffer.getPrefixedString(utf8.newDecoder());
    }
-   
+
    public Object getUnderlyingBuffer()
    {
       return buffer;
    }
-         
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

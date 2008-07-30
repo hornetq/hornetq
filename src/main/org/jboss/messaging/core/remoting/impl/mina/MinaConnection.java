@@ -18,12 +18,12 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import org.apache.mina.common.IoBuffer;
-import org.apache.mina.common.IoSession;
+import org.apache.mina.core.buffer.IoBuffer;
+import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.ssl.SslFilter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.MessagingBuffer;
@@ -41,35 +41,35 @@ public class MinaConnection implements Connection
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(MinaConnection.class);
-      
+
    // Attributes ----------------------------------------------------
 
    private final IoSession session;
-   
+
    private boolean closed;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-   
+
    public MinaConnection(final IoSession session)
    {
       this.session = session;
    }
 
    // Public --------------------------------------------------------
-   
+
    // Connection implementation ----------------------------
-   
+
    public synchronized void close()
    {
       if (closed)
       {
          return;
       }
-      
+
       session.close().awaitUninterruptibly();
-      
+
       SslFilter sslFilter = (SslFilter) session.getFilterChain().get("ssl");
       if (sslFilter != null)
       {
@@ -81,10 +81,10 @@ public class MinaConnection implements Connection
          {
             // ignore
          }
-         
-         
+
+
       }
-      
+
       closed = true;
    }
 

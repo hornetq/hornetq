@@ -21,16 +21,16 @@
  */
 package org.jboss.messaging.tests.unit.core.remoting.impl.mina;
 
-import org.apache.mina.common.IoSession;
+import org.apache.mina.core.session.IoSession;
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnection;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * A MinaConnectionTest
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -39,56 +39,56 @@ public class MinaConnectionTest extends UnitTestCase
    public void testGetID() throws Exception
    {
       IoSession session = EasyMock.createStrictMock(IoSession.class);
-      
+
       final long id = 192812;
-      
+
       EasyMock.expect(session.getId()).andReturn(id);
-      
+
       MinaConnection conn = new MinaConnection(session);
-      
+
       EasyMock.replay(session);
-      
+
       assertEquals(id, conn.getID());
-      
+
       EasyMock.verify(session);
    }
-   
+
    public void testWrite() throws Exception
    {
       IoSession session = EasyMock.createStrictMock(IoSession.class);
-      
+
       final Object underlying = new Object();
-      
+
       MessagingBuffer buff = EasyMock.createStrictMock(MessagingBuffer.class);
-      
+
       EasyMock.expect(buff.getUnderlyingBuffer()).andReturn(underlying);
-      
+
       EasyMock.expect(session.write(underlying)).andReturn(null);
-      
+
       MinaConnection conn = new MinaConnection(session);
-      
+
       EasyMock.replay(session, buff);
-      
+
       conn.write(buff);
-      
+
       EasyMock.verify(session, buff);
    }
-   
+
    public void testCreateBuffer() throws Exception
    {
       IoSession session = EasyMock.createStrictMock(IoSession.class);
-      
+
       MinaConnection conn = new MinaConnection(session);
-      
+
       EasyMock.replay(session);
-      
+
       final int size = 1234;
-      
+
       MessagingBuffer buff = conn.createBuffer(size);
-      
+
       assertEquals(size, buff.capacity());
-      
+
       EasyMock.verify(session);
    }
-     
+
 }

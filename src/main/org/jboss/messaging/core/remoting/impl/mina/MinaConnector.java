@@ -23,14 +23,14 @@ package org.jboss.messaging.core.remoting.impl.mina;
 
 import java.net.InetSocketAddress;
 
-import org.apache.mina.common.ConnectFuture;
-import org.apache.mina.common.DefaultIoFilterChainBuilder;
-import org.apache.mina.common.IdleStatus;
-import org.apache.mina.common.IoBuffer;
-import org.apache.mina.common.IoHandlerAdapter;
-import org.apache.mina.common.IoService;
-import org.apache.mina.common.IoServiceListener;
-import org.apache.mina.common.IoSession;
+import org.apache.mina.core.buffer.IoBuffer;
+import org.apache.mina.core.filterchain.DefaultIoFilterChainBuilder;
+import org.apache.mina.core.future.ConnectFuture;
+import org.apache.mina.core.service.IoHandlerAdapter;
+import org.apache.mina.core.service.IoService;
+import org.apache.mina.core.service.IoServiceListener;
+import org.apache.mina.core.session.IdleStatus;
+import org.apache.mina.core.session.IoSession;
 import org.apache.mina.transport.socket.SocketConnector;
 import org.apache.mina.transport.socket.SocketSessionConfig;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
@@ -40,13 +40,13 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.RemotingHandler;
-import org.jboss.messaging.core.remoting.spi.Connector;
 import org.jboss.messaging.core.remoting.spi.Connection;
+import org.jboss.messaging.core.remoting.spi.Connector;
 
 /**
- * 
+ *
  * A MinaConnector
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -59,60 +59,60 @@ public class MinaConnector implements Connector
    // Attributes ----------------------------------------------------
 
    private SocketConnector connector;
-   
+
    private final RemotingHandler handler;
-   
+
    private final Location location;
-   
+
    private final ConnectionLifeCycleListener listener;
-   
+
    private final ConnectionParams params;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
+
    public MinaConnector(final Location location, final ConnectionParams params,
                         final RemotingHandler handler,
                         final ConnectionLifeCycleListener listener)
-   {            
+   {
       if (location == null)
       {
          throw new IllegalArgumentException("Invalid argument null location");
       }
-      
+
       if (params == null)
       {
          throw new IllegalArgumentException("Invalid argument null connection params");
       }
-      
+
       if (handler == null)
       {
          throw new IllegalArgumentException("Invalid argument null handler");
       }
-      
+
       if (listener == null)
       {
          throw new IllegalArgumentException("Invalid argument null listener");
       }
-      
-      this.handler = handler;      
+
+      this.handler = handler;
       this.location = location;
       this.listener = listener;
-      this.params = params;            
+      this.params = params;
    }
-   
+
    public synchronized void start()
    {
       if (connector != null)
       {
          return;
       }
-      
+
       connector = new NioSocketConnector();
-      
+
       SocketSessionConfig connectorConfig = connector.getSessionConfig();
 
       DefaultIoFilterChainBuilder filterChain = connector.getFilterChain();
@@ -123,7 +123,7 @@ public class MinaConnector implements Connector
       if (params.getTcpReceiveBufferSize() != -1)
       {
          connectorConfig.setReceiveBufferSize(params.getTcpReceiveBufferSize());
-      }      
+      }
       if (params.getTcpSendBufferSize() != -1)
       {
          connectorConfig.setSendBufferSize(params.getTcpSendBufferSize());
@@ -132,7 +132,7 @@ public class MinaConnector implements Connector
       connectorConfig.setReuseAddress(true);
 
       if (params.isSSLEnabled())
-      {    
+      {
          try
          {
             FilterChainSupport.addSSLFilter(filterChain, true, params.getKeyStorePath(), params.getKeyStorePassword(), null, null);
@@ -145,20 +145,20 @@ public class MinaConnector implements Connector
          }
       }
       FilterChainSupport.addCodecFilter(filterChain, handler);
-      
-      connector.setHandler(new MinaHandler());   
-      
+
+      connector.setHandler(new MinaHandler());
+
       connector.addListener(new ServiceListener());
    }
-   
+
    public synchronized void close()
    {
       if (connector != null)
-      {     
+      {
          connector.dispose();
-      }            
+      }
    }
-   
+
    public Connection createConnection()
    {
       InetSocketAddress address = new InetSocketAddress(location.getHost(), location.getPort());
@@ -166,11 +166,11 @@ public class MinaConnector implements Connector
       connector.setDefaultRemoteAddress(address);
 
       future.awaitUninterruptibly();
-      
+
       if (future.isConnected())
-      {         
-         IoSession session = future.getSession();  
-         
+      {
+         IoSession session = future.getSession();
+
          return new MinaConnection(session);
       }
       else
@@ -178,7 +178,7 @@ public class MinaConnector implements Connector
          return null;
       }
    }
-     
+
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
@@ -212,32 +212,34 @@ public class MinaConnector implements Connector
       }
 
       public void sessionDestroyed(IoSession session)
-      {        
+      {
          listener.connectionDestroyed(session.getId());
       }
    }
-   
+
    private final class MinaHandler extends IoHandlerAdapter
    {
+      @Override
       public void exceptionCaught(final IoSession session, final Throwable cause)
               throws Exception
       {
          log.error("caught exception " + cause + " for session " + session, cause);
 
          MessagingException me = new MessagingException(MessagingException.INTERNAL_ERROR, "MINA exception");
-         
+
          me.initCause(cause);
-         
-         listener.connectionException(session.getId(), me);  
+
+         listener.connectionException(session.getId(), me);
       }
 
+      @Override
       public void messageReceived(final IoSession session, final Object message)
               throws Exception
       {
          IoBuffer buffer = (IoBuffer) message;
-         
+
          handler.bufferReceived(session.getId(), new IoBufferWrapper(buffer));
       }
    }
-   
+
 }

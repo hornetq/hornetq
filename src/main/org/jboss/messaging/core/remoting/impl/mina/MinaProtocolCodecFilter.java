@@ -18,14 +18,14 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+import static org.jboss.messaging.util.DataConstants.*;
 
-import org.apache.mina.common.IoBuffer;
-import org.apache.mina.common.IoSession;
+import org.apache.mina.core.buffer.IoBuffer;
+import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.CumulativeProtocolDecoder;
 import org.apache.mina.filter.codec.ProtocolCodecFactory;
 import org.apache.mina.filter.codec.ProtocolDecoder;
@@ -37,7 +37,7 @@ import org.jboss.messaging.core.remoting.RemotingHandler;
 
 /**
  * A Mina ProtocolEncoder used to encode/decode messages.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
@@ -45,9 +45,9 @@ public class MinaProtocolCodecFilter extends CumulativeProtocolDecoder
         implements ProtocolEncoder, ProtocolCodecFactory
 {
    private static final Logger log = Logger.getLogger(MinaProtocolCodecFilter.class);
-   
+
    private final RemotingHandler handler;
-   
+
    public MinaProtocolCodecFilter(final RemotingHandler handler)
    {
       this.handler = handler;
@@ -68,6 +68,7 @@ public class MinaProtocolCodecFilter extends CumulativeProtocolDecoder
 
    // ProtocolEncoder implementation ------------------------------------------
 
+   @Override
    public void dispose(final IoSession session) throws Exception
    {
    }
@@ -81,18 +82,19 @@ public class MinaProtocolCodecFilter extends CumulativeProtocolDecoder
    // CumulativeProtocolDecoder overrides
    // -------------------------------------------------------------------------------------
 
+   @Override
    public boolean doDecode(final IoSession session, final IoBuffer in, final ProtocolDecoderOutput out) throws Exception
    {
       //TODO - we can avoid this entirely if we maintain fragmented packets in the handler
-      
+
       int start = in.position();
-      
+
       int length = handler.isReadyToHandle(new IoBufferWrapper(in));
-      
+
       if (length == -1)
-      {         
+      {
          in.position(start);
-         
+
          return false;
       }
 
@@ -101,12 +103,12 @@ public class MinaProtocolCodecFilter extends CumulativeProtocolDecoder
       copied.put(in);
       copied.setAutoExpand(true);
       copied.flip();
-      
+
       in.position(start + length + SIZE_INT);
-      
-      out.write(copied);      
-      
-      return true;    
+
+      out.write(copied);
+
+      return true;
    }
 }
 

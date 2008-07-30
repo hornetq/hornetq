@@ -24,7 +24,7 @@ package org.jboss.messaging.core.remoting.impl.mina;
 
 import javax.net.ssl.SSLContext;
 
-import org.apache.mina.common.DefaultIoFilterChainBuilder;
+import org.apache.mina.core.filterchain.DefaultIoFilterChainBuilder;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.ssl.SslFilter;
 import org.jboss.messaging.core.remoting.RemotingHandler;
@@ -44,11 +44,11 @@ public class FilterChainSupport
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-   
+
    private FilterChainSupport()
-   {      
+   {
    }
-   
+
    // Public --------------------------------------------------------
 
    public static void addCodecFilter(final DefaultIoFilterChainBuilder filterChain,
@@ -72,9 +72,9 @@ public class FilterChainSupport
          filter.setUseClientMode(true);
          filter.setWantClientAuth(true);
       }
-      filterChain.addLast("ssl", filter); 
+      filterChain.addLast("ssl", filter);
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Inner classes -------------------------------------------------

@@ -58,10 +58,10 @@
 	<classpathentry kind="lib" path="thirdparty/jboss/jbosssx-client/lib/jbosssx-client.jar"/>
 	<classpathentry kind="lib" path="thirdparty/easymock/lib/easymock.jar" sourcepath="thirdparty/easymock/lib/src.zip"/>
 	<classpathentry kind="lib" path="thirdparty/slf4j/log4j/lib/slf4j-log4j12.jar"/>
-	<classpathentry exported="true" kind="lib" path="thirdparty/apache-mina/lib/mina-core-2.0.0-M2-20080520.004618-19.jar" sourcepath="thirdparty/apache-mina/lib/mina-core-2.0.0-M2-20080520.004618-19-sources.jar"/>
 	<classpathentry kind="lib" path="tests/jms-tests/config"/>
 	<classpathentry kind="lib" path="thirdparty/easymock-classextension/lib/easymockclassextension.jar"/>
 	<classpathentry kind="lib" path="thirdparty/cglib/lib/cglib.jar"/>
 	<classpathentry kind="lib" path="tests/tmpfiles"/>
+	<classpathentry kind="lib" path="thirdparty/apache-mina/lib/mina-core-2.0.0-M3-20080730.120633-1.jar" sourcepath="thirdparty/apache-mina/lib/mina-core-2.0.0-M3-20080730.120633-1-sources.jar"/>
 	<classpathentry kind="output" path="eclipse-output"/>
 </classpath>

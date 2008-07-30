@@ -26,19 +26,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.mina.common.IoSession;
-import org.apache.mina.common.IoSessionAttributeMap;
-import org.apache.mina.common.IoSessionDataStructureFactory;
-import org.apache.mina.common.WriteRequest;
-import org.apache.mina.common.WriteRequestQueue;
+import org.apache.mina.core.session.IoSession;
+import org.apache.mina.core.session.IoSessionAttributeMap;
+import org.apache.mina.core.session.IoSessionDataStructureFactory;
+import org.apache.mina.core.write.WriteRequest;
+import org.apache.mina.core.write.WriteRequestQueue;
 
 /**
- * 
+ *
  * A MessagingIOSessionDataStructureFactory
- * 
+ *
  * Derived from:
  * @author The Apache MINA Project (dev@mina.apache.org)
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -56,8 +56,8 @@ public class MessagingIOSessionDataStructureFactory implements IoSessionDataStru
    {
       return new ConcurrentWriteRequestQueue();
    }
-   
-   
+
+
    private static class ConcurrentIoSessionAttributeMap implements IoSessionAttributeMap {
 
       private final ConcurrentMap<Object, Object> attributes = new ConcurrentHashMap<Object, Object>(4);
@@ -95,7 +95,7 @@ public class MessagingIOSessionDataStructureFactory implements IoSessionDataStru
           if (value == null) {
               return null;
           }
-          
+
           return attributes.putIfAbsent(key, value);
       }
 
@@ -115,7 +115,7 @@ public class MessagingIOSessionDataStructureFactory implements IoSessionDataStru
           if (value == null) {
               return false;
           }
-          
+
           return attributes.remove(key, value);
       }
 
@@ -128,20 +128,20 @@ public class MessagingIOSessionDataStructureFactory implements IoSessionDataStru
       }
 
       public Set<Object> getAttributeKeys(IoSession session) {
-          return new HashSet<Object>(attributes.keySet());          
+          return new HashSet<Object>(attributes.keySet());
       }
 
       public void dispose(IoSession session) throws Exception {
       }
   }
-   
+
    private static class ConcurrentWriteRequestQueue implements WriteRequestQueue
    {
       private final Queue<WriteRequest> q = new ConcurrentLinkedQueue<WriteRequest>();
-      
+
       public void dispose(IoSession session) {
       }
-      
+
       public void clear(IoSession session) {
           q.clear();
       }
@@ -157,11 +157,11 @@ public class MessagingIOSessionDataStructureFactory implements IoSessionDataStru
       public synchronized WriteRequest poll(IoSession session) {
           return q.poll();
       }
-      
+
       @Override
       public String toString() {
           return q.toString();
       }
   }
-  
+
 }
