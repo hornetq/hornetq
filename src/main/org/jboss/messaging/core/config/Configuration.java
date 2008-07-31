@@ -81,7 +81,19 @@ public interface Configuration extends Serializable
    int getPort();
    
    void setPort(int port);
-
+   
+   TransportType getBackupTransport();
+   
+   void setBackupTransport(TransportType transport);
+   
+   String getBackupHost();
+   
+   void setBackupHost(String host);
+   
+   int getBackupPort();
+   
+   void setBackupPort(int port);
+   
    Location getLocation();
          
    String getKeyStorePath();

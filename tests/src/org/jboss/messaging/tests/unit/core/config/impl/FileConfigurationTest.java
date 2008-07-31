@@ -39,7 +39,10 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(12345, conf.getScheduledThreadPoolMaxSize());
       assertEquals("blahhost", conf.getHost());
       assertEquals(TransportType.HTTP, conf.getTransport());
-      assertEquals(6540, conf.getPort());
+      assertEquals(6540, conf.getPort());      
+      assertEquals("backuphost", conf.getBackupHost());
+      assertEquals(TransportType.TCP, conf.getBackupTransport());
+      assertEquals(7540, conf.getBackupPort());      
       assertEquals(5423, conf.getSecurityInvalidationInterval());
       assertEquals(false, conf.isRequireDestinations());
       assertEquals(false, conf.isSecurityEnabled());

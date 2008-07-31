@@ -89,7 +89,7 @@ public class ConfigurationImpl implements Configuration
    
    public static final int DEFAULT_JOURNAL_MIN_FILES = 10;
    
-   public static final int DEFAULT_MAX_AIO = 5000;
+   public static final int DEFAULT_JOURNAL_MAX_AIO = 5000;
    
    private static final long serialVersionUID = 4077088945050267843L;
 
@@ -97,7 +97,7 @@ public class ConfigurationImpl implements Configuration
    // Attributes -----------------------------------------------------------------------------
       
    protected boolean clustered = DEFAULT_CLUSTERED;
-   
+      
    protected int scheduledThreadPoolMaxSize = DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
    
    protected long securityInvalidationInterval = DEFAULT_SECURITY_INVALIDATION_INTERVAL;
@@ -127,7 +127,7 @@ public class ConfigurationImpl implements Configuration
    
    protected int journalMinFiles = DEFAULT_JOURNAL_MIN_FILES;
    
-   protected int journalMaxAIO = DEFAULT_MAX_AIO;
+   protected int journalMaxAIO = DEFAULT_JOURNAL_MAX_AIO;
    
    // remoting config
        
@@ -136,6 +136,12 @@ public class ConfigurationImpl implements Configuration
    protected String host = DEFAULT_HOST;
    
    protected int port = DEFAULT_PORT;
+   
+   protected TransportType backupTransport;
+   
+   protected String backupHost;
+   
+   protected int backupPort;
    
    protected final ConnectionParams defaultConnectionParams = new ConnectionParamsImpl();
    
@@ -222,6 +228,36 @@ public class ConfigurationImpl implements Configuration
    public void setPort(int port)
    {
       this.port = port;
+   }
+   
+   public TransportType getBackupTransport()
+   {
+      return backupTransport;
+   }
+   
+   public void setBackupTransport(TransportType transport)
+   {
+      this.backupTransport = transport;
+   }
+
+   public String getBackupHost()
+   {
+      return backupHost;
+   }
+   
+   public void setBackupHost(String host)
+   {
+      this.backupHost = host;
+   }
+   
+   public int getBackupPort()
+   {
+      return backupPort;
+   }
+   
+   public void setBackupPort(int port)
+   {
+      this.backupPort = port;
    }
    
    public Location getLocation()

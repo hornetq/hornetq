@@ -76,7 +76,7 @@ public class ConfigurationImplTest extends TestCase
       assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_SYNC_NON_TRANSACTIONAL, conf.isJournalSyncNonTransactional());
       assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE, conf.getJournalFileSize());
       assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_MIN_FILES, conf.getJournalMinFiles());      
-      assertEquals(ConfigurationImpl.DEFAULT_MAX_AIO, conf.getJournalMaxAIO());
+      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_MAX_AIO, conf.getJournalMaxAIO());
    }
    
    public void testSetGetAttributes()
@@ -187,7 +187,7 @@ public class ConfigurationImplTest extends TestCase
       conf.setTransport(TransportType.TCP);
       conf.setHost("blahhost");
       conf.setPort(1234);
-      assertEquals("tcp://blahhost:1234", conf.getLocation().getLocation());
+      assertEquals("TCP://blahhost:1234", conf.getLocation().getLocation());
    }
    
    public void testGetSetInterceptors()

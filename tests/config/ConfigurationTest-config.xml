@@ -1,15 +1,17 @@
 <deployment>
    <configuration>
       <clustered>true</clustered>
-      <scheduled-max-pool-size>12345</scheduled-max-pool-size>    
-      <max-pool-size>54321</max-pool-size>
+      <scheduled-max-pool-size>12345</scheduled-max-pool-size>        
       <require-destinations>false</require-destinations>
       <security-enabled>false</security-enabled>
       <security-invalidation-interval>5423</security-invalidation-interval>
       <remoting-transport>HTTP</remoting-transport>
       <remoting-bind-address>5431</remoting-bind-address>
       <remoting-host>blahhost</remoting-host>
-      <remoting-port>6540</remoting-port>
+      <remoting-port>6540</remoting-port>      
+      <remoting-backup-transport>TCP</remoting-backup-transport>   
+      <remoting-backup-host>backuphost</remoting-backup-host>
+      <remoting-backup-port>7540</remoting-backup-port>      
       <remoting-call-timeout>7654</remoting-call-timeout>
       <remoting-enable-invm-optimisation>false</remoting-enable-invm-optimisation>
       <remoting-tcp-nodelay>false</remoting-tcp-nodelay>

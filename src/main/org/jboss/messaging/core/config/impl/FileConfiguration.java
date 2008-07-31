@@ -80,10 +80,10 @@ public class FileConfiguration extends ConfigurationImpl
       securityEnabled = getBoolean(e, "security-enabled", securityEnabled);
       
       securityInvalidationInterval = getLong(e, "security-invalidation-interval", securityInvalidationInterval);
-      
-      transport = TransportType.valueOf(getString(e, "remoting-transport", TransportType.TCP.toString()));
-
+            
       // Remoting config
+      
+      transport = TransportType.valueOf(getString(e, "remoting-transport", transport.toString()));
       
       host = getString(e, "remoting-host", host);
 
@@ -93,6 +93,17 @@ public class FileConfiguration extends ConfigurationImpl
       }
 
       port = getInteger(e, "remoting-port", port);
+      
+      String sbackupTransport = getString(e, "remoting-backup-transport", null);
+      
+      if (sbackupTransport != null)
+      {
+         backupTransport = TransportType.valueOf(sbackupTransport);
+      }
+      
+      backupHost = getString(e, "remoting-backup-host", backupHost);
+
+      backupPort = getInteger(e, "remoting-backup-port", backupPort);
 
       int callTimeout = getInteger(e, "remoting-call-timeout", ConnectionParamsImpl.DEFAULT_CALL_TIMEOUT);
 
@@ -108,13 +119,13 @@ public class FileConfiguration extends ConfigurationImpl
 
       sslEnabled = getBoolean(e, "remoting-enable-ssl", ConnectionParamsImpl.DEFAULT_SSL_ENABLED);
 
-      keyStorePath = getString(e, "remoting-ssl-keystore-path", null);
+      keyStorePath = getString(e, "remoting-ssl-keystore-path", ConfigurationImpl.DEFAULT_KEYSTORE_PATH);
 
-      keyStorePassword = getString(e, "remoting-ssl-keystore-password", null);
+      keyStorePassword = getString(e, "remoting-ssl-keystore-password", ConfigurationImpl.DEFAULT_KEYSTORE_PASSWORD);
 
-      trustStorePath = getString(e, "remoting-ssl-truststore-path", null);
+      trustStorePath = getString(e, "remoting-ssl-truststore-path", ConfigurationImpl.DEFAULT_TRUSTSTORE_PATH);
 
-      trustStorePassword = getString(e, "remoting-ssl-truststore-password", null);
+      trustStorePassword = getString(e, "remoting-ssl-truststore-password", ConfigurationImpl.DEFAULT_TRUSTSTORE_PASSWORD);
 
       defaultConnectionParams.setCallTimeout(callTimeout);
       
