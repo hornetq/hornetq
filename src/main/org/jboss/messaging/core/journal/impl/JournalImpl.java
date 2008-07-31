@@ -1049,7 +1049,6 @@ public class JournalImpl implements TestableJournal
                      else
                      {
                         log.warn("Prepared transaction " + healthy + " wasn't considered completed, it will be ignored");
-                        journalTransaction.setInvalid(true);
                         tx.invalid = true;
                      }
                      
@@ -1247,11 +1246,17 @@ public class JournalImpl implements TestableJournal
       return this.fileFactory.getAlignment();
    }
    
-   public void checkReclaimStatus() throws Exception
+   // TestableJournal implementation --------------------------------------------------------------
+   
+   
+   public void setAutoReclaim(boolean autoReclaim)
    {
-      JournalFile[] files = new JournalFile[dataFiles.size()];
-      
-      reclaimer.scan(dataFiles.toArray(files));		
+      this.autoReclaim = autoReclaim;
+   }
+   
+   public boolean isAutoReclaim()
+   {
+      return this.autoReclaim;
    }
    
    public String debug() throws Exception
@@ -1293,8 +1298,6 @@ public class JournalImpl implements TestableJournal
       
       return builder.toString();
    }
-   
-   // TestableJournal implementation --------------------------------------------------------------
    
    /** Method for use on testcases.
     *  It will call waitComplete on every transaction, so any assertions on the file system will be correct after this */
@@ -1428,11 +1431,6 @@ public class JournalImpl implements TestableJournal
       debugWait();
    }
 
-   public void disableAutoReclaiming()
-   {
-      this.autoReclaim = false;
-   }
-   
    // MessagingComponent implementation ---------------------------------------------------
    
    public synchronized boolean isStarted()
@@ -1490,6 +1488,13 @@ public class JournalImpl implements TestableJournal
    
    // Private -----------------------------------------------------------------------------
 
+   private void checkReclaimStatus() throws Exception
+   {
+      JournalFile[] files = new JournalFile[dataFiles.size()];
+      
+      reclaimer.scan(dataFiles.toArray(files));    
+   }
+   
    // Discard the old JournalFile and set it with a new ID
    private JournalFile reinitializeFile(final JournalFile file) throws Exception
    {
@@ -1516,7 +1521,6 @@ public class JournalImpl implements TestableJournal
       return jf;
    }
    
-   @SuppressWarnings("unchecked")
    private Pair<Integer, Integer>[] readReferencesOnTransaction(final int variableSize, final ByteBuffer bb)
    {
       int numberOfFiles = variableSize / (SIZE_INT * 2);
@@ -1525,7 +1529,7 @@ public class JournalImpl implements TestableJournal
       
       for (int i = 0; i < numberOfFiles; i++)
       {
-         values[i] = new Pair(bb.getInt(), bb.getInt());
+         values[i] = new Pair<Integer, Integer>(bb.getInt(), bb.getInt());
       }
       
       return values;
@@ -1736,7 +1740,7 @@ public class JournalImpl implements TestableJournal
       
       String fileName = filePrefix + "-" + orderingID + "." + fileExtension;
       
-      if (trace) log.trace("Creating file " + fileName);
+      if (trace) trace("Creating file " + fileName);
       
       SequentialFile sequentialFile = fileFactory.createSequentialFile(fileName, maxAIO);
       
@@ -1772,7 +1776,7 @@ public class JournalImpl implements TestableJournal
    
    private int generateOrderingID()
    {
-      return nextOrderingId.addAndGet(1);
+      return nextOrderingId.incrementAndGet();
    }
    
    // You need to guarantee lock.acquire() over currentFile before calling this method
@@ -1807,7 +1811,7 @@ public class JournalImpl implements TestableJournal
    // You need to guarantee lock.acquire() before calling this method
    private JournalFile enqueueOpenFile() throws InterruptedException
    {
-      if (trace) log.trace("enqueueOpenFile with openedFiles.size=" + openedFiles.size());
+      if (trace) trace("enqueueOpenFile with openedFiles.size=" + openedFiles.size());
       
       filesExecutor.execute(new Runnable()
       {
@@ -2030,18 +2034,6 @@ public class JournalImpl implements TestableJournal
       // Used to verify completion on reload
       private final Map<Integer, AtomicInteger> numberOfElements = new HashMap<Integer, AtomicInteger>();
       
-      private boolean invalid = false;
-      
-      public void setInvalid(boolean b)
-      {
-         this.invalid = b;
-      }
-      
-      public boolean isInvalid()
-      {
-         return this.invalid;
-      }
-      
       public Map<Integer, AtomicInteger> getElementsSummary()
       {
          return numberOfElements;
@@ -2104,10 +2096,8 @@ public class JournalImpl implements TestableJournal
                
                if (posFiles != null)
                {
-                  //throw new IllegalStateException("Cannot find add info " + n.b);
                   posFiles.addDelete(n.a);
                }
-               
             }
          }
          

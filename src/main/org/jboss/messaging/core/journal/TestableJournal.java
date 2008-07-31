@@ -60,7 +60,15 @@ public interface TestableJournal extends Journal
    
    int getMaxAIO();
    
+   /** This method could be promoted to Journal interface when we decide to use the loadManager 
+    *  instead of load(List,List)
+    */
+   long load(LoadManager reloadManager) throws Exception;
+   
+   
    void forceMoveNextFile() throws Exception;
    
-   void disableAutoReclaiming();
+   void setAutoReclaim(boolean autoReclaim);
+   
+   boolean isAutoReclaim();
 }

@@ -77,11 +77,9 @@ public class AlignedJournalImplTest extends UnitTestCase
       
       FakeSequentialFileFactory factory = new FakeSequentialFileFactory(200, true);
       
-      SequentialFile file = factory.createSequentialFile("test1", 100);
+      SequentialFile file = factory.createSequentialFile("test1", 1);
 
       file.open();
-
-      
       
       try
       {
@@ -273,7 +271,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       
       setupJournal(JOURNAL_SIZE, 100);
       
-      journalImpl.disableAutoReclaiming();
+      journalImpl.setAutoReclaim(false);
       
       journalImpl.checkAndReclaimFiles();
       
@@ -318,7 +316,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       
       setupJournal(JOURNAL_SIZE, 100);
       
-      journalImpl.disableAutoReclaiming();
+      journalImpl.setAutoReclaim(false);
       
       journalImpl.checkAndReclaimFiles();
       
@@ -416,7 +414,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       
       setupJournal(JOURNAL_SIZE, 100);
       
-      journalImpl.disableAutoReclaiming();
+      journalImpl.setAutoReclaim(false);
       
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
@@ -562,7 +560,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       
       journalImpl.appendCommitRecord(1l);
       
-      SequentialFile file = factory.createSequentialFile("tt-1.tt", 10000);
+      SequentialFile file = factory.createSequentialFile("tt-1.tt", 1);
       
       file.open();
       
@@ -631,7 +629,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       
       journalImpl.appendCommitRecord(2l);
       
-      SequentialFile file = factory.createSequentialFile("tt-1.tt", 10000);
+      SequentialFile file = factory.createSequentialFile("tt-1.tt", 1);
       
       file.open();
       
@@ -744,7 +742,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       
       journalImpl.appendCommitRecord(1l);
       
-      SequentialFile file = factory.createSequentialFile("tt-1.tt", 10000);
+      SequentialFile file = factory.createSequentialFile("tt-1.tt", 1);
       
       file.open();
       
@@ -923,6 +921,56 @@ public class AlignedJournalImplTest extends UnitTestCase
       assertEquals(2, factory.listFiles("tt").size());
 
       
+   }
+   
+   public void testReloadInvalidPrepared() throws Exception
+   {
+      final int JOURNAL_SIZE = 3000;
+      
+      setupJournal(JOURNAL_SIZE, 100);
+      
+      assertEquals(0, records.size());
+      assertEquals(0, transactions.size());
+      
+      for (int i = 0; i < 10; i++)
+      {
+         journalImpl.appendAddRecordTransactional(1, i, (byte) 1, new SimpleEncoding(50,(byte) 1));
+         journalImpl.forceMoveNextFile();
+      }
+      journalImpl.appendPrepareRecord(1l);
+
+      setupJournal(JOURNAL_SIZE, 100);
+      assertEquals(0, records.size());
+      assertEquals(1, transactions.size());
+
+      SequentialFile file = factory.createSequentialFile("tt-1.tt", 1);
+      
+      file.open();
+      
+      ByteBuffer buffer = ByteBuffer.allocate(100);
+      
+      // Messing up with the first record (removing the position)
+      file.position(100);
+      
+      file.read(buffer);
+
+      buffer.position(1);
+      
+      buffer.putInt(-1);
+      
+      buffer.rewind();
+      
+      // Messing up with the first record (changing the fileID, so Journal reload will think the record came from a different journal usage)
+      file.position(100);
+
+      file.write(buffer, true);
+      
+      file.close();
+      
+      setupJournal(JOURNAL_SIZE, 100);
+
+      assertEquals(0, records.size());
+      assertEquals(0, transactions.size());
    }
    
    public void testReclaimAfterRollabck() throws Exception

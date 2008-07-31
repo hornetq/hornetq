@@ -73,8 +73,6 @@ public interface Journal extends MessagingComponent
    long load(List<RecordInfo> committedRecords,
          List<PreparedTransactionInfo> preparedTransactions) throws Exception;
    
-   long load(LoadManager reloadManager) throws Exception;
-   
    int getAlignment() throws Exception;
    
 }
