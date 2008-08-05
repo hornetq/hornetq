@@ -298,6 +298,18 @@ void AsyncFile::read(THREAD_CONTEXT threadContext, long position, size_t size, v
 	}
 }
 
+long AsyncFile::getSize()
+{
+	struct stat64 statBuffer;
+	
+	if (fstat64(fileHandle, &statBuffer) < 0)
+	{
+		return -1l;
+	}
+	return statBuffer.st_size;
+}
+
+
 void AsyncFile::stopPoller(THREAD_CONTEXT threadContext)
 {
 	pollerRunning = 0;

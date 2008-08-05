@@ -206,9 +206,6 @@ public class MultiThreadWriteNativeTest extends AIOTestBase
                
                log.debug(Thread.currentThread().getName() + " Rec/Sec= " + (NUMBER_OF_LINES * 1000 / (endtime-startTime)) + " total time = " + (endtime-startTime) + " number of lines=" + NUMBER_OF_LINES);
                
-               libaio.destroyBuffer(buffer);
-               
-               
                for (CountDownCallback callback: list)
                {
                    assertTrue (callback.doneCalled);

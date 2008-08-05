@@ -32,6 +32,7 @@
 #include "AIOController.h"
 #include "JNICallbackAdapter.h"
 #include "AIOException.h"
+#include "Version.h"
 
 
 
@@ -143,40 +144,6 @@ JNIEXPORT void Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_i
 	}
 }
 
-JNIEXPORT jobject JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_newBuffer
-  (JNIEnv * env, jobject, jlong size)
-{
-	try
-	{
-		
-		if (size % ALIGNMENT)
-		{
-			throwException(env, "java/lang/RuntimeException", "Buffer size needs to be aligned to 512");
-			return 0;
-		}
-		
-		void * buffer = 0;
-		if (::posix_memalign(&buffer, 512, size))
-		{
-			throw AIOException(10, "Error on posix_memalign");
-		}
-		return env->NewDirectByteBuffer(buffer, size);
-	}
-	catch (AIOException& e)
-	{
-		throwException(env, "java/lang/RuntimeException", e.what());
-		return 0;
-	}
-}
-
-JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_destroyBuffer
-  (JNIEnv * env, jobject, jobject jbuffer)
-{
-	void *  buffer = env->GetDirectBufferAddress(jbuffer);
-	free(buffer);
-}
-
-
 JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_stopPoller
   (JNIEnv *env, jclass, jlong controllerAddress)
 {
@@ -224,9 +191,37 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 	}
 }
 
+
+
 /** It does nothing... just return true to make sure it has all the binary dependencies */
-JNIEXPORT jboolean JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_isNativeLoaded
+JNIEXPORT jint JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_getNativeVersion
   (JNIEnv *, jclass)
+
 {
-	return 1;
+     return _VERSION_NATIVE_AIO;
 }
+
+
+JNIEXPORT jlong JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_size0
+  (JNIEnv * env, jobject, jlong controllerAddress)
+{
+	try
+	{
+		AIOController * controller = (AIOController *) controllerAddress;
+
+		long size = controller->fileOutput.getSize();
+		if (size < 0)
+		{
+			throwException(env, "java/lang/RuntimeException", "native method size failed");
+			return -1l;
+		}
+		return size;
+	}
+	catch (AIOException& e)
+	{
+		throwException(env, "java/lang/RuntimeException", e.what());
+		return -1l;
+	}
+	
+}
+

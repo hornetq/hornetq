@@ -166,8 +166,6 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
             assertFalse(callback.errorCalled);
          }
          
-         controller.destroyBuffer(block);
-         
          controller.close();
       } finally
       {
@@ -288,8 +286,6 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          {
             assertEquals((byte) (i % 100), bytesRead[i]);
          }
-         
-         controller.destroyBuffer(buffer);
       } finally
       {
          try
@@ -555,8 +551,6 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
             assertFalse(tmp.errorCalled);
          }
          
-         controller.destroyBuffer(block);
-         
          controller.close();
       } finally
       {
@@ -634,8 +628,7 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          
          assertTrue(aioBlock.errorCalled);
          assertFalse(aioBlock.doneCalled);
-         
-         controller.destroyBuffer(block);
+
       } catch (Exception e)
       {
          throw e;
@@ -658,6 +651,26 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
       }
       
    }
+   
+   public void testSize() throws Exception
+   {
+      final AsynchronousFileImpl controller = new AsynchronousFileImpl();
+      
+      final int NUMBER_LINES = 10;
+      final int SIZE = 1024;
+      
+      controller.open(FILE_NAME, 1);
+      
+      log.debug("Filling file");
+      
+      controller.fill(0, 1, NUMBER_LINES * SIZE, (byte) 'j');
+      
+      assertEquals (NUMBER_LINES * SIZE, controller.size());
+      
+      controller.close();
+      
+   }
+   
    
    private void addString(String str, ByteBuffer buffer)
    {

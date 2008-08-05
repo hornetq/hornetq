@@ -10,6 +10,7 @@ extern "C" {
 /* Inaccessible static: log */
 /* Inaccessible static: totalMaxIO */
 /* Inaccessible static: loaded */
+/* Inaccessible static: EXPECTED_NATIVE_VERSION */
 /*
  * Class:     org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl
  * Method:    init
@@ -17,6 +18,14 @@ extern "C" {
  */
 JNIEXPORT jlong JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_init
   (JNIEnv *, jclass, jstring, jint, jobject);
+
+/*
+ * Class:     org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl
+ * Method:    size0
+ * Signature: (J)J
+ */
+JNIEXPORT jlong JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_size0
+  (JNIEnv *, jobject, jlong);
 
 /*
  * Class:     org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl
@@ -60,10 +69,10 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 
 /*
  * Class:     org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl
- * Method:    isNativeLoaded
- * Signature: ()Z
+ * Method:    getNativeVersion
+ * Signature: ()I
  */
-JNIEXPORT jboolean JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_isNativeLoaded
+JNIEXPORT jint JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_getNativeVersion
   (JNIEnv *, jclass);
 
 /*
@@ -73,22 +82,6 @@ JNIEXPORT jboolean JNICALL Java_org_jboss_messaging_core_asyncio_impl_Asynchrono
  */
 JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_internalPollEvents
   (JNIEnv *, jclass, jlong);
-
-/*
- * Class:     org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl
- * Method:    destroyBuffer
- * Signature: (Ljava/nio/ByteBuffer;)V
- */
-JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_destroyBuffer
-  (JNIEnv *, jobject, jobject);
-
-/*
- * Class:     org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl
- * Method:    newBuffer
- * Signature: (J)Ljava/nio/ByteBuffer;
- */
-JNIEXPORT jobject JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_newBuffer
-  (JNIEnv *, jobject, jlong);
 
 #ifdef __cplusplus
 }

@@ -60,6 +60,8 @@ public:
 		return fileHandle;
 	}
 
+	long getSize();
+
 	inline void * newBuffer(int size)
 	{
 		void * buffer = 0;

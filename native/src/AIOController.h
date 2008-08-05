@@ -43,7 +43,6 @@ public:
 	 */
 	void log(THREAD_CONTEXT threadContext, short level, const char * message);
 	
-	int fileHandle;
 	AsyncFile fileOutput;
 	
 	void destroy(THREAD_CONTEXT context);

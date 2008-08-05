@@ -52,9 +52,7 @@ public interface AsynchronousFile
 	
 	void fill(long position, int blocks, long size, byte fillChar);
 	
-	ByteBuffer newBuffer(long size);
-	
-	void destroyBuffer(ByteBuffer buffer);
+	ByteBuffer newBuffer(int size);
 	
 	int getBlockSize();
 	

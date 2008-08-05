@@ -53,6 +53,8 @@ public class AsynchronousFileImpl implements AsynchronousFile
    private static AtomicInteger totalMaxIO = new AtomicInteger(0);
    
    private static boolean loaded = false;
+   
+   private static int EXPECTED_NATIVE_VERSION = 10;
       
    static void addMax(int io)
    {
@@ -71,7 +73,15 @@ public class AsynchronousFileImpl implements AsynchronousFile
       {
          log.trace(name + " being loaded");
          System.loadLibrary(name);
-         return isNativeLoaded();
+         if (getNativeVersion() != EXPECTED_NATIVE_VERSION)
+         {
+            log.warn("You have a native library with a different version than expected");
+            return false;
+         }
+         else
+         {
+            return true;
+         }
       }
       catch (Throwable e)
       {
@@ -216,8 +226,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	public long size()
 	{
 		checkOpened();
-		// TODO: wire this method to ftell
-		return 0;
+		return size0(handler);
 	}
 	
 	public void fill(final long position, final int blocks, final long size, final byte fillChar)
@@ -236,6 +245,18 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	   return fileName;
 	}
 	
+   // Should we make this method static?
+   public ByteBuffer newBuffer(int size)
+   {
+      if (size % getBlockSize() != 0)
+      {
+         throw new RuntimeException("Buffer size needs to be aligned to 512");
+      }
+      
+      return ByteBuffer.allocateDirect((int)size);
+   }
+   
+      
 	// Private
 	// ---------------------------------------------------------------------------------
 	
@@ -292,6 +313,8 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	
 	private static native long init(String fileName, int maxIO, Logger logger);
 	
+	private native long size0(long handle);
+	
 	private native void write(long handle, long position, long size, ByteBuffer buffer, AIOCallback aioPackage);
 	
 	private native void read(long handle, long position, long size, ByteBuffer buffer, AIOCallback aioPackage);
@@ -303,18 +326,11 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	private static native void stopPoller(long handler);
 	
 	/** A native method that does nothing, and just validate if the ELF dependencies are loaded and on the correct platform as this binary format */
-	private static native boolean isNativeLoaded();
+	private static native int getNativeVersion();
 	
 	/** Poll asynchrounous events from internal queues */
 	private static native void internalPollEvents(long handler);
 	
-	// Should we make this method static?
-	public native void destroyBuffer(ByteBuffer buffer);
-	
-	// Should we make this method static?
-	public native ByteBuffer newBuffer(long size);
-	
-		
 	// Inner classes
 	// -----------------------------------------------------------------------------------------
 	
