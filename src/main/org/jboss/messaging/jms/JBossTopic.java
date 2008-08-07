@@ -26,6 +26,7 @@ import javax.jms.JMSException;
 import javax.jms.Topic;
 
 import org.jboss.messaging.util.Pair;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -99,6 +100,11 @@ public class JBossTopic extends JBossDestination implements Topic
       return pair;
    }
          
+   public static SimpleString createAddressFromName(String name)
+   {
+      return new SimpleString(JMS_TOPIC_ADDRESS_PREFIX + name);
+   }
+
    // Attributes ----------------------------------------------------     
    
    // Constructors --------------------------------------------------
@@ -131,6 +137,7 @@ public class JBossTopic extends JBossDestination implements Topic
    {
       return "JBossTopic[" + name + "]";
    }
+
      
    // Package protected ---------------------------------------------
    

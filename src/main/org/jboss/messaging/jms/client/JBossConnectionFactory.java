@@ -235,6 +235,16 @@ public class JBossConnectionFactory implements
    
    // Public ---------------------------------------------------------------------------------------
    
+   public String getClientID()
+   {
+      return clientID;
+   }
+   
+   public int getDupsOKBatchSize()
+   {
+      return dupsOKBatchSize;
+   }
+   
    public String toString()
    {
       return "JBossConnectionFactory->" + connectionFactory;

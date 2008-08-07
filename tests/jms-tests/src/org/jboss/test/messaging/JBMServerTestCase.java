@@ -39,8 +39,11 @@ import javax.transaction.TransactionManager;
 
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.jms.JBossQueue;
+import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.JMSServerManager;
+import org.jboss.messaging.jms.server.management.SubscriberInfo;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.DatabaseClearer;
 import org.jboss.test.messaging.tools.container.Server;
@@ -584,11 +587,11 @@ public class JBMServerTestCase extends JBMBaseTestCase
    {
       if (isQueue)
       {
-         servers.get(server).removeAllMessagesForQueue(destName);
+         servers.get(server).removeAllMessages(new JBossQueue(destName));
       }
       else
       {
-         servers.get(server).removeAllMessagesForTopic(destName);
+         servers.get(server).removeAllMessages(new JBossTopic(destName));
       }
    }
 
@@ -795,9 +798,9 @@ public class JBMServerTestCase extends JBMBaseTestCase
       servers.get(server).undeployConnectionFactory(objectName);
    }
 
-   protected List listAllSubscriptionsForTopic(String s) throws Exception
+   protected List<SubscriberInfo> listAllSubscribersForTopic(String s) throws Exception
    {
-      return servers.get(0).listAllSubscriptionsForTopic(s);
+      return servers.get(0).listAllSubscribersForTopic(s);
    }
 
    protected Integer getMessageCountForQueue(String s) throws Exception

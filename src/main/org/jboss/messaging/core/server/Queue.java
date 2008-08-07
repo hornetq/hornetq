@@ -28,7 +28,11 @@ import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.FlowController;
+import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.SimpleString;
 
 
@@ -70,8 +74,6 @@ public interface Queue
    void setPersistenceID(long id);
    
    Filter getFilter();
-   
-   void setFilter(Filter filter);
    
    int getMessageCount();
    
@@ -116,7 +118,28 @@ public interface Queue
    MessageReference getReference(long id);
    
    void deleteAllReferences(StorageManager storageManager) throws Exception;
-   
+
+   boolean deleteReference(long messageID, StorageManager storageManager)
+         throws Exception;
+
+   boolean expireMessage(long messageID, StorageManager storageManager,
+         PostOffice postOffice,
+         HierarchicalRepository<QueueSettings> queueSettingsRepository)
+         throws Exception;
+
+   boolean sendMessageToDLQ(long messageID, StorageManager storageManager,
+         PostOffice postOffice,
+         HierarchicalRepository<QueueSettings> queueSettingsRepository)
+         throws Exception;
+
+   boolean changeMessagePriority(long messageID, byte newPriority,
+         StorageManager storageManager, PostOffice postOffice,
+         HierarchicalRepository<QueueSettings> queueSettingsRepository)
+         throws Exception;
+
+   boolean moveMessage(long messageID, Binding toBinding,
+         StorageManager storageManager, PostOffice postOffice) throws Exception;
+
    void lock();
    
    void unlock();

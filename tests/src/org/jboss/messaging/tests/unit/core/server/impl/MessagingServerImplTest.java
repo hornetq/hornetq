@@ -30,7 +30,10 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.ManagementService;
+import org.jboss.messaging.core.management.MessagingServerManagement;
 import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
@@ -45,6 +48,7 @@ import org.jboss.messaging.core.server.impl.MessagingServerPacketHandler;
 import org.jboss.messaging.core.server.impl.QueueFactoryImpl;
 import org.jboss.messaging.core.server.impl.ServerConnectionImpl;
 import org.jboss.messaging.core.server.impl.ServerConnectionPacketHandler;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.VersionLoader;
@@ -163,11 +167,25 @@ public class MessagingServerImplTest extends UnitTestCase
          //Ok
       }
       
-      EasyMock.reset(sm, rs);
+      ManagementService mr = EasyMock.createMock(ManagementService.class);
+      
+      server.setManagementService(mr);
+      
+      try
+      {
+         server.start();
+         fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         //Ok
+      }
+      
+      EasyMock.reset(sm, rs, mr);
       
       EasyMock.expect(sm.isStarted()).andStubReturn(true);
       EasyMock.expect(rs.isStarted()).andStubReturn(false);
-      
+
       EasyMock.replay(sm, rs);
       
       try
@@ -361,6 +379,12 @@ public class MessagingServerImplTest extends UnitTestCase
       };
       
       server.setSecurityManager(sem);
+
+      ManagementService mr = EasyMock.createMock(ManagementService.class);
+      mr.setQueueSettingsRepository(EasyMock.isA(HierarchicalRepository.class));
+      mr.setPostOffice(EasyMock.isA(PostOffice.class));
+      mr.registerServer(EasyMock.isA(MessagingServerManagement.class));
+      server.setManagementService(mr);
       
       sm.loadBindings(EasyMock.isA(QueueFactoryImpl.class), EasyMock.isA(ArrayList.class), EasyMock.isA(ArrayList.class));
       sm.loadMessages(EasyMock.isA(PostOfficeImpl.class), EasyMock.isA(Map.class));
@@ -370,11 +394,11 @@ public class MessagingServerImplTest extends UnitTestCase
       EasyMock.expect(sm.isStarted()).andStubReturn(true);
       EasyMock.expect(rs.isStarted()).andStubReturn(true);
       
-      EasyMock.replay(rs, sm, pd);
+      EasyMock.replay(rs, sm, pd, mr);
       
       server.start();
       
-      EasyMock.verify(rs, sm, pd);
+      EasyMock.verify(rs, sm, pd, mr);
       
       
       try
@@ -412,6 +436,12 @@ public class MessagingServerImplTest extends UnitTestCase
       
       server.setSecurityManager(sem);
       
+      ManagementService mr = EasyMock.createMock(ManagementService.class);
+      mr.setQueueSettingsRepository(EasyMock.isA(HierarchicalRepository.class));
+      mr.setPostOffice(EasyMock.isA(PostOffice.class));
+      mr.registerServer(EasyMock.isA(MessagingServerManagement.class));
+      server.setManagementService(mr);
+
       PacketDispatcher pd = EasyMock.createMock(PacketDispatcher.class);
       EasyMock.expect(rs.getDispatcher()).andReturn(pd);
       

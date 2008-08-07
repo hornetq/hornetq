@@ -8,4 +8,4 @@ done
 echo ***********************************************************************************
 echo "java $JVM_ARGS -classpath $CLASSPATH org.jboss.jms.server.microcontainer.JBMBootstrapServer jbm-standalone-beans.xml"
 echo ***********************************************************************************
-java $JVM_ARGS -classpath $CLASSPATH org.jboss.messaging.microcontainer.JBMBootstrapServer jbm-standalone-beans.xml
+java $JVM_ARGS -classpath $CLASSPATH -Dcom.sun.management.jmxremote org.jboss.messaging.microcontainer.JBMBootstrapServer jbm-standalone-beans.xml

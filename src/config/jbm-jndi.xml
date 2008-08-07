@@ -102,7 +102,7 @@
       <entry name="/queue/QueueWithOwnRedeliveryDelay"/>
    </queue>
    <topic name="TopicWithOwnRedeliveryDelay">
-      <entry name="/queue/TopicWithOwnRedeliveryDelay"/>
+      <entry name="/topic/TopicWithOwnRedeliveryDelay"/>
    </topic>
    <queue name="testDistributedQueue">
       <entry name="/topic/testDistributedQueue"/>

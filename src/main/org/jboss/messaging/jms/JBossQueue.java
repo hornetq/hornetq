@@ -25,6 +25,8 @@ package org.jboss.messaging.jms;
 import javax.jms.JMSException;
 import javax.jms.Queue;
 
+import org.jboss.messaging.util.SimpleString;
+
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -42,6 +44,11 @@ public class JBossQueue extends JBossDestination implements Queue
 
    // Static --------------------------------------------------------
    
+   public static SimpleString createAddressFromName(String name)
+   {
+      return new SimpleString(JMS_QUEUE_ADDRESS_PREFIX + name);
+   }
+
    // Attributes ----------------------------------------------------
    
    // Constructors --------------------------------------------------

@@ -22,6 +22,9 @@
 
 package org.jboss.messaging.jms.server.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.XmlDeployer;
 import org.jboss.messaging.core.logging.Logger;
@@ -148,6 +151,8 @@ public class JMSServerDeployer extends XmlDeployer
          }
 
          NodeList children = node.getChildNodes();
+         String name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
+         List<String> jndiBindings = new ArrayList<String>();
          for (int i = 0; i < children.getLength(); i++)
          {
             Node child = children.item(i);
@@ -155,13 +160,14 @@ public class JMSServerDeployer extends XmlDeployer
             if (ENTRY_NODE_NAME.equalsIgnoreCase(children.item(i).getNodeName()))
             {
                String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
-               String name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
-               jmsServerManager.createConnectionFactory(name, clientID, dupsOKBatchSize, 
-                     consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate, 
-               		blockOnAcknowledge, sendNonPersistentMessagesSynchronously, 
-               		sendPersistentMessagesSynchronously, jndiName);
+               jndiBindings.add(jndiName);
             }
          }
+         
+         jmsServerManager.createConnectionFactory(name, clientID, dupsOKBatchSize, 
+               consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate, 
+               blockOnAcknowledge, sendNonPersistentMessagesSynchronously, 
+               sendPersistentMessagesSynchronously, jndiBindings);
       }
       else if (node.getNodeName().equals(QUEUE_NODE_NAME))
       {

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -36,6 +37,7 @@ import org.jboss.messaging.util.SimpleString;
  * 
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public interface MessagingServerManagement
 {
@@ -54,6 +56,17 @@ public interface MessagingServerManagement
     * @throws Exception if a problem occurred
     */
    void createQueue(SimpleString address, SimpleString name) throws Exception;
+
+   /**
+    * @param address
+    * @param name
+    * @param filter
+    * @param durable
+    * @param temporary
+    * @throws Exception
+    */
+   void createQueue(SimpleString address, SimpleString name, SimpleString filter,
+         boolean durable, boolean temporary) throws Exception;
 
    /**
     * destroy a particular queue
@@ -87,184 +100,79 @@ public interface MessagingServerManagement
    List<Queue> getQueuesForAddress(SimpleString address) throws Exception;
 
    /**
+    * @param messageID
+    * @param simpleAddress
+    * @return
+    * @throws Exception 
+    */
+   boolean removeMessageFromAddress(long messageID, SimpleString address) throws Exception;
+
+   /**
     * remove all the messages for a specific address
     * @param address the address
     * @throws Exception if a problem occurred
     */
    void removeAllMessagesForAddress(SimpleString address) throws Exception;
 
-   void setSecurityForAddress(String address, Set<Role> roles) throws Exception;
+   void setSecurityForAddress(SimpleString address, Set<Role> roles) throws Exception;
    
-   void removeSecurityForAddress(String address) throws Exception;
+   void removeSecurityForAddress(SimpleString address) throws Exception;
    
-   Set<Role> getSecurityForAddress(String address) throws Exception;
+   Set<Role> getSecurityForAddress(SimpleString address) throws Exception;
    
-   void setQueueAttributes(String queueName, QueueSettings settings) throws Exception;
+   void setQueueAttributes(SimpleString queueName, QueueSettings settings) throws Exception;
    
-   /**
-    * remove all the messages for a specific binding
-    * @param name the name of the binding
-    * @throws Exception if a problem occurred
-    */
-   //void removeAllMessagesForBinding(SimpleString name) throws Exception;
-
-   /**
-    * List all messages in a queue that match the filter provided
-    * @param queue the name of the queue
-    * @param filter the filter
-    * @return the messages
-    * @throws Exception if a problem occurred
-    */
-   //List<Message> listMessages(SimpleString queue, Filter filter) throws Exception;
-
-   /**
-    * remove the messages for a specific binding that match the specified filter
-    * @param binding the name of the binding
-    * @param filter the filter
-    * @throws Exception if a problem occurred
-    */
-  /// void removeMessageForBinding(String binding, Filter filter) throws Exception;
-
-   /**
-    * remove the messages for a specific address that match the specified filter
-    * @param address the address
-    * @param filter the filter
-    * @throws Exception if a problem occurred
-    */
-  // void removeMessageForAddress(String address, Filter filter) throws Exception;
-
-   /**
-    * count the number of messages in a queue
-    * @param queue the name of the queue
-    * @return the number of messages in a queue
-    * @throws Exception if a problem occurred
-    */
-   int getMessageCountForQueue(SimpleString queue) throws Exception;
-
-   /**
-    * register a message counter with a specific queue
-    * @param queue the name of the queue
-    * @throws Exception if a problem occurred
-    */
-   //void registerMessageCounter(SimpleString queue) throws Exception;
-
-   /**
-    * unregister a message counter from a specific queue
-    * @param queue the name of the queue
-    * @throws Exception if a problem occurred
-    */
-   //void unregisterMessageCounter(SimpleString queue) throws Exception;
-
-   /**
-    * start collection statistics on a message counter. The message counter must have been registered first.
-    * @param queue the name of the queue
-    * @param duration how long to take a sample for in seconds. 0 means indefinitely.
-    * @throws Exception if a problem occurred
-    */
-   //void startMessageCounter(SimpleString queue, long duration) throws Exception;
-
-   /**
-    * stop a message counter on a specific queue. The message counter must be started to call this.
-    * @param queue the name of the queue
-    * @return the message counter stopped
-    * @throws Exception if a problem occurred
-    */
-   //MessageCounter stopMessageCounter(SimpleString queue) throws Exception;
-
-   /**
-    * get a message counter for a specific queue
-    * @param queue the name of the queue
-    * @return the message counter
-    */
-   //MessageCounter getMessageCounter(SimpleString queue);
-//
-   /**
-    * get all message counters
-    * @return the message counters
-    */
-   //Collection<MessageCounter> getMessageCounters();
-
-   /**
-    * reset a message counter for a specific queue
-    * @param queue the name of the queue
-    */
-   //void resetMessageCounter(SimpleString queue);
-
-   /**
-    * reset all message counters registered
-    */
-   //void resetMessageCounters();
-
-   /**
-    * reset the history for a message counter for a queue
-    * @param queue the name of the queue
-    */
-   //void resetMessageCounterHistory(SimpleString queue);
-
-   /**
-    * reset all message counter histories
-    */
-   //void resetMessageCounterHistories();
-
-   /**
-    * stop all message counters
-    * @return all message counters
-    * @throws Exception if a problem occurred
-    */
-   //List<MessageCounter> stopAllMessageCounters() throws Exception;
-
-   /**
-    * unregister all message counters
-    * @throws Exception if a problem occurred
-    */
-   //void unregisterAllMessageCounters() throws Exception;
-
-   /**
-    * get the number of consumers for a specific queue
-    * @param queue the name of the queue
-    * @return the count
-    * @throws Exception if a problem occurred
-    */
-   //public int getConsumerCountForQueue(SimpleString queue) throws Exception;
-
-   /**
-    * return all the active connections
-    * @return all connections
-    */
-   //List<ServerConnection> getActiveConnections();
-
-   /**
-    * move a set of messages from one queue to another
-    * @param toQueue the source queue
-    * @param fromQueue the destination queue
-    * @param filter the filter to use
-    * @throws Exception if a problem occurred
-    */
-   //void moveMessages(String toQueue, String fromQueue, String filter) throws Exception;
-
-   /**
-    * expire a set of messages for a specific queue
-    * @param queue the name of the queue
-    * @param filter the filter to use
-    * @throws Exception if a problem occurred
-    */
-   //void expireMessages(SimpleString queue,String filter) throws Exception;
-
-   /**
-    * change the message priority for a set of messages
-    * @param queue the name of the queue
-    * @param filter the filter to use
-    * @param priority the priority to change to
-    * @throws Exception if a problem occurred
-    */
-   //void changeMessagePriority(String queue, String filter, int priority) throws Exception;
-
-   /**
-    * list all available addresses
-    * @return the addresses
-    */
-   //Set<SimpleString> listAvailableAddresses();
-
    Configuration getConfiguration();
 
+   /**
+    * @param queueName
+    * @return
+    * @throws Exception 
+    */
+   Queue getQueue(SimpleString queueName) throws Exception;
+
+   /**
+    * @return
+    */
+   String getVersion();
+
+   /**
+    * @param messageID
+    * @param address
+    * @return
+    * @throws Exception 
+    */
+   boolean expireMessage(long messageID, SimpleString address) throws Exception;
+
+   /**
+    * @param filter
+    * @param address
+    * @return
+    * @throws Exception 
+    */
+   int expireMessages(Filter filter,
+         SimpleString address) throws Exception;
+
+   /**
+    * @param simpleAddress
+    * @return
+    */
+   QueueSettings getQueueSettings(SimpleString simpleAddress);
+
+   /**
+    * @param filter
+    * @param simpleAddress
+    * @return
+    */
+   int sendMessagesToDLQ(Filter filter,
+         SimpleString simpleAddress) throws Exception;
+
+   /**
+    * @param filter
+    * @param newPriority
+    * @param simpleAddress
+    * @return
+    */
+   int changeMessagesPriority(Filter filter,
+         byte newPriority, SimpleString address) throws Exception;
 }

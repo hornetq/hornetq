@@ -22,9 +22,21 @@
 
 package org.jboss.messaging.core.postoffice.impl;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.FlowController;
@@ -37,23 +49,17 @@ import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.ConcurrentSet;
 import org.jboss.messaging.util.SimpleString;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 /**
  * 
  * A PostOfficeImpl
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
 public class PostOfficeImpl implements PostOffice
 {  
    private static final Logger log = Logger.getLogger(PostOfficeImpl.class);
-   
-   //private final int nodeID;
    
    private final ConcurrentMap<SimpleString, List<Binding>> mappings = new ConcurrentHashMap<SimpleString, List<Binding>>();
    
@@ -70,13 +76,17 @@ public class PostOfficeImpl implements PostOffice
    private final StorageManager storageManager;
    
    private volatile boolean started;
+
+   private ManagementService managementService;
     
    public PostOfficeImpl(final StorageManager storageManager,
-   		                final QueueFactory queueFactory, final boolean checkAllowable)
+   		                final QueueFactory queueFactory, final ManagementService managementService, final boolean checkAllowable)
    {
       this.storageManager = storageManager;
       
       this.queueFactory = queueFactory;
+      
+      this.managementService = managementService;
       
       this.checkAllowable = checkAllowable;
    }
@@ -120,6 +130,7 @@ public class PostOfficeImpl implements PostOffice
       	}
       	 
          flowControllers.put(address, new FlowControllerImpl(address, this));
+         managementService.registerAddress(address);
    	}
    	
    	return added;
@@ -137,6 +148,7 @@ public class PostOfficeImpl implements PostOffice
          {
       		storageManager.deleteDestination(address);
          }
+      	managementService.unregisterAddress(address);
       }
 
       return removed;
@@ -175,6 +187,8 @@ public class PostOfficeImpl implements PostOffice
       {
       	storageManager.deleteBinding(binding);
       }
+      
+      managementService.unregisterQueue(queueName, binding.getAddress());
       
       return binding;
    }
@@ -274,6 +288,15 @@ public class PostOfficeImpl implements PostOffice
       
       Binding binding = new BindingImpl(address, queue);
       
+      try
+      {
+         managementService.registerQueue(queue, address, storageManager);
+      } catch (Exception e)
+      {
+         e.printStackTrace();
+         throw new IllegalStateException(e);
+      }
+
       return binding;
    }
    
@@ -286,6 +309,9 @@ public class PostOfficeImpl implements PostOffice
       if (prevBindings != null)
       {
          bindings = prevBindings;
+      } else
+      {
+         managementService.registerAddress(binding.getAddress());
       }
                      
       bindings.add(binding);  
@@ -334,6 +360,8 @@ public class PostOfficeImpl implements PostOffice
       {
          mappings.remove(binding.getAddress());
                            
+         managementService.unregisterAddress(binding.getAddress());
+         
          binding.getQueue().setFlowController(null);
       }
                

@@ -58,6 +58,8 @@ public abstract class MessageImpl implements Message
 
    public static final SimpleString HDR_ACTUAL_EXPIRY_TIME = new SimpleString("JBMActualExpiryTime");
 
+   public static final SimpleString HDR_ORIGIN_QUEUE = new SimpleString("JBMOriginQueue");
+
    // Attributes ----------------------------------------------------
 
    private SimpleString destination;

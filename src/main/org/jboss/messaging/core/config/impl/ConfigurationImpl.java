@@ -61,6 +61,8 @@ public class ConfigurationImpl implements Configuration
    
    public static final boolean DEFAULT_SECURITY_ENABLED = true;
    
+   public static final boolean DEFAULT_MANAGEMENT_ENABLED = true;
+   
    public static final boolean DEFAULT_SSL_ENABLED = false;
    
    public static final String DEFAULT_KEYSTORE_PATH = "messaging.keystore";
@@ -106,6 +108,7 @@ public class ConfigurationImpl implements Configuration
    
    protected boolean securityEnabled = DEFAULT_SECURITY_ENABLED;
 
+   protected boolean managementEnabled = DEFAULT_MANAGEMENT_ENABLED;
    
    // Journal related attributes
    
@@ -442,6 +445,16 @@ public class ConfigurationImpl implements Configuration
       this.securityEnabled = enabled;
    }
 
+	public boolean isManagementEnabled()
+	{
+	   return managementEnabled ;
+	}
+	
+	public void setManagementEnabled(boolean enabled)
+	{
+	   this.managementEnabled = enabled;
+	}
+	
    public ConnectionParams getConnectionParams()
    {
       return this.defaultConnectionParams;

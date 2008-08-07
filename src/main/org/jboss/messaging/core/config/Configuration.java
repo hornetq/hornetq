@@ -62,6 +62,10 @@ public interface Configuration extends Serializable
    
    void setRequireDestinations(boolean require);
 
+   boolean isManagementEnabled();
+
+   void setManagementEnabled(boolean enabled);
+
    // Remoting related attributes ----------------------------------------------------------
    
    List<String> getInterceptorClassNames();
@@ -157,4 +161,5 @@ public interface Configuration extends Serializable
    boolean isCreateJournalDir();
    
    void setCreateJournalDir(boolean create);
+
 }

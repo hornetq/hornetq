@@ -23,6 +23,7 @@
 package org.jboss.messaging.tests.performance.persistence;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -30,6 +31,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.core.config.impl.FileConfiguration;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
@@ -127,7 +129,7 @@ public class StorageManagerTimingTest extends UnitTestCase
       
       configuration.setJournalType(journalType);
       
-      final JournalStorageManager journal = new JournalStorageManager(configuration);
+      final JournalStorageManager journal = new JournalStorageManager(configuration, new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(), false));
       journal.start();
       
       FakePostOffice office = new FakePostOffice();

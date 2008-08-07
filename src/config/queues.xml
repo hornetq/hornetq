@@ -64,12 +64,12 @@
    </security>
 
    <queue-settings match="queuejms.QueueWithOwnDLQAndExpiryQueue">
-      <dlq>PrivateDLQ</dlq>
+      <dlq>queuejms.PrivateDLQ</dlq>
       <expiry-queue>queuejms.PrivateExpiryQueue</expiry-queue>
    </queue-settings>
 
    <queue-settings match="topicjms.TopicWithOwnDLQAndExpiryQueue">
-      <dlq>PrivateDLQ</dlq>
+      <dlq>queuejms.PrivateDLQ</dlq>
       <expiry-queue>queuejms.PrivateExpiryQueue</expiry-queue>
    </queue-settings>
 
@@ -96,7 +96,7 @@
    <!--default for catch all-->
    <queue-settings match="*">
       <clustered>false</clustered>
-      <dlq>DLQ</dlq>
+      <dlq>queuejms.DLQ</dlq>
       <expiry-queue>queuejms.ExpiryQueue</expiry-queue>
       <redelivery-delay>0</redelivery-delay>
       <max-size-bytes>-1</max-size-bytes>

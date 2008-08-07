@@ -22,19 +22,13 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.list.PriorityLinkedList;
-import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.FlowController;
-import org.jboss.messaging.core.server.*;
-import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.core.transaction.impl.TransactionImpl;
-import org.jboss.messaging.util.SimpleString;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -43,6 +37,26 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import org.jboss.messaging.core.filter.Filter;
+import org.jboss.messaging.core.list.PriorityLinkedList;
+import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.FlowController;
+import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.server.Consumer;
+import org.jboss.messaging.core.server.DistributionPolicy;
+import org.jboss.messaging.core.server.HandleStatus;
+import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.core.transaction.impl.TransactionImpl;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -385,11 +399,6 @@ public class QueueImpl implements Queue
       return filter;
    }
 
-   public void setFilter(final Filter filter)
-   {
-      this.filter = filter;
-   }
-
    public synchronized int getMessageCount()
    {    
       return messageReferences.size() + getScheduledCount() + getDeliveringCount();
@@ -489,6 +498,116 @@ public class QueueImpl implements Queue
       }
 
       tx.commit();
+   }
+   
+   public synchronized boolean deleteReference(final long messageID, final StorageManager storageManager) throws Exception
+   {
+      boolean deleted = false;
+      
+      Transaction tx = new TransactionImpl(storageManager, null);
+
+      Iterator<MessageReference> iter = messageReferences.iterator();
+
+      while (iter.hasNext())
+      {
+         MessageReference ref = iter.next();
+         if (ref.getMessage().getMessageID() == messageID)
+         {        
+            deliveringCount.incrementAndGet();
+            tx.addAcknowledgement(ref);
+            iter.remove();
+            deleted = true;
+            break;
+         }
+      }
+
+      tx.commit();
+      
+      return deleted;
+   }
+   
+   public boolean expireMessage(final long messageID,
+         final StorageManager storageManager, final PostOffice postOffice,
+         final HierarchicalRepository<QueueSettings> queueSettingsRepository)
+         throws Exception
+   {
+      Iterator<MessageReference> iter = messageReferences.iterator();
+
+      while (iter.hasNext())
+      {
+         MessageReference ref = iter.next();
+         if (ref.getMessage().getMessageID() == messageID)
+         {
+            deliveringCount.incrementAndGet();
+            ref.expire(storageManager, postOffice, queueSettingsRepository);
+            iter.remove();
+            return true;
+         }
+      }
+      return false;
+   }
+
+   public boolean sendMessageToDLQ(final long messageID,
+         final StorageManager storageManager, final PostOffice postOffice,
+         final HierarchicalRepository<QueueSettings> queueSettingsRepository)
+         throws Exception
+   {
+      Iterator<MessageReference> iter = messageReferences.iterator();
+
+      while (iter.hasNext())
+      {
+         MessageReference ref = iter.next();
+         if (ref.getMessage().getMessageID() == messageID)
+         {
+            deliveringCount.incrementAndGet();
+            ref.sendToDLQ(storageManager, postOffice, queueSettingsRepository);
+            iter.remove();
+            return true;
+         }
+      }
+      return false;
+   }
+
+   public boolean moveMessage(final long messageID,
+         final Binding toBinding, final StorageManager storageManager,
+         final PostOffice postOffice) throws Exception
+   {
+      Iterator<MessageReference> iter = messageReferences.iterator();
+
+      while (iter.hasNext())
+      {
+         MessageReference ref = iter.next();
+         if (ref.getMessage().getMessageID() == messageID)
+         {
+            deliveringCount.incrementAndGet();
+            ref.move(toBinding, storageManager, postOffice);
+            iter.remove();
+            return true;
+         }
+      }
+      return false;
+   }
+   
+   public boolean changeMessagePriority(final long messageID, final byte newPriority,
+         final StorageManager storageManager, final PostOffice postOffice,
+         final HierarchicalRepository<QueueSettings> queueSettingsRepository)
+         throws Exception
+   {
+      List<MessageReference> refs = list(null);
+      for (MessageReference ref : refs)
+      {
+         ServerMessage message = ref.getMessage();
+         if (message.getMessageID() == messageID)
+         {
+            message.setPriority(newPriority);
+            // delete and add the reference so that it
+            // goes to the right queues for the new priority
+            deleteReference(messageID, storageManager);
+            addLast(ref);
+            return true;
+         }
+      }
+      return false;
    }
    
    public void lock()

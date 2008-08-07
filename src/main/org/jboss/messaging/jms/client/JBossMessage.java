@@ -59,7 +59,7 @@ public class JBossMessage implements javax.jms.Message
 {
    // Constants -----------------------------------------------------
 
-   private static final SimpleString REPLYTO_HEADER_NAME = new SimpleString("JMSReplyTo");
+   public static final SimpleString REPLYTO_HEADER_NAME = new SimpleString("JMSReplyTo");
    
    public static final SimpleString CORRELATIONID_HEADER_NAME = new SimpleString("JMSCorrelationID");
 

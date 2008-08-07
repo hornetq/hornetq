@@ -25,6 +25,7 @@ package org.jboss.messaging.core.server;
 import java.util.Set;
 
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.MessagingServerManagement;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.remoting.RemotingConnection;
@@ -62,10 +63,14 @@ public interface MessagingServer extends MessagingComponent
       
    StorageManager getStorageManager();
 
-   public JBMSecurityManager getSecurityManager();
+   JBMSecurityManager getSecurityManager();
       
    void setSecurityManager(JBMSecurityManager securityManager);
 
+   ManagementService getManagementService();
+  
+   void setManagementService(ManagementService managementService);
+   
    Version getVersion();
   
    CreateConnectionResponse createConnection(String username, String password,                                          

@@ -34,7 +34,9 @@ import javax.transaction.UserTransaction;
 import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.jms.server.JMSServerManager;
+import org.jboss.messaging.jms.server.management.SubscriberInfo;
 
 /**
  * The remote interface exposed by TestServer.
@@ -254,13 +256,11 @@ public interface Server extends Remote
 
    InitialContext getInitialContext() throws Exception;
 
-   void removeAllMessagesForQueue(String destName) throws Exception;
-
-   void removeAllMessagesForTopic(String destName) throws Exception;
+   void removeAllMessages(JBossDestination destination) throws Exception;
 
    Integer getMessageCountForQueue(String queueName) throws Exception;
 
-   List listAllSubscriptionsForTopic(String s) throws Exception;
+   List<SubscriberInfo> listAllSubscribersForTopic(String s) throws Exception;
 
    Set<Role> getSecurityConfig() throws Exception;
 

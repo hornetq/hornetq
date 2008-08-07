@@ -21,8 +21,12 @@
   */
 package org.jboss.messaging.core.server.impl;
 
+import java.lang.management.ManagementFactory;
+
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.management.ManagementService;
+import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.persistence.impl.nullpm.NullStorageManager;
 import org.jboss.messaging.core.remoting.RemotingService;
@@ -36,6 +40,7 @@ import org.jboss.messaging.core.server.MessagingService;
 /**
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
 public class MessagingServiceImpl implements MessagingService
@@ -53,6 +58,8 @@ public class MessagingServiceImpl implements MessagingService
 
       JBMSecurityManager securityManager = new JBMSecurityManagerImpl(true);
       
+      ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(), false);
+      
       MessagingServer server = new MessagingServerImpl();
       
       server.setConfiguration(config);
@@ -62,6 +69,8 @@ public class MessagingServiceImpl implements MessagingService
       server.setRemotingService(remotingService);
       
       server.setSecurityManager(securityManager);
+      
+      server.setManagementService(managementService);
       
       return new MessagingServiceImpl(server, storageManager, remotingService);
    }

@@ -36,7 +36,7 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 
-import org.jboss.messaging.jms.server.SubscriptionInfo;
+import org.jboss.messaging.jms.server.management.SubscriberInfo;
 
 
 /**
@@ -81,13 +81,13 @@ public class DurableSubscriptionTest extends JMSTestCase
 	
 	      s.createDurableSubscriber(topic1, "monicabelucci");
 
-	      List subs = listAllSubscriptionsForTopic("Topic1");
+	      List<SubscriberInfo> subs = listAllSubscribersForTopic("Topic1");
 	      
 	      assertNotNull(subs);
 	      
 	      assertEquals(1, subs.size());
 	      
-	      SubscriptionInfo info = (SubscriptionInfo)subs.get(0);
+	      SubscriberInfo info = subs.get(0);
 	
 	      assertEquals("monicabelucci", info.getName());
 	
@@ -95,11 +95,11 @@ public class DurableSubscriptionTest extends JMSTestCase
 	
 	      conn.close();
 	
-	      subs = listAllSubscriptionsForTopic("Topic1");
+	      subs = listAllSubscribersForTopic("Topic1");
 	
 	      assertEquals(1, subs.size());
 	      
-	      info = (SubscriptionInfo)subs.get(0);
+	      info = subs.get(0);
 	
 	      assertEquals("monicabelucci", info.getName());
 	

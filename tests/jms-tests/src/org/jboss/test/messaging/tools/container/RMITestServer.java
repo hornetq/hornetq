@@ -21,9 +21,11 @@
   */
 package org.jboss.test.messaging.tools.container;
 
+import java.lang.management.ManagementFactory;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -31,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.management.MBeanServerInvocationHandler;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
@@ -40,7 +43,12 @@ import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.jms.server.JMSServerManager;
+import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
+import org.jboss.messaging.jms.server.management.SubscriberInfo;
+import org.jboss.messaging.jms.server.management.TopicControlMBean;
+import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
 
 /**
  * An RMI wrapper to access the ServiceContainer from a different address space.
@@ -450,26 +458,26 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return server.getJMSServerManager();
    }
 
-   public void removeAllMessagesForQueue(String destName) throws Exception
+   public void removeAllMessages(JBossDestination destination) throws Exception
    {
-      server.removeAllMessagesForQueue(destName);
+      server.removeAllMessages(destination);
    }
-
-   public void removeAllMessagesForTopic(String destName) throws Exception
-   {
-      server.removeAllMessagesForTopic(destName);
-   }
-
 
    public Integer getMessageCountForQueue(String queueName) throws Exception
    {
-      return getJMSServerManager().getMessageCountForQueue(queueName);
+      ObjectName objectName = JMSManagementServiceImpl.getJMSQueueObjectName(queueName);
+      JMSQueueControlMBean queue = (JMSQueueControlMBean) MBeanServerInvocationHandler.newProxyInstance(
+            ManagementFactory.getPlatformMBeanServer(), objectName, JMSQueueControlMBean.class, false);
+      return queue.getMessageCount();
    }
 
 
-   public List listAllSubscriptionsForTopic(String s) throws Exception
+   public List<SubscriberInfo> listAllSubscribersForTopic(String s) throws Exception
    {
-      return server.listAllSubscriptionsForTopic(s);
+      ObjectName objectName = JMSManagementServiceImpl.getJMSTopicObjectName(s);
+      TopicControlMBean topic = (TopicControlMBean) MBeanServerInvocationHandler.newProxyInstance(
+            ManagementFactory.getPlatformMBeanServer(), objectName, TopicControlMBean.class, false);
+      return Arrays.asList(topic.listAllSubscriberInfos());
    }
 
 

@@ -31,12 +31,12 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.MessagingServerManagement;
 import org.jboss.messaging.core.management.impl.MessagingServerManagementImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
-import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingService;
@@ -102,6 +102,7 @@ public class MessagingServerImpl implements MessagingServer
    private RemotingService remotingService;
    private JBMSecurityManager securityManager;  
    private Configuration configuration;
+   private ManagementService managementService;
         
    // Constructors ---------------------------------------------------------------------------------
    
@@ -123,7 +124,7 @@ public class MessagingServerImpl implements MessagingServer
 
       /*
       The following components are pluggable on the messaging server:
-      Configuration, StorageManager, RemotingService and SecurityManager
+      Configuration, StorageManager, RemotingService, SecurityManager and ManagementRegistration
       They must already be injected by the time the messaging server starts
       It's up to the user to make sure the pluggable components are started - their
       lifecycle will not be controlled here
@@ -150,6 +151,11 @@ public class MessagingServerImpl implements MessagingServer
          throw new IllegalStateException("Must inject SecurityManager before starting MessagingServer");
       }      
       
+      if (managementService == null)
+      {
+         throw new IllegalStateException("Must inject ManagementRegistration before starting MessagingServer");
+      }   
+      
       if (!storageManager.isStarted())
       {
          throw new IllegalStateException("StorageManager must be started before MessagingServer is started");
@@ -164,9 +170,11 @@ public class MessagingServerImpl implements MessagingServer
 
       securityStore = new SecurityStoreImpl(configuration.getSecurityInvalidationInterval(), configuration.isSecurityEnabled());  
       queueSettingsRepository.setDefault(new QueueSettings());
+      managementService.setQueueSettingsRepository(queueSettingsRepository);
       scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(), new JBMThreadFactory("JBM-scheduled-threads"));                  
       queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository);      
-      postOffice = new PostOfficeImpl(storageManager, queueFactory, configuration.isRequireDestinations());
+      postOffice = new PostOfficeImpl(storageManager, queueFactory, managementService, configuration.isRequireDestinations());
+      managementService.setPostOffice(postOffice);
                        
       securityRepository = new HierarchicalObjectRepository<Set<Role>>();
       securityRepository.setDefault(new HashSet<Role>());
@@ -174,12 +182,14 @@ public class MessagingServerImpl implements MessagingServer
       securityStore.setSecurityManager(securityManager);                       
       resourceManager = new ResourceManagerImpl(0);                           
       dispatcher = remotingService.getDispatcher();
-      postOffice.start();
-      serverPacketHandler = new MessagingServerPacketHandler(this, remotingService);          
-     
       serverManagement = new MessagingServerManagementImpl(postOffice, storageManager, configuration,
                                                            securityRepository,
                                                            queueSettingsRepository, this);
+      managementService.registerServer(serverManagement);
+
+      postOffice.start();
+      serverPacketHandler = new MessagingServerPacketHandler(this, remotingService);          
+     
       //Register the handler as the last thing - since after that users will be able to connect
       started = true;
       dispatcher.register(serverPacketHandler);      
@@ -269,6 +279,20 @@ public class MessagingServerImpl implements MessagingServer
    public JBMSecurityManager getSecurityManager()
    {
       return securityManager;
+   }
+   
+   public void setManagementService(ManagementService managementService)
+   {
+      if (started)
+      {
+         throw new IllegalStateException("Cannot set management service when started");
+      }
+      this.managementService = managementService;
+   }
+   
+   public ManagementService getManagementService()
+   {
+      return managementService;
    }
    
    //This is needed for the security deployer

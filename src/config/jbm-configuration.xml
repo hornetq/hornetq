@@ -12,6 +12,8 @@
       
       <security-invalidation-interval>10000</security-invalidation-interval>
       
+      <management-enabled>true</management-enabled>
+
       <!-- Remoting configuration -->
 
       <!-- one of: TCP, INVM                                                                     -->

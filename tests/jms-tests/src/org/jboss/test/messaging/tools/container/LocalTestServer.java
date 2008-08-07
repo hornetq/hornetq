@@ -22,15 +22,18 @@
 package org.jboss.test.messaging.tools.container;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.management.MBeanServerInvocationHandler;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
@@ -43,7 +46,12 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.jms.server.JMSServerManager;
+import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
+import org.jboss.messaging.jms.server.management.SubscriberInfo;
+import org.jboss.messaging.jms.server.management.TopicControlMBean;
+import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
 import org.jboss.messaging.microcontainer.JBMBootstrapServer;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.test.messaging.tools.ConfigurationHelper;
@@ -529,14 +537,14 @@ public class LocalTestServer implements Server, Runnable
 
    public void configureSecurityForDestination(String destName, boolean isQueue, Set<Role> roles) throws Exception
    {
-      String prefix = isQueue ? "queuejms." : "topicjms.";
+      SimpleString destination = new SimpleString((isQueue ? "queuejms." : "topicjms.") + destName);
       if (roles != null)
       {
-         getMessagingServer().getServerManagement().setSecurityForAddress(prefix + destName, roles);
+         getMessagingServer().getServerManagement().setSecurityForAddress(destination, roles);
       }
       else
       {
-         getMessagingServer().getServerManagement().removeSecurityForAddress(prefix + destName);
+         getMessagingServer().getServerManagement().removeSecurityForAddress(destination);
       }
    }
 
@@ -630,40 +638,40 @@ public class LocalTestServer implements Server, Runnable
 
    public Integer getMessageCountForQueue(String queueName) throws Exception
    {
-      return getJMSServerManager().getMessageCountForQueue(queueName);
+      ObjectName objectName = JMSManagementServiceImpl.getJMSQueueObjectName(queueName);
+      JMSQueueControlMBean queue = (JMSQueueControlMBean) MBeanServerInvocationHandler.newProxyInstance(
+            ManagementFactory.getPlatformMBeanServer(), objectName, JMSQueueControlMBean.class, false);
+      return queue.getMessageCount();
    }
 
-   public void removeAllMessagesForQueue(String destName) throws Exception
+   public void removeAllMessages(JBossDestination destination) throws Exception
    {
-      getJMSServerManager().removeAllMessagesForQueue(destName);
+      getJMSServerManager().removeAllMessages(destination);
    }
 
-   public void removeAllMessagesForTopic(String destName) throws Exception
+   public List<SubscriberInfo> listAllSubscribersForTopic(String s) throws Exception
    {
-      getJMSServerManager().removeAllMessagesForTopic(destName);
-   }
-
-
-   public List listAllSubscriptionsForTopic(String s) throws Exception
-   {
-      return getJMSServerManager().listSubscriptions(s);
+      ObjectName objectName = JMSManagementServiceImpl.getJMSTopicObjectName(s);
+      TopicControlMBean topic = (TopicControlMBean) MBeanServerInvocationHandler.newProxyInstance(
+            ManagementFactory.getPlatformMBeanServer(), objectName, TopicControlMBean.class, false);
+      return Arrays.asList(topic.listAllSubscriberInfos());
    }
 
 
    public Set<Role> getSecurityConfig() throws Exception
    {
-      return getMessagingServer().getServerManagement().getSecurityForAddress("*");
+      return getMessagingServer().getServerManagement().getSecurityForAddress(new SimpleString("*"));
    }
 
    public void setSecurityConfig(Set<Role> defConfig) throws Exception
    {
-      getMessagingServer().getServerManagement().removeSecurityForAddress("*");
-      getMessagingServer().getServerManagement().setSecurityForAddress("*", defConfig);      
+      getMessagingServer().getServerManagement().removeSecurityForAddress(new SimpleString("*"));
+      getMessagingServer().getServerManagement().setSecurityForAddress(new SimpleString("*"), defConfig);      
    }
 
    public void setRedeliveryDelayOnDestination(String dest, boolean queue, long delay) throws Exception
    {
-      String condition = (queue ? "queuejms." : "topicjms.") + dest;
+      SimpleString condition = new SimpleString((queue ? "queuejms." : "topicjms.") + dest);
       QueueSettings queueSettings = new QueueSettings();
       queueSettings.setRedeliveryDelay(delay);
       getMessagingServer().getServerManagement().setQueueAttributes(condition, queueSettings);      

@@ -48,7 +48,6 @@
 
    <bean name="MessagingServerManagement"
          class="org.jboss.messaging.core.management.impl.MessagingServerManagementImpl">
-      <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.messaging:service=MessagingServerManagement",exposedInterface=org.jboss.messaging.core.management.MessagingServerManagement.class)</annotation>      
       <constructor factoryMethod="getServerManagement">
          <factory bean="MessagingServer"/>
       </constructor>
@@ -67,6 +66,9 @@
       </property>
       <property name="securityManager">
          <inject bean="JBMSecurityManager"/>
+      </property>
+      <property name="managementService">
+         <inject bean="ManagementService"/>
       </property>      
    </bean>
 
@@ -75,6 +77,9 @@
          <parameter>
             <inject bean="Configuration"/>
          </parameter>
+         <parameter>
+            <inject bean="ManagementService"/>
+         </parameter>         
       </constructor>
    </bean>
 
@@ -87,10 +92,12 @@
    </bean>
    
    <bean name="JMSServerManager" class="org.jboss.messaging.jms.server.impl.JMSServerManagerImpl">
-      <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.messaging:service=JMSServerManager",exposedInterface=org.jboss.messaging.jms.server.JMSServerManager.class)</annotation>
       <constructor>
          <parameter>
             <inject bean="MessagingServer" property="serverManagement"/>
+         </parameter>
+         <parameter>
+            <inject bean="JMSManagementService"/>
          </parameter>
       </constructor>
    </bean>
@@ -128,4 +135,31 @@
       </constructor>
    </bean>
 
+   <bean name="ManagementService" class="org.jboss.messaging.core.management.impl.ManagementServiceImpl">
+      <constructor>
+         <parameter>
+            <inject bean="MBeanServer"/>
+         </parameter>
+         <parameter>
+            <inject bean="Configuration" property="managementEnabled" />
+         </parameter>
+      </constructor>
+   </bean>
+   
+   <bean name="JMSManagementService" class="org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl">
+      <constructor>
+         <parameter>
+            <inject bean="MBeanServer"/>
+         </parameter>
+         <parameter>
+            <inject bean="Configuration" property="managementEnabled" />
+         </parameter>
+      </constructor>
+   </bean>
+   
+   <bean name="MBeanServer" class="javax.management.MBeanServer">
+      <constructor factoryClass="java.lang.management.ManagementFactory"
+                   factoryMethod="getPlatformMBeanServer"/>
+   </bean> 
+   
 </deployment>

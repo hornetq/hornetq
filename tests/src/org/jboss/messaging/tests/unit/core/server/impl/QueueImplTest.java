@@ -22,6 +22,15 @@
 
 package org.jboss.messaging.tests.unit.core.server.impl;
 
+import static org.easymock.EasyMock.anyLong;
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.isA;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
+import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -34,13 +43,18 @@ import java.util.concurrent.TimeUnit;
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.DistributionPolicy;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.QueueImpl;
 import org.jboss.messaging.core.server.impl.RoundRobinDistributionPolicy;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeConsumer;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeFilter;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -191,21 +205,20 @@ public class QueueImplTest extends UnitTestCase
       assertEquals(policy, queue.getDistributionPolicy());
    }
 
-   public void testGetSetFilter()
+   public void testGetFilter()
    {
       Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
 
       assertNull(queue.getFilter());
 
-      Filter filter = new FakeFilter();
-
-      queue.setFilter(filter);
-
-      assertEquals(filter, queue.getFilter());
+      Filter filter = createMock(Filter.class);
+      replay(filter);
 
       queue = new QueueImpl(1, queue1, filter, false, true, false, -1, scheduledExecutor);
 
       assertEquals(filter, queue.getFilter());
+      
+      verify(filter);
    }
 
    public void testDefaultMaxSize()
@@ -1403,8 +1416,144 @@ public class QueueImplTest extends UnitTestCase
       EasyMock.verify(consumer);
 
    }
+   
+   public void testExpireMessage() throws Exception
+   {
+      long messageID = randomLong();
+      final SimpleString expiryQueue = new SimpleString("expiryQueue");
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
+      MessageReference messageReference = generateReference(queue, messageID);
+      StorageManager storageManager = EasyMock.createMock(StorageManager.class);
+      EasyMock.expect(storageManager.generateTransactionID()).andReturn(randomLong());
+      EasyMock.expect(storageManager.generateMessageID()).andReturn(randomLong());
+      storageManager.storeDeleteTransactional(EasyMock.anyLong(), EasyMock.eq(messageID));
+      storageManager.commit(EasyMock.anyLong());
+      PostOffice postOffice = createMock(PostOffice.class);      
+      Binding expiryBinding = createMock(Binding.class);
+      EasyMock.expect(expiryBinding.getAddress()).andStubReturn(expiryQueue);
+      EasyMock.expect(postOffice.getBinding(expiryQueue)).andReturn(expiryBinding );
+      EasyMock.expect(postOffice.route(EasyMock.isA(ServerMessage.class))).andReturn(new ArrayList<MessageReference>());
+      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+      QueueSettings queueSettings = new QueueSettings() 
+      {
+         @Override
+         public SimpleString getExpiryQueue()
+         {
+            return expiryQueue;
+         } 
+      };
+      EasyMock.expect(queueSettingsRepository.getMatch(queue1.toString())).andStubReturn(queueSettings);
 
+      EasyMock.replay(storageManager, postOffice, queueSettingsRepository, expiryBinding);
 
+      assertEquals(0, queue.getMessageCount());
+      assertEquals(0, queue.getDeliveringCount());
+      assertEquals(0, queue.getSizeBytes());
+      
+      queue.addLast(messageReference);
+      
+      assertEquals(1, queue.getMessageCount());
+      assertEquals(0, queue.getDeliveringCount());
+      assertTrue(queue.getSizeBytes() > 0);
+      
+      queue.expireMessage(messageID, storageManager , postOffice, queueSettingsRepository);
+      
+      assertEquals(0, queue.getMessageCount());
+      assertEquals(0, queue.getDeliveringCount());
+      assertEquals(0, queue.getSizeBytes());
+
+      EasyMock.verify(storageManager, postOffice, queueSettingsRepository, expiryBinding);
+   }
+
+   public void testSendMessageToDLQ() throws Exception
+   {
+      long messageID = randomLong();
+      final SimpleString dlqName = new SimpleString("dlq");
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
+      MessageReference messageReference = generateReference(queue, messageID);
+      StorageManager storageManager = createMock(StorageManager.class);
+      expect(storageManager.generateTransactionID()).andReturn(randomLong());
+      expect(storageManager.generateMessageID()).andReturn(randomLong());
+      storageManager.storeDeleteTransactional(anyLong(), eq(messageID));
+      storageManager.commit(anyLong());
+      PostOffice postOffice = createMock(PostOffice.class);      
+      Binding dlqBinding = createMock(Binding.class);
+      expect(dlqBinding.getAddress()).andStubReturn(dlqName);
+      expect(postOffice.getBinding(dlqName)).andReturn(dlqBinding );
+      expect(postOffice.route(isA(ServerMessage.class))).andReturn(new ArrayList<MessageReference>());
+      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+      QueueSettings queueSettings = new QueueSettings() 
+      {
+         @Override
+         public SimpleString getDLQ()
+         {
+            return dlqName;
+         } 
+      };
+      EasyMock.expect(queueSettingsRepository.getMatch(queue1.toString())).andStubReturn(queueSettings);
+
+      EasyMock.replay(storageManager, postOffice, queueSettingsRepository, dlqBinding);
+
+      assertEquals(0, queue.getMessageCount());
+      assertEquals(0, queue.getDeliveringCount());
+      assertEquals(0, queue.getSizeBytes());
+      
+      queue.addLast(messageReference);
+      
+      assertEquals(1, queue.getMessageCount());
+      assertEquals(0, queue.getDeliveringCount());
+      assertTrue(queue.getSizeBytes() > 0);
+      
+      queue.sendMessageToDLQ(messageID, storageManager , postOffice, queueSettingsRepository);
+      
+      assertEquals(0, queue.getMessageCount());
+      assertEquals(0, queue.getDeliveringCount());
+      assertEquals(0, queue.getSizeBytes());
+
+      EasyMock.verify(storageManager, postOffice, queueSettingsRepository, dlqBinding);
+   }
+   
+   public void testMoveMessage() throws Exception
+   {
+      long messageID = randomLong();
+      long tid = randomLong();
+      final SimpleString toQueueName = new SimpleString("toQueueName");
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
+      Queue toQueue = createMock(Queue.class);
+    
+      MessageReference messageReference = generateReference(queue, messageID);
+      StorageManager storageManager = EasyMock.createMock(StorageManager.class);
+      EasyMock.expect(storageManager.generateTransactionID()).andReturn(tid);
+      storageManager.storeDeleteTransactional(EasyMock.anyLong(), EasyMock.eq(messageID));
+      storageManager.commit(EasyMock.anyLong());
+      PostOffice postOffice = EasyMock.createMock(PostOffice.class);      
+      Binding toBinding = EasyMock.createMock(Binding.class);
+      EasyMock.expect(toBinding.getAddress()).andStubReturn(toQueueName);
+      EasyMock.expect(toBinding.getQueue()).andStubReturn(toQueue);
+      EasyMock.expect(postOffice.route(EasyMock.isA(ServerMessage.class))).andReturn(new ArrayList<MessageReference>());
+      HierarchicalRepository<QueueSettings> queueSettingsRepository = EasyMock.createMock(HierarchicalRepository.class);
+
+      EasyMock.replay(storageManager, postOffice, queueSettingsRepository, toBinding);
+
+      assertEquals(0, queue.getMessageCount());
+      assertEquals(0, queue.getDeliveringCount());
+      assertEquals(0, queue.getSizeBytes());
+      
+      queue.addLast(messageReference);
+      
+      assertEquals(1, queue.getMessageCount());
+      assertEquals(0, queue.getDeliveringCount());
+      assertTrue(queue.getSizeBytes() > 0);
+      
+      queue.moveMessage(messageID, toBinding, storageManager, postOffice);
+      
+      assertEquals(0, queue.getMessageCount());
+      assertEquals(0, queue.getDeliveringCount());
+      assertEquals(0, queue.getSizeBytes());
+
+      EasyMock.verify(storageManager, postOffice, queueSettingsRepository, toBinding);
+   }
+   
    // Inner classes ---------------------------------------------------------------
 
    class AddtoQueueRunner implements Runnable

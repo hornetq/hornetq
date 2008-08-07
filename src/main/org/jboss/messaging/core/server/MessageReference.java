@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.server;
 
 import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -65,8 +66,14 @@ public interface MessageReference
    boolean cancel(StorageManager persistenceManager, PostOffice postOffice,
    		         HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;  
    
+   void sendToDLQ(StorageManager persistenceManager, PostOffice postOffice,
+                  HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+   
    void expire(StorageManager persistenceManager, PostOffice postOffice,
    		      HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+   
+   void move(Binding otherBinding, StorageManager persistenceManager, PostOffice postOffice) throws Exception;
+
 
 }
 
