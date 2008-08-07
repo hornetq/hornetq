@@ -29,6 +29,7 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.remoting.TransportType;
+import org.jboss.messaging.core.remoting.impl.mina.MinaAcceptorFactory;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
@@ -52,7 +53,9 @@ public class SimpleExample
          ConfigurationImpl configuration = new ConfigurationImpl();
          configuration.setTransport(TransportType.TCP);
          configuration.setHost("localhost");
+         configuration.setSecurityEnabled(false);
          messagingService = MessagingServiceImpl.newNullStorageMessagingServer(configuration);
+         messagingService.getServer().getRemotingService().registerAcceptorFactory(new MinaAcceptorFactory());      
          //start the server
          messagingService.start();
 
