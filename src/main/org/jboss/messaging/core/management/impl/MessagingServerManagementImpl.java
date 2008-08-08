@@ -129,9 +129,9 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
       return server.getConnectionCount();
    }
 
-   public void destroyQueue(final SimpleString name) throws Exception
+   public void destroyQueue(final SimpleString queueName) throws Exception
    {
-      Binding binding = postOffice.getBinding(name);
+      Binding binding = postOffice.getBinding(queueName);
 
       if (binding != null)
       {
@@ -167,10 +167,10 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
       }
    }
 
-   public boolean removeMessageFromAddress(final long messageID,
-         SimpleString address) throws Exception
+   public boolean removeMessageFromQueue(final long messageID,
+         SimpleString queueName) throws Exception
    {
-      Binding binding = postOffice.getBinding(address);
+      Binding binding = postOffice.getBinding(queueName);
       if (binding != null)
       {
          Queue queue = binding.getQueue();
@@ -179,10 +179,10 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
       return false;
    }
 
-   public boolean expireMessage(final long messageID, final SimpleString address)
+   public boolean expireMessage(final long messageID, final SimpleString queueName)
          throws Exception
    {
-      Binding binding = postOffice.getBinding(address);
+      Binding binding = postOffice.getBinding(queueName);
       if (binding != null)
       {
          Queue queue = binding.getQueue();
@@ -193,9 +193,9 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
    }
 
    public int expireMessages(final Filter filter,
-         final SimpleString address) throws Exception
+         final SimpleString queueName) throws Exception
    {
-      Binding binding = postOffice.getBinding(address);
+      Binding binding = postOffice.getBinding(queueName);
       if (binding != null)
       {
          Queue queue = binding.getQueue();
@@ -211,9 +211,9 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
    }
 
    public int sendMessagesToDLQ(final Filter filter,
-         final SimpleString address) throws Exception
+         final SimpleString queueName) throws Exception
    {
-      Binding binding = postOffice.getBinding(address);
+      Binding binding = postOffice.getBinding(queueName);
       if (binding != null)
       {
          Queue queue = binding.getQueue();
@@ -229,9 +229,9 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
    }
 
    public int changeMessagesPriority(final Filter filter,
-         final byte newPriority, final SimpleString address) throws Exception
+         final byte newPriority, final SimpleString queueName) throws Exception
    {
-      Binding binding = postOffice.getBinding(address);
+      Binding binding = postOffice.getBinding(queueName);
       if (binding != null)
       {
          Queue queue = binding.getQueue();

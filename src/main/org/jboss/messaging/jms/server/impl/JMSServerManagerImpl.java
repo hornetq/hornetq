@@ -281,7 +281,7 @@ public class JMSServerManagerImpl implements JMSServerManager
    public boolean removeMessage(final long messageID,
          final JBossDestination destination) throws Exception
    {
-      return messagingServerManagement.removeMessageFromAddress(messageID,
+      return messagingServerManagement.removeMessageFromQueue(messageID,
             destination.getSimpleAddress());
    }
 

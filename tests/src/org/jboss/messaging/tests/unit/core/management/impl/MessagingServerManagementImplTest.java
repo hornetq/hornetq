@@ -313,15 +313,15 @@ public class MessagingServerManagementImplTest extends UnitTestCase
 
    }
 
-   public void testRemoveMessageForAddress() throws Exception
+   public void testRemoveMessageFromQueue() throws Exception
    {
-      SimpleString address = randomSimpleString();
+      SimpleString queueName = randomSimpleString();
       long messageID = randomLong();
 
       mockPostOffice = createMock(PostOffice.class);
       Binding binding = createMock(Binding.class);
       Queue queue = createMock(Queue.class);
-      expect(mockPostOffice.getBinding(address)).andReturn(binding);
+      expect(mockPostOffice.getBinding(queueName)).andReturn(binding);
       expect(binding.getQueue()).andReturn(queue);
       expect(queue.deleteReference(messageID, mockStorageManager)).andReturn(
             true);
@@ -329,7 +329,7 @@ public class MessagingServerManagementImplTest extends UnitTestCase
       replay(mockPostOffice, binding, queue, mockStorageManager);
 
       MessagingServerManagementImpl impl = createImpl();
-      assertTrue(impl.removeMessageFromAddress(messageID, address));
+      assertTrue(impl.removeMessageFromQueue(messageID, queueName));
 
       verify(mockPostOffice, binding, queue, mockStorageManager);
    }
@@ -345,20 +345,20 @@ public class MessagingServerManagementImplTest extends UnitTestCase
       replay(mockPostOffice);
 
       MessagingServerManagementImpl impl = createImpl();
-      assertFalse(impl.removeMessageFromAddress(messageID, address));
+      assertFalse(impl.removeMessageFromQueue(messageID, address));
 
       verify(mockPostOffice);
    }
 
    public void testExpireMessage() throws Exception
    {
-      SimpleString address = randomSimpleString();
+      SimpleString queueName = randomSimpleString();
       long messageID = randomLong();
 
       mockPostOffice = createMock(PostOffice.class);
       Binding binding = createMock(Binding.class);
       Queue queue = createMock(Queue.class);
-      expect(mockPostOffice.getBinding(address)).andReturn(binding);
+      expect(mockPostOffice.getBinding(queueName)).andReturn(binding);
       expect(binding.getQueue()).andReturn(queue);
       expect(
             queue.expireMessage(messageID, mockStorageManager, mockPostOffice,
@@ -367,23 +367,23 @@ public class MessagingServerManagementImplTest extends UnitTestCase
       replay(mockPostOffice, binding, queue, mockStorageManager);
 
       MessagingServerManagementImpl impl = createImpl();
-      assertTrue(impl.expireMessage(messageID, address));
+      assertTrue(impl.expireMessage(messageID, queueName));
 
       verify(mockPostOffice, binding, queue, mockStorageManager);
    }
 
-   public void testExpireMessageForUnkownAddress() throws Exception
+   public void testExpireMessageForUnkownQueueName() throws Exception
    {
-      SimpleString address = randomSimpleString();
+      SimpleString queueName = randomSimpleString();
       long messageID = randomLong();
 
       mockPostOffice = createMock(PostOffice.class);
-      expect(mockPostOffice.getBinding(address)).andReturn(null);
+      expect(mockPostOffice.getBinding(queueName)).andReturn(null);
 
       replay(mockPostOffice);
 
       MessagingServerManagementImpl impl = createImpl();
-      assertFalse(impl.expireMessage(messageID, address));
+      assertFalse(impl.expireMessage(messageID, queueName));
 
       verify(mockPostOffice);
    }
@@ -391,13 +391,13 @@ public class MessagingServerManagementImplTest extends UnitTestCase
    public void testExpireMessages() throws Exception
    {
       Filter filter = new FilterImpl(new SimpleString("color = 'green'"));
-      SimpleString address = randomSimpleString();
+      SimpleString queueName = randomSimpleString();
       long messageID = randomLong();
 
       mockPostOffice = createMock(PostOffice.class);
       Binding binding = createMock(Binding.class);
       Queue queue = createMock(Queue.class);
-      expect(mockPostOffice.getBinding(address)).andReturn(binding);
+      expect(mockPostOffice.getBinding(queueName)).andReturn(binding);
       expect(binding.getQueue()).andReturn(queue);
       List<MessageReference> refs = new ArrayList<MessageReference>();
       MessageReference ref = createMock(MessageReference.class);
@@ -413,25 +413,25 @@ public class MessagingServerManagementImplTest extends UnitTestCase
       replay(mockPostOffice, binding, queue, mockStorageManager, ref, message);
 
       MessagingServerManagementImpl impl = createImpl();
-      assertEquals(1, impl.expireMessages(filter, address));
+      assertEquals(1, impl.expireMessages(filter, queueName));
 
       verify(mockPostOffice, binding, queue, mockStorageManager, ref, message);
    }
 
-   public void testExpireMessagesForUnknownAddress() throws Exception
+   public void testExpireMessagesForUnknownQueueName() throws Exception
    {
       Filter filter = new FilterImpl(new SimpleString("color = 'green'"));
-      SimpleString address = randomSimpleString();
+      SimpleString queueName = randomSimpleString();
 
       mockPostOffice = createMock(PostOffice.class);
       Binding binding = createMock(Binding.class);
       Queue queue = createMock(Queue.class);
-      expect(mockPostOffice.getBinding(address)).andReturn(null);
+      expect(mockPostOffice.getBinding(queueName)).andReturn(null);
 
       replay(mockPostOffice, binding, queue, mockStorageManager);
 
       MessagingServerManagementImpl impl = createImpl();
-      assertEquals(0, impl.expireMessages(filter, address));
+      assertEquals(0, impl.expireMessages(filter, queueName));
 
       verify(mockPostOffice, binding, queue, mockStorageManager);
    }
@@ -439,13 +439,13 @@ public class MessagingServerManagementImplTest extends UnitTestCase
    public void testSendMessagesToDLQ() throws Exception
    {
       Filter filter = new FilterImpl(new SimpleString("color = 'green'"));
-      SimpleString address = randomSimpleString();
+      SimpleString queueName = randomSimpleString();
       long messageID = randomLong();
 
       mockPostOffice = createMock(PostOffice.class);
       Binding binding = createMock(Binding.class);
       Queue queue = createMock(Queue.class);
-      expect(mockPostOffice.getBinding(address)).andReturn(binding);
+      expect(mockPostOffice.getBinding(queueName)).andReturn(binding);
       expect(binding.getQueue()).andReturn(queue);
       List<MessageReference> refs = new ArrayList<MessageReference>();
       MessageReference ref = createMock(MessageReference.class);
@@ -461,23 +461,23 @@ public class MessagingServerManagementImplTest extends UnitTestCase
       replay(mockPostOffice, binding, queue, mockStorageManager, ref, message);
 
       MessagingServerManagementImpl impl = createImpl();
-      assertEquals(1, impl.sendMessagesToDLQ(filter, address));
+      assertEquals(1, impl.sendMessagesToDLQ(filter, queueName));
 
       verify(mockPostOffice, binding, queue, mockStorageManager, ref, message);
    }
 
-   public void testSendMessagesToDLQForUnknownAddress() throws Exception
+   public void testSendMessagesToDLQForUnknownQueueName() throws Exception
    {
       Filter filter = new FilterImpl(new SimpleString("color = 'green'"));
-      SimpleString address = randomSimpleString();
+      SimpleString queueName = randomSimpleString();
 
       mockPostOffice = createMock(PostOffice.class);
-      expect(mockPostOffice.getBinding(address)).andReturn(null);
+      expect(mockPostOffice.getBinding(queueName)).andReturn(null);
 
       replay(mockPostOffice);
 
       MessagingServerManagementImpl impl = createImpl();
-      assertEquals(0, impl.sendMessagesToDLQ(filter, address));
+      assertEquals(0, impl.sendMessagesToDLQ(filter, queueName));
 
       verify(mockPostOffice);
    }
@@ -485,14 +485,14 @@ public class MessagingServerManagementImplTest extends UnitTestCase
    public void testChangeMessagesPriority() throws Exception
    {
       Filter filter = new FilterImpl(new SimpleString("color = 'green'"));
-      SimpleString address = randomSimpleString();
+      SimpleString queueName = randomSimpleString();
       long messageID = randomLong();
       byte newPriority = (byte) 9;
 
       mockPostOffice = createMock(PostOffice.class);
       Binding binding = createMock(Binding.class);
       Queue queue = createMock(Queue.class);
-      expect(mockPostOffice.getBinding(address)).andReturn(binding);
+      expect(mockPostOffice.getBinding(queueName)).andReturn(binding);
       expect(binding.getQueue()).andReturn(queue);
       List<MessageReference> refs = new ArrayList<MessageReference>();
       MessageReference ref = createMock(MessageReference.class);
@@ -509,24 +509,24 @@ public class MessagingServerManagementImplTest extends UnitTestCase
       replay(mockPostOffice, binding, queue, mockStorageManager, ref, message);
 
       MessagingServerManagementImpl impl = createImpl();
-      assertEquals(1, impl.changeMessagesPriority(filter, newPriority, address));
+      assertEquals(1, impl.changeMessagesPriority(filter, newPriority, queueName));
 
       verify(mockPostOffice, binding, queue, mockStorageManager, ref, message);
    }
 
-   public void testChangeMessagesPriorityForUnknownAddress() throws Exception
+   public void testChangeMessagesPriorityForUnknownQueueName() throws Exception
    {
       Filter filter = new FilterImpl(new SimpleString("color = 'green'"));
-      SimpleString address = randomSimpleString();
+      SimpleString queueName = randomSimpleString();
       byte newPriority = (byte) 9;
 
       mockPostOffice = createMock(PostOffice.class);
-      expect(mockPostOffice.getBinding(address)).andReturn(null);
+      expect(mockPostOffice.getBinding(queueName)).andReturn(null);
 
       replay(mockPostOffice);
 
       MessagingServerManagementImpl impl = createImpl();
-      assertEquals(0, impl.changeMessagesPriority(filter, newPriority, address));
+      assertEquals(0, impl.changeMessagesPriority(filter, newPriority, queueName));
 
       verify(mockPostOffice);
    }

@@ -99,13 +99,7 @@ public interface MessagingServerManagement
     */
    List<Queue> getQueuesForAddress(SimpleString address) throws Exception;
 
-   /**
-    * @param messageID
-    * @param simpleAddress
-    * @return
-    * @throws Exception 
-    */
-   boolean removeMessageFromAddress(long messageID, SimpleString address) throws Exception;
+   boolean removeMessageFromQueue(long messageID, SimpleString queueName) throws Exception;
 
    /**
     * remove all the messages for a specific address
@@ -136,22 +130,11 @@ public interface MessagingServerManagement
     */
    String getVersion();
 
-   /**
-    * @param messageID
-    * @param address
-    * @return
-    * @throws Exception 
-    */
-   boolean expireMessage(long messageID, SimpleString address) throws Exception;
+   boolean expireMessage(long messageID, SimpleString queueName) throws Exception;
 
-   /**
-    * @param filter
-    * @param address
-    * @return
-    * @throws Exception 
-    */
+
    int expireMessages(Filter filter,
-         SimpleString address) throws Exception;
+         SimpleString queueName) throws Exception;
 
    /**
     * @param simpleAddress
@@ -159,20 +142,9 @@ public interface MessagingServerManagement
     */
    QueueSettings getQueueSettings(SimpleString simpleAddress);
 
-   /**
-    * @param filter
-    * @param simpleAddress
-    * @return
-    */
    int sendMessagesToDLQ(Filter filter,
-         SimpleString simpleAddress) throws Exception;
+         SimpleString queueName) throws Exception;
 
-   /**
-    * @param filter
-    * @param newPriority
-    * @param simpleAddress
-    * @return
-    */
    int changeMessagesPriority(Filter filter,
-         byte newPriority, SimpleString address) throws Exception;
+         byte newPriority, SimpleString queueName) throws Exception;
 }
