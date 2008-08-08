@@ -66,6 +66,8 @@ public interface QueueControlMBean
    String getExpiryQueue();
    
    String getDLQ();
+   
+   boolean isBackup();
 
    // Operations ----------------------------------------------------
 

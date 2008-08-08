@@ -40,10 +40,32 @@ public interface JMSQueueControlMBean extends DestinationControlMBean
 {
    // Attributes ----------------------------------------------------
    
+   String getName();
+   
    String getExpiryQueue();
    
    String getDLQ();
    
+   int getMessagesAdded();
+
+   boolean isClustered();
+
+   boolean isTemporary();
+
+   boolean isDurable();
+
+   long getSizeBytes();
+
+   int getMaxSizeBytes();
+
+   int getMessageCount();
+
+   long getScheduledCount();
+
+   int getConsumerCount();
+
+   int getDeliveringCount();
+
    // Operations ----------------------------------------------------
    
    @Operation(desc = "List all messages in the queue", impact = INFO)

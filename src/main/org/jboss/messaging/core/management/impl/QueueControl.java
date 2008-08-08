@@ -108,6 +108,11 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
       return queue.isTemporary();
    }
 
+   public boolean isBackup()
+   {
+      return queue.isBackup();
+   }
+
    public int getMessageCount()
    {
       return queue.getMessageCount();

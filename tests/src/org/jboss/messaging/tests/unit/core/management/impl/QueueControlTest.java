@@ -189,6 +189,25 @@ public class QueueControlTest extends TestCase
 
       verify(queue, storageManager, postOffice, repository);
    }
+   
+   public void testIsBackup() throws Exception
+   {
+      boolean backup = randomBoolean();
+
+      Queue queue = createMock(Queue.class);
+      expect(queue.isBackup()).andReturn(backup);
+      StorageManager storageManager = createMock(StorageManager.class);
+      PostOffice postOffice = createMock(PostOffice.class);
+      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
+
+      replay(queue, storageManager, postOffice, repository);
+
+      QueueControlMBean control = new QueueControl(queue, storageManager,
+            postOffice, repository);
+      assertEquals(backup, control.isBackup());
+
+      verify(queue, storageManager, postOffice, repository);
+   }
 
    public void testGetMessageCount() throws Exception
    {

@@ -106,11 +106,51 @@ public class JMSQueueControl extends StandardMBean implements
       return managedQueue.isTemporary();
    }
 
-   public int getMessageCount() throws Exception
+   public int getMessageCount()
    {
       return coreQueue.getMessageCount();
    }
 
+   public int getMessagesAdded()
+   {
+      return coreQueue.getMessagesAdded();
+   }
+
+   public int getConsumerCount()
+   {
+      return coreQueue.getConsumerCount();
+   }
+   
+   public int getDeliveringCount()
+   {
+      return coreQueue.getDeliveringCount();
+   }
+   
+   public int getMaxSizeBytes()
+   {
+      return coreQueue.getMaxSizeBytes();
+   }
+   
+   public long getScheduledCount()
+   {
+      return coreQueue.getScheduledCount();
+   }
+   
+   public long getSizeBytes()
+   {
+      return coreQueue.getSizeBytes();
+   }
+   
+   public boolean isClustered()
+   {
+      return coreQueue.isClustered();
+   }
+   
+   public boolean isDurable()
+   {
+      return coreQueue.isDurable();
+   }
+   
    public String getJNDIBinding()
    {
       return binding;

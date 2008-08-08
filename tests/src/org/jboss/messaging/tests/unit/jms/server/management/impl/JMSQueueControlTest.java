@@ -145,6 +145,46 @@ public class JMSQueueControlTest extends TestCase
 
       verify(coreQueue, serverManager);
    }
+   
+   public void testIsClustered() throws Exception
+   {
+      String jndiBinding = randomString();
+      String name = randomString();
+      boolean clustered = randomBoolean();
+
+      JBossQueue queue = new JBossQueue(name);
+      Queue coreQueue = createMock(Queue.class);
+      expect(coreQueue.isClustered()).andReturn(clustered);
+      JMSServerManager serverManager = createMock(JMSServerManager.class);
+
+      replay(coreQueue, serverManager);
+
+      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
+            jndiBinding, serverManager);
+      assertEquals(clustered, control.isClustered());
+
+      verify(coreQueue, serverManager);
+   }
+
+   public void testIsDurabled() throws Exception
+   {
+      String jndiBinding = randomString();
+      String name = randomString();
+      boolean durable = randomBoolean();
+
+      JBossQueue queue = new JBossQueue(name);
+      Queue coreQueue = createMock(Queue.class);
+      expect(coreQueue.isDurable()).andReturn(durable);
+      JMSServerManager serverManager = createMock(JMSServerManager.class);
+
+      replay(coreQueue, serverManager);
+
+      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
+            jndiBinding, serverManager);
+      assertEquals(durable, control.isDurable());
+
+      verify(coreQueue, serverManager);
+   }
 
    public void testGetMessageCount() throws Exception
    {
@@ -165,7 +205,127 @@ public class JMSQueueControlTest extends TestCase
 
       verify(coreQueue, serverManager);
    }
+   
+   public void testGetMessagesAdded() throws Exception
+   {
+      String jndiBinding = randomString();
+      String name = randomString();
+      int count = randomInt();
 
+      JBossQueue queue = new JBossQueue(name);
+      Queue coreQueue = createMock(Queue.class);
+      expect(coreQueue.getMessagesAdded()).andReturn(count);
+      JMSServerManager serverManager = createMock(JMSServerManager.class);
+
+      replay(coreQueue, serverManager);
+
+      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
+            jndiBinding, serverManager);
+      assertEquals(count, control.getMessagesAdded());
+
+      verify(coreQueue, serverManager);
+   }
+   
+   public void testGetConsumerCount() throws Exception
+   {
+      String jndiBinding = randomString();
+      String name = randomString();
+      int count = randomInt();
+
+      JBossQueue queue = new JBossQueue(name);
+      Queue coreQueue = createMock(Queue.class);
+      expect(coreQueue.getConsumerCount()).andReturn(count);
+      JMSServerManager serverManager = createMock(JMSServerManager.class);
+
+      replay(coreQueue, serverManager);
+
+      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
+            jndiBinding, serverManager);
+      assertEquals(count, control.getConsumerCount());
+
+      verify(coreQueue, serverManager);
+   }
+
+   public void testGetDeliveringCount() throws Exception
+   {
+      String jndiBinding = randomString();
+      String name = randomString();
+      int count = randomInt();
+
+      JBossQueue queue = new JBossQueue(name);
+      Queue coreQueue = createMock(Queue.class);
+      expect(coreQueue.getDeliveringCount()).andReturn(count);
+      JMSServerManager serverManager = createMock(JMSServerManager.class);
+
+      replay(coreQueue, serverManager);
+
+      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
+            jndiBinding, serverManager);
+      assertEquals(count, control.getDeliveringCount());
+
+      verify(coreQueue, serverManager);
+   }
+
+   public void testGetMaxSizeBytes() throws Exception
+   {
+      String jndiBinding = randomString();
+      String name = randomString();
+      int size = randomInt();
+
+      JBossQueue queue = new JBossQueue(name);
+      Queue coreQueue = createMock(Queue.class);
+      expect(coreQueue.getMaxSizeBytes()).andReturn(size);
+      JMSServerManager serverManager = createMock(JMSServerManager.class);
+
+      replay(coreQueue, serverManager);
+
+      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
+            jndiBinding, serverManager);
+      assertEquals(size, control.getMaxSizeBytes());
+
+      verify(coreQueue, serverManager);
+   }
+   
+   public void testGetSizeBytes() throws Exception
+   {
+      String jndiBinding = randomString();
+      String name = randomString();
+      int size = randomInt();
+
+      JBossQueue queue = new JBossQueue(name);
+      Queue coreQueue = createMock(Queue.class);
+      expect(coreQueue.getSizeBytes()).andReturn(size);
+      JMSServerManager serverManager = createMock(JMSServerManager.class);
+
+      replay(coreQueue, serverManager);
+
+      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
+            jndiBinding, serverManager);
+      assertEquals(size, control.getSizeBytes());
+
+      verify(coreQueue, serverManager);
+   }
+   
+   public void testGetScheduledCount() throws Exception
+   {
+      String jndiBinding = randomString();
+      String name = randomString();
+      int count = randomInt();
+
+      JBossQueue queue = new JBossQueue(name);
+      Queue coreQueue = createMock(Queue.class);
+      expect(coreQueue.getScheduledCount()).andReturn(count);
+      JMSServerManager serverManager = createMock(JMSServerManager.class);
+
+      replay(coreQueue, serverManager);
+
+      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
+            jndiBinding, serverManager);
+      assertEquals(count, control.getScheduledCount());
+
+      verify(coreQueue, serverManager);
+   }
+   
    public void testGetDLQ() throws Exception
    {
       String jndiBinding = randomString();
