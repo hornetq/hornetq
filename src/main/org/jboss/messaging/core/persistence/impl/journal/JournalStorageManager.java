@@ -47,7 +47,6 @@ import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -112,9 +111,7 @@ public class JournalStorageManager implements StorageManager
 	
 	private volatile boolean started;
 
-   private final ManagementService managementService;
-   
-	public JournalStorageManager(final Configuration config, final ManagementService managementService)
+	public JournalStorageManager(final Configuration config)
 	{
 		if (config.getJournalType() != JournalType.NIO && config.getJournalType() != JournalType.ASYNCIO)
 		{
@@ -176,16 +173,13 @@ public class JournalStorageManager implements StorageManager
 	   		config.getJournalMinFiles(), config.isJournalSyncTransactional(),
 	   		config.isJournalSyncNonTransactional(), journalFF,
 	   		"jbm-data", "jbm", config.getJournalMaxAIO());
-	   
-	     this.managementService = managementService;
 	}
 	
 	/* This constructor is only used for testing */
-	public JournalStorageManager(final Journal messageJournal, final Journal bindingsJournal, final ManagementService managementService)
+	public JournalStorageManager(final Journal messageJournal, final Journal bindingsJournal)
    {
 	   this.messageJournal = messageJournal;
 	   this.bindingsJournal = bindingsJournal;
-	   this.managementService = managementService;
    }
 	
 	public long generateMessageID()
@@ -532,8 +526,6 @@ public class JournalStorageManager implements StorageManager
 			
 				Binding binding = new BindingImpl(address, queue);
 				
-				managementService.registerQueue(queue, address, this);
-
 				bindings.add(binding);      
 			}
 			else if (rec == DESTINATION_RECORD)

@@ -41,7 +41,6 @@ import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.TestableJournal;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -73,9 +72,8 @@ public class JournalStorageManagerTest extends UnitTestCase
    {
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);      
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);
-      ManagementService managementService = EasyMock.createNiceMock(ManagementService.class);
       
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, managementService);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
       
       ServerMessage msg = EasyMock.createStrictMock(ServerMessage.class);      
       long msgID = 1021092;      
@@ -90,9 +88,8 @@ public class JournalStorageManagerTest extends UnitTestCase
    {
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);      
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);      
-      ManagementService managementService = EasyMock.createNiceMock(ManagementService.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, managementService);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
       
       final long queueID = 1210981;
       final long messageID = 101921092;
@@ -112,9 +109,8 @@ public class JournalStorageManagerTest extends UnitTestCase
    {
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);      
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);      
-      ManagementService managementService = EasyMock.createNiceMock(ManagementService.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, managementService);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
       
       final long messageID = 101921092;
       
@@ -128,9 +124,8 @@ public class JournalStorageManagerTest extends UnitTestCase
    {
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);      
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);     
-      ManagementService managementService = EasyMock.createNiceMock(ManagementService.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, managementService);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
       
       ServerMessage msg = EasyMock.createStrictMock(ServerMessage.class);      
       long msgID = 1021092;      
@@ -146,9 +141,8 @@ public class JournalStorageManagerTest extends UnitTestCase
    {
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);      
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);   
-      ManagementService managementService = EasyMock.createNiceMock(ManagementService.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, managementService);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
       
       final long queueID = 1210981;
       final long messageID = 101921092;
@@ -169,9 +163,8 @@ public class JournalStorageManagerTest extends UnitTestCase
    {
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);      
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);  
-      ManagementService managementService = EasyMock.createNiceMock(ManagementService.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, managementService);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
       
       final long messageID = 101921092;
       final long txID = 1209373;
@@ -186,9 +179,8 @@ public class JournalStorageManagerTest extends UnitTestCase
    {
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);      
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);      
-      ManagementService managementService = EasyMock.createNiceMock(ManagementService.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, managementService);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
       
       final long txID = 1209373;
       
@@ -202,9 +194,8 @@ public class JournalStorageManagerTest extends UnitTestCase
    {
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);      
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);      
-      ManagementService managementService = EasyMock.createNiceMock(ManagementService.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, managementService);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
       
       final long txID = 1209373;
       
@@ -218,9 +209,8 @@ public class JournalStorageManagerTest extends UnitTestCase
    {
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);      
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);      
-      ManagementService managementService = EasyMock.createNiceMock(ManagementService.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, managementService);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
       
       final long txID = 1209373;
       
@@ -234,9 +224,8 @@ public class JournalStorageManagerTest extends UnitTestCase
    {
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);      
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);      
-      ManagementService managementService = EasyMock.createNiceMock(ManagementService.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, managementService);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
       
       final long msgID = 120912901;
       final long queueID = 1283743;
@@ -267,9 +256,8 @@ public class JournalStorageManagerTest extends UnitTestCase
    {
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);      
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);      
-      ManagementService managementService = EasyMock.createNiceMock(ManagementService.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, managementService);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
      
       messageJournal.load((List<RecordInfo>) EasyMock.anyObject(), (List<PreparedTransactionInfo>) EasyMock.anyObject());
       
@@ -432,9 +420,8 @@ public class JournalStorageManagerTest extends UnitTestCase
    {
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);      
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);      
-      ManagementService managementService = EasyMock.createNiceMock(ManagementService.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, managementService);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
            
       Queue queue = EasyMock.createStrictMock(Queue.class);
       SimpleString queueName = new SimpleString("saiohsiudh");
@@ -502,9 +489,8 @@ public class JournalStorageManagerTest extends UnitTestCase
    {
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);      
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);      
-      ManagementService managementService = EasyMock.createNiceMock(ManagementService.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, managementService);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
       
       Binding binding = EasyMock.createStrictMock(Binding.class);
       Queue queue = EasyMock.createStrictMock(Queue.class);
@@ -525,9 +511,8 @@ public class JournalStorageManagerTest extends UnitTestCase
    {
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);      
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);      
-      ManagementService managementService = EasyMock.createNiceMock(ManagementService.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, managementService);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
       
       Binding binding = EasyMock.createStrictMock(Binding.class);
       Queue queue = EasyMock.createStrictMock(Queue.class);
@@ -554,9 +539,8 @@ public class JournalStorageManagerTest extends UnitTestCase
    {
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);      
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);      
-      ManagementService managementService = EasyMock.createNiceMock(ManagementService.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, managementService);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
       
       SimpleString dest = new SimpleString("oaskokas");
       
@@ -673,9 +657,8 @@ public class JournalStorageManagerTest extends UnitTestCase
    {
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);      
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);      
-      ManagementService managementService = EasyMock.createNiceMock(ManagementService.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, managementService);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
      
       bindingsJournal.load((List<RecordInfo>) EasyMock.anyObject(), (List<PreparedTransactionInfo>) EasyMock.anyObject());
       
@@ -737,9 +720,8 @@ public class JournalStorageManagerTest extends UnitTestCase
    {
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);      
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);      
-      ManagementService managementService = EasyMock.createNiceMock(ManagementService.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, managementService);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
       
       assertFalse(jsm.isStarted());
       bindingsJournal.start();
@@ -794,9 +776,8 @@ public class JournalStorageManagerTest extends UnitTestCase
       
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);      
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);      
-      ManagementService managementService = EasyMock.createNiceMock(ManagementService.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, managementService);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
       
       assertEquals(id++, jsm.generateMessageID());
       assertEquals(id++, jsm.generateMessageID());
@@ -809,9 +790,8 @@ public class JournalStorageManagerTest extends UnitTestCase
    {
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);      
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);      
-      ManagementService managementService = EasyMock.createNiceMock(ManagementService.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, managementService);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
       
       long id = 1212;
       EasyMock.expect(messageJournal.getTransactionID()).andReturn(id);
@@ -826,9 +806,8 @@ public class JournalStorageManagerTest extends UnitTestCase
    public void testConstructor()
    {
       Configuration config = new ConfigurationImpl();
-      ManagementService managementService = EasyMock.createNiceMock(ManagementService.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(config, managementService);
+      JournalStorageManager jsm = new JournalStorageManager(config);
      
       assertNotNull(jsm.getMessageJournal());
       

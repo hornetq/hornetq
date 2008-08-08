@@ -314,6 +314,8 @@ public class PostOfficeImpl implements PostOffice
          managementService.registerAddress(binding.getAddress());
       }
                      
+      managementService.registerQueue(binding.getQueue(), binding.getAddress(), storageManager);
+
       bindings.add(binding);  
 
       if (nameMap.putIfAbsent(binding.getQueue().getName(), binding) != null)
