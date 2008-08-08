@@ -138,7 +138,7 @@
             <inject bean="MBeanServer"/>
          </parameter>
          <parameter>
-            <inject bean="Configuration" property="managementEnabled" />
+            <inject bean="Configuration" property="JMXManagementEnabled" />
          </parameter>
       </constructor>
    </bean>
@@ -149,7 +149,7 @@
             <inject bean="MBeanServer"/>
          </parameter>
          <parameter>
-            <inject bean="Configuration" property="managementEnabled" />
+            <inject bean="Configuration" property="JMXManagementEnabled" />
          </parameter>
       </constructor>
    </bean>

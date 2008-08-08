@@ -62,9 +62,9 @@ public interface Configuration extends Serializable
    
    void setRequireDestinations(boolean require);
 
-   boolean isManagementEnabled();
+   boolean isJMXManagementEnabled();
 
-   void setManagementEnabled(boolean enabled);
+   void setJMXManagementEnabled(boolean enabled);
 
    // Remoting related attributes ----------------------------------------------------------
    

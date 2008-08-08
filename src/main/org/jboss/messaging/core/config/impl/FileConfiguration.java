@@ -79,7 +79,7 @@ public class FileConfiguration extends ConfigurationImpl
       
       securityEnabled = getBoolean(e, "security-enabled", securityEnabled);
       
-      managementEnabled = getBoolean(e, "management-enabled", managementEnabled);
+      jmxManagementEnabled = getBoolean(e, "jmx-management-enabled", jmxManagementEnabled);
       
       securityInvalidationInterval = getLong(e, "security-invalidation-interval", securityInvalidationInterval);
             

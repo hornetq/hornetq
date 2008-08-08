@@ -12,7 +12,7 @@
       
       <security-invalidation-interval>10000</security-invalidation-interval>
       
-      <management-enabled>true</management-enabled>
+      <jmx-management-enabled>true</jmx-management-enabled>
 
       <!-- Remoting configuration -->
 

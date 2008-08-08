@@ -61,7 +61,7 @@ public class ConfigurationImpl implements Configuration
    
    public static final boolean DEFAULT_SECURITY_ENABLED = true;
    
-   public static final boolean DEFAULT_MANAGEMENT_ENABLED = true;
+   public static final boolean DEFAULT_JMX_MANAGEMENT_ENABLED = true;
    
    public static final boolean DEFAULT_SSL_ENABLED = false;
    
@@ -108,7 +108,7 @@ public class ConfigurationImpl implements Configuration
    
    protected boolean securityEnabled = DEFAULT_SECURITY_ENABLED;
 
-   protected boolean managementEnabled = DEFAULT_MANAGEMENT_ENABLED;
+   protected boolean jmxManagementEnabled = DEFAULT_JMX_MANAGEMENT_ENABLED;
    
    // Journal related attributes
    
@@ -445,14 +445,14 @@ public class ConfigurationImpl implements Configuration
       this.securityEnabled = enabled;
    }
 
-	public boolean isManagementEnabled()
+	public boolean isJMXManagementEnabled()
 	{
-	   return managementEnabled ;
+	   return jmxManagementEnabled ;
 	}
 	
-	public void setManagementEnabled(boolean enabled)
+	public void setJMXManagementEnabled(boolean enabled)
 	{
-	   this.managementEnabled = enabled;
+	   this.jmxManagementEnabled = enabled;
 	}
 	
    public ConnectionParams getConnectionParams()

@@ -57,7 +57,7 @@ public class ManagementServiceImpl implements ManagementService
    private MessagingServerManagement server;
    private PostOffice postOffice;
    private HierarchicalRepository<QueueSettings> queueSettingsRepository;
-   private boolean managementEnabled;
+   private boolean jmxManagementEnabled;
 
    // Static --------------------------------------------------------
 
@@ -84,10 +84,10 @@ public class ManagementServiceImpl implements ManagementService
    // Constructors --------------------------------------------------
 
    public ManagementServiceImpl(final MBeanServer mbeanServer,
-         final boolean managementEnabled)
+         final boolean jmxManagementEnabled)
    {
       this.mbeanServer = mbeanServer;
-      this.managementEnabled = managementEnabled;
+      this.jmxManagementEnabled = jmxManagementEnabled;
    }
 
    // Public --------------------------------------------------------
@@ -108,7 +108,7 @@ public class ManagementServiceImpl implements ManagementService
    public void registerServer(final MessagingServerManagement server)
          throws Exception
    {
-      if (!managementEnabled)
+      if (!jmxManagementEnabled)
       {
          return;
       }
@@ -123,7 +123,7 @@ public class ManagementServiceImpl implements ManagementService
 
    public void unregisterServer() throws Exception
    {
-      if (!managementEnabled)
+      if (!jmxManagementEnabled)
       {
          return;
       }
@@ -137,7 +137,7 @@ public class ManagementServiceImpl implements ManagementService
 
    public void registerAddress(final SimpleString address) throws Exception
    {
-      if (!managementEnabled)
+      if (!jmxManagementEnabled)
       {
          return;
       }
@@ -153,7 +153,7 @@ public class ManagementServiceImpl implements ManagementService
 
    public void unregisterAddress(final SimpleString address) throws Exception
    {
-      if (!managementEnabled)
+      if (!jmxManagementEnabled)
       {
          return;
       }
@@ -167,7 +167,7 @@ public class ManagementServiceImpl implements ManagementService
    public void registerQueue(final Queue queue, final SimpleString address,
          final StorageManager storageManager) throws Exception
    {
-      if (!managementEnabled)
+      if (!jmxManagementEnabled)
       {
          return;
       }
@@ -185,7 +185,7 @@ public class ManagementServiceImpl implements ManagementService
    public void unregisterQueue(final SimpleString name,
          final SimpleString address) throws Exception
    {
-      if (!managementEnabled)
+      if (!jmxManagementEnabled)
       {
          return;
       }

@@ -50,7 +50,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
    // Attributes ----------------------------------------------------
 
    public final MBeanServer mbeanServer;
-   private final boolean managementEnabled;
+   private final boolean jmxManagementEnabled;
 
    // Static --------------------------------------------------------
 
@@ -84,10 +84,10 @@ public class JMSManagementServiceImpl implements JMSManagementService
    // Constructors --------------------------------------------------
 
    public JMSManagementServiceImpl(final MBeanServer mbeanServer,
-         final boolean managementEnabled)
+         final boolean jmxManagementEnabled)
    {
       this.mbeanServer = mbeanServer;
-      this.managementEnabled = managementEnabled;
+      this.jmxManagementEnabled = jmxManagementEnabled;
    }
 
    // Public --------------------------------------------------------
@@ -97,7 +97,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
    public void registerJMSServer(final JMSServerManager server)
          throws Exception
    {
-      if (!managementEnabled)
+      if (!jmxManagementEnabled)
       {
          return;
       }
@@ -119,7 +119,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
          final String jndiBinding, final JMSServerManager server)
          throws Exception
    {
-      if (!managementEnabled)
+      if (!jmxManagementEnabled)
       {
          return;
       }
@@ -131,7 +131,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
 
    public void unregisterQueue(final String name) throws Exception
    {
-      if (!managementEnabled)
+      if (!jmxManagementEnabled)
       {
          return;
       }
@@ -146,7 +146,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
          final MessagingServerManagement serverManagement,
          final String jndiBinding) throws Exception
    {
-      if (!managementEnabled)
+      if (!jmxManagementEnabled)
       {
          return;
       }
@@ -158,7 +158,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
 
    public void unregisterTopic(final String name) throws Exception
    {
-      if (!managementEnabled)
+      if (!jmxManagementEnabled)
       {
          return;
       }
@@ -173,7 +173,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
          final JBossConnectionFactory connectionFactory,
          final List<String> bindings) throws Exception
    {
-      if (!managementEnabled)
+      if (!jmxManagementEnabled)
       {
          return;
       }
@@ -185,7 +185,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
 
    public void unregisterConnectionFactory(final String name) throws Exception
    {
-      if (!managementEnabled)
+      if (!jmxManagementEnabled)
       {
          return;
       }
