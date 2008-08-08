@@ -58,9 +58,6 @@
          <parameter>
             <inject bean="Configuration"/>
          </parameter>
-         <parameter>
-            <inject bean="ManagementService"/>
-         </parameter>
       </constructor>
    </bean>
 
