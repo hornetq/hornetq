@@ -318,9 +318,11 @@ public class MessageReferenceImplTest extends UnitTestCase
 
    public void testMove() throws Exception
    {
+      SimpleString fromAddress = RandomUtil.randomSimpleString();
       SimpleString toAddress = RandomUtil.randomSimpleString();
       long tid = RandomUtil.randomLong();
       long messageID = RandomUtil.randomLong();
+      long newMessageID = RandomUtil.randomLong();
       
       Queue queue = EasyMock.createStrictMock(Queue.class);
       Binding toBinding = EasyMock.createStrictMock(Binding.class);
@@ -333,6 +335,11 @@ public class MessageReferenceImplTest extends UnitTestCase
 
       EasyMock.expect(persistenceManager.generateTransactionID()).andReturn(tid);
       EasyMock.expect(serverMessage.copy()).andReturn(copyMessage);
+      EasyMock.expect(persistenceManager.generateMessageID()).andReturn(newMessageID);
+      copyMessage.setMessageID(newMessageID);
+      EasyMock.expect(copyMessage.getDestination()).andReturn(fromAddress);
+      copyMessage.putStringProperty(MessageImpl.HDR_ORIGIN_QUEUE, fromAddress);
+      copyMessage.setExpiration(0);
       EasyMock.expect(toBinding.getAddress()).andStubReturn(toAddress);
       copyMessage.setDestination(toAddress);
       EasyMock.expect(postOffice.route(copyMessage)).andReturn(new ArrayList<MessageReference>());

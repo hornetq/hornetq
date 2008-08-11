@@ -1516,6 +1516,7 @@ public class QueueImplTest extends UnitTestCase
    public void testMoveMessage() throws Exception
    {
       long messageID = randomLong();
+      long newMessageID = randomLong();
       long tid = randomLong();
       final SimpleString toQueueName = new SimpleString("toQueueName");
       Queue queue = new QueueImpl(1, queue1, null, false, true, false, -1, scheduledExecutor);
@@ -1523,6 +1524,7 @@ public class QueueImplTest extends UnitTestCase
     
       MessageReference messageReference = generateReference(queue, messageID);
       StorageManager storageManager = EasyMock.createMock(StorageManager.class);
+      EasyMock.expect(storageManager.generateMessageID()).andReturn(newMessageID);
       EasyMock.expect(storageManager.generateTransactionID()).andReturn(tid);
       storageManager.storeDeleteTransactional(EasyMock.anyLong(), EasyMock.eq(messageID));
       storageManager.commit(EasyMock.anyLong());

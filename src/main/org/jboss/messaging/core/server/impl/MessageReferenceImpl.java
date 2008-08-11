@@ -137,41 +137,13 @@ public class MessageReferenceImpl implements MessageReference
 
       if (maxDeliveries > 0 && deliveryCount >= maxDeliveries)
       {
-         SimpleString DLQ = queueSettingsRepository.getMatch(
-               queue.getName().toString()).getDLQ();
-
-         Transaction tx = new TransactionImpl(persistenceManager, postOffice);
-
-         if (DLQ != null)
-         {
-            Binding binding = postOffice.getBinding(DLQ);
-
-            if (binding == null)
-            {
-               binding = postOffice.addBinding(DLQ, DLQ, null, true, false);
-            }
-
-            ServerMessage copyMessage = makeCopyForDLQOrExpiry(false,
-                  persistenceManager);
-            copyMessage.setDestination(binding.getAddress());
-
-            tx.addMessage(copyMessage);
-
-            tx.addAcknowledgement(this);
-         } else
-         {
-            // No DLQ
-
-            log
-                  .warn("Message has reached maximum delivery attempts, no DLQ is configured so dropping it");
-
-            tx.addAcknowledgement(this);
-         }
-
-         tx.commit();
-
+         log
+         .warn("Message has reached maximum delivery attempts, sending it to DLQ");
+         sendToDLQ(persistenceManager, postOffice, queueSettingsRepository);
+         
          return false;
-      } else
+      } 
+      else
       {
          queue.referenceCancelled();
 
@@ -187,30 +159,20 @@ public class MessageReferenceImpl implements MessageReference
       SimpleString dlq = queueSettingsRepository.getMatch(
             queue.getName().toString()).getDLQ();
 
-      Transaction tx = new TransactionImpl(persistenceManager, postOffice);
-
       if (dlq != null)
       {
-         Binding binding = postOffice.getBinding(dlq);
+         Binding dlqBinding = postOffice.getBinding(dlq);
 
-         if (binding == null)
+         if (dlqBinding == null)
          {
-            binding = postOffice.addBinding(dlq, dlq, null, true, false);
+            dlqBinding = postOffice.addBinding(dlq, dlq, null, true, false);
          }
 
-         ServerMessage copyMessage = makeCopyForDLQOrExpiry(false,
-               persistenceManager);
-         copyMessage.setDestination(binding.getAddress());
-
-         tx.addMessage(copyMessage);
-
-         tx.addAcknowledgement(this);
-
-         tx.commit();
+         move(dlqBinding, persistenceManager, postOffice, false);
       } else
       {
          throw new IllegalStateException("No DLQ configured for queue "
-               + queue.getName());
+               + queue.getName() + ", so dropping it");
       }
    }
    
@@ -222,51 +184,35 @@ public class MessageReferenceImpl implements MessageReference
       SimpleString expiryQueue = queueSettingsRepository.getMatch(
             queue.getName().toString()).getExpiryQueue();
 
-      Transaction tx = new TransactionImpl(persistenceManager, postOffice);
-
       if (expiryQueue != null)
       {
-         Binding binding = postOffice.getBinding(expiryQueue);
+         Binding expiryBinding = postOffice.getBinding(expiryQueue);
 
-         if (binding == null)
+         if (expiryBinding == null)
          {
-            binding = postOffice.addBinding(expiryQueue, expiryQueue, null,
+            expiryBinding = postOffice.addBinding(expiryQueue, expiryQueue, null,
                   true, false);
          }
-
-         ServerMessage copyMessage = makeCopyForDLQOrExpiry(true,
-               persistenceManager);
-
-         copyMessage.setDestination(binding.getAddress());
-
-         tx.addMessage(copyMessage);
-
-         tx.addAcknowledgement(this);
-      } else
+         
+         move(expiryBinding, persistenceManager, postOffice, true);
+      } 
+      else
       {
          log
                .warn("Message has expired, no expiry queue is configured so dropping it");
 
+         Transaction tx = new TransactionImpl(persistenceManager, postOffice);
          tx.addAcknowledgement(this);
+         tx.commit();
       }
 
-      tx.commit();
    }
    
    public void move(final Binding otherBinding,
          final StorageManager persistenceManager, final PostOffice postOffice)
-         throws Exception
+   throws Exception
    {
-      Transaction tx = new TransactionImpl(persistenceManager, postOffice);
-
-      ServerMessage copyMessage = message.copy();
-      copyMessage.setDestination(otherBinding.getAddress());
-
-      tx.addMessage(copyMessage);
-
-      tx.addAcknowledgement(this);
-
-      tx.commit();
+      move(otherBinding, persistenceManager, postOffice, false);
    }
 
    // Public --------------------------------------------------------
@@ -282,7 +228,23 @@ public class MessageReferenceImpl implements MessageReference
    
    // Private -------------------------------------------------------
    
-   private ServerMessage makeCopyForDLQOrExpiry(final boolean expiry, final StorageManager pm) throws Exception
+   private void move(final Binding otherBinding,
+         final StorageManager persistenceManager, final PostOffice postOffice, final boolean expiry)
+         throws Exception
+   {
+      Transaction tx = new TransactionImpl(persistenceManager, postOffice);
+
+      ServerMessage copyMessage = makeCopy(expiry, persistenceManager);
+      copyMessage.setDestination(otherBinding.getAddress());
+
+      tx.addMessage(copyMessage);
+
+      tx.addAcknowledgement(this);
+
+      tx.commit();
+   }
+   
+   private ServerMessage makeCopy(final boolean expiry, final StorageManager pm) throws Exception
    {
       /*
        We copy the message and send that to the dlq/expiry queue - this is
