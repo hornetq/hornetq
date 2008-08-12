@@ -142,16 +142,18 @@ public class AsynchronousFileImpl implements AsynchronousFile
 			
 	public void open(final String fileName, final int maxIO)
 	{
+      writeLock.lock();
+
 		try
 		{
-			writeLock.lock();
+         if (opened)
+         {
+            throw new IllegalStateException("AsynchronousFile is already opened");
+         }
+
          this.maxIO = maxIO;
  			writeSemaphore = new Semaphore(this.maxIO);
 			
-			if (opened)
-			{
-				throw new IllegalStateException("AsynchronousFile is already opened");
-			}
 			opened = true;
 			this.fileName=fileName;
 			handler = init (fileName, this.maxIO, log);
@@ -168,9 +170,10 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	{
 		checkOpened();
 		
-		try
+      writeLock.lock();
+
+      try
 		{
-	      writeLock.lock();
 	      
 	      while (!writeSemaphore.tryAcquire(maxIO, 60, TimeUnit.SECONDS))
 	      {
