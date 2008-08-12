@@ -58,6 +58,7 @@ public class SimpleClient
          clientConnection.start();
          Message msg = clientConsumer.receive(5000);
          System.out.println("msg.getPayload() = " + msg.getBody().getString());
+         clientSession.acknowledge();
       }
       catch(Exception e)
       {

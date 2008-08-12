@@ -69,6 +69,7 @@ public class SSLClient
          ClientConsumer clientConsumer = clientSession.createConsumer(queue);
          clientConnection.start();
          Message msg = clientConsumer.receive(5000);
+         clientSession.acknowledge();
          System.out.println("msg.getPayload() = " + msg.getBody().getString());
       }
       catch(Exception e)

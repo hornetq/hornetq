@@ -76,6 +76,7 @@ public class SimpleExample
          ClientConsumer clientConsumer = clientSession.createConsumer(atestq);
          clientConnection.start();
          Message msg = clientConsumer.receive(5000);
+         clientSession.acknowledge();
          System.out.println("msg.getPayload() = " + msg.getBody().getString());
       }
       catch (Exception e)
