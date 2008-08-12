@@ -75,6 +75,8 @@ public class SpawnedVMSupport
          sb.append("-cp").append(" \"").append(classPath).append("\" ");
       }
 
+      sb.append("-Djava.library.path=").append(System.getProperty("java.library.path", "./native/bin")).append(" ");
+      
       sb.append(className).append(' ');
 
       for (int i = 0; i < args.length; i++)

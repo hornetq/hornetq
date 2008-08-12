@@ -30,8 +30,9 @@ import org.jboss.messaging.core.journal.LoadManager;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
-import org.jboss.messaging.tests.stress.StressTestBase;
 import org.jboss.messaging.tests.stress.journal.remote.RemoteJournalAppender;
+import org.jboss.messaging.tests.util.SpawnedVMSupport;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * 
@@ -40,7 +41,7 @@ import org.jboss.messaging.tests.stress.journal.remote.RemoteJournalAppender;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public class ValidateTransactionHealthTest extends StressTestBase
+public class ValidateTransactionHealthTest extends UnitTestCase
 {
    
    // Constants -----------------------------------------------------
@@ -126,11 +127,11 @@ public class ValidateTransactionHealthTest extends StressTestBase
             
             if (externalProcess)
             {
-               RemoteProcess process = startProcess(true, RemoteJournalAppender.class
+               Process process = SpawnedVMSupport.spawnVM(RemoteJournalAppender.class
                      .getCanonicalName(), type, journalDir, Long
                      .toString(numberOfRecords), Integer.toString(transactionSize), Integer.toString(numberOfThreads));
-               process.getProcess().waitFor();
-               assertEquals(RemoteJournalAppender.OK, process.getProcess().exitValue());
+               process.waitFor();
+               assertEquals(RemoteJournalAppender.OK, process.exitValue());
             }
             else
             {
