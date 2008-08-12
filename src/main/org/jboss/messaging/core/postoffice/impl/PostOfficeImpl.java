@@ -282,20 +282,13 @@ public class PostOfficeImpl implements PostOffice
    // Private -----------------------------------------------------------------
    
    private Binding createBinding(final SimpleString address, final SimpleString name, final Filter filter,
-                                 final boolean durable, final boolean temporary)
+                                 final boolean durable, final boolean temporary) throws Exception
    {
       Queue queue = queueFactory.createQueue(-1, name, filter, durable, temporary);
       
       Binding binding = new BindingImpl(address, queue);
       
-      try
-      {
-         managementService.registerQueue(queue, address, storageManager);
-      } catch (Exception e)
-      {
-         e.printStackTrace();
-         throw new IllegalStateException(e);
-      }
+      managementService.registerQueue(queue, address, storageManager);
 
       return binding;
    }
