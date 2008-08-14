@@ -23,6 +23,7 @@
 
 package org.jboss.messaging.tests.unit.core.journal.impl;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
@@ -32,10 +33,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.journal.EncodingSupport;
+import org.jboss.messaging.core.journal.LoadManager;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
+import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
@@ -51,6 +54,27 @@ public class AlignedJournalImplTest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------
+
+   private static final LoadManager dummyLoader = new LoadManager(){
+
+      public void addPreparedTransaction(
+            PreparedTransactionInfo preparedTransaction)
+      {
+      }
+
+      public void addRecord(RecordInfo info)
+      {
+      }
+
+      public void deleteRecord(long id)
+      {
+      }
+
+      public void updateRecord(RecordInfo info)
+      {
+      }};
+   
+
    
    // Attributes ----------------------------------------------------
    
@@ -1137,6 +1161,51 @@ public class AlignedJournalImplTest extends UnitTestCase
       
    }
    
+   public void testAlignmentOverReload() throws Exception
+   {
+
+      SequentialFileFactory factory = new FakeSequentialFileFactory(512, false);
+      JournalImpl impl = new JournalImpl(512 + 512 * 3, 20, true, false, factory, "jbm", "jbm", 1000);
+      
+      impl.start();
+      
+      impl.load(dummyLoader);
+      
+      impl.appendAddRecord(1l, (byte)0, new SimpleEncoding(100, (byte)'a'));
+      impl.appendAddRecord(2l, (byte)0, new SimpleEncoding(100, (byte)'b'));
+      impl.appendAddRecord(3l, (byte)0, new SimpleEncoding(100, (byte)'b'));
+      impl.appendAddRecord(4l, (byte)0, new SimpleEncoding(100, (byte)'b'));
+
+      impl.stop();
+
+      impl = new JournalImpl(512 + 1024 + 512, 20, true, false, factory, "jbm", "jbm", 1000);
+      impl.start();
+      impl.load(dummyLoader);
+      
+      
+      // It looks silly, but this forceMoveNextFile is in place to replicate one specific bug caught during development
+      impl.forceMoveNextFile();
+
+      impl.appendDeleteRecord(1l);
+      impl.appendDeleteRecord(2l);
+      impl.appendDeleteRecord(3l);
+      impl.appendDeleteRecord(4l);
+      
+      impl.stop();
+      
+      
+      impl = new JournalImpl(512 + 1024 + 512, 20, true, false, factory, "jbm", "jbm", 1000);
+      impl.start();
+      
+      ArrayList<RecordInfo> info = new ArrayList<RecordInfo>();
+      ArrayList<PreparedTransactionInfo> trans  = new ArrayList<PreparedTransactionInfo>();
+      
+      impl.load(info, trans);
+
+      assertEquals(0, info.size());
+      assertEquals(0, trans.size());
+      
+   }
    
    
    // Package protected ---------------------------------------------

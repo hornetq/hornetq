@@ -1193,7 +1193,7 @@ public class JournalImpl implements TestableJournal
          
          currentFile.getFile().position(currentFile.getFile().calculateBlockStart(lastDataPos));
          
-         currentFile.setOffset(lastDataPos);
+         currentFile.setOffset(currentFile.getFile().position());
       }
       else
       {
@@ -1772,6 +1772,7 @@ public class JournalImpl implements TestableJournal
    {
       file.getFile().open();
       file.getFile().position(file.getFile().calculateBlockStart(SIZE_HEADER));
+      file.setOffset(file.getFile().calculateBlockStart(SIZE_HEADER));
    }
    
    private int generateOrderingID()
