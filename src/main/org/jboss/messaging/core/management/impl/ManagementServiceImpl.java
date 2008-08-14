@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.management.impl;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import javax.management.MBeanServer;
@@ -60,6 +62,7 @@ public class ManagementServiceImpl implements ManagementService
 
    private final MBeanServer mbeanServer;
    private final boolean jmxManagementEnabled;
+   private final Map<ObjectName, Object> registry;
 
    private PostOffice postOffice;
    private HierarchicalRepository<Set<Role>> securityRepository;
@@ -94,6 +97,7 @@ public class ManagementServiceImpl implements ManagementService
    {
       this.mbeanServer = mbeanServer;
       this.jmxManagementEnabled = jmxManagementEnabled;
+      this.registry = new HashMap<ObjectName, Object>();
    }
 
    // Public --------------------------------------------------------
@@ -112,42 +116,27 @@ public class ManagementServiceImpl implements ManagementService
       MessagingServerControlMBean managedServer = new MessagingServerControl(
             postOffice, storageManager, configuration, securityRepository,
             queueSettingsRepository, messagingServer);
-      if (!jmxManagementEnabled)
-      {
-         return managedServer;
-      }
-      unregisterServer();
       ObjectName objectName = getMessagingServerObjectName();
-      mbeanServer.registerMBean(managedServer, objectName);
+      register(objectName, managedServer);
+      registerInJMX(objectName, managedServer);
       log.info("registered core server under " + objectName);
       return managedServer;
-
    }
 
    public void unregisterServer() throws Exception
    {
-      if (!jmxManagementEnabled)
-      {
-         return;
-      }
       ObjectName objectName = getMessagingServerObjectName();
-      if (mbeanServer.isRegistered(objectName))
-      {
-         mbeanServer.unregisterMBean(getMessagingServerObjectName());
-      }
+      unregister(objectName);
+      unregisterFromJMX(objectName);
    }
 
    public void registerAddress(final SimpleString address) throws Exception
    {
-      if (!jmxManagementEnabled)
-      {
-         return;
-      }
-      unregisterAddress(address);
       ObjectName objectName = getAddressObjectName(address);
       AddressControlMBean addressControl = new AddressControl(address,
             postOffice, securityRepository);
-      mbeanServer.registerMBean(addressControl, objectName);
+      register(objectName, addressControl);
+      registerInJMX(objectName, addressControl);
       if (log.isDebugEnabled())
       {
          log.debug("registered address " + objectName);
@@ -156,29 +145,19 @@ public class ManagementServiceImpl implements ManagementService
 
    public void unregisterAddress(final SimpleString address) throws Exception
    {
-      if (!jmxManagementEnabled)
-      {
-         return;
-      }
       ObjectName objectName = getAddressObjectName(address);
-      if (mbeanServer.isRegistered(objectName))
-      {
-         mbeanServer.unregisterMBean(objectName);
-      }
+      unregister(objectName);
+      unregisterFromJMX(objectName);
    }
 
    public void registerQueue(final Queue queue, final SimpleString address,
          final StorageManager storageManager) throws Exception
    {
-      if (!jmxManagementEnabled)
-      {
-         return;
-      }
-      unregisterQueue(queue.getName(), address);
       ObjectName objectName = getQueueObjectName(address, queue.getName());
       QueueControlMBean queueControl = new QueueControl(queue, storageManager,
             postOffice, queueSettingsRepository);
-      mbeanServer.registerMBean(queueControl, objectName);
+      register(objectName, queueControl);
+      registerInJMX(objectName, queueControl);
       if (log.isDebugEnabled())
       {
          log.debug("registered queue " + objectName);
@@ -188,15 +167,9 @@ public class ManagementServiceImpl implements ManagementService
    public void unregisterQueue(final SimpleString name,
          final SimpleString address) throws Exception
    {
-      if (!jmxManagementEnabled)
-      {
-         return;
-      }
       ObjectName objectName = getQueueObjectName(address, name);
-      if (mbeanServer.isRegistered(objectName))
-      {
-         mbeanServer.unregisterMBean(objectName);
-      }
+      unregister(objectName);
+      unregisterFromJMX(objectName);
    }
 
    // Package protected ---------------------------------------------
@@ -205,5 +178,39 @@ public class ManagementServiceImpl implements ManagementService
 
    // Private -------------------------------------------------------
 
+   private void register(ObjectName objectName, Object managedResource)
+   {
+      unregister(objectName);
+      registry.put(objectName, managedResource);
+   }
+
+   private void unregister(ObjectName objectName)
+   {
+      registry.remove(objectName);
+   }
+
+   private void registerInJMX(ObjectName objectName, Object managedResource)
+         throws Exception
+   {
+      if (!jmxManagementEnabled)
+      {
+         return;
+      }
+      unregisterFromJMX(objectName);
+      mbeanServer.registerMBean(managedResource, objectName);
+   }
+
+   private void unregisterFromJMX(ObjectName objectName) throws Exception
+   {
+      if (!jmxManagementEnabled)
+      {
+         return;
+      }
+      if (mbeanServer.isRegistered(objectName))
+      {
+         mbeanServer.unregisterMBean(objectName);
+      }
+   }
+   
    // Inner classes -------------------------------------------------
 }

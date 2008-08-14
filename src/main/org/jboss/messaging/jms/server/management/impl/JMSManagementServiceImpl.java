@@ -22,7 +22,9 @@
 
 package org.jboss.messaging.jms.server.management.impl;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -54,6 +56,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
 
    public final MBeanServer mbeanServer;
    private final boolean jmxManagementEnabled;
+   private Map<ObjectName, Object> registry;
 
    // Static --------------------------------------------------------
 
@@ -91,6 +94,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
    {
       this.mbeanServer = mbeanServer;
       this.jmxManagementEnabled = jmxManagementEnabled;
+      this.registry = new HashMap<ObjectName, Object>();
    }
 
    // Public --------------------------------------------------------
@@ -100,22 +104,17 @@ public class JMSManagementServiceImpl implements JMSManagementService
    public void registerJMSServer(final JMSServerManager server)
          throws Exception
    {
-      if (!jmxManagementEnabled)
-      {
-         return;
-      }
       ObjectName objectName = getJMSServerObjectName();
-      unregisterJMSServer();
-      mbeanServer.registerMBean(new JMSServerControl(server), objectName);
+      JMSServerControl control = new JMSServerControl(server);
+      register(objectName, control);
+      registerInJMX(objectName, control);
    }
 
    public void unregisterJMSServer() throws Exception
    {
       ObjectName objectName = getJMSServerObjectName();
-      if (mbeanServer.isRegistered(objectName))
-      {
-         mbeanServer.unregisterMBean(objectName);
-      }
+      unregister(objectName);
+      unregisterFromJMX(objectName);
    }
 
    public void registerQueue(final JBossQueue queue, final Queue coreQueue,
@@ -124,82 +123,55 @@ public class JMSManagementServiceImpl implements JMSManagementService
          HierarchicalRepository<QueueSettings> queueSettingsRepository)
          throws Exception
    {
-      if (!jmxManagementEnabled)
-      {
-         return;
-      }
       ObjectName objectName = getJMSQueueObjectName(queue.getQueueName());
-      unregisterQueue(queue.getQueueName());
-      mbeanServer.registerMBean(new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository),
-            objectName);
+      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
+            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      register(objectName, control);
+      registerInJMX(objectName, control);
    }
 
    public void unregisterQueue(final String name) throws Exception
    {
-      if (!jmxManagementEnabled)
-      {
-         return;
-      }
       ObjectName objectName = getJMSQueueObjectName(name);
-      if (mbeanServer.isRegistered(objectName))
-      {
-         mbeanServer.unregisterMBean(objectName);
-      }
+      unregister(objectName);
+      unregisterFromJMX(objectName);
    }
 
    public void registerTopic(final JBossTopic topic, final String jndiBinding,
          final PostOffice postOffice, final StorageManager storageManager)
          throws Exception
    {
-      if (!jmxManagementEnabled)
-      {
-         return;
-      }
       ObjectName objectName = getJMSTopicObjectName(topic.getTopicName());
-      unregisterTopic(topic.getTopicName());
-      mbeanServer.registerMBean(new TopicControl(topic, jndiBinding,
-            postOffice, storageManager), objectName);
+      TopicControl control = new TopicControl(topic, jndiBinding, postOffice,
+            storageManager);
+      register(objectName, control);
+      registerInJMX(objectName, control);
    }
 
    public void unregisterTopic(final String name) throws Exception
    {
-      if (!jmxManagementEnabled)
-      {
-         return;
-      }
       ObjectName objectName = getJMSTopicObjectName(name);
-      if (mbeanServer.isRegistered(objectName))
-      {
-         mbeanServer.unregisterMBean(getJMSTopicObjectName(name));
-      }
+      unregister(objectName);
+      unregisterFromJMX(objectName);
    }
 
    public void registerConnectionFactory(final String name,
          final JBossConnectionFactory connectionFactory,
          final List<String> bindings) throws Exception
    {
-      if (!jmxManagementEnabled)
-      {
-         return;
-      }
       ObjectName objectName = getConnectionFactoryObjectName(name);
-      unregisterConnectionFactory(name);
-      mbeanServer.registerMBean(new ConnectionFactoryControl(connectionFactory,
-            connectionFactory.getCoreConnection(), name, bindings), objectName);
+      ConnectionFactoryControl control = new ConnectionFactoryControl(
+            connectionFactory, connectionFactory.getCoreConnection(), name,
+            bindings);
+      register(objectName, control);
+      registerInJMX(objectName, control);
    }
 
    public void unregisterConnectionFactory(final String name) throws Exception
    {
-      if (!jmxManagementEnabled)
-      {
-         return;
-      }
       ObjectName objectName = getConnectionFactoryObjectName(name);
-      if (mbeanServer.isRegistered(objectName))
-      {
-         mbeanServer.unregisterMBean(objectName);
-      }
+      unregister(objectName);
+      unregisterFromJMX(objectName);
    }
 
    // Package protected ---------------------------------------------
@@ -207,6 +179,40 @@ public class JMSManagementServiceImpl implements JMSManagementService
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+
+   private void register(ObjectName objectName, Object managedResource)
+   {
+      unregister(objectName);
+      registry.put(objectName, managedResource);
+   }
+
+   private void unregister(ObjectName objectName)
+   {
+      registry.remove(objectName);
+   }
+
+   private void registerInJMX(ObjectName objectName, Object managedResource)
+         throws Exception
+   {
+      if (!jmxManagementEnabled)
+      {
+         return;
+      }
+      unregisterFromJMX(objectName);
+      mbeanServer.registerMBean(managedResource, objectName);
+   }
+
+   private void unregisterFromJMX(ObjectName objectName) throws Exception
+   {
+      if (!jmxManagementEnabled)
+      {
+         return;
+      }
+      if (mbeanServer.isRegistered(objectName))
+      {
+         mbeanServer.unregisterMBean(objectName);
+      }
+   }
 
    // Inner classes -------------------------------------------------
 }

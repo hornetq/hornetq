@@ -12,6 +12,7 @@
       
       <security-invalidation-interval>10000</security-invalidation-interval>
       
+      <!-- true to expose JBoss Messaging resources through JMX -->
       <jmx-management-enabled>true</jmx-management-enabled>
 
       <!-- Remoting configuration -->
