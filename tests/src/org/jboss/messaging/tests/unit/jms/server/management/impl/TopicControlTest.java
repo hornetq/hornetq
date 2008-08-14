@@ -37,7 +37,9 @@ import javax.management.openmbean.TabularData;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.management.MessagingServerManagement;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.server.management.SubscriberInfo;
@@ -67,14 +69,16 @@ public class TopicControlTest extends TestCase
       String name = randomString();
 
       JBossTopic topic = new JBossTopic(name);
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
+      PostOffice postOffice = createMock(PostOffice.class);
+      StorageManager storageManager = createMock(StorageManager.class);
 
-      replay(server);
+      replay(postOffice, storageManager);
 
-      TopicControl control = new TopicControl(topic, server, jndiBinding);
+      TopicControl control = new TopicControl(topic, jndiBinding, postOffice,
+            storageManager);
       assertEquals(name, control.getName());
 
-      verify(server);
+      verify(postOffice, storageManager);
    }
 
    public void testGetAddress() throws Exception
@@ -83,14 +87,16 @@ public class TopicControlTest extends TestCase
       String name = randomString();
 
       JBossTopic topic = new JBossTopic(name);
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
+      PostOffice postOffice = createMock(PostOffice.class);
+      StorageManager storageManager = createMock(StorageManager.class);
 
-      replay(server);
+      replay(postOffice, storageManager);
 
-      TopicControl control = new TopicControl(topic, server, jndiBinding);
+      TopicControl control = new TopicControl(topic, jndiBinding, postOffice,
+            storageManager);
       assertEquals(topic.getAddress(), control.getAddress());
 
-      verify(server);
+      verify(postOffice, storageManager);
    }
 
    public void testGetJNDIBinding() throws Exception
@@ -99,14 +105,16 @@ public class TopicControlTest extends TestCase
       String name = randomString();
 
       JBossTopic topic = new JBossTopic(name);
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
+      PostOffice postOffice = createMock(PostOffice.class);
+      StorageManager storageManager = createMock(StorageManager.class);
 
-      replay(server);
+      replay(postOffice, storageManager);
 
-      TopicControl control = new TopicControl(topic, server, jndiBinding);
+      TopicControl control = new TopicControl(topic, jndiBinding, postOffice,
+            storageManager);
       assertEquals(jndiBinding, control.getJNDIBinding());
 
-      verify(server);
+      verify(postOffice, storageManager);
    }
 
    public void testIsTemporary() throws Exception
@@ -115,14 +123,16 @@ public class TopicControlTest extends TestCase
       String name = randomString();
 
       JBossTopic topic = new JBossTopic(name);
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
+      PostOffice postOffice = createMock(PostOffice.class);
+      StorageManager storageManager = createMock(StorageManager.class);
 
-      replay(server);
+      replay(postOffice, storageManager);
 
-      TopicControl control = new TopicControl(topic, server, jndiBinding);
+      TopicControl control = new TopicControl(topic, jndiBinding, postOffice,
+            storageManager);
       assertEquals(topic.isTemporary(), control.isTemporary());
 
-      verify(server);
+      verify(postOffice, storageManager);
    }
 
    public void testGetMessageCount() throws Exception
@@ -135,35 +145,52 @@ public class TopicControlTest extends TestCase
       int countForDurableQueue_2 = randomInt();
 
       JBossTopic topic = new JBossTopic(name);
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
+      PostOffice postOffice = createMock(PostOffice.class);
+      StorageManager storageManager = createMock(StorageManager.class);
+
       Queue nonDurableQueue = createMock(Queue.class);
       expect(nonDurableQueue.isDurable()).andStubReturn(false);
       expect(nonDurableQueue.getMessageCount()).andStubReturn(
             countForNonDurableQueue);
+      Binding bindingForNonDurableQueue = createMock(Binding.class);
+      expect(bindingForNonDurableQueue.getQueue()).andStubReturn(
+            nonDurableQueue);
+
       Queue durableQueue_1 = createMock(Queue.class);
       expect(durableQueue_1.isDurable()).andStubReturn(true);
       expect(durableQueue_1.getMessageCount()).andStubReturn(
             countForDurableQueue_1);
+      Binding bindingForDurableQueue_1 = createMock(Binding.class);
+      expect(bindingForDurableQueue_1.getQueue()).andStubReturn(durableQueue_1);
+
       Queue durableQueue_2 = createMock(Queue.class);
       expect(durableQueue_2.isDurable()).andStubReturn(true);
       expect(durableQueue_2.getMessageCount()).andStubReturn(
             countForDurableQueue_2);
-      List<Queue> queues = new ArrayList<Queue>();
-      queues.add(nonDurableQueue);
-      queues.add(durableQueue_1);
-      queues.add(durableQueue_2);
-      expect(server.getQueuesForAddress(topic.getSimpleAddress()))
-            .andStubReturn(queues);
-      replay(server, nonDurableQueue, durableQueue_1, durableQueue_2);
+      Binding bindingForDurableQueue_2 = createMock(Binding.class);
+      expect(bindingForDurableQueue_2.getQueue()).andStubReturn(durableQueue_2);
 
-      TopicControl control = new TopicControl(topic, server, jndiBinding);
+      List<Binding> bindings = new ArrayList<Binding>();
+      bindings.add(bindingForNonDurableQueue);
+      bindings.add(bindingForDurableQueue_1);
+      bindings.add(bindingForDurableQueue_2);
+      expect(postOffice.getBindingsForAddress(topic.getSimpleAddress()))
+            .andStubReturn(bindings);
+      replay(postOffice, storageManager, bindingForNonDurableQueue,
+            nonDurableQueue, bindingForDurableQueue_1, durableQueue_1,
+            bindingForDurableQueue_2, durableQueue_2);
+
+      TopicControl control = new TopicControl(topic, jndiBinding, postOffice,
+            storageManager);
       assertEquals(countForNonDurableQueue + countForDurableQueue_1
             + countForDurableQueue_2, control.getMessageCount());
       assertEquals(countForDurableQueue_1 + countForDurableQueue_2, control
             .getDurableMessageCount());
       assertEquals(countForNonDurableQueue, control.getNonDurableMessageCount());
 
-      verify(server, nonDurableQueue, durableQueue_1, durableQueue_2);
+      verify(postOffice, storageManager, bindingForNonDurableQueue,
+            nonDurableQueue, bindingForDurableQueue_1, durableQueue_1,
+            bindingForDurableQueue_2, durableQueue_2);
    }
 
    public void testGetSubcribersCount() throws Exception
@@ -172,27 +199,44 @@ public class TopicControlTest extends TestCase
       String name = randomString();
 
       JBossTopic topic = new JBossTopic(name);
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
+      PostOffice postOffice = createMock(PostOffice.class);
+      StorageManager storageManager = createMock(StorageManager.class);
+
       Queue nonDurableQueue = createMock(Queue.class);
       expect(nonDurableQueue.isDurable()).andStubReturn(false);
+      Binding bindingForNonDurableQueue = createMock(Binding.class);
+      expect(bindingForNonDurableQueue.getQueue()).andStubReturn(
+            nonDurableQueue);
+
       Queue durableQueue_1 = createMock(Queue.class);
       expect(durableQueue_1.isDurable()).andStubReturn(true);
+      Binding bindingForDurableQueue_1 = createMock(Binding.class);
+      expect(bindingForDurableQueue_1.getQueue()).andStubReturn(durableQueue_1);
+
       Queue durableQueue_2 = createMock(Queue.class);
       expect(durableQueue_2.isDurable()).andStubReturn(true);
-      List<Queue> queues = new ArrayList<Queue>();
-      queues.add(nonDurableQueue);
-      queues.add(durableQueue_1);
-      queues.add(durableQueue_2);
-      expect(server.getQueuesForAddress(topic.getSimpleAddress()))
-            .andStubReturn(queues);
-      replay(server, nonDurableQueue, durableQueue_1, durableQueue_2);
+      Binding bindingForDurableQueue_2 = createMock(Binding.class);
+      expect(bindingForDurableQueue_2.getQueue()).andStubReturn(durableQueue_2);
 
-      TopicControl control = new TopicControl(topic, server, jndiBinding);
+      List<Binding> bindings = new ArrayList<Binding>();
+      bindings.add(bindingForNonDurableQueue);
+      bindings.add(bindingForDurableQueue_1);
+      bindings.add(bindingForDurableQueue_2);
+      expect(postOffice.getBindingsForAddress(topic.getSimpleAddress()))
+            .andStubReturn(bindings);
+      replay(postOffice, storageManager, bindingForNonDurableQueue,
+            nonDurableQueue, bindingForDurableQueue_1, durableQueue_1,
+            bindingForDurableQueue_2, durableQueue_2);
+
+      TopicControl control = new TopicControl(topic, jndiBinding, postOffice,
+            storageManager);
       assertEquals(3, control.getSubcribersCount());
       assertEquals(2, control.getDurableSubcribersCount());
       assertEquals(1, control.getNonDurableSubcribersCount());
 
-      verify(server, nonDurableQueue, durableQueue_1, durableQueue_2);
+      verify(postOffice, storageManager, bindingForNonDurableQueue,
+            nonDurableQueue, bindingForDurableQueue_1, durableQueue_1,
+            bindingForDurableQueue_2, durableQueue_2);
    }
 
    public void testRemoveAllMessages() throws Exception
@@ -201,14 +245,34 @@ public class TopicControlTest extends TestCase
       String name = randomString();
 
       JBossTopic topic = new JBossTopic(name);
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      server.removeAllMessagesForAddress(topic.getSimpleAddress());
-      replay(server);
+      PostOffice postOffice = createMock(PostOffice.class);
+      StorageManager storageManager = createMock(StorageManager.class);
 
-      TopicControl control = new TopicControl(topic, server, jndiBinding);
+      Queue queue_1 = createMock(Queue.class);
+      Binding bindingforQueue_1 = createMock(Binding.class);
+      expect(bindingforQueue_1.getQueue()).andStubReturn(queue_1);
+
+      Queue queue_2 = createMock(Queue.class);
+      Binding bindingForQueue_2 = createMock(Binding.class);
+      expect(bindingForQueue_2.getQueue()).andStubReturn(queue_2);
+
+      List<Binding> bindings = new ArrayList<Binding>();
+      bindings.add(bindingforQueue_1);
+      bindings.add(bindingForQueue_2);
+      expect(postOffice.getBindingsForAddress(topic.getSimpleAddress()))
+            .andStubReturn(bindings);
+      queue_1.deleteAllReferences(storageManager);
+      queue_2.deleteAllReferences(storageManager);
+
+      replay(postOffice, storageManager, bindingforQueue_1, queue_1,
+            bindingForQueue_2, queue_2);
+
+      TopicControl control = new TopicControl(topic, jndiBinding, postOffice,
+            storageManager);
       control.removeAllMessages();
 
-      verify(server);
+      verify(postOffice, storageManager, bindingforQueue_1, queue_1,
+            bindingForQueue_2, queue_2);
    }
 
    public void testListSubscriberInfos() throws Exception
@@ -217,7 +281,9 @@ public class TopicControlTest extends TestCase
       String name = randomString();
 
       JBossTopic topic = new JBossTopic(name);
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
+      PostOffice postOffice = createMock(PostOffice.class);
+      StorageManager storageManager = createMock(StorageManager.class);
+
       Queue durableQueue = createMock(Queue.class);
       expect(durableQueue.getName()).andStubReturn(
             JBossTopic.createAddressFromName(randomString()));
@@ -225,6 +291,9 @@ public class TopicControlTest extends TestCase
       expect(durableQueue.isDurable()).andStubReturn(true);
       expect(durableQueue.getMessageCount()).andStubReturn(randomInt());
       expect(durableQueue.getMaxSizeBytes()).andStubReturn(randomInt());
+      Binding bindingForDurableQueue = createMock(Binding.class);
+      expect(bindingForDurableQueue.getQueue()).andStubReturn(durableQueue);
+
       Queue nonDurableQueue = createMock(Queue.class);
       expect(nonDurableQueue.getName()).andStubReturn(
             JBossTopic.createAddressFromName(randomString()));
@@ -232,14 +301,18 @@ public class TopicControlTest extends TestCase
       expect(nonDurableQueue.isDurable()).andStubReturn(false);
       expect(nonDurableQueue.getMessageCount()).andStubReturn(randomInt());
       expect(nonDurableQueue.getMaxSizeBytes()).andStubReturn(randomInt());
-      List<Queue> queues = new ArrayList<Queue>();
-      queues.add(durableQueue);
-      queues.add(nonDurableQueue);
-      expect(server.getQueuesForAddress(topic.getSimpleAddress()))
-            .andStubReturn(queues);
-      replay(server, durableQueue, nonDurableQueue);
+      Binding bindingForNonDurableQueue = createMock(Binding.class);
+      expect(bindingForNonDurableQueue.getQueue()).andStubReturn(nonDurableQueue);
+      List<Binding> bindings = new ArrayList<Binding>();
+      bindings.add(bindingForDurableQueue);
+      bindings.add(bindingForNonDurableQueue);
+      expect(postOffice.getBindingsForAddress(topic.getSimpleAddress()))
+            .andStubReturn(bindings);
+      replay(postOffice, storageManager, bindingForDurableQueue, durableQueue,
+            bindingForNonDurableQueue, nonDurableQueue);
 
-      TopicControl control = new TopicControl(topic, server, jndiBinding);
+      TopicControl control = new TopicControl(topic, jndiBinding, postOffice,
+            storageManager);
       SubscriberInfo[] infos = control.listAllSubscriberInfos();
       assertEquals(2, infos.length);
       infos = control.listDurableSubscriberInfos();
@@ -249,7 +322,8 @@ public class TopicControlTest extends TestCase
       assertEquals(1, infos.length);
       assertEquals(nonDurableQueue.getName().toString(), infos[0].getID());
 
-      verify(server, durableQueue, nonDurableQueue);
+      verify(postOffice, storageManager, bindingForDurableQueue, durableQueue,
+            bindingForNonDurableQueue, nonDurableQueue);
    }
 
    public void testListSubscribers() throws Exception
@@ -258,7 +332,9 @@ public class TopicControlTest extends TestCase
       String name = randomString();
 
       JBossTopic topic = new JBossTopic(name);
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
+      PostOffice postOffice = createMock(PostOffice.class);
+      StorageManager storageManager = createMock(StorageManager.class);
+
       Queue durableQueue = createMock(Queue.class);
       expect(durableQueue.getName()).andStubReturn(
             JBossTopic.createAddressFromName(randomString()));
@@ -266,6 +342,9 @@ public class TopicControlTest extends TestCase
       expect(durableQueue.isDurable()).andStubReturn(true);
       expect(durableQueue.getMessageCount()).andStubReturn(randomInt());
       expect(durableQueue.getMaxSizeBytes()).andStubReturn(randomInt());
+      Binding bindingForDurableQueue = createMock(Binding.class);
+      expect(bindingForDurableQueue.getQueue()).andStubReturn(durableQueue);
+
       Queue nonDurableQueue = createMock(Queue.class);
       expect(nonDurableQueue.getName()).andStubReturn(
             JBossTopic.createAddressFromName(randomString()));
@@ -273,26 +352,33 @@ public class TopicControlTest extends TestCase
       expect(nonDurableQueue.isDurable()).andStubReturn(false);
       expect(nonDurableQueue.getMessageCount()).andStubReturn(randomInt());
       expect(nonDurableQueue.getMaxSizeBytes()).andStubReturn(randomInt());
-      List<Queue> queues = new ArrayList<Queue>();
-      queues.add(durableQueue);
-      queues.add(nonDurableQueue);
-      expect(server.getQueuesForAddress(topic.getSimpleAddress()))
-            .andStubReturn(queues);
-      replay(server, durableQueue, nonDurableQueue);
+      Binding bindingForNonDurableQueue = createMock(Binding.class);
+      expect(bindingForNonDurableQueue.getQueue()).andStubReturn(nonDurableQueue);
 
-      TopicControl control = new TopicControl(topic, server, jndiBinding);
+      List<Binding> bindings = new ArrayList<Binding>();
+      bindings.add(bindingForDurableQueue);
+      bindings.add(bindingForNonDurableQueue);
+      expect(postOffice.getBindingsForAddress(topic.getSimpleAddress()))
+            .andStubReturn(bindings);
+      replay(postOffice, storageManager, bindingForDurableQueue, durableQueue,
+            bindingForNonDurableQueue, nonDurableQueue);
+
+      TopicControl control = new TopicControl(topic, jndiBinding, postOffice,
+            storageManager);
       TabularData data = control.listAllSubscribers();
       assertEquals(2, data.size());
       data = control.listDurableSubscribers();
       assertEquals(1, data.size());
-      CompositeData info = data.get(new String[] { durableQueue.getName().toString() });
+      CompositeData info = data.get(new String[] { durableQueue.getName()
+            .toString() });
       assertNotNull(info);
       data = control.listNonDurableSubscribers();
       assertEquals(1, data.size());
       info = data.get(new String[] { nonDurableQueue.getName().toString() });
       assertNotNull(info);
 
-      verify(server, durableQueue, nonDurableQueue);
+      verify(postOffice, storageManager, bindingForDurableQueue, durableQueue,
+            bindingForNonDurableQueue, nonDurableQueue);
    }
 
    // Package protected ---------------------------------------------

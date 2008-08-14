@@ -43,6 +43,7 @@ import javax.transaction.UserTransaction;
 
 import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -537,14 +538,14 @@ public class LocalTestServer implements Server, Runnable
 
    public void configureSecurityForDestination(String destName, boolean isQueue, Set<Role> roles) throws Exception
    {
-      SimpleString destination = new SimpleString((isQueue ? "queuejms." : "topicjms.") + destName);
+      String destination = (isQueue ? "queuejms." : "topicjms.") + destName;
       if (roles != null)
       {
-         getMessagingServer().getServerManagement().setSecurityForAddress(destination, roles);
+         getMessagingServer().getSecurityRepository().addMatch(destination, roles);
       }
       else
       {
-         getMessagingServer().getServerManagement().removeSecurityForAddress(destination);
+         getMessagingServer().getSecurityRepository().removeMatch(destination);
       }
    }
 
@@ -646,7 +647,11 @@ public class LocalTestServer implements Server, Runnable
 
    public void removeAllMessages(JBossDestination destination) throws Exception
    {
-      getJMSServerManager().removeAllMessages(destination);
+      Binding binding = getMessagingServer().getPostOffice().getBinding(destination.getSimpleAddress());
+      if (binding != null)
+      {
+         binding.getQueue().deleteAllReferences(getMessagingServer().getStorageManager());
+      }
    }
 
    public List<SubscriberInfo> listAllSubscribersForTopic(String s) throws Exception
@@ -660,13 +665,13 @@ public class LocalTestServer implements Server, Runnable
 
    public Set<Role> getSecurityConfig() throws Exception
    {
-      return getMessagingServer().getServerManagement().getSecurityForAddress(new SimpleString("*"));
+      return getMessagingServer().getSecurityRepository().getMatch("*");
    }
 
    public void setSecurityConfig(Set<Role> defConfig) throws Exception
    {
-      getMessagingServer().getServerManagement().removeSecurityForAddress(new SimpleString("*"));
-      getMessagingServer().getServerManagement().setSecurityForAddress(new SimpleString("*"), defConfig);      
+      getMessagingServer().getSecurityRepository().removeMatch("*");
+      getMessagingServer().getSecurityRepository().addMatch("*", defConfig);      
    }
 
    public void setRedeliveryDelayOnDestination(String dest, boolean queue, long delay) throws Exception
@@ -674,7 +679,8 @@ public class LocalTestServer implements Server, Runnable
       SimpleString condition = new SimpleString((queue ? "queuejms." : "topicjms.") + dest);
       QueueSettings queueSettings = new QueueSettings();
       queueSettings.setRedeliveryDelay(delay);
-      getMessagingServer().getServerManagement().setQueueAttributes(condition, queueSettings);      
+      //FIXME we need to expose queue attributes in another way
+//      getMessagingServer().getServerManagement().setQueueAttributes(condition, queueSettings);      
    }
 
 

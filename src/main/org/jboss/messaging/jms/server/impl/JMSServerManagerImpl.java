@@ -31,11 +31,13 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.management.MessagingServerManagement;
+import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
-import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
@@ -66,13 +68,25 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    private final Map<String, List<String>> connectionFactoryBindings = new HashMap<String, List<String>>();
 
-   private final MessagingServerManagement messagingServerManagement;
+   private final MessagingServerControlMBean messagingServer;
 
-   private JMSManagementService managementService;
+   private final PostOffice postOffice;
 
-   public JMSServerManagerImpl(final MessagingServerManagement serverManager, final JMSManagementService managementService)
+   private final StorageManager storageManager;
+
+   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
+
+   private final JMSManagementService managementService;
+
+   public JMSServerManagerImpl(final MessagingServerControlMBean server,
+         final PostOffice postOffice, final StorageManager storageManager,
+         final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+         final JMSManagementService managementService)
    {
-      messagingServerManagement = serverManager;
+      this.messagingServer = server;
+      this.postOffice = postOffice;
+      this.storageManager = storageManager;
+      this.queueSettingsRepository = queueSettingsRepository;
       this.managementService = managementService;
    }
 
@@ -92,29 +106,28 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    public boolean isStarted()
    {
-      return messagingServerManagement.isStarted();
+      return messagingServer.isStarted();
    }
 
    public String getVersion()
    {
-      return messagingServerManagement.getVersion();
+      return messagingServer.getVersion();
    }
 
    public boolean createQueue(final String queueName, final String jndiBinding)
          throws Exception
    {
       JBossQueue jBossQueue = new JBossQueue(queueName);
-      messagingServerManagement.addDestination(jBossQueue.getSimpleAddress());
-      messagingServerManagement.createQueue(jBossQueue.getSimpleAddress(),
-            jBossQueue.getSimpleAddress());
+      postOffice.addDestination(jBossQueue.getSimpleAddress(), false);
+      messagingServer.createQueue(jBossQueue.getAddress(), jBossQueue.getAddress());
       boolean added = bindToJndi(jndiBinding, jBossQueue);
       if (added)
       {
          addToDestinationBindings(queueName, jndiBinding);
       }
-      managementService.registerQueue(jBossQueue,
-            messagingServerManagement.getQueue(jBossQueue.getSimpleAddress()),
-            jndiBinding, this);
+      Binding binding = postOffice.getBinding(jBossQueue.getSimpleAddress());
+      managementService.registerQueue(jBossQueue, binding.getQueue(),
+            jndiBinding, postOffice, storageManager, queueSettingsRepository);
       return added;
    }
 
@@ -122,14 +135,14 @@ public class JMSServerManagerImpl implements JMSServerManager
          throws Exception
    {
       JBossTopic jBossTopic = new JBossTopic(topicName);
-      messagingServerManagement.addDestination(jBossTopic.getSimpleAddress());
+      postOffice.addDestination(jBossTopic.getSimpleAddress(), false);
       boolean added = bindToJndi(jndiBinding, jBossTopic);
       if (added)
       {
          addToDestinationBindings(topicName, jndiBinding);
       }
-      managementService.registerTopic(jBossTopic,
-            messagingServerManagement, jndiBinding);
+      managementService.registerTopic(jBossTopic, jndiBinding, postOffice,
+            storageManager);
       return added;
    }
 
@@ -146,10 +159,10 @@ public class JMSServerManagerImpl implements JMSServerManager
       }
       destinations.remove(name);
       managementService.unregisterQueue(name);
-      messagingServerManagement.removeDestination(JBossQueue
-            .createAddressFromName(name));
-      messagingServerManagement.destroyQueue(JBossQueue
-            .createAddressFromName(name));
+      postOffice.removeDestination(JBossQueue.createAddressFromName(name),
+            false);
+      messagingServer.destroyQueue(JBossQueue.createAddressFromName(name)
+            .toString());
 
       return true;
    }
@@ -167,16 +180,10 @@ public class JMSServerManagerImpl implements JMSServerManager
       }
       destinations.remove(name);
       managementService.unregisterTopic(name);
-      messagingServerManagement.removeDestination(JBossTopic
-            .createAddressFromName(name));
+      postOffice.removeDestination(JBossTopic.createAddressFromName(name),
+            false);
 
       return true;
-   }
-
-   public QueueSettings getSettings(final JBossDestination destination)
-   {
-      return messagingServerManagement.getQueueSettings(destination
-            .getSimpleAddress());
    }
 
    public boolean createConnectionFactory(final String name,
@@ -192,11 +199,11 @@ public class JMSServerManagerImpl implements JMSServerManager
       if (cf == null)
       {
          cf = new JBossConnectionFactory(clientID, dupsOKBatchSize,
-               messagingServerManagement.getConfiguration().getLocation(),
-               messagingServerManagement.getConfiguration()
-                     .getConnectionParams(), consumerWindowSize,
-               consumerMaxRate, producerWindowSize, producerMaxRate,
-               blockOnAcknowledge, defaultSendNonPersistentMessagesBlocking,
+               messagingServer.getConfiguration().getLocation(),
+               messagingServer.getConfiguration().getConnectionParams(),
+               consumerWindowSize, consumerMaxRate, producerWindowSize,
+               producerMaxRate, blockOnAcknowledge,
+               defaultSendNonPersistentMessagesBlocking,
                defaultSendPersistentMessagesBlocking);
          connectionFactories.put(name, cf);
       }
@@ -230,11 +237,11 @@ public class JMSServerManagerImpl implements JMSServerManager
       if (cf == null)
       {
          cf = new JBossConnectionFactory(clientID, dupsOKBatchSize,
-               messagingServerManagement.getConfiguration().getLocation(),
-               messagingServerManagement.getConfiguration()
-                     .getConnectionParams(), consumerWindowSize,
-               consumerMaxRate, producerWindowSize, producerMaxRate,
-               blockOnAcknowledge, defaultSendNonPersistentMessagesBlocking,
+               messagingServer.getConfiguration().getLocation(),
+               messagingServer.getConfiguration().getConnectionParams(),
+               consumerWindowSize, consumerMaxRate, producerWindowSize,
+               producerMaxRate, blockOnAcknowledge,
+               defaultSendNonPersistentMessagesBlocking,
                defaultSendPersistentMessagesBlocking);
       }
       for (String jndiBinding : jndiBindings)
@@ -269,42 +276,6 @@ public class JMSServerManagerImpl implements JMSServerManager
       managementService.unregisterConnectionFactory(name);
 
       return true;
-   }
-
-   public void removeAllMessages(final JBossDestination destination)
-         throws Exception
-   {
-      messagingServerManagement.removeAllMessagesForAddress(destination
-            .getSimpleAddress());
-   }
-
-   public boolean removeMessage(final long messageID,
-         final JBossDestination destination) throws Exception
-   {
-      return messagingServerManagement.removeMessageFromQueue(messageID,
-            destination.getSimpleAddress());
-   }
-
-   public int expireMessages(final Filter filter,
-         final JBossDestination destination) throws Exception
-   {
-      return messagingServerManagement.expireMessages(filter, destination
-            .getSimpleAddress());
-   }
-
-   public int sendMessagesToDLQ(final Filter filter,
-         final JBossDestination destination) throws Exception
-   {
-      return messagingServerManagement.sendMessagesToDLQ(filter, destination
-            .getSimpleAddress());
-   }
-
-   public int changeMessagesPriority(final Filter filter,
-         final byte newPriority, final JBossDestination destination)
-         throws Exception
-   {
-      return messagingServerManagement.changeMessagesPriority(filter,
-            newPriority, destination.getSimpleAddress());
    }
 
    // Public --------------------------------------------------------

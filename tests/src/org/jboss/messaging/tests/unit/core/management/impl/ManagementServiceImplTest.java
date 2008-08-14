@@ -30,6 +30,8 @@ import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 
+import java.util.Set;
+
 import javax.management.MBeanServer;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
@@ -40,14 +42,18 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.management.AddressControlMBean;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
-import org.jboss.messaging.core.management.MessagingServerManagement;
 import org.jboss.messaging.core.management.QueueControlMBean;
 import org.jboss.messaging.core.management.impl.AddressControl;
 import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.management.impl.MessagingServerControl;
 import org.jboss.messaging.core.management.impl.QueueControl;
 import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -75,21 +81,24 @@ public class ManagementServiceImplTest extends TestCase
       ObjectInstance objectInstance = new ObjectInstance(objectName,
             MessagingServerControl.class.getName());
 
-      MBeanServer mbeanServer = createMock(MBeanServer.class);
+      PostOffice postOffice = createMock(PostOffice.class);
+      StorageManager storageManager = createMock(StorageManager.class);
       Configuration configuration = createMock(Configuration.class);
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      expect(server.getConfiguration()).andReturn(configuration);
+      HierarchicalRepository<Set<Role>> securityRepository = createMock(HierarchicalRepository.class);
+      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+      MessagingServer messagingServer = createMock(MessagingServer.class);
+      MBeanServer mbeanServer = createMock(MBeanServer.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(false);
       expect(
-            mbeanServer.registerMBean(isA(MessagingServerControlMBean.class),
+            mbeanServer.registerMBean(isA(MessagingServerControl.class),
                   eq(objectName))).andReturn(objectInstance);
 
-      replay(mbeanServer, server);
+      replay(mbeanServer, postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, messagingServer);
 
       ManagementService service = new ManagementServiceImpl(mbeanServer, true);
-      service.registerServer(server);
+      service.registerServer(postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, messagingServer);
 
-      verify(mbeanServer, server);
+      verify(mbeanServer, postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, messagingServer);
    }
 
    public void testRegisterAlreadyRegisteredMessagingServer() throws Exception
@@ -99,22 +108,25 @@ public class ManagementServiceImplTest extends TestCase
       ObjectInstance objectInstance = new ObjectInstance(objectName,
             MessagingServerControl.class.getName());
 
-      MBeanServer mbeanServer = createMock(MBeanServer.class);
+      PostOffice postOffice = createMock(PostOffice.class);
+      StorageManager storageManager = createMock(StorageManager.class);
       Configuration configuration = createMock(Configuration.class);
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      expect(server.getConfiguration()).andReturn(configuration);
+      HierarchicalRepository<Set<Role>> securityRepository = createMock(HierarchicalRepository.class);
+      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+      MessagingServer messagingServer = createMock(MessagingServer.class);
+      MBeanServer mbeanServer = createMock(MBeanServer.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(true);
       mbeanServer.unregisterMBean(objectName);
       expect(
             mbeanServer.registerMBean(isA(MessagingServerControlMBean.class),
                   eq(objectName))).andReturn(objectInstance);
 
-      replay(mbeanServer, server);
+      replay(mbeanServer, postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, messagingServer);
 
       ManagementService service = new ManagementServiceImpl(mbeanServer, true);
-      service.registerServer(server);
+      service.registerServer(postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, messagingServer);
 
-      verify(mbeanServer, server);
+      verify(mbeanServer, postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, messagingServer);
    }
 
    public void testUnregisterMessagingServer() throws Exception

@@ -46,13 +46,6 @@
       </property>
    </bean>
 
-   <bean name="MessagingServerManagement"
-         class="org.jboss.messaging.core.management.impl.MessagingServerManagementImpl">
-      <constructor factoryMethod="getServerManagement">
-         <factory bean="MessagingServer"/>
-      </constructor>
-   </bean>
-
    <bean name="MessagingServer" class="org.jboss.messaging.core.server.impl.MessagingServerImpl">
       <depends>QueueSettingsDeployer</depends>
       <property name="storageManager">
@@ -92,6 +85,15 @@
       <constructor>
          <parameter>
             <inject bean="MessagingServer" property="serverManagement"/>
+         </parameter>
+         <parameter>
+            <inject bean="MessagingServer" property="postOffice"/>
+         </parameter>
+         <parameter>
+            <inject bean="MessagingServer" property="storageManager"/>
+         </parameter>
+         <parameter>
+            <inject bean="MessagingServer" property="queueSettingsRepository"/>
          </parameter>
          <parameter>
             <inject bean="JMSManagementService"/>

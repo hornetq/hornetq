@@ -34,15 +34,18 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.jms.client.SelectorTranslator;
-import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSMessageInfo;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
 import org.jboss.messaging.util.SimpleString;
@@ -63,7 +66,9 @@ public class JMSQueueControl extends StandardMBean implements
    private final JBossQueue managedQueue;
    private Queue coreQueue;
    private final String binding;
-   private JMSServerManager server;
+   private final PostOffice postOffice;
+   private final StorageManager storageManager;
+   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
 
    // Static --------------------------------------------------------
 
@@ -77,14 +82,18 @@ public class JMSQueueControl extends StandardMBean implements
    // Constructors --------------------------------------------------
 
    public JMSQueueControl(final JBossQueue queue, final Queue coreQueue,
-         final String jndiBinding, final JMSServerManager server)
+         final String jndiBinding, final PostOffice postOffice,
+         final StorageManager storageManager,
+         HierarchicalRepository<QueueSettings> queueSettingsRepository)
          throws NotCompliantMBeanException
    {
       super(JMSQueueControlMBean.class);
       this.managedQueue = queue;
       this.coreQueue = coreQueue;
       this.binding = jndiBinding;
-      this.server = server;
+      this.postOffice = postOffice;
+      this.storageManager = storageManager;
+      this.queueSettingsRepository = queueSettingsRepository;
    }
 
    // Public --------------------------------------------------------
@@ -120,37 +129,37 @@ public class JMSQueueControl extends StandardMBean implements
    {
       return coreQueue.getConsumerCount();
    }
-   
+
    public int getDeliveringCount()
    {
       return coreQueue.getDeliveringCount();
    }
-   
+
    public int getMaxSizeBytes()
    {
       return coreQueue.getMaxSizeBytes();
    }
-   
+
    public long getScheduledCount()
    {
       return coreQueue.getScheduledCount();
    }
-   
+
    public long getSizeBytes()
    {
       return coreQueue.getSizeBytes();
    }
-   
+
    public boolean isClustered()
    {
       return coreQueue.isClustered();
    }
-   
+
    public boolean isDurable()
    {
       return coreQueue.isDurable();
    }
-   
+
    public String getJNDIBinding()
    {
       return binding;
@@ -158,10 +167,10 @@ public class JMSQueueControl extends StandardMBean implements
 
    public String getDLQ()
    {
-      QueueSettings settings = server.getSettings(managedQueue);
-      if (settings != null && settings.getDLQ() != null)
+      QueueSettings queueSettings = queueSettingsRepository.getMatch(getName());
+      if (queueSettings != null && queueSettings.getDLQ() != null)
       {
-         return JBossDestination.fromAddress(settings.getDLQ().toString())
+         return JBossDestination.fromAddress(queueSettings.getDLQ().toString())
                .getName();
       } else
       {
@@ -171,11 +180,11 @@ public class JMSQueueControl extends StandardMBean implements
 
    public String getExpiryQueue()
    {
-      QueueSettings settings = server.getSettings(managedQueue);
-      if (settings != null && settings.getExpiryQueue() != null)
+      QueueSettings queueSettings = queueSettingsRepository.getMatch(getName());
+      if (queueSettings != null && queueSettings.getExpiryQueue() != null)
       {
          return JBossDestination.fromAddress(
-               settings.getExpiryQueue().toString()).getName();
+               queueSettings.getExpiryQueue().toString()).getName();
       } else
       {
          return null;
@@ -191,13 +200,13 @@ public class JMSQueueControl extends StandardMBean implements
          throw new IllegalArgumentException(
                "No message found for JMSMessageID: " + messageID);
       }
-      return server.removeMessage(refs.get(0).getMessage().getMessageID(),
-            managedQueue);
+      return coreQueue.deleteReference(refs.get(0).getMessage().getMessageID(),
+            storageManager);
    }
 
    public void removeAllMessages() throws Exception
    {
-      server.removeAllMessages(managedQueue);
+      coreQueue.deleteAllReferences(storageManager);
    }
 
    public TabularData listAllMessages() throws Exception
@@ -238,7 +247,8 @@ public class JMSQueueControl extends StandardMBean implements
          throw new IllegalArgumentException(
                "No message found for JMSMessageID: " + messageID);
       }
-      return server.expireMessages(filter, managedQueue) == 1;
+      return coreQueue.expireMessage(refs.get(0).getMessage().getMessageID(),
+            storageManager, postOffice, queueSettingsRepository);
    }
 
    public int expireMessages(final String filterStr) throws Exception
@@ -248,14 +258,21 @@ public class JMSQueueControl extends StandardMBean implements
          Filter filter = filterStr == null ? null : new FilterImpl(
                new SimpleString(SelectorTranslator
                      .convertToJBMFilterString(filterStr)));
-         return server.expireMessages(filter, managedQueue);
+
+         List<MessageReference> refs = coreQueue.list(filter);
+         for (MessageReference ref : refs)
+         {
+            coreQueue.expireMessage(ref.getMessage().getMessageID(),
+                  storageManager, postOffice, queueSettingsRepository);
+         }
+         return refs.size();
       } catch (MessagingException e)
       {
          throw new IllegalStateException(e.getMessage());
       }
    }
 
-   public boolean sendMessageTDLQ(final String messageID) throws Exception
+   public boolean sendMessageToDLQ(final String messageID) throws Exception
    {
       Filter filter = createFilterForJMSMessageID(messageID);
       List<MessageReference> refs = coreQueue.list(filter);
@@ -264,7 +281,9 @@ public class JMSQueueControl extends StandardMBean implements
          throw new IllegalArgumentException(
                "No message found for JMSMessageID: " + messageID);
       }
-      return server.sendMessagesToDLQ(filter, managedQueue) == 1;
+      return coreQueue.sendMessageToDLQ(
+            refs.get(0).getMessage().getMessageID(), storageManager,
+            postOffice, queueSettingsRepository);
    }
 
    public boolean changeMessagePriority(final String messageID,
@@ -282,8 +301,9 @@ public class JMSQueueControl extends StandardMBean implements
          throw new IllegalArgumentException(
                "No message found for JMSMessageID: " + messageID);
       }
-      return server.changeMessagesPriority(filter, (byte) newPriority,
-            managedQueue) == 1;
+      return coreQueue.changeMessagePriority(refs.get(0).getMessage()
+            .getMessageID(), (byte) newPriority, storageManager, postOffice,
+            queueSettingsRepository);
    }
 
    // StandardMBean overrides ---------------------------------------

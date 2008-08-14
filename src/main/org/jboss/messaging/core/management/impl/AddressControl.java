@@ -32,11 +32,12 @@ import javax.management.StandardMBean;
 import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.management.AddressControlMBean;
-import org.jboss.messaging.core.management.MessagingServerManagement;
 import org.jboss.messaging.core.management.RoleInfo;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -54,19 +55,22 @@ public class AddressControl extends StandardMBean implements
    // Attributes ----------------------------------------------------
 
    private final SimpleString address;
-   private MessagingServerManagement server;
+   private final PostOffice postOffice;
+   private final HierarchicalRepository<Set<Role>> securityRepository;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    public AddressControl(final SimpleString address,
-         final MessagingServerManagement server)
+         final PostOffice postOffice,
+         final HierarchicalRepository<Set<Role>> securityRepository)
          throws NotCompliantMBeanException
    {
       super(AddressControlMBean.class);
       this.address = address;
-      this.server = server;
+      this.postOffice = postOffice;
+      this.securityRepository = securityRepository;
    }
 
    // Public --------------------------------------------------------
@@ -82,11 +86,12 @@ public class AddressControl extends StandardMBean implements
    {
       try
       {
-         List<Queue> queues = server.getQueuesForAddress(address);
-         String[] queueNames = new String[queues.size()];
-         for (int i = 0; i < queues.size(); i++)
+         List<Binding> bindings = postOffice.getBindingsForAddress(address);
+         String[] queueNames = new String[bindings.size()];
+         for (int i = 0; i < bindings.size(); i++)
          {
-            queueNames[i] = queues.get(i).getName().toString();
+            Binding binding = bindings.get(i);
+            queueNames[i] = binding.getQueue().getName().toString();
          }
          return queueNames;
       } catch (Throwable t)
@@ -102,7 +107,7 @@ public class AddressControl extends StandardMBean implements
 
    public RoleInfo[] getRoleInfos() throws Exception
    {
-      Set<Role> roles = server.getSecurityForAddress(address);
+      Set<Role> roles = securityRepository.getMatch(address.toString());
       RoleInfo[] roleInfos = new RoleInfo[roles.size()];
       int i = 0;
       for (Role role : roles)
@@ -118,19 +123,19 @@ public class AddressControl extends StandardMBean implements
    public void addRole(final String name, final boolean create,
          final boolean read, final boolean write) throws Exception
    {
-      Set<Role> roles = server.getSecurityForAddress(address);
+      Set<Role> roles = securityRepository.getMatch(address.toString());
       Role newRole = new Role(name, read, write, create);
       boolean added = roles.add(newRole);
       if (!added)
       {
          throw new IllegalArgumentException("Role " + name + " already exists");
       }
-      server.setSecurityForAddress(address, roles);
+      securityRepository.addMatch(address.toString(), roles);
    }
 
    public void removeRole(final String role) throws Exception
    {
-      Set<Role> roles = server.getSecurityForAddress(address);
+      Set<Role> roles = securityRepository.getMatch(address.toString());
       Iterator<Role> it = roles.iterator();
       boolean removed = false;
       while (it.hasNext())
@@ -147,7 +152,7 @@ public class AddressControl extends StandardMBean implements
       {
          throw new IllegalArgumentException("Role " + role + " does not exist");
       }
-      server.setSecurityForAddress(address, roles);
+      securityRepository.addMatch(address.toString(), roles);
    }
 
    // StandardMBean overrides ---------------------------------------

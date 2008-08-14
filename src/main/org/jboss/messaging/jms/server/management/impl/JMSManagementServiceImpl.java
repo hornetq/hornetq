@@ -27,9 +27,12 @@ import java.util.List;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-import org.jboss.messaging.core.management.MessagingServerManagement;
 import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
@@ -116,7 +119,9 @@ public class JMSManagementServiceImpl implements JMSManagementService
    }
 
    public void registerQueue(final JBossQueue queue, final Queue coreQueue,
-         final String jndiBinding, final JMSServerManager server)
+         final String jndiBinding, final PostOffice postOffice,
+         final StorageManager storageManager,
+         HierarchicalRepository<QueueSettings> queueSettingsRepository)
          throws Exception
    {
       if (!jmxManagementEnabled)
@@ -126,7 +131,8 @@ public class JMSManagementServiceImpl implements JMSManagementService
       ObjectName objectName = getJMSQueueObjectName(queue.getQueueName());
       unregisterQueue(queue.getQueueName());
       mbeanServer.registerMBean(new JMSQueueControl(queue, coreQueue,
-            jndiBinding, server), objectName);
+            jndiBinding, postOffice, storageManager, queueSettingsRepository),
+            objectName);
    }
 
    public void unregisterQueue(final String name) throws Exception
@@ -142,9 +148,9 @@ public class JMSManagementServiceImpl implements JMSManagementService
       }
    }
 
-   public void registerTopic(final JBossTopic topic,
-         final MessagingServerManagement serverManagement,
-         final String jndiBinding) throws Exception
+   public void registerTopic(final JBossTopic topic, final String jndiBinding,
+         final PostOffice postOffice, final StorageManager storageManager)
+         throws Exception
    {
       if (!jmxManagementEnabled)
       {
@@ -152,8 +158,8 @@ public class JMSManagementServiceImpl implements JMSManagementService
       }
       ObjectName objectName = getJMSTopicObjectName(topic.getTopicName());
       unregisterTopic(topic.getTopicName());
-      mbeanServer.registerMBean(new TopicControl(topic, serverManagement,
-            jndiBinding), objectName);
+      mbeanServer.registerMBean(new TopicControl(topic, jndiBinding,
+            postOffice, storageManager), objectName);
    }
 
    public void unregisterTopic(final String name) throws Exception

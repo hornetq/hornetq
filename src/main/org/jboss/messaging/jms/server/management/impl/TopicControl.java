@@ -31,10 +31,12 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.StandardMBean;
 import javax.management.openmbean.TabularData;
 
-import org.jboss.messaging.core.management.MessagingServerManagement;
 import org.jboss.messaging.core.management.Operation;
 import org.jboss.messaging.core.management.Parameter;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -58,21 +60,23 @@ public class TopicControl extends StandardMBean implements TopicControlMBean
    // Attributes ----------------------------------------------------
 
    private final JBossTopic managedTopic;
-   private final MessagingServerManagement server;
    private final String binding;
+   private final PostOffice postOffice;
+   private final StorageManager storageManager;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public TopicControl(final JBossTopic topic,
-         final MessagingServerManagement server, final String jndiBinding)
+   public TopicControl(final JBossTopic topic, final String jndiBinding,
+         final PostOffice postOffice, final StorageManager storageManager)
          throws NotCompliantMBeanException
    {
       super(TopicControlMBean.class);
       this.managedTopic = topic;
-      this.server = server;
       this.binding = jndiBinding;
+      this.postOffice = postOffice;
+      this.storageManager = storageManager;
    }
 
    // Public --------------------------------------------------------
@@ -180,7 +184,13 @@ public class TopicControl extends StandardMBean implements TopicControlMBean
    public TabularData listMessagesForSubscriber(final String subscriberID)
          throws Exception
    {
-      Queue queue = server.getQueue(new SimpleString(subscriberID));
+      SimpleString sAddress = new SimpleString(subscriberID);
+      Binding binding = postOffice.getBinding(sAddress);
+      if (binding == null)
+      {
+         throw new IllegalArgumentException("No queue with name " + sAddress);
+      }
+      Queue queue = binding.getQueue();
       List<MessageReference> messageRefs = queue.list(null);
       List<JMSMessageInfo> infos = new ArrayList<JMSMessageInfo>(messageRefs
             .size());
@@ -196,7 +206,14 @@ public class TopicControl extends StandardMBean implements TopicControlMBean
 
    public void removeAllMessages() throws Exception
    {
-      server.removeAllMessagesForAddress(managedTopic.getSimpleAddress());
+      List<Binding> bindings = postOffice.getBindingsForAddress(managedTopic
+            .getSimpleAddress());
+
+      for (Binding binding : bindings)
+      {
+         Queue queue = binding.getQueue();
+         queue.deleteAllReferences(storageManager);
+      }
    }
 
    // Package protected ---------------------------------------------
@@ -250,11 +267,13 @@ public class TopicControl extends StandardMBean implements TopicControlMBean
    {
       try
       {
-         List<Queue> queues = server.getQueuesForAddress(managedTopic
+         List<Binding> bindings = postOffice.getBindingsForAddress(managedTopic
                .getSimpleAddress());
          List<Queue> matchingQueues = new ArrayList<Queue>();
-         for (Queue queue : queues)
+
+         for (Binding binding : bindings)
          {
+            Queue queue = binding.getQueue();
             if (durability == DurabilityType.ALL
                   || (durability == DurabilityType.DURABLE && queue.isDurable())
                   || (durability == DurabilityType.NON_DURABLE && !queue

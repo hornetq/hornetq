@@ -26,8 +26,9 @@ import java.util.Set;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.management.MessagingServerManagement;
+import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
@@ -79,11 +80,13 @@ public interface MessagingServer extends MessagingComponent
         
    boolean isStarted();
    
-   MessagingServerManagement getServerManagement();  
+   MessagingServerControlMBean getServerManagement();  
    
    HierarchicalRepository<Set<Role>> getSecurityRepository();
    
    HierarchicalRepository<QueueSettings> getQueueSettingsRepository();
    
    int getConnectionCount();
+   
+   PostOffice getPostOffice();
 }

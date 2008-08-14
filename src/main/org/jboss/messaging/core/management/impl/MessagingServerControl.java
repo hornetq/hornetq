@@ -23,12 +23,12 @@
 package org.jboss.messaging.core.management.impl;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.management.ListenerNotFoundException;
 import javax.management.MBeanInfo;
 import javax.management.MBeanNotificationInfo;
-import javax.management.NotCompliantMBeanException;
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
 import javax.management.NotificationEmitter;
@@ -37,8 +37,18 @@ import javax.management.NotificationListener;
 import javax.management.StandardMBean;
 
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.filter.Filter;
+import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
-import org.jboss.messaging.core.management.MessagingServerManagement;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -55,8 +65,12 @@ public class MessagingServerControl extends StandardMBean implements
 
    // Attributes ----------------------------------------------------
 
-   private final MessagingServerManagement server;
+   private final PostOffice postOffice;
+   private final StorageManager storageManager;
    private final Configuration configuration;
+   private final HierarchicalRepository<Set<Role>> securityRepository;
+   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
+   private final MessagingServer server;
 
    private final NotificationBroadcasterSupport broadcaster;
    private AtomicLong notifSeq = new AtomicLong(0);
@@ -65,16 +79,106 @@ public class MessagingServerControl extends StandardMBean implements
 
    // Constructors --------------------------------------------------
 
-   public MessagingServerControl(final MessagingServerManagement server,
-         final Configuration configuration) throws NotCompliantMBeanException
+   public MessagingServerControl(PostOffice postOffice,
+         StorageManager storageManager, Configuration configuration,
+         HierarchicalRepository<Set<Role>> securityRepository,
+         HierarchicalRepository<QueueSettings> queueSettingsRepository,
+         MessagingServer messagingServer) throws Exception
    {
       super(MessagingServerControlMBean.class);
-      this.server = server;
+      this.postOffice = postOffice;
+      this.storageManager = storageManager;
       this.configuration = configuration;
+      this.securityRepository = securityRepository;
+      this.queueSettingsRepository = queueSettingsRepository;
+      this.server = messagingServer;
+
       broadcaster = new NotificationBroadcasterSupport();
    }
 
    // Public --------------------------------------------------------
+
+   public void addDestination(SimpleString simpleAddress) throws Exception
+   {
+      postOffice.addDestination(simpleAddress, false);
+   }
+
+   public void removeDestination(SimpleString simpleAddress) throws Exception
+   {
+      postOffice.removeDestination(simpleAddress, false);
+   }
+
+   public Queue getQueue(String address) throws Exception
+   {
+      SimpleString sAddress = new SimpleString(address);
+      Binding binding = postOffice.getBinding(sAddress);
+      if (binding == null)
+      {
+         throw new IllegalArgumentException("No queue with name " + sAddress);
+      }
+
+      return binding.getQueue();
+   }
+
+   public Configuration getConfiguration()
+   {
+      return configuration;
+   }
+
+   public int expireMessages(Filter filter, SimpleString simpleAddress)
+         throws Exception
+   {
+      Binding binding = postOffice.getBinding(simpleAddress);
+      if (binding != null)
+      {
+         Queue queue = binding.getQueue();
+         List<MessageReference> refs = queue.list(filter);
+         for (MessageReference ref : refs)
+         {
+            queue.expireMessage(ref.getMessage().getMessageID(),
+                  storageManager, postOffice, queueSettingsRepository);
+         }
+         return refs.size();
+      }
+      return 0;
+   }
+
+   public int sendMessagesToDLQ(Filter filter, SimpleString simpleAddress)
+         throws Exception
+   {
+      Binding binding = postOffice.getBinding(simpleAddress);
+      if (binding != null)
+      {
+         Queue queue = binding.getQueue();
+         List<MessageReference> refs = queue.list(filter);
+         for (MessageReference ref : refs)
+         {
+            queue.sendMessageToDLQ(ref.getMessage().getMessageID(),
+                  storageManager, postOffice, queueSettingsRepository);
+         }
+         return refs.size();
+      }
+      return 0;
+   }
+
+   public int changeMessagesPriority(Filter filter, byte newPriority,
+         SimpleString simpleAddress) throws Exception
+   {
+      Binding binding = postOffice.getBinding(simpleAddress);
+      if (binding != null)
+      {
+         Queue queue = binding.getQueue();
+         List<MessageReference> refs = queue.list(filter);
+         for (MessageReference ref : refs)
+         {
+            queue.changeMessagePriority(ref.getMessage().getMessageID(),
+                  newPriority, storageManager, postOffice,
+                  queueSettingsRepository);
+         }
+         return refs.size();
+      }
+      return 0;
+   }
 
    // StandardMBean overrides ---------------------------------------
 
@@ -97,7 +201,7 @@ public class MessagingServerControl extends StandardMBean implements
 
    public String getVersion()
    {
-      return server.getVersion();
+      return server.getVersion().getFullVersion();
    }
 
    public String getBindingsDirectory()
@@ -203,19 +307,24 @@ public class MessagingServerControl extends StandardMBean implements
    public boolean addAddress(final String address) throws Exception
    {
       sendNotification(NotificationType.ADDRESS_ADDED, address);
-      return server.addDestination(new SimpleString(address));
+      return postOffice.addDestination(new SimpleString(address), false);
    }
 
    public void createQueue(final String address, final String name)
          throws Exception
    {
-      server.createQueue(new SimpleString(address), new SimpleString(name));
+      SimpleString sAddress = new SimpleString(address);
+      SimpleString sName = new SimpleString(name);
+      if (postOffice.getBinding(sAddress) == null)
+      {
+         postOffice.addBinding(sAddress, sName, null, true, false);
+      }
       sendNotification(NotificationType.ADDRESS_ADDED, address);
       sendNotification(NotificationType.QUEUE_CREATED, name);
    }
 
    public void createQueue(final String address, final String name,
-         final String filter, final boolean durable, final boolean temporary)
+         final String filterStr, final boolean durable, final boolean temporary)
          throws Exception
    {
       if (temporary && durable)
@@ -224,17 +333,36 @@ public class MessagingServerControl extends StandardMBean implements
                "A queue can not be both temporary and durable");
       }
 
-      SimpleString simpleFilter = (filter == null || filter.length() == 0) ? null
-            : new SimpleString(filter);
-      server.createQueue(new SimpleString(address), new SimpleString(name),
-            simpleFilter, durable, temporary);
+      SimpleString sAddress = new SimpleString(address);
+      SimpleString sName = new SimpleString(name);
+      SimpleString sFilter = (filterStr == null || filterStr.length() == 0) ? null
+            : new SimpleString(filterStr);
+      Filter filter = null;
+      if (sFilter != null)
+      {
+         filter = new FilterImpl(sFilter);
+      }
+      if (postOffice.getBinding(sAddress) == null)
+      {
+         postOffice.addBinding(sAddress, sName, filter, durable, temporary);
+      }
       sendNotification(NotificationType.ADDRESS_ADDED, address);
       sendNotification(NotificationType.QUEUE_CREATED, name);
    }
 
    public void destroyQueue(final String name) throws Exception
    {
-      server.destroyQueue(new SimpleString(name));
+      SimpleString sName = new SimpleString(name);
+      Binding binding = postOffice.getBinding(sName);
+
+      if (binding != null)
+      {
+         Queue queue = binding.getQueue();
+
+         queue.deleteAllReferences(storageManager);
+
+         postOffice.removeBinding(queue.getName());
+      }
       sendNotification(NotificationType.QUEUE_DESTROYED, name);
    }
 
@@ -246,7 +374,7 @@ public class MessagingServerControl extends StandardMBean implements
    public boolean removeAddress(final String address) throws Exception
    {
       sendNotification(NotificationType.ADDRESS_REMOVED, address);
-      return server.removeDestination(new SimpleString(address));
+      return postOffice.removeDestination(new SimpleString(address), false);
    }
 
    // NotificationEmitter implementation ----------------------------

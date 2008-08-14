@@ -40,8 +40,12 @@ import javax.management.ObjectName;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.ClientConnectionFactory;
-import org.jboss.messaging.core.management.MessagingServerManagement;
+import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
@@ -134,7 +138,9 @@ public class JMSManagementServiceImplTest extends TestCase
 
       JBossQueue queue = new JBossQueue(name);
       Queue coreQueue = createMock(Queue.class);
-      JMSServerManager server = createMock(JMSServerManager.class);
+      PostOffice postOffice = createMock(PostOffice.class);
+      StorageManager storageManager = createMock(StorageManager.class);
+      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
 
       MBeanServer mbeanServer = createMock(MBeanServer.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(false);
@@ -142,13 +148,13 @@ public class JMSManagementServiceImplTest extends TestCase
             mbeanServer.registerMBean(isA(JMSQueueControlMBean.class),
                   eq(objectName))).andReturn(objectInstance);
 
-      replay(mbeanServer, coreQueue, server);
+      replay(mbeanServer, coreQueue, postOffice, storageManager, queueSettingsRepository);
 
       JMSManagementService service = new JMSManagementServiceImpl(mbeanServer,
             true);
-      service.registerQueue(queue, coreQueue, jndiBinding, server);
+      service.registerQueue(queue, coreQueue, jndiBinding, postOffice, storageManager, queueSettingsRepository);
 
-      verify(mbeanServer, coreQueue, server);
+      verify(mbeanServer, coreQueue, postOffice, storageManager, queueSettingsRepository);
    }
 
    public void testRegisterAlreadyRegisteredQueue() throws Exception
@@ -162,7 +168,9 @@ public class JMSManagementServiceImplTest extends TestCase
 
       JBossQueue queue = new JBossQueue(name);
       Queue coreQueue = createMock(Queue.class);
-      JMSServerManager server = createMock(JMSServerManager.class);
+      PostOffice postOffice = createMock(PostOffice.class);
+      StorageManager storageManager = createMock(StorageManager.class);
+      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
 
       MBeanServer mbeanServer = createMock(MBeanServer.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(true);
@@ -171,13 +179,13 @@ public class JMSManagementServiceImplTest extends TestCase
             mbeanServer.registerMBean(isA(JMSQueueControlMBean.class),
                   eq(objectName))).andReturn(objectInstance);
 
-      replay(mbeanServer, coreQueue, server);
+      replay(mbeanServer, coreQueue, postOffice, storageManager, queueSettingsRepository);
 
       JMSManagementService service = new JMSManagementServiceImpl(mbeanServer,
             true);
-      service.registerQueue(queue, coreQueue, jndiBinding, server);
+      service.registerQueue(queue, coreQueue, jndiBinding, postOffice, storageManager, queueSettingsRepository);
 
-      verify(mbeanServer, coreQueue, server);
+      verify(mbeanServer, coreQueue, postOffice, storageManager, queueSettingsRepository);
    }
 
    public void testRegisterTopic() throws Exception
@@ -190,7 +198,8 @@ public class JMSManagementServiceImplTest extends TestCase
             TopicControl.class.getName());
 
       JBossTopic topic = new JBossTopic(name);
-      MessagingServerManagement serverManagement = createMock(MessagingServerManagement.class);
+      PostOffice postOffice= createMock(PostOffice.class);
+      StorageManager storageManager = createMock(StorageManager.class);
 
       MBeanServer mbeanServer = createMock(MBeanServer.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(false);
@@ -198,13 +207,13 @@ public class JMSManagementServiceImplTest extends TestCase
             mbeanServer.registerMBean(isA(TopicControlMBean.class),
                   eq(objectName))).andReturn(objectInstance);
 
-      replay(mbeanServer, serverManagement);
+      replay(mbeanServer, postOffice, storageManager);
 
       JMSManagementService service = new JMSManagementServiceImpl(mbeanServer,
             true);
-      service.registerTopic(topic, serverManagement, jndiBinding);
+      service.registerTopic(topic, jndiBinding, postOffice, storageManager);
 
-      verify(mbeanServer, serverManagement);
+      verify(mbeanServer, postOffice, storageManager);
    }
 
    public void testRegisterAlreadyRegisteredTopic() throws Exception
@@ -217,7 +226,8 @@ public class JMSManagementServiceImplTest extends TestCase
             TopicControl.class.getName());
 
       JBossTopic topic = new JBossTopic(name);
-      MessagingServerManagement serverManagement = createMock(MessagingServerManagement.class);
+      PostOffice postOffice= createMock(PostOffice.class);
+      StorageManager storageManager = createMock(StorageManager.class);
 
       MBeanServer mbeanServer = createMock(MBeanServer.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(true);
@@ -226,13 +236,13 @@ public class JMSManagementServiceImplTest extends TestCase
             mbeanServer.registerMBean(isA(TopicControlMBean.class),
                   eq(objectName))).andReturn(objectInstance);
 
-      replay(mbeanServer, serverManagement);
+      replay(mbeanServer, postOffice, storageManager);
 
       JMSManagementService service = new JMSManagementServiceImpl(mbeanServer,
             true);
-      service.registerTopic(topic, serverManagement, jndiBinding);
+      service.registerTopic(topic, jndiBinding, postOffice, storageManager);
 
-      verify(mbeanServer, serverManagement);
+      verify(mbeanServer, postOffice, storageManager);
    }
 
    public void testRegisterConnectionFactory() throws Exception

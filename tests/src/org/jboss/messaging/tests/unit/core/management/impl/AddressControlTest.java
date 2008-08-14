@@ -42,12 +42,14 @@ import javax.management.openmbean.TabularData;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.management.MessagingServerManagement;
 import org.jboss.messaging.core.management.RoleInfo;
 import org.jboss.messaging.core.management.impl.AddressControl;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -89,44 +91,55 @@ public class AddressControlTest extends TestCase
    public void testGetAddress() throws Exception
    {
       SimpleString address = randomSimpleString();
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
+      PostOffice postOffice = createMock(PostOffice.class);
+      HierarchicalRepository<Set<Role>> securityRepository = createMock(HierarchicalRepository.class);
+      replay(postOffice, securityRepository);
 
-      replay(server);
-
-      AddressControl control = new AddressControl(address, server);
+      AddressControl control = new AddressControl(address, postOffice,
+            securityRepository);
       assertEquals(address.toString(), control.getAddress());
 
-      verify(server);
+      verify(postOffice, securityRepository);
    }
 
    public void testGetQueueNames() throws Exception
    {
       SimpleString address = randomSimpleString();
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      List<Queue> queues = new ArrayList<Queue>();
+      PostOffice postOffice = createMock(PostOffice.class);
+      HierarchicalRepository<Set<Role>> securityRepository = createMock(HierarchicalRepository.class);
+      List<Binding> bindings = new ArrayList<Binding>();
       Queue queue_1 = createMock(Queue.class);
       expect(queue_1.getName()).andStubReturn(randomSimpleString());
+      Binding binding_1 = createMock(Binding.class);
+      expect(binding_1.getQueue()).andReturn(queue_1);
       Queue queue_2 = createMock(Queue.class);
       expect(queue_2.getName()).andStubReturn(randomSimpleString());
-      queues.add(queue_1);
-      queues.add(queue_2);
-      expect(server.getQueuesForAddress(address)).andReturn(queues);
+      Binding binding_2 = createMock(Binding.class);
+      expect(binding_2.getQueue()).andReturn(queue_2);
+      bindings.add(binding_1);
+      bindings.add(binding_2);
+      expect(postOffice.getBindingsForAddress(address)).andReturn(bindings);
 
-      replay(server, queue_1, queue_2);
+      replay(binding_1, queue_1, binding_2, queue_2);
+      replay(postOffice, securityRepository);
 
-      AddressControl control = new AddressControl(address, server);
+      AddressControl control = new AddressControl(address, postOffice,
+            securityRepository);
       String[] queueNames = control.getQueueNames();
       assertEquals(2, queueNames.length);
       assertEquals(queue_1.getName().toString(), queueNames[0]);
       assertEquals(queue_2.getName().toString(), queueNames[1]);
 
-      verify(server, queue_1, queue_2);
+      verify(binding_1, queue_1, binding_2, queue_2);
+      verify(postOffice, securityRepository);
    }
 
    public void testGetRoleInfos() throws Exception
    {
       SimpleString address = randomSimpleString();
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
+      PostOffice postOffice = createMock(PostOffice.class);
+      HierarchicalRepository<Set<Role>> securityRepository = createMock(HierarchicalRepository.class);
+
       Set<Role> roles = new HashSet<Role>();
       Role role_1 = new Role(randomString(), randomBoolean(), randomBoolean(),
             randomBoolean());
@@ -134,11 +147,12 @@ public class AddressControlTest extends TestCase
             randomBoolean());
       roles.add(role_1);
       roles.add(role_2);
-      expect(server.getSecurityForAddress(address)).andReturn(roles);
+      expect(securityRepository.getMatch(address.toString())).andReturn(roles);
 
-      replay(server);
+      replay(postOffice, securityRepository);
 
-      AddressControl control = new AddressControl(address, server);
+      AddressControl control = new AddressControl(address, postOffice,
+            securityRepository);
       RoleInfo[] infos = control.getRoleInfos();
       assertEquals(2, infos.length);
       if (infos[0].getName().equals(role_1.getName()))
@@ -151,13 +165,15 @@ public class AddressControlTest extends TestCase
          assertRoleEquals(role_1, infos[1]);
       }
 
-      verify(server);
+      verify(postOffice, securityRepository);
    }
 
    public void testGetRoles() throws Exception
    {
       SimpleString address = randomSimpleString();
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
+      PostOffice postOffice = createMock(PostOffice.class);
+      HierarchicalRepository<Set<Role>> securityRepository = createMock(HierarchicalRepository.class);
+
       Set<Role> roles = new HashSet<Role>();
       Role role_1 = new Role(randomString(), randomBoolean(), randomBoolean(),
             randomBoolean());
@@ -165,11 +181,12 @@ public class AddressControlTest extends TestCase
             randomBoolean());
       roles.add(role_1);
       roles.add(role_2);
-      expect(server.getSecurityForAddress(address)).andReturn(roles);
+      expect(securityRepository.getMatch(address.toString())).andReturn(roles);
 
-      replay(server);
+      replay(postOffice, securityRepository);
 
-      AddressControl control = new AddressControl(address, server);
+      AddressControl control = new AddressControl(address, postOffice,
+            securityRepository);
       TabularData data = control.getRoles();
       assertEquals(2, data.size());
       CompositeData roleData_1 = data.get(new Object[] { role_1.getName() });
@@ -177,38 +194,44 @@ public class AddressControlTest extends TestCase
       assertRoleEquals(role_1, roleData_1);
       assertRoleEquals(role_2, roleData_2);
 
-      verify(server);
+      verify(postOffice, securityRepository);
    }
 
    public void testAddRole() throws Exception
    {
       SimpleString address = randomSimpleString();
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      expect(server.getSecurityForAddress(address)).andReturn(
-            new HashSet<Role>());
-      server.setSecurityForAddress(eq(address), isA(Set.class));
-      replay(server);
+      PostOffice postOffice = createMock(PostOffice.class);
+      HierarchicalRepository<Set<Role>> securityRepository = createMock(HierarchicalRepository.class);
 
-      AddressControl control = new AddressControl(address, server);
+      expect(securityRepository.getMatch(address.toString())).andReturn(
+            new HashSet<Role>());
+      securityRepository.addMatch(eq(address.toString()), isA(Set.class));
+      replay(postOffice, securityRepository);
+
+      AddressControl control = new AddressControl(address, postOffice,
+            securityRepository);
       control.addRole(randomString(), randomBoolean(), randomBoolean(),
             randomBoolean());
 
-      verify(server);
+      verify(postOffice, securityRepository);
    }
 
    public void testAddRoleWhichAlreadExists() throws Exception
    {
       SimpleString address = randomSimpleString();
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
+      PostOffice postOffice = createMock(PostOffice.class);
+      HierarchicalRepository<Set<Role>> securityRepository = createMock(HierarchicalRepository.class);
+
       Set<Role> roles = new HashSet<Role>();
       Role role = new Role(randomString(), randomBoolean(), randomBoolean(),
             randomBoolean());
       roles.add(role);
-      expect(server.getSecurityForAddress(address)).andReturn(roles);
+      expect(securityRepository.getMatch(address.toString())).andReturn(roles);
 
-      replay(server);
+      replay(postOffice, securityRepository);
 
-      AddressControl control = new AddressControl(address, server);
+      AddressControl control = new AddressControl(address, postOffice,
+            securityRepository);
       try
       {
          control.addRole(role.getName(), role.isCheckType(CheckType.CREATE),
@@ -219,36 +242,42 @@ public class AddressControlTest extends TestCase
       {
       }
 
-      verify(server);
+      verify(postOffice, securityRepository);
    }
 
    public void testRemoveRole() throws Exception
    {
       SimpleString address = randomSimpleString();
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
+      PostOffice postOffice = createMock(PostOffice.class);
+      HierarchicalRepository<Set<Role>> securityRepository = createMock(HierarchicalRepository.class);
+
       Set<Role> roles = new HashSet<Role>();
       Role role = new Role(randomString(), randomBoolean(), randomBoolean(),
             randomBoolean());
       roles.add(role);
-      expect(server.getSecurityForAddress(address)).andReturn(roles);
-      server.setSecurityForAddress(eq(address), isA(Set.class));
-      replay(server);
+      expect(securityRepository.getMatch(address.toString())).andReturn(roles);
+      securityRepository.addMatch(eq(address.toString()), isA(Set.class));
+      replay(postOffice, securityRepository);
 
-      AddressControl control = new AddressControl(address, server);
+      AddressControl control = new AddressControl(address, postOffice,
+            securityRepository);
       control.removeRole(role.getName());
 
-      verify(server);
+      verify(postOffice, securityRepository);
    }
 
    public void testRemoveRoleFromEmptySet() throws Exception
    {
       SimpleString address = randomSimpleString();
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      expect(server.getSecurityForAddress(address)).andReturn(
-            new HashSet<Role>());
-      replay(server);
+      PostOffice postOffice = createMock(PostOffice.class);
+      HierarchicalRepository<Set<Role>> securityRepository = createMock(HierarchicalRepository.class);
 
-      AddressControl control = new AddressControl(address, server);
+      expect(securityRepository.getMatch(address.toString())).andReturn(
+            new HashSet<Role>());
+      replay(postOffice, securityRepository);
+
+      AddressControl control = new AddressControl(address, postOffice,
+            securityRepository);
       try
       {
          control.removeRole(randomString());
@@ -257,7 +286,7 @@ public class AddressControlTest extends TestCase
       {
       }
 
-      verify(server);
+      verify(postOffice, securityRepository);
    }
 
    // Package protected ---------------------------------------------

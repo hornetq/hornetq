@@ -24,7 +24,9 @@ package org.jboss.messaging.tests.unit.core.management.impl;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.isA;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
@@ -35,6 +37,7 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 import javax.management.MBeanServer;
@@ -47,12 +50,21 @@ import junit.framework.TestCase;
 import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.management.MessagingServerManagement;
+import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.management.impl.MessagingServerControl;
 import org.jboss.messaging.core.management.impl.MessagingServerControl.NotificationType;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.TransportType;
+import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.JournalType;
+import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -67,6 +79,12 @@ public class MessagingServerControlTest extends TestCase
 {
    private MBeanServer mbeanServer;
    private ObjectName serverON;
+   private PostOffice postOffice;
+   private StorageManager storageManager;
+   private Configuration configuration;
+   private HierarchicalRepository<Set<Role>> securityRepository;
+   private HierarchicalRepository<QueueSettings> queueSettingsRepository;
+   private MessagingServer server;
 
    // Constants -----------------------------------------------------
 
@@ -93,48 +111,49 @@ public class MessagingServerControlTest extends TestCase
    {
       boolean started = randomBoolean();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
       expect(server.isStarted()).andStubReturn(started);
-      Configuration configuration = createMock(Configuration.class);
-      replay(server, configuration);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       assertEquals(started, control.isStarted());
 
-      verify(server, configuration);
+      verifyMocks();
    }
 
    public void testGetVersion() throws Exception
    {
-      String version = randomString();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
+      String fullVersion = randomString();
+      Version version = createMock(Version.class);
+      expect(version.getFullVersion()).andReturn(fullVersion);
       expect(server.getVersion()).andStubReturn(version);
-      Configuration configuration = createMock(Configuration.class);
-      replay(server, configuration);
+      replayMocks();
+      replay(version);
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
-      assertEquals(version, control.getVersion());
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
+      assertEquals(fullVersion, control.getVersion());
 
-      verify(server, configuration);
+      verify(version);
+      verifyMocks();
    }
 
    public void testGetBindingsDirectory() throws Exception
    {
       String dir = randomString();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
       expect(configuration.getBindingsDirectory()).andReturn(dir);
-      replay(server, configuration);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       assertEquals(dir, control.getBindingsDirectory());
 
-      verify(server, configuration);
+      verifyMocks();
    }
 
    public void testGetInterceptorClassNames() throws Exception
@@ -142,308 +161,289 @@ public class MessagingServerControlTest extends TestCase
       List<String> list = new ArrayList<String>();
       list.add(randomString());
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
       expect(configuration.getInterceptorClassNames()).andReturn(list);
-      replay(server, configuration);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       assertEquals(list, control.getInterceptorClassNames());
 
-      verify(server, configuration);
+      verifyMocks();
    }
 
    public void testGetJournalDirectory() throws Exception
    {
       String dir = randomString();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
       expect(configuration.getJournalDirectory()).andReturn(dir);
-      replay(server, configuration);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       assertEquals(dir, control.getJournalDirectory());
 
-      verify(server, configuration);
+      verifyMocks();
    }
 
    public void testGetJournalFileSize() throws Exception
    {
       int size = randomInt();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
       expect(configuration.getJournalFileSize()).andReturn(size);
-      replay(server, configuration);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       assertEquals(size, control.getJournalFileSize());
 
-      verify(server, configuration);
+      verifyMocks();
    }
 
    public void testGetJournalMaxAIO() throws Exception
    {
       int max = randomInt();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
       expect(configuration.getJournalMaxAIO()).andReturn(max);
-      replay(server, configuration);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       assertEquals(max, control.getJournalMaxAIO());
 
-      verify(server, configuration);
+      verifyMocks();
    }
 
    public void testGetJournalMinFiles() throws Exception
    {
       int minFiles = randomInt();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
       expect(configuration.getJournalMinFiles()).andReturn(minFiles);
-      replay(server, configuration);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       assertEquals(minFiles, control.getJournalMinFiles());
 
-      verify(server, configuration);
+      verifyMocks();
    }
 
    public void testGetJournalType() throws Exception
    {
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
       expect(configuration.getJournalType()).andReturn(JournalType.ASYNCIO);
-      replay(server, configuration);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       assertEquals(JournalType.ASYNCIO.toString(), control.getJournalType());
 
-      verify(server, configuration);
+      verifyMocks();
    }
 
    public void testGetKeyStorePath() throws Exception
    {
       String path = randomString();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
       expect(configuration.getKeyStorePath()).andReturn(path);
-      replay(server, configuration);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       assertEquals(path, control.getKeyStorePath());
 
-      verify(server, configuration);
+      verifyMocks();
    }
 
    public void testGetLocation() throws Exception
    {
       Location location = new LocationImpl(TransportType.TCP, "localhost");
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
       expect(configuration.getLocation()).andReturn(location);
-      replay(server, configuration);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       assertEquals(location.toString(), control.getLocation());
 
-      verify(server, configuration);
+      verifyMocks();
    }
 
    public void testGetScheduledThreadPoolMaxSize() throws Exception
    {
       int size = randomInt();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
       expect(configuration.getScheduledThreadPoolMaxSize()).andReturn(size);
-      replay(server, configuration);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       assertEquals(size, control.getScheduledThreadPoolMaxSize());
 
-      verify(server, configuration);
+      verifyMocks();
    }
 
    public void testGetSecurityInvalidationInterval() throws Exception
    {
       long interval = randomLong();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
       expect(configuration.getSecurityInvalidationInterval()).andReturn(
             interval);
-      replay(server, configuration);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       assertEquals(interval, control.getSecurityInvalidationInterval());
 
-      verify(server, configuration);
+      verifyMocks();
    }
 
    public void testGetTrustStorePath() throws Exception
    {
       String path = randomString();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
       expect(configuration.getTrustStorePath()).andReturn(path);
-      replay(server, configuration);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       assertEquals(path, control.getTrustStorePath());
 
-      verify(server, configuration);
+      verifyMocks();
    }
 
    public void testIsClustered() throws Exception
    {
       boolean clustered = randomBoolean();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
       expect(configuration.isClustered()).andReturn(clustered);
-      replay(server, configuration);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       assertEquals(clustered, control.isClustered());
 
-      verify(server, configuration);
+      verifyMocks();
    }
 
    public void testIsCreateBindingsDir() throws Exception
    {
       boolean createBindingsDir = randomBoolean();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
       expect(configuration.isCreateBindingsDir()).andReturn(createBindingsDir);
-      replay(server, configuration);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       assertEquals(createBindingsDir, control.isCreateBindingsDir());
 
-      verify(server, configuration);
+      verifyMocks();
    }
 
    public void testIsCreateJournalDir() throws Exception
    {
       boolean createJournalDir = randomBoolean();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
       expect(configuration.isCreateJournalDir()).andReturn(createJournalDir);
-      replay(server, configuration);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       assertEquals(createJournalDir, control.isCreateJournalDir());
 
-      verify(server, configuration);
+      verifyMocks();
    }
 
    public void testIsJournalSyncNonTransactional() throws Exception
    {
       boolean journalSyncNonTransactional = randomBoolean();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
       expect(configuration.isJournalSyncNonTransactional()).andReturn(
             journalSyncNonTransactional);
-      replay(server, configuration);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       assertEquals(journalSyncNonTransactional, control
             .isJournalSyncNonTransactional());
 
-      verify(server, configuration);
+      verifyMocks();
    }
 
    public void testIsJournalSyncTransactional() throws Exception
    {
       boolean journalSyncTransactional = randomBoolean();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
       expect(configuration.isJournalSyncTransactional()).andReturn(
             journalSyncTransactional);
-      replay(server, configuration);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       assertEquals(journalSyncTransactional, control
             .isJournalSyncTransactional());
 
-      verify(server, configuration);
+      verifyMocks();
    }
 
    public void testIsRequireDestinations() throws Exception
    {
       boolean requireDestinations = randomBoolean();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
       expect(configuration.isRequireDestinations()).andReturn(
             requireDestinations);
-      replay(server, configuration);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       assertEquals(requireDestinations, control.isRequireDestinations());
 
-      verify(server, configuration);
+      verifyMocks();
    }
 
    public void testIsSSLEnabled() throws Exception
    {
       boolean sslEnabled = randomBoolean();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
       expect(configuration.isSSLEnabled()).andReturn(sslEnabled);
-      replay(server, configuration);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       assertEquals(sslEnabled, control.isSSLEnabled());
 
-      verify(server, configuration);
+      verifyMocks();
    }
 
    public void testIsSecurityEnabled() throws Exception
    {
       boolean securityEnabled = randomBoolean();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
       expect(configuration.isSecurityEnabled()).andReturn(securityEnabled);
-      replay(server, configuration);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       assertEquals(securityEnabled, control.isSecurityEnabled());
 
-      verify(server, configuration);
+      verifyMocks();
    }
 
    public void testAddDestination() throws Exception
@@ -451,13 +451,13 @@ public class MessagingServerControlTest extends TestCase
       String address = randomString();
       boolean added = randomBoolean();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      expect(server.addDestination(new SimpleString(address))).andReturn(added);
-      Configuration configuration = createMock(Configuration.class);
-      replay(server, configuration);
+      expect(postOffice.addDestination(new SimpleString(address), false))
+            .andReturn(added);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       mbeanServer.registerMBean(control, serverON);
 
       final CountDownLatch latch = new CountDownLatch(1);
@@ -471,11 +471,9 @@ public class MessagingServerControlTest extends TestCase
             MessagingServerControl.NotificationType.ADDRESS_ADDED, listener,
             latch);
 
-      verify(server, configuration);
+      verifyMocks();
 
       mbeanServer.removeNotificationListener(serverON, listener);
-
-      verify(server, configuration);
    }
 
    public void testRemoveAddress() throws Exception
@@ -483,14 +481,13 @@ public class MessagingServerControlTest extends TestCase
       String address = randomString();
       boolean removed = randomBoolean();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      expect(server.removeDestination(new SimpleString(address))).andReturn(
-            removed);
-      Configuration configuration = createMock(Configuration.class);
-      replay(server, configuration);
+      expect(postOffice.removeDestination(new SimpleString(address), false))
+            .andReturn(removed);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       mbeanServer.registerMBean(control, serverON);
 
       final CountDownLatch latch = new CountDownLatch(1);
@@ -504,7 +501,7 @@ public class MessagingServerControlTest extends TestCase
             MessagingServerControl.NotificationType.ADDRESS_REMOVED, listener,
             latch);
 
-      verify(server, configuration);
+      verifyMocks();
 
       mbeanServer.removeNotificationListener(serverON, listener);
    }
@@ -514,16 +511,21 @@ public class MessagingServerControlTest extends TestCase
       String address = randomString();
       String name = randomString();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
-      server.createQueue(new SimpleString(address), new SimpleString(name));
-      replay(server, configuration);
+      expect(postOffice.getBinding(new SimpleString(address))).andReturn(null);
+      Binding newBinding = createMock(Binding.class);
+      expect(
+            postOffice.addBinding(new SimpleString(address), new SimpleString(
+                  name), null, true, false)).andReturn(newBinding);
+      replayMocks();
+      replay(newBinding);
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       control.createQueue(address, name);
 
-      verify(server, configuration);
+      verifyMocks();
+      verify(newBinding);
    }
 
    public void testCreateQueueAndReceiveNotification() throws Exception
@@ -531,13 +533,17 @@ public class MessagingServerControlTest extends TestCase
       String address = randomString();
       String name = randomString();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
-      server.createQueue(new SimpleString(address), new SimpleString(name));
-      replay(server, configuration);
+      expect(postOffice.getBinding(new SimpleString(address))).andReturn(null);
+      Binding newBinding = createMock(Binding.class);
+      expect(
+            postOffice.addBinding(new SimpleString(address), new SimpleString(
+                  name), null, true, false)).andReturn(newBinding);
+      replayMocks();
+      replay(newBinding);
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       mbeanServer.registerMBean(control, serverON);
 
       final CountDownLatch latch = new CountDownLatch(1);
@@ -551,9 +557,10 @@ public class MessagingServerControlTest extends TestCase
             MessagingServerControl.NotificationType.QUEUE_CREATED, listener,
             latch);
 
-      verify(server, configuration);
-
       mbeanServer.removeNotificationListener(serverON, listener);
+
+      verify(newBinding);
+      verifyMocks();
    }
 
    public void testCreateQueueWithAllParameters() throws Exception
@@ -564,17 +571,22 @@ public class MessagingServerControlTest extends TestCase
       boolean durable = true;
       boolean temporary = false;
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
-      server.createQueue(new SimpleString(address), new SimpleString(name),
-            new SimpleString(filter), durable, temporary);
-      replay(server, configuration);
+      expect(postOffice.getBinding(new SimpleString(address))).andReturn(null);
+      Binding newBinding = createMock(Binding.class);
+      expect(
+            postOffice.addBinding(eq(new SimpleString(address)),
+                  eq(new SimpleString(name)), isA(Filter.class), eq(durable),
+                  eq(temporary))).andReturn(newBinding);
+      replayMocks();
+      replay(newBinding);
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       control.createQueue(address, name, filter, durable, temporary);
 
-      verify(server, configuration);
+      verify(newBinding);
+      verifyMocks();
    }
 
    public void testCreateQueueWithEmptyFilter() throws Exception
@@ -585,17 +597,21 @@ public class MessagingServerControlTest extends TestCase
       boolean durable = true;
       boolean temporary = false;
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
-      server.createQueue(new SimpleString(address), new SimpleString(name),
-            null, durable, temporary);
-      replay(server, configuration);
+      expect(postOffice.getBinding(new SimpleString(address))).andReturn(null);
+      Binding newBinding = createMock(Binding.class);
+      expect(
+            postOffice.addBinding(new SimpleString(address), new SimpleString(
+                  name), null, durable, temporary)).andReturn(newBinding);
+      replay(newBinding);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       control.createQueue(address, name, filter, durable, temporary);
 
-      verify(server, configuration);
+      verify(newBinding);
+      verifyMocks();
    }
 
    public void testCreateQueueWithNullFilter() throws Exception
@@ -606,17 +622,21 @@ public class MessagingServerControlTest extends TestCase
       boolean durable = true;
       boolean temporary = false;
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
-      server.createQueue(new SimpleString(address), new SimpleString(name),
-            null, durable, temporary);
-      replay(server, configuration);
+      expect(postOffice.getBinding(new SimpleString(address))).andReturn(null);
+      Binding newBinding = createMock(Binding.class);
+      expect(
+            postOffice.addBinding(new SimpleString(address), new SimpleString(
+                  name), null, durable, temporary)).andReturn(newBinding);
+      replay(newBinding);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       control.createQueue(address, name, filter, durable, temporary);
 
-      verify(server, configuration);
+      verify(newBinding);
+      verifyMocks();
    }
 
    public void testCreateQueueWithBothDurableAndTemporarySetToTrueFails()
@@ -627,12 +647,11 @@ public class MessagingServerControlTest extends TestCase
       boolean durable = true;
       boolean temporary = true;
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
-      replay(server, configuration);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       try
       {
          control.createQueue(address, name, null, durable, temporary);
@@ -641,20 +660,27 @@ public class MessagingServerControlTest extends TestCase
       {
       }
 
-      verify(server, configuration);
+      verifyMocks();
    }
 
    public void testDestroyQueueAndReceiveNotification() throws Exception
    {
       String name = randomString();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
-      server.destroyQueue(new SimpleString(name));
-      replay(server, configuration);
+      Binding binding = createMock(Binding.class);
+      Queue queue = createMock(Queue.class);
+      expect(queue.getName()).andReturn(new SimpleString(name));
+      expect(binding.getQueue()).andReturn(queue);
+      expect(postOffice.getBinding(new SimpleString(name))).andReturn(binding);
+      queue.deleteAllReferences(storageManager);
+      expect(postOffice.removeBinding(new SimpleString(name))).andReturn(
+            binding);
+      replayMocks();
+      replay(binding, queue);
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       mbeanServer.registerMBean(control, serverON);
 
       final CountDownLatch latch = new CountDownLatch(1);
@@ -668,7 +694,8 @@ public class MessagingServerControlTest extends TestCase
             MessagingServerControl.NotificationType.QUEUE_DESTROYED, listener,
             latch);
 
-      verify(server, configuration);
+      verify(binding, queue);
+      verifyMocks();
 
       mbeanServer.removeNotificationListener(serverON, listener);
    }
@@ -677,16 +704,15 @@ public class MessagingServerControlTest extends TestCase
    {
       int count = randomInt();
 
-      MessagingServerManagement server = createMock(MessagingServerManagement.class);
-      Configuration configuration = createMock(Configuration.class);
       expect(server.getConnectionCount()).andReturn(count);
-      replay(server, configuration);
+      replayMocks();
 
-      MessagingServerControl control = new MessagingServerControl(server,
-            configuration);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
       assertEquals(count, control.getConnectionCount());
 
-      verify(server, configuration);
+      verifyMocks();
    }
 
    // Package protected ---------------------------------------------
@@ -700,6 +726,13 @@ public class MessagingServerControlTest extends TestCase
 
       mbeanServer = ManagementFactory.getPlatformMBeanServer();
       serverON = ManagementServiceImpl.getMessagingServerObjectName();
+
+      postOffice = createMock(PostOffice.class);
+      storageManager = createMock(StorageManager.class);
+      configuration = createMock(Configuration.class);
+      securityRepository = createMock(HierarchicalRepository.class);
+      queueSettingsRepository = createMock(HierarchicalRepository.class);
+      server = createMock(MessagingServer.class);
    }
 
    @Override
@@ -713,10 +746,29 @@ public class MessagingServerControlTest extends TestCase
       serverON = null;
       mbeanServer = null;
 
+      postOffice = null;
+      storageManager = null;
+      configuration = null;
+      securityRepository = null;
+      queueSettingsRepository = null;
+      server = null;
+
       super.tearDown();
    }
 
    // Private -------------------------------------------------------
+
+   private void replayMocks()
+   {
+      replay(postOffice, storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
+   }
+
+   private void verifyMocks()
+   {
+      verify(postOffice, storageManager, configuration, securityRepository,
+            queueSettingsRepository, server);
+   }
 
    // Inner classes -------------------------------------------------
 

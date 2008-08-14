@@ -21,6 +21,10 @@
  */ 
 package org.jboss.messaging.tests.unit.core.server.impl;
 
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.isA;
+
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
@@ -31,7 +35,7 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.management.MessagingServerManagement;
+import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
@@ -167,9 +171,8 @@ public class MessagingServerImplTest extends UnitTestCase
          //Ok
       }
       
-      ManagementService mr = EasyMock.createMock(ManagementService.class);
-      
-      server.setManagementService(mr);
+      ManagementService ms = EasyMock.createMock(ManagementService.class);
+      server.setManagementService(ms);
       
       try
       {
@@ -181,7 +184,7 @@ public class MessagingServerImplTest extends UnitTestCase
          //Ok
       }
       
-      EasyMock.reset(sm, rs, mr);
+      EasyMock.reset(sm, rs);
       
       EasyMock.expect(sm.isStarted()).andStubReturn(true);
       EasyMock.expect(rs.isStarted()).andStubReturn(false);
@@ -209,7 +212,12 @@ public class MessagingServerImplTest extends UnitTestCase
             
       pd.register(EasyMock.isA(MessagingServerPacketHandler.class));
       
-      EasyMock.replay(sm, rs, pd);
+      MessagingServerControlMBean managedServer = EasyMock.createMock(MessagingServerControlMBean.class);
+      expect(ms.registerServer(isA(PostOffice.class), eq(sm), eq(server
+            .getConfiguration()), isA(HierarchicalRepository.class), eq(server
+            .getQueueSettingsRepository()), eq(server))).andReturn(managedServer);
+
+      EasyMock.replay(sm, rs, pd, ms);
       
       assertFalse(server.isStarted());
       
@@ -217,7 +225,7 @@ public class MessagingServerImplTest extends UnitTestCase
       
       assertTrue(server.isStarted());
       
-      EasyMock.verify(sm, rs, pd);
+      EasyMock.verify(sm, rs, pd, ms);
       
       EasyMock.reset(sm, rs, pd);
       
@@ -299,7 +307,7 @@ public class MessagingServerImplTest extends UnitTestCase
       
       EasyMock.verify(sm, rs, pd);
       
-      EasyMock.reset(sm, rs, pd);
+      EasyMock.reset(sm, rs, pd, ms);
       
       EasyMock.expect(rs.getDispatcher()).andReturn(pd);
       EasyMock.expect(sm.isStarted()).andStubReturn(true);
@@ -309,12 +317,16 @@ public class MessagingServerImplTest extends UnitTestCase
             
       pd.register(EasyMock.isA(MessagingServerPacketHandler.class));
       
-      EasyMock.replay(sm, rs, pd);
+      expect(ms.registerServer(isA(PostOffice.class), eq(sm), eq(server
+            .getConfiguration()), isA(HierarchicalRepository.class), eq(server
+            .getQueueSettingsRepository()), eq(server))).andReturn(managedServer);
+
+      EasyMock.replay(sm, rs, pd, ms);
                  
       //Should be able to start again
       server.start();
       
-      EasyMock.verify(sm, rs, pd);
+      EasyMock.verify(sm, rs, pd, ms);
       
       assertTrue(server.isStarted());
       
@@ -381,13 +393,16 @@ public class MessagingServerImplTest extends UnitTestCase
       server.setSecurityManager(sem);
 
       ManagementService mr = EasyMock.createMock(ManagementService.class);
-      mr.setQueueSettingsRepository(EasyMock.isA(HierarchicalRepository.class));
-      mr.setPostOffice(EasyMock.isA(PostOffice.class));
-      mr.registerServer(EasyMock.isA(MessagingServerManagement.class));
+      MessagingServerControlMBean managedServer = EasyMock.createMock(MessagingServerControlMBean.class);
+      expect(mr.registerServer(isA(PostOffice.class), eq(sm), eq(server
+            .getConfiguration()), isA(HierarchicalRepository.class), eq(server
+            .getQueueSettingsRepository()), eq(server))).andReturn(managedServer);
       server.setManagementService(mr);
-      
-      sm.loadBindings(EasyMock.isA(QueueFactoryImpl.class), EasyMock.isA(ArrayList.class), EasyMock.isA(ArrayList.class));
-      sm.loadMessages(EasyMock.isA(PostOfficeImpl.class), EasyMock.isA(Map.class));
+
+      sm.loadBindings(EasyMock.isA(QueueFactoryImpl.class), EasyMock
+            .isA(ArrayList.class), EasyMock.isA(ArrayList.class));
+      sm.loadMessages(EasyMock.isA(PostOfficeImpl.class), EasyMock
+            .isA(Map.class));
       PacketDispatcher pd = EasyMock.createMock(PacketDispatcher.class);
       EasyMock.expect(rs.getDispatcher()).andReturn(pd);
       pd.register(EasyMock.isA(MessagingServerPacketHandler.class));      
@@ -420,7 +435,6 @@ public class MessagingServerImplTest extends UnitTestCase
       server.setStorageManager(sm);      
       RemotingService rs = EasyMock.createMock(RemotingService.class);      
       server.setRemotingService(rs);
-      
       JBMSecurityManager sem = new JBMSecurityManager()
       {
          public boolean validateUser(String user, String password)
@@ -437,9 +451,10 @@ public class MessagingServerImplTest extends UnitTestCase
       server.setSecurityManager(sem);
       
       ManagementService mr = EasyMock.createMock(ManagementService.class);
-      mr.setQueueSettingsRepository(EasyMock.isA(HierarchicalRepository.class));
-      mr.setPostOffice(EasyMock.isA(PostOffice.class));
-      mr.registerServer(EasyMock.isA(MessagingServerManagement.class));
+      MessagingServerControlMBean managedServer = EasyMock.createMock(MessagingServerControlMBean.class);
+      expect(mr.registerServer(isA(PostOffice.class), eq(sm), eq(server
+            .getConfiguration()), isA(HierarchicalRepository.class), eq(server
+            .getQueueSettingsRepository()), eq(server))).andReturn(managedServer);
       server.setManagementService(mr);
 
       PacketDispatcher pd = EasyMock.createMock(PacketDispatcher.class);

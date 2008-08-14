@@ -32,8 +32,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.management.MessagingServerManagement;
-import org.jboss.messaging.core.management.impl.MessagingServerManagementImpl;
+import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
@@ -93,7 +92,7 @@ public class MessagingServerImpl implements MessagingServer
    private HierarchicalRepository<Set<Role>> securityRepository;
    private ResourceManager resourceManager;   
    private MessagingServerPacketHandler serverPacketHandler;
-   private MessagingServerManagement serverManagement;
+   private MessagingServerControlMBean serverManagement;
    private PacketDispatcher dispatcher;
 
    // plugins
@@ -170,11 +169,9 @@ public class MessagingServerImpl implements MessagingServer
 
       securityStore = new SecurityStoreImpl(configuration.getSecurityInvalidationInterval(), configuration.isSecurityEnabled());  
       queueSettingsRepository.setDefault(new QueueSettings());
-      managementService.setQueueSettingsRepository(queueSettingsRepository);
       scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(), new JBMThreadFactory("JBM-scheduled-threads"));                  
       queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository);      
       postOffice = new PostOfficeImpl(storageManager, queueFactory, managementService, configuration.isRequireDestinations());
-      managementService.setPostOffice(postOffice);
                        
       securityRepository = new HierarchicalObjectRepository<Set<Role>>();
       securityRepository.setDefault(new HashSet<Role>());
@@ -182,10 +179,9 @@ public class MessagingServerImpl implements MessagingServer
       securityStore.setSecurityManager(securityManager);                       
       resourceManager = new ResourceManagerImpl(0);                           
       dispatcher = remotingService.getDispatcher();
-      serverManagement = new MessagingServerManagementImpl(postOffice, storageManager, configuration,
-                                                           securityRepository,
-                                                           queueSettingsRepository, this);
-      managementService.registerServer(serverManagement);
+      serverManagement = managementService.registerServer(postOffice, storageManager, configuration,
+            securityRepository,
+            queueSettingsRepository, this);
 
       postOffice.start();
       serverPacketHandler = new MessagingServerPacketHandler(this, remotingService);          
@@ -349,7 +345,7 @@ public class MessagingServerImpl implements MessagingServer
       return new CreateConnectionResponse(connection.getID(), version);
    }
          
-   public MessagingServerManagement getServerManagement()
+   public MessagingServerControlMBean getServerManagement()
    {
       return serverManagement;
    }
@@ -357,6 +353,11 @@ public class MessagingServerImpl implements MessagingServer
    public int getConnectionCount()
    {
       return this.remotingService.getConnections().size();
+   }
+   
+   public PostOffice getPostOffice()
+   {
+      return postOffice;
    }
 
    // Public ---------------------------------------------------------------------------------------

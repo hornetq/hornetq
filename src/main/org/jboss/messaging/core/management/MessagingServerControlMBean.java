@@ -26,6 +26,8 @@ import static javax.management.MBeanOperationInfo.ACTION;
 
 import java.util.List;
 
+import org.jboss.messaging.core.config.Configuration;
+
 /**
  * This interface describes the core management interface exposed by the server
  */
@@ -79,6 +81,8 @@ public interface MessagingServerControlMBean
 
    boolean isCreateJournalDir();
 
+   Configuration getConfiguration();
+   
    // Operations ----------------------------------------------------
 
    @Operation(desc = "Create a queue with the specified address", impact = ACTION)

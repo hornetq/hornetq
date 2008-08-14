@@ -70,7 +70,7 @@ public interface MessageReference
                   HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
    
    void expire(StorageManager persistenceManager, PostOffice postOffice,
-   		      HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+         HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
    
    void move(Binding otherBinding, StorageManager persistenceManager, PostOffice postOffice) throws Exception;
 

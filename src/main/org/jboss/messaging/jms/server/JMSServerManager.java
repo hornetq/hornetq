@@ -24,10 +24,6 @@ package org.jboss.messaging.jms.server;
 
 import java.util.List;
 
-import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
-import org.jboss.messaging.jms.JBossDestination;
-
 /**
  * The JMS Management interface.
  * 
@@ -169,27 +165,4 @@ public interface JMSServerManager
     */
    boolean destroyConnectionFactory(String name) throws Exception;
 
-   /**
-    * removes all messages from a particular destination
-    * 
-    * @param queue
-    *           the destination
-    * @throws Exception
-    *            if a problem occurred
-    */
-   void removeAllMessages(JBossDestination destination) throws Exception;
-
-   boolean removeMessage(long messageID, JBossDestination destination)
-         throws Exception;
-
-   int expireMessages(Filter filter, JBossDestination destination)
-         throws Exception;
-
-   public QueueSettings getSettings(JBossDestination destination);
-
-   int sendMessagesToDLQ(Filter filter, JBossDestination destination)
-         throws Exception;
-
-   int changeMessagesPriority(Filter filter, byte newPriority,
-         JBossDestination destination) throws Exception;
 }

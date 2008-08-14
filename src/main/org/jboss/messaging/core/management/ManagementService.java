@@ -22,8 +22,13 @@
 
 package org.jboss.messaging.core.management;
 
+import java.util.Set;
+
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -37,13 +42,11 @@ import org.jboss.messaging.util.SimpleString;
  */
 public interface ManagementService
 {
-   void setPostOffice(PostOffice postOffice);
-
-   void setQueueSettingsRepository(
-         HierarchicalRepository<QueueSettings> queueSettingsRepository);
-
-   void registerServer(MessagingServerManagement server)
-         throws Exception;
+   MessagingServerControlMBean registerServer(PostOffice postOffice, StorageManager storageManager,
+         Configuration configuration,
+         HierarchicalRepository<Set<Role>> securityRepository,
+         HierarchicalRepository<QueueSettings> queueSettingsRepository,
+         MessagingServer messagingServer) throws Exception;
 
    void unregisterServer() throws Exception;
 
@@ -51,9 +54,10 @@ public interface ManagementService
 
    void unregisterAddress(SimpleString address) throws Exception;
 
-   void registerQueue(Queue queue, SimpleString address, StorageManager storageManager)
-         throws Exception;
+   void registerQueue(Queue queue, SimpleString address,
+         StorageManager storageManager) throws Exception;
 
    void unregisterQueue(SimpleString name, SimpleString address)
          throws Exception;
+
 }

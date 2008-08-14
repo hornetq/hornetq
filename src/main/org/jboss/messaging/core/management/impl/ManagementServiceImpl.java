@@ -22,16 +22,21 @@
 
 package org.jboss.messaging.core.management.impl;
 
+import java.util.Set;
+
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.AddressControlMBean;
 import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.management.MessagingServerManagement;
+import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.QueueControlMBean;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -54,10 +59,11 @@ public class ManagementServiceImpl implements ManagementService
    // Attributes ----------------------------------------------------
 
    private final MBeanServer mbeanServer;
-   private MessagingServerManagement server;
+   private final boolean jmxManagementEnabled;
+
    private PostOffice postOffice;
+   private HierarchicalRepository<Set<Role>> securityRepository;
    private HierarchicalRepository<QueueSettings> queueSettingsRepository;
-   private boolean jmxManagementEnabled;
 
    // Static --------------------------------------------------------
 
@@ -94,31 +100,28 @@ public class ManagementServiceImpl implements ManagementService
 
    // ManagementRegistration implementation -------------------------
 
-   public void setPostOffice(final PostOffice postOffice)
+   public MessagingServerControlMBean registerServer(PostOffice postOffice,
+         StorageManager storageManager, Configuration configuration,
+         HierarchicalRepository<Set<Role>> securityRepository,
+         HierarchicalRepository<QueueSettings> queueSettingsRepository,
+         MessagingServer messagingServer) throws Exception
    {
       this.postOffice = postOffice;
-   }
-
-   public void setQueueSettingsRepository(
-         final HierarchicalRepository<QueueSettings> queueSettingsRepository)
-   {
+      this.securityRepository = securityRepository;
       this.queueSettingsRepository = queueSettingsRepository;
-   }
-
-   public void registerServer(final MessagingServerManagement server)
-         throws Exception
-   {
+      MessagingServerControlMBean managedServer = new MessagingServerControl(
+            postOffice, storageManager, configuration, securityRepository,
+            queueSettingsRepository, messagingServer);
       if (!jmxManagementEnabled)
       {
-         return;
+         return managedServer;
       }
       unregisterServer();
       ObjectName objectName = getMessagingServerObjectName();
-      MessagingServerControl managedServer = new MessagingServerControl(server,
-            server.getConfiguration());
       mbeanServer.registerMBean(managedServer, objectName);
-      this.server = server;
       log.info("registered core server under " + objectName);
+      return managedServer;
+
    }
 
    public void unregisterServer() throws Exception
@@ -131,7 +134,6 @@ public class ManagementServiceImpl implements ManagementService
       if (mbeanServer.isRegistered(objectName))
       {
          mbeanServer.unregisterMBean(getMessagingServerObjectName());
-         this.server = null;
       }
    }
 
@@ -143,7 +145,8 @@ public class ManagementServiceImpl implements ManagementService
       }
       unregisterAddress(address);
       ObjectName objectName = getAddressObjectName(address);
-      AddressControlMBean addressControl = new AddressControl(address, server);
+      AddressControlMBean addressControl = new AddressControl(address,
+            postOffice, securityRepository);
       mbeanServer.registerMBean(addressControl, objectName);
       if (log.isDebugEnabled())
       {
