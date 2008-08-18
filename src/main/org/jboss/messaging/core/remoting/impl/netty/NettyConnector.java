@@ -169,10 +169,10 @@ public class NettyConnector implements Connector
          return;
       }
 
-      bossExecutor.shutdown();
-      workerExecutor.shutdown();
       bootstrap = null;
       channelFactory = null;
+      bossExecutor.shutdown();
+      workerExecutor.shutdown();
    }
 
    public Connection createConnection()
@@ -212,7 +212,7 @@ public class NettyConnector implements Connector
       }
 
       @Override
-      public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
+      public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
       {
          listener.connectionDestroyed(e.getChannel().getId());
       }
@@ -221,7 +221,7 @@ public class NettyConnector implements Connector
       public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception
       {
          log.error(
-               "caught exception " + e.getCause() + " for session " +
+               "caught exception " + e.getCause() + " for channel " +
                e.getChannel(), e.getCause());
 
          MessagingException me = new MessagingException(MessagingException.INTERNAL_ERROR, "Netty exception");
