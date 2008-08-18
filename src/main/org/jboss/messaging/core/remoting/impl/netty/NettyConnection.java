@@ -25,6 +25,7 @@ package org.jboss.messaging.core.remoting.impl.netty;
 import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.handler.ssl.SslHandler;
 
 /**
@@ -64,19 +65,19 @@ public class NettyConnection implements Connection
          return;
       }
 
-      channel.close().awaitUninterruptibly();
-
       SslHandler sslHandler = (SslHandler) channel.getPipeline().get("ssl");
       if (sslHandler != null)
       {
          try
          {
-            sslHandler.close(channel).awaitUninterruptibly();
+            sslHandler.close(channel).addListener(ChannelFutureListener.CLOSE);
          }
          catch (Throwable t)
          {
             // ignore
          }
+      } else {
+         channel.close();
       }
 
       closed = true;
