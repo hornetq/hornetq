@@ -43,7 +43,7 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.ChildChannelStateEvent;
+import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
@@ -67,7 +67,6 @@ public class NettyAcceptor implements Acceptor
    private ChannelFactory channelFactory;
    private Channel serverChannel;
    private ServerBootstrap bootstrap;
-   private NettyChildChannelHandler childChannelHandler;
 
    private final Configuration configuration;
 
@@ -97,8 +96,6 @@ public class NettyAcceptor implements Acceptor
       workerExecutor = Executors.newCachedThreadPool();
       channelFactory = new NioServerSocketChannelFactory(bossExecutor, workerExecutor);
       bootstrap = new ServerBootstrap(channelFactory);
-      childChannelHandler = new NettyChildChannelHandler();
-      bootstrap.setParentHandler(childChannelHandler);
 
       bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
          public ChannelPipeline getPipeline() throws Exception
@@ -144,9 +141,6 @@ public class NettyAcceptor implements Acceptor
          return;
       }
 
-      // remove the listener before disposing the acceptor
-      // so that we're not notified when the sessions are destroyed
-      serverChannel.getPipeline().remove(childChannelHandler);
       serverChannel.close().awaitUninterruptibly();
       bossExecutor.shutdown();
       workerExecutor.shutdown();
@@ -158,6 +152,27 @@ public class NettyAcceptor implements Acceptor
    @ChannelPipelineCoverage("one")
    private final class NettyHandler extends SimpleChannelHandler
    {
+      @Override
+      public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
+      {
+         Connection tc = new NettyConnection(e.getChannel());
+         listener.connectionCreated(tc);
+      }
+
+      @Override
+      public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
+      {
+         boolean notify;
+         synchronized (NettyAcceptor.this)
+         {
+            notify = channelFactory == null;
+         }
+
+         if (notify) {
+            listener.connectionDestroyed(e.getChannel().getId());
+         }
+      }
+
       @Override
       public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception
       {
@@ -178,26 +193,6 @@ public class NettyAcceptor implements Acceptor
       {
          ChannelBuffer buffer = (ChannelBuffer) e.getMessage();
          handler.bufferReceived(e.getChannel().getId(), new ChannelBufferWrapper(buffer));
-      }
-   }
-
-   @ChannelPipelineCoverage("one")
-   private final class NettyChildChannelHandler extends SimpleChannelHandler
-   {
-
-      @Override
-      public void childChannelOpen(ChannelHandlerContext ctx, ChildChannelStateEvent e) throws Exception
-      {
-         Connection tc = new NettyConnection(e.getChildChannel());
-         listener.connectionCreated(tc);
-         ctx.sendUpstream(e);
-      }
-
-      @Override
-      public void childChannelClosed(ChannelHandlerContext ctx, ChildChannelStateEvent e) throws Exception
-      {
-         listener.connectionDestroyed(e.getChildChannel().getId());
-         ctx.sendUpstream(e);
       }
    }
 }
