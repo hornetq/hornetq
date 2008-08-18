@@ -151,7 +151,8 @@ public class NettyConnector implements Connector
                }
                catch (Exception e)
                {
-                  IllegalStateException ise = new IllegalStateException("Unable to create MinaConnection for " + location);
+                  IllegalStateException ise = new IllegalStateException(
+                        "Unable to create Netty connection for " + location);
                   ise.initCause(e);
                   throw ise;
                }
@@ -217,6 +218,7 @@ public class NettyConnector implements Connector
       {
          SslHandler sslHandler = ctx.getPipeline().get(SslHandler.class);
          if (sslHandler != null) {
+            log.info("Starting SSL handshake.");
             sslHandler.handshake(e.getChannel());
          }
       }
