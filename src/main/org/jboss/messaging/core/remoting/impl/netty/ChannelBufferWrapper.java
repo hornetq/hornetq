@@ -58,6 +58,10 @@ public class ChannelBufferWrapper implements MessagingBuffer
 
    public ChannelBufferWrapper(final int size)
    {
+      if (size < 0) {
+         throw new IllegalArgumentException("size: " + size);
+      }
+
       buffer = dynamicBuffer(size);
       buffer.writerIndex(buffer.capacity());
    }
