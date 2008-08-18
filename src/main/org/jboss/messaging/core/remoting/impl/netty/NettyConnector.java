@@ -48,6 +48,7 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
+import org.jboss.netty.handler.ssl.SslHandler;
 
 /**
  *
@@ -209,6 +210,15 @@ public class NettyConnector implements Connector
       {
          ChannelBuffer buffer = (ChannelBuffer) e.getMessage();
          handler.bufferReceived(e.getChannel().getId(), new ChannelBufferWrapper(buffer));
+      }
+
+      @Override
+      public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
+      {
+         SslHandler sslHandler = ctx.getPipeline().get(SslHandler.class);
+         if (sslHandler != null) {
+            sslHandler.handshake(e.getChannel());
+         }
       }
 
       @Override
