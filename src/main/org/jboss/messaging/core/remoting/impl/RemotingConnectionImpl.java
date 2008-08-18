@@ -246,7 +246,7 @@ public class RemotingConnectionImpl implements RemotingConnection
       destroy();
 
       // Then call the listeners
-      for (FailureListener listener : failureListeners)
+      for (FailureListener listener : new ArrayList<FailureListener>(failureListeners))
       {
          try
          {
