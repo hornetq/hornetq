@@ -58,11 +58,17 @@ public class ChannelBufferWrapper implements MessagingBuffer
 
    public ChannelBufferWrapper(final int size)
    {
-      if (size < 0) {
-         throw new IllegalArgumentException("size: " + size);
+      if (size == 0) {
+         buffer = ChannelBuffer.EMPTY_BUFFER;
+      } else {
+         try {
+            buffer = dynamicBuffer(size);
+         } catch (IllegalArgumentException e) {
+            // FIXME: This block should go away once Netty 3.0.0.CR2 is
+            //        released.
+            throw new IllegalArgumentException("size: " + size);
+         }
       }
-
-      buffer = dynamicBuffer(size);
       buffer.writerIndex(buffer.capacity());
    }
 
