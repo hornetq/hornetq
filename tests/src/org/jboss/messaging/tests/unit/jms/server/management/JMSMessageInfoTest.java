@@ -22,16 +22,8 @@
 
 package org.jboss.messaging.tests.unit.jms.server.management;
 
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
-import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
-import static org.jboss.messaging.tests.util.RandomUtil.randomByte;
-import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
-import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
-import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
+import static org.easymock.EasyMock.*;
+import static org.jboss.messaging.tests.util.RandomUtil.*;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -48,9 +40,9 @@ import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public class JMSMessageInfoTest extends TestCase
 {
@@ -76,7 +68,8 @@ public class JMSMessageInfoTest extends TestCase
       assertEquals(expected.getExpiration(), actual.get("expiration"));
 
       TabularData propsDatas = (TabularData) actual.get("properties");
-      Collection<CompositeData> props = propsDatas.values();
+      Collection<CompositeData> props =
+         (Collection<CompositeData>) propsDatas.values();
       assertEquals(expected.getProperties().size(), props.size());
       for (CompositeData prop : props)
       {
@@ -132,7 +125,7 @@ public class JMSMessageInfoTest extends TestCase
       TabularData data = JMSMessageInfo.toTabularData(new JMSMessageInfo[0]);
       assertEquals(0, data.size());
    }
-   
+
    public void testFromServerMessage() throws Exception
    {
       ServerMessage message = createMock(ServerMessage.class);
@@ -148,12 +141,12 @@ public class JMSMessageInfoTest extends TestCase
       propNames.add(new SimpleString("foo"));
       expect(message.getPropertyNames()).andStubReturn(propNames);
       expect(message.getProperty(new SimpleString("foo"))).andStubReturn(randomSimpleString());
-      
+
       replay(message);
       JMSMessageInfo info = JMSMessageInfo.fromServerMessage(message );
-      
+
       verify(message);
-      
+
    }
 
 

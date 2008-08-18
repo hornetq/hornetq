@@ -22,11 +22,7 @@
 
 package org.jboss.messaging.tests.unit.core.management;
 
-import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
-import static org.jboss.messaging.tests.util.RandomUtil.randomByte;
-import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
-import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
+import static org.jboss.messaging.tests.util.RandomUtil.*;
 
 import java.util.Collection;
 
@@ -39,9 +35,9 @@ import org.jboss.messaging.core.management.MessageInfo;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public class MessageInfoTest extends TestCase
 {
@@ -64,15 +60,16 @@ public class MessageInfoTest extends TestCase
       assertEquals(expected.getPriority(), actual.get("priority"));
       assertEquals(expected.isExpired(), actual.get("expired"));
       assertEquals(expected.getExpiration(), actual.get("expiration"));
-      
+
       TabularData propsDatas = (TabularData) actual.get("properties");
-      Collection<CompositeData> props = propsDatas.values();
+      Collection<CompositeData> props =
+         (Collection<CompositeData>) propsDatas.values();
       assertEquals(expected.getProperties().size(), props.size());
       for (CompositeData prop : props)
       {
          String actualKey = (String) prop.get("key");
          String actualValue = (String) prop.get("value");
-         
+
          assertTrue(expected.getProperties().containsKey(actualKey));
          assertEquals(expected.getProperties().get(actualKey), actualValue);
       }
