@@ -41,6 +41,7 @@ import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
+import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
@@ -200,6 +201,7 @@ public class NettyConnector implements Connector
 
    // Inner classes -------------------------------------------------
 
+   @ChannelPipelineCoverage("one")
    private final class NettyHandler extends SimpleChannelHandler
    {
       @Override
