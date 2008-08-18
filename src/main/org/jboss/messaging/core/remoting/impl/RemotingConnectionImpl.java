@@ -278,10 +278,10 @@ public class RemotingConnectionImpl implements RemotingConnection
          dispatcher.unregister(pongHandler.getID());
       }
 
+      destroyed = true;
+
       // We close the underlying transport connection
       transportConnection.close();
-
-      destroyed = true;
    }
 
    // Package protected
