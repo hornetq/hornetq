@@ -61,7 +61,7 @@ public class MessagingFrameDecoder extends FrameDecoder
       if (length == -1)
       {
          in.readerIndex(start);
-         return false;
+         return null;
       }
 
       in.readerIndex(start + SIZE_INT);
