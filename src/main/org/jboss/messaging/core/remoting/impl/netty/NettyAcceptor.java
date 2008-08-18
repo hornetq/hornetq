@@ -166,7 +166,11 @@ public class NettyAcceptor implements Acceptor
                e.getChannel(), e.getCause());
          MessagingException me = new MessagingException(MessagingException.INTERNAL_ERROR, "Netty exception");
          me.initCause(e.getCause());
-         listener.connectionException(e.getChannel().getId(), me);
+         try {
+            listener.connectionException(e.getChannel().getId(), me);
+         } catch (Exception ex) {
+            log.error("failed to notify the listener:", ex);
+         }
       }
 
       @Override

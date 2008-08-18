@@ -226,7 +226,11 @@ public class NettyConnector implements Connector
 
          MessagingException me = new MessagingException(MessagingException.INTERNAL_ERROR, "Netty exception");
          me.initCause(e.getCause());
-         listener.connectionException(e.getChannel().getId(), me);
+         try {
+            listener.connectionException(e.getChannel().getId(), me);
+         } catch (Exception ex) {
+            log.error("failed to notify the listener:", ex);
+         }
       }
    }
 }
