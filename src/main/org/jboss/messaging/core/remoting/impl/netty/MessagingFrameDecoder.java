@@ -68,7 +68,3 @@ public class MessagingFrameDecoder extends FrameDecoder
       return in.readBytes(length);
    }
 }
-
-
-
-
