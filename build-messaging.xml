@@ -170,7 +170,8 @@
       <path refid="jboss.jboss.jaspi.api.classpath"/>
       <path refid="jgroups.jgroups.classpath"/>
       <path refid="apache.mina.classpath"/>
-   	<path refid="jpa.api.classpath"/>
+      <path refid="netty.netty.classpath"/>
+      <path refid="jpa.api.classpath"/>
       <path location="${build.classes.dir}"/>
    </path>
 	
@@ -488,6 +489,9 @@
          </fileset>
          <fileset dir="${apache.mina.lib}">
             <include name="mina-core-2.0.0-M2-20080520.004618-19.jar"/>
+         </fileset>
+         <fileset dir="${netty.lib}">
+            <include name="netty-3.0.0.CR1.jar"/>
          </fileset>
          <fileset dir="${slf4j.api.lib}">
             <include name="slf4j-api-1.4.3.jar"/>
