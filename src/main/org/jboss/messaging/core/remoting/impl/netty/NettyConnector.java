@@ -27,12 +27,15 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.net.ssl.SSLContext;
+
 import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.RemotingHandler;
+import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.Connector;
 import org.jboss.netty.bootstrap.ClientBootstrap;
@@ -138,24 +141,29 @@ public class NettyConnector implements Connector
       bootstrap.setOption("keepAlive", true);
       bootstrap.setOption("reuseAddress", true);
 
-      bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
+      final SSLContext context;
+      if (params.isSSLEnabled()) {
+         try {
+            context = SSLSupport.getInstance(true, params.getKeyStorePath(), params.getKeyStorePassword(), null, null);
+         }
+         catch (Exception e)
+         {
+            IllegalStateException ise = new IllegalStateException(
+                  "Unable to create NettyConnector for " + location);
+            ise.initCause(e);
+            throw ise;
+         }
+      } else {
+         context = null; // Unused
+      }
 
+      bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
          public ChannelPipeline getPipeline() throws Exception
          {
             ChannelPipeline pipeline = pipeline();
             if (params.isSSLEnabled())
             {
-               try
-               {
-                  ChannelPipelineSupport.addSSLFilter(pipeline, true, params.getKeyStorePath(), params.getKeyStorePassword(), null, null);
-               }
-               catch (Exception e)
-               {
-                  IllegalStateException ise = new IllegalStateException(
-                        "Unable to create Netty connection for " + location);
-                  ise.initCause(e);
-                  throw ise;
-               }
+                  ChannelPipelineSupport.addSSLFilter(pipeline, context, true);
             }
             ChannelPipelineSupport.addCodecFilter(pipeline, handler);
             pipeline.addLast("handler", new NettyHandler());

@@ -28,11 +28,14 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.net.ssl.SSLContext;
+
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.RemotingHandler;
+import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.netty.bootstrap.ServerBootstrap;
@@ -97,16 +100,32 @@ public class NettyAcceptor implements Acceptor
       channelFactory = new NioServerSocketChannelFactory(bossExecutor, workerExecutor);
       bootstrap = new ServerBootstrap(channelFactory);
 
+      final SSLContext context;
+      if (configuration.isSSLEnabled()) {
+         try {
+            context = SSLSupport.createServerContext(
+                  configuration.getKeyStorePath(),
+                  configuration.getKeyStorePassword(),
+                  configuration.getTrustStorePath(),
+                  configuration.getTrustStorePassword());
+         } catch (Exception e) {
+            IllegalStateException ise = new IllegalStateException(
+                  "Unable to create NettyAcceptor for " +
+                  configuration.getHost() + ":" + configuration.getPort());
+            ise.initCause(e);
+            throw ise;
+         }
+      } else {
+         context = null; // Unused
+      }
+
       bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
          public ChannelPipeline getPipeline() throws Exception
          {
             ChannelPipeline pipeline = pipeline();
             if (configuration.isSSLEnabled())
             {
-               ChannelPipelineSupport.addSSLFilter(pipeline, false, configuration.getKeyStorePath(),
-                       configuration.getKeyStorePassword(),
-                       configuration.getTrustStorePath(),
-                       configuration.getTrustStorePassword());
+               ChannelPipelineSupport.addSSLFilter(pipeline, context, false);
             }
             ChannelPipelineSupport.addCodecFilter(pipeline, handler);
             pipeline.addLast("handler", new NettyHandler());

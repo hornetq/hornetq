@@ -26,7 +26,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
 import org.jboss.messaging.core.remoting.RemotingHandler;
-import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.handler.ssl.SslHandler;
 
@@ -62,12 +61,8 @@ public class ChannelPipelineSupport
    }
 
    public static void addSSLFilter(
-         final ChannelPipeline pipeline, final boolean client,
-         final String keystorePath, final String keystorePassword, final String trustStorePath,
-         final String trustStorePassword) throws Exception
+         final ChannelPipeline pipeline, final SSLContext context, final boolean client) throws Exception
    {
-      SSLContext context = SSLSupport.getInstance(client, keystorePath, keystorePassword,
-            trustStorePath, trustStorePassword);
       SSLEngine engine = context.createSSLEngine();
       if (client)
       {
