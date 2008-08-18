@@ -150,6 +150,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    {
       int limit = buffer.writerIndex();
       buffer.writerIndex(buffer.readerIndex());
+      buffer.readerIndex(0);
       try {
          buffer.writeByte(byteValue);
       } finally {
@@ -165,6 +166,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    {
       int limit = buffer.writerIndex();
       buffer.writerIndex(buffer.readerIndex());
+      buffer.readerIndex(0);
       try {
          buffer.writeBytes(byteArray);
       } finally {
@@ -180,6 +182,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    {
       int limit = buffer.writerIndex();
       buffer.writerIndex(buffer.readerIndex());
+      buffer.readerIndex(0);
       try {
          buffer.writeBytes(bytes, offset, length);
       } finally {
@@ -195,6 +198,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    {
       int limit = buffer.writerIndex();
       buffer.writerIndex(buffer.readerIndex());
+      buffer.readerIndex(0);
       try {
          buffer.writeInt(intValue);
       } finally {
@@ -215,6 +219,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    {
       int limit = buffer.writerIndex();
       buffer.writerIndex(buffer.readerIndex());
+      buffer.readerIndex(0);
       try {
          buffer.writeLong(longValue);
       } finally {
@@ -240,6 +245,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    {
       int limit = buffer.writerIndex();
       buffer.writerIndex(buffer.readerIndex());
+      buffer.readerIndex(0);
       try {
          buffer.writeShort(s);
       } finally {
@@ -390,6 +396,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
 
       int limit = buffer.writerIndex();
       buffer.writerIndex(buffer.readerIndex());
+      buffer.readerIndex(0);
       try {
          buffer.writeShort((short) length);
          buffer.writeBytes(encoded);
