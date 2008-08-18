@@ -19,23 +19,37 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.remoting;
 
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.spi.Connection;
+package org.jboss.messaging.tests.unit.core.remoting.impl.netty;
+
+import org.easymock.EasyMock;
+import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.remoting.ConnectionLifeCycleListener;
+import org.jboss.messaging.core.remoting.RemotingHandler;
+import org.jboss.messaging.core.remoting.impl.netty.NettyAcceptor;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  *
- * A ConnectionLifeCycleListener
+ * A MinaAcceptorTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface ConnectionLifeCycleListener
+public class NettyAcceptorTest extends UnitTestCase
 {
-   void connectionCreated(Connection connection);
+   public void testStartStop() throws Exception
+   {
+      RemotingHandler handler = EasyMock.createStrictMock(RemotingHandler.class);
+      Configuration config = new ConfigurationImpl();
+      ConnectionLifeCycleListener listener = EasyMock.createStrictMock(ConnectionLifeCycleListener.class);
+      NettyAcceptor acceptor = new NettyAcceptor(config, handler, listener);
 
-   void connectionDestroyed(Object connectionID);
+      acceptor.start();
+      acceptor.stop();
+      acceptor.start();
+      acceptor.stop();
 
-   void connectionException(Object connectionID, MessagingException me);
+   }
 }

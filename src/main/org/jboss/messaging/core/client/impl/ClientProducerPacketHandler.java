@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.client.impl;
 
@@ -29,9 +29,9 @@ import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerFlowCreditMessage;
 
 /**
- * 
+ *
  * A ClientProducerPacketHandler
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -46,7 +46,7 @@ public class ClientProducerPacketHandler implements PacketHandler
    public ClientProducerPacketHandler(final ClientProducerInternal clientProducer, final long producerID)
    {
       this.clientProducer = clientProducer;
-      
+
       this.producerID = producerID;
    }
 
@@ -55,14 +55,14 @@ public class ClientProducerPacketHandler implements PacketHandler
       return producerID;
    }
 
-   public void handle(final long sessionID, final Packet packet)
-   {    
+   public void handle(final Object connectionID, final Packet packet)
+   {
       byte type = packet.getType();
-      
+
       if (type == PacketImpl.PROD_RECEIVETOKENS)
       {
          ProducerFlowCreditMessage message = (ProducerFlowCreditMessage) packet;
-         
+
          try
          {
             clientProducer.receiveCredits(message.getTokens());
@@ -75,7 +75,7 @@ public class ClientProducerPacketHandler implements PacketHandler
       else
       {
       	throw new IllegalStateException("Invalid packet: " + type);
-      }      
+      }
    }
 
    @Override
@@ -83,16 +83,17 @@ public class ClientProducerPacketHandler implements PacketHandler
    {
       return "ClientProducerPacketHandler[id=" + producerID + "]";
    }
-   
+
+   @Override
    public boolean equals(Object other)
    {
       if (other instanceof ClientProducerPacketHandler == false)
       {
          return false;
       }
-            
+
       ClientProducerPacketHandler r = (ClientProducerPacketHandler)other;
-      
-      return r.producerID == this.producerID;     
+
+      return r.producerID == producerID;
    }
 }

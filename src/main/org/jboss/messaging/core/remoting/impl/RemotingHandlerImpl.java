@@ -18,17 +18,11 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 package org.jboss.messaging.core.remoting.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CLOSE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATECONNECTION;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATECONNECTION_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EXCEPTION;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NULL;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PING;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PONG;
-import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.*;
+import static org.jboss.messaging.util.DataConstants.*;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -87,33 +81,33 @@ import org.jboss.messaging.util.ExecutorFactory;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 
 /**
- * 
+ *
  * A RemotingHandlerImpl
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
 public class RemotingHandlerImpl implements RemotingHandler
-{   
+{
    private static final Logger log = Logger.getLogger(RemotingHandlerImpl.class);
-   
+
    private final PacketDispatcher dispatcher;
 
    private final ExecutorFactory executorFactory;
 
    private final ConcurrentMap<Long, Executor> executors = new ConcurrentHashMap<Long, Executor>();
-   
-   private final ConcurrentMap<Long, Long> lastPings = new ConcurrentHashMap<Long, Long>();
 
-   public RemotingHandlerImpl(final PacketDispatcher dispatcher, final ExecutorService executorService)                              
+   private final ConcurrentMap<Object, Long> lastPings = new ConcurrentHashMap<Object, Long>();
+
+   public RemotingHandlerImpl(final PacketDispatcher dispatcher, final ExecutorService executorService)
    {
       if (dispatcher == null)
       {
          throw new IllegalArgumentException ("argument dispatcher can't be null");
       }
-      
+
       this.dispatcher = dispatcher;
-      
+
       if (executorService != null)
       {
          executorFactory = new OrderedExecutorFactory(executorService);
@@ -123,30 +117,30 @@ public class RemotingHandlerImpl implements RemotingHandler
          executorFactory = null;
       }
    }
-   
-   public Set<Long> scanForFailedConnections(final long expirePeriod)
+
+   public Set<Object> scanForFailedConnections(final long expirePeriod)
    {
       long now = System.currentTimeMillis();
-      
-      Set<Long> failedIDs = new HashSet<Long>();
-      
-      for (Map.Entry<Long, Long> entry: lastPings.entrySet())
+
+      Set<Object> failedIDs = new HashSet<Object>();
+
+      for (Map.Entry<Object, Long> entry: lastPings.entrySet())
       {
          long lastPing = entry.getValue();
-         
+
          if (now - lastPing > expirePeriod)
          {
             failedIDs.add(entry.getKey());
          }
       }
-      
+
       return failedIDs;
    }
-   
-   public void bufferReceived(final long connectionID, final MessagingBuffer buffer) throws Exception
+
+   public void bufferReceived(final Object connectionID, final MessagingBuffer buffer) throws Exception
    {
       final Packet packet = decode(connectionID, buffer);
-               
+
       if (executorFactory != null)
       {
          long executorID = packet.getExecutorID();
@@ -183,9 +177,9 @@ public class RemotingHandlerImpl implements RemotingHandler
       else
       {
          dispatcher.dispatch(connectionID, packet);
-      }      
+      }
    }
-   
+
    public int isReadyToHandle(final MessagingBuffer buffer)
    {
       if (buffer.remaining() <= SIZE_INT)
@@ -194,15 +188,15 @@ public class RemotingHandlerImpl implements RemotingHandler
       }
 
       int length = buffer.getInt();
-      
+
       if (buffer.remaining() < length)
       {
          return -1;
       }
-      
+
       return length;
    }
-   
+
    public void closeExecutor(final long executorID)
    {
       if (executors != null)
@@ -210,28 +204,28 @@ public class RemotingHandlerImpl implements RemotingHandler
          executors.remove(executorID);
       }
    }
-   
-   public void removeLastPing(final long connectionID)
+
+   public void removeLastPing(final Object connectionID)
    {
       lastPings.remove(connectionID);
    }
-   
+
    // Public ------------------------------------------------------------------------------
-   
+
    public int getNumExecutors()
    {
       return executors.size();
    }
-   
-   public Packet decode(final long connectionID, final MessagingBuffer in) throws Exception
-   {     
+
+   public Packet decode(final Object connectionID, final MessagingBuffer in) throws Exception
+   {
       byte packetType = in.getByte();
-      
+
       Packet packet;
 
       switch (packetType)
       {
-         case NULL:
+         case PacketImpl.NULL:
          {
             packet = new PacketImpl(PacketImpl.NULL);
             break;
@@ -509,12 +503,12 @@ public class RemotingHandlerImpl implements RemotingHandler
       }
 
       packet.decode(in);
-      
+
       return packet;
 
-   }   
-   
+   }
+
    // Private -----------------------------------------------------------------------------
-   
-   
+
+
 }

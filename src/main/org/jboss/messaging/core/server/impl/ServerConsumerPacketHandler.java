@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.server.impl;
 
@@ -33,7 +33,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.server.ServerConsumer;
 
 /**
- * 
+ *
  * A ServerConsumerPacketHandler
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -45,13 +45,13 @@ public class ServerConsumerPacketHandler implements PacketHandler
    private static final Logger log = Logger.getLogger(ServerConsumerPacketHandler.class);
 
 	private final ServerConsumer consumer;
-	
+
 	private final RemotingConnection remotingConnection;
-	
+
 	public ServerConsumerPacketHandler(final ServerConsumer consumer, final RemotingConnection remotingConnection)
 	{
 		this.consumer = consumer;
-		
+
 		this.remotingConnection = remotingConnection;
 	}
 
@@ -60,12 +60,12 @@ public class ServerConsumerPacketHandler implements PacketHandler
       return consumer.getID();
    }
 
-   public void handle(final long remotingConnectionID, final Packet packet)
+   public void handle(final Object remotingConnectionID, final Packet packet)
    {
       Packet response = null;
 
       byte type = packet.getType();
-      
+
       try
       {
          switch (type)
@@ -76,7 +76,7 @@ public class ServerConsumerPacketHandler implements PacketHandler
             break;
          case PacketImpl.CLOSE:
             consumer.close();
-            response = new PacketImpl(PacketImpl.NULL);     
+            response = new PacketImpl(PacketImpl.NULL);
             break;
          default:
             response = new MessagingExceptionMessage(new MessagingException(MessagingException.UNSUPPORTED_PACKET,
@@ -86,26 +86,26 @@ public class ServerConsumerPacketHandler implements PacketHandler
       catch (Throwable t)
       {
          MessagingException me;
-         
-         log.error("Caught unexpected exception", t);         
-         
+
+         log.error("Caught unexpected exception", t);
+
          if (t instanceof MessagingException)
          {
             me = (MessagingException)t;
          }
          else
-         {            
+         {
             me = new MessagingException(MessagingException.INTERNAL_ERROR);
          }
-                  
-         response = new MessagingExceptionMessage(me);    
+
+         response = new MessagingExceptionMessage(me);
       }
 
       if (response != null)
       {
          response.normalize(packet);
-         
-         remotingConnection.sendOneWay(response);    
+
+         remotingConnection.sendOneWay(response);
       }
    }
 }

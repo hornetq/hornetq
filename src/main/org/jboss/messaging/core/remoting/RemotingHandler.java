@@ -18,27 +18,27 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 package org.jboss.messaging.core.remoting;
 
 import java.util.Set;
 
 /**
- * 
+ *
  * A RemotingHandler
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
 public interface RemotingHandler
 {
-   void bufferReceived(long connectionID, MessagingBuffer buffer) throws Exception;
-   
+   void bufferReceived(Object connectionID, MessagingBuffer buffer) throws Exception;
+
    int isReadyToHandle(MessagingBuffer buffer);
-   
+
    void closeExecutor(long executorID);
-   
-   Set<Long> scanForFailedConnections(long expirePeriod);
-   
-   void removeLastPing(long connectionID);   
+
+   Set<Object> scanForFailedConnections(long expirePeriod);
+
+   void removeLastPing(Object connectionID);
 }

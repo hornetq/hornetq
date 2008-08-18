@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl;
 
@@ -36,9 +36,9 @@ import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.TransportType;
+import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.Connector;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
-import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.util.JBMThreadFactory;
 
 /**
@@ -49,23 +49,23 @@ import org.jboss.messaging.util.JBMThreadFactory;
 public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLifeCycleListener
 {
    // Constants -----------------------------------------------------
-     
+
    public static final Logger log = Logger.getLogger(ConnectionRegistryImpl.class);
-   
+
 
    // Attributes ----------------------------------------------------
 
-   private Map<String, ConnectionHolder> connections = new HashMap<String, ConnectionHolder>();
-         
-   private Map<TransportType, ConnectorFactory> connectorFactories = new HashMap<TransportType, ConnectorFactory>();
-   
-   private Map<Long, RemotingConnection> remotingConnections = new HashMap<Long, RemotingConnection>();
-   
+   private final Map<String, ConnectionHolder> connections = new HashMap<String, ConnectionHolder>();
+
+   private final Map<TransportType, ConnectorFactory> connectorFactories = new HashMap<TransportType, ConnectorFactory>();
+
+   private final Map<Object, RemotingConnection> remotingConnections = new HashMap<Object, RemotingConnection>();
+
    //TODO - core pool size should be configurable
-   private ScheduledThreadPoolExecutor pingExecutor = new ScheduledThreadPoolExecutor(20, new JBMThreadFactory("jbm-pinger-threads"));
+   private final ScheduledThreadPoolExecutor pingExecutor = new ScheduledThreadPoolExecutor(20, new JBMThreadFactory("jbm-pinger-threads"));
 
    // Static --------------------------------------------------------
-   
+
    // ConnectionRegistry implementation -----------------------------
 
    public synchronized RemotingConnection getConnection(final Location location, final ConnectionParams connectionParams)
@@ -73,11 +73,11 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
       String key = location.getLocation();
 
       ConnectionHolder holder = connections.get(key);
-      
+
       if (holder != null)
-      {         
+      {
          holder.increment();
-         
+
          RemotingConnection connection = holder.getConnection();
 
          if (log.isDebugEnabled())
@@ -88,22 +88,22 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
          return connection;
       }
       else
-      {                        
+      {
          PacketDispatcher dispatcher = new PacketDispatcherImpl(null);
-         
+
          RemotingHandler handler = new RemotingHandlerImpl(dispatcher, null);
-         
+
          Connector connector = createConnector(location, connectionParams, handler, this);
-         
+
          connector.start();
-         
+
          Connection tc = connector.createConnection();
-         
+
          if (tc == null)
          {
             throw new IllegalStateException("Failed to connect to " + location);
          }
-         
+
          long pingInterval = connectionParams.getPingInterval();
          RemotingConnection connection;
          if (pingInterval != -1)
@@ -118,26 +118,26 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
          }
 
          remotingConnections.put(tc.getID(), connection);
-         
+
          if (log.isDebugEnabled())
          {
             log.debug("Created " + connector + " to connect to "  + location);
          }
-   
+
          holder = new ConnectionHolder(connection, connector);
-         
+
          connections.put(key, holder);
-         
+
          return connection;
       }
    }
-   
+
    public synchronized void returnConnection(final Location location)
    {
       String key = location.getLocation();
 
       ConnectionHolder holder = connections.get(key);
-      
+
       if (holder == null)
       {
          throw new IllegalStateException("No connection for location " + key);
@@ -149,13 +149,13 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
          {
             log.debug("Removed connection for " + key);
          }
-                     
+
          RemotingConnection conn = remotingConnections.remove(holder.getConnection().getID());
-         
+
          conn.destroy();
-         
+
          holder.getConnector().close();
-         
+
          connections.remove(key);
       }
       else
@@ -164,15 +164,15 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
          if (log.isDebugEnabled())
          {
             log.debug(holder.getCount() + " remaining references to " + key);
-         }         
+         }
       }
    }
 
    public synchronized int size()
    {
-      return this.connections.size();
+      return connections.size();
    }
-   
+
    public synchronized void registerConnectorFactory(final TransportType transport, final ConnectorFactory factory)
    {
       connectorFactories.put(transport, factory);
@@ -182,7 +182,7 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
    {
       connectorFactories.remove(transport);
    }
-   
+
    public synchronized ConnectorFactory getConnectorFactory(final TransportType transport)
    {
       return connectorFactories.get(transport);
@@ -191,51 +191,51 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-         
+
    // ConnectionLifeCycleListener implementation --------------------
-   
+
    public void connectionCreated(final Connection connection)
-   {      
+   {
    }
 
-   public void connectionDestroyed(final long connectionID)
-   {      
+   public void connectionDestroyed(final Object connectionID)
+   {
       RemotingConnection conn = remotingConnections.remove(connectionID);
-      
+
       if (conn != null)
       {
          ConnectionHolder holder = connections.remove(conn.getLocation().getLocation());
-         
+
          //If conn still exists here this means that the underlying transport connection has been closed from the server side without
          //being returned from the client side so we need to fail the connection and call it's listeners
          MessagingException me = new MessagingException(MessagingException.OBJECT_CLOSED,
                                                         "The connection has been closed.");
          conn.fail(me);
-         
-         holder.getConnector().close();         
+
+         holder.getConnector().close();
       }
    }
 
-   public void connectionException(final long connectionID, final MessagingException me)
+   public void connectionException(final Object connectionID, final MessagingException me)
    {
       RemotingConnection conn = remotingConnections.remove(connectionID);
-      
+
       if (conn == null)
       {
          throw new IllegalStateException("Cannot find connection with id " + connectionID);
       }
-      
+
       ConnectionHolder holder = connections.remove(conn.getLocation().getLocation());
-      
+
       conn.fail(me);
-      
+
       holder.getConnector().close();
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-     
+
    // Private -------------------------------------------------------
 
    private Connector createConnector(final Location location,
@@ -244,7 +244,7 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
          final ConnectionLifeCycleListener listener)
    {
       ConnectorFactory factory = connectorFactories.get(location.getTransport());
-      
+
       if (factory == null)
       {
          throw new IllegalStateException("No connector factory registered for transport " + location.getTransport());
@@ -258,9 +258,9 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
    private static class ConnectionHolder
    {
       private final RemotingConnection connection;
-      
+
       private final Connector connector;
-      
+
       private int count;
 
       public ConnectionHolder(final RemotingConnection connection, final Connector connector)
@@ -269,7 +269,7 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
 
          this.connection = connection;
          this.connector = connector;
-         this.count = 1;
+         count = 1;
       }
 
       public void increment()
@@ -291,7 +291,7 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
       {
          return connection;
       }
-      
+
       public Connector getConnector()
       {
          return connector;

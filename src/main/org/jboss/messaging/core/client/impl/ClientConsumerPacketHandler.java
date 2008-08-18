@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.client.impl;
 
@@ -46,7 +46,7 @@ public class ClientConsumerPacketHandler implements PacketHandler
    public ClientConsumerPacketHandler(final ClientConsumerInternal clientConsumer, final long consumerID)
    {
       this.clientConsumer = clientConsumer;
-      
+
       this.consumerID = consumerID;
    }
 
@@ -55,14 +55,14 @@ public class ClientConsumerPacketHandler implements PacketHandler
       return consumerID;
    }
 
-   public void handle(final long sessionID, final Packet packet)
+   public void handle(final Object connectionID, final Packet packet)
    {
       byte type = packet.getType();
-      
+
       if (type == PacketImpl.RECEIVE_MSG)
       {
          ReceiveMessage message = (ReceiveMessage) packet;
-         
+
          try
          {
             clientConsumer.handleMessage(message.getClientMessage());
@@ -83,16 +83,17 @@ public class ClientConsumerPacketHandler implements PacketHandler
    {
       return "ClientConsumerPacketHandler[id=" + consumerID + "]";
    }
-   
+
+   @Override
    public boolean equals(Object other)
    {
       if (other instanceof ClientConsumerPacketHandler == false)
       {
          return false;
       }
-            
+
       ClientConsumerPacketHandler r = (ClientConsumerPacketHandler)other;
-      
-      return r.consumerID == this.consumerID;     
+
+      return r.consumerID == consumerID;
    }
 }

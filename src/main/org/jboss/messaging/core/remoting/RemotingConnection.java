@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting;
 
@@ -26,36 +26,36 @@ import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.exception.MessagingException;
 
 /**
- * 
+ *
  * A RemotingConnection
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
 public interface RemotingConnection
 {
-   long getID();
-      
+   Object getID();
+
    Packet sendBlocking(long targetID, long executorID, Packet packet) throws MessagingException;
-   
+
    void sendOneWay(long targetID, long executorID, Packet packet);
-   
+
    Packet sendBlocking(Packet packet) throws MessagingException;
-   
+
    void sendOneWay(Packet packet);
-   
+
    void addFailureListener(FailureListener listener);
-   
+
    boolean removeFailureListener(FailureListener listener);
-   
+
    PacketDispatcher getPacketDispatcher();
-   
+
    Location getLocation();
-   
+
    MessagingBuffer createBuffer(int size);
-   
+
    void fail(MessagingException me);
-   
+
    void destroy();
 }

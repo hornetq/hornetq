@@ -20,92 +20,42 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.remoting.impl.mina;
+package org.jboss.messaging.tests.unit.core.remoting.impl.netty;
 
-import org.apache.mina.core.buffer.IoBuffer;
-import org.apache.mina.core.session.IoSession;
-import org.apache.mina.filter.ssl.SslFilter;
-import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.MessagingBuffer;
-import org.jboss.messaging.core.remoting.spi.Connection;
+import org.jboss.messaging.core.remoting.impl.netty.ChannelBufferWrapper;
+import org.jboss.messaging.tests.unit.core.remoting.MessagingBufferTestBase;
+import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.buffer.ChannelBuffers;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * buhnaflagilibrn
+ *
  * @version <tt>$Revision$</tt>
+ *
  */
-public class MinaConnection implements Connection
+public class ChannelBufferWrapperTest extends MessagingBufferTestBase
 {
+
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(MinaConnection.class);
-
    // Attributes ----------------------------------------------------
-
-   private final IoSession session;
-
-   private boolean closed;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public MinaConnection(final IoSession session)
-   {
-      this.session = session;
-   }
-
    // Public --------------------------------------------------------
 
-   // Connection implementation ----------------------------
+   // BufferWrapperBase overrides -----------------------------------
 
-   public synchronized void close()
+   @Override
+   protected MessagingBuffer createBuffer()
    {
-      if (closed)
-      {
-         return;
-      }
-
-      session.close().awaitUninterruptibly();
-
-      SslFilter sslFilter = (SslFilter) session.getFilterChain().get("ssl");
-      if (sslFilter != null)
-      {
-         try
-         {
-            sslFilter.stopSsl(session).awaitUninterruptibly();
-         }
-         catch (Throwable t)
-         {
-            // ignore
-         }
-
-
-      }
-
-      closed = true;
+      ChannelBuffer buffer = ChannelBuffers.dynamicBuffer(512);
+      buffer.writerIndex(buffer.capacity());
+      return new ChannelBufferWrapper(buffer);
    }
-
-   public MessagingBuffer createBuffer(int size)
-   {
-      IoBuffer buffer = IoBuffer.allocate(size);
-      buffer.setAutoExpand(true);
-      return new IoBufferWrapper(buffer);
-   }
-
-   public Object getID()
-   {
-      return Long.valueOf(session.getId());
-   }
-
-   public void write(final MessagingBuffer buffer)
-   {
-      session.write(buffer.getUnderlyingBuffer());
-   }
-
-   // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
 
@@ -114,5 +64,4 @@ public class MinaConnection implements Connection
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-
 }

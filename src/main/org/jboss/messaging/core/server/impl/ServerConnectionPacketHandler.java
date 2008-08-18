@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.server.impl;
 
@@ -43,13 +43,13 @@ public class ServerConnectionPacketHandler implements PacketHandler
    private static final Logger log = Logger.getLogger(ServerConnectionPacketHandler.class);
 
    private final ServerConnection connection;
-   
+
    private final RemotingConnection remotingConnection;
 
    public ServerConnectionPacketHandler(final ServerConnection connection, final RemotingConnection remotingConnection)
    {
       this.connection = connection;
-      
+
       this.remotingConnection = remotingConnection;
    }
 
@@ -58,14 +58,14 @@ public class ServerConnectionPacketHandler implements PacketHandler
       return connection.getID();
    }
 
-   public void handle(final long remotingConnectionID, final Packet packet)
+   public void handle(final Object remotingConnectionID, final Packet packet)
    {
       Packet response = null;
 
       byte type = packet.getType();
 
       try
-      {      
+      {
          switch (type)
          {
             case PacketImpl.CONN_CREATESESSION:
@@ -87,26 +87,26 @@ public class ServerConnectionPacketHandler implements PacketHandler
             default:
                response = new MessagingExceptionMessage(new MessagingException(MessagingException.UNSUPPORTED_PACKET,
                      "Unsupported packet " + type));
-         }      
+         }
       }
       catch (Throwable t)
       {
          MessagingException me;
-         
-         log.error("Caught unexpected exception", t);         
-         
+
+         log.error("Caught unexpected exception", t);
+
          if (t instanceof MessagingException)
          {
             me = (MessagingException)t;
          }
          else
-         {            
+         {
             me = new MessagingException(MessagingException.INTERNAL_ERROR);
          }
-                  
-         response = new MessagingExceptionMessage(me);    
+
+         response = new MessagingExceptionMessage(me);
       }
-      
+
       if (response instanceof MessagingExceptionMessage)
       {
          MessagingExceptionMessage mee = (MessagingExceptionMessage)response;
@@ -115,8 +115,8 @@ public class ServerConnectionPacketHandler implements PacketHandler
       if (response != null)
       {
          response.normalize(packet);
-         
-         remotingConnection.sendOneWay(response);    
+
+         remotingConnection.sendOneWay(response);
       }
    }
 }

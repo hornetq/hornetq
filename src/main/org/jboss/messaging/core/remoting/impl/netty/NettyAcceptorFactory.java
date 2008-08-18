@@ -19,23 +19,26 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.remoting;
 
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.spi.Connection;
+package org.jboss.messaging.core.remoting.impl.netty;
+
+import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.remoting.ConnectionLifeCycleListener;
+import org.jboss.messaging.core.remoting.RemotingHandler;
+import org.jboss.messaging.core.remoting.spi.Acceptor;
+import org.jboss.messaging.core.remoting.spi.AcceptorFactory;
 
 /**
- *
- * A ConnectionLifeCycleListener
+ * A NettyAcceptorFactory
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
-public interface ConnectionLifeCycleListener
+public class NettyAcceptorFactory implements AcceptorFactory
 {
-   void connectionCreated(Connection connection);
-
-   void connectionDestroyed(Object connectionID);
-
-   void connectionException(Object connectionID, MessagingException me);
+   public Acceptor createAcceptor(final Configuration configuration,
+                                  final RemotingHandler handler,
+                                  final ConnectionLifeCycleListener listener)
+   {
+      return new NettyAcceptor(configuration, handler, listener);
+   }
 }

@@ -18,13 +18,11 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATECONNECTION;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PING;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PONG;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.*;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -49,13 +47,13 @@ public class MessagingServerPacketHandler implements PacketHandler
    private static final Logger log = Logger.getLogger(MessagingServerPacketHandler.class);
 
    private final MessagingServer server;
-   
+
    private final RemotingService remotingService;
 
    public MessagingServerPacketHandler(final MessagingServer server, final RemotingService remotingService)
    {
       this.server = server;
-      
+
       this.remotingService = remotingService;
    }
 
@@ -64,15 +62,15 @@ public class MessagingServerPacketHandler implements PacketHandler
       //0 is reserved for this handler
       return 0;
    }
-   
-   public void handle(final long connectionID, final Packet packet)
+
+   public void handle(final Object connectionID, final Packet packet)
    {
       Packet response = null;
-            
+
       RemotingConnection connection = remotingService.getConnection(connectionID);
 
       byte type = packet.getType();
-      
+
       try
       {
          if (type == PING)
@@ -80,13 +78,13 @@ public class MessagingServerPacketHandler implements PacketHandler
             response = new PacketImpl(PONG);
          }
          else if (type == CREATECONNECTION)
-         {            
+         {
             CreateConnectionRequest request = (CreateConnectionRequest) packet;
-   
+
             response =
-               server.createConnection(request.getUsername(), request.getPassword(),                             
+               server.createConnection(request.getUsername(), request.getPassword(),
                                        request.getVersion(),
-                                       connection);               
+                                       connection);
          }
          else
          {
@@ -97,23 +95,23 @@ public class MessagingServerPacketHandler implements PacketHandler
       catch (Throwable t)
       {
          MessagingException me;
-         
-         log.error("Caught unexpected exception", t);         
-         
+
+         log.error("Caught unexpected exception", t);
+
          if (t instanceof MessagingException)
          {
             me = (MessagingException)t;
          }
          else
-         {            
+         {
             me = new MessagingException(MessagingException.INTERNAL_ERROR);
          }
-                  
-         response = new MessagingExceptionMessage(me);    
+
+         response = new MessagingExceptionMessage(me);
       }
-      
+
       response.normalize(packet);
-      
+
       connection.sendOneWay(response);
    }
 

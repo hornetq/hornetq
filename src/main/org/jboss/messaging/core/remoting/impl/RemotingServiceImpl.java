@@ -18,11 +18,11 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl;
 
-import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
+import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.*;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -51,13 +51,13 @@ import org.jboss.messaging.util.JBMThreadFactory;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *  
+ *
  * @version <tt>$Revision$</tt>
  */
 public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycleListener
 {
    // Constants -----------------------------------------------------
-  
+
    private static final Logger log = Logger.getLogger(RemotingServiceImpl.class);
 
    // Attributes ----------------------------------------------------
@@ -71,37 +71,37 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    private final PacketDispatcher dispatcher;
 
    private final ExecutorService remotingExecutor;
-   
+
    private RemotingHandler handler;
-   
+
    private final long connectionExpirePeriod;
-   
-   private final Map<Long, RemotingConnection> connections = new ConcurrentHashMap<Long, RemotingConnection>();
-   
+
+   private final Map<Object, RemotingConnection> connections = new ConcurrentHashMap<Object, RemotingConnection>();
+
    private final Set<AcceptorFactory> acceptorFactories = new HashSet<AcceptorFactory>();
-   
+
    private final Timer failedConnectionTimer = new Timer(true);
-   
+
    private TimerTask failedConnectionsTask;
-      
+
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-      
+
    public RemotingServiceImpl(final Configuration config)
    {
       validate(config);
 
       this.config = config;
-      
+
       dispatcher = new PacketDispatcherImpl(null);
 
       remotingExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-session-ordering-threads"));
-      
+
       handler = new RemotingHandlerImpl(dispatcher, remotingExecutor);
-      
+
       long pingPeriod = config.getConnectionParams().getPingInterval();
-      
+
       if (pingPeriod != -1)
       {
          connectionExpirePeriod = (long)(1.5 * pingPeriod);
@@ -109,8 +109,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       else
       {
          connectionExpirePeriod = -1;
-      }         
-      
+      }
+
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
       for (String interceptorClass : config.getInterceptorClassNames())
       {
@@ -124,12 +124,12 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             log.warn("Error instantiating interceptor \"" + interceptorClass + "\"", e);
          }
       }
-      
+
       for (String factoryClass: config.getAcceptorFactoryClassNames())
       {
          try
          {
-            Class<?> clazz = loader.loadClass(factoryClass);            
+            Class<?> clazz = loader.loadClass(factoryClass);
             acceptorFactories.add((AcceptorFactory)clazz.newInstance());
          }
          catch (Exception e)
@@ -138,7 +138,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          }
       }
    }
-   
+
    // RemotingService implementation -------------------------------
 
    public synchronized void start() throws Exception
@@ -147,23 +147,23 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          return;
       }
-                  
+
       for (AcceptorFactory factory: acceptorFactories)
       {
          Acceptor acceptor = factory.createAcceptor(config, handler, this);
-         
+
          acceptors.add(acceptor);
       }
-      
+
       for (Acceptor a : acceptors)
       {
          a.start();
       }
-      
+
       if (connectionExpirePeriod != -1)
       {
          failedConnectionsTask = new FailedConnectionsTask();
-         
+
          failedConnectionTimer.schedule(failedConnectionsTask, 0, 1000);
       }
 
@@ -176,22 +176,22 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          return;
       }
-      
+
       if (failedConnectionsTask != null)
       {
          failedConnectionsTask.cancel();
-         
+
          failedConnectionsTask = null;
       }
-      
+
       for (Acceptor acceptor : acceptors)
       {
          acceptor.stop();
       }
-      
+
       started = false;
    }
-   
+
    public boolean isStarted()
    {
       return started;
@@ -206,12 +206,12 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    {
       return acceptors;
    }
-   
-   public RemotingConnection getConnection(final long remotingConnectionID)
+
+   public RemotingConnection getConnection(final Object remotingConnectionID)
    {
       return connections.get(remotingConnectionID);
    }
-   
+
    public synchronized void registerAcceptorFactory(final AcceptorFactory factory)
    {
       acceptorFactories.add(factory);
@@ -221,46 +221,46 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    {
       acceptorFactories.remove(factory);
    }
-   
+
    public synchronized Set<RemotingConnection> getConnections()
    {
       return new HashSet<RemotingConnection>(connections.values());
    }
 
    // ConnectionLifeCycleListener implementation -----------------------------------
-   
+
    public void connectionCreated(final Connection connection)
    {
       RemotingConnection rc =
          new RemotingConnectionImpl(connection, dispatcher, null, config.getConnectionParams().getCallTimeout());
-      
-      this.connections.put(connection.getID(), rc);
+
+      connections.put(connection.getID(), rc);
    }
 
-   public void connectionDestroyed(long connectionID)
+   public void connectionDestroyed(Object connectionID)
    {
       handler.removeLastPing(connectionID);
-      
+
       if (connections.remove(connectionID) == null)
       {
          throw new IllegalStateException("Cannot find connection with id " + connectionID);
-      }            
+      }
    }
 
-   public void connectionException(long connectionID, MessagingException me)
+   public void connectionException(Object connectionID, MessagingException me)
    {
       RemotingConnection rc = connections.remove(connectionID);
-      
+
       if (rc == null)
       {
          throw new IllegalStateException("Cannot find connection with id " + connectionID);
       }
-      
+
       rc.fail(me);
    }
-   
+
    // Public --------------------------------------------------------
-   
+
    /*
     * Used in testing
     */
@@ -276,44 +276,46 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-   
+
    private class FailedConnectionsTask extends TimerTask
    {
       private boolean cancelled;
-      
+
+      @Override
       public synchronized void run()
       {
          if (cancelled)
          {
             return;
          }
-         
-         Set<Long> failedIDs = handler.scanForFailedConnections(connectionExpirePeriod);
- 
-         for (long id: failedIDs)
+
+         Set<Object> failedIDs = handler.scanForFailedConnections(connectionExpirePeriod);
+
+         for (Object id: failedIDs)
          {
             RemotingConnection conn = connections.get(id);
-            
+
             if (conn == null)
             {
                throw new IllegalStateException("Cannot find connection with id " + id);
             }
-            
+
             MessagingException me = new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
                   "Did not receive ping on connection. It is likely a client has exited or crashed without " +
                   "closing its connection, or the network between the server and client has failed. The connection will now be closed.");
-            
+
             conn.fail(me);
          }
       }
-      
+
+      @Override
       public synchronized boolean cancel()
       {
          cancelled = true;
-         
+
          return super.cancel();
       }
-      
+
    }
 
 }

@@ -18,16 +18,11 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CLOSE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NO_ID_SET;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NULL;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_HASNEXTMESSAGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_NEXTMESSAGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_RESET;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.*;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -54,11 +49,11 @@ import org.jboss.messaging.util.SimpleString;
 
 /**
  * Concrete implementation of BrowserEndpoint.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision: 3778 $</tt>
- * 
+ *
  * $Id: ServerBrowserImpl.java 3778 2008-02-24 12:15:29Z timfox $
  */
 public class ServerBrowserImpl
@@ -77,29 +72,29 @@ public class ServerBrowserImpl
    private final Filter filter;
    private Iterator<ServerMessage> iterator;
    private final RemotingConnection remotingConnection;
-   
+
    // Constructors ---------------------------------------------------------------------------------
 
    public ServerBrowserImpl(final ServerSession session,
                             final Queue destination, final String messageFilter,
                             final PacketDispatcher dispatcher,
                             final RemotingConnection remotingConnection) throws MessagingException
-   {     
+   {
       this.session = session;
-      
-      this.id = dispatcher.generateID();
-      
+
+      id = dispatcher.generateID();
+
       this.destination = destination;
 
 		if (messageFilter != null)
-		{	
+		{
 		   filter = new FilterImpl(new SimpleString(messageFilter));
 		}
 		else
 		{
 		   filter = null;
 		}
-		
+
 		this.remotingConnection = remotingConnection;
    }
 
@@ -109,7 +104,7 @@ public class ServerBrowserImpl
    {
    	return id;
    }
-   
+
    public void reset() throws Exception
    {
       iterator = createIterator();
@@ -126,7 +121,7 @@ public class ServerBrowserImpl
 
       return has;
    }
-   
+
    public ServerMessage nextMessage() throws Exception
    {
       if (iterator == null)
@@ -161,29 +156,33 @@ public class ServerBrowserImpl
             messages.add(m);
             i++;
          }
-         else break;
-      }		
-		return (Message[])messages.toArray(new Message[messages.size()]);	
+         else
+         {
+            break;
+         }
+      }
+		return messages.toArray(new Message[messages.size()]);
    }
-   
+
    public void close() throws Exception
    {
       iterator = null;
-      
+
       session.removeBrowser(this);
-      
+
       log.trace(this + " closed");
    }
-           
+
    // Public ---------------------------------------------------------------------------------------
 
+   @Override
    public String toString()
    {
       return "BrowserEndpoint[" + id + "]";
    }
 
    // Package protected ----------------------------------------------------------------------------
-   
+
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
@@ -191,14 +190,14 @@ public class ServerBrowserImpl
    private Iterator<ServerMessage> createIterator()
    {
       List<MessageReference> refs = destination.list(filter);
-      
+
       List<ServerMessage> msgs = new ArrayList<ServerMessage>();
-      
+
       for (MessageReference ref: refs)
       {
          msgs.add(ref.getMessage());
       }
-      
+
       return msgs.iterator();
    }
 
@@ -208,15 +207,15 @@ public class ServerBrowserImpl
    }
 
    // Inner classes --------------------------------------------------------------------------------
-   
+
    private class ServerBrowserEndpointHandler implements PacketHandler
    {
       public long getID()
       {
-         return ServerBrowserImpl.this.id;
+         return id;
       }
-      
-      public void handle(final long connectionID, final Packet packet)
+
+      public void handle(final Object connectionID, final Packet packet)
       {
          Packet response = null;
 
@@ -226,19 +225,19 @@ public class ServerBrowserImpl
             switch (type)
             {
             case SESS_BROWSER_HASNEXTMESSAGE:
-               response = new SessionBrowserHasNextMessageResponseMessage(hasNextMessage());            
+               response = new SessionBrowserHasNextMessageResponseMessage(hasNextMessage());
                break;
             case SESS_BROWSER_NEXTMESSAGE:
-               ServerMessage message = nextMessage();               
+               ServerMessage message = nextMessage();
                response = new ReceiveMessage(message, 0, 0);
                break;
-            case SESS_BROWSER_RESET:            
+            case SESS_BROWSER_RESET:
                reset();
-               response = new PacketImpl(NULL); 
+               response = new PacketImpl(NULL);
                break;
             case CLOSE:
                close();
-               response = new PacketImpl(NULL); 
+               response = new PacketImpl(NULL);
                break;
             default:
                response = new MessagingExceptionMessage(new MessagingException(MessagingException.UNSUPPORTED_PACKET,
@@ -248,24 +247,24 @@ public class ServerBrowserImpl
          catch (Throwable t)
          {
             MessagingException me;
-            
-            log.error("Caught unexpected exception", t);         
-            
+
+            log.error("Caught unexpected exception", t);
+
             if (t instanceof MessagingException)
             {
                me = (MessagingException)t;
             }
             else
-            {            
+            {
                me = new MessagingException(MessagingException.INTERNAL_ERROR);
             }
-                     
-            response = new MessagingExceptionMessage(me);    
+
+            response = new MessagingExceptionMessage(me);
          }
-         
+
          response.normalize(packet);
-         
-         remotingConnection.sendOneWay(response);         
+
+         remotingConnection.sendOneWay(response);
       }
    }
 }

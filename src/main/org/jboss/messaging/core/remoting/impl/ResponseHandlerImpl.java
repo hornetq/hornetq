@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl;
 
@@ -26,9 +26,9 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.ResponseHandler;
 
 /**
- * 
+ *
  * A ResponseHandlerImpl
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -50,7 +50,7 @@ public class ResponseHandlerImpl implements ResponseHandler
       return id;
    }
 
-   public synchronized void handle(final long remotingConnectionID, final Packet packet)
+   public synchronized void handle(final Object remotingConnectionID, final Packet packet)
    {
       if (failed)
       {
@@ -58,7 +58,7 @@ public class ResponseHandlerImpl implements ResponseHandler
          return;
       }
 
-      this.response = packet;
+      response = packet;
 
       notify();
    }
@@ -104,7 +104,7 @@ public class ResponseHandlerImpl implements ResponseHandler
       return response;
    }
 
-   
+
    public void reset()
    {
       response = null;

@@ -35,9 +35,9 @@ import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * A RemotingHandlerImplTest
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -48,6 +48,7 @@ public class RemotingHandlerImplTest extends UnitTestCase
    private PacketDispatcher dispatcher;
    private ExecutorService executorService;
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -57,67 +58,68 @@ public class RemotingHandlerImplTest extends UnitTestCase
       buff = new ByteBufferWrapper(ByteBuffer.allocate(1024));
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       super.tearDown();
       handler = null;
       buff = null;
    }
-   
+
    public void testScanForFailedConnections() throws Exception
    {
       final long expirePeriod = 100;
-      
+
       MessagingBuffer buff1 = new ByteBufferWrapper(ByteBuffer.allocate(1024));
       Packet ping1 = new PacketImpl(PacketImpl.PING);
-      ping1.encode(buff1); 
+      ping1.encode(buff1);
       buff1.getInt();
       final long connectionID1 = 120912;
-      
+
       MessagingBuffer buff2 = new ByteBufferWrapper(ByteBuffer.allocate(1024));
       Packet ping2 = new PacketImpl(PacketImpl.PING);
-      ping2.encode(buff2);      
+      ping2.encode(buff2);
       buff2.getInt();
       final long connectionID2 = 12023;
-      
+
       MessagingBuffer buff3 = new ByteBufferWrapper(ByteBuffer.allocate(1024));
       Packet ping3 = new PacketImpl(PacketImpl.PING);
-      ping3.encode(buff3);      
+      ping3.encode(buff3);
       buff3.getInt();
       final long connectionID3 = 1123128;
-      
+
       MessagingBuffer buff4 = new ByteBufferWrapper(ByteBuffer.allocate(1024));
       Packet ping4 = new PacketImpl(PacketImpl.PING);
       ping4.encode(buff4);
       buff4.getInt();
       final long connectionID4 = 127987;
-      
-      Set<Long> failed = handler.scanForFailedConnections(expirePeriod);
-      
+
+      Set<Object> failed = handler.scanForFailedConnections(expirePeriod);
+
       assertEquals(0, failed.size());
-      
-      handler.bufferReceived(connectionID1, buff1);      
+
+      handler.bufferReceived(connectionID1, buff1);
       handler.bufferReceived(connectionID2, buff2);
       handler.bufferReceived(connectionID3, buff3);
       handler.bufferReceived(connectionID4, buff4);
-      
-      failed = handler.scanForFailedConnections(expirePeriod);      
+
+      failed = handler.scanForFailedConnections(expirePeriod);
       assertEquals(0, failed.size());
-      
+
       Thread.sleep(expirePeriod + 10);
-      
-      failed = handler.scanForFailedConnections(expirePeriod);      
+
+      failed = handler.scanForFailedConnections(expirePeriod);
       assertEquals(4, failed.size());
-      
-      handler.removeLastPing(connectionID1);      
-      handler.removeLastPing(connectionID2);      
-      handler.removeLastPing(connectionID3);      
+
+      handler.removeLastPing(connectionID1);
+      handler.removeLastPing(connectionID2);
+      handler.removeLastPing(connectionID3);
       handler.removeLastPing(connectionID4);
-      
-      failed = handler.scanForFailedConnections(expirePeriod);      
-      assertEquals(0, failed.size());                 
+
+      failed = handler.scanForFailedConnections(expirePeriod);
+      assertEquals(0, failed.size());
    }
-   
+
 
 }
 

@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl;
 
@@ -56,7 +56,7 @@ public class PacketDispatcherImpl implements PacketDispatcher
 
    private final AtomicLong idSequence = new AtomicLong(0);
 
-   private List<Interceptor> interceptors = new CopyOnWriteArrayList<Interceptor>();
+   private final List<Interceptor> interceptors = new CopyOnWriteArrayList<Interceptor>();
 
    // Static --------------------------------------------------------
 
@@ -67,7 +67,7 @@ public class PacketDispatcherImpl implements PacketDispatcher
       handlers = new ConcurrentHashMap<Long, PacketHandler>();
       if (filters != null)
       {
-         this.interceptors.addAll(filters);
+         interceptors.addAll(filters);
       }
    }
 
@@ -115,21 +115,21 @@ public class PacketDispatcherImpl implements PacketDispatcher
    {
       interceptors.remove(filter);
    }
-   
+
    public List<Interceptor> getInterceptors()
    {
       return new ArrayList<Interceptor>(interceptors);
    }
 
-   public void dispatch(final long connectionID, final Packet packet) throws Exception
+   public void dispatch(final Object connectionID, final Packet packet) throws Exception
    {
       long targetID = packet.getTargetID();
-      
+
       PacketHandler handler = getHandler(targetID);
-      
+
       if (handler != null)
       {
-         if (callInterceptors(packet))                  
+         if (callInterceptors(packet))
          {
             handler.handle(connectionID, packet);
          }
@@ -161,7 +161,7 @@ public class PacketDispatcherImpl implements PacketDispatcher
             {
                log.warn("Failed in calling interceptor: " + interceptor, e);
             }
-         }         
+         }
       }
       return true;
    }

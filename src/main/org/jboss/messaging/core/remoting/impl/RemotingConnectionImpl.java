@@ -127,7 +127,7 @@ public class RemotingConnectionImpl implements RemotingConnection
    // RemotingConnection implementation
    // ------------------------------------------------------------
 
-   public long getID()
+   public Object getID()
    {
       return transportConnection.getID();
    }
@@ -240,9 +240,9 @@ public class RemotingConnectionImpl implements RemotingConnection
    }
 
    public synchronized void fail(final MessagingException me)
-   {  
+   {
       log.warn(me.getMessage());
-      
+
       destroy();
 
       // Then call the listeners
@@ -258,7 +258,7 @@ public class RemotingConnectionImpl implements RemotingConnection
             // executing
             log.error("Failed to execute failure listener", t);
          }
-      }      
+      }
    }
 
    public synchronized void destroy()
@@ -292,21 +292,21 @@ public class RemotingConnectionImpl implements RemotingConnection
 
    // Private
    // --------------------------------------------------------------------------------------
-      
+
    private void doWrite(final Packet packet)
    {
       if (destroyed)
       {
          throw new IllegalStateException("Cannot write packet to connection, it is destroyed");
       }
-      
+
       MessagingBuffer buffer = transportConnection.createBuffer(PacketImpl.INITIAL_BUFFER_SIZE);
 
       packet.encode(buffer);
 
       transportConnection.write(buffer);
    }
-  
+
 
    // Inner classes
    // --------------------------------------------------------------------------------
@@ -323,7 +323,7 @@ public class RemotingConnectionImpl implements RemotingConnection
 
             fail(me);
          }
-     
+
          gotPong = false;
          firstTime = false;
 
@@ -351,9 +351,9 @@ public class RemotingConnectionImpl implements RemotingConnection
          return id;
       }
 
-      public void handle(long connectionID, Packet packet)
+      public void handle(Object connectionID, Packet packet)
       {
-         gotPong = true;         
+         gotPong = true;
       }
 
    }

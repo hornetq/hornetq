@@ -20,14 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.remoting.impl.mina;
+package org.jboss.messaging.core.remoting.impl.netty;
 
-import org.apache.mina.core.buffer.IoBuffer;
-import org.apache.mina.core.session.IoSession;
-import org.apache.mina.filter.ssl.SslFilter;
-import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.core.remoting.spi.Connection;
+import org.jboss.netty.channel.Channel;
+import org.jboss.netty.handler.ssl.SslHandler;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -36,15 +34,13 @@ import org.jboss.messaging.core.remoting.spi.Connection;
  * buhnaflagilibrn
  * @version <tt>$Revision$</tt>
  */
-public class MinaConnection implements Connection
+public class NettyConnection implements Connection
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(MinaConnection.class);
-
    // Attributes ----------------------------------------------------
 
-   private final IoSession session;
+   private final Channel channel;
 
    private boolean closed;
 
@@ -52,9 +48,9 @@ public class MinaConnection implements Connection
 
    // Constructors --------------------------------------------------
 
-   public MinaConnection(final IoSession session)
+   public NettyConnection(final Channel channel)
    {
-      this.session = session;
+      this.channel = channel;
    }
 
    // Public --------------------------------------------------------
@@ -68,21 +64,19 @@ public class MinaConnection implements Connection
          return;
       }
 
-      session.close().awaitUninterruptibly();
+      channel.close().awaitUninterruptibly();
 
-      SslFilter sslFilter = (SslFilter) session.getFilterChain().get("ssl");
-      if (sslFilter != null)
+      SslHandler sslHandler = (SslHandler) channel.getPipeline().get("ssl");
+      if (sslHandler != null)
       {
          try
          {
-            sslFilter.stopSsl(session).awaitUninterruptibly();
+            sslHandler.close(channel).awaitUninterruptibly();
          }
          catch (Throwable t)
          {
             // ignore
          }
-
-
       }
 
       closed = true;
@@ -90,19 +84,17 @@ public class MinaConnection implements Connection
 
    public MessagingBuffer createBuffer(int size)
    {
-      IoBuffer buffer = IoBuffer.allocate(size);
-      buffer.setAutoExpand(true);
-      return new IoBufferWrapper(buffer);
+      return new ChannelBufferWrapper(size);
    }
 
    public Object getID()
    {
-      return Long.valueOf(session.getId());
+      return channel.getId();
    }
 
    public void write(final MessagingBuffer buffer)
    {
-      session.write(buffer.getUnderlyingBuffer());
+      channel.write(buffer.getUnderlyingBuffer());
    }
 
    // Public --------------------------------------------------------
