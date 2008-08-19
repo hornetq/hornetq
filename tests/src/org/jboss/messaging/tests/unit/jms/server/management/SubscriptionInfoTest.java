@@ -31,7 +31,7 @@ import javax.management.openmbean.TabularData;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.jms.server.management.SubscriberInfo;
+import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -39,7 +39,7 @@ import org.jboss.messaging.jms.server.management.SubscriberInfo;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class SubscriberInfoTest extends TestCase
+public class SubscriptionInfoTest extends TestCase
 {
    // Constants -----------------------------------------------------
 
@@ -47,12 +47,12 @@ public class SubscriberInfoTest extends TestCase
 
    // Static --------------------------------------------------------
 
-   public static void assertEquals(SubscriberInfo expected,
+   public static void assertEquals(SubscriptionInfo expected,
          CompositeData actual)
    {
-      assertTrue(actual.getCompositeType().equals(SubscriberInfo.TYPE));
+      assertTrue(actual.getCompositeType().equals(SubscriptionInfo.TYPE));
 
-      assertEquals(expected.getID(), actual.get("id"));
+      assertEquals(expected.getQueueName(), actual.get("queueName"));
       assertEquals(expected.getClientID(), actual.get("clientID"));
       assertEquals(expected.getName(), actual.get("name"));
       assertEquals(expected.isDurable(), actual.get("durable"));
@@ -67,7 +67,7 @@ public class SubscriberInfoTest extends TestCase
 
    public void testToCompositeData() throws Exception
    {
-      SubscriberInfo info = new SubscriberInfo(randomString(), randomString(),
+      SubscriptionInfo info = new SubscriptionInfo(randomString(), randomString(),
             randomString(), randomBoolean(), randomString(), randomInt(),
             randomInt());
       CompositeData data = info.toCompositeData();
@@ -77,18 +77,18 @@ public class SubscriberInfoTest extends TestCase
 
    public void testToTabularData() throws Exception
    {
-      SubscriberInfo info_1 = new SubscriberInfo(randomString(), randomString(),
+      SubscriptionInfo info_1 = new SubscriptionInfo(randomString(), randomString(),
             randomString(), randomBoolean(), randomString(), randomInt(),
             randomInt());
-      SubscriberInfo info_2 = new SubscriberInfo(randomString(), randomString(),
+      SubscriptionInfo info_2 = new SubscriptionInfo(randomString(), randomString(),
             randomString(), randomBoolean(), randomString(), randomInt(),
             randomInt());
-      SubscriberInfo[] infos = new SubscriberInfo[] { info_1, info_2 };
+      SubscriptionInfo[] infos = new SubscriptionInfo[] { info_1, info_2 };
 
-      TabularData data = SubscriberInfo.toTabularData(infos);
+      TabularData data = SubscriptionInfo.toTabularData(infos);
       assertEquals(2, data.size());
-      CompositeData data_1 = data.get(new Object[] { info_1.getID() });
-      CompositeData data_2 = data.get(new Object[] { info_2.getID() });
+      CompositeData data_1 = data.get(new Object[] { info_1.getQueueName() });
+      CompositeData data_2 = data.get(new Object[] { info_2.getQueueName() });
 
       assertEquals(info_1, data_1);
       assertEquals(info_2, data_2);
@@ -96,7 +96,7 @@ public class SubscriberInfoTest extends TestCase
 
    public void testToTabularDataWithEmptyMessages() throws Exception
    {
-      TabularData data = SubscriberInfo.toTabularData(new SubscriberInfo[0]);
+      TabularData data = SubscriptionInfo.toTabularData(new SubscriptionInfo[0]);
       assertEquals(0, data.size());
    }
 

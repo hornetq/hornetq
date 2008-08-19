@@ -50,7 +50,7 @@ import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
-import org.jboss.messaging.jms.server.management.SubscriberInfo;
+import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 import org.jboss.messaging.jms.server.management.TopicControlMBean;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
 import org.jboss.messaging.microcontainer.JBMBootstrapServer;
@@ -654,12 +654,12 @@ public class LocalTestServer implements Server, Runnable
       }
    }
 
-   public List<SubscriberInfo> listAllSubscribersForTopic(String s) throws Exception
+   public List<SubscriptionInfo> listAllSubscribersForTopic(String s) throws Exception
    {
       ObjectName objectName = JMSManagementServiceImpl.getJMSTopicObjectName(s);
       TopicControlMBean topic = (TopicControlMBean) MBeanServerInvocationHandler.newProxyInstance(
             ManagementFactory.getPlatformMBeanServer(), objectName, TopicControlMBean.class, false);
-      return Arrays.asList(topic.listAllSubscriberInfos());
+      return Arrays.asList(topic.listAllSubscriptionInfos());
    }
 
 

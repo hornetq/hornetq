@@ -42,7 +42,7 @@ import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.jms.JBossTopic;
-import org.jboss.messaging.jms.server.management.SubscriberInfo;
+import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 import org.jboss.messaging.jms.server.management.impl.TopicControl;
 
 /**
@@ -185,15 +185,15 @@ public class TopicControlTest extends TestCase
       assertEquals(countForNonDurableQueue + countForDurableQueue_1
             + countForDurableQueue_2, control.getMessageCount());
       assertEquals(countForDurableQueue_1 + countForDurableQueue_2, control
-            .getDurableMessageCount());
-      assertEquals(countForNonDurableQueue, control.getNonDurableMessageCount());
+            .getDurableMessagesCount());
+      assertEquals(countForNonDurableQueue, control.getNonDurableMessagesCount());
 
       verify(postOffice, storageManager, bindingForNonDurableQueue,
             nonDurableQueue, bindingForDurableQueue_1, durableQueue_1,
             bindingForDurableQueue_2, durableQueue_2);
    }
 
-   public void testGetSubcribersCount() throws Exception
+   public void testGetSubcriptionsCount() throws Exception
    {
       String jndiBinding = randomString();
       String name = randomString();
@@ -230,9 +230,9 @@ public class TopicControlTest extends TestCase
 
       TopicControl control = new TopicControl(topic, jndiBinding, postOffice,
             storageManager);
-      assertEquals(3, control.getSubcribersCount());
-      assertEquals(2, control.getDurableSubcribersCount());
-      assertEquals(1, control.getNonDurableSubcribersCount());
+      assertEquals(3, control.getSubcriptionsCount());
+      assertEquals(2, control.getDurableSubcriptionsCount());
+      assertEquals(1, control.getNonDurableSubcriptionsCount());
 
       verify(postOffice, storageManager, bindingForNonDurableQueue,
             nonDurableQueue, bindingForDurableQueue_1, durableQueue_1,
@@ -275,7 +275,7 @@ public class TopicControlTest extends TestCase
             bindingForQueue_2, queue_2);
    }
 
-   public void testListSubscriberInfos() throws Exception
+   public void testListSubscriptionInfos() throws Exception
    {
       String jndiBinding = randomString();
       String name = randomString();
@@ -313,20 +313,20 @@ public class TopicControlTest extends TestCase
 
       TopicControl control = new TopicControl(topic, jndiBinding, postOffice,
             storageManager);
-      SubscriberInfo[] infos = control.listAllSubscriberInfos();
+      SubscriptionInfo[] infos = control.listAllSubscriptionInfos();
       assertEquals(2, infos.length);
-      infos = control.listDurableSubscriberInfos();
+      infos = control.listDurableSubscriptionInfos();
       assertEquals(1, infos.length);
-      assertEquals(durableQueue.getName().toString(), infos[0].getID());
-      infos = control.listNonDurableSubscriberInfos();
+      assertEquals(durableQueue.getName().toString(), infos[0].getQueueName());
+      infos = control.listNonDurableSubscriptionInfos();
       assertEquals(1, infos.length);
-      assertEquals(nonDurableQueue.getName().toString(), infos[0].getID());
+      assertEquals(nonDurableQueue.getName().toString(), infos[0].getQueueName());
 
       verify(postOffice, storageManager, bindingForDurableQueue, durableQueue,
             bindingForNonDurableQueue, nonDurableQueue);
    }
 
-   public void testListSubscribers() throws Exception
+   public void testListSubscriptions() throws Exception
    {
       String jndiBinding = randomString();
       String name = randomString();
@@ -365,14 +365,14 @@ public class TopicControlTest extends TestCase
 
       TopicControl control = new TopicControl(topic, jndiBinding, postOffice,
             storageManager);
-      TabularData data = control.listAllSubscribers();
+      TabularData data = control.listAllSubscriptions();
       assertEquals(2, data.size());
-      data = control.listDurableSubscribers();
+      data = control.listDurableSubscriptions();
       assertEquals(1, data.size());
       CompositeData info = data.get(new String[] { durableQueue.getName()
             .toString() });
       assertNotNull(info);
-      data = control.listNonDurableSubscribers();
+      data = control.listNonDurableSubscriptions();
       assertEquals(1, data.size());
       info = data.get(new String[] { nonDurableQueue.getName().toString() });
       assertNotNull(info);

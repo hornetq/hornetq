@@ -41,18 +41,18 @@ import javax.management.openmbean.TabularType;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class SubscriberInfo
+public class SubscriptionInfo
 {
    // Constants -----------------------------------------------------
 
    public static final CompositeType TYPE;
    private static final TabularType TABULAR_TYPE;
-   private static final String SUBSCRIBER_TYPE_NAME = "SubscriberInfo";
-   private static final String SUBSCRIBER_TABULAR_TYPE_NAME = "SubscriberTabularInfo";
-   private static final String[] ITEM_NAMES = new String[] { "id", "clientID",
+   private static final String SUBSCRIPTION_TYPE_NAME = "SubscriptionInfo";
+   private static final String SUBSCRIPTION_TABULAR_TYPE_NAME = "SubscriptionTabularInfo";
+   private static final String[] ITEM_NAMES = new String[] { "queueName", "clientID",
          "name", "durable", "selector", "messageCount", "maxSizeBytes" };
    private static final String[] ITEM_DESCRIPTIONS = new String[] {
-         "ID of the subscriber", "ClientID of the subscription",
+         "ID of the subscription", "ClientID of the subscription",
          "name of the subscription", "Is the subscriber durable?", "Selector",
          "Number of messages", "Maximum size in bytes" };
    private static final OpenType[] ITEM_TYPES = new OpenType[] { STRING,
@@ -62,8 +62,8 @@ public class SubscriberInfo
    {
       try
       {
-         TYPE = createSubscriberInfoType();
-         TABULAR_TYPE = createSubscriberInfoTabularType();
+         TYPE = createSubscriptionInfoType();
+         TABULAR_TYPE = createSubscriptionInfoTabularType();
       } catch (OpenDataException e)
       {
          throw new IllegalStateException(e);
@@ -72,7 +72,7 @@ public class SubscriberInfo
 
    // Attributes ----------------------------------------------------
 
-   private final String id;
+   private final String queueName;
    private final String clientID;
    private final String name;
    private final boolean durable;
@@ -82,38 +82,38 @@ public class SubscriberInfo
 
    // Static --------------------------------------------------------
 
-   public static TabularData toTabularData(final SubscriberInfo[] infos)
+   public static TabularData toTabularData(final SubscriptionInfo[] infos)
    {
       TabularData data = new TabularDataSupport(TABULAR_TYPE);
-      for (SubscriberInfo subscriberInfo : infos)
+      for (SubscriptionInfo subscriberInfo : infos)
       {
          data.put(subscriberInfo.toCompositeData());
       }
       return data;
    }
 
-   private static CompositeType createSubscriberInfoType()
+   private static CompositeType createSubscriptionInfoType()
          throws OpenDataException
    {
-      return new CompositeType(SUBSCRIBER_TYPE_NAME,
-            "Information for a Topic Subscriber", ITEM_NAMES,
+      return new CompositeType(SUBSCRIPTION_TYPE_NAME,
+            "Information for a Topic Subscription", ITEM_NAMES,
             ITEM_DESCRIPTIONS, ITEM_TYPES);
    }
 
-   private static TabularType createSubscriberInfoTabularType()
+   private static TabularType createSubscriptionInfoTabularType()
          throws OpenDataException
    {
-      return new TabularType(SUBSCRIBER_TABULAR_TYPE_NAME,
-            "Table of SubscriberInfo", TYPE, new String[] { "id" });
+      return new TabularType(SUBSCRIPTION_TABULAR_TYPE_NAME,
+            "Table of SubscriptionInfo", TYPE, new String[] { "queueName" });
    }
 
    // Constructors --------------------------------------------------
 
-   public SubscriberInfo(final String id, final String clientID,
+   public SubscriptionInfo(final String queueName, final String clientID,
          final String name, final boolean durable, final String selector,
          final int messageCount, final int maxSizeBytes)
    {
-      this.id = id;
+      this.queueName = queueName;
       this.clientID = clientID;
       this.name = name;
       this.durable = durable;
@@ -124,9 +124,9 @@ public class SubscriberInfo
 
    // Public --------------------------------------------------------
 
-   public String getID()
+   public String getQueueName()
    {
-      return id;
+      return queueName;
    }
 
    public String getClientID()
@@ -163,11 +163,10 @@ public class SubscriberInfo
    {
       try
       {
-         return new CompositeDataSupport(TYPE, ITEM_NAMES, new Object[] { id,
+         return new CompositeDataSupport(TYPE, ITEM_NAMES, new Object[] { queueName,
                clientID, name, durable, selector, messageCount, maxSizeBytes });
       } catch (OpenDataException e)
       {
-         e.printStackTrace();
          return null;
       }
    }

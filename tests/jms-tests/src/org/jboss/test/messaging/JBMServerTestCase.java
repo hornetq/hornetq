@@ -43,7 +43,7 @@ import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.JMSServerManager;
-import org.jboss.messaging.jms.server.management.SubscriberInfo;
+import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.DatabaseClearer;
 import org.jboss.test.messaging.tools.container.Server;
@@ -798,7 +798,7 @@ public class JBMServerTestCase extends JBMBaseTestCase
       servers.get(server).undeployConnectionFactory(objectName);
    }
 
-   protected List<SubscriberInfo> listAllSubscribersForTopic(String s) throws Exception
+   protected List<SubscriptionInfo> listAllSubscribersForTopic(String s) throws Exception
    {
       return servers.get(0).listAllSubscribersForTopic(s);
    }

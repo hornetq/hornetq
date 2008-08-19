@@ -37,43 +37,43 @@ public interface TopicControlMBean extends DestinationControlMBean
 {
    // Attributes ----------------------------------------------------
 
-   int getSubcribersCount();
+   int getSubcriptionsCount();
 
-   int getDurableSubcribersCount();
+   int getDurableSubcriptionsCount();
 
-   int getNonDurableSubcribersCount();
+   int getNonDurableSubcriptionsCount();
 
-   int getDurableMessageCount();
+   int getDurableMessagesCount();
 
-   int getNonDurableMessageCount();
+   int getNonDurableMessagesCount();
 
    // Operations ----------------------------------------------------
 
    // Open Type API
 
-   @Operation(desc = "List all subscribers")
-   TabularData listAllSubscribers();
+   @Operation(desc = "List all subscriptions")
+   TabularData listAllSubscriptions();
 
-   @Operation(desc = "List only the durable subscribers")
-   TabularData listDurableSubscribers();
+   @Operation(desc = "List only the durable subscriptions")
+   TabularData listDurableSubscriptions();
 
-   @Operation(desc = "List only the non durable subscribers")
-   TabularData listNonDurableSubscribers();
+   @Operation(desc = "List only the non durable subscriptions")
+   TabularData listNonDurableSubscriptions();
 
-   @Operation(desc = "List all the message for the given subscriber")
-   public TabularData listMessagesForSubscriber(
-         @Parameter(name = "subscriberID", desc = "Subscriber's ID") String subscriberID)
+   @Operation(desc = "List all the message for the given subscription")
+   public TabularData listMessagesForSubscription(
+         @Parameter(name = "queueName", desc = "the name of the queue representing a subscription") String queueName)
          throws Exception;
 
    // Specific API
 
-   @Operation(desc = "List all subscribers")
-   SubscriberInfo[] listAllSubscriberInfos();
+   @Operation(desc = "List all subscriptions")
+   SubscriptionInfo[] listAllSubscriptionInfos();
 
-   @Operation(desc = "List only the durable subscribers")
-   SubscriberInfo[] listDurableSubscriberInfos();
+   @Operation(desc = "List only the durable subscriptions")
+   SubscriptionInfo[] listDurableSubscriptionInfos();
 
-   @Operation(desc = "List only the non durable subscribers")
-   SubscriberInfo[] listNonDurableSubscriberInfos();
+   @Operation(desc = "List only the non durable subscriptions")
+   SubscriptionInfo[] listNonDurableSubscriptionInfos();
 
 }

@@ -36,7 +36,7 @@ import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.jms.server.JMSServerManager;
-import org.jboss.messaging.jms.server.management.SubscriberInfo;
+import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 
 /**
  * The remote interface exposed by TestServer.
@@ -260,7 +260,7 @@ public interface Server extends Remote
 
    Integer getMessageCountForQueue(String queueName) throws Exception;
 
-   List<SubscriberInfo> listAllSubscribersForTopic(String s) throws Exception;
+   List<SubscriptionInfo> listAllSubscribersForTopic(String s) throws Exception;
 
    Set<Role> getSecurityConfig() throws Exception;
 

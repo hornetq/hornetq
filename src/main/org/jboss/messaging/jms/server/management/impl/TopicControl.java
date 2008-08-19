@@ -42,7 +42,7 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.server.management.JMSMessageInfo;
-import org.jboss.messaging.jms.server.management.SubscriberInfo;
+import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 import org.jboss.messaging.jms.server.management.TopicControlMBean;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
@@ -126,65 +126,65 @@ public class TopicControl extends StandardMBean implements TopicControlMBean
       return getMessageCount(DurabilityType.ALL);
    }
 
-   public int getDurableMessageCount()
+   public int getDurableMessagesCount()
    {
       return getMessageCount(DurabilityType.DURABLE);
    }
 
-   public int getNonDurableMessageCount()
+   public int getNonDurableMessagesCount()
    {
       return getMessageCount(DurabilityType.NON_DURABLE);
    }
 
-   public int getSubcribersCount()
+   public int getSubcriptionsCount()
    {
       return getQueues(DurabilityType.ALL).size();
    }
 
-   public int getDurableSubcribersCount()
+   public int getDurableSubcriptionsCount()
    {
       return getQueues(DurabilityType.DURABLE).size();
    }
 
-   public int getNonDurableSubcribersCount()
+   public int getNonDurableSubcriptionsCount()
    {
       return getQueues(DurabilityType.NON_DURABLE).size();
    }
 
-   public TabularData listAllSubscribers()
+   public TabularData listAllSubscriptions()
    {
-      return SubscriberInfo.toTabularData(listAllSubscriberInfos());
+      return SubscriptionInfo.toTabularData(listAllSubscriptionInfos());
    }
 
-   public TabularData listDurableSubscribers()
+   public TabularData listDurableSubscriptions()
    {
-      return SubscriberInfo.toTabularData(listDurableSubscriberInfos());
+      return SubscriptionInfo.toTabularData(listDurableSubscriptionInfos());
    }
 
-   public TabularData listNonDurableSubscribers()
+   public TabularData listNonDurableSubscriptions()
    {
-      return SubscriberInfo.toTabularData(listNonDurableSubscriberInfos());
+      return SubscriptionInfo.toTabularData(listNonDurableSubscriptionInfos());
    }
 
-   public SubscriberInfo[] listAllSubscriberInfos()
+   public SubscriptionInfo[] listAllSubscriptionInfos()
    {
       return listSubscribersInfos(DurabilityType.ALL);
    }
 
-   public SubscriberInfo[] listDurableSubscriberInfos()
+   public SubscriptionInfo[] listDurableSubscriptionInfos()
    {
       return listSubscribersInfos(DurabilityType.DURABLE);
    }
 
-   public SubscriberInfo[] listNonDurableSubscriberInfos()
+   public SubscriptionInfo[] listNonDurableSubscriptionInfos()
    {
       return listSubscribersInfos(DurabilityType.NON_DURABLE);
    }
 
-   public TabularData listMessagesForSubscriber(final String subscriberID)
+   public TabularData listMessagesForSubscription(final String queueName)
          throws Exception
    {
-      SimpleString sAddress = new SimpleString(subscriberID);
+      SimpleString sAddress = new SimpleString(queueName);
       Binding binding = postOffice.getBinding(sAddress);
       if (binding == null)
       {
@@ -222,10 +222,10 @@ public class TopicControl extends StandardMBean implements TopicControlMBean
 
    // Private -------------------------------------------------------
 
-   private SubscriberInfo[] listSubscribersInfos(final DurabilityType durability)
+   private SubscriptionInfo[] listSubscribersInfos(final DurabilityType durability)
    {
       List<Queue> queues = getQueues(durability);
-      List<SubscriberInfo> subInfos = new ArrayList<SubscriberInfo>(queues
+      List<SubscriptionInfo> subInfos = new ArrayList<SubscriptionInfo>(queues
             .size());
       for (Queue queue : queues)
       {
@@ -243,12 +243,12 @@ public class TopicControl extends StandardMBean implements TopicControlMBean
 
          String filter = queue.getFilter() != null ? queue.getFilter()
                .getFilterString().toString() : null;
-         SubscriberInfo info = new SubscriberInfo(queue.getName().toString(),
+         SubscriptionInfo info = new SubscriptionInfo(queue.getName().toString(),
                clientID, subName, queue.isDurable(), filter, queue
                      .getMessageCount(), queue.getMaxSizeBytes());
          subInfos.add(info);
       }
-      return (SubscriberInfo[]) subInfos.toArray(new SubscriberInfo[subInfos
+      return (SubscriptionInfo[]) subInfos.toArray(new SubscriptionInfo[subInfos
             .size()]);
    }
 
