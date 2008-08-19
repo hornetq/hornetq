@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.core.security.impl;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.messaging.core.exception.MessagingException;
@@ -31,7 +30,7 @@ import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.SecurityStore;
-import org.jboss.messaging.core.server.ServerConnection;
+import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.HierarchicalRepositoryChangeListener;
 import org.jboss.messaging.util.ConcurrentHashSet;
@@ -100,7 +99,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
       }
    }
 
-   public void check(final SimpleString address, final CheckType checkType, final ServerConnection conn) throws Exception
+   public void check(final SimpleString address, final CheckType checkType, final ServerSession session) throws Exception
    {
       if (securityEnabled)
       {
@@ -116,9 +115,9 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
          
          Set<Role> roles = securityRepository.getMatch(saddress);
          
-         if (!securityManager.validateUserAndRole(conn.getUsername(), conn.getPassword(), roles, checkType))
+         if (!securityManager.validateUserAndRole(session.getUsername(), session.getPassword(), roles, checkType))
          {
-             throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "Unable to validate user: " + conn.getUsername());
+             throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "Unable to validate user: " + session.getUsername());
          }
          // if we get here we're granted, add to the cache
    

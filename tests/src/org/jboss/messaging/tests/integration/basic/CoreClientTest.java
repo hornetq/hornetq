@@ -24,18 +24,16 @@ package org.jboss.messaging.tests.integration.basic;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.ConnectionParams;
+import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.Location;
-import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.remoting.impl.mina.MinaAcceptorFactory;
 import org.jboss.messaging.core.server.MessagingService;
@@ -45,6 +43,9 @@ import org.jboss.messaging.util.SimpleString;
 
 public class CoreClientTest extends TestCase
 {
+   private static final Logger log = Logger.getLogger(CoreClientTest.class);
+   
+   
    // Constants -----------------------------------------------------
 
    private final SimpleString QUEUE = new SimpleString("CoreClientTestQueue");
@@ -63,7 +64,7 @@ public class CoreClientTest extends TestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-
+ 
       conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setTransport(TransportType.TCP);
@@ -83,62 +84,41 @@ public class CoreClientTest extends TestCase
    
    
    public void testCoreClient() throws Exception
-   {
+   {      
       Location location = new LocationImpl(TransportType.TCP, "localhost", ConfigurationImpl.DEFAULT_PORT);
             
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location);
-      ClientConnection conn = cf.createConnection();
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(location);
+
+      ClientSession session = sf.createSession(false, true, true, -1, false);
       
-      ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
       session.createQueue(QUEUE, QUEUE, null, false, false);
       
-      ClientProducer producer = session.createProducer(QUEUE);
-
-      ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
-            System.currentTimeMillis(), (byte) 1);
-      message.getBody().putString("testINVMCoreClient");
-      producer.send(message);
-
+      ClientProducer producer = session.createProducer(QUEUE);     
+      
+      for (int i = 0; i < 100; i++)
+      {
+         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
+               System.currentTimeMillis(), (byte) 1);
+         
+         message.getBody().putString("testINVMCoreClient");
+         
+         producer.send(message);
+      }
+      
       ClientConsumer consumer = session.createConsumer(QUEUE);
-      conn.start();
       
-      message = consumer.receive(1000);
+      session.start();
       
-      assertEquals("testINVMCoreClient", message.getBody().getString());
+      for (int i = 0; i < 100; i++)
+      {
+         ClientMessage message2 = consumer.receive(1000);
+
+         assertEquals("testINVMCoreClient", message2.getBody().getString());
+      }
       
-      conn.close();
+      session.close();
    }
 
-   public void testCoreClientMultipleConnections() throws Exception
-   {
-      Location location = new LocationImpl(TransportType.TCP, "localhost", ConfigurationImpl.DEFAULT_PORT);
-      ConnectionParams connectionParams = new ConnectionParamsImpl();
-      connectionParams.setCallTimeout(500000);
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location, connectionParams);
-      ClientConnection conn = cf.createConnection();
-
-      ClientConnectionFactory cf2 = new ClientConnectionFactoryImpl(location, connectionParams);
-      ClientConnection conn2 = cf2.createConnection();
-
-      ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
-      session.createQueue(QUEUE, QUEUE, null, false, false);
-
-      ClientProducer producer = session.createProducer(QUEUE);
-
-      ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
-            System.currentTimeMillis(), (byte) 1);
-      message.getBody().putString("testINVMCoreClient");
-      producer.send(message);
-
-      ClientConsumer consumer = session.createConsumer(QUEUE);
-      conn.start();
-
-      message = consumer.receive(1000);
-
-      assertEquals("testINVMCoreClient", message.getBody().getString());
-
-      conn.close();
-   }
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

@@ -43,6 +43,7 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
@@ -53,10 +54,11 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryRespon
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.SecurityStore;
+import org.jboss.messaging.core.server.CommandManager;
 import org.jboss.messaging.core.server.Delivery;
 import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.ServerConnection;
 import org.jboss.messaging.core.server.ServerConsumer;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerProducer;
@@ -72,20 +74,15 @@ import org.jboss.messaging.util.SimpleString;
 /**
  * Session implementation
  *
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> Parts derived from
- *         JBM 1.x ServerSessionImpl by
- * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * @version <tt>$Revision: 3783 $</tt>
- *          <p/>
- *          $Id: ServerSessionImpl.java 3783 2008-02-25 12:15:14Z timfox $
  */
-public class ServerSessionImpl implements ServerSession
+
+public class ServerSessionImpl implements ServerSession, FailureListener
 {
    // Constants
-   // ------------------------------------------------------------------------------------
+   // ------------------------------------------------------------------------------------   
 
    private static final Logger log = Logger.getLogger(ServerSessionImpl.class);
 
@@ -98,13 +95,17 @@ public class ServerSessionImpl implements ServerSession
    private final boolean trace = log.isTraceEnabled();
 
    private final long id;
+   
+   private final String name;
+   
+   private final String username;
+   
+   private final String password;
 
    private final boolean autoCommitSends;
 
    private final boolean autoCommitAcks;
-
-   private final ServerConnection connection;
-  
+ 
    private final RemotingConnection remotingConnection;
 
    private final Set<ServerConsumer> consumers = new ConcurrentHashSet<ServerConsumer>();
@@ -120,6 +121,8 @@ public class ServerSessionImpl implements ServerSession
    private final Executor executor;
 
    private Transaction tx;
+   
+   private final MessagingServer server;
      
    private final StorageManager storageManager;
 
@@ -132,30 +135,47 @@ public class ServerSessionImpl implements ServerSession
    private final SecurityStore securityStore;
    
    private final PacketDispatcher dispatcher;
+               
+   private final CommandManager commandManager;
 
+   private volatile boolean started = false;
+      
    // Constructors
    // ---------------------------------------------------------------------------------
 
-   public ServerSessionImpl(final ServerConnection connection,
+   public ServerSessionImpl(final long id,
+                            final String name,
+                            final String username,
+                            final String password,
                             final boolean autoCommitSends,
                             final boolean autoCommitAcks,
                             final boolean xa, 
                             final RemotingConnection remotingConnection,
+                            final MessagingServer server,
                             final StorageManager storageManager,
                             final PostOffice postOffice,
                             final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                             final ResourceManager resourceManager,
                             final SecurityStore securityStore,
                             final PacketDispatcher packetDispatcher,
-                            final Executor executor) throws Exception
+                            final Executor executor,
+                            final CommandManager commandManager) throws Exception
    {
+      this.id = id;
+      
+      this.name = name;
+      
+      this.username = username;
+      
+      this.password = password;
+      
       this.autoCommitSends = autoCommitSends;
 
       this.autoCommitAcks = autoCommitAcks;
       
-      this.connection = connection;
-      
       this.remotingConnection = remotingConnection;
+      
+      this.server = server;
             
       this.storageManager = storageManager;
       
@@ -169,19 +189,34 @@ public class ServerSessionImpl implements ServerSession
       
       this.dispatcher = packetDispatcher;
       
-      this.id = dispatcher.generateID();      
-      
       this.executor = executor;
       
       if (!xa)
       {         
          tx = new TransactionImpl(storageManager, postOffice);
       }
+       
+      this.commandManager = commandManager;
    }
 
    // ServerSession implementation
    // ---------------------------------------------------------------------------------------
 
+   public String getName()
+   {
+      return name;
+   }
+   
+   public String getUsername()
+   {
+      return username;
+   }
+   
+   public String getPassword()
+   {
+      return password;
+   }
+   
    public long getID()
    {
       return id;
@@ -217,19 +252,41 @@ public class ServerSessionImpl implements ServerSession
       dispatcher.unregister(producer.getID());
    }
 
-   public void handleDelivery(final MessageReference ref, final ServerConsumer consumer) throws Exception
+   public void handleDelivery(final MessageReference ref, final ServerConsumer consumer)
    {
       Delivery delivery;
 
       long nextID = deliveryIDSequence.getAndIncrement();
 
-      delivery = new DeliveryImpl(ref, id, consumer.getClientTargetID(), nextID, remotingConnection);
+      delivery = new DeliveryImpl(ref, consumer.getClientTargetID(), nextID, commandManager);
 
       deliveries.add(delivery);      
 
-      delivery.deliver();
+//      if (!defer)
+//      {
+         delivery.deliver();
+//      }
+//      else
+//      {
+//         //Actual delivery is deferred until the replicate delivery response comes back from the backup
+//      }
    }
-
+   
+   public void deliverDeferredDelivery(final long messageID)
+   {
+      for (Delivery del: deliveries)
+      {
+         long id = del.getReference().getMessage().getMessageID();
+         
+         if (id == messageID)
+         {
+            del.deliver();
+            
+            break;
+         }
+      }     
+   }
+   
    public void setStarted(final boolean s) throws Exception
    {
       Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers);
@@ -238,6 +295,8 @@ public class ServerSessionImpl implements ServerSession
       {
          consumer.setStarted(s);
       }
+      
+      started = s;      
    }
 
    public void close() throws Exception
@@ -272,8 +331,10 @@ public class ServerSessionImpl implements ServerSession
       rollback();
 
       deliveries.clear();
-
-      connection.removeSession(this);
+      
+      server.removeSession(name);
+      
+      commandManager.close();           
    }
 
    public void promptDelivery(final Queue queue)
@@ -286,7 +347,7 @@ public class ServerSessionImpl implements ServerSession
       //check the user has write access to this address. 
       try
       {
-         securityStore.check(msg.getDestination(), CheckType.WRITE, connection);
+         securityStore.check(msg.getDestination(), CheckType.WRITE, this);
       }      
       catch (MessagingException e)
       {       
@@ -298,11 +359,6 @@ public class ServerSessionImpl implements ServerSession
       }
 
       msg.setMessageID(storageManager.generateMessageID());
-      
-      // This allows the no-local consumers to filter out the messages that come
-      // from the same connection.
-
-      msg.setConnectionID(connection.getID());
       
       if (autoCommitSends)
       {
@@ -843,47 +899,57 @@ public class ServerSessionImpl implements ServerSession
       return resourceManager.setTimeoutSeconds(timeoutSeconds);
    }
 
-   public void addDestination(final SimpleString address, final boolean temporary) throws Exception
+   public void addDestination(final SimpleString address, final boolean durable, final boolean temporary) throws Exception
    {
-      securityStore.check(address, CheckType.CREATE, connection);
+      securityStore.check(address, CheckType.CREATE, this);
 
-      if (!postOffice.addDestination(address, temporary))
+      if (!postOffice.addDestination(address, durable))
       {
          throw new MessagingException(MessagingException.ADDRESS_EXISTS, "Address already exists: " + address);
       }
-      else
+      
+      if (temporary)
       {
-         if (temporary)
-         {
-            connection.addTemporaryDestination(address);
-         }
+         //Temporary address in core simply means the address will be deleted if the remoting connection
+         //dies. It does not mean it will get deleted automatically when the session is closed.
+         //It is up to the user to delete the address when finished with it
+         
+         remotingConnection.addFailureListener(
+            new FailureListener()
+            {
+               public void connectionFailed(final MessagingException me)
+               {
+                  try
+                  {
+                     postOffice.removeDestination(address, durable);
+                  }
+                  catch (Exception e)
+                  {
+                     log.error("Failed to remove temporary address " + address);
+                  }
+               }         
+            }); 
       }
    }
 
-   public void removeDestination(final SimpleString address, final boolean temporary) throws Exception
+   public void removeDestination(final SimpleString address, final boolean durable) throws Exception
    {
-      securityStore.check(address, CheckType.CREATE, connection);
+      securityStore.check(address, CheckType.CREATE, this);
 
-      if (!postOffice.removeDestination(address, temporary))
+      if (!postOffice.removeDestination(address, durable))
       {
          throw new MessagingException(MessagingException.ADDRESS_DOES_NOT_EXIST, "Address does not exist: " + address);
-      }
-      else
-      {
-         if (temporary)
-         {
-            connection.removeTemporaryDestination(address);
-         }
       }
    }
 
    public void createQueue(final SimpleString address, final SimpleString queueName,
-                           final SimpleString filterString, boolean durable, final boolean temporary) throws Exception
+                           final SimpleString filterString, final boolean durable,
+                           final boolean temporary) throws Exception
    {
       //make sure the user has privileges to create this queue
       if (!postOffice.containsDestination(address))
       {
-         securityStore.check(address, CheckType.CREATE, connection);
+         securityStore.check(address, CheckType.CREATE, this);
       }
       
       Binding binding = postOffice.getBinding(queueName);
@@ -893,11 +959,6 @@ public class ServerSessionImpl implements ServerSession
          throw new MessagingException(MessagingException.QUEUE_EXISTS);
       }
 
-      if (temporary)
-      {
-         durable = false;
-      }
-
       Filter filter = null;
 
       if (filterString != null)
@@ -905,14 +966,31 @@ public class ServerSessionImpl implements ServerSession
          filter = new FilterImpl(filterString);
       }
 
-      binding = postOffice.addBinding(address, queueName, filter, durable,
-              temporary);
-
+      binding = postOffice.addBinding(address, queueName, filter, durable);
+      
       if (temporary)
-      {
-         Queue queue = binding.getQueue();
-
-         connection.addTemporaryQueue(queue);
+      {      
+         //Temporary queue in core simply means the queue will be deleted if the remoting connection
+         //dies. It does not mean it will get deleted automatically when the session is closed.
+         //It is up to the user to delete the queue when finished with it
+         
+         final Queue queue = binding.getQueue();
+         
+         remotingConnection.addFailureListener(
+            new FailureListener()
+            {
+               public void connectionFailed(final MessagingException me)
+               {
+                  try
+                  {
+                     postOffice.removeBinding(queue.getName());
+                  }
+                  catch (Exception e)
+                  {
+                     log.error("Failed to remove temporary queue " + queue.getName());
+                  }
+               }         
+            }); 
       }
    }
 
@@ -936,15 +1014,10 @@ public class ServerSessionImpl implements ServerSession
       {
          binding.getQueue().deleteAllReferences(storageManager);
       }
-
-      if (queue.isTemporary())
-      {
-         connection.removeTemporaryQueue(queue);
-      }
    }
 
-   public SessionCreateConsumerResponseMessage createConsumer(final long clientTargetID, final SimpleString queueName, final SimpleString filterString,
-                                                              final boolean noLocal, final boolean autoDeleteQueue,
+   public SessionCreateConsumerResponseMessage createConsumer(final long clientTargetID, final SimpleString queueName,
+                                                              final SimpleString filterString,                                                              
                                                               int windowSize, int maxRate) throws Exception
    {
       Binding binding = postOffice.getBinding(queueName);
@@ -954,7 +1027,7 @@ public class ServerSessionImpl implements ServerSession
          throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
       }
 
-      securityStore.check(binding.getAddress(), CheckType.READ, connection);
+      securityStore.check(binding.getAddress(), CheckType.READ, this);
 
       Filter filter = null;
 
@@ -965,24 +1038,26 @@ public class ServerSessionImpl implements ServerSession
 
       //Flow control values if specified on queue override those passed in from client
 
-      Integer queueWindowSize = queueSettingsRepository.getMatch(queueName.toString()).getConsumerWindowSize();
-
+      QueueSettings qs = queueSettingsRepository.getMatch(queueName.toString());
+      
+      Integer queueWindowSize = (Integer)qs.getConsumerWindowSize();
+      
       windowSize = queueWindowSize != null ? queueWindowSize : windowSize;
 
       Integer queueMaxRate = queueSettingsRepository.getMatch(queueName.toString()).getConsumerMaxRate();
 
       maxRate = queueMaxRate != null ? queueMaxRate : maxRate;
-
+      
       ServerConsumer consumer =
-              new ServerConsumerImpl(this, clientTargetID, binding.getQueue(), noLocal, filter,
-                                     autoDeleteQueue, windowSize != -1, maxRate, connection.getID(),
-                                     connection.isStarted(),
+              new ServerConsumerImpl(this, clientTargetID, binding.getQueue(), filter,
+                                     windowSize != -1, maxRate,
+                                     started,                       
                                      storageManager,
                                      queueSettingsRepository,
                                      postOffice,
                                      dispatcher);
 
-      dispatcher.register(new ServerConsumerPacketHandler(consumer, remotingConnection));
+      dispatcher.register(new ServerConsumerPacketHandler(consumer, commandManager));
 
       SessionCreateConsumerResponseMessage response =
               new SessionCreateConsumerResponseMessage(consumer.getID(), windowSize);
@@ -1011,7 +1086,7 @@ public class ServerSessionImpl implements ServerSession
 
          SimpleString filterString = filter == null ? null : filter.getFilterString();
 
-         response = new SessionQueueQueryResponseMessage(queue.isDurable(), queue.isTemporary(), queue.getMaxSizeBytes(),
+         response = new SessionQueueQueryResponseMessage(queue.isDurable(), queue.getMaxSizeBytes(),
                  queue.getConsumerCount(), queue.getMessageCount(),
                  filterString, binding.getAddress());
       }
@@ -1057,12 +1132,12 @@ public class ServerSessionImpl implements ServerSession
          throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
       }
 
-      securityStore.check(binding.getAddress(), CheckType.READ, connection);
+      securityStore.check(binding.getAddress(), CheckType.READ, this);
 
       ServerBrowserImpl browser =
          new ServerBrowserImpl(this, binding.getQueue(),
                                filterString == null ? null : filterString.toString(),
-                               dispatcher, remotingConnection);
+                               dispatcher, commandManager);
 
       browsers.add(browser);
 
@@ -1099,12 +1174,12 @@ public class ServerSessionImpl implements ServerSession
       final int serverWindowSize = windowToUse == -1 ? -1 : (int)(windowToUse * 0.75);            
       
       ServerProducerImpl producer 
-         = new ServerProducerImpl(this, clientTargetID, address, remotingConnection, flowController, serverWindowSize,
-                                  dispatcher);
+         = new ServerProducerImpl(this, clientTargetID, address, flowController, serverWindowSize,
+                                  dispatcher, commandManager);
 
       producers.add(producer);
 
-      dispatcher.register(new ServerProducerPacketHandler(producer, remotingConnection));
+      dispatcher.register(new ServerProducerPacketHandler(producer, commandManager));
       
       //Get some initial credits to send to the producer - we try for windowToUse
       
@@ -1112,14 +1187,23 @@ public class ServerSessionImpl implements ServerSession
       
       return new SessionCreateProducerResponseMessage(producer.getID(), initialCredits, maxRateToUse);
    }
+   
+   // FailureListener implementation --------------------------------------------------------------------
+   
+   public void connectionFailed(MessagingException me)
+   {
+      try
+      {
+         close();
+      }
+      catch (Throwable t)
+      {
+         log.error("Failed to close connection " + this);
+      }
+   }
 
    // Public ---------------------------------------------------------------------------------------------
 
-   public String toString()
-   {
-      return "SessionEndpoint[" + id + "]";
-   }
-   
    public Transaction getTransaction()
    {      
       return tx;

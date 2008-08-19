@@ -149,13 +149,13 @@ public interface Server extends Remote
 //   /**
 //    * Simulates a topic deployment (copying the topic descriptor in the deploy directory).
 //    */
-//   void deployTopic(String name, String jndiName, boolean clustered) throws Exception;
+//   void deployTopic(String name, String jndiName, boolean manageConfirmations) throws Exception;
 //
 //   /**
 //    * Simulates a topic deployment (copying the topic descriptor in the deploy directory).
 //    */
 //   void deployTopic(String name, String jndiName, int fullSize, int pageSize,
-//                    int downCacheSize, boolean clustered) throws Exception;
+//                    int downCacheSize, boolean manageConfirmations) throws Exception;
 //
 //   /**
 //    * Creates a topic programatically.
@@ -165,13 +165,13 @@ public interface Server extends Remote
 //   /**
 //    * Simulates a queue deployment (copying the queue descriptor in the deploy directory).
 //    */
-//   void deployQueue(String name, String jndiName, boolean clustered) throws Exception;
+//   void deployQueue(String name, String jndiName, boolean manageConfirmations) throws Exception;
 //
 //   /**
 //    * Simulates a queue deployment (copying the queue descriptor in the deploy directory).
 //    */
 //   void deployQueue(String name, String jndiName, int fullSize, int pageSize,
-//                    int downCacheSize, boolean clustered) throws Exception;
+//                    int downCacheSize, boolean manageConfirmations) throws Exception;
 //
 //   /**
 //    * Creates a queue programatically.

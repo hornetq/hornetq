@@ -41,17 +41,21 @@ public class SessionAddDestinationMessage extends PacketImpl
    
    private SimpleString address;
    
+   private boolean durable;
+   
    private boolean temporary;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionAddDestinationMessage(final SimpleString address, final boolean temp)
+   public SessionAddDestinationMessage(final SimpleString address, final boolean durable, final boolean temp)
    {
       super(SESS_ADD_DESTINATION);
       
       this.address = address;
+      
+      this.durable = durable;
       
       this.temporary = temp;
    }
@@ -68,27 +72,34 @@ public class SessionAddDestinationMessage extends PacketImpl
       return address;
    }
    
+   public boolean isDurable()
+   {
+   	return durable;
+   }
+   
    public boolean isTemporary()
    {
-   	return temporary;
+      return temporary;
    }
    
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putSimpleString(address);
+      buffer.putBoolean(durable);
       buffer.putBoolean(temporary);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
       address = buffer.getSimpleString();
+      durable = buffer.getBoolean();
       temporary = buffer.getBoolean();
    }
    
    @Override
    public String toString()
    {
-      return getParentString() + ", address=" + address + ", temp=" + temporary +"]";
+      return getParentString() + ", address=" + address + ", temp=" + durable +"]";
    }
    
    public boolean equals(Object other)
@@ -101,6 +112,7 @@ public class SessionAddDestinationMessage extends PacketImpl
       SessionAddDestinationMessage r = (SessionAddDestinationMessage)other;
       
       return super.equals(other) && this.address.equals(r.address) &&
+             this.durable == r.durable &&
              this.temporary == r.temporary;
    }
    

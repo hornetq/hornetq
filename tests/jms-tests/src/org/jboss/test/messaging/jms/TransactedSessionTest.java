@@ -624,7 +624,7 @@ public class TransactedSessionTest extends JMSTestCase
             producer.send(m);
          }
 
-         log.trace("Sent messages");
+         log.info("Sent messages");
 
          checkEmpty(queue1);
       }
@@ -635,7 +635,6 @@ public class TransactedSessionTest extends JMSTestCase
             conn.close();
          }
       }
-
    }
 
 

@@ -161,7 +161,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
    {
       ObjectName objectName = getConnectionFactoryObjectName(name);
       ConnectionFactoryControl control = new ConnectionFactoryControl(
-            connectionFactory, connectionFactory.getCoreConnection(), name,
+            connectionFactory, name,
             bindings);
       register(objectName, control);
       registerInJMX(objectName, control);

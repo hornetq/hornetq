@@ -40,7 +40,6 @@ import javax.naming.InitialContext;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.bridge.ConnectionFactoryFactory;
 import org.jboss.messaging.jms.bridge.DestinationFactory;
-import org.jboss.messaging.jms.bridge.Bridge;
 import org.jboss.messaging.jms.bridge.QualityOfServiceMode;
 import org.jboss.messaging.jms.bridge.impl.JNDIConnectionFactoryFactory;
 import org.jboss.messaging.jms.bridge.impl.JNDIDestinationFactory;

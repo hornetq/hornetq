@@ -118,7 +118,7 @@ public class JMSServerManagerImpl implements JMSServerManager
          throws Exception
    {
       JBossQueue jBossQueue = new JBossQueue(queueName);
-      postOffice.addDestination(jBossQueue.getSimpleAddress(), false);
+      postOffice.addDestination(jBossQueue.getSimpleAddress(), true);
       messagingServer.createQueue(jBossQueue.getAddress(), jBossQueue.getAddress());
       boolean added = bindToJndi(jndiBinding, jBossQueue);
       if (added)
@@ -135,7 +135,7 @@ public class JMSServerManagerImpl implements JMSServerManager
          throws Exception
    {
       JBossTopic jBossTopic = new JBossTopic(topicName);
-      postOffice.addDestination(jBossTopic.getSimpleAddress(), false);
+      postOffice.addDestination(jBossTopic.getSimpleAddress(), true);
       boolean added = bindToJndi(jndiBinding, jBossTopic);
       if (added)
       {

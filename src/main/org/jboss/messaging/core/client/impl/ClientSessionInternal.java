@@ -41,8 +41,6 @@ public interface ClientSessionInternal extends ClientSession
 {
    long getServerTargetID();
    
-   ClientConnectionInternal getConnection();
-      
    void delivered(long deliveryID, boolean expired);
    
    void addConsumer(ClientConsumerInternal consumer);

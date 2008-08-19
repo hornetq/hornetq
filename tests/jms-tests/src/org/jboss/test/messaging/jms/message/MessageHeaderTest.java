@@ -21,19 +21,36 @@
   */
 package org.jboss.test.messaging.jms.message;
 
-import org.easymock.EasyMock;
 import static org.easymock.EasyMock.expect;
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.impl.ClientMessageImpl;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
-import org.jboss.messaging.jms.client.*;
 
-import javax.jms.*;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Enumeration;
 import java.util.HashSet;
+
+import javax.jms.BytesMessage;
+import javax.jms.DeliveryMode;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
+import javax.jms.Message;
+import javax.jms.MessageFormatException;
+import javax.jms.MessageNotWriteableException;
+import javax.jms.ObjectMessage;
+import javax.jms.StreamMessage;
+import javax.jms.TextMessage;
+
+import org.easymock.EasyMock;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.impl.ClientMessageImpl;
+import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
+import org.jboss.messaging.jms.client.JBossBytesMessage;
+import org.jboss.messaging.jms.client.JBossMapMessage;
+import org.jboss.messaging.jms.client.JBossMessage;
+import org.jboss.messaging.jms.client.JBossObjectMessage;
+import org.jboss.messaging.jms.client.JBossStreamMessage;
+import org.jboss.messaging.jms.client.JBossTextMessage;
 
 /**
  *

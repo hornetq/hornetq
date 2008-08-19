@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.remoting.impl;
 
-import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.*;
+import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -231,9 +231,21 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    public void connectionCreated(final Connection connection)
    {
+//      RemotingConnection backupConnection = null;
+//      
+//      if (config.isClustered())
+//      {
+//         Location backupLocation = new LocationImpl(config.getBackupTransport(), config.getBackupHost(),
+//                                                    config.getBackupPort());
+//         
+//         ConnectionRegistry reg = ConnectionRegistryLocator.getRegistry();
+//         
+//         backupConnection = reg.getConnection(backupLocation, config.getConnectionParams());
+//      }
+      
       RemotingConnection rc =
-         new RemotingConnectionImpl(connection, dispatcher, null, config.getConnectionParams().getCallTimeout());
-
+         new RemotingConnectionImpl(connection, dispatcher, config.getLocation(), config.getConnectionParams().getCallTimeout());
+          
       connections.put(connection.getID(), rc);
    }
 

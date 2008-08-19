@@ -49,7 +49,10 @@ public class PacketDispatcherImpl implements PacketDispatcher
    public static final Logger log = Logger.getLogger(PacketDispatcherImpl.class);
 
    private static boolean trace = log.isTraceEnabled();
-
+   
+   // Reserved for main server handler
+   public static final long MAIN_SERVER_HANDLER_ID = 0;    
+   
    // Attributes ----------------------------------------------------
 
    private final Map<Long, PacketHandler> handlers;
@@ -57,7 +60,7 @@ public class PacketDispatcherImpl implements PacketDispatcher
    private final AtomicLong idSequence = new AtomicLong(0);
 
    private final List<Interceptor> interceptors = new CopyOnWriteArrayList<Interceptor>();
-
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -77,12 +80,12 @@ public class PacketDispatcherImpl implements PacketDispatcher
    {
       long id = idSequence.getAndIncrement();
 
-      if (id == 0)
+      if (id == MAIN_SERVER_HANDLER_ID)
       {
-         // ID 0 is reserved for the connection factory handler
-         id = generateID();
+         // Reserved ID
+         id = idSequence.getAndIncrement();
       }
-
+      
       return id;
    }
 
@@ -136,8 +139,9 @@ public class PacketDispatcherImpl implements PacketDispatcher
       }
       else
       {
-         //Producer tokens can arrive after producer is closed - this is ok
-         if (packet.getType() != PacketImpl.PROD_RECEIVETOKENS)
+         //Producer tokens and command confirmations can arrive after producer is closed - this is ok
+         int type = packet.getType();
+         if (type != PacketImpl.PACKETS_CONFIRMED)     
          {
             log.error("Unhandled packet " + packet);
          }

@@ -442,9 +442,9 @@ public class JBMServerTestCase extends JBMBaseTestCase
 //   }
 //
 //   public void deployQueue(String name, String jndiName, int fullSize, int pageSize,
-//                           int downCacheSize, int serverIndex, boolean clustered) throws Exception
+//                           int downCacheSize, int serverIndex, boolean manageConfirmations) throws Exception
 //   {
-//      servers.get(serverIndex).deployQueue(name, jndiName, fullSize, pageSize, downCacheSize, clustered);
+//      servers.get(serverIndex).deployQueue(name, jndiName, fullSize, pageSize, downCacheSize, manageConfirmations);
 //
 //   }
 //
@@ -479,9 +479,9 @@ public class JBMServerTestCase extends JBMBaseTestCase
 //   }
 //
 //   public void deployTopic(String name, String jndiName, int fullSize, int pageSize,
-//                           int downCacheSize, int serverIndex, boolean clustered) throws Exception
+//                           int downCacheSize, int serverIndex, boolean manageConfirmations) throws Exception
 //   {
-//      servers.get(serverIndex).deployTopic(name, jndiName, fullSize, pageSize, downCacheSize, clustered);
+//      servers.get(serverIndex).deployTopic(name, jndiName, fullSize, pageSize, downCacheSize, manageConfirmations);
 //
 //   }
 //

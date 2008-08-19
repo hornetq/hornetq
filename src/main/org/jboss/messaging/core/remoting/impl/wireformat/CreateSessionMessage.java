@@ -30,40 +30,82 @@ import org.jboss.messaging.core.remoting.MessagingBuffer;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class ConnectionCreateSessionMessage extends PacketImpl
+public class CreateSessionMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
+   
+   private String name;
+   
+   private int version;
+   
+   private String username;
+   
+   private String password;
    
    private boolean xa;
    
    private boolean autoCommitSends;
    
    private boolean autoCommitAcks;
+   
+   private long commandResponseTargetID;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ConnectionCreateSessionMessage(final boolean xa, final boolean autoCommitSends, final boolean autoCommitAcks)
+   public CreateSessionMessage(final String name, final int version, final String username, final String password,
+                               final boolean xa, final boolean autoCommitSends,
+                               final boolean autoCommitAcks, final long commandResponseTargetID)
    {
-      super(CONN_CREATESESSION);
+      super(CREATESESSION);
+      
+      this.name = name;
+      
+      this.version = version;
 
+      this.username = username;
+      
+      this.password = password;
+      
       this.xa = xa;
       
       this.autoCommitSends = autoCommitSends;
       
       this.autoCommitAcks = autoCommitAcks;
+      
+      this.commandResponseTargetID = commandResponseTargetID;
    }
    
-   public ConnectionCreateSessionMessage()
+   public CreateSessionMessage()
    {
-      super(CONN_CREATESESSION);
+      super(CREATESESSION);
    }
 
    // Public --------------------------------------------------------
 
+   public String getName()
+   {
+      return name;
+   }
+   
+   public int getVersion()
+   {
+      return version;
+   }
+   
+   public String getUsername()
+   {
+      return username;
+   }
+   
+   public String getPassword()
+   {
+      return password;
+   }
+   
    public boolean isXA()
    {
       return xa;
@@ -79,34 +121,54 @@ public class ConnectionCreateSessionMessage extends PacketImpl
       return this.autoCommitAcks;
    }
    
+   public long getCommandResponseTargetID()
+   {
+      return commandResponseTargetID;
+   }
+   
    public void encodeBody(final MessagingBuffer buffer)
    {
+      buffer.putString(name);
+      buffer.putInt(version);
+      buffer.putNullableString(username);
+      buffer.putNullableString(password);
       buffer.putBoolean(xa);
       buffer.putBoolean(autoCommitSends);
       buffer.putBoolean(autoCommitAcks);
+      buffer.putLong(commandResponseTargetID);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
+      name = buffer.getString();
+      version = buffer.getInt();
+      username = buffer.getNullableString();
+      password = buffer.getNullableString();
       xa = buffer.getBoolean();
       autoCommitSends = buffer.getBoolean();
       autoCommitAcks = buffer.getBoolean();
+      commandResponseTargetID = buffer.getLong();
    }
    
    public boolean equals(Object other)
    {
-      if (other instanceof ConnectionCreateSessionMessage == false)
+      if (other instanceof CreateSessionMessage == false)
       {
          return false;
       }
             
-      ConnectionCreateSessionMessage r = (ConnectionCreateSessionMessage)other;
+      CreateSessionMessage r = (CreateSessionMessage)other;
       
       boolean matches = super.equals(other) &&
+                        this.name.equals(r.name) &&
+                        this.version == r.version &&
                         this.xa == r.xa &&
                         this.autoCommitSends == r.autoCommitSends &&
-                        this.autoCommitAcks == r.autoCommitAcks;
-      
+                        this.autoCommitAcks == r.autoCommitAcks &&
+                        this.commandResponseTargetID == r.commandResponseTargetID &&
+                        (this.username == null ? r.username == null : this.username.equals(r.username)) &&
+                        (this.password == null ? r.password == null : this.password.equals(r.password));
+         
       return matches;
    }
 

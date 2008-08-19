@@ -21,18 +21,27 @@
   */
 package org.jboss.test.messaging.jms.message;
 
-import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
-import org.jboss.test.messaging.JBMServerTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.tm.TransactionManagerLocator;
-
-import javax.jms.*;
+import javax.jms.Connection;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.XAConnection;
+import javax.jms.XAConnectionFactory;
+import javax.jms.XASession;
 import javax.naming.InitialContext;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
+
+import org.jboss.test.messaging.JBMServerTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
+
+import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 
 /**
  * 

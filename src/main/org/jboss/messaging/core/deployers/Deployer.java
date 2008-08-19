@@ -22,9 +22,9 @@
 
 package org.jboss.messaging.core.deployers;
 
-import org.jboss.messaging.core.server.MessagingComponent;
-
 import java.net.URL;
+
+import org.jboss.messaging.core.server.MessagingComponent;
 
 /**
  * abstract class that helps with deployment of messaging components.

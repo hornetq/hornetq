@@ -22,8 +22,10 @@
 
 package org.jboss.messaging.tests.unit.core.remoting.impl.mina;
 
-import static org.easymock.EasyMock.*;
-import static org.jboss.messaging.tests.util.RandomUtil.*;
+import static org.easymock.EasyMock.createStrictMock;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
+import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import junit.framework.TestCase;
 
 import org.apache.mina.core.session.IoSession;

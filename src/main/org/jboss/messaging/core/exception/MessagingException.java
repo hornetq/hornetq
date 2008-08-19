@@ -62,6 +62,8 @@ public class MessagingException extends Exception
 
    public static final int INCOMPATIBLE_CLIENT_SERVER_VERSIONS = 108;
    
+   public static final int SESSION_EXISTS = 109;
+   
    private int code;
    
    public MessagingException()

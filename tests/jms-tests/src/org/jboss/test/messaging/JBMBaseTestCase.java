@@ -35,14 +35,11 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import javax.jms.Topic;
-import javax.jms.XAConnection;
-import javax.jms.XAConnectionFactory;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.jms.client.JBossConnection;
 import org.jboss.messaging.microcontainer.JBMBootstrapServer;
 import org.jboss.test.messaging.util.ProxyAssertSupport;
 import org.jboss.tm.TransactionManagerLocator;

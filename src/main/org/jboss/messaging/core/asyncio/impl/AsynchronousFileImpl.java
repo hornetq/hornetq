@@ -48,9 +48,9 @@ public class AsynchronousFileImpl implements AsynchronousFile
    // Static 
    // -------------------------------------------------------------------------------
    
-   private static Logger log = Logger.getLogger(AsynchronousFileImpl.class);
+   private static final Logger log = Logger.getLogger(AsynchronousFileImpl.class);
    
-   private static AtomicInteger totalMaxIO = new AtomicInteger(0);
+   private static final AtomicInteger totalMaxIO = new AtomicInteger(0);
    
    private static boolean loaded = false;
    

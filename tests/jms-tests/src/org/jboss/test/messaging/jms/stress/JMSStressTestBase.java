@@ -26,7 +26,6 @@ import javax.jms.Destination;
 import javax.jms.Topic;
 import javax.jms.XASession;
 
-import org.jboss.messaging.jms.client.JBossSession;
 import org.jboss.test.messaging.JBMServerTestCase;
 
 /**

@@ -31,11 +31,11 @@ import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
-import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
+import org.jboss.messaging.core.server.CommandManager;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -55,11 +55,11 @@ public class ServerBrowserImplTest extends UnitTestCase
       Queue destination = EasyMock.createStrictMock(Queue.class);
       String messageFilter = null;
       PacketDispatcher dispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      CommandManager cm = EasyMock.createStrictMock(CommandManager.class);
       EasyMock.expect(dispatcher.generateID()).andReturn(999l);
-      EasyMock.replay(session, destination, dispatcher, rc);
-      ServerBrowserImpl browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, rc);
-      EasyMock.verify(session, destination, dispatcher, rc);
+      EasyMock.replay(session, destination, dispatcher, cm);
+      ServerBrowserImpl browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, cm);
+      EasyMock.verify(session, destination, dispatcher, cm);
       assertEquals(999l, browser.getID());
    }
 
@@ -69,11 +69,11 @@ public class ServerBrowserImplTest extends UnitTestCase
       Queue destination = EasyMock.createStrictMock(Queue.class);
       String messageFilter = "myproperty='this'";
       PacketDispatcher dispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      CommandManager cm = EasyMock.createStrictMock(CommandManager.class);
       EasyMock.expect(dispatcher.generateID()).andReturn(999l);
-      EasyMock.replay(session, destination, dispatcher, rc);
-      ServerBrowserImpl browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, rc);
-      EasyMock.verify(session, destination, dispatcher, rc);
+      EasyMock.replay(session, destination, dispatcher, cm);
+      ServerBrowserImpl browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, cm);
+      EasyMock.verify(session, destination, dispatcher, cm);
       assertEquals(999l, browser.getID());
    }
 
@@ -83,20 +83,20 @@ public class ServerBrowserImplTest extends UnitTestCase
       Queue destination = EasyMock.createStrictMock(Queue.class);
       String messageFilter = "this is a rubbish filter";
       PacketDispatcher dispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      CommandManager cm = EasyMock.createStrictMock(CommandManager.class);
       EasyMock.expect(dispatcher.generateID()).andReturn(999l);
-      EasyMock.replay(session, destination, dispatcher, rc);
+      EasyMock.replay(session, destination, dispatcher, cm);
       ServerBrowserImpl browser = null;
       try
       {
-         browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, rc);
+         browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, cm);
          fail("should throw exception");
       }
       catch (MessagingException e)
       {
          assertEquals(e.getCode(), MessagingException.INVALID_FILTER_EXPRESSION);
       }
-      EasyMock.verify(session, destination, dispatcher, rc);
+      EasyMock.verify(session, destination, dispatcher, cm);
    }
 
    public void testClose() throws Exception
@@ -105,15 +105,15 @@ public class ServerBrowserImplTest extends UnitTestCase
       Queue destination = EasyMock.createStrictMock(Queue.class);
       String messageFilter = null;
       PacketDispatcher dispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      CommandManager cm = EasyMock.createStrictMock(CommandManager.class);
       EasyMock.expect(dispatcher.generateID()).andReturn(999l);
-      EasyMock.replay(session, destination, dispatcher, rc);
-      ServerBrowserImpl browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, rc);
+      EasyMock.replay(session, destination, dispatcher, cm);
+      ServerBrowserImpl browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, cm);
       EasyMock.reset(session);
       session.removeBrowser(browser);
       EasyMock.replay(session);
       browser.close();
-      EasyMock.verify(session, destination, dispatcher, rc);
+      EasyMock.verify(session, destination, dispatcher, cm);
       assertEquals(999l, browser.getID());
    }
 
@@ -125,16 +125,16 @@ public class ServerBrowserImplTest extends UnitTestCase
       EasyMock.expect(destination.list(null)).andReturn(refs);
       String messageFilter = null;
       PacketDispatcher dispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      CommandManager cm = EasyMock.createStrictMock(CommandManager.class);
       EasyMock.expect(dispatcher.generateID()).andReturn(999l);
-      EasyMock.replay(session, destination, dispatcher);
-      ServerBrowserImpl browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, rc);
+      EasyMock.replay(session, destination, dispatcher, cm);
+      ServerBrowserImpl browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, cm);
       for (MessageReference ref : refs)
       {
          assertTrue(browser.hasNextMessage());
          assertEquals(browser.nextMessage(), ref.getMessage());
       }
-      EasyMock.verify(session, destination, dispatcher);
+      EasyMock.verify(session, destination, dispatcher, cm);
    }
 
    public void testReset() throws Exception
@@ -145,10 +145,10 @@ public class ServerBrowserImplTest extends UnitTestCase
       EasyMock.expect(destination.list(null)).andStubReturn(refs);
       String messageFilter = null;
       PacketDispatcher dispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      CommandManager cm = EasyMock.createStrictMock(CommandManager.class);
       EasyMock.expect(dispatcher.generateID()).andReturn(999l);
-      EasyMock.replay(session, destination, dispatcher, rc);
-      ServerBrowserImpl browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, rc);
+      EasyMock.replay(session, destination, dispatcher, cm);
+      ServerBrowserImpl browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, cm);
       for (MessageReference ref : refs)
       {
          assertTrue(browser.hasNextMessage());
@@ -160,7 +160,7 @@ public class ServerBrowserImplTest extends UnitTestCase
          assertTrue(browser.hasNextMessage());
          assertEquals(browser.nextMessage(), ref.getMessage());
       }
-      EasyMock.verify(session, destination, dispatcher, rc);
+      EasyMock.verify(session, destination, dispatcher, cm);
    }
 
    public void testNextBlock() throws Exception
@@ -171,10 +171,10 @@ public class ServerBrowserImplTest extends UnitTestCase
       EasyMock.expect(destination.list(null)).andReturn(refs);
       String messageFilter = null;
       PacketDispatcher dispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      CommandManager cm = EasyMock.createStrictMock(CommandManager.class);
       EasyMock.expect(dispatcher.generateID()).andReturn(999l);
-      EasyMock.replay(session, destination, dispatcher, rc);
-      ServerBrowserImpl browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, rc);
+      EasyMock.replay(session, destination, dispatcher, cm);
+      ServerBrowserImpl browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, cm);
       Message[] messages = browser.nextMessageBlock(2);
       Message[] messages2 = browser.nextMessageBlock(3);
       assertEquals(messages.length, 2);
@@ -184,7 +184,7 @@ public class ServerBrowserImplTest extends UnitTestCase
       assertEquals(messages2[0], refs.get(2).getMessage());
       assertEquals(messages2[1], refs.get(3).getMessage());
       assertEquals(messages2[2], refs.get(4).getMessage());
-      EasyMock.verify(session, destination, dispatcher, rc);
+      EasyMock.verify(session, destination, dispatcher, cm);
    }
 
 
@@ -196,10 +196,10 @@ public class ServerBrowserImplTest extends UnitTestCase
       EasyMock.expect(destination.list(null)).andReturn(refs);
       String messageFilter = null;
       PacketDispatcher dispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      CommandManager cm = EasyMock.createStrictMock(CommandManager.class);
       EasyMock.expect(dispatcher.generateID()).andReturn(999l);
-      EasyMock.replay(session, destination, dispatcher, rc);
-      ServerBrowserImpl browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, rc);
+      EasyMock.replay(session, destination, dispatcher, cm);
+      ServerBrowserImpl browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, cm);
       Message[] messages = browser.nextMessageBlock(2);
       try
       {
@@ -213,7 +213,7 @@ public class ServerBrowserImplTest extends UnitTestCase
       assertEquals(messages.length, 2);
       assertEquals(messages[0], refs.get(0).getMessage());
       assertEquals(messages[1], refs.get(1).getMessage());
-      EasyMock.verify(session, destination, dispatcher, rc);
+      EasyMock.verify(session, destination, dispatcher, cm);
    }
 
    public void testCloseDoHandle() throws Exception
@@ -223,19 +223,20 @@ public class ServerBrowserImplTest extends UnitTestCase
       String messageFilter = null;
       PacketDispatcher dispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
       Packet packet = EasyMock.createStrictMock(Packet.class);
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      CommandManager cm = EasyMock.createStrictMock(CommandManager.class);
       EasyMock.expect(dispatcher.generateID()).andReturn(999l);
       EasyMock.expect(packet.getType()).andReturn(PacketImpl.CLOSE);
       EasyMock.expect(packet.getResponseTargetID()).andStubReturn(1l);
-      rc.sendOneWay((Packet) EasyMock.anyObject());
-      EasyMock.replay(session, destination, dispatcher, packet, rc);
-      ServerBrowserImpl browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, rc);
+      cm.sendCommandOneway(EasyMock.eq(1l), (Packet) EasyMock.anyObject());
+      cm.packetProcessed(packet);
+      EasyMock.replay(session, destination, dispatcher, packet, cm);
+      ServerBrowserImpl browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, cm);
       EasyMock.reset(session);
       session.removeBrowser(browser);
       EasyMock.replay(session);
       PacketHandler handler = browser.newHandler();
       handler.handle(132, packet);
-      EasyMock.verify(session, destination, dispatcher, rc);
+      EasyMock.verify(session, destination, dispatcher, cm);
       assertEquals(999l, browser.getID());
    }
 
@@ -248,25 +249,29 @@ public class ServerBrowserImplTest extends UnitTestCase
       String messageFilter = null;
       PacketDispatcher dispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
       Packet packet = EasyMock.createStrictMock(Packet.class);
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      CommandManager cm = EasyMock.createStrictMock(CommandManager.class);
       EasyMock.expect(dispatcher.generateID()).andReturn(999l);
       EasyMock.expect(packet.getType()).andReturn(PacketImpl.SESS_BROWSER_HASNEXTMESSAGE);
       EasyMock.expect(packet.getResponseTargetID()).andStubReturn(1l);
-      rc.sendOneWay((Packet) EasyMock.anyObject()) ;
+      cm.sendCommandOneway(EasyMock.eq(1l), (Packet) EasyMock.anyObject());      
       EasyMock.expectLastCall().andAnswer(new IAnswer<Object>()
       {
          public Object answer() throws Throwable
          {
-            SessionBrowserHasNextMessageResponseMessage resp = (SessionBrowserHasNextMessageResponseMessage) EasyMock.getCurrentArguments()[0];
+            long targetID = (Long)EasyMock.getCurrentArguments()[0];
+            assertEquals(1, targetID);
+            SessionBrowserHasNextMessageResponseMessage resp =
+               (SessionBrowserHasNextMessageResponseMessage) EasyMock.getCurrentArguments()[1];
             assertEquals(resp.hasNext(), true);
             return null;
-         }
+         }         
       });
-      EasyMock.replay(session, destination, dispatcher, packet, rc);
-      ServerBrowserImpl browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, rc);
+      cm.packetProcessed(packet);
+      EasyMock.replay(session, destination, dispatcher, packet, cm);
+      ServerBrowserImpl browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, cm);
       PacketHandler handler = browser.newHandler();
       handler.handle(1245, packet);
-      EasyMock.verify(session, destination, dispatcher, packet, rc);
+      EasyMock.verify(session, destination, dispatcher, packet, cm);
       assertEquals(999l, handler.getID());
    }
 
@@ -279,25 +284,28 @@ public class ServerBrowserImplTest extends UnitTestCase
       String messageFilter = null;
       PacketDispatcher dispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
       Packet packet = EasyMock.createStrictMock(Packet.class);
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      CommandManager cm = EasyMock.createStrictMock(CommandManager.class);
       EasyMock.expect(dispatcher.generateID()).andReturn(999l);
       EasyMock.expect(packet.getType()).andReturn(PacketImpl.SESS_BROWSER_NEXTMESSAGE);
       EasyMock.expect(packet.getResponseTargetID()).andStubReturn(1l);
-      rc.sendOneWay((Packet) EasyMock.anyObject()) ;
+      cm.sendCommandOneway(EasyMock.eq(1l), (Packet) EasyMock.anyObject());      
       EasyMock.expectLastCall().andAnswer(new IAnswer<Object>()
       {
          public Object answer() throws Throwable
          {
-            ReceiveMessage resp = (ReceiveMessage) EasyMock.getCurrentArguments()[0];
+            long targetID = (Long)EasyMock.getCurrentArguments()[0];
+            assertEquals(1, targetID);
+            ReceiveMessage resp = (ReceiveMessage) EasyMock.getCurrentArguments()[1];
             assertEquals(resp.getServerMessage(), refs.get(0).getMessage());
             return null;
          }
       });
-      EasyMock.replay(session, destination, dispatcher, packet, rc);
-      ServerBrowserImpl browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, rc);
+      cm.packetProcessed(packet);
+      EasyMock.replay(session, destination, dispatcher, packet, cm);
+      ServerBrowserImpl browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, cm);
       PacketHandler handler = browser.newHandler();
       handler.handle(1762162, packet);
-      EasyMock.verify(session, destination, dispatcher, packet, rc);
+      EasyMock.verify(session, destination, dispatcher, packet, cm);
       assertEquals(999l, browser.getID());
    }
 
@@ -310,40 +318,47 @@ public class ServerBrowserImplTest extends UnitTestCase
       String messageFilter = null;
       PacketDispatcher dispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
       Packet packet = EasyMock.createStrictMock(Packet.class);
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      CommandManager cm = EasyMock.createStrictMock(CommandManager.class);
       EasyMock.expect(dispatcher.generateID()).andReturn(999l);
       EasyMock.expect(packet.getType()).andReturn(PacketImpl.SESS_BROWSER_NEXTMESSAGE);
       EasyMock.expect(packet.getResponseTargetID()).andStubReturn(1l);
       EasyMock.expect(packet.getType()).andReturn(PacketImpl.SESS_BROWSER_RESET);
       EasyMock.expect(packet.getType()).andReturn(PacketImpl.SESS_BROWSER_NEXTMESSAGE);
-      rc.sendOneWay((Packet) EasyMock.anyObject()) ;
+      cm.sendCommandOneway(EasyMock.eq(1l), (Packet) EasyMock.anyObject());      
       EasyMock.expectLastCall().andAnswer(new IAnswer<Object>()
       {
          public Object answer() throws Throwable
          {
-            ReceiveMessage resp = (ReceiveMessage) EasyMock.getCurrentArguments()[0];
+            long targetID = (Long)EasyMock.getCurrentArguments()[0];
+            assertEquals(1, targetID);
+            ReceiveMessage resp = (ReceiveMessage) EasyMock.getCurrentArguments()[1];
             assertEquals(resp.getServerMessage(), refs.get(0).getMessage());
             return null;
          }
       });
-      rc.sendOneWay((Packet) EasyMock.anyObject()) ;
-      rc.sendOneWay((Packet) EasyMock.anyObject()) ;
+      cm.packetProcessed(packet);
+      cm.sendCommandOneway(EasyMock.eq(1l), (Packet) EasyMock.anyObject()) ;
+      cm.packetProcessed(packet);
+      cm.sendCommandOneway(EasyMock.eq(1l), (Packet) EasyMock.anyObject()) ;
       EasyMock.expectLastCall().andAnswer(new IAnswer<Object>()
       {
          public Object answer() throws Throwable
          {
-            ReceiveMessage resp = (ReceiveMessage) EasyMock.getCurrentArguments()[0];
+            long targetID = (Long)EasyMock.getCurrentArguments()[0];
+            assertEquals(1, targetID);
+            ReceiveMessage resp = (ReceiveMessage) EasyMock.getCurrentArguments()[1];
             assertEquals(resp.getServerMessage(), refs.get(0).getMessage());
             return null;
          }
       });
-      EasyMock.replay(session, destination, dispatcher, packet, rc);
-      ServerBrowserImpl browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, rc);
+      cm.packetProcessed(packet);
+      EasyMock.replay(session, destination, dispatcher, packet, cm);
+      ServerBrowserImpl browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, cm);
       PacketHandler handler = browser.newHandler();
       handler.handle(1234, packet);
       handler.handle(1234, packet);
       handler.handle(1234, packet);
-      EasyMock.verify(session, destination, dispatcher, packet, rc);
+      EasyMock.verify(session, destination, dispatcher, packet, cm);
       assertEquals(999l, browser.getID());
    }
 
@@ -354,26 +369,29 @@ public class ServerBrowserImplTest extends UnitTestCase
       String messageFilter = null;
       PacketDispatcher dispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
       Packet packet = EasyMock.createStrictMock(Packet.class);
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      CommandManager cm = EasyMock.createStrictMock(CommandManager.class);
       EasyMock.expect(dispatcher.generateID()).andReturn(999l);
       EasyMock.expect(packet.getType()).andReturn(Byte.MAX_VALUE);
       EasyMock.expect(packet.getResponseTargetID()).andStubReturn(1l);
-      rc.sendOneWay((Packet) EasyMock.anyObject()) ;
+      cm.sendCommandOneway(EasyMock.eq(1l), (Packet) EasyMock.anyObject());      
       EasyMock.expectLastCall().andAnswer(new IAnswer<Object>()
       {
          public Object answer() throws Throwable
          {
-            MessagingExceptionMessage message = (MessagingExceptionMessage) EasyMock.getCurrentArguments()[0];
+            long targetID = (Long)EasyMock.getCurrentArguments()[0];
+            assertEquals(1, targetID);
+            MessagingExceptionMessage message = (MessagingExceptionMessage) EasyMock.getCurrentArguments()[1];
             assertEquals(message.getException().getCode(), MessagingException.UNSUPPORTED_PACKET);
             return null;
          }
       });
-      EasyMock.replay(session, destination, dispatcher, packet, rc);
-      ServerBrowserImpl browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, rc);
+      cm.packetProcessed(packet);
+      EasyMock.replay(session, destination, dispatcher, packet, cm);
+      ServerBrowserImpl browser = new ServerBrowserImpl(session, destination, messageFilter, dispatcher, cm);
       PacketHandler handler = browser.newHandler();
 
       handler.handle(1245, packet);
-      EasyMock.verify(session, destination, dispatcher, packet, rc);
+      EasyMock.verify(session, destination, dispatcher, packet, cm);
       assertEquals(999l, browser.getID());
    }
 

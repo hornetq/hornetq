@@ -24,6 +24,7 @@ package org.jboss.messaging.core.remoting;
 
 import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.server.CommandManager;
 
 /**
  *
@@ -37,11 +38,12 @@ public interface RemotingConnection
 {
    Object getID();
 
-   Packet sendBlocking(long targetID, long executorID, Packet packet) throws MessagingException;
+   Packet sendBlocking(long targetID, long executorID, Packet packet, CommandManager cm);
 
    void sendOneWay(long targetID, long executorID, Packet packet);
 
-   Packet sendBlocking(Packet packet) throws MessagingException;
+   // TODO this method is only used in tests so should be removed
+   Packet sendBlocking(Packet packet, CommandManager cm) throws MessagingException;
 
    void sendOneWay(Packet packet);
 

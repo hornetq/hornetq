@@ -22,9 +22,10 @@
 
 package org.jboss.messaging.core.remoting.impl;
 
+import static org.jboss.messaging.core.remoting.TransportType.INVM;
+
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.logging.Logger;
-import static org.jboss.messaging.core.remoting.TransportType.INVM;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

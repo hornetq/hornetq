@@ -24,8 +24,8 @@ package org.jboss.messaging.tests.unit.core.server.impl;
 import org.easymock.EasyMock;
 import org.easymock.IAnswer;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
+import org.jboss.messaging.core.server.CommandManager;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.DeliveryImpl;
@@ -40,26 +40,28 @@ public class DeliveryImplTest extends UnitTestCase
    {
       ServerMessage message = EasyMock.createStrictMock(ServerMessage.class);
       MessageReference messageReference = EasyMock.createStrictMock(MessageReference.class);     
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      DeliveryImpl delivery = new DeliveryImpl(messageReference, 1, 2 ,3 , rc);
+      CommandManager cm = EasyMock.createStrictMock(CommandManager.class);
+      final long consumerID = 1234l;
+      final long deliveryID = 48548l;
+      final int deliveryCount  = 252;
+      DeliveryImpl delivery = new DeliveryImpl(messageReference, consumerID, deliveryID, cm);
       EasyMock.expect(messageReference.getMessage()).andStubReturn(message);
-      EasyMock.expect(messageReference.getDeliveryCount()).andReturn(1);
-      rc.sendOneWay((Packet) EasyMock.anyObject());
+      EasyMock.expect(messageReference.getDeliveryCount()).andReturn(deliveryCount);
+      cm.sendCommandOneway(EasyMock.eq(consumerID), (Packet) EasyMock.anyObject());
       EasyMock.expectLastCall().andAnswer(new IAnswer<Object>()
       {
          public Object answer() throws Throwable
          {
-            ReceiveMessage receiveMessage = (ReceiveMessage) EasyMock.getCurrentArguments()[0];
-            assertEquals(receiveMessage.getTargetID(), 2);
-            assertEquals(receiveMessage.getExecutorID(), 1);
-            assertEquals(receiveMessage.getDeliveryCount(), 2);
+            long targetID = (Long)EasyMock.getCurrentArguments()[0];
+            assertEquals(consumerID, targetID);
+            ReceiveMessage receiveMessage = (ReceiveMessage) EasyMock.getCurrentArguments()[1];            
+            assertEquals(receiveMessage.getDeliveryCount(), deliveryCount + 1);
             return null;
          }
-      });
-      assertEquals(delivery.getDeliveryID(), 3);
-      assertEquals(delivery.getReference(), messageReference);
-      EasyMock.replay(messageReference, rc, message);
+      });      
+      EasyMock.replay(messageReference, cm, message);
       delivery.deliver();
-      EasyMock.verify(messageReference, rc, message);
+      EasyMock.verify(messageReference, cm, message);
+      assertEquals(messageReference, delivery.getReference());
    }
 }

@@ -22,7 +22,11 @@
 
 package org.jboss.messaging.tests.unit.core.management;
 
-import static org.jboss.messaging.tests.util.RandomUtil.*;
+import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
+import static org.jboss.messaging.tests.util.RandomUtil.randomByte;
+import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
+import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
+import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.util.Collection;
 

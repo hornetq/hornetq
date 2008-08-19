@@ -317,22 +317,16 @@ public class MessagingServerControl extends StandardMBean implements
       SimpleString sName = new SimpleString(name);
       if (postOffice.getBinding(sAddress) == null)
       {
-         postOffice.addBinding(sAddress, sName, null, true, false);
+         postOffice.addBinding(sAddress, sName, null, true);
       }
       sendNotification(NotificationType.ADDRESS_ADDED, address);
       sendNotification(NotificationType.QUEUE_CREATED, name);
    }
 
    public void createQueue(final String address, final String name,
-         final String filterStr, final boolean durable, final boolean temporary)
+         final String filterStr, final boolean durable)
          throws Exception
    {
-      if (temporary && durable)
-      {
-         throw new IllegalArgumentException(
-               "A queue can not be both temporary and durable");
-      }
-
       SimpleString sAddress = new SimpleString(address);
       SimpleString sName = new SimpleString(name);
       SimpleString sFilter = (filterStr == null || filterStr.length() == 0) ? null
@@ -344,7 +338,7 @@ public class MessagingServerControl extends StandardMBean implements
       }
       if (postOffice.getBinding(sAddress) == null)
       {
-         postOffice.addBinding(sAddress, sName, filter, durable, temporary);
+         postOffice.addBinding(sAddress, sName, filter, durable);
       }
       sendNotification(NotificationType.ADDRESS_ADDED, address);
       sendNotification(NotificationType.QUEUE_CREATED, name);

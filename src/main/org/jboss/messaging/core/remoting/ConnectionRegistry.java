@@ -44,4 +44,6 @@ public interface ConnectionRegistry
    ConnectorFactory getConnectorFactory(final TransportType transport);
    
    int size();
+   
+   int getCount(Location location);
 }

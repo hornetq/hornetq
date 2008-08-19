@@ -47,6 +47,8 @@ public class ConfigurationImpl implements Configuration
 
    public static final boolean DEFAULT_CLUSTERED = false;
    
+   public static final boolean DEFAULT_BACKUP = false;
+   
    public static final int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 30;
    
    public static final String DEFAULT_HOST = "localhost";
@@ -64,7 +66,7 @@ public class ConfigurationImpl implements Configuration
    public static final boolean DEFAULT_JMX_MANAGEMENT_ENABLED = true;
    
    public static final boolean DEFAULT_SSL_ENABLED = false;
-   
+     
    public static final String DEFAULT_KEYSTORE_PATH = "messaging.keystore";
    
    public static final String DEFAULT_KEYSTORE_PASSWORD = "secureexample";
@@ -99,6 +101,8 @@ public class ConfigurationImpl implements Configuration
    // Attributes -----------------------------------------------------------------------------
       
    protected boolean clustered = DEFAULT_CLUSTERED;
+   
+   protected boolean backup = DEFAULT_BACKUP;
       
    protected int scheduledThreadPoolMaxSize = DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
    
@@ -145,7 +149,7 @@ public class ConfigurationImpl implements Configuration
    protected String backupHost;
    
    protected int backupPort;
-   
+    
    protected final ConnectionParams defaultConnectionParams = new ConnectionParamsImpl();
    
    protected boolean sslEnabled = DEFAULT_SSL_ENABLED;
@@ -171,6 +175,16 @@ public class ConfigurationImpl implements Configuration
    public void setClustered(boolean clustered)
    {
       this.clustered = clustered;
+   }
+   
+   public boolean isBackup()
+   {
+      return backup;
+   }
+   
+   public void setBackup(boolean backup)
+   {
+      this.backup = backup;
    }
    
    public int getScheduledThreadPoolMaxSize()

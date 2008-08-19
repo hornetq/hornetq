@@ -51,7 +51,6 @@ import org.jboss.messaging.core.management.impl.QueueControl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -176,7 +175,7 @@ public class QueueControlTest extends TestCase
       boolean temp = randomBoolean();
 
       Queue queue = createMock(Queue.class);
-      expect(queue.isTemporary()).andReturn(temp);
+      expect(queue.isDurable()).andReturn(temp);
       StorageManager storageManager = createMock(StorageManager.class);
       PostOffice postOffice = createMock(PostOffice.class);
       HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);

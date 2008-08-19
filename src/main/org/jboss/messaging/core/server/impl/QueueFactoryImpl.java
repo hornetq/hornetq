@@ -44,9 +44,9 @@ public class QueueFactoryImpl implements QueueFactory
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
 
    private final ScheduledExecutorService scheduledExecutor;
-
+   
    public QueueFactoryImpl(final ScheduledExecutorService scheduledExecutor,
-   		HierarchicalRepository<QueueSettings> queueSettingsRepository)
+   	                   	final HierarchicalRepository<QueueSettings> queueSettingsRepository)
    {
       this.queueSettingsRepository = queueSettingsRepository;
       
@@ -54,11 +54,11 @@ public class QueueFactoryImpl implements QueueFactory
    }
    
    public Queue createQueue(final long persistenceID, final SimpleString name, final Filter filter,
-                            final boolean durable, final boolean temporary)
+                            final boolean durable)
    {
       QueueSettings queueSettings = queueSettingsRepository.getMatch(name.toString());
             
-      Queue queue = new QueueImpl(persistenceID, name, filter, queueSettings.isClustered(), durable, temporary,
+      Queue queue = new QueueImpl(persistenceID, name, filter, queueSettings.isClustered(), durable,
       		queueSettings.getMaxSizeBytes(), scheduledExecutor);
 
       queue.setDistributionPolicy(queueSettings.getDistributionPolicy());

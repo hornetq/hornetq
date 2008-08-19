@@ -43,4 +43,9 @@ public interface ServerConsumer extends Consumer
 	void receiveCredits(int credits) throws Exception;
 	
 	Queue getQueue();
+	
+//	void handleReplicatedDelivery(long messageID, long responseTargetID) throws Exception;
+	
+	//TODO - can we clean this up?
+//	void handleReplicatedDeliveryResponse(long messageID) throws Exception;
 }

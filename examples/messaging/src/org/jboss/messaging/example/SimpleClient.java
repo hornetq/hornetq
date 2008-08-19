@@ -21,8 +21,14 @@
    */
 package org.jboss.messaging.example;
 
-import org.jboss.messaging.core.client.*;
-import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.ConnectionParams;
+import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -40,14 +46,13 @@ public class SimpleClient
 {
    public static void main(final String[] args)
    {
-      ClientConnection clientConnection = null;
+      ClientSession clientSession = null;
       try
       {
          Location location = new LocationImpl(TransportType.TCP, "localhost", 5400);
          ConnectionParams connectionParams = new ConnectionParamsImpl();
-         ClientConnectionFactory connectionFactory = new ClientConnectionFactoryImpl(location, connectionParams);
-         clientConnection = connectionFactory.createConnection();
-         ClientSession clientSession = clientConnection.createClientSession(false, true, true, 100, true, false);
+         ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(location, connectionParams);           
+         clientSession = sessionFactory.createSession(false, true, true, 1, false);
          SimpleString queue = new SimpleString("queuejms.testQueue");
          ClientProducer clientProducer = clientSession.createProducer(queue);
          ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE, false, 0,
@@ -55,7 +60,7 @@ public class SimpleClient
          message.getBody().putString("Hello!");
          clientProducer.send(message);
          ClientConsumer clientConsumer = clientSession.createConsumer(queue);
-         clientConnection.start();
+         clientSession.start();
          Message msg = clientConsumer.receive(5000);
          System.out.println("msg.getPayload() = " + msg.getBody().getString());
          clientSession.acknowledge();
@@ -66,15 +71,14 @@ public class SimpleClient
       }
       finally
       {
-         if (clientConnection != null)
+         if (clientSession != null)
          {
             try
             {
-               clientConnection.close();
+               clientSession.close();
             }
-            catch (MessagingException e1)
-            {
-               //
+            catch (MessagingException ignore)
+            {               
             }
          }
       }

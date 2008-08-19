@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.remoting;
 
 
+
 /**
  * 
  * A Packet
@@ -53,8 +54,6 @@ public interface Packet
 
    void setExecutorID(long executorID);
    
-   void normalize(Packet other);
-
    void encode(MessagingBuffer buffer);
       
    void decode(MessagingBuffer buffer);

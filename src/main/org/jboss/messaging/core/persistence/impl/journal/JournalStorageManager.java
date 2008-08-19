@@ -522,7 +522,7 @@ public class JournalStorageManager implements StorageManager
 					filter = new FilterImpl(filterString);
 				}
 
-				Queue queue = queueFactory.createQueue(id, queueName, filter, true, false);
+				Queue queue = queueFactory.createQueue(id, queueName, filter, true);
 			
 				Binding binding = new BindingImpl(address, queue);
 				

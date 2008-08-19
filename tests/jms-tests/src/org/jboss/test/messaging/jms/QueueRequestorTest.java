@@ -82,17 +82,15 @@ public class QueueRequestorTest extends JMSTestCase
 	      
 	      Message m1 = sess1.createMessage();
 	      log.trace("Sending request message");
-	      TextMessage m2 = (TextMessage)requestor.request(m1);
-	      
-	      
+	      TextMessage m2 = (TextMessage)requestor.request(m1);	      	      
 	      assertNotNull(m2);
 	      
 	      assertEquals("This is the response", m2.getText());
       }
       finally
       {      
-	      if (conn1 != null) conn1.close();
-	      if (conn2 != null) conn2.close();
+	     if (conn1 != null) conn1.close();
+	     if (conn2 != null) conn2.close();
       }      
    }   
    

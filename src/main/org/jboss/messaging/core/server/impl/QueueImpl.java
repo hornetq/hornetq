@@ -86,14 +86,12 @@ public class QueueImpl implements Queue
 
    private final boolean durable;
 
-   private final boolean temporary;
-
    private final int maxSizeBytes;
      
    private final ScheduledExecutorService scheduledExecutor;
 
-   private final PriorityLinkedList<MessageReference> messageReferences = new PriorityLinkedListImpl<MessageReference>(
-         NUM_PRIORITIES);
+   private final PriorityLinkedList<MessageReference> messageReferences =
+      new PriorityLinkedListImpl<MessageReference>(NUM_PRIORITIES);
 
    private final List<Consumer> consumers = new ArrayList<Consumer>();
 
@@ -121,11 +119,11 @@ public class QueueImpl implements Queue
    
    private final Lock lock = new ReentrantLock(false);
    
-   private boolean backup;
+   private volatile boolean backup;
          
    public QueueImpl(final long persistenceID, final SimpleString name,
          final Filter filter, final boolean clustered, final boolean durable,
-         final boolean temporary, final int maxSizeBytes,
+         final int maxSizeBytes,
          final ScheduledExecutorService scheduledExecutor)
    {
       this.persistenceID = persistenceID;
@@ -137,8 +135,6 @@ public class QueueImpl implements Queue
       this.clustered = clustered;
 
       this.durable = durable;
-
-      this.temporary = temporary;
 
       this.maxSizeBytes = maxSizeBytes;
 
@@ -158,11 +154,6 @@ public class QueueImpl implements Queue
    public boolean isDurable()
    {
       return durable;
-   }
-
-   public boolean isTemporary()
-   {
-      return temporary;
    }
 
    public SimpleString getName()
@@ -226,7 +217,15 @@ public class QueueImpl implements Queue
     */
    public void deliver()
    {
-      //TODO - we need to lock during delivery since otherwise delivery could occur while we're rolling back a transction
+      //We don't do actual delivery if the queue is on a backup node - this is because it's async and could get out of step
+      //with the live node. Instead, when we replicate the delivery we remove the ref from the queue
+       
+      if (backup)
+      {
+         return;
+      }
+      
+      //TODO - we need to lock during delivery since otherwise delivery could occur while we're rolling back a transaction
       //which would mean messages got delivered in the wrong order
       //We need to revise this for better concurrency
       lock.lock();
@@ -303,15 +302,15 @@ public class QueueImpl implements Queue
       consumers.add(consumer);
    }
 
-   public synchronized boolean removeConsumer(final Consumer consumer)
+   public synchronized boolean removeConsumer(final Consumer consumer) throws Exception
    {
       boolean removed = consumers.remove(consumer);
-
+      
       if (pos == consumers.size())
       {
          pos = 0;
       }
-
+      
       if (consumers.isEmpty())
       {
          promptDelivery = false;
@@ -620,14 +619,29 @@ public class QueueImpl implements Queue
       lock.unlock();     
    }
 
-   public synchronized boolean isBackup()
+   public boolean isBackup()
    {
       return backup;
    }
    
-   public synchronized void setBackup(final boolean backup)
+   public void setBackup(final boolean backup)
    {
       this.backup = backup;
+      
+      if (!backup)
+      {
+         for (ScheduledDeliveryRunnable runnable: scheduledRunnables)
+         {
+            scheduleDelivery(runnable, runnable.getReference().getScheduledDeliveryTime());
+         }
+      }
+      
+      //TODO - what about waiting for the deliverAsync executor to finish?
+   }
+   
+   public MessageReference removeFirst()
+   {
+      return messageReferences.removeFirst();
    }
    
    // Public
@@ -635,7 +649,10 @@ public class QueueImpl implements Queue
 
    public boolean equals(Object other)
    {
-      if (this == other) { return true; }
+      if (this == other)
+      {
+         return true;
+      }
 
       QueueImpl qother = (QueueImpl) other;
 
@@ -671,7 +688,7 @@ public class QueueImpl implements Queue
 
       boolean add = false;
 
-      if (direct)
+      if (direct && !backup)
       {
          // Deliver directly
 
@@ -731,30 +748,35 @@ public class QueueImpl implements Queue
       long deliveryTime = ref.getScheduledDeliveryTime();
       
       if (deliveryTime != 0 && scheduledExecutor != null)
-      {      
-         long now = System.currentTimeMillis();
-      
-         if (deliveryTime > now)
+      {                     
+         if (trace)
          {
-            if (trace)
-            {
-               log.trace("Scheduling delivery for " + ref + " to occur at "  + deliveryTime);
-            }
-   
-            long delay = deliveryTime - now;
-   
-            ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(ref);
-   
-            scheduledRunnables.add(runnable);
-   
-            Future<?> future = scheduledExecutor.schedule(runnable, delay, TimeUnit.MILLISECONDS);
-   
-            runnable.setFuture(future);
-   
-            return true;
+            log.trace("Scheduling delivery for " + ref + " to occur at "  + deliveryTime);
          }
+         
+         ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(ref);
+
+         scheduledRunnables.add(runnable);
+         
+         if (!backup)
+         {            
+            scheduleDelivery(runnable, deliveryTime);
+         }
+
+         return true;         
       }
       return false;      
+   }
+   
+   private void scheduleDelivery(final ScheduledDeliveryRunnable runnable, final long deliveryTime)
+   {
+      long now = System.currentTimeMillis();
+      
+      long delay = deliveryTime - now;
+
+      Future<?> future = scheduledExecutor.schedule(runnable, delay, TimeUnit.MILLISECONDS);
+
+      runnable.setFuture(future);
    }
 
    private HandleStatus deliver(final MessageReference reference)
@@ -771,7 +793,7 @@ public class QueueImpl implements Queue
       while (true)
       {
          Consumer consumer = consumers.get(pos);
-
+         
          pos = distributionPolicy.select(consumers, pos);
 
          HandleStatus status;
@@ -786,13 +808,22 @@ public class QueueImpl implements Queue
                   "consumer=" + consumer + ", message=" + reference, t);
 
             // If the consumer throws an exception we remove the consumer
-            removeConsumer(consumer);
+            try
+            {
+               removeConsumer(consumer);
+            }
+            catch (Exception e)
+            {
+               log.error("Failed to remove consumer", e);
+            }
 
             return HandleStatus.BUSY;
          }
 
-         if (status == null) { throw new IllegalStateException(
-               "ClientConsumer.handle() should never return null"); }
+         if (status == null)
+         {
+            throw new IllegalStateException("ClientConsumer.handle() should never return null");
+         }
 
          if (status == HandleStatus.HANDLED)
          {
@@ -904,15 +935,9 @@ public class QueueImpl implements Queue
          {
             // Add back to the front of the queue
 
+            //TODO - need to replicate this so backup node also adds back to front of queue
+            
             addFirst(ref);
-         }
-         else
-         {
-            if (trace)
-            {
-               log.trace("Delivered scheduled delivery at "
-                     + System.currentTimeMillis() + " for " + ref);
-            }
          }
       }
    }

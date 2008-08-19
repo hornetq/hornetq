@@ -33,6 +33,14 @@ import java.io.Serializable;
  */
 public interface ConnectionParams extends Serializable
 {   
+   boolean isClustered();
+   
+   void setClustered(boolean clustered);
+   
+   int getPacketConfirmationBatchSize();
+   
+   void setPacketConfirmationBatchSize(int batchSize);
+   
    long getCallTimeout();
 
    void setCallTimeout(long timeout);

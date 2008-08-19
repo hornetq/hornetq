@@ -36,14 +36,14 @@ import org.jboss.messaging.util.DataConstants;
  */
 public class PacketImpl implements Packet
 {
-   // Constants -----------------------------------------------------
+   // Constants -------------------------------------------------------------------------
    
    private static final Logger log = Logger.getLogger(PacketImpl.class);
 
    public static final long NO_ID_SET = -1L;
    
    public static final int INITIAL_BUFFER_SIZE = 1024;
-   
+    
    private int commandID;
 
    private long responseTargetID = NO_ID_SET;
@@ -55,7 +55,7 @@ public class PacketImpl implements Packet
    private final byte type;
       
    // The message types
-   // ------------------------------------------------------------------------------------
+   // -----------------------------------------------------------------------------------
    
    public static final byte NULL = 1;
    public static final byte PING = 4;
@@ -66,15 +66,9 @@ public class PacketImpl implements Packet
    public static final byte CLOSE = 11;
    
    // Server
-   public static final byte CREATECONNECTION = 20;
-   public static final byte CREATECONNECTION_RESP = 21;
+   public static final byte CREATESESSION = 20;
+   public static final byte CREATESESSION_RESP = 21;
    
-   // Connection
-   public static final byte CONN_CREATESESSION = 30;
-   public static final byte CONN_CREATESESSION_RESP = 31;
-   public static final byte CONN_START = 32;
-   public static final byte CONN_STOP = 33;
-
    // Session   
    public static final byte SESS_CREATECONSUMER = 40;
    public static final byte SESS_CREATECONSUMER_RESP = 41;
@@ -115,6 +109,8 @@ public class PacketImpl implements Packet
    public static final byte SESS_XA_SET_TIMEOUT_RESP = 76;
    public static final byte SESS_XA_GET_TIMEOUT = 77;
    public static final byte SESS_XA_GET_TIMEOUT_RESP = 78;
+   public static final byte SESS_START = 79;
+   public static final byte SESS_STOP = 80;
        
    // Consumer 
    public static final byte CONS_FLOWTOKEN = 90;   
@@ -124,6 +120,13 @@ public class PacketImpl implements Packet
    public static final byte PROD_RECEIVETOKENS = 101;
    
    public static final byte RECEIVE_MSG = 110;
+   
+   public static final byte PACKETS_CONFIRMED = 111;
+   
+   //Replication
+   
+   public static final byte REPLICATE_DELIVERY = 112;
+   public static final byte REPLICATE_DELIVERY_RESPONSE = 113;
 
    // Static --------------------------------------------------------
 
@@ -179,13 +182,6 @@ public class PacketImpl implements Packet
       this.executorID = executorID;
    }
 
-   public void normalize(Packet other)
-   {
-      assert other != null;
-
-      setTargetID(other.getResponseTargetID());
-   }
-
    public void encode(MessagingBuffer buffer)
    {      
       //The standard header fields
@@ -208,7 +204,7 @@ public class PacketImpl implements Packet
 
    public void decode(final MessagingBuffer buffer)
    {
-      commandID = buffer.getInt();
+      commandID = buffer.getInt();      
       responseTargetID = buffer.getLong();
       targetID = buffer.getLong();
       executorID = buffer.getLong();

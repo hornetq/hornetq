@@ -33,10 +33,9 @@ import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.core.server.CommandManager;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -64,16 +63,14 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // -----------------------------------------------------------------------------------
 
    private final ClientSessionInternal session;
+   
+   private final CommandManager commandManager;
       
    private final long targetID;
    
    private final long clientTargetID;
    
    private final Executor sessionExecutor;
-   
-   private final long sessionTargetID;
-   
-   private final RemotingConnection remotingConnection;
    
    private final PacketDispatcher dispatcher;
 
@@ -101,35 +98,23 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // Constructors
    // ---------------------------------------------------------------------------------
 
-   /**
-    * Create a ClientConsumerImpl.
-    * 
-    * The targetID is the same for the consumer on the client side and on the server side.
-    * 
-    * The targetID is not globally unique: the same ID can be used by 2 different servers.
-    * This is not an issue since the scope of the targetID remains within the RemotingConnection
-    * (and its PacketDispatcher) to a single server.
-    */
    public ClientConsumerImpl(final ClientSessionInternal session, final long targetID,
                              final long clientTargetID,                                                   
                              final int clientWindowSize,
-                             final boolean direct,
-                             final RemotingConnection remotingConnection,
+                             final boolean direct,                             
                              final PacketDispatcher dispatcher,
                              final Executor executor,
-                             final long sessionTargetID)
+                             final CommandManager commandManager)
    {
       this.targetID = targetID;
       
       this.clientTargetID = clientTargetID;
       
+      this.commandManager = commandManager;
+      
       this.session = session;
       
-      this.sessionTargetID = sessionTargetID;
-      
       this.sessionExecutor = executor;
-      
-      this.remotingConnection = remotingConnection;
       
       this.dispatcher = dispatcher;
       
@@ -296,7 +281,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    }
 
    public void handleMessage(final ClientMessage message) throws Exception
-   {
+   {    
       if (closed)
       {
          // This is ok - we just ignore the message
@@ -352,7 +337,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          	{   
          		buffer.addLast(message, message.getPriority());         		
          	}
-         	            	
+         	
          	queueExecutor();
          }
       }
@@ -420,7 +405,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          
          if (creditsToSend >= clientWindowSize)
          {            
-            remotingConnection.sendOneWay(targetID, sessionTargetID, new ConsumerFlowCreditMessage(creditsToSend));
+            commandManager.sendCommandOneway(targetID, new ConsumerFlowCreditMessage(creditsToSend));
             
             creditsToSend = 0;            
          }
@@ -517,7 +502,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          // Now we wait for any current handler runners to run.
          waitForOnMessageToComplete();
-
+         
          closed = true;
 
          if (receiverThread != null)
@@ -535,7 +520,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
          if (sendCloseMessage)
          {
-            remotingConnection.sendBlocking(targetID, sessionTargetID, new PacketImpl(PacketImpl.CLOSE));
+            commandManager.sendCommandBlocking(targetID, new PacketImpl(PacketImpl.CLOSE));          
          }
 
          dispatcher.unregister(clientTargetID);

@@ -48,8 +48,8 @@ import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.tm.TxUtils;
 import org.jboss.tm.TransactionManagerLocator;
+import org.jboss.tm.TxUtils;
 
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 

@@ -48,8 +48,6 @@ import org.jboss.messaging.util.SimpleString;
  * 
  * A TransactionImplTest
  * 
- * TODO test with persistent and non persistent
- * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -401,21 +399,21 @@ public class TransactionImplTest extends UnitTestCase
 //   public void testSendCommit() throws Exception
 //   {
 //      //Durable queue
-//      Queue queue1 = new QueueImpl(12, new SimpleString("queue1"), null, false, true, false, -1, scheduledExecutor);
+//      Queue queue1 = new QueueImpl(12, new SimpleString("queue1"), null, false, true, -1, scheduledExecutor);
 //      
 //      //Durable queue
-//      Queue queue2 = new QueueImpl(34, new SimpleString("queue2"), null, false, true, false, -1, scheduledExecutor);
+//      Queue queue2 = new QueueImpl(34, new SimpleString("queue2"), null, false, true, -1, scheduledExecutor);
 //      
 //      //Non durable queue
-//      Queue queue3 = new QueueImpl(65, new SimpleString("queue3"), null, false, false, false, -1, scheduledExecutor);
+//      Queue queue3 = new QueueImpl(65, new SimpleString("queue3"), null, false, false, -1, scheduledExecutor);
 //      
 //      //Durable message to send
 //      
-//      Message message1 = this.generateMessage(1);
+//      ServerMessage message1 = this.generateMessage(1);
 //      
 //      // Non durable message to send
 //      
-//      Message message2 = this.generateMessage(2);
+//      ServerMessage message2 = this.generateMessage(2);
 //      
 //      message2.setDurable(false);
 //      
@@ -508,19 +506,19 @@ public class TransactionImplTest extends UnitTestCase
 //      
 //      //TODO test messages are routed and refs count reduced
 //   }
-   
+//   
    
    
    public void testAckCommit() throws Exception
    {
       //Durable queue
-      Queue queue1 = new QueueImpl(12, new SimpleString("queue1"), null, false, true, false, -1, scheduledExecutor);
+      Queue queue1 = new QueueImpl(12, new SimpleString("queue1"), null, false, true, -1, scheduledExecutor);
       
       //Durable queue
-      Queue queue2 = new QueueImpl(34, new SimpleString("queue2"), null, false, true, false, -1, scheduledExecutor);
+      Queue queue2 = new QueueImpl(34, new SimpleString("queue2"), null, false, true, -1, scheduledExecutor);
       
       //Non durable queue
-      Queue queue3 = new QueueImpl(65, new SimpleString("queue3"), null, false, false, false, -1, scheduledExecutor);
+      Queue queue3 = new QueueImpl(65, new SimpleString("queue3"), null, false, false, -1, scheduledExecutor);
       
       //Some refs to ack
       

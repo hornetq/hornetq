@@ -31,10 +31,10 @@ import org.easymock.EasyMock;
 import org.easymock.IAnswer;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.server.CommandManager;
 import org.jboss.messaging.core.server.ServerConsumer;
 import org.jboss.messaging.core.server.impl.ServerConsumerPacketHandler;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -47,8 +47,8 @@ public class ServerConsumerPacketHandlerTest extends UnitTestCase
    public void testGetId()
    {
       ServerConsumer consumer = createStrictMock(ServerConsumer.class);
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      ServerConsumerPacketHandler handler = new ServerConsumerPacketHandler(consumer, rc);
+      CommandManager cm = createStrictMock(CommandManager.class);      
+      ServerConsumerPacketHandler handler = new ServerConsumerPacketHandler(consumer, cm);
       expect(consumer.getID()).andReturn(9999l);
       replay(consumer);
       assertEquals(9999l, handler.getID());
@@ -58,59 +58,62 @@ public class ServerConsumerPacketHandlerTest extends UnitTestCase
    public void testConsumerFlowHandle() throws Exception
    {
       ServerConsumer consumer = createStrictMock(ServerConsumer.class);
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      ServerConsumerPacketHandler handler = new ServerConsumerPacketHandler(consumer, rc);
+      CommandManager cm = createStrictMock(CommandManager.class);     
+      ServerConsumerPacketHandler handler = new ServerConsumerPacketHandler(consumer, cm);
       ConsumerFlowCreditMessage message = new ConsumerFlowCreditMessage(100);
       consumer.receiveCredits(100);
-      replay(consumer, rc);
+      cm.packetProcessed(message);
+      replay(consumer, cm);
       handler.handle(1212, message);
-      verify(consumer, rc);
+      verify(consumer, cm);
    }
 
    public void testConsumerClose() throws Exception
    {
       ServerConsumer consumer = createStrictMock(ServerConsumer.class);
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      ServerConsumerPacketHandler handler = new ServerConsumerPacketHandler(consumer, rc);
+      CommandManager cm = createStrictMock(CommandManager.class);     
+      ServerConsumerPacketHandler handler = new ServerConsumerPacketHandler(consumer, cm);
       Packet message = new PacketImpl(PacketImpl.CLOSE);
-      message.setResponseTargetID(123);
+      message.setResponseTargetID(123L);
       consumer.close();
-      rc.sendOneWay(EasyMock.isA(PacketImpl.class));
+      cm.sendCommandOneway(EasyMock.eq(123l), EasyMock.isA(PacketImpl.class));
       EasyMock.expectLastCall().andAnswer(new IAnswer<Object>()
       {
          public Object answer() throws Throwable
          {
-            Packet packet = (Packet) getCurrentArguments()[0];
+            Packet packet = (Packet) getCurrentArguments()[1];
             assertEquals(PacketImpl.NULL, packet.getType());
             return null;
          }
       });
-      replay(consumer, rc);
+      cm.packetProcessed(message);
+      replay(consumer, cm);
       handler.handle(1212, message);
-      verify(consumer, rc);
+      verify(consumer, cm);
    }
 
    public void testUnsupportedPacket() throws Exception
    {
       ServerConsumer consumer = createStrictMock(ServerConsumer.class);
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      ServerConsumerPacketHandler handler = new ServerConsumerPacketHandler(consumer, rc);
+      CommandManager cm = createStrictMock(CommandManager.class);     
+      ServerConsumerPacketHandler handler = new ServerConsumerPacketHandler(consumer, cm);
       Packet packet = EasyMock.createStrictMock(Packet.class);
       expect(packet.getType()).andReturn(Byte.MAX_VALUE);
       final long responseTargetID = 283782374;
       EasyMock.expect(packet.getResponseTargetID()).andReturn(responseTargetID);
-      rc.sendOneWay(EasyMock.isA(PacketImpl.class));
+      cm.sendCommandOneway(EasyMock.eq(responseTargetID), EasyMock.isA(PacketImpl.class));
       EasyMock.expectLastCall().andAnswer(new IAnswer<Object>()
       {
          public Object answer() throws Throwable
          {
-            MessagingExceptionMessage me = (MessagingExceptionMessage)EasyMock.getCurrentArguments()[0];
+            MessagingExceptionMessage me = (MessagingExceptionMessage)EasyMock.getCurrentArguments()[1];
             assertEquals(MessagingException.UNSUPPORTED_PACKET, me.getException().getCode());
             return null;
          }
       });
-      replay(consumer, rc, packet);
+      cm.packetProcessed(packet);
+      replay(consumer, cm, packet);
       handler.handle(1212, packet);
-      verify(consumer, rc, packet);
+      verify(consumer, cm, packet);
    }
 }

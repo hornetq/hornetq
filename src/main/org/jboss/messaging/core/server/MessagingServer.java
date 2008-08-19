@@ -31,7 +31,7 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingService;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
@@ -74,9 +74,16 @@ public interface MessagingServer extends MessagingComponent
    
    Version getVersion();
   
-   CreateConnectionResponse createConnection(String username, String password,                                          
-                                             int incrementingVersion,
-                                             RemotingConnection remotingConnection) throws Exception;
+   CreateSessionResponseMessage createSession(final String name,
+                                              final String username, final String password,                                  
+                                              final int incrementingVersion,
+                                              final RemotingConnection remotingConnection,
+                                              final boolean autoCommitSends,
+                                              final boolean autoCommitAcks,
+                                              final boolean xa,
+                                              final long remoteCommandResponseTargetID) throws Exception;
+   
+   void removeSession(String name);
         
    boolean isStarted();
    

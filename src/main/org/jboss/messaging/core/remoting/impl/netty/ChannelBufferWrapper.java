@@ -22,8 +22,12 @@
 
 package org.jboss.messaging.core.remoting.impl.netty;
 
-import static org.jboss.messaging.util.DataConstants.*;
-import static org.jboss.netty.buffer.ChannelBuffers.*;
+import static org.jboss.messaging.util.DataConstants.FALSE;
+import static org.jboss.messaging.util.DataConstants.NOT_NULL;
+import static org.jboss.messaging.util.DataConstants.NULL;
+import static org.jboss.messaging.util.DataConstants.TRUE;
+import static org.jboss.netty.buffer.ChannelBuffers.copiedBuffer;
+import static org.jboss.netty.buffer.ChannelBuffers.dynamicBuffer;
 
 import java.nio.ByteBuffer;
 

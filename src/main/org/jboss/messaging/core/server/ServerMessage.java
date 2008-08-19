@@ -37,10 +37,6 @@ public interface ServerMessage extends Message
    
    void setMessageID(long id);
 
-   long getConnectionID();
-   
-   void setConnectionID(long connectionID);
-   
    MessageReference createReference(Queue queue);   
 
    int decrementDurableRefCount();

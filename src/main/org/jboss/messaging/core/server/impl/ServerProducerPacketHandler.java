@@ -26,10 +26,10 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
-import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
+import org.jboss.messaging.core.server.CommandManager;
 import org.jboss.messaging.core.server.ServerProducer;
 
 /**
@@ -43,15 +43,16 @@ public class ServerProducerPacketHandler implements PacketHandler
 {
    private static final Logger log = Logger.getLogger(ServerProducerPacketHandler.class);
 
+   private final CommandManager commandManager;
+   
 	private final ServerProducer producer;
 
-	private final RemotingConnection remotingConnection;
-
-	public ServerProducerPacketHandler(final ServerProducer producer, final RemotingConnection remotingConnection)
+	public ServerProducerPacketHandler(final ServerProducer producer,
+	                                   final CommandManager commandManager)	                                   
 	{
+	   this.commandManager = commandManager;
+	   
 		this.producer = producer;
-
-		this.remotingConnection = remotingConnection;
 	}
 
    public long getID()
@@ -60,38 +61,46 @@ public class ServerProducerPacketHandler implements PacketHandler
    }
 
    public void handle(final Object remotingConnectionID, final Packet packet)
-   {
+   {    
       Packet response = null;
 
       byte type = packet.getType();
 
+      long responseTargetID = packet.getResponseTargetID();
+      
       try
       {
          switch (type)
          {
-         case PacketImpl.PROD_SEND:
-            ProducerSendMessage message = (ProducerSendMessage) packet;
-            producer.send(message.getServerMessage());
-            if (packet.getResponseTargetID() != PacketImpl.NO_ID_SET)
+            case PacketImpl.PROD_SEND:
             {
-               response = new PacketImpl(PacketImpl.NULL);
+               ProducerSendMessage message = (ProducerSendMessage) packet;
+               producer.send(message.getServerMessage());
+               if (responseTargetID != PacketImpl.NO_ID_SET)
+               {
+                  response = new PacketImpl(PacketImpl.NULL);
+               }
+               break;
             }
-            break;
-         case PacketImpl.CLOSE:
-            producer.close();
-            response = new PacketImpl(PacketImpl.NULL);
-            break;
-         default:
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.UNSUPPORTED_PACKET,
-                                                     "Unsupported packet " + type));
+            case PacketImpl.CLOSE:
+            {
+               producer.close();
+               response = new PacketImpl(PacketImpl.NULL);
+               break;
+            }
+            default:
+            {
+               response = new MessagingExceptionMessage(new MessagingException(MessagingException.UNSUPPORTED_PACKET,
+                                                        "Unsupported packet " + type));
+            }
          }
       }
       catch (Throwable t)
       {
          MessagingException me;
 
-         log.error("Caught unexpected exception", t);
-
+         log.error("Caught unexpected exception", t); 
+          
          if (t instanceof MessagingException)
          {
             me = (MessagingException)t;
@@ -99,16 +108,19 @@ public class ServerProducerPacketHandler implements PacketHandler
          else
          {
             me = new MessagingException(MessagingException.INTERNAL_ERROR);
+         }    
+         
+         if (responseTargetID != PacketImpl.NO_ID_SET)
+         {
+            response = new MessagingExceptionMessage(me);
          }
-
-         response = new MessagingExceptionMessage(me);
       }
-
+            
       if (response != null)
       {
-         response.normalize(packet);
-
-         remotingConnection.sendOneWay(response);
+         commandManager.sendCommandOneway(responseTargetID, response);    
       }
+      
+      commandManager.packetProcessed(packet);
    }
 }

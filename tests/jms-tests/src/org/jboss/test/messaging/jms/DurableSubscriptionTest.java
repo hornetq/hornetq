@@ -69,6 +69,10 @@ public class DurableSubscriptionTest extends JMSTestCase
    {
       Connection conn = null;
       
+//      two problems
+//      1) race somwehere in connectionregistry
+//      2) subs not being deleted - this test reports 8
+      
       try
       {      
 	      conn = cf.createConnection();

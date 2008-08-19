@@ -28,6 +28,7 @@ import org.jboss.messaging.core.client.impl.ClientConsumerInternal;
 import org.jboss.messaging.core.client.impl.ClientConsumerPacketHandler;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
+import org.jboss.messaging.core.server.CommandManager;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
@@ -43,9 +44,11 @@ public class ClientConsumerPacketHandlerTest extends UnitTestCase
    {
       ClientConsumerInternal consumer = EasyMock.createStrictMock(ClientConsumerInternal.class);
       
+      CommandManager cm = EasyMock.createStrictMock(CommandManager.class);
+      
       final int id = 716276;
       
-      ClientConsumerPacketHandler handler = new ClientConsumerPacketHandler(consumer, id);
+      ClientConsumerPacketHandler handler = new ClientConsumerPacketHandler(consumer, id, cm);
          
       ClientMessage msg = EasyMock.createStrictMock(ClientMessage.class);
       
@@ -55,15 +58,17 @@ public class ClientConsumerPacketHandlerTest extends UnitTestCase
       
       consumer.handleMessage(msg);
       
-      EasyMock.replay(consumer, msg);
+      cm.packetProcessed(rm);
+      
+      EasyMock.replay(consumer, msg, cm);
       
       handler.handle(123123, rm);
       
-      EasyMock.verify(consumer, msg);
+      EasyMock.verify(consumer, msg, cm);
       
       try
       {
-         handler.handle(1212, new PacketImpl(PacketImpl.CONN_START));
+         handler.handle(1212, new PacketImpl(PacketImpl.SESS_START));
          fail("Should throw Exception");
       }
       catch (IllegalStateException e)

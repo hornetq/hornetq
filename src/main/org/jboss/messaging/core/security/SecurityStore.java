@@ -24,13 +24,14 @@ package org.jboss.messaging.core.security;
 
 import java.util.Set;
 
-import org.jboss.messaging.core.server.ServerConnection;
+import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.util.SimpleString;
 
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -39,7 +40,7 @@ public interface SecurityStore
 {
    void authenticate(String user, String password) throws Exception;
    
-   void check(SimpleString address, CheckType checkType, ServerConnection conn) throws Exception;
+   void check(SimpleString address, CheckType checkType, ServerSession session) throws Exception;
 
    void setSecurityRepository(HierarchicalRepository<Set<Role>> securityRepository);
    

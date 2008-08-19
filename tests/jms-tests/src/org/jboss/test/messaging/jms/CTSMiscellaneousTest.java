@@ -21,6 +21,9 @@
  */
 package org.jboss.test.messaging.jms;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -43,9 +46,6 @@ import org.jboss.test.messaging.jms.message.SimpleJMSBytesMessage;
 import org.jboss.test.messaging.jms.message.SimpleJMSMessage;
 import org.jboss.test.messaging.jms.message.SimpleJMSTextMessage;
 import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
-
-import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Safeguards for previously detected TCK failures.

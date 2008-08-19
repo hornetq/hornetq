@@ -23,38 +23,38 @@
 package org.jboss.messaging.tests.unit.core.client.impl;
 
 import org.easymock.EasyMock;
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.Location;
-import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.messaging.core.client.impl.ClientConnectionImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
-import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.ConnectionRegistry;
-import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.TransportType;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
+import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
+import org.jboss.messaging.core.server.CommandManager;
+import org.jboss.messaging.core.server.impl.CommandManagerImpl;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.core.version.impl.VersionImpl;
+import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.VersionLoader;
 
 /**
  * 
- * A ClientConnectionFactoryImplTest
+ * A ClientSessionFactoryImplTest
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class ClientConnectionFactoryImplTest extends UnitTestCase
+public class ClientSessionFactoryImplTest extends UnitTestCase
 {
-   private static final Logger log = Logger.getLogger(ClientConnectionFactoryImplTest.class);
+   private static final Logger log = Logger.getLogger(ClientSessionFactoryImplTest.class);
    
    public void testWideConstructor() throws Exception
    {
@@ -62,10 +62,10 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
       
       final ConnectionParams params = new ConnectionParamsImpl();
       
-      testCreateClientConnectionFactoryImpl(location, params,
+      testCreateClientSessionFactory(location, params,
             32342, 1254, 152454, 15454, false, false, false);
       
-      testCreateClientConnectionFactoryImpl(location, params,
+      testCreateClientSessionFactory(location, params,
             65465, 5454, 6544, 654654, true, true, true);      
    }
    
@@ -73,7 +73,7 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
    {
       final Location location = new LocationImpl(TransportType.TCP, "bullfrog");
       
-      final ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location);
+      final ClientSessionFactory cf = new ClientSessionFactoryImpl(location);
       
       assertTrue(cf.getLocation() == location);
       
@@ -89,7 +89,7 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
       
       final ConnectionParams params = new ConnectionParamsImpl();
       
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location, params);
+      ClientSessionFactory cf = new ClientSessionFactoryImpl(location, params);
       
       assertTrue(cf.getLocation() == location);
             
@@ -102,72 +102,25 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
    {
       final Location location = new LocationImpl(TransportType.TCP, "echidna");
       
-      final ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location);
+      final ClientSessionFactory cf = new ClientSessionFactoryImpl(location);
       
       checkGetSetAttributes(cf, new ConnectionParamsImpl(), 12312, 1231, 23424, 123213, false, false, false);
       checkGetSetAttributes(cf, new ConnectionParamsImpl(), 656, 3453, 4343, 6556, true, true, true);      
    }   
    
-   public void testCreateConnection() throws Throwable
+   public void testCreateSession() throws Throwable
    {
-      testCreateConnectionWithUsernameAndPassword(null, null);
+      testCreateSessionWithUsernameAndPassword(null, null);
    }
    
-   public void testCreateConnectionWithUsernameAndPassword() throws Throwable
+   public void testCreateSessionWithUsernameAndPassword() throws Throwable
    {
-      testCreateConnectionWithUsernameAndPassword("bob", "wibble");
-   }
-   
-   public void testMessagingExceptionOnCreateConnection() throws Throwable
-   {
-      final Location location = new LocationImpl(TransportType.TCP, "baked beans");
-      
-      final ConnectionParams params = new ConnectionParamsImpl();
-      
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);      
-      
-      ConnectionRegistry cr = EasyMock.createStrictMock(ConnectionRegistry.class);
-      
-      ClientConnectionFactoryImpl cf =
-         new ClientConnectionFactoryImpl(location, params,
-               32432, 4323,
-               453453, 54543, false,
-               false, false);
-      
-      cf.setConnectionRegistry(cr);
-      
-      MessagingException me = new MessagingException(1234, "blahblah");
-      
-      EasyMock.expect(cr.getConnection(location, params)).andReturn(rc);
-      
-      Version clientVersion = VersionLoader.load();
-      
-      CreateConnectionRequest request =
-         new CreateConnectionRequest(clientVersion.getIncrementingVersion(), null, null);
-        
-      EasyMock.expect(rc.sendBlocking(0, 0, request)).andThrow(me);
-      
-      cr.returnConnection(location);
-      
-      EasyMock.replay(cr, rc);
-      
-      try
-      {
-         cf.createConnection();
-         
-         fail("Should throw exception");
-      }
-      catch (MessagingException e)
-      {
-         assertTrue(e == me);
-      }
-      
-      EasyMock.verify(cr, rc);
-   }
+      testCreateSessionWithUsernameAndPassword("bob", "wibble");
+   }   
    
    // Private -----------------------------------------------------------------------------------------------------------
       
-   private void testCreateConnectionWithUsernameAndPassword(final String username, final String password) throws Throwable
+   private void testCreateSessionWithUsernameAndPassword(final String username, final String password) throws Throwable
    {
       final Location location = new LocationImpl(TransportType.TCP, "cheesecake");
       
@@ -176,10 +129,11 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
       ConnectionRegistry cr = EasyMock.createStrictMock(ConnectionRegistry.class);
       
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
-      PacketDispatcher dispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
       
-      ClientConnectionFactoryImpl cf =
-         new ClientConnectionFactoryImpl(location, params,
+      PacketDispatcher dispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
+       
+      ClientSessionFactoryImpl cf =
+         new ClientSessionFactoryImpl(location, params,
                32432, 4323,
                453453, 54543, false,
                false, false);
@@ -188,51 +142,58 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
             
       EasyMock.expect(cr.getConnection(location, params)).andReturn(rc);
       
-      Version clientVersion = VersionLoader.load();
+      EasyMock.expect(rc.getPacketDispatcher()).andStubReturn(dispatcher);
+      long commandResponseTargetID = 1201922;
+      EasyMock.expect(dispatcher.generateID()).andReturn(commandResponseTargetID);
       
-      CreateConnectionRequest request =
-         new CreateConnectionRequest(clientVersion.getIncrementingVersion(), username, password);
-      
-      final long connTargetID = 5425142;
-      
+      boolean xa = RandomUtil.randomBoolean();
+      boolean autoCommitSends = RandomUtil.randomBoolean();
+      boolean autoCommitAcks = RandomUtil.randomBoolean();
+      int lazyAckBatchSize = 123;     
+      boolean cacheProducers = RandomUtil.randomBoolean();
+              
       Version serverVersion = new VersionImpl("blah", 1, 1, 1, 12, "blah");
       
-      CreateConnectionResponse response = 
-         new CreateConnectionResponse(connTargetID, serverVersion);
+      CreateSessionResponseMessage response = 
+         new CreateSessionResponseMessage(124312, 16226, serverVersion.getIncrementingVersion());
       
-      EasyMock.expect(rc.sendBlocking(0, 0, request)).andReturn(response);
-
-      EasyMock.expect(rc.getPacketDispatcher()).andReturn(dispatcher);
-      rc.addFailureListener((FailureListener) EasyMock.anyObject());
+      EasyMock.expect(rc.sendBlocking(EasyMock.eq(PacketDispatcherImpl.MAIN_SERVER_HANDLER_ID),
+                                      EasyMock.eq(PacketDispatcherImpl.MAIN_SERVER_HANDLER_ID),
+                                      EasyMock.isA(CreateSessionMessage.class),
+                                      (CommandManager)EasyMock.isNull())).andReturn(response);
+      
+      dispatcher.register(EasyMock.isA(CommandManagerImpl.class));
+           
       EasyMock.replay(cr, rc, dispatcher);
       
-      ClientConnection conn;
+      ClientSession sess;
       
       if (username == null)         
       {
-         conn = cf.createConnection();
+         sess = cf.createSession(xa, autoCommitSends, autoCommitAcks, lazyAckBatchSize, 
+                  cacheProducers);
       }
       else
       {
-         conn = cf.createConnection(username, password);
+         sess = cf.createSession(username, password, xa, autoCommitSends, autoCommitAcks, lazyAckBatchSize,
+                                 cacheProducers);
       }
          
       EasyMock.verify(cr, rc, dispatcher);
-      
-      assertTrue(conn instanceof ClientConnectionImpl);
-      
-      assertEquals(serverVersion.getFullVersion(), conn.getServerVersion().getFullVersion());
+
+      assertNotNull(sess.getName());
    }
    
-   private void testCreateClientConnectionFactoryImpl(final Location location, final ConnectionParams params,
+   
+   private void testCreateClientSessionFactory(final Location location, final ConnectionParams params,
          final int defaultConsumerWindowSize, final int defaultConsumerMaxRate,
          final int defaultProducerWindowSize, final int defaultProducerMaxRate,
          final boolean defaultBlockOnAcknowledge,
          final boolean defaultSendNonPersistentMessagesBlocking,
          final boolean defaultSendPersistentMessagesBlocking) throws Exception
    {
-      ClientConnectionFactory cf =
-         new ClientConnectionFactoryImpl(location, params, defaultConsumerWindowSize, defaultConsumerMaxRate,
+      ClientSessionFactory cf =
+         new ClientSessionFactoryImpl(location, params, defaultConsumerWindowSize, defaultConsumerMaxRate,
                defaultProducerWindowSize, defaultProducerMaxRate, defaultBlockOnAcknowledge,
                defaultSendNonPersistentMessagesBlocking, defaultSendPersistentMessagesBlocking);
       
@@ -247,18 +208,18 @@ public class ClientConnectionFactoryImplTest extends UnitTestCase
       assertEquals(defaultSendPersistentMessagesBlocking, cf.isDefaultBlockOnPersistentSend());
    }
    
-   private void checkDefaults(final ClientConnectionFactory cf) throws Exception
+   private void checkDefaults(final ClientSessionFactory cf) throws Exception
    {
-      assertEquals(ClientConnectionFactoryImpl.DEFAULT_DEFAULT_CONSUMER_WINDOW_SIZE, cf.getDefaultConsumerWindowSize());
-      assertEquals(ClientConnectionFactoryImpl.DEFAULT_DEFAULT_CONSUMER_MAX_RATE, cf.getDefaultConsumerMaxRate());
-      assertEquals(ClientConnectionFactoryImpl.DEFAULT_DEFAULT_PRODUCER_WINDOW_SIZE, cf.getDefaultProducerWindowSize());
-      assertEquals(ClientConnectionFactoryImpl.DEFAULT_DEFAULT_PRODUCER_MAX_RATE, cf.getDefaultProducerMaxRate());
-      assertEquals(ClientConnectionFactoryImpl.DEFAULT_DEFAULT_BLOCK_ON_ACKNOWLEDGE, cf.isDefaultBlockOnAcknowledge());
-      assertEquals(ClientConnectionFactoryImpl.DEFAULT_DEFAULT_BLOCK_ON_PERSISTENT_SEND, cf.isDefaultBlockOnNonPersistentSend());
-      assertEquals(ClientConnectionFactoryImpl.DEFAULT_DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND, cf.isDefaultBlockOnPersistentSend());      
+      assertEquals(ClientSessionFactoryImpl.DEFAULT_DEFAULT_CONSUMER_WINDOW_SIZE, cf.getDefaultConsumerWindowSize());
+      assertEquals(ClientSessionFactoryImpl.DEFAULT_DEFAULT_CONSUMER_MAX_RATE, cf.getDefaultConsumerMaxRate());
+      assertEquals(ClientSessionFactoryImpl.DEFAULT_DEFAULT_PRODUCER_WINDOW_SIZE, cf.getDefaultProducerWindowSize());
+      assertEquals(ClientSessionFactoryImpl.DEFAULT_DEFAULT_PRODUCER_MAX_RATE, cf.getDefaultProducerMaxRate());
+      assertEquals(ClientSessionFactoryImpl.DEFAULT_DEFAULT_BLOCK_ON_ACKNOWLEDGE, cf.isDefaultBlockOnAcknowledge());
+      assertEquals(ClientSessionFactoryImpl.DEFAULT_DEFAULT_BLOCK_ON_PERSISTENT_SEND, cf.isDefaultBlockOnNonPersistentSend());
+      assertEquals(ClientSessionFactoryImpl.DEFAULT_DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND, cf.isDefaultBlockOnPersistentSend());      
    }
    
-   private void checkGetSetAttributes(ClientConnectionFactory cf,
+   private void checkGetSetAttributes(ClientSessionFactory cf,
          final ConnectionParams params,
          final int defaultConsumerWindowSize, final int defaultConsumerMaxRate,
          final int defaultProducerWindowSize, final int defaultProducerMaxRate,

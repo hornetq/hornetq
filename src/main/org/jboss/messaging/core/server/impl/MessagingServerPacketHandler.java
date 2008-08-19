@@ -22,7 +22,8 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.*;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PING;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PONG;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -30,7 +31,8 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingService;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
+import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.server.MessagingServer;
@@ -59,12 +61,11 @@ public class MessagingServerPacketHandler implements PacketHandler
 
    public long getID()
    {
-      //0 is reserved for this handler
-      return 0;
+      return PacketDispatcherImpl.MAIN_SERVER_HANDLER_ID;
    }
 
    public void handle(final Object connectionID, final Packet packet)
-   {
+   {      
       Packet response = null;
 
       RemotingConnection connection = remotingService.getConnection(connectionID);
@@ -77,19 +78,24 @@ public class MessagingServerPacketHandler implements PacketHandler
          {
             response = new PacketImpl(PONG);
          }
-         else if (type == CREATECONNECTION)
+         else if (type == PacketImpl.CREATESESSION)
          {
-            CreateConnectionRequest request = (CreateConnectionRequest) packet;
+            CreateSessionMessage request = (CreateSessionMessage) packet;
 
             response =
-               server.createConnection(request.getUsername(), request.getPassword(),
-                                       request.getVersion(),
-                                       connection);
+               server.createSession(request.getName(),
+                                    request.getUsername(), request.getPassword(),
+                                    request.getVersion(),
+                                    connection,
+                                    request.isAutoCommitSends(),
+                                    request.isAutoCommitAcks(),
+                                    request.isXA(),
+                                    request.getCommandResponseTargetID());                                                                
          }
          else
          {
             response = new MessagingExceptionMessage(new MessagingException(MessagingException.UNSUPPORTED_PACKET,
-                    "Unsupported packet " + type));
+                                                     "Unsupported packet " + type));
          }
       }
       catch (Throwable t)
@@ -110,9 +116,10 @@ public class MessagingServerPacketHandler implements PacketHandler
          response = new MessagingExceptionMessage(me);
       }
 
-      response.normalize(packet);
+      response.setTargetID(packet.getResponseTargetID());
+         
+      connection.sendOneWay(response);                  
 
-      connection.sendOneWay(response);
    }
 
 }

@@ -2567,69 +2567,69 @@ public class MessageConsumerTest extends JMSTestCase
 
    // Test that stop doesn't in any way break subsequent close
 
-//   public void testCloseAfterStop() throws Exception
-//   {
-//      Connection producerConnection = null;
-//
-//      Connection consumerConnection = null;
-//
-//      try
-//      {
-//         producerConnection = cf.createConnection();
-//
-//         consumerConnection = cf.createConnection();
-//
-//         Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//
-//         Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//
-//         MessageProducer queueProducer = producerSession.createProducer(queue1);
-//
-//         MessageConsumer queueConsumer = consumerSession.createConsumer(queue1);
-//
-//         MessageListener myListener = new MessageListener()
-//         {
-//            public void onMessage(Message message)
-//            {
-//               try
-//               {
-//                  Thread.sleep(100);
-//               }
-//               catch (InterruptedException e)
-//               {
-//                  // Ignore
-//               }
-//            }
-//         };
-//
-//         queueConsumer.setMessageListener(myListener);
-//
-//         consumerConnection.start();
-//
-//         for (int i = 0; i < 100; i++)
-//         {
-//            queueProducer.send(producerSession.createTextMessage("Message #" + Integer.toString(i)));
-//         }
-//
-//         consumerConnection.stop();
-//
-//         consumerConnection.close();
-//
-//         consumerConnection = null;
-//      }
-//      finally
-//      {
-//         if (producerConnection != null)
-//         {
-//            producerConnection.close();
-//         }
-//         if (consumerConnection != null)
-//         {
-//            consumerConnection.close();
-//         }
-//         removeAllMessages(queue1.getQueueName(), true, 0);
-//      }
-//   }
+   public void testCloseAfterStop() throws Exception
+   {
+      Connection producerConnection = null;
+
+      Connection consumerConnection = null;
+
+      try
+      {
+         producerConnection = cf.createConnection();
+
+         consumerConnection = cf.createConnection();
+
+         Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageProducer queueProducer = producerSession.createProducer(queue1);
+
+         MessageConsumer queueConsumer = consumerSession.createConsumer(queue1);
+
+         MessageListener myListener = new MessageListener()
+         {
+            public void onMessage(Message message)
+            {
+               try
+               {
+                  Thread.sleep(100);
+               }
+               catch (InterruptedException e)
+               {
+                  // Ignore
+               }
+            }
+         };
+
+         queueConsumer.setMessageListener(myListener);
+
+         consumerConnection.start();
+
+         for (int i = 0; i < 100; i++)
+         {
+            queueProducer.send(producerSession.createTextMessage("Message #" + Integer.toString(i)));
+         }
+
+         consumerConnection.stop();
+
+         consumerConnection.close();
+
+         consumerConnection = null;
+      }
+      finally
+      {
+         if (producerConnection != null)
+         {
+            producerConnection.close();
+         }
+         if (consumerConnection != null)
+         {
+            consumerConnection.close();
+         }
+         removeAllMessages(queue1.getQueueName(), true, 0);
+      }
+   }
 
    //
    // Multiple consumers

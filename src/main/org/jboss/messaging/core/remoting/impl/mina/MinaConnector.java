@@ -54,7 +54,7 @@ public class MinaConnector implements Connector
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(MinaConnection.class);
+   private static final Logger log = Logger.getLogger(MinaConnector.class);
 
    // Attributes ----------------------------------------------------
 

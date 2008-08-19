@@ -38,5 +38,5 @@ import org.jboss.messaging.util.SimpleString;
 public interface QueueFactory
 {
    Queue createQueue(long persistenceID, SimpleString name, Filter filter,
-                     boolean durable, boolean temporary);
+                     boolean durable);
 }

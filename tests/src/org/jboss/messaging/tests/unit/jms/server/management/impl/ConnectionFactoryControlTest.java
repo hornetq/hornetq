@@ -36,11 +36,9 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import org.easymock.classextension.EasyMock;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.management.impl.ConnectionFactoryControl;
-import org.jboss.messaging.tests.util.RandomUtil;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -67,15 +65,14 @@ public class ConnectionFactoryControlTest extends TestCase
       bindings.add(randomString());
       bindings.add(randomString());
 
-      JBossConnectionFactory cf = createMock(JBossConnectionFactory.class);
-      ClientConnectionFactory coreCF = createMock(ClientConnectionFactory.class);
-      replay(cf, coreCF);
+      JBossConnectionFactory cf = createMock(JBossConnectionFactory.class);      
+      replay(cf);
 
       ConnectionFactoryControl control = new ConnectionFactoryControl(cf,
-            coreCF, name, bindings);
+            name, bindings);
       assertEquals(name, control.getName());
 
-      verify(cf, coreCF);
+      verify(cf);
    }
 
    public void testGetBindings() throws Exception
@@ -85,15 +82,14 @@ public class ConnectionFactoryControlTest extends TestCase
       bindings.add(randomString());
       bindings.add(randomString());
 
-      JBossConnectionFactory cf = createMock(JBossConnectionFactory.class);
-      ClientConnectionFactory coreCF = createMock(ClientConnectionFactory.class);
-      replay(cf, coreCF);
+      JBossConnectionFactory cf = createMock(JBossConnectionFactory.class);     
+      replay(cf);
 
       ConnectionFactoryControl control = new ConnectionFactoryControl(cf,
-            coreCF, name, bindings);
+            name, bindings);
       assertEquals(bindings, control.getBindings());
 
-      verify(cf, coreCF);
+      verify(cf);
    }
 
    public void testGetURL() throws Exception
@@ -103,17 +99,16 @@ public class ConnectionFactoryControlTest extends TestCase
       bindings.add(randomString());
       bindings.add(randomString());
 
-      JBossConnectionFactory cf = createMock(JBossConnectionFactory.class);
-      ClientConnectionFactory coreCF = createMock(ClientConnectionFactory.class);
-      Location location = createMock(Location.class);
-      expect(coreCF.getLocation()).andReturn(location);
-      replay(cf, coreCF, location);
+      JBossConnectionFactory cf = createMock(JBossConnectionFactory.class);      
+      Location location = createMock(Location.class);  
+      EasyMock.expect(cf.getLocation()).andReturn(location);
+      replay(cf, location);
 
       ConnectionFactoryControl control = new ConnectionFactoryControl(cf,
-            coreCF, name, bindings);
+            name, bindings);
       assertEquals(location.toString(), control.getURL());
 
-      verify(cf, coreCF, location);
+      verify(cf, location);
    }
 
    public void testGetClientID() throws Exception
@@ -125,15 +120,14 @@ public class ConnectionFactoryControlTest extends TestCase
       String clientID = randomString();
 
       JBossConnectionFactory cf = createMock(JBossConnectionFactory.class);
-      expect(cf.getClientID()).andReturn(clientID);
-      ClientConnectionFactory coreCF = createMock(ClientConnectionFactory.class);
-      replay(cf, coreCF);
+      expect(cf.getClientID()).andReturn(clientID);      
+      replay(cf);
 
       ConnectionFactoryControl control = new ConnectionFactoryControl(cf,
-            coreCF, name, bindings);
+            name, bindings);
       assertEquals(clientID, control.getClientID());
 
-      verify(cf, coreCF);
+      verify(cf);
    }
 
    public void testGetDefaultConsumerMaxRate() throws Exception
@@ -144,16 +138,15 @@ public class ConnectionFactoryControlTest extends TestCase
       bindings.add(randomString());
       int rate = randomInt();
 
-      JBossConnectionFactory cf = createMock(JBossConnectionFactory.class);
-      ClientConnectionFactory coreCF = createMock(ClientConnectionFactory.class);
-      expect(coreCF.getDefaultConsumerMaxRate()).andReturn(rate);
-      replay(cf, coreCF);
+      JBossConnectionFactory cf = createMock(JBossConnectionFactory.class);    
+      EasyMock.expect(cf.getDefaultConsumerMaxRate()).andReturn(rate);
+      replay(cf);
 
       ConnectionFactoryControl control = new ConnectionFactoryControl(cf,
-            coreCF, name, bindings);
+            name, bindings);
       assertEquals(rate, control.getDefaultConsumerMaxRate());
 
-      verify(cf, coreCF);
+      verify(cf);
    }
 
    public void testGetDefaultConsumerWindowSize() throws Exception
@@ -164,16 +157,15 @@ public class ConnectionFactoryControlTest extends TestCase
       bindings.add(randomString());
       int size = randomInt();
 
-      JBossConnectionFactory cf = createMock(JBossConnectionFactory.class);
-      ClientConnectionFactory coreCF = createMock(ClientConnectionFactory.class);
-      expect(coreCF.getDefaultConsumerWindowSize()).andReturn(size);
-      replay(cf, coreCF);
+      JBossConnectionFactory cf = createMock(JBossConnectionFactory.class);  
+      EasyMock.expect(cf.getDefaultConsumerWindowSize()).andReturn(size);
+      replay(cf);
 
       ConnectionFactoryControl control = new ConnectionFactoryControl(cf,
-            coreCF, name, bindings);
+            name, bindings);
       assertEquals(size, control.getDefaultConsumerWindowSize());
 
-      verify(cf, coreCF);
+      verify(cf);
    }
 
    public void testGetDefaultProducerMaxRate() throws Exception
@@ -184,16 +176,15 @@ public class ConnectionFactoryControlTest extends TestCase
       bindings.add(randomString());
       int rate = randomInt();
 
-      JBossConnectionFactory cf = createMock(JBossConnectionFactory.class);
-      ClientConnectionFactory coreCF = createMock(ClientConnectionFactory.class);
-      expect(coreCF.getDefaultProducerMaxRate()).andReturn(rate);
-      replay(cf, coreCF);
+      JBossConnectionFactory cf = createMock(JBossConnectionFactory.class);        
+      EasyMock.expect(cf.getDefaultProducerMaxRate()).andReturn(rate);
+      replay(cf);
 
       ConnectionFactoryControl control = new ConnectionFactoryControl(cf,
-            coreCF, name, bindings);
+            name, bindings);
       assertEquals(rate, control.getDefaultProducerMaxRate());
 
-      verify(cf, coreCF);
+      verify(cf);
    }
 
    public void testGetDefaultProducerWindowSize() throws Exception
@@ -204,16 +195,15 @@ public class ConnectionFactoryControlTest extends TestCase
       bindings.add(randomString());
       int size = randomInt();
 
-      JBossConnectionFactory cf = createMock(JBossConnectionFactory.class);
-      ClientConnectionFactory coreCF = createMock(ClientConnectionFactory.class);
-      expect(coreCF.getDefaultProducerWindowSize()).andReturn(size);
-      replay(cf, coreCF);
+      JBossConnectionFactory cf = createMock(JBossConnectionFactory.class);     
+      EasyMock.expect(cf.getDefaultProducerWindowSize()).andReturn(size);
+      replay(cf);
 
       ConnectionFactoryControl control = new ConnectionFactoryControl(cf,
-            coreCF, name, bindings);
+            name, bindings);
       assertEquals(size, control.getDefaultProducerWindowSize());
 
-      verify(cf, coreCF);
+      verify(cf);
    }
 
    public void testGetDupsOKBatchSize() throws Exception
@@ -225,15 +215,14 @@ public class ConnectionFactoryControlTest extends TestCase
       int size = randomInt();
 
       JBossConnectionFactory cf = createMock(JBossConnectionFactory.class);
-      ClientConnectionFactory coreCF = createMock(ClientConnectionFactory.class);
       expect(cf.getDupsOKBatchSize()).andReturn(size);
-      replay(cf, coreCF);
+      replay(cf);
 
       ConnectionFactoryControl control = new ConnectionFactoryControl(cf,
-            coreCF, name, bindings);
+            name, bindings);
       assertEquals(size, control.getDupsOKBatchSize());
 
-      verify(cf, coreCF);
+      verify(cf);
    }
 
    public void testIsDefaultBlockOnAcknowledge() throws Exception
@@ -244,17 +233,15 @@ public class ConnectionFactoryControlTest extends TestCase
       bindings.add(randomString());
       boolean blockOnAcknowledge = randomBoolean();
 
-      JBossConnectionFactory cf = createMock(JBossConnectionFactory.class);
-      ClientConnectionFactory coreCF = createMock(ClientConnectionFactory.class);
-      expect(coreCF.isDefaultBlockOnAcknowledge())
-            .andReturn(blockOnAcknowledge);
-      replay(cf, coreCF);
+      JBossConnectionFactory cf = createMock(JBossConnectionFactory.class);     
+      EasyMock.expect(cf.isDefaultBlockOnAcknowledge()).andReturn(blockOnAcknowledge);
+      replay(cf);
 
       ConnectionFactoryControl control = new ConnectionFactoryControl(cf,
-            coreCF, name, bindings);
+            name, bindings);
       assertEquals(blockOnAcknowledge, control.isDefaultBlockOnAcknowledge());
 
-      verify(cf, coreCF);
+      verify(cf);
    }
 
    public void testIsDefaultBlockOnNonPersistentSend() throws Exception
@@ -265,18 +252,16 @@ public class ConnectionFactoryControlTest extends TestCase
       bindings.add(randomString());
       boolean blockOnNonPersistentSend = randomBoolean();
 
-      JBossConnectionFactory cf = createMock(JBossConnectionFactory.class);
-      ClientConnectionFactory coreCF = createMock(ClientConnectionFactory.class);
-      expect(coreCF.isDefaultBlockOnNonPersistentSend()).andReturn(
-            blockOnNonPersistentSend);
-      replay(cf, coreCF);
+      JBossConnectionFactory cf = createMock(JBossConnectionFactory.class);     
+      EasyMock.expect(cf.isDefaultSendNonPersistentMessagesBlocking()).andReturn(blockOnNonPersistentSend);
+      replay(cf);
 
       ConnectionFactoryControl control = new ConnectionFactoryControl(cf,
-            coreCF, name, bindings);
+            name, bindings);
       assertEquals(blockOnNonPersistentSend, control
             .isDefaultBlockOnNonPersistentSend());
 
-      verify(cf, coreCF);
+      verify(cf);
    }
 
    public void testIsDefaultBlockOnPersistentSend() throws Exception
@@ -287,18 +272,16 @@ public class ConnectionFactoryControlTest extends TestCase
       bindings.add(randomString());
       boolean blockOnPersistentSend = randomBoolean();
 
-      JBossConnectionFactory cf = createMock(JBossConnectionFactory.class);
-      ClientConnectionFactory coreCF = createMock(ClientConnectionFactory.class);
-      expect(coreCF.isDefaultBlockOnPersistentSend()).andReturn(
-            blockOnPersistentSend);
-      replay(cf, coreCF);
+      JBossConnectionFactory cf = createMock(JBossConnectionFactory.class); 
+      EasyMock.expect(cf.isDefaultSendPersistentMessagesBlocking()).andReturn(blockOnPersistentSend);
+      replay(cf);
 
       ConnectionFactoryControl control = new ConnectionFactoryControl(cf,
-            coreCF, name, bindings);
+            name, bindings);
       assertEquals(blockOnPersistentSend, control
             .isDefaultBlockOnPersistentSend());
 
-      verify(cf, coreCF);
+      verify(cf);
    }
 
    // Package protected ---------------------------------------------

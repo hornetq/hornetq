@@ -35,7 +35,6 @@ import org.easymock.IAnswer;
 import org.easymock.classextension.EasyMock;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
@@ -67,6 +66,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessag
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
+import org.jboss.messaging.core.server.CommandManager;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.server.impl.ServerSessionPacketHandler;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -79,15 +79,15 @@ public class ServerSessionPacketHandlerTest extends UnitTestCase
 {
    private ServerSession session;
    private ServerSessionPacketHandler handler;
-   private RemotingConnection rc;
+   private CommandManager cm;
    private SimpleString queueName;
    private SimpleString filterString;
 
    protected void setUp() throws Exception
    {
       session = createStrictMock(ServerSession.class);
-      rc = createStrictMock(RemotingConnection.class);
-      handler = new ServerSessionPacketHandler(session, rc);
+      cm = createStrictMock(CommandManager.class);
+      handler = new ServerSessionPacketHandler(session, cm);
       queueName = new SimpleString("qname");
       filterString = new SimpleString("test = 'foo'");
    }
@@ -109,307 +109,382 @@ public class ServerSessionPacketHandlerTest extends UnitTestCase
    public void testCreateConsumer() throws Exception
    {
       SessionCreateConsumerResponseMessage resp = EasyMock.createStrictMock(SessionCreateConsumerResponseMessage.class);
-      expect(session.createConsumer(1, queueName, filterString, true, true, 10, 100)).andReturn(resp);
-      rc.sendOneWay(resp);     
-      replay(session, rc);
-      SessionCreateConsumerMessage request = new SessionCreateConsumerMessage(1, queueName, filterString, true, true, 10, 100);
+      expect(session.createConsumer(1, queueName, filterString, 10, 100)).andReturn(resp);
+      SessionCreateConsumerMessage request = new SessionCreateConsumerMessage(1, queueName, filterString, 10, 100);
+      long responseTargetID = 1212;
+      request.setResponseTargetID(responseTargetID);
+      cm.sendCommandOneway(responseTargetID, resp);  
+      cm.packetProcessed(request);
+      replay(session, cm);
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testCreateQueue() throws Exception
    {
-      session.createQueue(queueName, queueName, filterString, true, true);
-      rc.sendOneWay(new PacketImpl(PacketImpl.NULL)); 
-      replay(session, rc);
       SessionCreateQueueMessage request = new SessionCreateQueueMessage(queueName, queueName, filterString, true, true);
+      session.createQueue(queueName, queueName, filterString, true, true);
+      long responseTargetID = 1212;
+      request.setResponseTargetID(responseTargetID);
+      cm.sendCommandOneway(responseTargetID, new PacketImpl(PacketImpl.NULL)); 
+      cm.packetProcessed(request);
+      replay(session, cm);
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testDeleteQueue() throws Exception
    {
-      session.deleteQueue(queueName);
-      rc.sendOneWay(new PacketImpl(PacketImpl.NULL)); 
-      replay(session, rc);
       SessionDeleteQueueMessage request = new SessionDeleteQueueMessage(queueName);
+      long responseTargetID = 1212;
+      request.setResponseTargetID(responseTargetID);
+      session.deleteQueue(queueName);
+      cm.sendCommandOneway(responseTargetID, new PacketImpl(PacketImpl.NULL)); 
+      cm.packetProcessed(request);
+      replay(session, cm);      
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testQueueQuery() throws Exception
    {
-      SessionQueueQueryResponseMessage resp = EasyMock.createStrictMock(SessionQueueQueryResponseMessage.class);
-      expect(session.executeQueueQuery(queueName)).andReturn(resp);
-      rc.sendOneWay(resp);
-      replay(session, rc);
       SessionQueueQueryMessage request = new SessionQueueQueryMessage(queueName);
+      SessionQueueQueryResponseMessage resp = EasyMock.createStrictMock(SessionQueueQueryResponseMessage.class);
+      long responseTargetID = 1212;
+      request.setResponseTargetID(responseTargetID);
+      expect(session.executeQueueQuery(queueName)).andReturn(resp);
+      cm.sendCommandOneway(responseTargetID, resp);
+      cm.packetProcessed(request);
+      replay(session, cm);      
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testBindingQuery() throws Exception
    {
-      SessionBindingQueryResponseMessage resp = EasyMock.createStrictMock(SessionBindingQueryResponseMessage.class);
-      expect(session.executeBindingQuery(queueName)).andReturn(resp);
-      rc.sendOneWay(resp);
-      replay(session, rc);
       SessionBindingQueryMessage request = new SessionBindingQueryMessage(queueName);
+      SessionBindingQueryResponseMessage resp = EasyMock.createStrictMock(SessionBindingQueryResponseMessage.class);
+      long responseTargetID = 1212;
+      request.setResponseTargetID(responseTargetID);
+      expect(session.executeBindingQuery(queueName)).andReturn(resp);
+      cm.sendCommandOneway(responseTargetID, resp);
+      cm.packetProcessed(request);
+      replay(session, cm);      
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testCreateBrowser() throws Exception
    {
-      SessionCreateBrowserResponseMessage resp = EasyMock.createStrictMock(SessionCreateBrowserResponseMessage.class);
-      expect(session.createBrowser(queueName, filterString)).andReturn(resp);
-      rc.sendOneWay(resp);
-      replay(session, rc);
       SessionCreateBrowserMessage request = new SessionCreateBrowserMessage(queueName, filterString);
+      SessionCreateBrowserResponseMessage resp = EasyMock.createStrictMock(SessionCreateBrowserResponseMessage.class);
+      long responseTargetID = 1212;
+      request.setResponseTargetID(responseTargetID);
+      expect(session.createBrowser(queueName, filterString)).andReturn(resp);
+      cm.sendCommandOneway(responseTargetID, resp);
+      cm.packetProcessed(request);
+      replay(session, cm);      
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testCreateProducer() throws Exception
    {
-      SessionCreateProducerResponseMessage resp = EasyMock.createStrictMock(SessionCreateProducerResponseMessage.class);
-      expect(session.createProducer(4, queueName, 33, 44)).andReturn(resp);
-      rc.sendOneWay(resp);
-      replay(session, rc);
       SessionCreateProducerMessage request = new SessionCreateProducerMessage(4, queueName, 33, 44);
+      SessionCreateProducerResponseMessage resp = EasyMock.createStrictMock(SessionCreateProducerResponseMessage.class);
+      long responseTargetID = 1212;
+      request.setResponseTargetID(responseTargetID);
+      expect(session.createProducer(4, queueName, 33, 44)).andReturn(resp);
+      cm.sendCommandOneway(responseTargetID, resp);
+      cm.packetProcessed(request);
+      replay(session, cm);      
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testClose() throws Exception
    {
-      session.close();
-      rc.sendOneWay(new PacketImpl(PacketImpl.NULL));
-      replay(session, rc);
       PacketImpl request = new PacketImpl(PacketImpl.CLOSE);
+      long responseTargetID = 1212;
+      request.setResponseTargetID(responseTargetID);
+      session.close();
+      cm.sendCommandOneway(responseTargetID, new PacketImpl(PacketImpl.NULL));
+      cm.packetProcessed(request);
+      replay(session, cm);      
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testSessionAck() throws Exception
    {
+      SessionAcknowledgeMessage request = new SessionAcknowledgeMessage(44, true);     
       session.acknowledge(44, true);
-      replay(session, rc);
-      SessionAcknowledgeMessage request = new SessionAcknowledgeMessage(44, true);
+      cm.packetProcessed(request);
+      replay(session, cm);      
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testCommit() throws Exception
    {
-      session.commit();
-      rc.sendOneWay(new PacketImpl(PacketImpl.NULL));
-      replay(session, rc);
       PacketImpl request = new PacketImpl(PacketImpl.SESS_COMMIT);
+      long responseTargetID = 1212;
+      request.setResponseTargetID(responseTargetID);
+      session.commit();
+      cm.sendCommandOneway(responseTargetID, new PacketImpl(PacketImpl.NULL));
+      cm.packetProcessed(request);
+      replay(session, cm);      
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testRollback() throws Exception
    {
-      session.rollback();
-      rc.sendOneWay(new PacketImpl(PacketImpl.NULL));
-      replay(session, rc);
       PacketImpl request = new PacketImpl(PacketImpl.SESS_ROLLBACK);
+      long responseTargetID = 1212;
+      request.setResponseTargetID(responseTargetID);
+      session.rollback();
+      cm.sendCommandOneway(responseTargetID, new PacketImpl(PacketImpl.NULL));
+      cm.packetProcessed(request);
+      replay(session, cm);    
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testCancel() throws Exception
    {
-      session.cancel(55, true);     
-      replay(session, rc);
       SessionCancelMessage request = new SessionCancelMessage(55, true);
+      session.cancel(55, true);     
+      cm.packetProcessed(request);
+      replay(session, cm);
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testXaCommit() throws Exception
    {
       Xid xid = createStrictMock(Xid.class);
+      SessionXACommitMessage request = new SessionXACommitMessage(xid, true);
+      long responseTargetID = 12123;
+      request.setResponseTargetID(responseTargetID);      
       SessionXAResponseMessage resp = EasyMock.createStrictMock(SessionXAResponseMessage.class);
       expect(session.XACommit(true, xid)).andReturn(resp);
-      rc.sendOneWay(resp);
-      replay(session, rc);
-      SessionXACommitMessage request = new SessionXACommitMessage(xid, true);
+      cm.sendCommandOneway(responseTargetID, resp);
+      cm.packetProcessed(request);
+      replay(session, cm);      
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testXaEnd() throws Exception
    {
       Xid xid = createStrictMock(Xid.class);
+      SessionXAEndMessage request = new SessionXAEndMessage(xid, true);
+      long responseTargetID = 12123;
+      request.setResponseTargetID(responseTargetID); 
       SessionXAResponseMessage resp = EasyMock.createStrictMock(SessionXAResponseMessage.class);
       expect(session.XAEnd(xid, true)).andReturn(resp);
-      rc.sendOneWay(resp);
-      replay(session, rc);
-      SessionXAEndMessage request = new SessionXAEndMessage(xid, true);
+      cm.sendCommandOneway(responseTargetID, resp);
+      cm.packetProcessed(request);
+      replay(session, cm);     
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testXaForget() throws Exception
    {
       Xid xid = createStrictMock(Xid.class);
+      SessionXAForgetMessage request = new SessionXAForgetMessage(xid); 
+      long responseTargetID = 12123;
+      request.setResponseTargetID(responseTargetID); 
       SessionXAResponseMessage resp = EasyMock.createStrictMock(SessionXAResponseMessage.class);
       expect(session.XAForget(xid)).andReturn(resp);
-      rc.sendOneWay(resp);
-      replay(session, rc);
-      SessionXAForgetMessage request = new SessionXAForgetMessage(xid);
+      cm.sendCommandOneway(responseTargetID, resp);
+      cm.packetProcessed(request);
+      replay(session, cm);      
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testXaJoin() throws Exception
    {
       Xid xid = createStrictMock(Xid.class);
+      SessionXAJoinMessage request = new SessionXAJoinMessage(xid);
+      long responseTargetID = 12123;
+      request.setResponseTargetID(responseTargetID);       
       SessionXAResponseMessage resp = EasyMock.createStrictMock(SessionXAResponseMessage.class);
       expect(session.XAJoin(xid)).andReturn(resp);
-      rc.sendOneWay(resp);
-      replay(session, rc);
-      SessionXAJoinMessage request = new SessionXAJoinMessage(xid);
+      cm.sendCommandOneway(responseTargetID, resp);
+      cm.packetProcessed(request);
+      replay(session, cm);      
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testXaResume() throws Exception
    {
       Xid xid = createStrictMock(Xid.class);
+      SessionXAResumeMessage request = new SessionXAResumeMessage(xid);
+      long responseTargetID = 12123;
+      request.setResponseTargetID(responseTargetID);        
       SessionXAResponseMessage resp = EasyMock.createStrictMock(SessionXAResponseMessage.class);
       expect(session.XAResume(xid)).andReturn(resp);
-      rc.sendOneWay(resp);
-      replay(session, rc);
-      SessionXAResumeMessage request = new SessionXAResumeMessage(xid);
+      cm.sendCommandOneway(responseTargetID, resp);
+      cm.packetProcessed(request);
+      replay(session, cm);      
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testXaRollback() throws Exception
    {
       Xid xid = createStrictMock(Xid.class);
+      SessionXARollbackMessage request = new SessionXARollbackMessage(xid);
+      long responseTargetID = 12123;
+      request.setResponseTargetID(responseTargetID);  
       SessionXAResponseMessage resp = EasyMock.createStrictMock(SessionXAResponseMessage.class);
       expect(session.XARollback(xid)).andReturn(resp);
-      rc.sendOneWay(resp);
-      replay(session, rc);
-      SessionXARollbackMessage request = new SessionXARollbackMessage(xid);
+      cm.sendCommandOneway(responseTargetID, resp);
+      cm.packetProcessed(request);
+      replay(session, cm);     
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testXaStart() throws Exception
    {
       Xid xid = createStrictMock(Xid.class);
+      SessionXAStartMessage request = new SessionXAStartMessage(xid);
+      long responseTargetID = 12123;
+      request.setResponseTargetID(responseTargetID);  
       SessionXAResponseMessage resp = EasyMock.createStrictMock(SessionXAResponseMessage.class);
       expect(session.XAStart(xid)).andReturn(resp);
-      rc.sendOneWay(resp);
-      replay(session, rc);
-      SessionXAStartMessage request = new SessionXAStartMessage(xid);
+      cm.sendCommandOneway(responseTargetID, resp);
+      cm.packetProcessed(request);
+      replay(session, cm);      
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testXaSuspend() throws Exception
    {
+      PacketImpl request = new PacketImpl(PacketImpl.SESS_XA_SUSPEND);
+      long responseTargetID = 12123;
+      request.setResponseTargetID(responseTargetID);
       SessionXAResponseMessage resp = EasyMock.createStrictMock(SessionXAResponseMessage.class);
       expect(session.XASuspend()).andReturn(resp);
-      rc.sendOneWay(resp);
-      replay(session, rc);
-      PacketImpl request = new PacketImpl(PacketImpl.SESS_XA_SUSPEND);
+      cm.sendCommandOneway(responseTargetID, resp);
+      cm.packetProcessed(request);
+      replay(session, cm);
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testXaPrepare() throws Exception
    {
       Xid xid = createStrictMock(Xid.class);
+      SessionXAPrepareMessage request = new SessionXAPrepareMessage(xid);
+      long responseTargetID = 12123;
+      request.setResponseTargetID(responseTargetID);
       SessionXAResponseMessage resp = EasyMock.createStrictMock(SessionXAResponseMessage.class);
       expect(session.XAPrepare(xid)).andReturn(resp);
-      rc.sendOneWay(resp);
-      replay(session, rc);
-      SessionXAPrepareMessage request = new SessionXAPrepareMessage(xid);
+      cm.sendCommandOneway(responseTargetID, resp);
+      cm.packetProcessed(request);
+      replay(session, cm);      
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testXaInDoubt() throws Exception
    {
+      PacketImpl request = new PacketImpl(PacketImpl.SESS_XA_INDOUBT_XIDS);
+      long responseTargetID = 12123;
+      request.setResponseTargetID(responseTargetID);
       Xid xid = createStrictMock(Xid.class);
       Xid xid2 = createStrictMock(Xid.class);
       List<Xid> xids = new ArrayList<Xid>();
       xids.add(xid);
       xids.add(xid2);
       expect(session.getInDoubtXids()).andReturn(xids);
-      rc.sendOneWay(new SessionXAGetInDoubtXidsResponseMessage(xids));
-      replay(session, rc);
-      PacketImpl request = new PacketImpl(PacketImpl.SESS_XA_INDOUBT_XIDS);
+      cm.sendCommandOneway(responseTargetID, new SessionXAGetInDoubtXidsResponseMessage(xids));
+      cm.packetProcessed(request);
+      replay(session, cm);      
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testXaGetTimeout() throws Exception
    {
+      PacketImpl request = new PacketImpl(PacketImpl.SESS_XA_GET_TIMEOUT);
+      long responseTargetID = 12123;
+      request.setResponseTargetID(responseTargetID);
       final int timeout = 2000;
       expect(session.getXATimeout()).andReturn(timeout);
-      rc.sendOneWay(new SessionXAGetTimeoutResponseMessage(timeout));
-      replay(session, rc);
-      PacketImpl request = new PacketImpl(PacketImpl.SESS_XA_GET_TIMEOUT);
+      cm.sendCommandOneway(responseTargetID, new SessionXAGetTimeoutResponseMessage(timeout));
+      cm.packetProcessed(request);
+      replay(session, cm);      
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testXaSetTimeout() throws Exception
    {
-      expect(session.setXATimeout(5000)).andReturn(true);
-      rc.sendOneWay(new SessionXASetTimeoutResponseMessage(true));
-      replay(session, rc);
       SessionXASetTimeoutMessage request = new SessionXASetTimeoutMessage(5000);
+      long responseTargetID = 12123;
+      request.setResponseTargetID(responseTargetID);
+      expect(session.setXATimeout(5000)).andReturn(true);
+      cm.sendCommandOneway(responseTargetID, new SessionXASetTimeoutResponseMessage(true));
+      cm.packetProcessed(request);
+      replay(session, cm);     
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testAddDestination() throws Exception
    {
-      session.addDestination(queueName, true);
-      rc.sendOneWay(new PacketImpl(PacketImpl.NULL));
-      replay(session, rc);
-      SessionAddDestinationMessage request = new SessionAddDestinationMessage(queueName, true);      
+      SessionAddDestinationMessage request = new SessionAddDestinationMessage(queueName, true, true); 
+      long responseTargetID = 12123;
+      request.setResponseTargetID(responseTargetID);
+      session.addDestination(queueName, true, true);
+      cm.sendCommandOneway(responseTargetID, new PacketImpl(PacketImpl.NULL));
+      cm.packetProcessed(request);
+      replay(session, cm);          
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testRemoveDestination() throws Exception
    {
-      session.removeDestination(queueName, true);
-      rc.sendOneWay(new PacketImpl(PacketImpl.NULL));
-      replay(session, rc);
       SessionRemoveDestinationMessage request = new SessionRemoveDestinationMessage(queueName, true);
+      long responseTargetID = 12123;
+      request.setResponseTargetID(responseTargetID);
+      session.removeDestination(queueName, true);
+      cm.sendCommandOneway(responseTargetID, new PacketImpl(PacketImpl.NULL));
+      cm.packetProcessed(request);
+      replay(session, cm);      
       handler.handle(123123, request);
-      verify(session, rc);
+      verify(session, cm);
    }
 
    public void testUnsupportedPacket() throws Exception
    {
       Packet packet = EasyMock.createStrictMock(Packet.class);
       expect(packet.getType()).andReturn(Byte.MAX_VALUE);
-      final long responseTargetID = 1212;
-      EasyMock.expect(packet.getResponseTargetID()).andReturn(responseTargetID);
-      rc.sendOneWay(EasyMock.isA(PacketImpl.class));
+      long responseTargetID = 1212;
+      EasyMock.expect(packet.getResponseTargetID()).andStubReturn(responseTargetID);
+      cm.sendCommandOneway(EasyMock.eq(responseTargetID), EasyMock.isA(PacketImpl.class));      
       EasyMock.expectLastCall().andAnswer(new IAnswer<Object>()
       {
          public Object answer() throws Throwable
          {
-            MessagingExceptionMessage me = (MessagingExceptionMessage)EasyMock.getCurrentArguments()[0];
+            MessagingExceptionMessage me = (MessagingExceptionMessage)EasyMock.getCurrentArguments()[1];
             assertEquals(MessagingException.UNSUPPORTED_PACKET, me.getException().getCode());
             return null;
          }
       });
-      replay(session, rc, packet);
+      cm.packetProcessed(packet);
+      replay(session, cm, packet);
       handler.handle(1212, packet);     
-      verify(session, rc, packet);
+      verify(session, cm, packet);
    }
 }

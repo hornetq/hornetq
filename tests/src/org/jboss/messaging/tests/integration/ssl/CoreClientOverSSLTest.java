@@ -25,12 +25,11 @@ package org.jboss.messaging.tests.integration.ssl;
 import static java.lang.Boolean.FALSE;
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
@@ -64,7 +63,7 @@ public class CoreClientOverSSLTest extends TestCase
 
    private MessagingService messagingService;
 
-   private ClientConnection connection;
+   private ClientSession session;
 
    private ClientConsumer consumer;
    
@@ -139,19 +138,18 @@ public class CoreClientOverSSLTest extends TestCase
       connectionParams.setKeyStorePassword("secureexample");
       connectionParams.setTrustStorePath("messaging.truststore");
       connectionParams.setTrustStorePassword("secureexample");
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(config.getLocation(), connectionParams);
-      connection = cf.createConnection(null, null);
-      ClientSession session = connection.createClientSession(false, true, true, -1, false, false);
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(config.getLocation(), connectionParams);    
+      session = sf.createSession(false, true, true, -1, false);
       session.createQueue(QUEUE, QUEUE, null, false, false);
       consumer = session.createConsumer(QUEUE);
-      connection.start();
+      session.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
       consumer.close();
-      connection.close();
+      session.close();
 
       messagingService.stop();
 

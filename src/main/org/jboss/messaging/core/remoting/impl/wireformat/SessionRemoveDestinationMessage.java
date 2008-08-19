@@ -41,19 +41,19 @@ public class SessionRemoveDestinationMessage extends PacketImpl
    
    private SimpleString address;
    
-   private boolean temporary;
+   private boolean durable;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
    
-   public SessionRemoveDestinationMessage(final SimpleString address, final boolean temporary)
+   public SessionRemoveDestinationMessage(final SimpleString address, final boolean durable)
    {
       super(SESS_REMOVE_DESTINATION);
       
       this.address = address;
       
-      this.temporary = temporary;
+      this.durable = durable;
    }
    
    public SessionRemoveDestinationMessage()
@@ -68,27 +68,27 @@ public class SessionRemoveDestinationMessage extends PacketImpl
       return address;
    }
    
-   public boolean isTemporary()
+   public boolean isDurable()
    {
-   	return temporary;
+   	return durable;
    }
    
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putSimpleString(address);
-      buffer.putBoolean(temporary);
+      buffer.putBoolean(durable);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
       address = buffer.getSimpleString();
-      temporary = buffer.getBoolean();
+      durable = buffer.getBoolean();
    }
       
    @Override
    public String toString()
    {
-      return getParentString() + ", address=" + address + ", temp=" + temporary + "]";
+      return getParentString() + ", address=" + address + ", temp=" + durable + "]";
    }
    
    public boolean equals(Object other)
@@ -101,7 +101,7 @@ public class SessionRemoveDestinationMessage extends PacketImpl
       SessionRemoveDestinationMessage r = (SessionRemoveDestinationMessage)other;
       
       return super.equals(other) && this.address.equals(r.address) &&
-             this.temporary == r.temporary;
+             this.durable == r.durable;
    }
    
    // Package protected ---------------------------------------------

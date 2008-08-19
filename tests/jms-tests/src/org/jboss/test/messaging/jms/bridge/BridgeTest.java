@@ -36,7 +36,6 @@ import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.jms.bridge.Bridge;
 import org.jboss.messaging.jms.bridge.QualityOfServiceMode;
 import org.jboss.messaging.jms.bridge.impl.BridgeImpl;
 import org.jboss.messaging.jms.client.JBossMessage;

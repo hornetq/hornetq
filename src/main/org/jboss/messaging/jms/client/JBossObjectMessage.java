@@ -22,13 +22,18 @@
 
 package org.jboss.messaging.jms.client;
 
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.util.ObjectInputStreamWithClassLoader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
-import java.io.*;
+
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.util.ObjectInputStreamWithClassLoader;
 
 /**
  * This class implements javax.jms.ObjectMessage

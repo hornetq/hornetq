@@ -21,8 +21,14 @@
    */
 package org.jboss.messaging.example;
 
-import org.jboss.messaging.core.client.*;
-import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.ConnectionParams;
+import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -45,7 +51,7 @@ public class SimpleExample
    public static void main(final String[] args) throws Exception
    {
       MessagingService messagingService = null;
-      ClientConnection clientConnection = null;
+      ClientSession clientSession = null;
 
       try
       {
@@ -62,10 +68,8 @@ public class SimpleExample
          //then we create a client as normal
          Location location = new LocationImpl(TransportType.TCP, "localhost", 5400);
          ConnectionParams connectionParams = new ConnectionParamsImpl();
-         ClientConnectionFactory connectionFactory = new ClientConnectionFactoryImpl(location, connectionParams);
-
-         clientConnection = connectionFactory.createConnection();
-         ClientSession clientSession = clientConnection.createClientSession(false, true, true, 100, true, false);
+         ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(location, connectionParams);
+         clientSession = sessionFactory.createSession(false, true, true, 1, false);
          SimpleString atestq = new SimpleString("atestq");
          clientSession.createQueue(atestq, atestq, null, false, true);
          ClientProducer clientProducer = clientSession.createProducer(atestq);
@@ -74,7 +78,7 @@ public class SimpleExample
          message.getBody().putString("Hello!");
          clientProducer.send(message);
          ClientConsumer clientConsumer = clientSession.createConsumer(atestq);
-         clientConnection.start();
+         clientSession.start();
          Message msg = clientConsumer.receive(5000);
          clientSession.acknowledge();
          System.out.println("msg.getPayload() = " + msg.getBody().getString());
@@ -85,11 +89,11 @@ public class SimpleExample
       }
       finally
       {
-         if (clientConnection != null)
+         if (clientSession != null)
          {
             try
             {
-               clientConnection.close();
+               clientSession.close();
             }
             catch (MessagingException e1)
             {

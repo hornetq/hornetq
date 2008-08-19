@@ -22,7 +22,11 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.*;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CLOSE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NULL;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_HASNEXTMESSAGE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_NEXTMESSAGE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_RESET;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -36,11 +40,11 @@ import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
-import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
+import org.jboss.messaging.core.server.CommandManager;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -68,22 +72,24 @@ public class ServerBrowserImpl
 
    private final long id;
    private final ServerSession session;
+   private final CommandManager commandManager;
    private final Queue destination;
    private final Filter filter;
    private Iterator<ServerMessage> iterator;
-   private final RemotingConnection remotingConnection;
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ServerBrowserImpl(final ServerSession session,
+   public ServerBrowserImpl(final ServerSession session,                            
                             final Queue destination, final String messageFilter,
                             final PacketDispatcher dispatcher,
-                            final RemotingConnection remotingConnection) throws MessagingException
+                            final CommandManager commandManager) throws MessagingException
    {
       this.session = session;
 
-      id = dispatcher.generateID();
-
+      this.commandManager = commandManager;
+      
+      this.id = dispatcher.generateID();
+      
       this.destination = destination;
 
 		if (messageFilter != null)
@@ -94,8 +100,6 @@ public class ServerBrowserImpl
 		{
 		   filter = null;
 		}
-
-		this.remotingConnection = remotingConnection;
    }
 
    // BrowserEndpoint implementation ---------------------------------------------------------------
@@ -262,9 +266,12 @@ public class ServerBrowserImpl
             response = new MessagingExceptionMessage(me);
          }
 
-         response.normalize(packet);
-
-         remotingConnection.sendOneWay(response);
+         if (packet.getResponseTargetID() != PacketImpl.NO_ID_SET)
+         {         
+            commandManager.sendCommandOneway(packet.getResponseTargetID(), response);
+         }
+        
+         commandManager.packetProcessed(packet);
       }
    }
 }

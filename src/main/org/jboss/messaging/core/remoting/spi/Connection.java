@@ -24,6 +24,7 @@ package org.jboss.messaging.core.remoting.spi;
 
 import org.jboss.messaging.core.remoting.MessagingBuffer;
 
+
 /**
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

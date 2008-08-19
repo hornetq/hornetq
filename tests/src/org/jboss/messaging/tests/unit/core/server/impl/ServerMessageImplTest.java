@@ -84,8 +84,7 @@ public class ServerMessageImplTest extends MessageImplTestBase
          message.putStringProperty(new SimpleString("prop2"), new SimpleString("blah2"));      
          
          message.setMessageID(81721872);
-         message.setConnectionID(10291092);
-         
+      
          ServerMessage message2 = new ServerMessageImpl(message);
          
          assertMessagesEquivalent(message, message2);
@@ -102,14 +101,6 @@ public class ServerMessageImplTest extends MessageImplTestBase
       final long id = 91829182;
       msg.setMessageID(id);
       assertEquals(id, msg.getMessageID());
-   }
-   
-   public void testGetSetConnectionID()
-   {
-      ServerMessage msg = (ServerMessage)createMessage();      
-      final long id = 8172718;
-      msg.setConnectionID(id);
-      assertEquals(id, msg.getConnectionID());
    }
    
    public void testCreateReferencesDurable()
@@ -196,8 +187,7 @@ public class ServerMessageImplTest extends MessageImplTestBase
       
       ServerMessage smsg1 = (ServerMessage)msg1;
       ServerMessage smsg2 = (ServerMessage)msg2;
-      
-      assertEquals(smsg1.getConnectionID(), smsg2.getConnectionID());
+          
       assertEquals(smsg1.getMessageID(), smsg2.getMessageID());
    }
 }

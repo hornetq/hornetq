@@ -95,7 +95,7 @@ public class MinaAcceptor implements Acceptor
       FilterChainSupport.addCodecFilter(filterChain, handler);
 
       // Bind
-      acceptor.setDefaultLocalAddress(new InetSocketAddress(configuration.getHost(), configuration.getPort()));
+      acceptor.setDefaultLocalAddress(new InetSocketAddress(configuration.getHost(), configuration.getPort()));      
       acceptor.getSessionConfig().setTcpNoDelay(configuration.getConnectionParams().isTcpNoDelay());
       int receiveBufferSize = configuration.getConnectionParams().getTcpReceiveBufferSize();
       if (receiveBufferSize != -1)

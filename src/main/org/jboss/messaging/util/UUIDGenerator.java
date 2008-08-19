@@ -16,6 +16,7 @@
 package org.jboss.messaging.util;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.SecureRandom;
 import java.util.Random;
 
@@ -93,5 +94,30 @@ public final class UUIDGenerator
       }
 
       return new UUID(UUID.TYPE_TIME_BASED, contents);
+   }
+   
+   public SimpleString generateSimpleStringUUID()
+   {
+      InetAddress localHost = null;
+      
+      try
+      {
+         localHost = InetAddress.getLocalHost();
+      }
+      catch (UnknownHostException e)
+      {        
+      }
+      SimpleString uid;
+      if (localHost == null)
+      {
+         uid = new SimpleString(java.util.UUID.randomUUID().toString());
+      }
+      else
+      {
+         UUIDGenerator gen = UUIDGenerator.getInstance();
+         uid = new SimpleString(gen.generateTimeBasedUUID(localHost).toString());
+      }    
+      
+      return uid;
    }
 }

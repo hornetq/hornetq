@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.remoting.impl.netty;
 
-import static org.jboss.messaging.util.DataConstants.*;
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
 import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.netty.buffer.ChannelBuffer;

@@ -24,8 +24,8 @@ package org.jboss.messaging.core.journal.impl;
 
 import java.nio.ByteBuffer;
 
-import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
+import org.jboss.messaging.core.journal.SequentialFile;
 
 /**
  * 

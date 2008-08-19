@@ -39,7 +39,7 @@ import org.jboss.messaging.util.XMLUtil;
 public class QueueSettingsDeployerTest extends TestCase
 {
    private String conf = "<queue-settings match=\"queues.*\">\n" +
-           "      <clustered>false</clustered>\n" +
+           "      <manageConfirmations>false</manageConfirmations>\n" +
            "      <dlq>DLQtest</dlq>\n" +
            "      <expiry-queue>ExpiryQueueTest</expiry-queue>\n" +
            "      <redelivery-delay>100</redelivery-delay>\n" +

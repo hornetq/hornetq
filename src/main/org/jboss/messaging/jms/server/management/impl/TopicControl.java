@@ -31,6 +31,7 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.StandardMBean;
 import javax.management.openmbean.TabularData;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.Operation;
 import org.jboss.messaging.core.management.Parameter;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
@@ -57,6 +58,8 @@ public class TopicControl extends StandardMBean implements TopicControlMBean
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(TopicControl.class);
+   
    // Attributes ----------------------------------------------------
 
    private final JBossTopic managedTopic;
@@ -227,10 +230,11 @@ public class TopicControl extends StandardMBean implements TopicControlMBean
       List<Queue> queues = getQueues(durability);
       List<SubscriptionInfo> subInfos = new ArrayList<SubscriptionInfo>(queues
             .size());
+      
       for (Queue queue : queues)
       {
          String clientID = null;
-         String subName = null;
+         String subName = null;                 
 
          if (queue.isDurable())
          {

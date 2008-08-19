@@ -32,7 +32,7 @@ import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
-import org.jboss.messaging.core.server.ServerConnection;
+import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.util.SimpleString;
 
@@ -107,20 +107,20 @@ public class SecurityStoreImplTest extends TestCase
       roles.add(new Role("user", false, false, true));
       repository.registerListener(securityStore);
       EasyMock.expect(repository.getMatch(address.toString())).andReturn(roles);
-      ServerConnection serverConnection = EasyMock.createNiceMock(ServerConnection.class);
-      EasyMock.expect(serverConnection.getUsername()).andReturn("user");
-      EasyMock.expect(serverConnection.getPassword()).andReturn("password");
+      ServerSession serverSession = EasyMock.createNiceMock(ServerSession.class);
+      EasyMock.expect(serverSession.getUsername()).andReturn("user");
+      EasyMock.expect(serverSession.getPassword()).andReturn("password");
       EasyMock.expect(securityManager.validateUserAndRole("user", "password", roles, CheckType.CREATE)).andReturn(true);
       EasyMock.expect(repository.getMatch(address.toString())).andReturn(roles);
-      EasyMock.expect(serverConnection.getUsername()).andReturn("user");
-      EasyMock.expect(serverConnection.getPassword()).andReturn("password");
+      EasyMock.expect(serverSession.getUsername()).andReturn("user");
+      EasyMock.expect(serverSession.getPassword()).andReturn("password");
       EasyMock.expect(securityManager.validateUserAndRole("user", "password", roles, CheckType.CREATE)).andReturn(true);
-      EasyMock.replay(repository, securityManager, serverConnection);
+      EasyMock.replay(repository, securityManager, serverSession);
       securityStore.setSecurityRepository(repository);
-      securityStore.check(address, CheckType.CREATE, serverConnection);
+      securityStore.check(address, CheckType.CREATE, serverSession);
       securityStore.onChange();
-      securityStore.check(address, CheckType.CREATE, serverConnection);
-      EasyMock.verify(repository, securityManager, serverConnection);
+      securityStore.check(address, CheckType.CREATE, serverSession);
+      EasyMock.verify(repository, securityManager, serverSession);
    }
 
    public void testSuccessfulCheckTimeoutCache() throws Exception
@@ -144,19 +144,19 @@ public class SecurityStoreImplTest extends TestCase
       roles.add(new Role("user", false, false, true));
       repository.registerListener(securityStore);
       EasyMock.expect(repository.getMatch(address.toString())).andReturn(roles);
-      ServerConnection serverConnection = EasyMock.createNiceMock(ServerConnection.class);
-      EasyMock.expect(serverConnection.getUsername()).andReturn("user");
-      EasyMock.expect(serverConnection.getPassword()).andReturn("password");
+      ServerSession serverSession = EasyMock.createNiceMock(ServerSession.class);
+      EasyMock.expect(serverSession.getUsername()).andReturn("user");
+      EasyMock.expect(serverSession.getPassword()).andReturn("password");
       EasyMock.expect(securityManager.validateUserAndRole("user", "password", roles, checkType)).andReturn(true);
-      EasyMock.replay(repository, securityManager, serverConnection);
+      EasyMock.replay(repository, securityManager, serverSession);
       securityStore.setSecurityRepository(repository);
-      securityStore.check(address, checkType, serverConnection);
-      EasyMock.verify(repository, securityManager, serverConnection);
+      securityStore.check(address, checkType, serverSession);
+      EasyMock.verify(repository, securityManager, serverSession);
       //now checked its cached
-      EasyMock.reset(repository, securityManager, serverConnection);
-      EasyMock.replay(repository, securityManager, serverConnection);
-      securityStore.check(address, checkType, serverConnection);
-      EasyMock.verify(repository, securityManager, serverConnection);
+      EasyMock.reset(repository, securityManager, serverSession);
+      EasyMock.replay(repository, securityManager, serverSession);
+      securityStore.check(address, checkType, serverSession);
+      EasyMock.verify(repository, securityManager, serverSession);
    }
    
    private void testUnsuccessfulCheck(final CheckType checkType) throws Exception
@@ -171,22 +171,22 @@ public class SecurityStoreImplTest extends TestCase
       roles.add(new Role("user", false, false, true));
       repository.registerListener(securityStore);
       EasyMock.expect(repository.getMatch(address.toString())).andReturn(roles);
-      ServerConnection serverConnection = EasyMock.createNiceMock(ServerConnection.class);
-      EasyMock.expect(serverConnection.getUsername()).andReturn("user");
-      EasyMock.expect(serverConnection.getPassword()).andReturn("password");
+      ServerSession serverSession = EasyMock.createNiceMock(ServerSession.class);
+      EasyMock.expect(serverSession.getUsername()).andReturn("user");
+      EasyMock.expect(serverSession.getPassword()).andReturn("password");
       EasyMock.expect(securityManager.validateUserAndRole("user", "password", roles, checkType)).andReturn(false);
-      EasyMock.replay(repository, securityManager, serverConnection);
+      EasyMock.replay(repository, securityManager, serverSession);
       securityStore.setSecurityRepository(repository);
       try
       {
-         securityStore.check(address, checkType, serverConnection);
+         securityStore.check(address, checkType, serverSession);
          fail("should throw exception");
       }
       catch (Exception e)
       {
          //pass
       }
-      EasyMock.verify(repository, securityManager, serverConnection);
+      EasyMock.verify(repository, securityManager, serverSession);
    }
    
    private void testSuccessfulCheckTimeoutCache(final CheckType checkType) throws Exception
@@ -203,22 +203,22 @@ public class SecurityStoreImplTest extends TestCase
       repository.registerListener(securityStore);
       
       EasyMock.expect(repository.getMatch(address.toString())).andReturn(roles);
-      ServerConnection serverConnection = EasyMock.createNiceMock(ServerConnection.class);
+      ServerSession serverSession = EasyMock.createNiceMock(ServerSession.class);
             
-      EasyMock.expect(serverConnection.getUsername()).andReturn("user");
-      EasyMock.expect(serverConnection.getPassword()).andReturn("password");
+      EasyMock.expect(serverSession.getUsername()).andReturn("user");
+      EasyMock.expect(serverSession.getPassword()).andReturn("password");
       EasyMock.expect(securityManager.validateUserAndRole("user", "password", roles, checkType)).andReturn(true);
             
       EasyMock.expect(repository.getMatch(address.toString())).andReturn(roles);      
-      EasyMock.expect(serverConnection.getUsername()).andReturn("user");
-      EasyMock.expect(serverConnection.getPassword()).andReturn("password");
+      EasyMock.expect(serverSession.getUsername()).andReturn("user");
+      EasyMock.expect(serverSession.getPassword()).andReturn("password");
       EasyMock.expect(securityManager.validateUserAndRole("user", "password", roles, checkType)).andReturn(true);
            
-      EasyMock.replay(repository, securityManager, serverConnection);
+      EasyMock.replay(repository, securityManager, serverSession);
       securityStore.setSecurityRepository(repository);
-      securityStore.check(address, checkType, serverConnection);
+      securityStore.check(address, checkType, serverSession);
       Thread.sleep(110);
-      securityStore.check(address, checkType, serverConnection);
-      EasyMock.verify(repository, securityManager, serverConnection);
+      securityStore.check(address, checkType, serverSession);
+      EasyMock.verify(repository, securityManager, serverSession);
    }
 }

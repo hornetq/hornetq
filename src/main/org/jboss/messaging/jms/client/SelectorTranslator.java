@@ -55,20 +55,12 @@ public class SelectorTranslator
         
       String filterString = parse(selectorString, "JMSDeliveryMode", "JBMDurable");      
       filterString = parse(filterString, "'PERSISTENT'", "'DURABLE'");
-      filterString = parse(filterString, "'NON_PERSISTENT'", "'NON_DURABLE'");
-      
-      filterString = parse(filterString, "JMSPriority", "JBMPriority");      
-      
-     // filterString = parse(selectorString, "JMSMessageID", "JMSMessageID");  //SAME
-      
+      filterString = parse(filterString, "'NON_PERSISTENT'", "'NON_DURABLE'");      
+      filterString = parse(filterString, "JMSPriority", "JBMPriority");            
       filterString = parse(filterString, "JMSTimestamp", "JBMTimestamp");
       
-     // filterString = parse(selectorString, "JMSCorrelationID", "JMSCorrelationID");  //SAME
-      
-     // filterString = parse(selectorString, "JMSType", "JMSType");  //SAME
-      
-     return filterString;
-      
+      return filterString;
+     
    }
    
    private static String parse(final String input, final String match, final String replace)

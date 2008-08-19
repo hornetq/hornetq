@@ -22,7 +22,10 @@
 
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import static org.jboss.messaging.util.DataConstants.*;
+import static org.jboss.messaging.util.DataConstants.FALSE;
+import static org.jboss.messaging.util.DataConstants.NOT_NULL;
+import static org.jboss.messaging.util.DataConstants.NULL;
+import static org.jboss.messaging.util.DataConstants.TRUE;
 
 import java.nio.charset.Charset;
 

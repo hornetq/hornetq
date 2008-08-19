@@ -27,6 +27,7 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerFlowCreditMessage;
+import org.jboss.messaging.core.server.CommandManager;
 
 /**
  *
@@ -39,12 +40,17 @@ public class ClientProducerPacketHandler implements PacketHandler
 {
    private static final Logger log = Logger.getLogger(ClientProducerPacketHandler.class);
 
+   private final CommandManager commandManager;
+   
    private final ClientProducerInternal clientProducer;
 
    private final long producerID;
-
-   public ClientProducerPacketHandler(final ClientProducerInternal clientProducer, final long producerID)
+   
+   public ClientProducerPacketHandler(final ClientProducerInternal clientProducer, final long producerID,
+                                      final CommandManager commandManager)
    {
+      this.commandManager = commandManager;
+      
       this.clientProducer = clientProducer;
 
       this.producerID = producerID;
@@ -71,6 +77,8 @@ public class ClientProducerPacketHandler implements PacketHandler
          {
             log.error("Failed to handle packet " + packet, e);
          }
+         
+         commandManager.packetProcessed(packet);
       }
       else
       {

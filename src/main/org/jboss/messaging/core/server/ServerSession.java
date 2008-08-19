@@ -22,12 +22,18 @@
 
 package org.jboss.messaging.core.server;
 
-import org.jboss.messaging.core.remoting.impl.wireformat.*;
-import org.jboss.messaging.core.server.impl.ServerBrowserImpl;
-import org.jboss.messaging.util.SimpleString;
+import java.util.List;
 
 import javax.transaction.xa.Xid;
-import java.util.List;
+
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
+import org.jboss.messaging.core.server.impl.ServerBrowserImpl;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -38,7 +44,13 @@ import java.util.List;
  */
 public interface ServerSession
 {
+   String getName();
+   
 	long getID();
+	
+	String getUsername();
+	
+	String getPassword();
 	
 	void removeBrowser(ServerBrowserImpl browser) throws Exception;
 	
@@ -51,6 +63,8 @@ public interface ServerSession
 	void setStarted(boolean started) throws Exception;
 	
 	void handleDelivery(MessageReference reference, ServerConsumer consumer) throws Exception;
+	
+	void deliverDeferredDelivery(long messageID);
 	
 	void promptDelivery(Queue queue);
 	
@@ -88,16 +102,17 @@ public interface ServerSession
 
    boolean setXATimeout(int timeoutSeconds);
 
-   void addDestination(SimpleString address, boolean temporary) throws Exception;
+   void addDestination(SimpleString address, boolean durable, boolean temporary) throws Exception;
 
-   void removeDestination(SimpleString address, boolean temporary) throws Exception;
+   void removeDestination(SimpleString address, boolean durable) throws Exception;
 
-   void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString, boolean durable, boolean temporary) throws Exception;
+   void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString,
+                    boolean durable, boolean temporary) throws Exception;
 
    void deleteQueue(SimpleString queueName) throws Exception;
 
-   SessionCreateConsumerResponseMessage createConsumer(long clientTargetID, SimpleString queueName, SimpleString filterString, boolean noLocal,
-   		                                              boolean autoDeleteQueue, int windowSize, int maxRate) throws Exception;
+   SessionCreateConsumerResponseMessage createConsumer(long clientTargetID, SimpleString queueName, SimpleString filterString,
+   		                                              int windowSize, int maxRate) throws Exception;
    
    SessionCreateProducerResponseMessage createProducer(long clientTargetID, SimpleString address, int windowSize, int maxRate) throws Exception;   
 

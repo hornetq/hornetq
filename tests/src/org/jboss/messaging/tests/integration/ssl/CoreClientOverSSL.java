@@ -26,14 +26,13 @@ import static org.jboss.messaging.core.remoting.TransportType.TCP;
 
 import java.util.Arrays;
 
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.Location;
-import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.logging.Logger;
@@ -77,9 +76,8 @@ public class CoreClientOverSSL
          connectionParams.setKeyStorePath(keyStorePath);
          connectionParams.setKeyStorePassword(keyStorePassword);
 
-         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(config, connectionParams);
-         ClientConnection conn = cf.createConnection(null, null);
-         ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
+         ClientSessionFactory sf = new ClientSessionFactoryImpl(config, connectionParams);         
+         ClientSession session = sf.createSession(false, true, true, -1, false);
          ClientProducer producer = session.createProducer(CoreClientOverSSLTest.QUEUE);
 
          ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
@@ -87,10 +85,9 @@ public class CoreClientOverSSL
          message.getBody().putString(CoreClientOverSSLTest.MESSAGE_TEXT_FROM_CLIENT);
          producer.send(message);
 
-         conn.close();
-
-         System.exit(0);
-      } catch (Throwable t)
+         session.close();
+      }
+      catch (Throwable t)
       {
          log.error(t.getMessage(), t);
          System.exit(1);

@@ -27,14 +27,13 @@ import static org.jboss.messaging.tests.integration.clientcrash.ClientCrashTest.
 
 import java.util.Arrays;
 
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.Location;
-import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
@@ -74,20 +73,19 @@ public class CrashClient
          int numberOfConnections = Integer.parseInt(args[0]);
 
          Location location = new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_PORT);
-         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(location);
-         ClientConnection conn = cf.createConnection();
-         ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
+         ClientSessionFactory sf = new ClientSessionFactoryImpl(location);
+         ClientSession session = sf.createSession(false, true, true, -1, false);
          ClientProducer producer = session.createProducer(QUEUE);
          ClientConsumer consumer = session.createConsumer(QUEUE);
 
-         if (numberOfConnections > 1)
-         {
-            // create (num - 1) unused connections
-            for (int i = 0; i < numberOfConnections - 1; i++)
-            {
-               cf.createConnection();         
-            }
-         }
+//         if (numberOfConnections > 1)
+//         {
+//            // create (num - 1) unused connections
+//            for (int i = 0; i < numberOfConnections - 1; i++)
+//            {
+//               cf.createConnection();         
+//            }
+//         }
          
          ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);
@@ -95,12 +93,13 @@ public class CrashClient
 
          producer.send(message);
 
-         conn.start();
-         consumer.receive(5000);
+         session.start();
+         //consumer.receive(5000);
          
          // crash
          System.exit(9);
-      } catch (Throwable t)
+      }
+      catch (Throwable t)
       {
          log.error(t.getMessage(), t);
          System.exit(1);

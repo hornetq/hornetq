@@ -22,6 +22,9 @@
 
 package org.jboss.messaging.jms.client;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionConsumer;
 import javax.jms.ConnectionMetaData;
@@ -44,12 +47,16 @@ import javax.jms.XASession;
 import javax.jms.XATopicConnection;
 import javax.jms.XATopicSession;
 
-import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.FailureListener;
-import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.version.Version;
+import org.jboss.messaging.util.ConcurrentHashSet;
+import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.UUIDGenerator;
+import org.jboss.messaging.util.VersionLoader;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -67,36 +74,63 @@ public class JBossConnection implements
    
    private static final Logger log = Logger.getLogger(JBossConnection.class);
 
-   static final int TYPE_GENERIC_CONNECTION = 0;
+   public static final int TYPE_GENERIC_CONNECTION = 0;
    
    public static final int TYPE_QUEUE_CONNECTION = 1;
    
    public static final int TYPE_TOPIC_CONNECTION = 2;
    
+   public static final SimpleString CONNECTION_ID_PROPERTY_NAME = new SimpleString("__JBM_CID");
+   
    // Static ---------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private final ClientConnection connection;
-   
    private final int connectionType;
    
    private final int dupsOKBatchSize;
    
+   private final Set<JBossSession> sessions = new ConcurrentHashSet<JBossSession>();
+   
+   private final Set<SimpleString> tempAddresses = new ConcurrentHashSet<SimpleString>();
+   
+   private final Set<SimpleString> tempQueues = new ConcurrentHashSet<SimpleString>();
+   
+   private volatile boolean hasNoLocal;
+        
    private volatile ExceptionListener exceptionListener;
    
    private volatile boolean justCreated = true;      
    
    private volatile ConnectionMetaData metaData;
    
+   private volatile boolean closed;
+   
+   private volatile boolean started;
+   
    private String clientID;
-              
+   
+   private final ClientSessionFactory sessionFactory;
+   
+   private final SimpleString uid;
+   
+   private final String username;
+   
+   private final String password;
+   
+   private final FailureListener listener = new JMSFailureListener();
+   
+   private final Version thisVersion;
+               
    // Constructors ---------------------------------------------------------------------------------
 
-   public JBossConnection(final ClientConnection connection, final int connectionType,
-                          final String clientID, final int dupsOKBatchSize)
-   {
-      this.connection = connection;
+   public JBossConnection(final String username, final String password, final int connectionType,
+                          final String clientID, final int dupsOKBatchSize,                       
+                          final ClientSessionFactory sessionFactory)
+   { 
+      this.username = username;
+      
+      this.password = password;
       
       this.connectionType = connectionType;
       
@@ -104,21 +138,19 @@ public class JBossConnection implements
       
       this.dupsOKBatchSize = dupsOKBatchSize;
 
-      try
-      {
-         connection.setFailureListener(new JMSFailureListener());
-      }
-      catch (MessagingException e)
-      {
-         log.warn("Unable to set remoting session listener");
-      }
-
+      this.sessionFactory = sessionFactory;
+      
+      uid = UUIDGenerator.getInstance().generateSimpleStringUUID();    
+      
+      thisVersion = VersionLoader.load();
    }
 
    // Connection implementation --------------------------------------------------------------------
 
    public Session createSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
+      checkClosed();
+      
       return createSessionInternal(transacted, acknowledgeMode, false, TYPE_GENERIC_CONNECTION, false);
    }
    
@@ -158,7 +190,7 @@ public class JBossConnection implements
 
       if (metaData == null)
       {
-         metaData = new JBossConnectionMetaData(connection.getServerVersion());
+         metaData = new JBossConnectionMetaData(thisVersion);
       }
 
       return metaData;
@@ -166,6 +198,8 @@ public class JBossConnection implements
       
    public ExceptionListener getExceptionListener() throws JMSException
    {
+      checkClosed();
+      
       justCreated = false;
       
       return exceptionListener;
@@ -173,43 +207,84 @@ public class JBossConnection implements
 
    public void setExceptionListener(final ExceptionListener listener) throws JMSException
    {
+      checkClosed();
+      
       exceptionListener = listener;
       justCreated = false;
    }
 
    public void start() throws JMSException
    {
-      try
+      checkClosed();
+      
+      for (JBossSession session: sessions)
       {
-         connection.start();
+         session.start();
       }
-      catch (MessagingException e)
-      {
-         throw JMSExceptionHelper.convertFromMessagingException(e);     
-      }
+
       justCreated = false;
+      started = true;
    }
 
    public void stop() throws JMSException
    {
-      try
+      checkClosed();
+
+      for (JBossSession session: sessions)
       {
-         connection.stop();
+         session.stop();
       }
-      catch (MessagingException e)
-      {
-         throw JMSExceptionHelper.convertFromMessagingException(e);     
-      }
-      
-      justCreated = false;
+ 
+      justCreated = false;      
+      started = false;
    }
 
-   public void close() throws JMSException
+   public synchronized void close() throws JMSException
    {
-
+      if (closed)
+      {
+         return;
+      }
+      
       try
       {
-         connection.close();
+         for (JBossSession session: new HashSet<JBossSession>(sessions))
+         {
+            session.close();            
+         }
+         
+         //TODO may be a better way of doing this that doesn't involve creating a new session
+         
+         if (!tempAddresses.isEmpty() || !tempQueues.isEmpty())
+         {
+            ClientSession session = null;
+            try
+            {
+               session =
+                  sessionFactory.createSession(username, password, false, true, true, 1, false);
+                         
+               //Remove any temporary queues and addresses
+               
+               for (SimpleString address: tempAddresses)
+               {   
+                  session.removeDestination(address, false);
+               }
+               
+               for (SimpleString queueName: tempQueues)
+               {                 
+                  session.deleteQueue(queueName);
+               }
+            }
+            finally
+            {
+               if (session != null)
+               {
+                  session.close();
+               }
+            }            
+         }
+                           
+         closed = true;
       }
       catch (MessagingException e)
       {
@@ -222,7 +297,7 @@ public class JBossConnection implements
                                                       final ServerSessionPool sessionPool,
                                                       final int maxMessages) throws JMSException
    {
-      //TODO
+      checkClosed();
       return null;
    }
 
@@ -232,6 +307,7 @@ public class JBossConnection implements
                                                              final ServerSessionPool sessionPool,
                                                              final int maxMessages) throws JMSException
    {
+      checkClosed();
       // As spec. section 4.11
       if (connectionType == TYPE_QUEUE_CONNECTION)
       {
@@ -248,7 +324,8 @@ public class JBossConnection implements
    public QueueSession createQueueSession(final boolean transacted,
                                           final int acknowledgeMode) throws JMSException
    {
-       return createSessionInternal(transacted, acknowledgeMode, false,
+      checkClosed();
+      return createSessionInternal(transacted, acknowledgeMode, false,
                                     JBossSession.TYPE_QUEUE_SESSION, false);
    }
 
@@ -256,8 +333,8 @@ public class JBossConnection implements
                                                       final ServerSessionPool sessionPool,
                                                       final int maxMessages) throws JMSException
    {
-      //TODO
-      
+      checkClosed();
+  
       return null;
    }
 
@@ -266,6 +343,7 @@ public class JBossConnection implements
    public TopicSession createTopicSession(final boolean transacted,
                                           final int acknowledgeMode) throws JMSException
    {
+      checkClosed();
       return createSessionInternal(transacted, acknowledgeMode, false,
                                    JBossSession.TYPE_TOPIC_SESSION, false);
    }
@@ -274,7 +352,7 @@ public class JBossConnection implements
                                                       final ServerSessionPool sessionPool,
                                                       final int maxMessages) throws JMSException
    {
-      //TODO
+      checkClosed();
       
       return null;
    }
@@ -283,7 +361,8 @@ public class JBossConnection implements
 
    public XASession createXASession() throws JMSException
    {
-       return createSessionInternal(true, Session.SESSION_TRANSACTED, true,
+      checkClosed();
+      return createSessionInternal(true, Session.SESSION_TRANSACTED, true,
                                     JBossSession.TYPE_GENERIC_SESSION, false);
    }
    
@@ -291,6 +370,7 @@ public class JBossConnection implements
 
    public XAQueueSession createXAQueueSession() throws JMSException
    {
+      checkClosed();
       return createSessionInternal(true, Session.SESSION_TRANSACTED, true,
                                    JBossSession.TYPE_QUEUE_SESSION, false);
 
@@ -301,6 +381,7 @@ public class JBossConnection implements
 
    public XATopicSession createXATopicSession() throws JMSException
    {
+      checkClosed();
       return createSessionInternal(true, Session.SESSION_TRANSACTED, true,
                                    JBossSession.TYPE_TOPIC_SESSION, false);
 
@@ -308,12 +389,54 @@ public class JBossConnection implements
    
    // Public ---------------------------------------------------------------------------------------
 
+   public void addTemporaryAddress(final SimpleString tempAddress)
+   {
+      tempAddresses.add(tempAddress);
+   }
+   
+   public void addTemporaryQueue(final SimpleString queueName)
+   {
+      tempQueues.add(queueName);
+   }
+   
+   public void removeTemporaryAddress(final SimpleString tempAddress)
+   {
+      tempAddresses.remove(tempAddress);
+   }
+   
+   public void removeTemporaryQueue(final SimpleString queueName)
+   {
+      tempQueues.remove(queueName);
+   }
+   
+   public boolean hasNoLocal()
+   {
+      return hasNoLocal;
+   }
+  
+   public void setHasNoLocal()
+   {
+      this.hasNoLocal = true;
+   }
+   
+   public SimpleString getUID()
+   {
+      return uid;
+   }
+   
    // We provide some overloaded createSession methods to allow the value of cacheProducers to be specified
    
    public Session createSession(final boolean transacted, final int acknowledgeMode,
    		                       final boolean cacheProducers) throws JMSException
    {
       return createSessionInternal(transacted, acknowledgeMode, false, TYPE_GENERIC_CONNECTION, cacheProducers);
+   }
+   
+   public QueueSession createQueueSession(final boolean transacted,
+            final int acknowledgeMode, final boolean cacheProducers) throws JMSException
+   {
+      return createSessionInternal(transacted, acknowledgeMode, false,
+                                   JBossSession.TYPE_QUEUE_SESSION, cacheProducers);
    }
    
    public TopicSession createTopicSession(final boolean transacted,
@@ -340,15 +463,21 @@ public class JBossConnection implements
       return createSessionInternal(true, Session.SESSION_TRANSACTED, true,
                                    JBossSession.TYPE_TOPIC_SESSION, cacheProducers);
    }
-
-   public String toString()
+   
+   public void removeSession(final JBossSession session)
    {
-      return "JBossConnection->" + connection;
+      sessions.remove(session);
    }
    
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
+   
+   // In case the user forgets to close the connection manually
+   protected void finalize() throws Throwable
+   {
+      close();
+   }
 
    protected JBossSession createSessionInternal(final boolean transacted, int acknowledgeMode,
                                                 final boolean isXA, final int type, final boolean cacheProducers) throws JMSException
@@ -361,24 +490,24 @@ public class JBossConnection implements
       try
       {
          ClientSession session;
-
+                 
       	if (acknowledgeMode == Session.SESSION_TRANSACTED)
       	{
       	   session =
-               connection.createClientSession(isXA, false, false, -1, false, cacheProducers);
+               sessionFactory.createSession(username, password, isXA, false, false, -1, cacheProducers);
       	}
       	else if (acknowledgeMode == Session.AUTO_ACKNOWLEDGE)
          {
-      	   session = connection.createClientSession(isXA, true, true, 1);
+      	   session = sessionFactory.createSession(username, password, isXA, true, true, 1, cacheProducers);
          }
          else if (acknowledgeMode == Session.DUPS_OK_ACKNOWLEDGE)
          {
-            session = connection.createClientSession(isXA, true, true, dupsOKBatchSize);
+            session = sessionFactory.createSession(username, password, isXA, true, true, dupsOKBatchSize, cacheProducers);
          }
          else if (acknowledgeMode == Session.CLIENT_ACKNOWLEDGE)
          {
             session =
-               connection.createClientSession(isXA, true, false, -1, false, cacheProducers);
+               sessionFactory.createSession(username, password, isXA, true, false, -1, cacheProducers);
          }         
          else
          {
@@ -387,7 +516,20 @@ public class JBossConnection implements
 
          justCreated = false;
          
-         return new JBossSession(this, transacted, isXA, acknowledgeMode, session, type);
+         //Setting multiple times on different sessions doesn't matter since RemotingConnection maintains
+         //a set (no duplicates)
+         session.addFailureListener(listener);
+         
+         JBossSession jbs = new JBossSession(this, transacted, isXA, acknowledgeMode, session, type);
+         
+         sessions.add(jbs);
+         
+         if (started)
+         {
+            session.start();
+         }
+         
+         return jbs;
       }
       catch (MessagingException e)
       {
@@ -399,7 +541,7 @@ public class JBossConnection implements
    
    private void checkClosed() throws JMSException
    {
-      if (connection.isClosed())
+      if (closed)
       {
          throw new IllegalStateException("Connection is closed");
       }

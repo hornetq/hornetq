@@ -56,9 +56,9 @@ public class FakePostOffice implements PostOffice
    private volatile boolean started;
    
    public Binding addBinding(SimpleString address, SimpleString queueName,
-         Filter filter, boolean durable, boolean temporary) throws Exception
+         Filter filter, boolean durable) throws Exception
    {
-      Queue queue = queueFactory.createQueue(-1, queueName, filter, durable, temporary); 
+      Queue queue = queueFactory.createQueue(-1, queueName, filter, durable); 
       Binding binding = new FakeBinding(address, queue);
       bindings.put(address, binding);
       return binding;
@@ -134,5 +134,10 @@ public class FakePostOffice implements PostOffice
       // TODO Auto-generated method stub
       return null;
    }
+   
+   public void setBackup(boolean backup)
+   {
+   }
+
    
 }

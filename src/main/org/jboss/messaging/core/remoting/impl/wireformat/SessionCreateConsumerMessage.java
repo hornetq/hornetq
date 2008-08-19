@@ -43,10 +43,6 @@ public class SessionCreateConsumerMessage extends PacketImpl
    
    private SimpleString filterString;
    
-   private boolean noLocal;
-   
-   private boolean autoDeleteQueue;
-   
    private int windowSize;
    
    private int maxRate;
@@ -55,8 +51,7 @@ public class SessionCreateConsumerMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateConsumerMessage(final long clientTargetID, final SimpleString queueName, final SimpleString filterString,
-   		                              final boolean noLocal, final boolean autoDeleteQueue,
+   public SessionCreateConsumerMessage(final long clientTargetID, final SimpleString queueName, final SimpleString filterString,   		                              
    		                              final int windowSize, final int maxRate)
    {
       super(SESS_CREATECONSUMER);
@@ -64,8 +59,6 @@ public class SessionCreateConsumerMessage extends PacketImpl
       this.clientTargetID = clientTargetID;
       this.queueName = queueName;
       this.filterString = filterString;
-      this.noLocal = noLocal;
-      this.autoDeleteQueue = autoDeleteQueue;
       this.windowSize = windowSize;
       this.maxRate = maxRate;
    }
@@ -83,8 +76,6 @@ public class SessionCreateConsumerMessage extends PacketImpl
       StringBuffer buff = new StringBuffer(getParentString());
       buff.append(", queueName=" + queueName);
       buff.append(", filterString=" + filterString);
-      buff.append(", noLocal=" + noLocal);
-      buff.append(", autoDeleteQueue=" + autoDeleteQueue);
       buff.append(", windowSize=" + windowSize);
       buff.append(", maxRate=" + maxRate);
       buff.append("]");
@@ -106,16 +97,6 @@ public class SessionCreateConsumerMessage extends PacketImpl
       return filterString;
    }
 
-   public boolean isNoLocal()
-   {
-      return noLocal;
-   }
-   
-   public boolean isAutoDeleteQueue()
-   {
-      return autoDeleteQueue;
-   }
-   
    public int getWindowSize()
    {
    	return windowSize;
@@ -131,8 +112,6 @@ public class SessionCreateConsumerMessage extends PacketImpl
       buffer.putLong(clientTargetID);
       buffer.putSimpleString(queueName);
       buffer.putNullableSimpleString(filterString);
-      buffer.putBoolean(noLocal);
-      buffer.putBoolean(autoDeleteQueue);
       buffer.putInt(windowSize);
       buffer.putInt(maxRate);
    }
@@ -142,8 +121,6 @@ public class SessionCreateConsumerMessage extends PacketImpl
       clientTargetID = buffer.getLong();
       queueName = buffer.getSimpleString();
       filterString = buffer.getNullableSimpleString();
-      noLocal = buffer.getBoolean();
-      autoDeleteQueue = buffer.getBoolean();
       windowSize = buffer.getInt();
       maxRate = buffer.getInt();
    }
@@ -160,8 +137,6 @@ public class SessionCreateConsumerMessage extends PacketImpl
       return super.equals(other) && this.clientTargetID == r.clientTargetID &&
              this.queueName.equals(r.queueName) &&
              this.filterString == null ? r.filterString == null : this.filterString.equals(r.filterString) &&
-             this.noLocal == r.noLocal &&
-             this.autoDeleteQueue == r.autoDeleteQueue &&
              this.windowSize == r.windowSize &&
              this.maxRate == r.maxRate;                  
    }

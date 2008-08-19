@@ -21,8 +21,9 @@
    */
 package org.jboss.jms.util;
 
-import javax.jms.DeliveryMode;
 import java.io.Serializable;
+
+import javax.jms.DeliveryMode;
 
 /**
  * 

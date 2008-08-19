@@ -119,7 +119,6 @@ public class ManagementServiceImpl implements ManagementService
       ObjectName objectName = getMessagingServerObjectName();
       register(objectName, managedServer);
       registerInJMX(objectName, managedServer);
-      log.info("registered core server under " + objectName);
       return managedServer;
    }
 

@@ -26,9 +26,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
@@ -70,6 +68,8 @@ public class FileConfiguration extends ConfigurationImpl
       Element e = XMLUtil.stringToElement(xml);
 
       clustered = getBoolean(e, "clustered", clustered);
+      
+      backup = getBoolean(e, "backup", backup);
 
       //NOTE! All the defaults come from the super class
       
@@ -106,6 +106,8 @@ public class FileConfiguration extends ConfigurationImpl
       backupHost = getString(e, "remoting-backup-host", backupHost);
 
       backupPort = getInteger(e, "remoting-backup-port", backupPort);
+      
+      int packetConfirmationBatchSize = getInteger(e, "packet-confirmation-batch-size", ConnectionParamsImpl.DEFAULT_PACKET_CONFIRMATION_BATCH_SIZE);
 
       int callTimeout = getInteger(e, "remoting-call-timeout", ConnectionParamsImpl.DEFAULT_CALL_TIMEOUT);
 
@@ -142,6 +144,8 @@ public class FileConfiguration extends ConfigurationImpl
       defaultConnectionParams.setPingInterval(pingInterval);
       
       defaultConnectionParams.setSSLEnabled(sslEnabled);
+      
+      defaultConnectionParams.setPacketConfirmationBatchSize(packetConfirmationBatchSize);
       
       NodeList interceptorNodes = e.getElementsByTagName("remoting-interceptors");
 

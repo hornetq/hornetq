@@ -83,7 +83,14 @@ public class ProducerSendMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      clientMessage.encode(buffer);
+      if (clientMessage != null)
+      {
+         clientMessage.encode(buffer);
+      }
+      else
+      {
+         serverMessage.encode(buffer);
+      }     
    }
    
    public void decodeBody(final MessagingBuffer buffer)

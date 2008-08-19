@@ -24,7 +24,6 @@ package org.jboss.messaging.tests.unit.core.server.impl;
 import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.createStrictMock;
 import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.reset;
 import static org.easymock.EasyMock.verify;
@@ -47,7 +46,6 @@ import org.jboss.messaging.core.server.impl.ServerConsumerImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -78,25 +76,6 @@ public class ServerConsumerImplTest extends UnitTestCase
    {
       ServerConsumerImpl consumer = create(1, 999l, false, true, false);
       expect(queue.removeConsumer(consumer)).andReturn(true);
-      serverSession.removeConsumer(consumer);
-      replay(serverSession, queue, filter, storageManager, repository, postOffice, dispatcher);
-      consumer.close();
-      verify(serverSession, queue, filter, storageManager, repository, postOffice, dispatcher);
-      assertEquals(999l, consumer.getID());
-      assertEquals(1, consumer.getClientTargetID());
-      assertEquals(queue, consumer.getQueue());
-   }
-
-   public void testCloseAutDeleteQueue() throws Exception
-   {
-      ServerConsumerImpl consumer = create(1, 999l, true, true, false);
-      expect(queue.removeConsumer(consumer)).andReturn(true);
-      expect(queue.getConsumerCount()).andReturn(0);
-      SimpleString qName = new SimpleString("testQ");
-      expect(queue.getName()).andStubReturn(qName);
-      expect(postOffice.removeBinding(qName)).andReturn(null);
-      expect(queue.isDurable()).andReturn(true);
-      queue.deleteAllReferences(storageManager);
       serverSession.removeConsumer(consumer);
       replay(serverSession, queue, filter, storageManager, repository, postOffice, dispatcher);
       consumer.close();
@@ -191,71 +170,6 @@ public class ServerConsumerImplTest extends UnitTestCase
       assertEquals(queue, consumer.getQueue());
    }
 
-   public void testHandleDeliveryNoLocalSameConnection() throws Exception
-   {
-      MessageReference messageReference = createStrictMock(MessageReference.class);
-      ServerMessage message = createStrictMock(ServerMessage.class);
-      expect(messageReference.getMessage()).andStubReturn(message);
-      ServerConsumerImpl consumer = create(1, 999l, false, true, true);
-      expect(messageReference.getQueue()).andStubReturn(queue);
-      serverSession.promptDelivery(queue);
-      expect(message.isExpired()).andReturn(false);
-      expect(filter.match(message)).andReturn(true);
-      expect(message.getConnectionID()).andReturn(2l);
-      expect(storageManager.generateTransactionID()).andReturn(555l);
-      expect(message.isDurable()).andReturn(false);
-      queue.referenceAcknowledged(messageReference);
-      replay(serverSession, queue, filter, storageManager, repository, postOffice, dispatcher, messageReference, message);
-      consumer.receiveCredits(1);
-      assertEquals(HandleStatus.HANDLED, consumer.handle(messageReference));
-      verify(serverSession, queue, filter, storageManager, repository, postOffice, dispatcher, messageReference, message);
-      assertEquals(999l, consumer.getID());
-      assertEquals(1, consumer.getClientTargetID());
-      assertEquals(queue, consumer.getQueue());
-   }
-
-   public void testHandleDeliveryNoLocalDiffConnection() throws Exception
-   {
-      MessageReference messageReference = createStrictMock(MessageReference.class);
-      ServerMessage message = createStrictMock(ServerMessage.class);
-      expect(messageReference.getMessage()).andStubReturn(message);
-      ServerConsumerImpl consumer = create(1, 999l, false, true, true);
-      serverSession.promptDelivery(queue);
-      expect(message.isExpired()).andReturn(false);
-      expect(filter.match(message)).andReturn(true);
-      expect(message.getConnectionID()).andReturn(3l);
-      expect(message.getEncodeSize()).andReturn(1);
-      serverSession.handleDelivery(messageReference, consumer);
-      replay(serverSession, queue, filter, storageManager, repository, postOffice, dispatcher, messageReference, message);
-      consumer.receiveCredits(1);
-      assertEquals(HandleStatus.HANDLED, consumer.handle(messageReference));
-      verify(serverSession, queue, filter, storageManager, repository, postOffice, dispatcher, messageReference, message);
-      assertEquals(999l, consumer.getID());
-      assertEquals(1, consumer.getClientTargetID());
-      assertEquals(queue, consumer.getQueue());
-   }
-
-   public void testHandlExceptionOneDeliveryRemovesConsumer() throws Exception
-   {
-      MessageReference messageReference = createStrictMock(MessageReference.class);
-      ServerMessage message = createStrictMock(ServerMessage.class);
-      expect(messageReference.getMessage()).andStubReturn(message);
-      ServerConsumerImpl consumer = create(1, 999l, false, true, false);
-      serverSession.promptDelivery(queue);
-      expect(message.isExpired()).andReturn(false);
-      expect(filter.match(message)).andReturn(true);
-      expect(message.getEncodeSize()).andReturn(1);
-      serverSession.handleDelivery(messageReference, consumer);
-      expectLastCall().andThrow(new RuntimeException());
-      replay(serverSession, queue, filter, storageManager, repository, postOffice, dispatcher, messageReference, message);
-      consumer.receiveCredits(1);
-      assertEquals(HandleStatus.HANDLED, consumer.handle(messageReference));
-      verify(serverSession, queue, filter, storageManager, repository, postOffice, dispatcher, messageReference, message);
-      assertEquals(999l, consumer.getID());
-      assertEquals(1, consumer.getClientTargetID());
-      assertEquals(queue, consumer.getQueue());
-   }
-
    public void testHandle2DeliveriesFirstUsesTokens() throws Exception
    {
       MessageReference messageReference = createStrictMock(MessageReference.class);
@@ -311,7 +225,6 @@ public class ServerConsumerImplTest extends UnitTestCase
       assertEquals(queue, consumer.getQueue());
    }
 
-
    private ServerConsumerImpl create(int clientId, long consumerId, boolean autoDeleteQueue, boolean started, boolean noLocal)
    {
       serverSession = createStrictMock(ServerSession.class);
@@ -324,7 +237,8 @@ public class ServerConsumerImplTest extends UnitTestCase
       expect(dispatcher.generateID()).andReturn(consumerId);
       queue.addConsumer((Consumer) anyObject());
       replay(dispatcher, queue);
-      ServerConsumerImpl consumer = new ServerConsumerImpl(serverSession, clientId, queue, noLocal, filter, autoDeleteQueue, true, 0, 2, started, storageManager,
+      ServerConsumerImpl consumer =
+         new ServerConsumerImpl(serverSession, clientId, queue, filter, true, 0, started, storageManager,
               repository, postOffice, dispatcher);
       verify(dispatcher, queue);
       reset(dispatcher, queue);

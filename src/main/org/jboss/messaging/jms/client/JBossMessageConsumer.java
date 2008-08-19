@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.jms.client;
 
-import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -38,6 +37,8 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.jms.JBossDestination;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -55,26 +56,29 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
 
    // Attributes ----------------------------------------------------
 
-   private ClientConsumer consumer;
+   private final ClientConsumer consumer;
    
    private MessageListener listener;
    
    private MessageHandler coreListener;
    
-   private JBossSession session;
+   private final JBossSession session;
    
-   private int ackMode;
+   private final int ackMode;
    
-   private boolean noLocal;
+   private final boolean noLocal;
    
-   private Destination destination;
+   private final JBossDestination destination;
    
-   private String selector;
+   private final String selector;
    
+   private final SimpleString autoDeleteQueueName;
+     
    // Constructors --------------------------------------------------
 
-   public JBossMessageConsumer(JBossSession session, ClientConsumer consumer, boolean noLocal,
-                               Destination destination, String selector) throws JMSException
+   public JBossMessageConsumer(final JBossSession session, final ClientConsumer consumer, final boolean noLocal,
+                               final JBossDestination destination, final String selector,
+                               final SimpleString autoDeleteQueueName) throws JMSException
    {      
       this.session = session;
       
@@ -87,6 +91,8 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
       this.destination = destination;
       
       this.selector = selector;      
+      
+      this.autoDeleteQueueName = autoDeleteQueueName;
    }
 
    // MessageConsumer implementation --------------------------------
@@ -139,8 +145,16 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
    public void close() throws JMSException
    {
       try
-      {
+      {         
          consumer.close();                 
+         
+         if (autoDeleteQueueName != null)
+         {
+            //If non durable subscriber need to delete subscription too
+            session.deleteQueue(autoDeleteQueueName);
+         }
+         
+         session.removeConsumer(this);
       }
       catch (MessagingException e)
       {

@@ -30,8 +30,6 @@ import java.util.Set;
 import org.jboss.kernel.spi.dependency.KernelControllerContext;
 import org.jboss.kernel.spi.dependency.KernelControllerContextAware;
 import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.test.messaging.tools.container.JBMPropertyKernelConfig;
 
 /**
  * This is class is used in test environments. it will intercept the creation of the configuration and change certain

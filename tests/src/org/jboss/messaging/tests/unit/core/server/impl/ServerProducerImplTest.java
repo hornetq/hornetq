@@ -30,12 +30,13 @@ import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.reset;
 import static org.easymock.EasyMock.verify;
 
+import org.easymock.EasyMock;
 import org.easymock.IAnswer;
 import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerFlowCreditMessage;
+import org.jboss.messaging.core.server.CommandManager;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.server.impl.ServerProducerImpl;
@@ -48,7 +49,7 @@ import org.jboss.messaging.util.SimpleString;
 public class ServerProducerImplTest extends UnitTestCase
 {
    private ServerSession session;
-   private RemotingConnection rc;
+   private CommandManager cm;
    private FlowController flowController;
    private PacketDispatcher dispatcher;
 
@@ -71,48 +72,47 @@ public class ServerProducerImplTest extends UnitTestCase
    {
       ServerProducerImpl producer = create(999);
       session.removeProducer(producer);
-      replay(session, rc, flowController, dispatcher);
+      replay(session, cm, flowController, dispatcher);
       producer.close();
-      verify(session, rc, flowController, dispatcher);
+      verify(session, cm, flowController, dispatcher);
    }
 
    public void testRequestAndSendCreditsWaiting() throws Exception
    {
       ServerProducerImpl producer = create(999);
-      replay(session, rc, flowController, dispatcher);
+      replay(session, cm, flowController, dispatcher);
       producer.setWaiting(true);
       producer.requestAndSendCredits();
-      verify(session, rc, flowController, dispatcher);
+      verify(session, cm, flowController, dispatcher);
    }
 
    public void testRequestAndSendCreditsNotWaiting() throws Exception
    {
       ServerProducerImpl producer = create(999);
       flowController.requestAndSendCredits(producer, 0);
-      replay(session, rc, flowController, dispatcher);
+      replay(session, cm, flowController, dispatcher);
       producer.setWaiting(false);
       producer.requestAndSendCredits();
-      verify(session, rc, flowController, dispatcher);
+      verify(session, cm, flowController, dispatcher);
    }
 
    public void testSendCreditsWaiting() throws Exception
    {
       ServerProducerImpl producer = create(999);
-      expect(session.getID()).andReturn(888l);
-      rc.sendOneWay((Packet) anyObject());
+      cm.sendCommandOneway(EasyMock.eq(1l), (Packet) anyObject());
       expectLastCall().andAnswer(new IAnswer<Object>()
       {
          public Object answer() throws Throwable
          {
-            assertEquals(ProducerFlowCreditMessage.class, getCurrentArguments()[0].getClass());
-            ProducerFlowCreditMessage m = (ProducerFlowCreditMessage) getCurrentArguments()[0];
+            assertEquals(ProducerFlowCreditMessage.class, getCurrentArguments()[1].getClass());
+            ProducerFlowCreditMessage m = (ProducerFlowCreditMessage) getCurrentArguments()[1];
             assertEquals(m.getTokens(), 12345);
             return null;
          }
       });
-      replay(session, rc, flowController, dispatcher);
+      replay(session, cm, flowController, dispatcher);
       producer.sendCredits(12345);
-      verify(session, rc, flowController, dispatcher);
+      verify(session, cm, flowController, dispatcher);
    }
 
    public void testSend() throws Exception
@@ -121,9 +121,9 @@ public class ServerProducerImplTest extends UnitTestCase
       ServerProducerImpl producer = create(999);
       expect(message.getEncodeSize()).andReturn(99);
       session.send((ServerMessage) anyObject());
-      replay(session, rc, flowController, dispatcher, message);
+      replay(session, cm, flowController, dispatcher, message);
       producer.send(message);
-      verify(session, rc, flowController, dispatcher, message);
+      verify(session, cm, flowController, dispatcher, message);
    }
 
    public void testSendAndRequestCredits() throws Exception
@@ -133,22 +133,22 @@ public class ServerProducerImplTest extends UnitTestCase
       expect(message.getEncodeSize()).andReturn(101);
       flowController.requestAndSendCredits(producer, 101);
       session.send((ServerMessage) anyObject());
-      replay(session, rc, flowController, dispatcher, message);
+      replay(session, cm, flowController, dispatcher, message);
       producer.send(message);
-      verify(session, rc, flowController, dispatcher, message);
+      verify(session, cm, flowController, dispatcher, message);
    }
 
    private ServerProducerImpl create(long id) throws Exception
    {
       session = createStrictMock(ServerSession.class);
-      rc = createStrictMock(RemotingConnection.class);
+      cm = createStrictMock(CommandManager.class);
       flowController = createStrictMock(FlowController.class);
       dispatcher = createStrictMock(PacketDispatcher.class);
       expect(dispatcher.generateID()).andReturn(id);
       replay(dispatcher);
       ServerProducerImpl producer = new ServerProducerImpl(session, 1, new SimpleString("testQ"),
-              rc, flowController, 100,
-              dispatcher);
+              flowController, 100,
+              dispatcher, cm);
       verify(dispatcher);
       reset(dispatcher);
       return producer;

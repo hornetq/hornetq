@@ -27,6 +27,7 @@ import org.jboss.messaging.core.client.impl.ClientProducerInternal;
 import org.jboss.messaging.core.client.impl.ClientProducerPacketHandler;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerFlowCreditMessage;
+import org.jboss.messaging.core.server.CommandManager;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
@@ -42,9 +43,11 @@ public class ClientProducerPacketHandlerTest extends UnitTestCase
    {
       ClientProducerInternal producer = EasyMock.createStrictMock(ClientProducerInternal.class);
       
+      CommandManager cm = EasyMock.createStrictMock(CommandManager.class);
+     
       final int id = 716276;
-      
-      ClientProducerPacketHandler handler = new ClientProducerPacketHandler(producer, id);
+                  
+      ClientProducerPacketHandler handler = new ClientProducerPacketHandler(producer, id, cm);
          
       final int credits = 918298;
       
@@ -54,15 +57,17 @@ public class ClientProducerPacketHandlerTest extends UnitTestCase
       
       producer.receiveCredits(credits);
       
-      EasyMock.replay(producer);
+      cm.packetProcessed(msg);
+      
+      EasyMock.replay(producer, cm);
       
       handler.handle(1121, msg);
       
-      EasyMock.verify(producer);
+      EasyMock.verify(producer, cm);
       
       try
       {
-         handler.handle(21322, new PacketImpl(PacketImpl.CONN_START));
+         handler.handle(21322, new PacketImpl(PacketImpl.SESS_START));
          fail("Should throw Exception");
       }
       catch (IllegalStateException e)

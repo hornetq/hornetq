@@ -68,7 +68,8 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
 
    // ConnectionRegistry implementation -----------------------------
 
-   public synchronized RemotingConnection getConnection(final Location location, final ConnectionParams connectionParams)
+   public synchronized RemotingConnection getConnection(final Location location,
+                                                              final ConnectionParams connectionParams)
    {
       String key = location.getLocation();
 
@@ -93,10 +94,17 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
 
          RemotingHandler handler = new RemotingHandlerImpl(dispatcher, null);
 
-         Connector connector = createConnector(location, connectionParams, handler, this);
+         ConnectorFactory factory = connectorFactories.get(location.getTransport());
+         
+         if (factory == null)
+         {
+            throw new IllegalStateException("No connector factory registered for transport " + location.getTransport());
+         }
 
+         Connector connector = factory.createConnector(location, connectionParams, handler, this);
+         
          connector.start();
-
+            
          Connection tc = connector.createConnection();
 
          if (tc == null)
@@ -106,15 +114,16 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
 
          long pingInterval = connectionParams.getPingInterval();
          RemotingConnection connection;
+
          if (pingInterval != -1)
          {
             connection = new RemotingConnectionImpl(tc, dispatcher, location,
-               connectionParams.getCallTimeout(), connectionParams.getPingInterval(), pingExecutor);
+                     connectionParams.getCallTimeout(), connectionParams.getPingInterval(), pingExecutor);
          }
          else
          {
             connection = new RemotingConnectionImpl(tc, dispatcher, location,
-                  connectionParams.getCallTimeout());
+                     connectionParams.getCallTimeout());
          }
 
          remotingConnections.put(tc.getID(), connection);
@@ -135,21 +144,19 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
    public synchronized void returnConnection(final Location location)
    {
       String key = location.getLocation();
-
+      
       ConnectionHolder holder = connections.get(key);
 
       if (holder == null)
       {
-         throw new IllegalStateException("No connection for location " + key);
+         //This is ok and might happen if connection is returned after an error occurred on it in which
+         //case it will have already automatically been closed and removed
+         log.warn("Connection not found when returning - probably connection has failed and been automatically removed");
+         return;
       }
 
       if (holder.getCount() == 1)
-      {
-         if (log.isDebugEnabled())
-         {
-            log.debug("Removed connection for " + key);
-         }
-
+      {           
          RemotingConnection conn = remotingConnections.remove(holder.getConnection().getID());
 
          conn.destroy();
@@ -161,10 +168,6 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
       else
       {
          holder.decrement();
-         if (log.isDebugEnabled())
-         {
-            log.debug(holder.getCount() + " remaining references to " + key);
-         }
       }
    }
 
@@ -186,6 +189,20 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
    public synchronized ConnectorFactory getConnectorFactory(final TransportType transport)
    {
       return connectorFactories.get(transport);
+   }
+   
+   public synchronized int getCount(final Location location)
+   {
+      ConnectionHolder holder = connections.get(location.getLocation());
+      
+      if (holder != null)
+      {
+         return holder.getCount();
+      }
+      else
+      {
+         return 0;
+      }
    }
 
    // Constructors --------------------------------------------------
@@ -237,21 +254,6 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-
-   private Connector createConnector(final Location location,
-         final ConnectionParams params,
-         final RemotingHandler handler,
-         final ConnectionLifeCycleListener listener)
-   {
-      ConnectorFactory factory = connectorFactories.get(location.getTransport());
-
-      if (factory == null)
-      {
-         throw new IllegalStateException("No connector factory registered for transport " + location.getTransport());
-      }
-
-      return factory.createConnector(location, params, handler, listener);
-   }
 
    // Inner classes -------------------------------------------------
 

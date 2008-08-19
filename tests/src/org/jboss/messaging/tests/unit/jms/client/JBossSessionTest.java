@@ -68,14 +68,13 @@ import junit.framework.TestCase;
 
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.client.ClientBrowser;
-import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
@@ -107,7 +106,7 @@ public class JBossSessionTest extends TestCase
 
    // Public --------------------------------------------------------
 
-   private ClientConnection mockClientConn;
+   private ClientSessionFactory sf;
    private ClientSession mockClientSession;
 
    @Override
@@ -115,15 +114,14 @@ public class JBossSessionTest extends TestCase
    {
       super.setUp();
 
-      mockClientConn = createStrictMock(ClientConnection.class);
-      mockClientConn.setFailureListener((FailureListener) EasyMock.anyObject());
+      sf = createStrictMock(ClientSessionFactory.class);      
       mockClientSession = createStrictMock(ClientSession.class);
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      verify(mockClientConn, mockClientSession);
+      verify(sf, mockClientSession);
 
       super.tearDown();
    }
@@ -132,25 +130,23 @@ public class JBossSessionTest extends TestCase
    {
       mockClientSession.close();
 
-      replay(mockClientConn, mockClientSession);
-
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      replay(sf, mockClientSession);
+      
+      JBossConnection connection = new JBossConnection(null, null, JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
 
       session.close();
    }
-
+      
    public void testCloseThrowsException() throws Exception
    {
       mockClientSession.close();
       expectLastCall().andThrow(new MessagingException());
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null, JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, true, false,
             Session.DUPS_OK_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
@@ -169,10 +165,9 @@ public class JBossSessionTest extends TestCase
       mockClientSession.close();
       expect(mockClientSession.isClosed()).andReturn(true);
 
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null, JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
@@ -192,10 +187,11 @@ public class JBossSessionTest extends TestCase
    {
       expect(mockClientSession.isClosed()).andReturn(false);
 
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+               JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
+      
       Session session = new JBossSession(connection, true, false, 0,
             mockClientSession, JBossSession.TYPE_GENERIC_SESSION);
 
@@ -206,10 +202,10 @@ public class JBossSessionTest extends TestCase
    {
       expect(mockClientSession.isClosed()).andReturn(false);
 
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.DUPS_OK_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
@@ -221,10 +217,10 @@ public class JBossSessionTest extends TestCase
    {
       mockClientSession.commit();
 
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, true, false,
             Session.DUPS_OK_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
@@ -236,10 +232,10 @@ public class JBossSessionTest extends TestCase
    {
       mockClientSession.commit();
       expectLastCall().andThrow(new MessagingException());
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, true, false,
             Session.DUPS_OK_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
@@ -255,10 +251,10 @@ public class JBossSessionTest extends TestCase
 
    public void testCommitOnNonTransactedSession() throws Exception
    {
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.DUPS_OK_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
@@ -274,10 +270,10 @@ public class JBossSessionTest extends TestCase
 
    public void testCommitOnXASession() throws Exception
    {
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, true, true, 0,
             mockClientSession, JBossSession.TYPE_GENERIC_SESSION);
 
@@ -294,10 +290,10 @@ public class JBossSessionTest extends TestCase
    {
       mockClientSession.rollback();
 
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, true, false,
             Session.DUPS_OK_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
@@ -309,10 +305,10 @@ public class JBossSessionTest extends TestCase
    {
       mockClientSession.rollback();
       expectLastCall().andThrow(new MessagingException());
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, true, false,
             Session.DUPS_OK_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
@@ -328,10 +324,10 @@ public class JBossSessionTest extends TestCase
 
    public void testRollbackOnNonTransactedSession() throws Exception
    {
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.DUPS_OK_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
@@ -347,10 +343,10 @@ public class JBossSessionTest extends TestCase
 
    public void testRollbackOnXASession() throws Exception
    {
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, true, true, 0,
             mockClientSession, JBossSession.TYPE_GENERIC_SESSION);
 
@@ -365,10 +361,10 @@ public class JBossSessionTest extends TestCase
 
    public void testRecoverOnTransactedSession() throws Exception
    {
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, true, false,
             Session.DUPS_OK_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
@@ -385,10 +381,10 @@ public class JBossSessionTest extends TestCase
    public void testRecoverOnNonTransactedSession() throws Exception
    {
       mockClientSession.rollback();
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.DUPS_OK_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
@@ -400,10 +396,10 @@ public class JBossSessionTest extends TestCase
    {
       mockClientSession.rollback();
       expectLastCall().andThrow(new MessagingException());
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.DUPS_OK_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
@@ -421,10 +417,10 @@ public class JBossSessionTest extends TestCase
    {
       expect(mockClientSession.isClosed()).andStubReturn(false);
       MessageListener listener = createStrictMock(MessageListener.class);
-      replay(mockClientConn, mockClientSession, listener);
+      replay(sf, mockClientSession, listener);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.DUPS_OK_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
@@ -546,10 +542,10 @@ public class JBossSessionTest extends TestCase
       expect(mockClientSession.createProducer(destination.getSimpleAddress()))
             .andReturn(clientProducer);
 
-      replay(mockClientConn, mockClientSession, clientProducer);
+      replay(sf, mockClientSession, clientProducer);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
@@ -567,10 +563,10 @@ public class JBossSessionTest extends TestCase
       expect(mockClientSession.createProducer(destination.getSimpleAddress()))
             .andThrow(new MessagingException());
 
-      replay(mockClientConn, mockClientSession, clientProducer);
+      replay(sf, mockClientSession, clientProducer);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
@@ -590,10 +586,10 @@ public class JBossSessionTest extends TestCase
    {
       Destination destination = createStrictMock(Destination.class);
 
-      replay(mockClientConn, mockClientSession, destination);
+      replay(sf, mockClientSession, destination);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
@@ -614,10 +610,10 @@ public class JBossSessionTest extends TestCase
       ClientProducer clientProducer = createStrictMock(ClientProducer.class);
       expect(mockClientSession.createProducer(null)).andReturn(clientProducer);
 
-      replay(mockClientConn, mockClientSession, clientProducer);
+      replay(sf, mockClientSession, clientProducer);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
@@ -634,10 +630,10 @@ public class JBossSessionTest extends TestCase
       expect(mockClientSession.createProducer(topic.getSimpleAddress()))
             .andReturn(clientProducer);
 
-      replay(mockClientConn, mockClientSession, clientProducer);
+      replay(sf, mockClientSession, clientProducer);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1, sf);
       TopicSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -655,10 +651,10 @@ public class JBossSessionTest extends TestCase
       expect(mockClientSession.createProducer(queue.getSimpleAddress()))
             .andReturn(clientProducer);
 
-      replay(mockClientConn, mockClientSession, clientProducer);
+      replay(sf, mockClientSession, clientProducer);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       QueueSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -676,18 +672,18 @@ public class JBossSessionTest extends TestCase
 
       // isExists() will return true
       SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage(
-            false, false, -1, -1, 1, null, destination.getSimpleAddress());
+            false, -1, 0, 1, null, destination.getSimpleAddress());
       expect(mockClientSession.queueQuery(destination.getSimpleAddress()))
             .andReturn(resp);
       expect(
             mockClientSession.createConsumer(destination.getSimpleAddress(),
-                  null, false, false, false)).andReturn(clientConsumer);
+                  null, false)).andReturn(clientConsumer);
       expect(mockClientSession.isClosed()).andReturn(false);
 
-      replay(mockClientConn, mockClientSession, clientConsumer);
+      replay(sf, mockClientSession, clientConsumer);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
@@ -713,10 +709,10 @@ public class JBossSessionTest extends TestCase
    {
       JBossDestination destination = new JBossQueue(randomString());
       expect(mockClientSession.queueQuery(destination.getSimpleAddress())).andThrow(new MessagingException());
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
@@ -732,10 +728,10 @@ public class JBossSessionTest extends TestCase
    
    public void testCreateConsumerWithNullDestination() throws Exception
    {
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
@@ -752,10 +748,10 @@ public class JBossSessionTest extends TestCase
    public void testCreateConsumerWithInvalidDestination() throws Exception
    {
       Destination invalidDestination = createStrictMock(Destination.class);
-      replay(mockClientConn, mockClientSession, invalidDestination);
+      replay(sf, mockClientSession, invalidDestination);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
@@ -780,10 +776,10 @@ public class JBossSessionTest extends TestCase
       expect(mockClientSession.queueQuery(destination.getSimpleAddress()))
             .andReturn(resp);
 
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
@@ -806,10 +802,10 @@ public class JBossSessionTest extends TestCase
       expect(mockClientSession.bindingQuery(destination.getSimpleAddress()))
       .andReturn(resp);
 
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -835,17 +831,17 @@ public class JBossSessionTest extends TestCase
             .andReturn(resp);
       mockClientSession.createQueue(eq(destination.getSimpleAddress()),
             isA(SimpleString.class), (SimpleString) isNull(), eq(false),
-            eq(false));
+            eq(true));
       expect(
             mockClientSession.createConsumer(isA(SimpleString.class),
-                  (SimpleString) isNull(), eq(false), eq(true), eq(false)))
+                  (SimpleString) isNull(), eq(false)))
             .andReturn(clientConsumer);
       expect(mockClientSession.isClosed()).andReturn(false);
 
-      replay(mockClientConn, mockClientSession, clientConsumer);
+      replay(sf, mockClientSession, clientConsumer);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -860,10 +856,10 @@ public class JBossSessionTest extends TestCase
    public void testCreateDurableSubscriberFromQueueSession() throws Exception
    {
       JBossTopic topic = new JBossTopic(randomString());
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -879,10 +875,10 @@ public class JBossSessionTest extends TestCase
    
    public void testCreateDurableSubscriberForNullTopic() throws Exception
    {
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -899,10 +895,10 @@ public class JBossSessionTest extends TestCase
    public void testCreateDurableSubscriberForInvalidTopic() throws Exception
    {
       Topic invalidTopic = createStrictMock(Topic.class);
-      replay(mockClientConn, mockClientSession, invalidTopic);
+      replay(sf, mockClientSession, invalidTopic);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -924,8 +920,7 @@ public class JBossSessionTest extends TestCase
       String clientID = randomString();
       JBossTopic topic = new JBossTopic(randomString());
       ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
-
-      expect(mockClientConn.isClosed()).andStubReturn(false);
+    
       expect(mockClientSession.isClosed()).andStubReturn(false);
 
       // isExists() will return true
@@ -940,13 +935,13 @@ public class JBossSessionTest extends TestCase
             eq(false));
       expect(
             mockClientSession.createConsumer(isA(SimpleString.class),
-                  (SimpleString) isNull(), eq(false), eq(false), eq(false)))
+                  (SimpleString) isNull(), eq(false)))
             .andReturn(clientConsumer);
 
-      replay(mockClientConn, mockClientSession, clientConsumer);
+      replay(sf, mockClientSession, clientConsumer);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -963,7 +958,7 @@ public class JBossSessionTest extends TestCase
       String clientID = null;
       JBossTopic topic = new JBossTopic(randomString());
 
-      expect(mockClientConn.isClosed()).andStubReturn(false);
+      
       expect(mockClientSession.isClosed()).andStubReturn(false);
 
       // isExists() will return true
@@ -971,10 +966,10 @@ public class JBossSessionTest extends TestCase
             true, new ArrayList<SimpleString>());
       expect(mockClientSession.bindingQuery(topic.getSimpleAddress()))
             .andReturn(bindingResp);
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -995,7 +990,7 @@ public class JBossSessionTest extends TestCase
       
       String subscriptionName = randomString();
       String clientID = randomString();
-      expect(mockClientConn.isClosed()).andStubReturn(false);
+      
       expect(mockClientSession.isClosed()).andStubReturn(false);
 
       // isExists() will return true
@@ -1003,10 +998,10 @@ public class JBossSessionTest extends TestCase
             true, new ArrayList<SimpleString>());
       expect(mockClientSession.bindingQuery(topicAddress))
             .andReturn(bindingResp);
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1, sf);
       JBossSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -1027,7 +1022,7 @@ public class JBossSessionTest extends TestCase
       String clientID = randomString();
       JBossTopic topic = new JBossTopic(randomString());
 
-      expect(mockClientConn.isClosed()).andStubReturn(false);
+      
       expect(mockClientSession.isClosed()).andStubReturn(false);
 
       // isExists() will return true
@@ -1036,13 +1031,14 @@ public class JBossSessionTest extends TestCase
       expect(mockClientSession.bindingQuery(topic.getSimpleAddress()))
             .andReturn(bindingResp);
       // already 1 durable subscriber
-      SessionQueueQueryResponseMessage queryResp = new SessionQueueQueryResponseMessage(true, false, -1, 1, 0, null, topic.getSimpleAddress());
+      SessionQueueQueryResponseMessage queryResp =
+         new SessionQueueQueryResponseMessage(true, -1, 1, 0, null, topic.getSimpleAddress());
       expect(mockClientSession.queueQuery(isA(SimpleString.class))).andReturn(queryResp);
 
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -1064,7 +1060,7 @@ public class JBossSessionTest extends TestCase
       JBossTopic topic = new JBossTopic(randomString());
       ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
 
-      expect(mockClientConn.isClosed()).andStubReturn(false);
+      
       expect(mockClientSession.isClosed()).andStubReturn(false);
 
       // isExists() will return true
@@ -1079,13 +1075,13 @@ public class JBossSessionTest extends TestCase
             eq(false));
       expect(
             mockClientSession.createConsumer(isA(SimpleString.class),
-                  (SimpleString) isNull(), eq(false), eq(false), eq(false)))
+                  (SimpleString) isNull(), eq(false)))
             .andReturn(clientConsumer);
 
-      replay(mockClientConn, mockClientSession, clientConsumer);
+      replay(sf, mockClientSession, clientConsumer);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -1103,7 +1099,7 @@ public class JBossSessionTest extends TestCase
       JBossTopic topic = new JBossTopic(randomString());
       ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
 
-      expect(mockClientConn.isClosed()).andStubReturn(false);
+      
       expect(mockClientSession.isClosed()).andStubReturn(false);
 
       // isExists() will return true
@@ -1112,17 +1108,18 @@ public class JBossSessionTest extends TestCase
       expect(mockClientSession.bindingQuery(topic.getSimpleAddress()))
             .andReturn(bindingResp);
       // isExists will return true
-      SessionQueueQueryResponseMessage queryResp = new SessionQueueQueryResponseMessage(true, false, -1, 0, 0, null, topic.getSimpleAddress());
+      SessionQueueQueryResponseMessage queryResp =
+         new SessionQueueQueryResponseMessage(true, -1, 0, 0, null, topic.getSimpleAddress());
       expect(mockClientSession.queueQuery(isA(SimpleString.class))).andReturn(queryResp);
       expect(
             mockClientSession.createConsumer(isA(SimpleString.class),
-                  (SimpleString) isNull(), eq(false), eq(false), eq(false)))
+                  (SimpleString) isNull(), eq(false)))
             .andReturn(clientConsumer);
 
-      replay(mockClientConn, mockClientSession, clientConsumer);
+      replay(sf, mockClientSession, clientConsumer);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -1141,7 +1138,7 @@ public class JBossSessionTest extends TestCase
       JBossTopic newTopic = new JBossTopic(randomString());
       ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
 
-      expect(mockClientConn.isClosed()).andStubReturn(false);
+      
       expect(mockClientSession.isClosed()).andStubReturn(false);
 
       // isExists() will return true
@@ -1150,20 +1147,21 @@ public class JBossSessionTest extends TestCase
       expect(mockClientSession.bindingQuery(newTopic.getSimpleAddress()))
             .andReturn(bindingResp);
       // isExists will return true
-      SessionQueueQueryResponseMessage queryResp = new SessionQueueQueryResponseMessage(true, false, -1, 0, 0, null, oldTopic.getSimpleAddress());
+      SessionQueueQueryResponseMessage queryResp =
+         new SessionQueueQueryResponseMessage(true, -1, 0, 0, null, oldTopic.getSimpleAddress());
       expect(mockClientSession.queueQuery(isA(SimpleString.class))).andReturn(queryResp);
       // queue address of the old topic
       mockClientSession.deleteQueue(isA(SimpleString.class));
       mockClientSession.createQueue(eq(newTopic.getSimpleAddress()), isA(SimpleString.class), (SimpleString) isNull(), eq(true), eq(false));
       expect(
             mockClientSession.createConsumer(isA(SimpleString.class),
-                  (SimpleString) isNull(), eq(false), eq(false), eq(false)))
+                  (SimpleString) isNull(), eq(false)))
             .andReturn(clientConsumer);
 
-      replay(mockClientConn, mockClientSession, clientConsumer);
+      replay(sf, mockClientSession, clientConsumer);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -1183,7 +1181,7 @@ public class JBossSessionTest extends TestCase
       SimpleString newSelector = new SimpleString("color = 'blue'");
       ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
 
-      expect(mockClientConn.isClosed()).andStubReturn(false);
+      
       expect(mockClientSession.isClosed()).andStubReturn(false);
 
       // isExists() will return true
@@ -1192,20 +1190,21 @@ public class JBossSessionTest extends TestCase
       expect(mockClientSession.bindingQuery(topic.getSimpleAddress()))
             .andReturn(bindingResp);
       // isExists will return true
-      SessionQueueQueryResponseMessage queryResp = new SessionQueueQueryResponseMessage(true, false, -1, 0, 0, oldSelector, topic.getSimpleAddress());
+      SessionQueueQueryResponseMessage queryResp =
+         new SessionQueueQueryResponseMessage(true, -1, 0, 0, oldSelector, topic.getSimpleAddress());
       expect(mockClientSession.queueQuery(isA(SimpleString.class))).andReturn(queryResp);
       // queue address of the old topic
       mockClientSession.deleteQueue(isA(SimpleString.class));
       mockClientSession.createQueue(eq(topic.getSimpleAddress()), isA(SimpleString.class), eq(newSelector), eq(true), eq(false));
       expect(
             mockClientSession.createConsumer(isA(SimpleString.class),
-                  (SimpleString) isNull(), eq(false), eq(false), eq(false)))
+                  (SimpleString) isNull(), eq(false)))
             .andReturn(clientConsumer);
 
-      replay(mockClientConn, mockClientSession, clientConsumer);
+      replay(sf, mockClientSession, clientConsumer);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -1224,10 +1223,10 @@ public class JBossSessionTest extends TestCase
       expect(mockClientSession.createBrowser(queue.getSimpleAddress(), null))
             .andReturn(clientBrowser);
 
-      replay(mockClientConn, mockClientSession, clientBrowser);
+      replay(sf, mockClientSession, clientBrowser);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       QueueSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1245,10 +1244,10 @@ public class JBossSessionTest extends TestCase
       expect(mockClientSession.createBrowser(queue.getSimpleAddress(), null))
             .andThrow(new MessagingException());
 
-      replay(mockClientConn, mockClientSession, clientBrowser);
+      replay(sf, mockClientSession, clientBrowser);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       QueueSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1271,10 +1270,10 @@ public class JBossSessionTest extends TestCase
       expect(mockClientSession.createBrowser(queue.getSimpleAddress(), null))
             .andReturn(clientBrowser);
 
-      replay(mockClientConn, mockClientSession, clientBrowser);
+      replay(sf, mockClientSession, clientBrowser);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       QueueSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1294,10 +1293,10 @@ public class JBossSessionTest extends TestCase
             mockClientSession.createBrowser(queue.getSimpleAddress(),
                   new SimpleString(filter))).andReturn(clientBrowser);
 
-      replay(mockClientConn, mockClientSession, clientBrowser);
+      replay(sf, mockClientSession, clientBrowser);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       QueueSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1312,10 +1311,10 @@ public class JBossSessionTest extends TestCase
    {
       Queue queue = new JBossQueue(randomString());
 
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       QueueSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -1331,10 +1330,10 @@ public class JBossSessionTest extends TestCase
 
    public void testCreateBrowserForNullQueue() throws Exception
    {
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       QueueSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1351,10 +1350,10 @@ public class JBossSessionTest extends TestCase
    public void testCreateBrowserForInvalidQueue() throws Exception
    {
       Queue queue = createStrictMock(Queue.class);
-      replay(mockClientConn, mockClientSession, queue);
+      replay(sf, mockClientSession, queue);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       QueueSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1378,13 +1377,13 @@ public class JBossSessionTest extends TestCase
 
       // isExists() will return true
       SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage(
-            false, false, -1, -1, 1, null, queueAddress);
+            false, -1, -1, 1, null, queueAddress);
       expect(mockClientSession.queueQuery(queueAddress)).andReturn(resp);
 
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       QueueSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1402,10 +1401,10 @@ public class JBossSessionTest extends TestCase
       expect(mockClientSession.queueQuery(queueAddress)).andThrow(
             new MessagingException());
 
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       QueueSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1429,10 +1428,10 @@ public class JBossSessionTest extends TestCase
       SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage();
       expect(mockClientSession.queueQuery(queueAddress)).andReturn(resp);
 
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       QueueSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1448,10 +1447,10 @@ public class JBossSessionTest extends TestCase
 
    public void testCreateQueueFromTopicSession() throws Exception
    {
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       QueueSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -1475,10 +1474,10 @@ public class JBossSessionTest extends TestCase
             true, new ArrayList<SimpleString>());
       expect(mockClientSession.bindingQuery(topicAddress)).andReturn(resp);
 
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       QueueSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -1496,10 +1495,10 @@ public class JBossSessionTest extends TestCase
       expect(mockClientSession.bindingQuery(topicAddress)).andThrow(
             new MessagingException());
 
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       QueueSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -1523,10 +1522,10 @@ public class JBossSessionTest extends TestCase
             false, new ArrayList<SimpleString>());
       expect(mockClientSession.bindingQuery(topicAddress)).andReturn(resp);
 
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       QueueSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -1542,10 +1541,10 @@ public class JBossSessionTest extends TestCase
 
    public void testCreateTopicFromQueueSession() throws Exception
    {
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       QueueSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1562,11 +1561,11 @@ public class JBossSessionTest extends TestCase
    public void testCreateTemporaryQueue() throws Exception
    {
       mockClientSession.createQueue(isA(SimpleString.class), isA(SimpleString.class), (SimpleString) isNull(), eq(false), eq(true));
-      mockClientSession.addDestination(isA(SimpleString.class), eq(true));
-      replay(mockClientConn, mockClientSession);
+      mockClientSession.addDestination(isA(SimpleString.class), eq(false), eq(true));
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       QueueSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1579,10 +1578,10 @@ public class JBossSessionTest extends TestCase
    {
       mockClientSession.createQueue(isA(SimpleString.class), isA(SimpleString.class), (SimpleString) isNull(), eq(false), eq(true));
       expectLastCall().andThrow(new MessagingException());
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       QueueSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1597,10 +1596,10 @@ public class JBossSessionTest extends TestCase
    
    public void testCreateTemporaryQueueFromTopicSession() throws Exception
    {
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1, sf);
       QueueSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -1615,11 +1614,11 @@ public class JBossSessionTest extends TestCase
    
    public void testCreateTemporaryTopic() throws Exception
    {
-      mockClientSession.addDestination(isA(SimpleString.class), eq(true));
-      replay(mockClientConn, mockClientSession);
+      mockClientSession.addDestination(isA(SimpleString.class), eq(false), eq(true));
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1, sf);
       QueueSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -1630,12 +1629,12 @@ public class JBossSessionTest extends TestCase
    
    public void testCreateTemporaryTopicThrowsException() throws Exception
    {
-      mockClientSession.addDestination(isA(SimpleString.class), eq(true));
+      mockClientSession.addDestination(isA(SimpleString.class), eq(false), eq(true));
       expectLastCall().andThrow(new MessagingException());
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1, sf);
       QueueSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -1651,10 +1650,10 @@ public class JBossSessionTest extends TestCase
 
    public void testCreateTemporaryTopicFromQueueSession() throws Exception
    {
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       QueueSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1675,13 +1674,14 @@ public class JBossSessionTest extends TestCase
       
       // isExists() will return true
       SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage(
-            false, false, -1, -1, 1, null, queueAddress);
-      expect(mockClientSession.queueQuery(queueAddress)).andReturn(resp);
-      mockClientSession.removeDestination(queueAddress, true);
-      replay(mockClientConn, mockClientSession);
+            false, -1, -1, 1, null, queueAddress);
+      expect(mockClientSession.queueQuery(queueAddress)).andReturn(resp);      
+      mockClientSession.removeDestination(queueAddress, false);
+      mockClientSession.deleteQueue(queueAddress);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       JBossSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1698,10 +1698,10 @@ public class JBossSessionTest extends TestCase
       // isExists() will return false
       SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage();
       expect(mockClientSession.queueQuery(queueAddress)).andReturn(resp);
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       JBossSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1723,12 +1723,13 @@ public class JBossSessionTest extends TestCase
       SimpleString queueAddress = new SimpleString(JBossTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX + queueName);
       
       
-      SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage(false, true, 0, consumerCount, 0, null, queueAddress);
+      SessionQueueQueryResponseMessage resp =
+         new SessionQueueQueryResponseMessage(false, 0, consumerCount, 0, null, queueAddress);
       expect(mockClientSession.queueQuery(queueAddress)).andReturn(resp);
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       JBossSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1746,10 +1747,10 @@ public class JBossSessionTest extends TestCase
    public void testDeleteTemporaryQueueThrowsException() throws Exception
    {
       expect(mockClientSession.queueQuery(isA(SimpleString.class))).andThrow(new MessagingException());
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       JBossSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1771,11 +1772,11 @@ public class JBossSessionTest extends TestCase
       
       SessionBindingQueryResponseMessage resp = new SessionBindingQueryResponseMessage(true, new ArrayList<SimpleString>());
       expect(mockClientSession.bindingQuery(topicAddress)).andReturn(resp);
-      mockClientSession.removeDestination(topicAddress, true);
-      replay(mockClientConn, mockClientSession);
+      mockClientSession.removeDestination(topicAddress, false);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       JBossSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1791,10 +1792,10 @@ public class JBossSessionTest extends TestCase
       
       SessionBindingQueryResponseMessage resp = new SessionBindingQueryResponseMessage(false, new ArrayList<SimpleString>());
       expect(mockClientSession.bindingQuery(topicAddress)).andReturn(resp);
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       JBossSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1818,10 +1819,10 @@ public class JBossSessionTest extends TestCase
       
       SessionBindingQueryResponseMessage resp = new SessionBindingQueryResponseMessage(true, queueNames);
       expect(mockClientSession.bindingQuery(topicAddress)).andReturn(resp);
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       JBossSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1841,10 +1842,10 @@ public class JBossSessionTest extends TestCase
       String topicName = randomString();
 
       expect(mockClientSession.bindingQuery(isA(SimpleString.class))).andThrow(new MessagingException());
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       JBossSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1862,10 +1863,10 @@ public class JBossSessionTest extends TestCase
    public void testGetSessionOnXASession() throws Exception
    {
       boolean isXA = true;
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       JBossSession session = new JBossSession(connection, false, isXA,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1877,10 +1878,10 @@ public class JBossSessionTest extends TestCase
    public void testGetSessionOnNonXASession() throws Exception
    {
       boolean isXA = false;
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       JBossSession session = new JBossSession(connection, false, isXA,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1897,10 +1898,10 @@ public class JBossSessionTest extends TestCase
    public void testGetXAResource() throws Exception
    {
       expect(mockClientSession.getXAResource()).andReturn(mockClientSession);
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       JBossSession session = new JBossSession(connection, false, true,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1912,10 +1913,10 @@ public class JBossSessionTest extends TestCase
    
    public void testGetQueueSession() throws Exception
    {
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       JBossSession session = new JBossSession(connection, false, true,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1927,10 +1928,10 @@ public class JBossSessionTest extends TestCase
    
    public void testGetCoreSession() throws Exception
    {
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       JBossSession session = new JBossSession(connection, false, true,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -1944,15 +1945,14 @@ public class JBossSessionTest extends TestCase
    {
       String subName = randomString();
       String clientID = randomString();
-      SimpleString queueAddres = new SimpleString(JBossTopic.createQueueNameForDurableSubscription(clientID, subName));
-      expect(mockClientConn.isClosed()).andReturn(false);
-      SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage(false, true, 0, 0, 0, null, queueAddres);
+      SimpleString queueAddres = new SimpleString(JBossTopic.createQueueNameForDurableSubscription(clientID, subName));      
+      SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage(false, 0, 0, 0, null, queueAddres);
       expect(mockClientSession.queueQuery(queueAddres)).andReturn(resp );
       mockClientSession.deleteQueue(queueAddres);
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1, sf);
       JBossSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -1962,15 +1962,14 @@ public class JBossSessionTest extends TestCase
    
    public void testUnsubscribeWithUnknownSubscription() throws Exception
    {
-      String clientID = randomString();
-      expect(mockClientConn.isClosed()).andReturn(false);
+      String clientID = randomString();     
       // isExists() will return false
       SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage();
       expect(mockClientSession.queueQuery(isA(SimpleString.class))).andReturn(resp );
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1, sf);
       JBossSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -1989,15 +1988,15 @@ public class JBossSessionTest extends TestCase
       String clientID = randomString();
       String subName = randomString();
       SimpleString queueAddres = new SimpleString(JBossTopic.createQueueNameForDurableSubscription(clientID, subName));
-      int consumerCount = 1;
-      expect(mockClientConn.isClosed()).andReturn(false);
+      int consumerCount = 1;      
 
-      SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage(true, false, 0, consumerCount, 0, null, queueAddres);
+      SessionQueueQueryResponseMessage resp =
+         new SessionQueueQueryResponseMessage(true, 0, consumerCount, 0, null, queueAddres);
       expect(mockClientSession.queueQuery(isA(SimpleString.class))).andReturn(resp );
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1, sf);
       JBossSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -2014,13 +2013,11 @@ public class JBossSessionTest extends TestCase
    public void testUnsubscribeThrowsException() throws Exception
    {
       String clientID = randomString();
-      expect(mockClientConn.isClosed()).andReturn(false);
-
       expect(mockClientSession.queueQuery(isA(SimpleString.class))).andThrow(new MessagingException());
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_TOPIC_CONNECTION, clientID, -1, sf);
       JBossSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -2037,10 +2034,10 @@ public class JBossSessionTest extends TestCase
    public void testUnsubscribeFromQueueSession() throws Exception
    {
       String subName = randomString();
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       JBossSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_QUEUE_SESSION);
@@ -2067,10 +2064,10 @@ public class JBossSessionTest extends TestCase
       ClientMessage clientMessage = new ClientMessageImpl(JBossMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
       expect(mockClientSession.isClosed()).andReturn(false);
       expect(mockClientSession.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);
-      replay(mockClientConn, mockClientSession);
+      replay(sf, mockClientSession);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);
@@ -2086,19 +2083,19 @@ public class JBossSessionTest extends TestCase
 
       // isExists() will return true
       SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage(
-            false, false, -1, -1, 1, null, destination.getSimpleAddress());
+            false, -1, 0, 1, null, destination.getSimpleAddress());
       expect(mockClientSession.queueQuery(destination.getSimpleAddress()))
             .andReturn(resp);
       expect(
             mockClientSession.createConsumer(destination.getSimpleAddress(),
-                  expectedSelector, false, false, false)).andReturn(
+                  expectedSelector, false)).andReturn(
             clientConsumer);
       expect(mockClientSession.isClosed()).andReturn(false);
 
-      replay(mockClientConn, mockClientSession, clientConsumer);
+      replay(sf, mockClientSession, clientConsumer);
 
-      JBossConnection connection = new JBossConnection(mockClientConn,
-            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection(null, null,
+            JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       Session session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, mockClientSession,
             JBossSession.TYPE_GENERIC_SESSION);

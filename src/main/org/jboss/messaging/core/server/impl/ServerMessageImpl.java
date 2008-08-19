@@ -22,13 +22,13 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 
@@ -41,9 +41,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ServerMessageImpl extends MessageImpl implements ServerMessage
 {
    private long messageID;
-   
-   private long connectionID;
-   
+    
    private final AtomicInteger durableRefCount = new AtomicInteger(0);
               
    /*
@@ -71,8 +69,6 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       super(other);
       
       this.messageID = other.messageID;
-      
-      this.connectionID = other.connectionID;
    }
    
    /**
@@ -92,16 +88,6 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    public void setMessageID(final long id)
    {
       this.messageID = id;
-   }
-   
-   public long getConnectionID()
-   {
-      return connectionID;
-   }
-   
-   public void setConnectionID(final long connectionID)
-   {
-      this.connectionID = connectionID;
    }
    
    public MessageReference createReference(final Queue queue)

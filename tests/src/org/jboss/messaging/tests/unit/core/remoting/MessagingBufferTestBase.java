@@ -22,8 +22,14 @@
 
 package org.jboss.messaging.tests.unit.core.remoting;
 
-import static org.jboss.messaging.tests.util.RandomUtil.*;
-import static org.jboss.messaging.tests.util.UnitTestCase.*;
+import static org.jboss.messaging.tests.util.RandomUtil.randomByte;
+import static org.jboss.messaging.tests.util.RandomUtil.randomBytes;
+import static org.jboss.messaging.tests.util.RandomUtil.randomDouble;
+import static org.jboss.messaging.tests.util.RandomUtil.randomFloat;
+import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
+import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
+import static org.jboss.messaging.tests.util.RandomUtil.randomString;
+import static org.jboss.messaging.tests.util.UnitTestCase.assertEqualsByteArrays;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.remoting.MessagingBuffer;

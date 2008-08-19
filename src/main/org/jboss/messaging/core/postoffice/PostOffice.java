@@ -55,14 +55,14 @@ import org.jboss.messaging.util.SimpleString;
  */
 public interface PostOffice extends MessagingComponent
 {   
-   boolean addDestination(SimpleString address, boolean temporary) throws Exception;
+   boolean addDestination(SimpleString address, boolean durable) throws Exception;
    
-   boolean removeDestination(SimpleString address, boolean temporary) throws Exception;
+   boolean removeDestination(SimpleString address, boolean durable) throws Exception;
    
    boolean containsDestination(SimpleString address);
 
    Binding addBinding(SimpleString address, SimpleString queueName, Filter filter,
-                      boolean durable, boolean temporary) throws Exception;
+                      boolean durable) throws Exception;
    
    Binding removeBinding(SimpleString queueName) throws Exception;
    
@@ -80,4 +80,6 @@ public interface PostOffice extends MessagingComponent
    Map<SimpleString, List<Binding>> getMappings();
 
    Set<SimpleString> listAllDestinations();
+   
+   void setBackup(boolean backup);
 }

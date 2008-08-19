@@ -98,6 +98,8 @@ public class TemporaryDestinationTest extends JMSTestCase
 	         //Can't delete temp dest if there are open consumers
 	      }
 	
+	      log.info("closing consumer");
+	      
 	      consumer.close();
 	      
 	      tempTopic.delete();      

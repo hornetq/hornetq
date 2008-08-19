@@ -27,6 +27,7 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
+import org.jboss.messaging.core.server.CommandManager;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -39,15 +40,24 @@ public class ClientConsumerPacketHandler implements PacketHandler
 {
    private static final Logger log = Logger.getLogger(ClientConsumerPacketHandler.class);
 
+   //private final ClientSessionInternal session;
+   
    private final ClientConsumerInternal clientConsumer;
 
    private final long consumerID;
-
-   public ClientConsumerPacketHandler(final ClientConsumerInternal clientConsumer, final long consumerID)
+   
+   private final CommandManager commandManager;
+   
+   public ClientConsumerPacketHandler(final ClientConsumerInternal clientConsumer,
+                                      final long consumerID,
+                                      final CommandManager commandManager)
+                                      
    {
       this.clientConsumer = clientConsumer;
-
+         
       this.consumerID = consumerID;
+      
+      this.commandManager = commandManager;
    }
 
    public long getID()
@@ -71,6 +81,8 @@ public class ClientConsumerPacketHandler implements PacketHandler
          {
             log.error("Failed to handle packet " + packet);
          }
+         
+         commandManager.packetProcessed(packet);
       }
       else
       {

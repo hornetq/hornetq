@@ -22,7 +22,8 @@
  */
 package org.jboss.messaging.core.remoting.impl;
 
-import static org.jboss.messaging.util.DataConstants.*;
+import static org.jboss.messaging.util.DataConstants.NOT_NULL;
+import static org.jboss.messaging.util.DataConstants.NULL;
 
 import java.nio.ByteBuffer;
 

@@ -27,8 +27,8 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingService;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.server.MessagingServer;
@@ -52,18 +52,19 @@ public class MessagingServerPacketHandlerTest extends UnitTestCase
       EasyMock.verify(server, rs);
    }
 
-   public void testHandleCreateConnection() throws Exception
+   public void testHandleCreateSession() throws Exception
    {
       MessagingServer server = EasyMock.createStrictMock(MessagingServer.class);
       RemotingService rs = EasyMock.createStrictMock(RemotingService.class);
       Version serverVersion = EasyMock.createStrictMock(Version.class);
-      CreateConnectionRequest packet = new CreateConnectionRequest(123, "andy", "taylor");
-      CreateConnectionResponse createConnectionResponse = new CreateConnectionResponse(1, serverVersion );
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
+      CreateSessionMessage packet = new CreateSessionMessage("blah", 123, "andy", "taylor",
+                                                             false, false, false, 123456);
+      CreateSessionResponseMessage createConnectionResponse = new CreateSessionResponseMessage(16256152, 98365, 123);
       MessagingServerPacketHandler messagingServerPacketHandler = new MessagingServerPacketHandler(server, rs);
       final long connectionID = 23982893;
-      EasyMock.expect(rs.getConnection(connectionID)).andReturn(rc);
-      EasyMock.expect(server.createConnection("andy", "taylor", 123, rc)).andReturn(createConnectionResponse);
+      EasyMock.expect(rs.getConnection(connectionID)).andReturn(rc);      
+      EasyMock.expect(server.createSession("blah", "andy", "taylor", 123, rc, false, false, false, 123456)).andReturn(createConnectionResponse);
       rc.sendOneWay(createConnectionResponse);
       EasyMock.replay(server, rc, rs, serverVersion);
       messagingServerPacketHandler.handle(connectionID, packet);

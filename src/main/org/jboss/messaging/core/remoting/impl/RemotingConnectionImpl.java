@@ -37,9 +37,9 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.spi.Connection;
+import org.jboss.messaging.core.server.CommandManager;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
@@ -136,19 +136,19 @@ public class RemotingConnectionImpl implements RemotingConnection
     * send the packet and block until a response is received (<code>oneWay</code>
     * is set to <code>false</code>)
     */
-   public Packet sendBlocking(final long targetID, final long executorID, final Packet packet) throws MessagingException
+   public Packet sendBlocking(final long targetID, final long executorID, final Packet packet, final CommandManager cm)
    {
       packet.setTargetID(targetID);
       packet.setExecutorID(executorID);
 
-      return sendBlocking(packet);
+      return sendBlocking(packet, cm);
    }
 
-   public Packet sendBlocking(final Packet packet) throws MessagingException
+   public Packet sendBlocking(final Packet packet, final CommandManager cm)
    {
       long handlerID = dispatcher.generateID();
 
-      ResponseHandlerImpl handler = new ResponseHandlerImpl(handlerID);
+      ResponseHandlerImpl handler = new ResponseHandlerImpl(handlerID, cm);
 
       dispatcher.register(handler);
 
@@ -159,25 +159,13 @@ public class RemotingConnectionImpl implements RemotingConnection
          doWrite(packet);
 
          Packet response = handler.waitForResponse(blockingCallTimeout);
-
+         
          if (response == null)
          {
-            MessagingException me = new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
-               "No response received for " + packet);
-            fail(me);
-            throw me;
+            throw new IllegalStateException("Timed out waiting for response");
          }
-
-         if (response instanceof MessagingExceptionMessage)
-         {
-            MessagingExceptionMessage message = (MessagingExceptionMessage) response;
-
-            throw message.getException();
-         }
-         else
-         {
-            return response;
-         }
+         
+         return response;
       }
       finally
       {
@@ -204,11 +192,6 @@ public class RemotingConnectionImpl implements RemotingConnection
       if (listener == null)
       {
          throw new IllegalStateException("FailureListener cannot be null");
-      }
-
-      if (failureListeners.contains(listener))
-      {
-         throw new IllegalStateException("FailureListener already set");
       }
 
       failureListeners.add(listener);

@@ -51,7 +51,7 @@ public class QueueFactoryImplTest extends UnitTestCase
       EasyMock.replay(scheduledExecutor, queueSettingsRepository);
       QueueFactoryImpl queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository);
       SimpleString qName = new SimpleString("testQ");
-      Queue queue = queueFactory.createQueue(123, qName, filter, true, true);
+      Queue queue = queueFactory.createQueue(123, qName, filter, true);
       EasyMock.verify(scheduledExecutor, queueSettingsRepository);
       assertEquals(queue.getDistributionPolicy().getClass(), RoundRobinDistributionPolicy.class);
       assertEquals(queue.isClustered(), true);
@@ -60,7 +60,7 @@ public class QueueFactoryImplTest extends UnitTestCase
       assertEquals(queue.getPersistenceID(), 123);
       assertEquals(queue.getFilter(), filter);
       assertEquals(queue.isDurable(), true);
-      assertEquals(queue.isTemporary(), true);
+      assertEquals(queue.isDurable(), true);
    }
 
    public void testCreateQueue2()
@@ -75,7 +75,7 @@ public class QueueFactoryImplTest extends UnitTestCase
       EasyMock.replay(scheduledExecutor, queueSettingsRepository);
       QueueFactoryImpl queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository);
       SimpleString qName = new SimpleString("testQ2");
-      Queue queue = queueFactory.createQueue(456, qName, null, false, false);
+      Queue queue = queueFactory.createQueue(456, qName, null, false);
       EasyMock.verify(scheduledExecutor, queueSettingsRepository);
       assertEquals(queue.getDistributionPolicy().getClass(), RoundRobinDistributionPolicy.class);
       assertEquals(queue.isClustered(), false);
@@ -84,6 +84,6 @@ public class QueueFactoryImplTest extends UnitTestCase
       assertEquals(queue.getPersistenceID(), 456);
       assertEquals(queue.getFilter(), null);
       assertEquals(queue.isDurable(), false);
-      assertEquals(queue.isTemporary(), false);
+      assertEquals(queue.isDurable(), false);
    }
 }

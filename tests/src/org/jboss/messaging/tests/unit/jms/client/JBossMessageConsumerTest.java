@@ -27,10 +27,10 @@ import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.isA;
 import static org.easymock.classextension.EasyMock.createStrictMock;
 import static org.easymock.classextension.EasyMock.replay;
+import static org.easymock.classextension.EasyMock.reset;
 import static org.easymock.classextension.EasyMock.verify;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
-import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -46,6 +46,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.MessagingBuffer;
+import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossMessage;
@@ -73,15 +74,27 @@ public class JBossMessageConsumerTest extends TestCase
    public void testClose() throws Exception
    {
       JBossSession session = createStrictMock(JBossSession.class);
-      expect(session.getAcknowledgeMode()).andReturn(Session.AUTO_ACKNOWLEDGE);
+      
       ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
+      
+      expect(session.getAcknowledgeMode()).andStubReturn(Session.AUTO_ACKNOWLEDGE);
+                                      
+      replay(session, clientConsumer);
+                  
+      JBossDestination destination = new JBossQueue(randomString());
+      
+      JBossMessageConsumer consumer = new JBossMessageConsumer(session,
+               clientConsumer, false, destination, null, null);
+      
+      verify(session, clientConsumer);
+      
+      reset(session, clientConsumer);
+            
       clientConsumer.close();
+      
+      session.removeConsumer(consumer);
 
       replay(session, clientConsumer);
-
-      Destination destination = new JBossQueue(randomString());
-      JBossMessageConsumer consumer = new JBossMessageConsumer(session,
-            clientConsumer, false, destination, null);
 
       consumer.close();
 
@@ -91,7 +104,7 @@ public class JBossMessageConsumerTest extends TestCase
    public void testCloseThrowsException() throws Exception
    {
       JBossSession session = createStrictMock(JBossSession.class);
-      Destination destination = new JBossQueue(randomString());
+      JBossDestination destination = new JBossQueue(randomString());
       expect(session.getAcknowledgeMode()).andReturn(Session.AUTO_ACKNOWLEDGE);
       ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
       clientConsumer.close();
@@ -100,7 +113,7 @@ public class JBossMessageConsumerTest extends TestCase
       replay(session, clientConsumer);
 
       JBossMessageConsumer consumer = new JBossMessageConsumer(session,
-            clientConsumer, false, destination, null);
+            clientConsumer, false, destination, null, null);
 
       try
       {
@@ -115,7 +128,7 @@ public class JBossMessageConsumerTest extends TestCase
 
    public void testCheckClosed() throws Exception
    {
-      Destination destination = new JBossQueue(randomString());
+      JBossDestination destination = new JBossQueue(randomString());
       JBossSession session = createStrictMock(JBossSession.class);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(session.getAcknowledgeMode()).andReturn(Session.AUTO_ACKNOWLEDGE);
@@ -128,7 +141,7 @@ public class JBossMessageConsumerTest extends TestCase
       replay(session, clientSession, clientConsumer);
 
       JBossMessageConsumer consumer = new JBossMessageConsumer(session,
-            clientConsumer, false, destination, null);
+            clientConsumer, false, destination, null, null);
 
       try
       {
@@ -144,7 +157,7 @@ public class JBossMessageConsumerTest extends TestCase
    public void testGetMessageSelector() throws Exception
    {
       String messageSelector = "color = 'green'";
-      Destination destination = new JBossQueue(randomString());
+      JBossDestination destination = new JBossQueue(randomString());
       JBossSession session = createStrictMock(JBossSession.class);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(session.getAcknowledgeMode()).andReturn(Session.AUTO_ACKNOWLEDGE);
@@ -155,7 +168,7 @@ public class JBossMessageConsumerTest extends TestCase
       replay(session, clientSession, clientConsumer);
 
       JBossMessageConsumer consumer = new JBossMessageConsumer(session,
-            clientConsumer, false, destination, messageSelector);
+            clientConsumer, false, destination, messageSelector, null);
 
       assertEquals(messageSelector, consumer.getMessageSelector());
 
@@ -165,7 +178,7 @@ public class JBossMessageConsumerTest extends TestCase
    public void testGetNoLocal() throws Exception
    {
       boolean noLocal = true;
-      Destination destination = new JBossQueue(randomString());
+      JBossDestination destination = new JBossQueue(randomString());
       JBossSession session = createStrictMock(JBossSession.class);
       expect(session.getAcknowledgeMode()).andReturn(Session.AUTO_ACKNOWLEDGE);
       ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
@@ -173,7 +186,7 @@ public class JBossMessageConsumerTest extends TestCase
       replay(session, clientConsumer);
 
       JBossMessageConsumer consumer = new JBossMessageConsumer(session,
-            clientConsumer, noLocal, destination, null);
+            clientConsumer, noLocal, destination, null, null);
 
       assertEquals(noLocal, consumer.getNoLocal());
 
@@ -182,7 +195,7 @@ public class JBossMessageConsumerTest extends TestCase
 
    public void testGetQueue() throws Exception
    {
-      Destination destination = new JBossQueue(randomString());
+      JBossDestination destination = new JBossQueue(randomString());
       JBossSession session = createStrictMock(JBossSession.class);
       expect(session.getAcknowledgeMode()).andReturn(Session.AUTO_ACKNOWLEDGE);
       ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
@@ -190,7 +203,7 @@ public class JBossMessageConsumerTest extends TestCase
       replay(session, clientConsumer);
 
       JBossMessageConsumer consumer = new JBossMessageConsumer(session,
-            clientConsumer, false, destination, null);
+            clientConsumer, false, destination, null, null);
 
       assertEquals(destination, consumer.getQueue());
 
@@ -199,7 +212,7 @@ public class JBossMessageConsumerTest extends TestCase
 
    public void testGetTopic() throws Exception
    {
-      Destination destination = new JBossTopic(randomString());
+      JBossDestination destination = new JBossTopic(randomString());
       JBossSession session = createStrictMock(JBossSession.class);
       expect(session.getAcknowledgeMode()).andReturn(Session.AUTO_ACKNOWLEDGE);
       ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
@@ -207,7 +220,7 @@ public class JBossMessageConsumerTest extends TestCase
       replay(session, clientConsumer);
 
       JBossMessageConsumer consumer = new JBossMessageConsumer(session,
-            clientConsumer, false, destination, null);
+            clientConsumer, false, destination, null, null);
 
       assertEquals(destination, consumer.getTopic());
 
@@ -216,7 +229,7 @@ public class JBossMessageConsumerTest extends TestCase
 
    public void testGetMessageListenerIsNull() throws Exception
    {
-      Destination destination = new JBossQueue(randomString());
+      JBossDestination destination = new JBossQueue(randomString());
       JBossSession session = createStrictMock(JBossSession.class);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(session.getAcknowledgeMode()).andReturn(Session.AUTO_ACKNOWLEDGE);
@@ -227,7 +240,7 @@ public class JBossMessageConsumerTest extends TestCase
       replay(session, clientSession, clientConsumer);
 
       JBossMessageConsumer consumer = new JBossMessageConsumer(session,
-            clientConsumer, false, destination, null);
+            clientConsumer, false, destination, null, null);
       assertNull(consumer.getMessageListener());
 
       verify(session, clientSession, clientConsumer);
@@ -235,7 +248,7 @@ public class JBossMessageConsumerTest extends TestCase
 
    public void testSetMessageListener() throws Exception
    {
-      Destination destination = new JBossQueue(randomString());
+      JBossDestination destination = new JBossQueue(randomString());
       JBossSession session = createStrictMock(JBossSession.class);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(session.getAcknowledgeMode()).andReturn(Session.AUTO_ACKNOWLEDGE);
@@ -248,7 +261,7 @@ public class JBossMessageConsumerTest extends TestCase
       replay(session, clientSession, clientConsumer, listener);
 
       JBossMessageConsumer consumer = new JBossMessageConsumer(session,
-            clientConsumer, false, destination, null);
+            clientConsumer, false, destination, null, null);
       consumer.setMessageListener(listener);
       assertEquals(listener, consumer.getMessageListener());
 
@@ -257,7 +270,7 @@ public class JBossMessageConsumerTest extends TestCase
 
    public void testSetMessageListenerThrowsException() throws Exception
    {
-      Destination destination = new JBossQueue(randomString());
+      JBossDestination destination = new JBossQueue(randomString());
       JBossSession session = createStrictMock(JBossSession.class);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(session.getAcknowledgeMode()).andReturn(Session.AUTO_ACKNOWLEDGE);
@@ -269,7 +282,7 @@ public class JBossMessageConsumerTest extends TestCase
       replay(session, clientSession, clientConsumer, listener);
 
       JBossMessageConsumer consumer = new JBossMessageConsumer(session,
-            clientConsumer, false, destination, null);
+            clientConsumer, false, destination, null, null);
       try
       {
          consumer.setMessageListener(listener);
@@ -317,7 +330,7 @@ public class JBossMessageConsumerTest extends TestCase
 
    public void testReceiveThrowsException() throws Exception
    {
-      Destination destination = new JBossQueue(randomString());
+      JBossDestination destination = new JBossQueue(randomString());
       JBossSession session = createStrictMock(JBossSession.class);
       expect(session.getAcknowledgeMode()).andReturn(Session.AUTO_ACKNOWLEDGE);
       ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
@@ -326,7 +339,7 @@ public class JBossMessageConsumerTest extends TestCase
       replay(session, clientConsumer);
 
       JBossMessageConsumer consumer = new JBossMessageConsumer(session,
-            clientConsumer, false, destination, null);
+            clientConsumer, false, destination, null, null);
 
       try
       {
@@ -341,7 +354,7 @@ public class JBossMessageConsumerTest extends TestCase
 
    public void testReceive() throws Exception
    {
-      Destination destination = new JBossQueue(randomString());
+      JBossDestination destination = new JBossQueue(randomString());
       JBossSession session = createStrictMock(JBossSession.class);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       expect(session.getAcknowledgeMode()).andReturn(Session.AUTO_ACKNOWLEDGE);
@@ -357,7 +370,7 @@ public class JBossMessageConsumerTest extends TestCase
       replay(session, clientSession, clientConsumer, clientMessage, body);
 
       JBossMessageConsumer consumer = new JBossMessageConsumer(session,
-            clientConsumer, false, destination, null);
+            clientConsumer, false, destination, null, null);
 
       Message message = consumer.receive();
       assertNotNull(message);
@@ -374,7 +387,7 @@ public class JBossMessageConsumerTest extends TestCase
    public void doReceiveWithNoMessage(long expectedTimeout,
          MessageReceiver receiver) throws Exception
    {
-      Destination destination = new JBossQueue(randomString());
+      JBossDestination destination = new JBossQueue(randomString());
       JBossSession session = createStrictMock(JBossSession.class);
       expect(session.getAcknowledgeMode()).andReturn(Session.AUTO_ACKNOWLEDGE);
       ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
@@ -383,7 +396,7 @@ public class JBossMessageConsumerTest extends TestCase
       replay(session, clientConsumer);
 
       JBossMessageConsumer consumer = new JBossMessageConsumer(session,
-            clientConsumer, false, destination, null);
+            clientConsumer, false, destination, null, null);
 
       Message message = receiver.receive(consumer);
       assertNull(message);

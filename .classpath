@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="src/main"/>
+	<classpathentry kind="src" path="build/src"/>
 	<classpathentry kind="src" path="tests/config"/>
 	<classpathentry kind="src" path="src/config"/>
 	<classpathentry kind="src" path="examples/jms/src"/>
 	<classpathentry kind="src" path="examples/messaging/src"/>
-	<classpathentry kind="src" path="build/src"/>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="tests/src"/>
 	<classpathentry kind="src" path="tests/jms-tests/src"/>
 	<classpathentry kind="lib" path="thirdparty/oswego-concurrent/lib/concurrent.jar"/>

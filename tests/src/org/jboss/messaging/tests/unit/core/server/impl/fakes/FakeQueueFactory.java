@@ -43,9 +43,9 @@ public class FakeQueueFactory implements QueueFactory
 	private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
 	public Queue createQueue(long persistenceID, SimpleString name, Filter filter,
-			                   boolean durable, boolean temporary)
+			                   boolean durable)
 	{
-		return new QueueImpl(persistenceID, name, filter, false, durable, temporary, -1, scheduledExecutor);
+		return new QueueImpl(persistenceID, name, filter, false, durable, -1, scheduledExecutor);
 	}
 
 }

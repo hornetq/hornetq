@@ -1,10 +1,12 @@
 <deployment>
    <configuration>
       <clustered>true</clustered>
+      <backup>true</backup>
       <scheduled-max-pool-size>12345</scheduled-max-pool-size>        
       <require-destinations>false</require-destinations>
       <security-enabled>false</security-enabled>
       <security-invalidation-interval>5423</security-invalidation-interval>
+      <packet-confirmation-batch-size>1234</packet-confirmation-batch-size>
       <remoting-transport>HTTP</remoting-transport>
       <remoting-bind-address>5431</remoting-bind-address>
       <remoting-host>blahhost</remoting-host>

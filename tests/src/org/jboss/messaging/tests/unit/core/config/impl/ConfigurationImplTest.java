@@ -35,7 +35,6 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.TransportType;
@@ -55,6 +54,7 @@ public class ConfigurationImplTest extends TestCase
    public void testDefaults()
    {      
       assertEquals(ConfigurationImpl.DEFAULT_CLUSTERED, conf.isClustered());
+      assertEquals(ConfigurationImpl.DEFAULT_BACKUP, conf.isBackup());
       assertEquals(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE, conf.getScheduledThreadPoolMaxSize());
       assertEquals(ConfigurationImpl.DEFAULT_HOST, conf.getHost());
       assertEquals(ConfigurationImpl.DEFAULT_TRANSPORT, conf.getTransport());
@@ -86,6 +86,10 @@ public class ConfigurationImplTest extends TestCase
          boolean b = randomBoolean();
          conf.setClustered(b);
          assertEquals(b, conf.isClustered());
+         
+         b = randomBoolean();
+         conf.setBackup(b);
+         assertEquals(b, conf.isBackup());
          
          int i = randomInt();
          conf.setScheduledThreadPoolMaxSize(i);
@@ -175,10 +179,7 @@ public class ConfigurationImplTest extends TestCase
          
          i = randomInt();
          conf.setJournalMaxAIO(i);
-         assertEquals(i, conf.getJournalMaxAIO());
-         
-         ConnectionParams params = conf.getConnectionParams();         
-         assertNotNull(params);         
+         assertEquals(i, conf.getJournalMaxAIO());        
       }
    }
    

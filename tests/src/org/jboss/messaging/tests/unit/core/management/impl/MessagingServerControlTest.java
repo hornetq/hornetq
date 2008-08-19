@@ -515,7 +515,7 @@ public class MessagingServerControlTest extends TestCase
       Binding newBinding = createMock(Binding.class);
       expect(
             postOffice.addBinding(new SimpleString(address), new SimpleString(
-                  name), null, true, false)).andReturn(newBinding);
+                  name), null, true)).andReturn(newBinding);
       replayMocks();
       replay(newBinding);
 
@@ -537,7 +537,7 @@ public class MessagingServerControlTest extends TestCase
       Binding newBinding = createMock(Binding.class);
       expect(
             postOffice.addBinding(new SimpleString(address), new SimpleString(
-                  name), null, true, false)).andReturn(newBinding);
+                  name), null, true)).andReturn(newBinding);
       replayMocks();
       replay(newBinding);
 
@@ -569,21 +569,20 @@ public class MessagingServerControlTest extends TestCase
       String name = randomString();
       String filter = "color = 'green'";
       boolean durable = true;
-      boolean temporary = false;
 
       expect(postOffice.getBinding(new SimpleString(address))).andReturn(null);
       Binding newBinding = createMock(Binding.class);
       expect(
             postOffice.addBinding(eq(new SimpleString(address)),
-                  eq(new SimpleString(name)), isA(Filter.class), eq(durable),
-                  eq(temporary))).andReturn(newBinding);
+                  eq(new SimpleString(name)), isA(Filter.class), eq(durable)
+                  )).andReturn(newBinding);
       replayMocks();
       replay(newBinding);
 
       MessagingServerControl control = new MessagingServerControl(postOffice,
             storageManager, configuration, securityRepository,
             queueSettingsRepository, server);
-      control.createQueue(address, name, filter, durable, temporary);
+      control.createQueue(address, name, filter, durable);
 
       verify(newBinding);
       verifyMocks();
@@ -595,20 +594,19 @@ public class MessagingServerControlTest extends TestCase
       String name = randomString();
       String filter = "";
       boolean durable = true;
-      boolean temporary = false;
-
+ 
       expect(postOffice.getBinding(new SimpleString(address))).andReturn(null);
       Binding newBinding = createMock(Binding.class);
       expect(
             postOffice.addBinding(new SimpleString(address), new SimpleString(
-                  name), null, durable, temporary)).andReturn(newBinding);
+                  name), null, durable)).andReturn(newBinding);
       replay(newBinding);
       replayMocks();
 
       MessagingServerControl control = new MessagingServerControl(postOffice,
             storageManager, configuration, securityRepository,
             queueSettingsRepository, server);
-      control.createQueue(address, name, filter, durable, temporary);
+      control.createQueue(address, name, filter, durable);
 
       verify(newBinding);
       verifyMocks();
@@ -620,46 +618,21 @@ public class MessagingServerControlTest extends TestCase
       String name = randomString();
       String filter = null;
       boolean durable = true;
-      boolean temporary = false;
 
       expect(postOffice.getBinding(new SimpleString(address))).andReturn(null);
       Binding newBinding = createMock(Binding.class);
       expect(
             postOffice.addBinding(new SimpleString(address), new SimpleString(
-                  name), null, durable, temporary)).andReturn(newBinding);
+                  name), null, durable)).andReturn(newBinding);
       replay(newBinding);
       replayMocks();
 
       MessagingServerControl control = new MessagingServerControl(postOffice,
             storageManager, configuration, securityRepository,
             queueSettingsRepository, server);
-      control.createQueue(address, name, filter, durable, temporary);
+      control.createQueue(address, name, filter, durable);
 
       verify(newBinding);
-      verifyMocks();
-   }
-
-   public void testCreateQueueWithBothDurableAndTemporarySetToTrueFails()
-         throws Exception
-   {
-      String address = randomString();
-      String name = randomString();
-      boolean durable = true;
-      boolean temporary = true;
-
-      replayMocks();
-
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
-      try
-      {
-         control.createQueue(address, name, null, durable, temporary);
-         fail("a queue can not be both durable and temporary");
-      } catch (IllegalArgumentException e)
-      {
-      }
-
       verifyMocks();
    }
 

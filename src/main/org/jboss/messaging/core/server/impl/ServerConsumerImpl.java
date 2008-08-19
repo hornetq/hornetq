@@ -22,18 +22,21 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.server.*;
+import org.jboss.messaging.core.server.HandleStatus;
+import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.ServerConsumer;
+import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
-import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.core.transaction.impl.TransactionImpl;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Concrete implementation of a ClientConsumer. 
@@ -61,13 +64,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private final Queue messageQueue;
    
-   private final boolean noLocal;
-
    private final Filter filter;
-   
-   private final boolean autoDeleteQueue;
-   
-   private final long connectionID;   
    
    private final ServerSession session;
          
@@ -76,20 +73,21 @@ public class ServerConsumerImpl implements ServerConsumer
    private final AtomicInteger availableCredits;
    
    private boolean started;
-   
+    
    private final StorageManager storageManager;
    
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
    
    private final PostOffice postOffice;
    
+   private final boolean replicated = false;
+   
    // Constructors ---------------------------------------------------------------------------------
  
    public ServerConsumerImpl(final ServerSession session, final long clientTargetID,
-                      final Queue messageQueue, final boolean noLocal, final Filter filter,
-   		             final boolean autoDeleteQueue, final boolean enableFlowControl, final int maxRate,
-   		             final long connectionID, 
-					       final boolean started,
+                      final Queue messageQueue, final Filter filter,
+   		             final boolean enableFlowControl, final int maxRate, 
+					       final boolean started,					      
 					       final StorageManager storageManager,
 					       final HierarchicalRepository<QueueSettings> queueSettingsRepository,
 					       final PostOffice postOffice,
@@ -99,14 +97,8 @@ public class ServerConsumerImpl implements ServerConsumer
       
       this.messageQueue = messageQueue;
       
-      this.noLocal = noLocal;
-
       this.filter = filter;
       
-      this.autoDeleteQueue = autoDeleteQueue;
-      
-      this.connectionID = connectionID;
-
       this.session = session;              
       
       this.started = started;
@@ -120,17 +112,33 @@ public class ServerConsumerImpl implements ServerConsumer
       	availableCredits = null;
       }
       
+    //  this.remotingConnection = remotingConnection;
+      
       this.storageManager = storageManager;
       
       this.queueSettingsRepository = queueSettingsRepository;
       
       this.postOffice = postOffice;
       
+//      this.replicated = remotingConnection.isReplicated();
+//      
+//      if (replicated)
+//      {
+//         PacketDispatcher replicatingDispatcher =
+//            remotingConnection.getReplicatingConnection().getPacketDispatcher();
+//         replicatedDeliveryResponseHandler = new ReplicatedDeliveryResponseHandler(replicatingDispatcher.generateID());
+//         
+//         replicatingDispatcher.register(replicatedDeliveryResponseHandler);                  
+//      }
+      
+      //Also increment the id on the local one so ids are in step
+    //  dispatcher.generateID();
+      
       this.id = dispatcher.generateID();
-            
+               
       messageQueue.addConsumer(this);
    }
-
+   
    // ServerConsumer implementation ----------------------------------------------------------------------
 
    public long getID()
@@ -143,8 +151,39 @@ public class ServerConsumerImpl implements ServerConsumer
       return clientTargetID;
    }
    
+//   public void handleReplicatedDelivery(final long messageID, final long responseTargetID) throws Exception
+//   {
+//      MessageReference ref = messageQueue.removeFirst();
+//      
+//      //Sanity check - can remove once stable
+//      if (ref.getMessage().getMessageID() != messageID)
+//      {
+//         throw new IllegalStateException("Message with id " + messageID + " should be at head of queue " +
+//                  "but instead I found " + ref.getMessage().getMessageID());
+//      }
+//      
+//      HandleStatus handled = handle(ref);
+//      
+//      //Sanity check
+//      if (handled != HandleStatus.HANDLED)
+//      {
+//         throw new IllegalStateException("Should be handled");
+//      }
+//      
+//      Packet response = new ConsumerReplicateDeliveryResponseMessage(messageID);
+//      
+//      response.setTargetID(responseTargetID);
+//      
+//      remotingConnection.sendOneWay(response);
+//   }
+   
+   public void handleReplicatedDeliveryResponse(final long messageID) throws Exception
+   {
+      session.deliverDeferredDelivery(messageID);
+   }
+   
    public HandleStatus handle(MessageReference ref) throws Exception
-   {                  
+   {                    
       if (availableCredits != null && availableCredits.get() <= 0)
       {
          return HandleStatus.BUSY;
@@ -172,68 +211,45 @@ public class ServerConsumerImpl implements ServerConsumer
          {
             return HandleStatus.NO_MATCH;
          }
-         
-         if (noLocal)
-         {
-            long conId = message.getConnectionID();
-
-            if (connectionID == conId)
-            {	            	
-            	Transaction tx = new TransactionImpl(storageManager, postOffice);
-            	
-            	tx.addAcknowledgement(ref);
-            	
-            	tx.commit();
-            	
-             	return HandleStatus.HANDLED;
-            }            
-         }
-                         
+                          
          if (availableCredits != null)
          {
             availableCredits.addAndGet(-message.getEncodeSize());
          }
                    
-         try
-         {            
-         	session.handleDelivery(ref, this);
-         }
-         catch (Exception e)
-         {
-         	log.error("Failed to handle delivery", e);
-         	
-         	started = false; // DO NOT return null or the message might get delivered more than once
-         }
+         session.handleDelivery(ref, this);
          
+//         if (replicated)
+//         {
+//            //Replicate the delivery
+//            
+//          server  Packet packet = new ConsumerReplicateDeliveryMessage(message.getMessageID());
+//            
+//            packet.setTargetID(this.id);
+//            packet.setResponseTargetID(this.replicatedDeliveryResponseHandler.getID());
+//            
+//            //remotingConnection.replicatePacket(packet);
+//         }
+                  
          return HandleStatus.HANDLED;
       }
    }
    
    public void close() throws Exception
-   {
-      if (trace)
-      {
-         log.trace(this + " close");
-      }
-      
+   {  
       setStarted(false);
 
       messageQueue.removeConsumer(this);
-      
-      if (autoDeleteQueue)
-      {
-         if (messageQueue.getConsumerCount() == 0)
-         {  
-            postOffice.removeBinding(messageQueue.getName());
-            
-            if (messageQueue.isDurable())
-            {
-               messageQueue.deleteAllReferences(storageManager);
-            }
-         }
-      }
-      
-      session.removeConsumer(this);           
+           
+      session.removeConsumer(this);  
+        
+//      if (replicated)
+//      {
+//         PacketDispatcher replicatingDispatcher =
+//            remotingConnection.getReplicatingConnection().getPacketDispatcher();
+//         
+//         replicatingDispatcher.unregister(replicatedDeliveryResponseHandler.getID());
+//      }
    }
    
    public void setStarted(final boolean started)
@@ -274,15 +290,42 @@ public class ServerConsumerImpl implements ServerConsumer
 
    // Public -----------------------------------------------------------------------------
      
-   public String toString()
-   {
-      return "ConsumerEndpoint[" + id + "]";
-   }
-   
    // Private --------------------------------------------------------------------------------------
 
    private void promptDelivery()
    {
       session.promptDelivery(messageQueue);
    } 
+   
+   // Inner classes ------------------------------------------------------------------------
+   
+//   private class ReplicatedDeliveryResponseHandler implements PacketHandler
+//   {
+//      ReplicatedDeliveryResponseHandler(final long id)
+//      {
+//         this.id = id;
+//      }
+//      
+//      private final long id;
+//
+//      public long getID()
+//      {
+//         return id;
+//      }
+//
+//      public void handle(final long connectionID, final Packet packet)
+//      {
+//         try
+//         {
+//            ConsumerReplicateDeliveryResponseMessage msg = (ConsumerReplicateDeliveryResponseMessage)packet;
+//            
+//            handleReplicatedDeliveryResponse(msg.getMessageID());
+//         }
+//         catch (Exception e)
+//         {
+//            log.error("Failed to handle replicate delivery response", e);
+//         }
+//      }
+//      
+//   }
 }

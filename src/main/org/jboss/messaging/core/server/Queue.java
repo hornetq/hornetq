@@ -63,7 +63,7 @@ public interface Queue
    
    void addConsumer(Consumer consumer);
 
-   boolean removeConsumer(Consumer consumer);
+   boolean removeConsumer(Consumer consumer) throws Exception;
    
    int getConsumerCount();
    
@@ -85,12 +85,6 @@ public interface Queue
    
    int getScheduledCount();
           
-  // int getMaxSize();
-   
-  // int getSizeBytes();
-   
- //  void setMaxSize(int maxSize);
-   
    int getMaxSizeBytes();
    
    int getSizeBytes();
@@ -100,9 +94,7 @@ public interface Queue
    void setDistributionPolicy(DistributionPolicy policy); 
    
    boolean isClustered();
-   
-   boolean isTemporary();
-   
+    
    boolean isDurable();
    
    SimpleString getName();
@@ -147,4 +139,6 @@ public interface Queue
    void setBackup(boolean backup);
    
    boolean isBackup();
+   
+   MessageReference removeFirst();
 }

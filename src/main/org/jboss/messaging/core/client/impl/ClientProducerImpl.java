@@ -29,8 +29,9 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
+import org.jboss.messaging.core.server.CommandManager;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TokenBucketLimiter;
 
@@ -63,7 +64,7 @@ public class ClientProducerImpl implements ClientProducerInternal
    
    private final ClientSessionInternal session;
    
-   private final RemotingConnection remotingConnection;
+   private final CommandManager commandManager;
    
    private final PacketDispatcher dispatcher;
    
@@ -84,25 +85,24 @@ public class ClientProducerImpl implements ClientProducerInternal
    private final boolean creditFlowControl;
    
    private final int initialWindowSize;
-   
-   private final long sessionTargetID;
-   
+    
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
       
-   public ClientProducerImpl(final ClientSessionInternal session,
+   public ClientProducerImpl(final ClientSessionInternal session,                             
                              final long serverTargetID,
                              final long clientTargetID,
    		                    final SimpleString address,   		                   
    		                    final TokenBucketLimiter rateLimiter,
    		                    final boolean blockOnNonPersistentSend,
    		                    final boolean blockOnPersistentSend,
-   		                    final int initialCredits,
-   		                    final RemotingConnection remotingConnection,
+   		                    final int initialCredits,   		                   
    		                    final PacketDispatcher dispatcher,
-   		                    final long sessionTargetID)
+   		                    final CommandManager commandManager)
    {   	
+      this.commandManager = commandManager;
+      
       this.session = session;
       
       this.serverTargetID = serverTargetID;
@@ -111,12 +111,8 @@ public class ClientProducerImpl implements ClientProducerInternal
       
       this.address = address;
       
-      this.remotingConnection = remotingConnection;
-      
       this.dispatcher = dispatcher;
-      
-      this.sessionTargetID = sessionTargetID;
-      
+       
       this.rateLimiter = rateLimiter;
             
       this.blockOnNonPersistentSend = blockOnNonPersistentSend; 
@@ -168,7 +164,14 @@ public class ClientProducerImpl implements ClientProducerInternal
          return;         
       }
       
-      doCleanup();
+      try
+      {
+         commandManager.sendCommandBlocking(serverTargetID, new PacketImpl(PacketImpl.CLOSE));
+      }
+      finally
+      {      
+         doCleanup();
+      }
    }
 
    public void cleanUp()
@@ -259,11 +262,11 @@ public class ClientProducerImpl implements ClientProducerInternal
                
       if (sendBlocking)
       {        
-         remotingConnection.sendBlocking(serverTargetID, sessionTargetID, message);
+         commandManager.sendCommandBlocking(serverTargetID, message);
       }
       else
       {
-         remotingConnection.sendOneWay(serverTargetID, sessionTargetID, message);
+         commandManager.sendCommandOneway(serverTargetID, message);
       }      
       
       //We only flow control with non-anonymous producers

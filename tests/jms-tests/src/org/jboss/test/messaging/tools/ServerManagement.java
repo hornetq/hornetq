@@ -415,8 +415,8 @@ public class ServerManagement
             testLogfileSuffix = testLogfileSuffix.substring(0, pos) + "server";
          }
 
-         // We need to add the i even in the non clustered case since we can have multiple
-         // non clustered servers
+         // We need to add the i even in the non manageConfirmations case since we can have multiple
+         // non manageConfirmations servers
          testLogfileSuffix += i;
       }
 

@@ -28,8 +28,8 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerFlowCreditMessage;
+import org.jboss.messaging.core.server.CommandManager;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerProducer;
 import org.jboss.messaging.core.server.ServerSession;
@@ -58,20 +58,20 @@ public class ServerProducerImpl implements ServerProducer
 	
 	private final int windowSize;
 	
-	private final RemotingConnection remotingConnection;
-	
 	private volatile boolean waiting;
 	
    private AtomicInteger creditsToSend = new AtomicInteger(0);
+   
+   private final CommandManager commandManager;
      	
 	// Constructors ----------------------------------------------------------------
 	
 	public ServerProducerImpl(final ServerSession session, final long clientTargetID,
 	                          final SimpleString address, 
-			                    final RemotingConnection remotingConnection,
 			                    final FlowController flowController,
 			                    final int windowSize,
-			                    final PacketDispatcher dispatcher) throws Exception
+			                    final PacketDispatcher dispatcher,
+			                    final CommandManager commandManager) throws Exception
 	{
 		this.id = dispatcher.generateID();
 		
@@ -81,11 +81,11 @@ public class ServerProducerImpl implements ServerProducer
 		
 		this.address = address;
 		
-		this.remotingConnection = remotingConnection;
-		
 		this.flowController = flowController;		
 		
 		this.windowSize = windowSize;
+		
+		this.commandManager = commandManager;
 	}
 	
 	// ServerProducer implementation --------------------------------------------
@@ -134,9 +134,7 @@ public class ServerProducerImpl implements ServerProducer
 	   
 		Packet packet = new ProducerFlowCreditMessage(credits);
 		
-		packet.setTargetID(clientTargetID);
-		packet.setExecutorID(session.getID());
-		remotingConnection.sendOneWay(packet);		
+		commandManager.sendCommandOneway(clientTargetID, packet);	
 	}
 	
 	public void setWaiting(final boolean waiting)

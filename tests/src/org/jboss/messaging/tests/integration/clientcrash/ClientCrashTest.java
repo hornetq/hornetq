@@ -25,13 +25,12 @@ package org.jboss.messaging.tests.integration.clientcrash;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
@@ -66,7 +65,7 @@ public class ClientCrashTest extends TestCase
    // Attributes ----------------------------------------------------
 
    private MessagingService messagingService;
-   private ClientConnectionFactory cf;
+   private ClientSessionFactory sf;
 
    // Constructors --------------------------------------------------
 
@@ -89,65 +88,46 @@ public class ClientCrashTest extends TestCase
 
    public void crashClient(int numberOfConnectionsOnTheClient) throws Exception
    {
-      ClientConnection connection = null;
+      assertActiveConnections(0);
 
-      try
-      {
-         assertActiveConnections(0);
+      // spawn a JVM that creates a JMS client, which waits to receive a test
+      // message
+      Process p = SpawnedVMSupport.spawnVM(CrashClient.class
+              .getName(), new String[]{Integer
+              .toString(numberOfConnectionsOnTheClient)});
 
-         // spawn a JVM that creates a JMS client, which waits to receive a test
-         // message
-         Process p = SpawnedVMSupport.spawnVM(CrashClient.class
-                 .getName(), new String[]{Integer
-                 .toString(numberOfConnectionsOnTheClient)});
+      ClientSession session = sf.createSession(false, true, true, -1, false);
+      session.createQueue(QUEUE, QUEUE, null, false, false);
+      ClientConsumer consumer = session.createConsumer(QUEUE);
+      ClientProducer producer = session.createProducer(QUEUE);
 
-         connection = cf.createConnection();
-         ClientSession session = connection.createClientSession(false, true,
-                 true, -1, false, false);
-         session.createQueue(QUEUE, QUEUE, null, false, false);
-         ClientConsumer consumer = session.createConsumer(QUEUE);
-         ClientProducer producer = session.createProducer(QUEUE);
+      session.start();
 
-         connection.start();
+      // send the message to the queue
+      Message messageFromClient = consumer.receive(5000);
+      assertNotNull("no message received", messageFromClient);
+      assertEquals(MESSAGE_TEXT_FROM_CLIENT, messageFromClient.getBody().getString());
 
-         // send the message to the queue
-         Message messageFromClient = consumer.receive(5000);
-         assertNotNull("no message received", messageFromClient);
-         assertEquals(MESSAGE_TEXT_FROM_CLIENT, messageFromClient.getBody().getString());
+      assertActiveConnections(1 + 1); //One local and one from the other vm
 
-         assertActiveConnections(1 + 1); //One local and one from the other vm
+      ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
+              System.currentTimeMillis(), (byte) 1);
+      message.getBody().putString(ClientCrashTest.MESSAGE_TEXT_FROM_SERVER);
+      producer.send(message);
 
-         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
-                 System.currentTimeMillis(), (byte) 1);
-         message.getBody().putString(ClientCrashTest.MESSAGE_TEXT_FROM_SERVER);
-         producer.send(message);
+      log.debug("waiting for the client VM to crash ...");
+      p.waitFor();
 
-         log.debug("waiting for the client VM to crash ...");
-         p.waitFor();
+      assertEquals(9, p.exitValue());
 
-         assertEquals(9, p.exitValue());
+      Thread.sleep(4000);
+      // the crash must have been detected and the client resources cleaned
+      // up only the local connection remains
+      assertActiveConnections(1);
 
-         Thread.sleep(4000);
-         // the crash must have been detected and the client resources cleaned
-         // up only the local connection remains
-         assertActiveConnections(1);
+      session.close();
 
-         connection.close();
-
-         assertActiveConnections(0);
-      }
-      finally
-      {
-         try
-         {
-            if (connection != null)
-               connection.close();
-         }
-         catch (Throwable ignored)
-         {
-            log.warn("Exception ignored:" + ignored.toString(), ignored);
-         }
-      }
+      assertActiveConnections(0);
    }
 
    // Package protected ---------------------------------------------
@@ -164,7 +144,7 @@ public class ClientCrashTest extends TestCase
       messagingService.getServer().getRemotingService().registerAcceptorFactory(new MinaAcceptorFactory());
       messagingService.start();
 
-      cf = new ClientConnectionFactoryImpl(new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_PORT));
+      sf = new ClientSessionFactoryImpl(new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_PORT));
    }
 
    @Override

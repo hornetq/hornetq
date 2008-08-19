@@ -21,45 +21,43 @@
  */ 
 package org.jboss.messaging.core.client.impl;
 
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.ConnectionRegistry;
 import org.jboss.messaging.core.remoting.ConnectionRegistryLocator;
+import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.TransportType;
-import org.jboss.messaging.core.remoting.impl.mina.MinaConnectorFactory;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
+import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
+import org.jboss.messaging.core.server.CommandManager;
+import org.jboss.messaging.core.server.impl.CommandManagerImpl;
 import org.jboss.messaging.core.version.Version;
+import org.jboss.messaging.util.UUIDGenerator;
 import org.jboss.messaging.util.VersionLoader;
 
 
 /**
- * Core connection factory.
- * 
- * Can be instantiate programmatically and used to make connections.
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  *
  * @version <tt>$Revision: 3602 $</tt>
  *
- * $Id: ClientConnectionFactoryImpl.java 3602 2008-01-21 17:48:32Z timfox $
  */
-public class ClientConnectionFactoryImpl implements ClientConnectionFactory
+public class ClientSessionFactoryImpl implements ClientSessionFactory
 {
    // Constants ------------------------------------------------------------------------------------
 
    private static final long serialVersionUID = 2512460695662741413L;
    
-   private static final Logger log = Logger.getLogger(ClientConnectionFactoryImpl.class);
+   private static final Logger log = Logger.getLogger(ClientSessionFactoryImpl.class);
    
    public static final int DEFAULT_DEFAULT_CONSUMER_WINDOW_SIZE = 1024 * 1024;
    
@@ -104,9 +102,9 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
    // Constructors ---------------------------------------------------------------------------------
 
    /**
-    * Create a ClientConnectionFactoryImpl specifying all attributes
+    * Create a ClientSessionFactoryImpl specifying all attributes
     */
-   public ClientConnectionFactoryImpl(final Location location, final ConnectionParams connectionParams,
+   public ClientSessionFactoryImpl(final Location location, final ConnectionParams connectionParams,
                                       final int defaultConsumerWindowSize, final int defaultConsumerMaxRate,
                                       final int defaultProducerWindowSize, final int defaultProducerMaxRate,
                                       final boolean defaultBlockOnAcknowledge,
@@ -126,27 +124,27 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
    }
    
    /**
-    * Create a ClientConnectionFactoryImpl specify location and using all default attribute values
+    * Create a ClientSessionFactoryImpl specify location and using all default attribute values
     * @param location the location of the server
     */
-   public ClientConnectionFactoryImpl(final Location location)
+   public ClientSessionFactoryImpl(final Location location)
    {
       this(location, new ConnectionParamsImpl(), false);   
    }
 
    /**
-    * Create a ClientConnectionFactoryImpl specify location and connection params and using all other default attribute values
+    * Create a ClientSessionFactoryImpl specify location and connection params and using all other default attribute values
     * @param location the location of the server
     * @param connectionParams the connection parameters
     */
-   public ClientConnectionFactoryImpl(final Location location, final ConnectionParams connectionParams)
+   public ClientSessionFactoryImpl(final Location location, final ConnectionParams connectionParams)
    {
       this(location, connectionParams, false);
    }
    
    
-   private ClientConnectionFactoryImpl(final Location location, final ConnectionParams connectionParams,
-                                       final boolean dummy)
+   private ClientSessionFactoryImpl(final Location location, final ConnectionParams connectionParams,
+                                    final boolean dummy)
    {
       defaultConsumerWindowSize = DEFAULT_DEFAULT_CONSUMER_WINDOW_SIZE;
       defaultConsumerMaxRate = DEFAULT_DEFAULT_CONSUMER_MAX_RATE;
@@ -160,58 +158,25 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
       this.connectionRegistry = ConnectionRegistryLocator.getRegistry();
    }
          
-   // ClientConnectionFactory implementation ---------------------------------------------
+   // ClientSessionFactory implementation ---------------------------------------------
 
-   public ClientConnection createConnection() throws MessagingException
+   public ClientSession createSession(final String username, final String password, final boolean xa,
+                                      final boolean autoCommitSends, final boolean autoCommitAcks,
+                                      int lazyAckBatchSize, boolean cacheProducers)                 
+      throws MessagingException
    {
-      return createConnection(null, null);
+      return createSessionInternal(username, password, xa, autoCommitSends, autoCommitAcks, lazyAckBatchSize,
+                                   cacheProducers);
    }
    
-   public ClientConnection createConnection(final String username, final String password) throws MessagingException
+   public ClientSession createSession(final boolean xa,
+            final boolean autoCommitSends, final boolean autoCommitAcks,
+            int lazyAckBatchSize, boolean cacheProducers)                 
+      throws MessagingException
    {
-      Version clientVersion = VersionLoader.load();
-                       
-      RemotingConnection remotingConnection = null;
-      try
-      {
-         remotingConnection = connectionRegistry.getConnection(location, connectionParams);
-         
-         CreateConnectionRequest request =
-            new CreateConnectionRequest(clientVersion.getIncrementingVersion(), username, password);
-         
-         CreateConnectionResponse response =
-            (CreateConnectionResponse)remotingConnection.sendBlocking(0, 0, request);
-
-         return new ClientConnectionImpl(this, response.getConnectionTargetID(), remotingConnection,
-               response.getServerVersion(), remotingConnection.getPacketDispatcher());
-      }
-      catch (Throwable t)
-      {
-         if (remotingConnection != null)
-         {
-            try
-            {
-               connectionRegistry.returnConnection(location);  
-            }
-            catch (Throwable ignore)
-            {               
-            }
-         }
-         
-         if (t instanceof MessagingException)
-         {
-            throw (MessagingException)t;
-         }
-         else
-         {
-            MessagingException me = new MessagingException(MessagingException.INTERNAL_ERROR, "Failed to start connection");
-            
-            me.initCause(t);
-            
-            throw me;
-         }
-      }
-   }
+      return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, lazyAckBatchSize,
+               cacheProducers);
+   }   
    
 	public int getDefaultConsumerWindowSize()
 	{
@@ -304,12 +269,78 @@ public class ClientConnectionFactoryImpl implements ClientConnectionFactory
    {
       this.connectionRegistry = registry;
    }
-      
+           
    // Protected ------------------------------------------------------------------------------------
 
    // Package Private ------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
+   
+   private ClientSession createSessionInternal(final String username, final String password, final boolean xa,
+            final boolean autoCommitSends, final boolean autoCommitAcks,
+            int lazyAckBatchSize, boolean cacheProducers)                 
+      throws MessagingException
+   {
+      Version clientVersion = VersionLoader.load();
+
+      RemotingConnection remotingConnection = null;
+      try
+      {
+         remotingConnection = connectionRegistry.getConnection(location, connectionParams);
+
+         PacketDispatcher dispatcher = remotingConnection.getPacketDispatcher();
+
+         long localCommandResponseTargetID = dispatcher.generateID();
+
+         String name = UUIDGenerator.getInstance().generateSimpleStringUUID().toString();
+         
+         Packet request =
+            new CreateSessionMessage(name, clientVersion.getIncrementingVersion(),
+                                     username, password,
+                                     xa, autoCommitSends, autoCommitAcks,
+                                     localCommandResponseTargetID);
+
+         CreateSessionResponseMessage response =
+            (CreateSessionResponseMessage)remotingConnection.sendBlocking(PacketDispatcherImpl.MAIN_SERVER_HANDLER_ID,
+                     PacketDispatcherImpl.MAIN_SERVER_HANDLER_ID, request, null);
+         
+         CommandManager cm = new CommandManagerImpl(connectionParams.getPacketConfirmationBatchSize(),
+                  remotingConnection, dispatcher, response.getSessionID(),
+                  localCommandResponseTargetID, response.getCommandResponseTargetID());
+   
+         return new ClientSessionImpl(name, response.getSessionID(), xa, lazyAckBatchSize, cacheProducers,
+                  autoCommitSends, autoCommitAcks, defaultBlockOnAcknowledge,
+                  remotingConnection, this,
+                  dispatcher,
+                  response.getServerVersion(), cm);
+      }
+      catch (Throwable t)
+      {
+         if (remotingConnection != null)
+         {
+            try
+            {
+               connectionRegistry.returnConnection(location);  
+            }
+            catch (Throwable ignore)
+            {               
+            }
+         }
+
+         if (t instanceof MessagingException)
+         {
+            throw (MessagingException)t;
+         }
+         else
+         {
+            MessagingException me = new MessagingException(MessagingException.INTERNAL_ERROR, "Failed to start connection");
+
+            me.initCause(t);
+
+            throw me;
+         }
+      }
+   }
    
    // Inner Classes --------------------------------------------------------------------------------
 }

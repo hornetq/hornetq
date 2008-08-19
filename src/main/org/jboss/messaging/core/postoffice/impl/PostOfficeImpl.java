@@ -77,8 +77,10 @@ public class PostOfficeImpl implements PostOffice
    
    private volatile boolean started;
 
-   private ManagementService managementService;
-    
+   private volatile boolean backup;
+
+   private final ManagementService managementService;
+  
    public PostOfficeImpl(final StorageManager storageManager,
    		                final QueueFactory queueFactory, final ManagementService managementService, final boolean checkAllowable)
    {
@@ -118,13 +120,13 @@ public class PostOfficeImpl implements PostOffice
    
    // PostOffice implementation -----------------------------------------------
 
-   public boolean addDestination(final SimpleString address, final boolean temporary) throws Exception
+   public boolean addDestination(final SimpleString address, final boolean durable) throws Exception
    {      
    	boolean added = destinations.addIfAbsent(address);
    	
    	if (added)
    	{   	
-      	if (!temporary)
+      	if (durable)
       	{
       		storageManager.addDestination(address);     
       	}
@@ -136,7 +138,7 @@ public class PostOfficeImpl implements PostOffice
    	return added;
    }
    
-   public boolean removeDestination(final SimpleString address, final boolean temporary) throws Exception
+   public boolean removeDestination(final SimpleString address, final boolean durable) throws Exception
    {      
       boolean removed = destinations.remove(address);
       
@@ -144,7 +146,7 @@ public class PostOfficeImpl implements PostOffice
       {
       	flowControllers.remove(address);
       	
-      	if (!temporary)
+      	if (durable)
          {
       		storageManager.deleteDestination(address);
          }
@@ -165,9 +167,9 @@ public class PostOfficeImpl implements PostOffice
    }
 
    public Binding addBinding(final SimpleString address, final SimpleString queueName, final Filter filter, 
-                             final boolean durable, final boolean temporary) throws Exception
+                             final boolean durable) throws Exception
    {
-      Binding binding = createBinding(address, queueName, filter, durable, temporary);
+      Binding binding = createBinding(address, queueName, filter, durable);
 
       addBindingInMemory(binding);
       
@@ -215,7 +217,7 @@ public class PostOfficeImpl implements PostOffice
    public List<MessageReference> route(final ServerMessage message) throws Exception
    {
       SimpleString address = message.getDestination();
-      
+          
       if (checkAllowable)
       {
          if (!destinations.contains(address))
@@ -235,7 +237,9 @@ public class PostOfficeImpl implements PostOffice
          {
             Queue queue = binding.getQueue();
             
-            if (queue.getFilter() == null || queue.getFilter().match(message))
+            Filter filter = queue.getFilter();
+            
+            if (filter == null || filter.match(message))
             {                      
                MessageReference reference = message.createReference(queue);              
                
@@ -243,7 +247,7 @@ public class PostOfficeImpl implements PostOffice
             }
          }
       }
-      
+         
       return refs;
    }
    
@@ -278,13 +282,25 @@ public class PostOfficeImpl implements PostOffice
    {   	
    	return flowControllers.get(address);
    }
+   
+   public void setBackup(final boolean backup)
+   {
+      this.backup = backup;
+      
+      for (Binding binding: nameMap.values())
+      {
+         binding.getQueue().setBackup(backup);
+      }
+   }
 
    // Private -----------------------------------------------------------------
    
    private Binding createBinding(final SimpleString address, final SimpleString name, final Filter filter,
-                                 final boolean durable, final boolean temporary) throws Exception
+                                 final boolean durable) throws Exception
    {
-      Queue queue = queueFactory.createQueue(-1, name, filter, durable, temporary);
+      Queue queue = queueFactory.createQueue(-1, name, filter, durable);
+      
+      queue.setBackup(backup);
       
       Binding binding = new BindingImpl(address, queue);
       
@@ -370,11 +386,11 @@ public class PostOfficeImpl implements PostOffice
       List<SimpleString> dests = new ArrayList<SimpleString>();
       
       storageManager.loadBindings(queueFactory, bindings, dests);
-                  
+                       
       //Destinations must be added first to ensure flow controllers exist before queues are created
       for (SimpleString destination: dests)
       {
-         addDestination(destination, false);
+         addDestination(destination, true);
       }
                 	
       Map<Long, Queue> queues = new HashMap<Long, Queue>();

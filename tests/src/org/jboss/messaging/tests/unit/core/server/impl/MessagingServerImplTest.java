@@ -42,16 +42,18 @@ import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingService;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.ServerSession;
+import org.jboss.messaging.core.server.impl.CommandManagerImpl;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.core.server.impl.MessagingServerPacketHandler;
 import org.jboss.messaging.core.server.impl.QueueFactoryImpl;
-import org.jboss.messaging.core.server.impl.ServerConnectionImpl;
-import org.jboss.messaging.core.server.impl.ServerConnectionPacketHandler;
+import org.jboss.messaging.core.server.impl.ServerSessionImpl;
+import org.jboss.messaging.core.server.impl.ServerSessionPacketHandler;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -354,7 +356,8 @@ public class MessagingServerImplTest extends UnitTestCase
                   
       try
       {
-         server.createConnection("hghgh", "hghggh", version.getIncrementingVersion() + 1, null);
+         server.createSession("blah", null, null, version.getIncrementingVersion() + 1,
+                  null, false, false, false, 124152);
          fail("Should throw exception");
       }
       catch (MessagingException e)
@@ -365,16 +368,11 @@ public class MessagingServerImplTest extends UnitTestCase
    
    public void testCreateConnectionFailAuthentication() throws Exception
    {      
-      MessagingServer server = new MessagingServerImpl();
-          
-      server.setConfiguration(new ConfigurationImpl());
-            
-      StorageManager sm = EasyMock.createMock(StorageManager.class);
-      
-      server.setStorageManager(sm);
-      
-      RemotingService rs = EasyMock.createMock(RemotingService.class);
-      
+      MessagingServerImpl server = new MessagingServerImpl();          
+      server.setConfiguration(new ConfigurationImpl());            
+      StorageManager sm = EasyMock.createMock(StorageManager.class);      
+      server.setStorageManager(sm);      
+      RemotingService rs = EasyMock.createMock(RemotingService.class);      
       server.setRemotingService(rs);
       
       JBMSecurityManager sem = new JBMSecurityManager()
@@ -391,7 +389,7 @@ public class MessagingServerImplTest extends UnitTestCase
       };
       
       server.setSecurityManager(sem);
-
+      
       ManagementService mr = EasyMock.createMock(ManagementService.class);
       MessagingServerControlMBean managedServer = EasyMock.createMock(MessagingServerControlMBean.class);
       expect(mr.registerServer(isA(PostOffice.class), eq(sm), eq(server
@@ -399,37 +397,37 @@ public class MessagingServerImplTest extends UnitTestCase
             .getQueueSettingsRepository()), eq(server))).andReturn(managedServer);
       server.setManagementService(mr);
 
-      sm.loadBindings(EasyMock.isA(QueueFactoryImpl.class), EasyMock
-            .isA(ArrayList.class), EasyMock.isA(ArrayList.class));
-      sm.loadMessages(EasyMock.isA(PostOfficeImpl.class), EasyMock
-            .isA(Map.class));
       PacketDispatcher pd = EasyMock.createMock(PacketDispatcher.class);
       EasyMock.expect(rs.getDispatcher()).andReturn(pd);
+      
+      sm.loadBindings(EasyMock.isA(QueueFactoryImpl.class), EasyMock.isA(ArrayList.class), EasyMock.isA(ArrayList.class));
+      sm.loadMessages(EasyMock.isA(PostOfficeImpl.class), EasyMock.isA(Map.class));
+
       pd.register(EasyMock.isA(MessagingServerPacketHandler.class));      
       EasyMock.expect(sm.isStarted()).andStubReturn(true);
       EasyMock.expect(rs.isStarted()).andStubReturn(true);
       
-      EasyMock.replay(rs, sm, pd, mr);
+      EasyMock.replay(rs, sm, pd);
       
       server.start();
-      
-      EasyMock.verify(rs, sm, pd, mr);
-      
-      
+            
+      Version version = VersionLoader.load();
+                     
       try
       {
-         server.createConnection("hjhjhj", "jkkjj", 43, null);
+         server.createSession("blah", "kajsjk", "asuh", version.getIncrementingVersion(),
+                  null, false, false, false, 124152);
          fail("Should throw exception");
       }
       catch (MessagingException e)
       {
          assertEquals(MessagingException.SECURITY_EXCEPTION, e.getCode());
-      }
+      }   
    }
    
-   public void testCreateConnectionOK() throws Exception
+   public void testCreateSessionOK() throws Exception
    {      
-      MessagingServer server = new MessagingServerImpl();          
+      MessagingServerImpl server = new MessagingServerImpl();          
       server.setConfiguration(new ConfigurationImpl());            
       StorageManager sm = EasyMock.createMock(StorageManager.class);      
       server.setStorageManager(sm);      
@@ -466,28 +464,45 @@ public class MessagingServerImplTest extends UnitTestCase
       pd.register(EasyMock.isA(MessagingServerPacketHandler.class));      
       EasyMock.expect(sm.isStarted()).andStubReturn(true);
       EasyMock.expect(rs.isStarted()).andStubReturn(true);
-      
+            
+      final long localCommandResponseID = 87879;
+      EasyMock.expect(pd.generateID()).andReturn(localCommandResponseID);
       
       final long id = 129812;
       EasyMock.expect(pd.generateID()).andReturn(id);
 
-      pd.register(EasyMock.isA(ServerConnectionPacketHandler.class));
+      pd.register(EasyMock.isA(ServerSessionPacketHandler.class));
             
-      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);    
-      rc.addFailureListener(EasyMock.isA(ServerConnectionImpl.class));
+      RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);  
+      EasyMock.expect(rc.getPacketDispatcher()).andStubReturn(pd);
+      
+      long txID = 12767126;
+      EasyMock.expect(sm.generateTransactionID()).andReturn(txID);
+      
+      pd.register(EasyMock.isA(CommandManagerImpl.class));
+      
+      rc.addFailureListener(EasyMock.isA(ServerSessionImpl.class));
       
       EasyMock.replay(rs, sm, pd, rc);
       
       server.start();
       final String username = "okasokas";
       final String password = "oksokasws";
- 
-      CreateConnectionResponse resp = server.createConnection(username, password, 43, rc);
+      
+      
+      final String name = "blah";
+      CreateSessionResponseMessage resp = server.createSession(name, username, password, 45, rc,
+               false, false, false, 12345);
       
       EasyMock.verify(rs, sm, pd, rc);
       
-      assertEquals(VersionLoader.load(), resp.getServerVersion());
-      assertEquals(id, resp.getConnectionTargetID());          
+      assertEquals(VersionLoader.load().getIncrementingVersion(), resp.getServerVersion());
+      assertEquals(id, resp.getSessionID());       
+      assertEquals(localCommandResponseID, resp.getCommandResponseTargetID());  
+      assertEquals(1, server.getSessions().size());
+      ServerSession session = server.getSessions().get(name);
+      assertEquals(username, session.getUsername());
+      assertEquals(password, session.getPassword());
    }
    
   

@@ -35,9 +35,8 @@ import javax.jms.Session;
 import junit.framework.TestCase;
 
 import org.easymock.EasyMock;
-import org.jboss.messaging.core.client.ClientConnection;
 import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.remoting.FailureListener;
+import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.jms.JBossTemporaryTopic;
 import org.jboss.messaging.jms.client.JBossConnection;
@@ -65,22 +64,15 @@ public class JBossTemporaryTopicTest extends TestCase
    public void testIsTemporary() throws Exception
    {
       String topicName = randomString();
+      JBossConnection connection = new JBossConnection("username", "password", 
+            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1, EasyMock.createMock(ClientSessionFactory.class));
 
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      clientConn.setFailureListener((FailureListener) EasyMock.anyObject());
-      ClientSession clientSession = createStrictMock(ClientSession.class);
-      replay(clientConn, clientSession);
-
-      JBossConnection connection = new JBossConnection(clientConn,
-            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1);
       JBossSession session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
+            Session.AUTO_ACKNOWLEDGE, EasyMock.createMock(ClientSession.class),
             JBossSession.TYPE_TOPIC_SESSION);
       JBossTemporaryTopic tempTopic = new JBossTemporaryTopic(session,
             topicName);
       assertEquals(true, tempTopic.isTemporary());
-
-      verify(clientConn, clientSession);
    }
 
    public void testDelete() throws Exception
@@ -89,18 +81,16 @@ public class JBossTemporaryTopicTest extends TestCase
       SimpleString topicAddress = new SimpleString(
             JBossTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX + topicName);
 
-      ClientConnection clientConn = createStrictMock(ClientConnection.class);
-      clientConn.setFailureListener((FailureListener) EasyMock.anyObject());
       ClientSession clientSession = createStrictMock(ClientSession.class);
       SessionBindingQueryResponseMessage resp = new SessionBindingQueryResponseMessage(
             true, new ArrayList<SimpleString>());
       expect(clientSession.bindingQuery(topicAddress)).andReturn(resp);
-      clientSession.removeDestination(topicAddress, true);
+      clientSession.removeDestination(topicAddress, false);
 
-      replay(clientConn, clientSession);
+      replay(clientSession);
 
-      JBossConnection connection = new JBossConnection(clientConn,
-            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1);
+      JBossConnection connection = new JBossConnection("username", "password",
+            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1, EasyMock.createMock(ClientSessionFactory.class));
       JBossSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, clientSession,
             JBossSession.TYPE_TOPIC_SESSION);
@@ -108,7 +98,7 @@ public class JBossTemporaryTopicTest extends TestCase
             topicName);
       tempTopic.delete();
 
-      verify(clientConn, clientSession);
+      verify(clientSession);
    }
    
    // Package protected ---------------------------------------------

@@ -859,7 +859,7 @@ public class GenerateSmokeReport
          }
          else
          {
-            sb.append(", not clustered");
+            sb.append(", not manageConfirmations");
          }
 
          sb.append(")");

@@ -45,6 +45,10 @@ public interface Configuration extends Serializable
    boolean isClustered();
    
    void setClustered(boolean clustered);
+   
+   boolean isBackup();
+   
+   void setBackup(boolean backup);
 
    int getScheduledThreadPoolMaxSize();
    

@@ -22,12 +22,13 @@
 
 package org.jboss.messaging.core.client;
 
+import javax.transaction.xa.XAResource;
+
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.util.SimpleString;
-
-import javax.transaction.xa.XAResource;
 
 /**
  *  
@@ -37,14 +38,16 @@ import javax.transaction.xa.XAResource;
  */
 public interface ClientSession extends XAResource
 {   
-   void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString, boolean durable, boolean temporary)
-                    throws MessagingException;
+   String getName();
+   
+   void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString,
+                    boolean durable, boolean temporary) throws MessagingException;
    
    void deleteQueue(SimpleString queueName) throws MessagingException;
    
-   void addDestination(SimpleString address, boolean temporary) throws MessagingException;
+   void addDestination(SimpleString address, boolean durable, boolean temporary) throws MessagingException;
    
-   void removeDestination(SimpleString address, boolean temporary) throws MessagingException;
+   void removeDestination(SimpleString address, boolean durable) throws MessagingException;
    
    SessionQueueQueryResponseMessage queueQuery(SimpleString queueName) throws MessagingException;
    
@@ -52,11 +55,11 @@ public interface ClientSession extends XAResource
                
    ClientConsumer createConsumer(SimpleString queueName) throws MessagingException;
    
-   ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean noLocal,
-                                 boolean autoDeleteQueue, boolean direct) throws MessagingException;
+   ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString,
+                                 boolean direct) throws MessagingException;
    
-   ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean noLocal,
-                                 boolean autoDeleteQueue, boolean direct,
+   ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString,
+                                 boolean direct,
                                  int windowSize, int maxRate) throws MessagingException;
    
    ClientBrowser createBrowser(SimpleString queueName, SimpleString filterString) throws MessagingException;
@@ -102,4 +105,14 @@ public interface ClientSession extends XAResource
    ClientMessage createClientMessage(final byte type, final boolean durable);
 
    ClientMessage createClientMessage(final boolean durable);
+   
+   void start() throws MessagingException;
+   
+   void stop() throws MessagingException;
+   
+   void addFailureListener(FailureListener listener);
+   
+   boolean removeFailureListener(FailureListener listener);
+   
+   int getVersion();
 }

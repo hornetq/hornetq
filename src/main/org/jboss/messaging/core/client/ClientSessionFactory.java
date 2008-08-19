@@ -24,34 +24,25 @@ package org.jboss.messaging.core.client;
 
 import org.jboss.messaging.core.exception.MessagingException;
 
+
 /**
  * 
- * A ClientConnectionFactory
+ * A ClientSessionFactory
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface ClientConnectionFactory
+public interface ClientSessionFactory
 {         
-   /**
-    * Create a connection using null user and password
-    *
-    * @return The connection
-    * @throws MessagingException
-    */
-   ClientConnection createConnection() throws MessagingException;
-   
-   /**
-    * Create a connection specifying username and password
-    * 
-    * @param username The username
-    * @param password The password
-    * @return The connection
-    * @throws MessagingException
-    */
-   ClientConnection createConnection(String username, String password) throws MessagingException;   
-   
-   
+   ClientSession createSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks,
+                               int lazyAckBatchSize, boolean cacheProducers)
+      throws MessagingException;
+      
+   ClientSession createSession(String username, String password, boolean xa, boolean autoCommitSends, boolean autoCommitAcks,
+                               int lazyAckBatchSize, boolean cacheProducers)
+      throws MessagingException;
+  
+      
    /**
     * Set the default consumer window size value to use for consumers created from this connection factory.
     *     

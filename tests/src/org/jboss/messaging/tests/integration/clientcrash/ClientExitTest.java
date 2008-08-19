@@ -25,11 +25,10 @@ package org.jboss.messaging.tests.integration.clientcrash;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
@@ -41,7 +40,7 @@ import org.jboss.messaging.tests.util.SpawnedVMSupport;
 import org.jboss.messaging.util.SimpleString;
 
 /**
- * A test that makes sure that a Messaging client gracefully exists after the last connection is
+ * A test that makes sure that a Messaging client gracefully exists after the last session is
  * closed. Test for http://jira.jboss.org/jira/browse/JBMESSAGING-417.
  *
  * This is not technically a crash test, but it uses the same type of topology as the crash tests
@@ -68,7 +67,7 @@ public class ClientExitTest extends TestCase
 
    private MessagingService messagingService;
 
-   private ClientConnection connection;
+   private ClientSession session;
 
    private ClientConsumer consumer;   
 
@@ -107,19 +106,18 @@ public class ClientExitTest extends TestCase
       messagingService.getServer().getRemotingService().registerAcceptorFactory(new MinaAcceptorFactory());
       messagingService.start();
 
-      ClientConnectionFactory cf = new ClientConnectionFactoryImpl(new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_PORT));
-      connection = cf.createConnection(null, null);
-      ClientSession session = connection.createClientSession(false, true, true, -1, false, false);
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_PORT));
+      session = sf.createSession(false, true, true, -1, false);
       session.createQueue(QUEUE, QUEUE, null, false, false);
       consumer = session.createConsumer(QUEUE);
-      connection.start();
+      session.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
       consumer.close();
-      connection.close();
+      session.close();
 
       messagingService.stop();
 

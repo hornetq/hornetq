@@ -23,9 +23,6 @@
 package org.jboss.messaging.tests.unit.jms.client;
 
 import static org.easymock.EasyMock.createStrictMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import javax.jms.Connection;
@@ -37,9 +34,9 @@ import javax.jms.XATopicConnection;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
+import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.Location;
+import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 
 /**
@@ -216,44 +213,66 @@ public class JBossConnectionFactoryTest extends TestCase
 
    // Private -------------------------------------------------------
 
+//   (final String clientID,
+//            final int dupsOKBatchSize,
+//            final Location location,
+//            final ConnectionParams connectionParams,                         
+//            final int defaultConsumerWindowSize,
+//            final int defaultConsumerMaxRate,
+//            final int defaultProducerWindowSize,
+//            final int defaultProducerMaxRate,
+//            final boolean defaultBlockOnAcknowledge,
+//            final boolean defaultSendNonPersistentMessagesBlocking,
+//            final boolean defaultSendPersistentMessagesBlocking)
+   
    private void doCreateConnection(Class expectedInterface,
          ConnectionCreation creation) throws Exception
    {
-      Location location = createStrictMock(Location.class);
-      ClientConnection clientConnection = createStrictMock(ClientConnection.class);
-      ClientConnectionFactory clientConnectionFactory = createStrictMock(ClientConnectionFactory.class);
-      expect(clientConnectionFactory.createConnection(null, null)).andReturn(
-            clientConnection);
-      replay(location, clientConnectionFactory);
-
-      JBossConnectionFactory factory = new JBossConnectionFactory(
-            clientConnectionFactory, null, 0, location, null, 0, 0, 0, 0,
-            false, false, false);
+      final String clientID = "kajsakjs";
+      final int dupsOKBatchSize = 12344;
+      final Location location = createStrictMock(Location.class);
+      final ConnectionParams params = new ConnectionParamsImpl();
+      final int defaultConsumerWindowSize = 1212;
+      final int defaultConsumerMaxRate = 5656;
+      final int defaultProducerWindowSize = 2323;
+      final int defaultProducerMaxRate = 988;
+      final boolean defaultBlockOnAcknowledge = true;
+      final boolean defaultSendNonPersistentMessagesBlocking = true;
+      final boolean defaultSendPersistentMessagesBlocking = true;
+      
+      JBossConnectionFactory factory = new JBossConnectionFactory(clientID, dupsOKBatchSize,
+               location, params, defaultConsumerWindowSize, defaultConsumerMaxRate,
+               defaultProducerWindowSize, defaultProducerMaxRate, defaultBlockOnAcknowledge,
+               defaultSendNonPersistentMessagesBlocking, defaultSendPersistentMessagesBlocking);
       Object connection = creation.createConnection(factory);
       assertNotNull(connection);
       assertTrue(expectedInterface.isAssignableFrom(connection.getClass()));
-      verify(location, clientConnectionFactory);
    }
 
-   private void doCreateConnectionWithCredentials(Class expectedInterface,
-         String user, String password, ConnectionCreation creation)
-         throws Exception
-   {
-      Location location = createStrictMock(Location.class);
-      ClientConnection clientConnection = createStrictMock(ClientConnection.class);
-      ClientConnectionFactory clientConnectionFactory = createStrictMock(ClientConnectionFactory.class);
-      expect(clientConnectionFactory.createConnection(user, password))
-            .andReturn(clientConnection);
-      replay(location, clientConnectionFactory);
+   private void doCreateConnectionWithCredentials(Class expectedInterface, String username, String password,
+            ConnectionCreation creation) throws Exception
+      {
+         final String clientID = "kajsakjs";
+         final int dupsOKBatchSize = 12344;
+         final Location location = createStrictMock(Location.class);
+         final ConnectionParams params = new ConnectionParamsImpl();
+         final int defaultConsumerWindowSize = 1212;
+         final int defaultConsumerMaxRate = 5656;
+         final int defaultProducerWindowSize = 2323;
+         final int defaultProducerMaxRate = 988;
+         final boolean defaultBlockOnAcknowledge = true;
+         final boolean defaultSendNonPersistentMessagesBlocking = true;
+         final boolean defaultSendPersistentMessagesBlocking = true;
+         
+         JBossConnectionFactory factory = new JBossConnectionFactory(clientID, dupsOKBatchSize,
+                  location, params, defaultConsumerWindowSize, defaultConsumerMaxRate,
+                  defaultProducerWindowSize, defaultProducerMaxRate, defaultBlockOnAcknowledge,
+                  defaultSendNonPersistentMessagesBlocking, defaultSendPersistentMessagesBlocking);
+         Object connection = creation.createConnection(factory, username, password);
+         assertNotNull(connection);
+         assertTrue(expectedInterface.isAssignableFrom(connection.getClass()));
+      }
 
-      JBossConnectionFactory factory = new JBossConnectionFactory(
-            clientConnectionFactory, null, 0, location, null, 0, 0, 0, 0,
-            false, false, false);
-      Object connection = creation.createConnection(factory, user, password);
-      assertNotNull(connection);
-      assertTrue(expectedInterface.isAssignableFrom(connection.getClass()));
-      verify(location, clientConnectionFactory);
-   }
 
    // Inner classes -------------------------------------------------
 

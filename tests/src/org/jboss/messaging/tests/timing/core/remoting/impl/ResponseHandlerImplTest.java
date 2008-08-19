@@ -40,7 +40,7 @@ public class ResponseHandlerImplTest extends UnitTestCase
 
    public void testReceiveResponseTooLate() throws Exception
    {
-      final ResponseHandler handler = new ResponseHandlerImpl(randomLong());
+      final ResponseHandler handler = new ResponseHandlerImpl(randomLong(), null);
       final AtomicReference<Packet> receivedPacket = new AtomicReference<Packet>();
 
       Thread t = new Thread() { 

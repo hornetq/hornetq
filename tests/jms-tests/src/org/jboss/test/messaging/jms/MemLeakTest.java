@@ -35,7 +35,6 @@ import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.management.MBeanServer;
 import javax.naming.InitialContext;
 
 import org.jboss.messaging.core.logging.Logger;

@@ -148,7 +148,7 @@ class ServiceContainerConfiguration
    }
 
    /**
-    * @return the clustered mode in which the container should run an individual test.
+    * @return the manageConfirmations mode in which the container should run an individual test.
     */
    public boolean isClustered()
    {
@@ -205,7 +205,7 @@ class ServiceContainerConfiguration
                {
                   currentRemotingTransport = XMLUtil.getTextContent(n);
                }
-               else if ("clustered".equals(name))
+               else if ("manageConfirmations".equals(name))
                {
                   currentClusteredMode = Boolean.getBoolean(XMLUtil.getTextContent(n));
                }

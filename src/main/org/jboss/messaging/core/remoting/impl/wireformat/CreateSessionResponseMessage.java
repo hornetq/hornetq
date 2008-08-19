@@ -24,35 +24,43 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.remoting.MessagingBuffer;
 
-
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
  * 
  * @version <tt>$Revision$</tt>
  */
-public class ConnectionCreateSessionResponseMessage extends PacketImpl
+public class CreateSessionResponseMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
    private long sessionTargetID;
+   
+   private long commandResponseTargetID;
+   
+   private int serverVersion;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ConnectionCreateSessionResponseMessage(final long sessionTargetID)
+   public CreateSessionResponseMessage(final long sessionTargetID, final long commandResponseTargetID,
+                                       final int serverVersion)
    {
-      super(CONN_CREATESESSION_RESP);
+      super(CREATESESSION_RESP);
 
       this.sessionTargetID = sessionTargetID;
+      
+      this.commandResponseTargetID = commandResponseTargetID;
+      
+      this.serverVersion = serverVersion;
    }
    
-   public ConnectionCreateSessionResponseMessage()
+   public CreateSessionResponseMessage()
    {
-      super(CONN_CREATESESSION_RESP);
+      super(CREATESESSION_RESP);
    }
 
    // Public --------------------------------------------------------
@@ -62,14 +70,28 @@ public class ConnectionCreateSessionResponseMessage extends PacketImpl
       return sessionTargetID;
    }
    
+   public long getCommandResponseTargetID()
+   {
+      return commandResponseTargetID;
+   }
+   
+   public int getServerVersion()
+   {
+      return serverVersion;
+   }
+   
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putLong(sessionTargetID);
+      buffer.putLong(commandResponseTargetID);
+      buffer.putInt(serverVersion);      
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
       sessionTargetID = buffer.getLong();
+      commandResponseTargetID = buffer.getLong();
+      serverVersion = buffer.getInt();
    }
 
    @Override
@@ -81,15 +103,16 @@ public class ConnectionCreateSessionResponseMessage extends PacketImpl
    
    public boolean equals(Object other)
    {
-      if (other instanceof ConnectionCreateSessionResponseMessage == false)
+      if (other instanceof CreateSessionResponseMessage == false)
       {
          return false;
       }
             
-      ConnectionCreateSessionResponseMessage r = (ConnectionCreateSessionResponseMessage)other;
+      CreateSessionResponseMessage r = (CreateSessionResponseMessage)other;
       
       boolean matches = super.equals(other) &&
-                        this.sessionTargetID == r.sessionTargetID;
+                        this.sessionTargetID == r.sessionTargetID &&
+                        this.commandResponseTargetID == r.commandResponseTargetID;
       
       return matches;
    }

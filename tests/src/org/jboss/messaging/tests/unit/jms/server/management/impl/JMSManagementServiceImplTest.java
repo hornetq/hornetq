@@ -39,8 +39,6 @@ import javax.management.ObjectName;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.client.ClientConnectionFactory;
-import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
@@ -257,22 +255,20 @@ public class JMSManagementServiceImplTest extends TestCase
       ObjectInstance objectInstance = new ObjectInstance(objectName,
             ConnectionFactoryControl.class.getName());
 
-      JBossConnectionFactory connectionFactory = createMock(JBossConnectionFactory.class);
-      ClientConnectionFactory coreConnection = createMock(ClientConnectionFactory.class);
-      expect(connectionFactory.getCoreConnection()).andReturn(coreConnection);
+      JBossConnectionFactory connectionFactory = createMock(JBossConnectionFactory.class);     
       MBeanServer mbeanServer = createMock(MBeanServer.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(false);
       expect(
             mbeanServer.registerMBean(isA(ConnectionFactoryControlMBean.class),
                   eq(objectName))).andReturn(objectInstance);
 
-      replay(mbeanServer, connectionFactory, coreConnection);
+      replay(mbeanServer, connectionFactory);
 
       JMSManagementService service = new JMSManagementServiceImpl(mbeanServer,
             true);
       service.registerConnectionFactory(name, connectionFactory, bindings);
 
-      verify(mbeanServer, connectionFactory, coreConnection);
+      verify(mbeanServer, connectionFactory);
    }
 
    public void testRegisterAlreadyRegisteredConnectionFactory() throws Exception
@@ -287,9 +283,7 @@ public class JMSManagementServiceImplTest extends TestCase
       ObjectInstance objectInstance = new ObjectInstance(objectName,
             ConnectionFactoryControl.class.getName());
 
-      JBossConnectionFactory connectionFactory = createMock(JBossConnectionFactory.class);
-      ClientConnectionFactory coreConnection = createMock(ClientConnectionFactory.class);
-      expect(connectionFactory.getCoreConnection()).andReturn(coreConnection);
+      JBossConnectionFactory connectionFactory = createMock(JBossConnectionFactory.class);     
       MBeanServer mbeanServer = createMock(MBeanServer.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(true);
       mbeanServer.unregisterMBean(objectName);
@@ -297,13 +291,13 @@ public class JMSManagementServiceImplTest extends TestCase
             mbeanServer.registerMBean(isA(ConnectionFactoryControlMBean.class),
                   eq(objectName))).andReturn(objectInstance);
 
-      replay(mbeanServer, connectionFactory, coreConnection);
+      replay(mbeanServer, connectionFactory);
 
       JMSManagementService service = new JMSManagementServiceImpl(mbeanServer,
             true);
       service.registerConnectionFactory(name, connectionFactory, bindings);
 
-      verify(mbeanServer, connectionFactory, coreConnection);
+      verify(mbeanServer, connectionFactory);
    }
    // Package protected ---------------------------------------------
 

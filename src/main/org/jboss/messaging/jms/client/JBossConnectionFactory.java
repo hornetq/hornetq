@@ -40,12 +40,10 @@ import javax.jms.XATopicConnectionFactory;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
+import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.Location;
-import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.referenceable.ConnectionFactoryObjectFactory;
 import org.jboss.messaging.jms.referenceable.SerializableObjectRefAddr;
@@ -72,7 +70,7 @@ public class JBossConnectionFactory implements
    
    // Attributes -----------------------------------------------------------------------------------
    
-   private transient ClientConnectionFactory connectionFactory;
+   private transient ClientSessionFactory sessionFactory;
    
    private final String clientID;
    
@@ -121,24 +119,6 @@ public class JBossConnectionFactory implements
       this.defaultBlockOnAcknowledge = defaultBlockOnAcknowledge;
       this.defaultSendNonPersistentMessagesBlocking = defaultSendNonPersistentMessagesBlocking;
       this.defaultSendPersistentMessagesBlocking = defaultSendPersistentMessagesBlocking;
-   }
-   
-   public JBossConnectionFactory(final ClientConnectionFactory factory,
-         final String clientID, final int dupsOKBatchSize,
-         final Location location, final ConnectionParams connectionParams,
-         final int defaultConsumerWindowSize, final int defaultConsumerMaxRate,
-         final int defaultProducerWindowSize, final int defaultProducerMaxRate,
-         final boolean defaultBlockOnAcknowledge,
-         final boolean defaultSendNonPersistentMessagesBlocking,
-         final boolean defaultSendPersistentMessagesBlocking)
-   {
-      this(clientID, dupsOKBatchSize, location, connectionParams,
-            defaultConsumerWindowSize, defaultConsumerMaxRate,
-            defaultProducerWindowSize, defaultProducerMaxRate,
-            defaultBlockOnAcknowledge,
-            defaultSendNonPersistentMessagesBlocking,
-            defaultSendPersistentMessagesBlocking);
-      this.connectionFactory = factory;
    }
    
    // ConnectionFactory implementation -------------------------------------------------------------
@@ -245,30 +225,46 @@ public class JBossConnectionFactory implements
       return dupsOKBatchSize;
    }
    
-   public String toString()
+   public Location getLocation()
    {
-      return "JBossConnectionFactory->" + connectionFactory;
+      return location;
    }
 
-   public synchronized ClientConnectionFactory getCoreConnection()
+   public int getDefaultConsumerWindowSize()
    {
-      if (connectionFactory == null)
-      {
-         connectionFactory = new ClientConnectionFactoryImpl(
-               location,
-               connectionParams,
-               defaultConsumerWindowSize,
-               defaultConsumerMaxRate,
-               defaultProducerWindowSize,
-               defaultProducerMaxRate,
-               defaultBlockOnAcknowledge,
-               defaultSendNonPersistentMessagesBlocking,
-               defaultSendPersistentMessagesBlocking);
-
-      }
-      return connectionFactory;
+      return defaultConsumerWindowSize;
    }
 
+   public int getDefaultConsumerMaxRate()
+   {
+      return defaultConsumerMaxRate;
+   }
+
+   public int getDefaultProducerWindowSize()
+   {
+      return defaultProducerWindowSize;
+   }
+
+   public int getDefaultProducerMaxRate()
+   {
+      return defaultProducerMaxRate;
+   }
+
+   public boolean isDefaultBlockOnAcknowledge()
+   {
+      return defaultBlockOnAcknowledge;
+   }
+
+   public boolean isDefaultSendNonPersistentMessagesBlocking()
+   {
+      return defaultSendNonPersistentMessagesBlocking;
+   }
+
+   public boolean isDefaultSendPersistentMessagesBlocking()
+   {
+      return defaultSendPersistentMessagesBlocking;
+   }
+      
    // Package protected ----------------------------------------------------------------------------
    
    // Protected ------------------------------------------------------------------------------------
@@ -277,20 +273,35 @@ public class JBossConnectionFactory implements
                                                       final boolean isXA, final int type)
       throws JMSException
    {
-      try
-      {
-         getCoreConnection();
-         
-         ClientConnection res = connectionFactory.createConnection(username, password);
-                    
-         return new JBossConnection(res, type, clientID, dupsOKBatchSize);
-      }
-      catch (MessagingException e)
-      {
-         throw JMSExceptionHelper.convertFromMessagingException(e);     
-      }
-   }
+//      try
+//      {
+         synchronized (this)
+         {
+            if (sessionFactory == null)
+            {
+               sessionFactory = new ClientSessionFactoryImpl(
+                     location,
+                     connectionParams,
+                     defaultConsumerWindowSize,
+                     defaultConsumerMaxRate,
+                     defaultProducerWindowSize,
+                     defaultProducerMaxRate,
+                     defaultBlockOnAcknowledge,
+                     defaultSendNonPersistentMessagesBlocking,
+                     defaultSendPersistentMessagesBlocking);
    
+            }
+         }
+           
+         return new JBossConnection(username, password, type, clientID, dupsOKBatchSize, sessionFactory);
+//      }
+//      catch (MessagingException e)
+//      {
+//         throw JMSExceptionHelper.convertFromMessagingException(e);     
+//      }
+   }
+
+  
    // Private --------------------------------------------------------------------------------------
       
    // Inner classes --------------------------------------------------------------------------------

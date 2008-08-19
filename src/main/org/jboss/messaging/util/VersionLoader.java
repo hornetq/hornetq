@@ -22,12 +22,12 @@
 
 package org.jboss.messaging.util;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.core.version.impl.VersionImpl;
-
-import java.util.Properties;
-import java.io.InputStream;
-import java.io.IOException;
 
 /**
  * This loads the version info in from a version.properties file.

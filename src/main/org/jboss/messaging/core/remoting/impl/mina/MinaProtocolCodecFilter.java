@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import static org.jboss.messaging.util.DataConstants.*;
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
@@ -94,7 +94,7 @@ public class MinaProtocolCodecFilter extends CumulativeProtocolDecoder
       if (length == -1)
       {
          in.position(start);
-
+         
          return false;
       }
 

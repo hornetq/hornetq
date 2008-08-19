@@ -24,6 +24,7 @@ package org.jboss.messaging.core.remoting.impl;
 
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.ResponseHandler;
+import org.jboss.messaging.core.server.CommandManager;
 
 /**
  *
@@ -35,14 +36,18 @@ import org.jboss.messaging.core.remoting.ResponseHandler;
 public class ResponseHandlerImpl implements ResponseHandler
 {
    private final long id;
+   
+   private final CommandManager cm;
 
    private Packet response;
 
    private boolean failed = false;
-
-   public ResponseHandlerImpl(final long id)
+   
+   public ResponseHandlerImpl(final long id, final CommandManager cm)
    {
       this.id = id;
+      
+      this.cm = cm;
    }
 
    public long getID()
@@ -59,7 +64,12 @@ public class ResponseHandlerImpl implements ResponseHandler
       }
 
       response = packet;
-
+      
+      if (cm != null)
+      {
+         cm.packetProcessed(packet);
+      }
+      
       notify();
    }
 

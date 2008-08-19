@@ -27,7 +27,6 @@ import java.util.List;
 import javax.management.NotCompliantMBeanException;
 import javax.management.StandardMBean;
 
-import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.management.ConnectionFactoryControlMBean;
 
@@ -45,21 +44,19 @@ public class ConnectionFactoryControl extends StandardMBean implements
    // Attributes ----------------------------------------------------
 
    private final JBossConnectionFactory cf;
-   private ClientConnectionFactory coreCF;
    private final List<String> bindings;
-   private String name;
+   private final String name;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    public ConnectionFactoryControl(final JBossConnectionFactory cf,
-         final ClientConnectionFactory coreCF, final String name, final List<String> bindings)
+         final String name, final List<String> bindings)
          throws NotCompliantMBeanException
    {
       super(ConnectionFactoryControlMBean.class);
       this.cf = cf;
-      this.coreCF = coreCF;
       this.name = name;
       this.bindings = bindings;
    }
@@ -70,7 +67,7 @@ public class ConnectionFactoryControl extends StandardMBean implements
 
    public String getURL()
    {
-      return coreCF.getLocation().toString();
+      return cf.getLocation().toString();
    }
 
    public List<String> getBindings()
@@ -84,23 +81,23 @@ public class ConnectionFactoryControl extends StandardMBean implements
    }
 
    public int getDefaultConsumerMaxRate()
-   {
-      return coreCF.getDefaultConsumerMaxRate();
+   {      
+      return cf.getDefaultConsumerMaxRate();
    }
 
    public int getDefaultConsumerWindowSize()
    {
-      return coreCF.getDefaultConsumerWindowSize();
+      return cf.getDefaultConsumerWindowSize();
    }
 
    public int getDefaultProducerMaxRate()
    {
-      return coreCF.getDefaultProducerMaxRate();
+      return cf.getDefaultProducerMaxRate();
    }
 
    public int getDefaultProducerWindowSize()
    {
-      return coreCF.getDefaultProducerWindowSize();
+      return cf.getDefaultProducerWindowSize();
    }
 
    public int getDupsOKBatchSize()
@@ -110,17 +107,17 @@ public class ConnectionFactoryControl extends StandardMBean implements
 
    public boolean isDefaultBlockOnAcknowledge()
    {
-      return coreCF.isDefaultBlockOnAcknowledge();
+      return cf.isDefaultBlockOnAcknowledge();
    }
 
    public boolean isDefaultBlockOnNonPersistentSend()
    {
-      return coreCF.isDefaultBlockOnNonPersistentSend();
+      return cf.isDefaultSendNonPersistentMessagesBlocking();
    }
 
    public boolean isDefaultBlockOnPersistentSend()
    {
-      return coreCF.isDefaultBlockOnPersistentSend();
+      return cf.isDefaultSendPersistentMessagesBlocking();
    }
 
    public String getName()

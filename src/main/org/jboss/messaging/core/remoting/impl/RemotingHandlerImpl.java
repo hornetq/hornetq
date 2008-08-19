@@ -21,8 +21,11 @@
  */
 package org.jboss.messaging.core.remoting.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.*;
-import static org.jboss.messaging.util.DataConstants.*;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CLOSE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EXCEPTION;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PING;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PONG;
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -37,13 +40,12 @@ import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingHandler;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketsConfirmedMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
@@ -77,6 +79,8 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessag
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.cluster.ConsumerReplicateDeliveryMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.cluster.ConsumerReplicateDeliveryResponseMessage;
 import org.jboss.messaging.util.ExecutorFactory;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 
@@ -96,7 +100,7 @@ public class RemotingHandlerImpl implements RemotingHandler
    private final ExecutorFactory executorFactory;
 
    private final ConcurrentMap<Long, Executor> executors = new ConcurrentHashMap<Long, Executor>();
-
+ 
    private final ConcurrentMap<Object, Long> lastPings = new ConcurrentHashMap<Object, Long>();
 
    public RemotingHandlerImpl(final PacketDispatcher dispatcher, final ExecutorService executorService)
@@ -138,7 +142,7 @@ public class RemotingHandlerImpl implements RemotingHandler
    }
 
    public void bufferReceived(final Object connectionID, final MessagingBuffer buffer) throws Exception
-   {
+   {      
       final Packet packet = decode(connectionID, buffer);
 
       if (executorFactory != null)
@@ -165,7 +169,7 @@ public class RemotingHandlerImpl implements RemotingHandler
             {
                try
                {
-                  dispatcher.dispatch(connectionID, packet);
+                  dispatcher.dispatch(connectionID, packet);                                  
                }
                catch (Exception e)
                {
@@ -250,35 +254,15 @@ public class RemotingHandlerImpl implements RemotingHandler
          {
             packet = new PacketImpl(PacketImpl.CLOSE);
             break;
-         }
-         case CREATECONNECTION:
+         }        
+         case PacketImpl.CREATESESSION:
          {
-            packet = new CreateConnectionRequest();
+            packet = new CreateSessionMessage();
             break;
          }
-         case CREATECONNECTION_RESP:
+         case PacketImpl.CREATESESSION_RESP:
          {
-            packet = new CreateConnectionResponse();
-            break;
-         }
-         case PacketImpl.CONN_CREATESESSION:
-         {
-            packet = new ConnectionCreateSessionMessage();
-            break;
-         }
-         case PacketImpl.CONN_CREATESESSION_RESP:
-         {
-            packet = new ConnectionCreateSessionResponseMessage();
-            break;
-         }
-         case PacketImpl.CONN_START:
-         {
-            packet = new PacketImpl(PacketImpl.CONN_START);
-            break;
-         }
-         case PacketImpl.CONN_STOP:
-         {
-            packet = new PacketImpl(PacketImpl.CONN_STOP);
+            packet = new CreateSessionResponseMessage();
             break;
          }
          case PacketImpl.SESS_CREATECONSUMER:
@@ -476,6 +460,16 @@ public class RemotingHandlerImpl implements RemotingHandler
             packet = new SessionXAGetTimeoutResponseMessage();
             break;
          }
+         case PacketImpl.SESS_START:
+         {            
+            packet = new PacketImpl(PacketImpl.SESS_START);
+            break;
+         }
+         case PacketImpl.SESS_STOP:
+         {
+            packet = new PacketImpl(PacketImpl.SESS_STOP);
+            break;
+         }
          case PacketImpl.CONS_FLOWTOKEN:
          {
             packet = new ConsumerFlowCreditMessage();
@@ -496,6 +490,21 @@ public class RemotingHandlerImpl implements RemotingHandler
             packet = new ReceiveMessage();
             break;
          }
+         case PacketImpl.PACKETS_CONFIRMED:
+         {
+            packet = new PacketsConfirmedMessage();
+            break;
+         }
+         case PacketImpl.REPLICATE_DELIVERY:
+         {
+            packet = new ConsumerReplicateDeliveryMessage();
+            break;
+         }
+         case PacketImpl.REPLICATE_DELIVERY_RESPONSE:
+         {
+            packet = new ConsumerReplicateDeliveryResponseMessage();
+            break;
+         }
          default:
          {
             throw new IllegalArgumentException("Invalid type: " + packetType);
@@ -505,10 +514,8 @@ public class RemotingHandlerImpl implements RemotingHandler
       packet.decode(in);
 
       return packet;
-
    }
 
    // Private -----------------------------------------------------------------------------
-
 
 }

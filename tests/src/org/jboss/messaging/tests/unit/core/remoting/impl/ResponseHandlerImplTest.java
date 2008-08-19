@@ -59,7 +59,7 @@ public class ResponseHandlerImplTest extends TestCase
    public void testReceiveResponseInTime() throws Exception
    {
       long id = randomLong();
-      final ResponseHandler handler = new ResponseHandlerImpl(id);
+      final ResponseHandler handler = new ResponseHandlerImpl(id, null);
 
       final AtomicReference<Packet> receivedPacket = new AtomicReference<Packet>();
       final CountDownLatch latch = new CountDownLatch(1);
@@ -86,7 +86,7 @@ public class ResponseHandlerImplTest extends TestCase
 
    public void testSetFailed() throws Exception
    {
-      ResponseHandler handler = new ResponseHandlerImpl(randomLong());
+      ResponseHandler handler = new ResponseHandlerImpl(randomLong(), null);
       handler.setFailed();
       try
       {

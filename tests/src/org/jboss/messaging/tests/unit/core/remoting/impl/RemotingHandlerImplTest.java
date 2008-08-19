@@ -35,11 +35,9 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.RemotingHandlerImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConnectionCreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionRequest;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerFlowCreditMessage;
@@ -78,7 +76,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
-import org.jboss.messaging.core.version.impl.VersionImpl;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
@@ -279,7 +276,7 @@ public class RemotingHandlerImplTest extends UnitTestCase
 
    public void testEmptyPacketConnStart() throws Exception
    {
-      PacketImpl message = new PacketImpl(PacketImpl.CONN_START);
+      PacketImpl message = new PacketImpl(PacketImpl.SESS_START);
       setHeaders(message);
       message.encode(buff);
       buff.getInt();
@@ -289,7 +286,7 @@ public class RemotingHandlerImplTest extends UnitTestCase
 
    public void testEmptyPacketConnStop() throws Exception
    {
-      PacketImpl message = new PacketImpl(PacketImpl.CONN_STOP);
+      PacketImpl message = new PacketImpl(PacketImpl.SESS_STOP);
       setHeaders(message);
       message.encode(buff);
       buff.getInt();
@@ -967,30 +964,46 @@ public class RemotingHandlerImplTest extends UnitTestCase
       assertEquals(message1.getProperty(stringProp), copy.getClientMessage().getProperty(stringProp));
    }
 
-   public void testConnectionCreateSessionPacket() throws Exception
+   public void testCreateSessionPacket() throws Exception
    {
-      ConnectionCreateSessionMessage message = new ConnectionCreateSessionMessage(true, true, true);
+      CreateSessionMessage message = new CreateSessionMessage(RandomUtil.randomString(), RandomUtil.randomInt(),
+               RandomUtil.randomString(), RandomUtil.randomString(),
+               RandomUtil.randomBoolean(), RandomUtil.randomBoolean(), RandomUtil.randomBoolean(),
+               RandomUtil.randomLong());
       setHeaders(message);
       message.encode(buff);
       buff.getInt();
-      ConnectionCreateSessionMessage copy = (ConnectionCreateSessionMessage) handler.decode(123, buff);
+      CreateSessionMessage copy = (CreateSessionMessage) handler.decode(123, buff);
       checkHeaders(message, copy);
+      assertEquals(message.getName(), copy.getName());
+      assertEquals(message.getVersion(), copy.getVersion());
+      assertEquals(message.getUsername(), copy.getUsername());
+      assertEquals(message.getPassword(), copy.getPassword());
       assertEquals(message.isAutoCommitAcks(), copy.isAutoCommitAcks());
       assertEquals(message.isAutoCommitSends(), copy.isAutoCommitSends());
       assertEquals(message.isXA(), copy.isXA());
+      assertEquals(message.getResponseTargetID(), copy.getResponseTargetID());
    }
-
-   public void testCreateConnectionRequestPacket() throws Exception
+   
+   public void testCreateSessionPacketNullUsernamePassword() throws Exception
    {
-      CreateConnectionRequest message = new CreateConnectionRequest(RandomUtil.randomInt(), RandomUtil.randomString(), RandomUtil.randomString());
+      CreateSessionMessage message = new CreateSessionMessage(RandomUtil.randomString(), RandomUtil.randomInt(),
+               null, null,
+               RandomUtil.randomBoolean(), RandomUtil.randomBoolean(), RandomUtil.randomBoolean(),
+               RandomUtil.randomLong());
       setHeaders(message);
       message.encode(buff);
       buff.getInt();
-      CreateConnectionRequest copy = (CreateConnectionRequest) handler.decode(123, buff);
+      CreateSessionMessage copy = (CreateSessionMessage) handler.decode(123, buff);
       checkHeaders(message, copy);
-      assertEquals(message.getUsername(), copy.getUsername());
+      assertEquals(message.getName(), copy.getName());
       assertEquals(message.getVersion(), copy.getVersion());
-      assertEquals(message.getPassword(), copy.getPassword());      
+      assertNull(message.getUsername());
+      assertNull(message.getPassword());
+      assertEquals(message.isAutoCommitAcks(), copy.isAutoCommitAcks());
+      assertEquals(message.isAutoCommitSends(), copy.isAutoCommitSends());
+      assertEquals(message.isXA(), copy.isXA());
+      assertEquals(message.getResponseTargetID(), copy.getResponseTargetID());
    }
 
    public void testConsumerFlowCreditMessagePacket() throws Exception
@@ -1004,31 +1017,19 @@ public class RemotingHandlerImplTest extends UnitTestCase
       assertEquals(message.getTokens(), copy.getTokens());
    }
 
-   public void testConnectionCreateSessionResponseMessagePacket() throws Exception
+   public void testCreateSessionResponseMessagePacket() throws Exception
    {
-      ConnectionCreateSessionResponseMessage message = new ConnectionCreateSessionResponseMessage(RandomUtil.randomLong());
+      CreateSessionResponseMessage message =
+         new CreateSessionResponseMessage(RandomUtil.randomLong(), RandomUtil.randomLong(),
+                  RandomUtil.randomInt());
       setHeaders(message);
       message.encode(buff);
       buff.getInt();
-      ConnectionCreateSessionResponseMessage copy = (ConnectionCreateSessionResponseMessage) handler.decode(123, buff);
+      CreateSessionResponseMessage copy = (CreateSessionResponseMessage) handler.decode(123, buff);
       checkHeaders(message, copy);
       assertEquals(message.getSessionID(), copy.getSessionID());
-   }
-
-   public void testCreateConnectionResponsePacket() throws Exception
-   {
-      CreateConnectionResponse message = new CreateConnectionResponse(RandomUtil.randomLong(), new VersionImpl(
-              RandomUtil.randomString(),
-              RandomUtil.randomInt(),
-              RandomUtil.randomInt(),
-              RandomUtil.randomInt(), RandomUtil.randomInt(), RandomUtil.randomString()));
-      setHeaders(message);
-      message.encode(buff);
-      buff.getInt();
-      CreateConnectionResponse copy = (CreateConnectionResponse) handler.decode(123, buff);
-      checkHeaders(message, copy);
-      assertEquals(message.getConnectionTargetID(), copy.getConnectionTargetID());
-      assertEquals(message.getServerVersion().getFullVersion(), copy.getServerVersion().getFullVersion());
+      assertEquals(message.getCommandResponseTargetID(), copy.getCommandResponseTargetID());
+      assertEquals(message.getServerVersion(), copy.getServerVersion());
    }
 
    public void testMessagingExceptionMessagePacket() throws Exception
@@ -1067,13 +1068,15 @@ public class RemotingHandlerImplTest extends UnitTestCase
 
    public void testSessionAddDestinationMessagePacket() throws Exception
    {
-      SessionAddDestinationMessage message = new SessionAddDestinationMessage(RandomUtil.randomSimpleString(), RandomUtil.randomBoolean());
+      SessionAddDestinationMessage message =
+         new SessionAddDestinationMessage(RandomUtil.randomSimpleString(), RandomUtil.randomBoolean(), RandomUtil.randomBoolean());
       setHeaders(message);
       message.encode(buff);
       buff.getInt();
       SessionAddDestinationMessage copy = (SessionAddDestinationMessage) handler.decode(123, buff);
       checkHeaders(message, copy);
       assertEquals(message.getAddress(), copy.getAddress());
+      assertEquals(message.isDurable(), copy.isDurable());
       assertEquals(message.isTemporary(), copy.isTemporary());
    }
 
@@ -1158,7 +1161,7 @@ public class RemotingHandlerImplTest extends UnitTestCase
    public void testSessionCreateConsumerMessagePacket() throws Exception
    {
       SessionCreateConsumerMessage message = new SessionCreateConsumerMessage(RandomUtil.randomLong(),
-              RandomUtil.randomSimpleString(), RandomUtil.randomSimpleString(), RandomUtil.randomBoolean(), RandomUtil.randomBoolean(),
+              RandomUtil.randomSimpleString(), RandomUtil.randomSimpleString(),
               RandomUtil.randomInt(), RandomUtil.randomInt());
       setHeaders(message);
       message.encode(buff);
@@ -1170,9 +1173,6 @@ public class RemotingHandlerImplTest extends UnitTestCase
       assertEquals(message.getMaxRate(), copy.getMaxRate());
       assertEquals(message.getQueueName(), copy.getQueueName());
       assertEquals(message.getWindowSize(), copy.getWindowSize());
-      assertEquals(message.isAutoDeleteQueue(), copy.isAutoDeleteQueue());
-      assertEquals(message.isNoLocal(), copy.isNoLocal());
-
    }
 
    public void testSessionCreateConsumerResponseMessagePacket() throws Exception
@@ -1232,7 +1232,7 @@ public class RemotingHandlerImplTest extends UnitTestCase
       assertEquals(message.getFilterString(), copy.getFilterString());
       assertEquals(message.getQueueName(), copy.getQueueName());
       assertEquals(message.isDurable(), copy.isDurable());
-      assertEquals(message.isTemporary(), copy.isTemporary());
+      assertEquals(message.isDurable(), copy.isDurable());
    }
 
    public void testSessionDeleteQueueMessagePacket() throws Exception
@@ -1256,11 +1256,12 @@ public class RemotingHandlerImplTest extends UnitTestCase
       checkHeaders(message, copy);
       assertEquals(message.getQueueName(), copy.getQueueName());
    }
-
+ 
    public void testSessionQueueQueryResponseMessagePacket() throws Exception
    {
-      SessionQueueQueryResponseMessage message = new SessionQueueQueryResponseMessage(RandomUtil.randomBoolean(),
-              RandomUtil.randomBoolean(), RandomUtil.randomInt(), RandomUtil.randomInt(), RandomUtil.randomInt(),
+      SessionQueueQueryResponseMessage message =
+         new SessionQueueQueryResponseMessage(RandomUtil.randomBoolean(),
+              RandomUtil.randomInt(), RandomUtil.randomInt(), RandomUtil.randomInt(),
               RandomUtil.randomSimpleString(), RandomUtil.randomSimpleString());
       setHeaders(message);
       message.encode(buff);
@@ -1274,7 +1275,7 @@ public class RemotingHandlerImplTest extends UnitTestCase
       assertEquals(message.getMessageCount(), copy.getMessageCount());
       assertEquals(message.isDurable(), copy.isDurable());
       assertEquals(message.isExists(), copy.isExists());
-      assertEquals(message.isTemporary(), copy.isTemporary());
+      assertEquals(message.isDurable(), copy.isDurable());
    }
 
    public void testSessionRemoveDestinationMessagePacket() throws Exception
@@ -1286,7 +1287,7 @@ public class RemotingHandlerImplTest extends UnitTestCase
       SessionRemoveDestinationMessage copy = (SessionRemoveDestinationMessage) handler.decode(123, buff);
       checkHeaders(message, copy);
       assertEquals(message.getAddress(), copy.getAddress());
-      assertEquals(message.isTemporary(), copy.isTemporary());
+      assertEquals(message.isDurable(), copy.isDurable());
    }
 
    public void testSessionXACommitMessagePacket() throws Exception

@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.remoting.impl.netty;
 
-import static org.jboss.netty.channel.Channels.*;
+import static org.jboss.netty.channel.Channels.pipeline;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;

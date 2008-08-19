@@ -25,14 +25,13 @@ package org.jboss.messaging.tests.integration.clientcrash;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import static org.jboss.messaging.tests.integration.clientcrash.ClientExitTest.QUEUE;
 
-import org.jboss.messaging.core.client.ClientConnection;
-import org.jboss.messaging.core.client.ClientConnectionFactory;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.Location;
-import org.jboss.messaging.core.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
@@ -62,9 +61,8 @@ public class GracefulClient
       {
          Location config = new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_PORT);
 
-         ClientConnectionFactory cf = new ClientConnectionFactoryImpl(config);
-         ClientConnection conn = cf.createConnection(null, null);
-         ClientSession session = conn.createClientSession(false, true, true, -1, false, false);
+         ClientSessionFactory sf = new ClientSessionFactoryImpl(config);         
+         ClientSession session = sf.createSession(false, true, true, -1, false);
          ClientProducer producer = session.createProducer(QUEUE);
          ClientConsumer consumer = session.createConsumer(QUEUE);
 
@@ -73,14 +71,15 @@ public class GracefulClient
          message.getBody().putString(ClientExitTest.MESSAGE_TEXT);
          producer.send(message);
 
-         conn.start();
+         session.start();
          
          // block in receiving for 5 secs, we won't receive anything
-        consumer.receive(5000);
+         consumer.receive(5000);
         
-        // this should silence any non-daemon thread and allow for graceful exit
-        conn.close();
-      } catch (Throwable t)
+         // this should silence any non-daemon thread and allow for graceful exit
+         session.close();
+      }
+      catch (Throwable t)
       {
          log.error(t.getMessage(), t);
          System.exit(1);

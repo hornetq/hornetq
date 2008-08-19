@@ -416,9 +416,9 @@ public class RemotingConnectionImplTest extends UnitTestCase
       
       rc.addFailureListener(listener);
       
-      Packet request = new PacketImpl(PacketImpl.CREATECONNECTION);
+      Packet request = new PacketImpl(PacketImpl.CREATESESSION);
       
-      Packet response = rc.sendBlocking(request);
+      Packet response = rc.sendBlocking(request, null);
       
       assertNotNull(response);
       
@@ -510,9 +510,9 @@ public class RemotingConnectionImplTest extends UnitTestCase
       
       rc.addFailureListener(listener);
       
-      Packet request = new PacketImpl(PacketImpl.CREATECONNECTION);
+      Packet request = new PacketImpl(PacketImpl.CREATESESSION);
       
-      Packet response = rc.sendBlocking(targetID, executorID, request);
+      Packet response = rc.sendBlocking(targetID, executorID, request, null);
       
       assertNotNull(response);
       

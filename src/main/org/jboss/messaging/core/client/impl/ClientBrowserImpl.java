@@ -24,10 +24,10 @@ package org.jboss.messaging.core.client.impl;
 import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
+import org.jboss.messaging.core.server.CommandManager;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -49,9 +49,7 @@ public class ClientBrowserImpl implements ClientBrowser
    
 	private final ClientSessionInternal session;
 	
-	private final RemotingConnection remotingConnection;
-	
-	private final long sessionTargetID;
+	private final CommandManager commandManager;
 	
 	private volatile boolean closed;
 	
@@ -59,17 +57,15 @@ public class ClientBrowserImpl implements ClientBrowser
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientBrowserImpl(final ClientSessionInternal session, final long serverTargetID,
-                            final RemotingConnection remotingConnection,
-                            final long sessionTargetID)
+   public ClientBrowserImpl(final ClientSessionInternal session,                            
+                            final long serverTargetID,
+                            final CommandManager commandManager)
    {
-      this.remotingConnection = remotingConnection;
-      
       this.serverTargetID = serverTargetID;
       
       this.session = session;
       
-      this.sessionTargetID = sessionTargetID;
+      this.commandManager = commandManager;
    }
 
    // ClientBrowser implementation -----------------------------------------------------------------
@@ -83,7 +79,7 @@ public class ClientBrowserImpl implements ClientBrowser
       
       try
       {
-         remotingConnection.sendBlocking(serverTargetID, sessionTargetID, new PacketImpl(PacketImpl.CLOSE));
+         commandManager.sendCommandBlocking(serverTargetID, new PacketImpl(PacketImpl.CLOSE));
       }
       finally
       {
@@ -109,7 +105,7 @@ public class ClientBrowserImpl implements ClientBrowser
    {
       checkClosed();
       
-      remotingConnection.sendBlocking(serverTargetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_BROWSER_RESET));
+      commandManager.sendCommandBlocking(serverTargetID, new PacketImpl(PacketImpl.SESS_BROWSER_RESET));
    }
 
    public boolean hasNextMessage() throws MessagingException
@@ -117,7 +113,7 @@ public class ClientBrowserImpl implements ClientBrowser
       checkClosed();
       
       SessionBrowserHasNextMessageResponseMessage response =
-         (SessionBrowserHasNextMessageResponseMessage)remotingConnection.sendBlocking(serverTargetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_BROWSER_HASNEXTMESSAGE));
+         (SessionBrowserHasNextMessageResponseMessage)commandManager.sendCommandBlocking(serverTargetID, new PacketImpl(PacketImpl.SESS_BROWSER_HASNEXTMESSAGE));
       
       return response.hasNext();
    }
@@ -127,7 +123,7 @@ public class ClientBrowserImpl implements ClientBrowser
       checkClosed();
       
       ReceiveMessage response =
-         (ReceiveMessage)remotingConnection.sendBlocking(serverTargetID, sessionTargetID, new PacketImpl(PacketImpl.SESS_BROWSER_NEXTMESSAGE));
+         (ReceiveMessage)commandManager.sendCommandBlocking(serverTargetID, new PacketImpl(PacketImpl.SESS_BROWSER_NEXTMESSAGE));
       
       return response.getClientMessage();
    }

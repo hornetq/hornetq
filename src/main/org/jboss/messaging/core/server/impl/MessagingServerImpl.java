@@ -23,7 +23,10 @@
 package org.jboss.messaging.core.server.impl;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -39,13 +42,15 @@ import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingService;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateConnectionResponse;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
+import org.jboss.messaging.core.server.CommandManager;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.QueueFactory;
+import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -102,6 +107,8 @@ public class MessagingServerImpl implements MessagingServer
    private JBMSecurityManager securityManager;  
    private Configuration configuration;
    private ManagementService managementService;
+   
+   private ConcurrentMap<String, ServerSession> sessions = new ConcurrentHashMap<String, ServerSession>();
         
    // Constructors ---------------------------------------------------------------------------------
    
@@ -170,7 +177,8 @@ public class MessagingServerImpl implements MessagingServer
       securityStore = new SecurityStoreImpl(configuration.getSecurityInvalidationInterval(), configuration.isSecurityEnabled());  
       queueSettingsRepository.setDefault(new QueueSettings());
       scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(), new JBMThreadFactory("JBM-scheduled-threads"));                  
-      queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository);      
+      queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository);     
+         
       postOffice = new PostOfficeImpl(storageManager, queueFactory, managementService, configuration.isRequireDestinations());
                        
       securityRepository = new HierarchicalObjectRepository<Set<Role>>();
@@ -184,6 +192,7 @@ public class MessagingServerImpl implements MessagingServer
             queueSettingsRepository, this);
 
       postOffice.start();
+      postOffice.setBackup(configuration.isBackup());
       serverPacketHandler = new MessagingServerPacketHandler(this, remotingService);          
      
       //Register the handler as the last thing - since after that users will be able to connect
@@ -313,9 +322,14 @@ public class MessagingServerImpl implements MessagingServer
       return started;
    }
 
-   public CreateConnectionResponse createConnection(final String username, final String password,                                  
-                                                    final int incrementingVersion,
-                                                    final RemotingConnection remotingConnection)
+   public CreateSessionResponseMessage createSession(final String name,
+                                                     final String username, final String password,                                  
+                                                     final int incrementingVersion,
+                                                     final RemotingConnection remotingConnection,
+                                                     final boolean autoCommitSends,
+                                                     final boolean autoCommitAcks,
+                                                     final boolean xa,
+                                                     final long remoteCommandResponseTargetID)
            throws Exception
    {
       if (version.getIncrementingVersion() < incrementingVersion)
@@ -324,6 +338,8 @@ public class MessagingServerImpl implements MessagingServer
                  "client not compatible with version: " + version.getFullVersion());
       }
       
+      //Is this comment relevant any more ?
+      
       // Authenticate. Successful autentication will place a new SubjectContext on thread local,
       // which will be used in the authorization process. However, we need to make sure we clean
       // up thread local immediately after we used the information, otherwise some other people
@@ -331,18 +347,45 @@ public class MessagingServerImpl implements MessagingServer
 
       securityStore.authenticate(username, password);
 
-      final ServerConnectionImpl connection =
-              new ServerConnectionImpl(username, password, remotingConnection,
-                                       postOffice,
-                                       dispatcher, storageManager,
-                                       queueSettingsRepository, resourceManager,
-                                       securityStore, executorFactory);
+      long localCommandResponseTargetID = dispatcher.generateID();
+                         
+      long sessionID = dispatcher.generateID();
       
-      remotingConnection.addFailureListener(connection);
-
-      dispatcher.register(new ServerConnectionPacketHandler(connection, remotingConnection));
-
-      return new CreateConnectionResponse(connection.getID(), version);
+      CommandManager cm = new CommandManagerImpl(configuration.getConnectionParams().getPacketConfirmationBatchSize(),
+               remotingConnection, dispatcher, sessionID,
+               localCommandResponseTargetID,
+               remoteCommandResponseTargetID);
+      
+      final ServerSessionImpl session = new ServerSessionImpl(sessionID, name, username, password,
+                                  autoCommitSends, autoCommitAcks, xa,
+                                  remotingConnection, 
+                                  this, storageManager, postOffice,
+                                  queueSettingsRepository,
+                                  resourceManager,
+                                  securityStore,
+                                  remotingConnection.getPacketDispatcher(),
+                                  executorFactory.getExecutor(),
+                                  cm);
+      
+      
+      dispatcher.register(new ServerSessionPacketHandler(session, cm));
+                        
+      if (sessions.putIfAbsent(name, session) != null)
+      {
+         throw new MessagingException(MessagingException.SESSION_EXISTS, "Session with name " + name + " already exists");
+      }
+      
+      remotingConnection.addFailureListener(session);
+                  
+      return new CreateSessionResponseMessage(session.getID(), localCommandResponseTargetID, version.getIncrementingVersion());
+   }
+   
+   public void removeSession(final String name)
+   {
+      if (sessions.remove(name) == null)
+      {
+         throw new IllegalStateException("Cannot find session to remove " + name);
+      }
    }
          
    public MessagingServerControlMBean getServerManagement()
@@ -361,6 +404,11 @@ public class MessagingServerImpl implements MessagingServer
    }
 
    // Public ---------------------------------------------------------------------------------------
+   
+   public Map<String, ServerSession> getSessions()
+   {
+      return sessions;
+   }
 
    // Package protected ----------------------------------------------------------------------------
 

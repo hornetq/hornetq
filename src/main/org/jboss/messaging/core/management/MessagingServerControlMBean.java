@@ -96,8 +96,8 @@ public interface MessagingServerControlMBean
          @Parameter(name = "address", desc = "Address of the queue") String address,
          @Parameter(name = "name", desc = "Name of the queue") String name,
          @Parameter(name = "filter", desc = "Filter of the queue") String filter,
-         @Parameter(name = "durable", desc = "Is the queue durable?") boolean durable,
-         @Parameter(name = "temporary", desc = "Is the queue temporary?") boolean temporary)
+         @Parameter(name = "durable", desc = "Is the queue durable?") boolean durable
+        )
          throws Exception;
 
    @Operation(desc = "Destroy a queue", impact = ACTION)

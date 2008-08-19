@@ -31,7 +31,11 @@ import org.jboss.messaging.core.client.ConnectionParams;
 public class ConnectionParamsImpl implements ConnectionParams
 {
    //Constants ---------------------------------------------------------------------------------------
-      
+           
+   public static final boolean DEFAULT_CLUSTERED = false;
+   
+   public static final int DEFAULT_PACKET_CONFIRMATION_BATCH_SIZE = 100;
+   
    public static final int DEFAULT_PING_INTERVAL = 10000; // in ms
      
    public static final int DEFAULT_CALL_TIMEOUT = 5000; // in ms
@@ -62,6 +66,10 @@ public class ConnectionParamsImpl implements ConnectionParams
    
    // Attributes -------------------------------------------------------------------------------------
    
+   private boolean clustered = DEFAULT_CLUSTERED;
+   
+   protected int packetConfirmationBatchSize = DEFAULT_PACKET_CONFIRMATION_BATCH_SIZE;
+      
    private long callTimeout = DEFAULT_CALL_TIMEOUT;
    
    private long pingInterval = DEFAULT_PING_INTERVAL;
@@ -84,6 +92,16 @@ public class ConnectionParamsImpl implements ConnectionParams
    
    private String trustStorePassword;
    
+   public int getPacketConfirmationBatchSize()
+   {
+      return packetConfirmationBatchSize;
+   }
+   
+   public void setPacketConfirmationBatchSize(int batchSize)
+   {
+      this.packetConfirmationBatchSize = batchSize;
+   }
+   
    public long getCallTimeout()
    {
       return callTimeout;
@@ -92,6 +110,16 @@ public class ConnectionParamsImpl implements ConnectionParams
    public void setCallTimeout(final long timeout)
    {
       this.callTimeout = timeout;
+   }
+   
+   public boolean isClustered()
+   {
+      return clustered;
+   }
+   
+   public void setClustered(final boolean clustered)
+   {
+      this.clustered = clustered;
    }
 
    public long getPingInterval()
@@ -103,6 +131,7 @@ public class ConnectionParamsImpl implements ConnectionParams
    {
       this.pingInterval = pingInterval;
    }
+   
    public boolean isInVMOptimisationEnabled()
    {
       return inVMOptimisationEnabled;
@@ -212,12 +241,18 @@ public class ConnectionParamsImpl implements ConnectionParams
       
       ConnectionParams cp = (ConnectionParams)other;
       
-      return cp.getCallTimeout() == callTimeout &&
+      return cp.isClustered() == clustered &&
+             cp.getPacketConfirmationBatchSize() == this.packetConfirmationBatchSize &&             
+             cp.getCallTimeout() == callTimeout &&
              cp.getPingInterval() == this.pingInterval &&
              cp.isInVMOptimisationEnabled() == this.isInVMOptimisationEnabled() &&
              cp.isTcpNoDelay() == this.isTcpNoDelay() &&
              cp.getTcpReceiveBufferSize() == this.getTcpReceiveBufferSize() &&
              cp.getTcpSendBufferSize() == this.getTcpSendBufferSize() &&
-             cp.isSSLEnabled() == this.isSSLEnabled();
+             cp.isSSLEnabled() == this.isSSLEnabled() &&
+             (cp.getKeyStorePath() == null ? this.keyStorePath == null : cp.getKeyStorePath().equals(this.keyStorePath)) &&
+             (cp.getTrustStorePath() == null ? this.trustStorePath == null : cp.getTrustStorePath().equals(this.trustStorePath)) &&
+             (cp.getKeyStorePassword() == null ? this.keyStorePassword == null : cp.getKeyStorePassword().equals(this.keyStorePassword)) &&
+             (cp.getTrustStorePassword() == null ? this.trustStorePassword == null : cp.getTrustStorePassword().equals(this.trustStorePassword));           
    }
 }

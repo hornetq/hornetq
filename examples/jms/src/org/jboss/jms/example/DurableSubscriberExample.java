@@ -31,7 +31,6 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 /**
  * A simple JMS Durable Subscriber example.

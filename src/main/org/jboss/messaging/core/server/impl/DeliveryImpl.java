@@ -23,11 +23,10 @@
 package org.jboss.messaging.core.server.impl;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
+import org.jboss.messaging.core.server.CommandManager;
 import org.jboss.messaging.core.server.Delivery;
 import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -42,23 +41,20 @@ public class DeliveryImpl implements Delivery
    
    private final MessageReference reference;
    
-   private final long sessionID;
-
    private final long consumerID;
    
    private final long deliveryID;
    
-   private final RemotingConnection remotingConnection;
+   private final CommandManager commandManager;
 
    public DeliveryImpl(final MessageReference reference, 
-                       final long sessionID, final long consumerID,
-                       final long deliveryID, final RemotingConnection remotingConnection)
+                       final long consumerID,
+                       final long deliveryID, final CommandManager commandManager)
    {      
       this.reference = reference;
-      this.sessionID = sessionID;
       this.consumerID = consumerID;
       this.deliveryID = deliveryID;
-      this.remotingConnection = remotingConnection;
+      this.commandManager = commandManager;
    }
 
    public MessageReference getReference()
@@ -71,13 +67,10 @@ public class DeliveryImpl implements Delivery
       return deliveryID;
    }
    
-   public void deliver() throws Exception
+   public void deliver()
    {
       ReceiveMessage message = new ReceiveMessage(reference.getMessage(), reference.getDeliveryCount() + 1, deliveryID);
       
-      message.setTargetID(consumerID);
-      message.setExecutorID(sessionID);
-      
-      remotingConnection.sendOneWay(message);
+      commandManager.sendCommandOneway(consumerID, message);
    }
 }

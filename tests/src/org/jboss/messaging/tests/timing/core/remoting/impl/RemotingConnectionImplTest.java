@@ -326,12 +326,12 @@ public class RemotingConnectionImplTest extends UnitTestCase
       
       rc.addFailureListener(listener);
       
-      Packet request = new PacketImpl(PacketImpl.CREATECONNECTION);
+      Packet request = new PacketImpl(PacketImpl.CREATESESSION);
       
       long start = System.currentTimeMillis();
       try
       {
-         rc.sendBlocking(request);
+         rc.sendBlocking(request, null);
          fail("Should throw exception");
       }
       catch (MessagingException me)
@@ -434,11 +434,11 @@ public class RemotingConnectionImplTest extends UnitTestCase
       
       rc.addFailureListener(listener);
       
-      Packet request = new PacketImpl(PacketImpl.CREATECONNECTION);
+      Packet request = new PacketImpl(PacketImpl.CREATESESSION);
       
       try
       {
-         rc.sendBlocking(request);
+         rc.sendBlocking(request, null);
          fail("Should throw exception");      
       }
       catch (MessagingException me)

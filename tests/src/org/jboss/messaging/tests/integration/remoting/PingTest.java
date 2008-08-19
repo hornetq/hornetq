@@ -117,6 +117,7 @@ public class PingTest extends TestCase
       {         
          conn = registry.getConnection(location, connectionParams);
          assertNotNull(conn);
+         assertEquals(1, registry.getCount(location));
          
          Listener clientListener = new Listener();
          
@@ -177,6 +178,7 @@ public class PingTest extends TestCase
       {        
          conn = registry.getConnection(location, connectionParams);
          assertNotNull(conn);
+         assertEquals(1, registry.getCount(location));
          
          Listener clientListener = new Listener();
          
@@ -229,6 +231,7 @@ public class PingTest extends TestCase
       try
       {         
          conn = registry.getConnection(location, connectionParams);
+         assertEquals(1, registry.getCount(location));
          assertNotNull(conn);
                 
          Listener clientListener = new Listener();
@@ -309,6 +312,7 @@ public class PingTest extends TestCase
      {         
         conn = registry.getConnection(location, connectionParams);
         assertNotNull(conn);
+        assertEquals(1, registry.getCount(location));
                
         Listener clientListener = new Listener();
         

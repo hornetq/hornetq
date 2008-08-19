@@ -36,5 +36,5 @@ public interface Delivery
    
    long getDeliveryID();
    
-   void deliver() throws Exception;
+   void deliver();
 }
