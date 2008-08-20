@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.remoting.impl.netty;
 
-import static org.jboss.netty.channel.Channels.pipeline;
+import static org.jboss.netty.channel.Channels.*;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
@@ -31,15 +31,12 @@ import java.util.concurrent.Executors;
 import javax.net.ssl.SSLContext;
 
 import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.netty.bootstrap.ServerBootstrap;
-import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -47,9 +44,6 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
 /**
@@ -63,8 +57,6 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
  */
 public class NettyAcceptor implements Acceptor
 {
-   private static final Logger log = Logger.getLogger(NettyAcceptor.class);
-
    private ExecutorService bossExecutor;
    private ExecutorService workerExecutor;
    private ChannelFactory channelFactory;
@@ -128,7 +120,7 @@ public class NettyAcceptor implements Acceptor
                ChannelPipelineSupport.addSSLFilter(pipeline, context, false);
             }
             ChannelPipelineSupport.addCodecFilter(pipeline, handler);
-            pipeline.addLast("handler", new NettyHandler());
+            pipeline.addLast("handler", new MessagingServerChannelHandler(handler, listener));
             return pipeline;
          }
       });
@@ -169,49 +161,18 @@ public class NettyAcceptor implements Acceptor
    // Inner classes -----------------------------------------------------------------------------
 
    @ChannelPipelineCoverage("one")
-   private final class NettyHandler extends SimpleChannelHandler
+   private final class MessagingServerChannelHandler extends MessagingChannelHandler
    {
+      MessagingServerChannelHandler(RemotingHandler handler, ConnectionLifeCycleListener listener)
+      {
+         super(handler, listener);
+      }
+
       @Override
       public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
       {
          Connection tc = new NettyConnection(e.getChannel());
          listener.connectionCreated(tc);
-      }
-
-      @Override
-      public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
-      {
-         boolean notify;
-         synchronized (NettyAcceptor.this)
-         {
-            notify = channelFactory == null;
-         }
-
-         if (notify) {
-            listener.connectionDestroyed(e.getChannel().getId());
-         }
-      }
-
-      @Override
-      public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception
-      {
-         log.error(
-               "caught exception " + e.getCause() + " for channel " +
-               e.getChannel(), e.getCause());
-         MessagingException me = new MessagingException(MessagingException.INTERNAL_ERROR, "Netty exception");
-         me.initCause(e.getCause());
-         try {
-            listener.connectionException(e.getChannel().getId(), me);
-         } catch (Exception ex) {
-            log.error("failed to notify the listener:", ex);
-         }
-      }
-
-      @Override
-      public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception
-      {
-         ChannelBuffer buffer = (ChannelBuffer) e.getMessage();
-         handler.bufferReceived(e.getChannel().getId(), new ChannelBufferWrapper(buffer));
       }
    }
 }

@@ -80,6 +80,12 @@ public class NettyConnection implements Connection
          channel.close();
       }
 
+      // TODO Do not spin - use signal.
+      MessagingChannelHandler handler = (MessagingChannelHandler) channel.getPipeline().get("handler");
+      while (!handler.destroyed) {
+         Thread.yield();
+      }
+
       closed = true;
    }
 

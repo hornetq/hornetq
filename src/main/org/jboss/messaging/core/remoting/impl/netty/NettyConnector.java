@@ -21,7 +21,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.netty;
 
-import static org.jboss.netty.channel.Channels.pipeline;
+import static org.jboss.netty.channel.Channels.*;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
@@ -31,7 +31,6 @@ import javax.net.ssl.SSLContext;
 
 import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.Location;
-import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.RemotingHandler;
@@ -39,7 +38,6 @@ import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.Connector;
 import org.jboss.netty.bootstrap.ClientBootstrap;
-import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -47,9 +45,6 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.handler.ssl.SslHandler;
 
@@ -166,7 +161,7 @@ public class NettyConnector implements Connector
                   ChannelPipelineSupport.addSSLFilter(pipeline, context, true);
             }
             ChannelPipelineSupport.addCodecFilter(pipeline, handler);
-            pipeline.addLast("handler", new NettyHandler());
+            pipeline.addLast("handler", new MessagingClientChannelHandler(handler, listener));
             return pipeline;
          }
       });
@@ -212,13 +207,11 @@ public class NettyConnector implements Connector
    // Inner classes -------------------------------------------------
 
    @ChannelPipelineCoverage("one")
-   private final class NettyHandler extends SimpleChannelHandler
+   private final class MessagingClientChannelHandler extends MessagingChannelHandler
    {
-      @Override
-      public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception
+      MessagingClientChannelHandler(RemotingHandler handler, ConnectionLifeCycleListener listener)
       {
-         ChannelBuffer buffer = (ChannelBuffer) e.getMessage();
-         handler.bufferReceived(e.getChannel().getId(), new ChannelBufferWrapper(buffer));
+         super(handler, listener);
       }
 
       @Override
@@ -228,28 +221,6 @@ public class NettyConnector implements Connector
          if (sslHandler != null) {
             log.info("Starting SSL handshake.");
             sslHandler.handshake(e.getChannel());
-         }
-      }
-
-      @Override
-      public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
-      {
-         listener.connectionDestroyed(e.getChannel().getId());
-      }
-
-      @Override
-      public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception
-      {
-         log.error(
-               "caught exception " + e.getCause() + " for channel " +
-               e.getChannel(), e.getCause());
-
-         MessagingException me = new MessagingException(MessagingException.INTERNAL_ERROR, "Netty exception");
-         me.initCause(e.getCause());
-         try {
-            listener.connectionException(e.getChannel().getId(), me);
-         } catch (Exception ex) {
-            log.error("failed to notify the listener:", ex);
          }
       }
    }
