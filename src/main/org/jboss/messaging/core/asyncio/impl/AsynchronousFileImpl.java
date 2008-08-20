@@ -27,7 +27,6 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.jboss.messaging.core.asyncio.AIOCallback;
@@ -126,8 +125,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	private String fileName;
 	private Thread poller;	
 	private int maxIO;	
-	private ReadWriteLock lock = new ReentrantReadWriteLock();
-	private Lock writeLock = lock.writeLock();
+	private Lock writeLock = new ReentrantReadWriteLock().writeLock();
    private Semaphore writeSemaphore;   
 	
 	/**
