@@ -26,6 +26,7 @@ import static org.jboss.netty.channel.Channels.*;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
@@ -179,6 +180,21 @@ public class NettyConnector implements Connector
       channelFactory = null;
       bossExecutor.shutdown();
       workerExecutor.shutdown();
+
+      for (;;)
+      {
+         try
+         {
+            if (bossExecutor.awaitTermination(1, TimeUnit.SECONDS))
+            {
+               break;
+            }
+         }
+         catch (InterruptedException e)
+         {
+            // Ignore
+         }
+      }
    }
 
    public Connection createConnection()

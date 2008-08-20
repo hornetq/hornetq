@@ -27,6 +27,7 @@ import static org.jboss.netty.channel.Channels.*;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
 
@@ -158,6 +159,20 @@ public class NettyAcceptor implements Acceptor
       serverChannel.close().awaitUninterruptibly();
       bossExecutor.shutdown();
       workerExecutor.shutdown();
+      for (;;)
+      {
+         try
+         {
+            if (bossExecutor.awaitTermination(1, TimeUnit.SECONDS))
+            {
+               break;
+            }
+         }
+         catch (InterruptedException e)
+         {
+            // Ignore
+         }
+      }
       channelFactory = null;
    }
 
