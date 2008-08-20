@@ -22,14 +22,10 @@
 
 package org.jboss.messaging.core.remoting.impl.netty;
 
-import static org.jboss.messaging.util.DataConstants.FALSE;
-import static org.jboss.messaging.util.DataConstants.NOT_NULL;
-import static org.jboss.messaging.util.DataConstants.NULL;
-import static org.jboss.messaging.util.DataConstants.TRUE;
-import static org.jboss.netty.buffer.ChannelBuffers.copiedBuffer;
-import static org.jboss.netty.buffer.ChannelBuffers.dynamicBuffer;
+import static org.jboss.messaging.util.DataConstants.*;
+import static org.jboss.netty.buffer.ChannelBuffers.*;
 
-import java.nio.ByteBuffer;
+import java.nio.BufferUnderflowException;
 
 import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
@@ -63,15 +59,11 @@ public class ChannelBufferWrapper implements MessagingBuffer
    public ChannelBufferWrapper(final int size)
    {
       if (size == 0) {
+         // FIXME: This block should go away once Netty 3.0.0.CR2 is
+         //        released.
          buffer = ChannelBuffer.EMPTY_BUFFER;
       } else {
-         try {
-            buffer = dynamicBuffer(size);
-         } catch (IllegalArgumentException e) {
-            // FIXME: This block should go away once Netty 3.0.0.CR2 is
-            //        released.
-            throw new IllegalArgumentException("size: " + size);
-         }
+         buffer = dynamicBuffer(size);
       }
       buffer.writerIndex(buffer.capacity());
    }
@@ -87,14 +79,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
 
    public byte[] array()
    {
-      ByteBuffer bb = buffer.toByteBuffer();
-      if (bb.hasArray() && !bb.isReadOnly()) {
-         return bb.array();
-      } else {
-         byte[] ba = new byte[bb.remaining()];
-         bb.get(ba);
-         return ba;
-      }
+      return buffer.toByteBuffer().array();
    }
 
    public int position()
@@ -152,66 +137,30 @@ public class ChannelBufferWrapper implements MessagingBuffer
 
    public void putByte(byte byteValue)
    {
-      int limit = buffer.writerIndex();
-      buffer.writerIndex(buffer.readerIndex());
-      buffer.readerIndex(0);
-      try {
-         buffer.writeByte(byteValue);
-      } finally {
-         buffer.readerIndex(buffer.writerIndex());
-         if (limit < buffer.readerIndex()) {
-            limit = buffer.readerIndex();
-         }
-         buffer.writerIndex(limit);
-      }
+      flip();
+      buffer.writeByte(byteValue);
+      buffer.readerIndex(buffer.writerIndex());
    }
 
    public void putBytes(final byte[] byteArray)
    {
-      int limit = buffer.writerIndex();
-      buffer.writerIndex(buffer.readerIndex());
-      buffer.readerIndex(0);
-      try {
-         buffer.writeBytes(byteArray);
-      } finally {
-         buffer.readerIndex(buffer.writerIndex());
-         if (limit < buffer.readerIndex()) {
-            limit = buffer.readerIndex();
-         }
-         buffer.writerIndex(limit);
-      }
+      flip();
+      buffer.writeBytes(byteArray);
+      buffer.readerIndex(buffer.writerIndex());
    }
 
    public void putBytes(final byte[] bytes, int offset, int length)
    {
-      int limit = buffer.writerIndex();
-      buffer.writerIndex(buffer.readerIndex());
-      buffer.readerIndex(0);
-      try {
-         buffer.writeBytes(bytes, offset, length);
-      } finally {
-         buffer.readerIndex(buffer.writerIndex());
-         if (limit < buffer.readerIndex()) {
-            limit = buffer.readerIndex();
-         }
-         buffer.writerIndex(limit);
-      }
+      flip();
+      buffer.writeBytes(bytes, offset, length);
+      buffer.readerIndex(buffer.writerIndex());
    }
 
    public void putInt(final int intValue)
    {
-      int limit = buffer.writerIndex();
-      buffer.writerIndex(buffer.readerIndex());
-      buffer.readerIndex(0);
-      try {
-         buffer.writeInt(intValue);
-      } finally {
-         buffer.readerIndex(buffer.writerIndex());
-         if (limit < buffer.readerIndex()) {
-            limit = buffer.readerIndex();
-         }
-         buffer.writerIndex(limit);
-      }
+      flip();
+      buffer.writeInt(intValue);
+      buffer.readerIndex(buffer.writerIndex());
    }
 
    public void putInt(final int pos, final int intValue)
@@ -221,18 +170,9 @@ public class ChannelBufferWrapper implements MessagingBuffer
 
    public void putLong(final long longValue)
    {
-      int limit = buffer.writerIndex();
-      buffer.writerIndex(buffer.readerIndex());
-      buffer.readerIndex(0);
-      try {
-         buffer.writeLong(longValue);
-      } finally {
-         buffer.readerIndex(buffer.writerIndex());
-         if (limit < buffer.readerIndex()) {
-            limit = buffer.readerIndex();
-         }
-         buffer.writerIndex(limit);
-      }
+      flip();
+      buffer.writeLong(longValue);
+      buffer.readerIndex(buffer.writerIndex());
    }
 
    public void putFloat(final float floatValue)
@@ -247,18 +187,9 @@ public class ChannelBufferWrapper implements MessagingBuffer
 
    public void putShort(final short s)
    {
-      int limit = buffer.writerIndex();
-      buffer.writerIndex(buffer.readerIndex());
-      buffer.readerIndex(0);
-      try {
-         buffer.writeShort(s);
-      } finally {
-         buffer.readerIndex(buffer.writerIndex());
-         if (limit < buffer.readerIndex()) {
-            limit = buffer.readerIndex();
-         }
-         buffer.writerIndex(limit);
-      }
+      flip();
+      buffer.writeShort(s);
+      buffer.readerIndex(buffer.writerIndex());
    }
 
    public void putChar(final char chr)
@@ -268,32 +199,56 @@ public class ChannelBufferWrapper implements MessagingBuffer
 
    public byte getByte()
    {
-      return buffer.readByte();
+      try {
+         return buffer.readByte();
+      } catch (IndexOutOfBoundsException e) {
+         throw new BufferUnderflowException();
+      }
    }
 
    public short getUnsignedByte()
    {
-      return buffer.readUnsignedByte();
+      try {
+         return buffer.readUnsignedByte();
+      } catch (IndexOutOfBoundsException e) {
+         throw new BufferUnderflowException();
+      }
    }
 
    public void getBytes(final byte[] b)
    {
-      buffer.readBytes(b);
+      try {
+         buffer.readBytes(b);
+      } catch (IndexOutOfBoundsException e) {
+         throw new BufferUnderflowException();
+      }
    }
 
    public void getBytes(final byte[] b, final int offset, final int length)
    {
-      buffer.readBytes(b, offset, length);
+      try {
+         buffer.readBytes(b, offset, length);
+      } catch (IndexOutOfBoundsException e) {
+         throw new BufferUnderflowException();
+      }
    }
 
    public int getInt()
    {
-      return buffer.readInt();
+      try {
+         return buffer.readInt();
+      } catch (IndexOutOfBoundsException e) {
+         throw new BufferUnderflowException();
+      }
    }
 
    public long getLong()
    {
-      return buffer.readLong();
+      try {
+         return buffer.readLong();
+      } catch (IndexOutOfBoundsException e) {
+         throw new BufferUnderflowException();
+      }
    }
 
    public float getFloat()
@@ -303,12 +258,20 @@ public class ChannelBufferWrapper implements MessagingBuffer
 
    public short getShort()
    {
-      return buffer.readShort();
+      try {
+         return buffer.readShort();
+      } catch (IndexOutOfBoundsException e) {
+         throw new BufferUnderflowException();
+      }
    }
 
    public int getUnsignedShort()
    {
-      return buffer.readUnsignedShort();
+      try {
+         return buffer.readUnsignedShort();
+      } catch (IndexOutOfBoundsException e) {
+         throw new BufferUnderflowException();
+      }
    }
 
    public double getDouble()
@@ -340,12 +303,13 @@ public class ChannelBufferWrapper implements MessagingBuffer
 
    public void putString(final String nullableString)
    {
-      putInt(nullableString.length());
-
+      flip();
+      buffer.writeInt(nullableString.length());
       for (int i = 0; i < nullableString.length(); i++)
       {
-         putChar(nullableString.charAt(i));
+         buffer.writeShort((short) nullableString.charAt(i));
       }
+      buffer.readerIndex(buffer.writerIndex());
    }
 
    public void putNullableString(final String nullableString)
@@ -398,19 +362,10 @@ public class ChannelBufferWrapper implements MessagingBuffer
                "the specified string is too long (" + length + ")");
       }
 
-      int limit = buffer.writerIndex();
-      buffer.writerIndex(buffer.readerIndex());
-      buffer.readerIndex(0);
-      try {
-         buffer.writeShort((short) length);
-         buffer.writeBytes(encoded);
-      } finally {
-         buffer.readerIndex(buffer.writerIndex());
-         if (limit < buffer.readerIndex()) {
-            limit = buffer.readerIndex();
-         }
-         buffer.writerIndex(limit);
-      }
+      flip();
+      buffer.writeShort((short) length);
+      buffer.writeBytes(encoded);
+      buffer.readerIndex(buffer.writerIndex());
    }
 
    public void putNullableSimpleString(final SimpleString string)
@@ -430,8 +385,10 @@ public class ChannelBufferWrapper implements MessagingBuffer
    {
       byte[] data = string.getData();
 
-      putInt(data.length);
-      putBytes(data);
+      flip();
+      buffer.writeInt(data.length);
+      buffer.writeBytes(data);
+      buffer.readerIndex(buffer.writerIndex());
    }
 
    public SimpleString getSimpleString()
@@ -459,8 +416,14 @@ public class ChannelBufferWrapper implements MessagingBuffer
 
    public String getUTF() throws Exception
    {
-      int length = buffer.readUnsignedShort();
-      ChannelBuffer utf8value = buffer.readSlice(length);
+      ChannelBuffer utf8value;
+      try {
+         int length = buffer.readUnsignedShort();
+         utf8value = buffer.readSlice(length);
+      } catch (IndexOutOfBoundsException e) {
+         throw new BufferUnderflowException();
+      }
+
       return utf8value.toString("UTF-8");
    }
 
