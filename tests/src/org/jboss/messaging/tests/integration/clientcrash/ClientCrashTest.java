@@ -18,11 +18,11 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.tests.integration.clientcrash;
 
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
+import static org.jboss.messaging.core.remoting.TransportType.*;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.ClientConsumer;
@@ -126,6 +126,8 @@ public class ClientCrashTest extends TestCase
       assertActiveConnections(1);
 
       session.close();
+
+      Thread.sleep(1000);
 
       assertActiveConnections(0);
    }
