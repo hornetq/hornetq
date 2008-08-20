@@ -64,9 +64,9 @@ public class ChannelPipelineSupport
          final ChannelPipeline pipeline, final SSLContext context, final boolean client) throws Exception
    {
       SSLEngine engine = context.createSSLEngine();
+      engine.setUseClientMode(client);
       if (client)
       {
-         engine.setUseClientMode(true);
          engine.setWantClientAuth(true);
       }
 

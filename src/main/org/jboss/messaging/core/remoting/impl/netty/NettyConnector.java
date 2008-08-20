@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 
 import org.jboss.messaging.core.client.ConnectionParams;
 import org.jboss.messaging.core.client.Location;
@@ -38,13 +39,13 @@ import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.Connector;
 import org.jboss.netty.bootstrap.ClientBootstrap;
+import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.handler.ssl.SslHandler;
 
@@ -143,6 +144,7 @@ public class NettyConnector implements Connector
          }
          catch (Exception e)
          {
+            close();
             IllegalStateException ise = new IllegalStateException(
                   "Unable to create NettyConnector for " + location);
             ise.initCause(e);
@@ -182,12 +184,43 @@ public class NettyConnector implements Connector
 
    public Connection createConnection()
    {
+      if (channelFactory == null) {
+         return null;
+      }
+
       InetSocketAddress address = new InetSocketAddress(location.getHost(), location.getPort());
       ChannelFuture future = bootstrap.connect(address);
       future.awaitUninterruptibly();
 
       if (future.isSuccess())
       {
+         final Channel ch = future.getChannel();
+         SslHandler sslHandler = ch.getPipeline().get(SslHandler.class);
+         if (sslHandler != null) {
+            log.info("Starting SSL handshake.");
+            try
+            {
+               sslHandler.handshake(ch).addListener(new ChannelFutureListener()
+               {
+                  public void operationComplete(ChannelFuture future) throws Exception
+                  {
+                     if (future.isSuccess()) {
+                        ch.getPipeline().get(MessagingChannelHandler.class).active = true;
+                     } else {
+                        ch.close();
+                     }
+                  }
+               });
+            }
+            catch (SSLException e)
+            {
+               ch.close();
+               return null;
+            }
+         } else {
+            ch.getPipeline().get(MessagingChannelHandler.class).active = true;
+         }
+
          return new NettyConnection(future.getChannel());
       }
       else
@@ -212,16 +245,6 @@ public class NettyConnector implements Connector
       MessagingClientChannelHandler(RemotingHandler handler, ConnectionLifeCycleListener listener)
       {
          super(handler, listener);
-      }
-
-      @Override
-      public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
-      {
-         SslHandler sslHandler = ctx.getPipeline().get(SslHandler.class);
-         if (sslHandler != null) {
-            log.info("Starting SSL handshake.");
-            sslHandler.handshake(e.getChannel());
-         }
       }
    }
 }

@@ -45,7 +45,7 @@ class MessagingChannelHandler extends SimpleChannelHandler
 
    private final RemotingHandler handler;
    private final ConnectionLifeCycleListener listener;
-   volatile boolean destroyed;
+   volatile boolean active;
 
    MessagingChannelHandler(RemotingHandler handler, ConnectionLifeCycleListener listener)
    {
@@ -65,10 +65,10 @@ class MessagingChannelHandler extends SimpleChannelHandler
    {
       synchronized (this)
       {
-         if (!destroyed)
+         if (active)
          {
             listener.connectionDestroyed(e.getChannel().getId());
-            destroyed = true;
+            active = false;
          }
       }
    }
@@ -76,7 +76,7 @@ class MessagingChannelHandler extends SimpleChannelHandler
    @Override
    public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
    {
-      destroyed = true;
+      active = false;
    }
 
    @Override
@@ -88,7 +88,7 @@ class MessagingChannelHandler extends SimpleChannelHandler
 
       synchronized (this)
       {
-         if (destroyed)
+         if (!active)
          {
             return;
          }
@@ -97,7 +97,7 @@ class MessagingChannelHandler extends SimpleChannelHandler
          me.initCause(e.getCause());
          try {
             listener.connectionException(e.getChannel().getId(), me);
-            destroyed = true;
+            active = false;
          } catch (Exception ex) {
             log.error("failed to notify the listener:", ex);
          }

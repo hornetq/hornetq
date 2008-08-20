@@ -39,12 +39,15 @@ import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
+import org.jboss.netty.channel.ChannelFuture;
+import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.jboss.netty.handler.ssl.SslHandler;
 
 /**
  * A Netty TCP Acceptor that supports SSL
@@ -171,8 +174,26 @@ public class NettyAcceptor implements Acceptor
       @Override
       public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
       {
-         Connection tc = new NettyConnection(e.getChannel());
-         listener.connectionCreated(tc);
+         final Connection tc = new NettyConnection(e.getChannel());
+
+         SslHandler sslHandler = ctx.getPipeline().get(SslHandler.class);
+         if (sslHandler != null) {
+            sslHandler.handshake(e.getChannel()).addListener(new ChannelFutureListener()
+            {
+               public void operationComplete(ChannelFuture future) throws Exception
+               {
+                  if (future.isSuccess()) {
+                     listener.connectionCreated(tc);
+                     active = true;
+                  } else {
+                     future.getChannel().close();
+                  }
+               }
+            });
+         } else {
+            listener.connectionCreated(tc);
+            active = true;
+         }
       }
    }
 }

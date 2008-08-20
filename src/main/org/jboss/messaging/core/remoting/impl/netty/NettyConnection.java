@@ -84,7 +84,7 @@ public class NettyConnection implements Connection
          // A client channel - wait until everything is cleaned up.
          // TODO Do not spin - use signal.
          MessagingChannelHandler handler = (MessagingChannelHandler) channel.getPipeline().get("handler");
-         while (!handler.destroyed) {
+         while (handler.active) {
             Thread.yield();
          }
       }
