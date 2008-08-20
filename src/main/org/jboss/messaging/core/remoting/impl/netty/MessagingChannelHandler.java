@@ -74,6 +74,12 @@ class MessagingChannelHandler extends SimpleChannelHandler
    }
 
    @Override
+   public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
+   {
+      destroyed = true;
+   }
+
+   @Override
    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception
    {
       log.error(
