@@ -42,7 +42,6 @@ import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
@@ -200,17 +199,14 @@ public class NettyConnector implements Connector
             log.info("Starting SSL handshake.");
             try
             {
-               sslHandler.handshake(ch).addListener(new ChannelFutureListener()
-               {
-                  public void operationComplete(ChannelFuture future) throws Exception
-                  {
-                     if (future.isSuccess()) {
-                        ch.getPipeline().get(MessagingChannelHandler.class).active = true;
-                     } else {
-                        ch.close();
-                     }
-                  }
-               });
+               ChannelFuture handshakeFuture = sslHandler.handshake(ch);
+               handshakeFuture.awaitUninterruptibly();
+               if (handshakeFuture.isSuccess()) {
+                  ch.getPipeline().get(MessagingChannelHandler.class).active = true;
+               } else {
+                  ch.close().awaitUninterruptibly();
+                  return null;
+               }
             }
             catch (SSLException e)
             {
@@ -221,7 +217,7 @@ public class NettyConnector implements Connector
             ch.getPipeline().get(MessagingChannelHandler.class).active = true;
          }
 
-         return new NettyConnection(future.getChannel());
+         return new NettyConnection(ch);
       }
       else
       {
