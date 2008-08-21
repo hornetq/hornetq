@@ -58,13 +58,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
 
    public ChannelBufferWrapper(final int size)
    {
-      if (size == 0) {
-         // FIXME: This block should go away once Netty 3.0.0.CR2 is
-         //        released.
-         buffer = ChannelBuffer.EMPTY_BUFFER;
-      } else {
-         buffer = dynamicBuffer(size);
-      }
+      buffer = dynamicBuffer(size);
       buffer.writerIndex(buffer.capacity());
    }
 

@@ -493,7 +493,7 @@
             <include name="mina-core-2.0.0-M3-20080730.120633-1.jar"/>
          </fileset>
          <fileset dir="${netty.lib}">
-            <include name="netty-3.0.0.CR1.jar"/>
+            <include name="netty-3.0.0.CR2.jar"/>
          </fileset>
          <fileset dir="${slf4j.api.lib}">
             <include name="slf4j-api-1.4.3.jar"/>
