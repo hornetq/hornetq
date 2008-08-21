@@ -74,8 +74,9 @@
       -->
       
       <remoting-acceptor-factories>         
-	      <class-name>org.jboss.messaging.core.remoting.impl.mina.MinaAcceptorFactory</class-name>      
+	      <!-- <class-name>org.jboss.messaging.core.remoting.impl.mina.MinaAcceptorFactory</class-name> -->      
 	      <class-name>org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory</class-name>	              
+	      <class-name>org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory</class-name>
       </remoting-acceptor-factories>
 
       <!-- Storage configuration -->

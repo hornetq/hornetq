@@ -123,7 +123,7 @@ public class InVMAcceptor implements Acceptor
       if (conn != null)
       {
          conn.close();
-      }
+      }            
    }
    
    private class Listener implements ConnectionLifeCycleListener
