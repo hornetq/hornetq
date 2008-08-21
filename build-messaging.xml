@@ -401,9 +401,8 @@
             <include name="org/jboss/messaging/core/list/**/*.class"/>
             <include name="org/jboss/messaging/core/message/**/*.class"/>
             <include name="org/jboss/messaging/core/version/**/*.class"/>
+            <!-- FIXME - why are these classes in the client jar ??? -->
             <include name="org/jboss/messaging/core/server/JournalType.class"/>
-            <include name="org/jboss/messaging/core/server/CommandManager.class"/>
-            <include name="org/jboss/messaging/core/server/impl/CommandManagerImpl.class"/>
             <include name="org/jboss/messaging/core/journal/EncodingSupport.class"/>
             <include name="org/jboss/messaging/core/server/ServerMessage.class"/>
             <include name="org/jboss/messaging/core/ping/**/*.class"/>
