@@ -19,10 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.remoting;
+package org.jboss.messaging.core.remoting.spi;
 
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.spi.Connection;
 
 /**
  *

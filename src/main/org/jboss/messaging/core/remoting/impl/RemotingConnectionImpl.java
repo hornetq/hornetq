@@ -31,15 +31,15 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.CommandManager;
 import org.jboss.messaging.core.remoting.FailureListener;
-import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.spi.Connection;
-import org.jboss.messaging.core.server.CommandManager;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>

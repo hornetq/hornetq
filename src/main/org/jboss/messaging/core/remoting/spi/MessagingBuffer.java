@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.remoting;
+package org.jboss.messaging.core.remoting.spi;
 
 import org.jboss.messaging.util.SimpleString;
 

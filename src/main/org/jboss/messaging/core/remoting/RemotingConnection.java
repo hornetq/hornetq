@@ -24,7 +24,7 @@ package org.jboss.messaging.core.remoting;
 
 import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.server.CommandManager;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
  *

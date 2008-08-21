@@ -27,7 +27,7 @@ import static org.jboss.messaging.util.DataConstants.NULL;
 
 import java.nio.ByteBuffer;
 
-import org.jboss.messaging.core.remoting.MessagingBuffer;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 /**

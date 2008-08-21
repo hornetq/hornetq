@@ -24,7 +24,7 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.MessagingBuffer;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 

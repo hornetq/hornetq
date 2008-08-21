@@ -78,7 +78,11 @@ public interface Configuration extends Serializable
    
    ConnectionParams getConnectionParams();
    
-   TransportType getTransport();
+   int getServerID(); //For INVM transport only
+   
+   void setServerID(int serverID);
+   
+   TransportType getTransport();     
    
    void setTransport(TransportType transport);
 

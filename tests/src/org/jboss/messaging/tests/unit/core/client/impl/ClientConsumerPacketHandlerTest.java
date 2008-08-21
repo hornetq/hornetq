@@ -26,9 +26,9 @@ import org.easymock.EasyMock;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.impl.ClientConsumerInternal;
 import org.jboss.messaging.core.client.impl.ClientConsumerPacketHandler;
+import org.jboss.messaging.core.remoting.CommandManager;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
-import org.jboss.messaging.core.server.CommandManager;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**

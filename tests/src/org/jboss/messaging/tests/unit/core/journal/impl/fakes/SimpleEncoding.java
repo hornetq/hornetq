@@ -23,7 +23,7 @@
 package org.jboss.messaging.tests.unit.core.journal.impl.fakes;
 
 import org.jboss.messaging.core.journal.EncodingSupport;
-import org.jboss.messaging.core.remoting.MessagingBuffer;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
  * Provides a SimpleEncoding with a Fake Payload

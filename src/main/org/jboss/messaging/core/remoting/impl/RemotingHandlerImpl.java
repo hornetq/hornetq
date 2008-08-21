@@ -36,7 +36,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingHandler;
@@ -81,6 +80,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResp
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.cluster.ConsumerReplicateDeliveryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.cluster.ConsumerReplicateDeliveryResponseMessage;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.ExecutorFactory;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 
@@ -142,7 +142,7 @@ public class RemotingHandlerImpl implements RemotingHandler
    }
 
    public void bufferReceived(final Object connectionID, final MessagingBuffer buffer) throws Exception
-   {      
+   {        
       final Packet packet = decode(connectionID, buffer);
 
       if (executorFactory != null)

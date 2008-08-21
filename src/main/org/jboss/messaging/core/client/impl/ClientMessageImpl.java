@@ -24,7 +24,7 @@ package org.jboss.messaging.core.client.impl;
 
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.remoting.MessagingBuffer;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
  * 

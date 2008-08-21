@@ -22,8 +22,8 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat.cluster;
 
-import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
  * 

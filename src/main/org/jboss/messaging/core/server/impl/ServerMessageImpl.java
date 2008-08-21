@@ -25,7 +25,7 @@ package org.jboss.messaging.core.server.impl;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.remoting.MessagingBuffer;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;

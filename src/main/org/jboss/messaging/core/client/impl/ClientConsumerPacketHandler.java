@@ -23,11 +23,11 @@
 package org.jboss.messaging.core.client.impl;
 
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.CommandManager;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
-import org.jboss.messaging.core.server.CommandManager;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -40,8 +40,6 @@ public class ClientConsumerPacketHandler implements PacketHandler
 {
    private static final Logger log = Logger.getLogger(ClientConsumerPacketHandler.class);
 
-   //private final ClientSessionInternal session;
-   
    private final ClientConsumerInternal clientConsumer;
 
    private final long consumerID;

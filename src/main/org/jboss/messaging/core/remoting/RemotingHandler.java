@@ -23,6 +23,8 @@ package org.jboss.messaging.core.remoting;
 
 import java.util.Set;
 
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+
 /**
  *
  * A RemotingHandler

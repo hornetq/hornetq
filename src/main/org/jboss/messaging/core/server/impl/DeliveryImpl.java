@@ -23,8 +23,8 @@
 package org.jboss.messaging.core.server.impl;
 
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.CommandManager;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
-import org.jboss.messaging.core.server.CommandManager;
 import org.jboss.messaging.core.server.Delivery;
 import org.jboss.messaging.core.server.MessageReference;
 

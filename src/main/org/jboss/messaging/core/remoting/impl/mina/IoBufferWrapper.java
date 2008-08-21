@@ -30,7 +30,7 @@ import static org.jboss.messaging.util.DataConstants.TRUE;
 import java.nio.charset.Charset;
 
 import org.apache.mina.core.buffer.IoBuffer;
-import org.jboss.messaging.core.remoting.MessagingBuffer;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 /**

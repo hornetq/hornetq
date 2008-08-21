@@ -22,9 +22,9 @@
 
 package org.jboss.messaging.core.remoting.impl;
 
+import org.jboss.messaging.core.remoting.CommandManager;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.ResponseHandler;
-import org.jboss.messaging.core.server.CommandManager;
 
 /**
  *

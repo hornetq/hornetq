@@ -22,8 +22,8 @@
 
 package org.jboss.messaging.tests.unit.core.remoting.impl;
 
-import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.core.remoting.impl.ExpandingMessagingBuffer;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.tests.unit.core.remoting.MessagingBufferTestBase;
 
 /**

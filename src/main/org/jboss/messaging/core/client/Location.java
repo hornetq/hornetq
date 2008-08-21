@@ -41,5 +41,5 @@ public interface Location extends Serializable
 
    int getPort();
 
- //  public int getServerID();
+   int getServerID();  // For invm only
 }

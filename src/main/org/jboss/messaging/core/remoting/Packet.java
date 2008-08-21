@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.remoting;
 
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+
 
 
 /**

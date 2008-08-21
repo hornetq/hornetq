@@ -50,7 +50,7 @@ import java.util.Set;
 
 import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.MessagingBuffer;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
  * 

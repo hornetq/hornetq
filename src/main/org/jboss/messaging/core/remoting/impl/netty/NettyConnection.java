@@ -22,8 +22,8 @@
 
 package org.jboss.messaging.core.remoting.impl.netty;
 
-import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.core.remoting.spi.Connection;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.handler.ssl.SslHandler;

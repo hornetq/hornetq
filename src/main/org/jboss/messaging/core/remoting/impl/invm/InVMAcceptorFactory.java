@@ -19,24 +19,27 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.server;
+package org.jboss.messaging.core.remoting.impl.invm;
 
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.remoting.RemotingHandler;
+import org.jboss.messaging.core.remoting.spi.Acceptor;
+import org.jboss.messaging.core.remoting.spi.AcceptorFactory;
+import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 
 /**
- * A CommandManagerImpl
+ * A InVMAcceptorFactory
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface CommandManager
+public class InVMAcceptorFactory implements AcceptorFactory
 {
-   Packet sendCommandBlocking(long targetID, Packet packet) throws MessagingException;
-   
-   void sendCommandOneway(long targetID, Packet packet);
-   
-   void packetProcessed(Packet packet);
-   
-   void close();
+
+   public Acceptor createAcceptor(final Configuration configuration,
+            final RemotingHandler handler, final ConnectionLifeCycleListener listener)
+   {
+      return new InVMAcceptor(configuration.getServerID(), handler, listener);
+   }
+
 }

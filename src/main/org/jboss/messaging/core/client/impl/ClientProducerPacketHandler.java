@@ -23,11 +23,11 @@
 package org.jboss.messaging.core.client.impl;
 
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.CommandManager;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerFlowCreditMessage;
-import org.jboss.messaging.core.server.CommandManager;
 
 /**
  *

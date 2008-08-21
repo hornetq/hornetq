@@ -27,7 +27,7 @@ import static org.jboss.netty.buffer.ChannelBuffers.*;
 
 import java.nio.BufferUnderflowException;
 
-import org.jboss.messaging.core.remoting.MessagingBuffer;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.netty.buffer.ChannelBuffer;
 

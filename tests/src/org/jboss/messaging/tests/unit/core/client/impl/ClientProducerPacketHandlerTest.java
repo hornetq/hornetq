@@ -25,9 +25,9 @@ package org.jboss.messaging.tests.unit.core.client.impl;
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.client.impl.ClientProducerInternal;
 import org.jboss.messaging.core.client.impl.ClientProducerPacketHandler;
+import org.jboss.messaging.core.remoting.CommandManager;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerFlowCreditMessage;
-import org.jboss.messaging.core.server.CommandManager;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**

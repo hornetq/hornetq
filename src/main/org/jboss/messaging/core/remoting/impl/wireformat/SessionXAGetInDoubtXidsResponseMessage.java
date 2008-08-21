@@ -27,7 +27,7 @@ import java.util.List;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.remoting.MessagingBuffer;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 
 /**

@@ -25,9 +25,9 @@ package org.jboss.messaging.tests.unit.core.remoting.impl.netty;
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.remoting.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.impl.netty.NettyAcceptor;
+import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**

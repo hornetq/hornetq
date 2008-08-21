@@ -23,10 +23,10 @@
 package org.jboss.messaging.core.remoting.impl.mina;
 
 import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.remoting.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.remoting.spi.AcceptorFactory;
+import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 
 /**
  * 

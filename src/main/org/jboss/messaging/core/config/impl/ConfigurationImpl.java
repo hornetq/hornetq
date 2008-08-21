@@ -137,6 +137,8 @@ public class ConfigurationImpl implements Configuration
    protected int journalMaxAIO = DEFAULT_JOURNAL_MAX_AIO;
    
    // remoting config
+   
+   protected int serverID;
        
    protected TransportType transport = DEFAULT_TRANSPORT;
    
@@ -225,6 +227,16 @@ public class ConfigurationImpl implements Configuration
    public void setTransport(TransportType transport)
    {
       this.transport = transport;
+   }
+   
+   public int getServerID()
+   {
+      return serverID;
+   }
+   
+   public void setServerID(final int serverID)
+   {
+      this.serverID = serverID;
    }
 
    public String getHost()

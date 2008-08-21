@@ -25,7 +25,7 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.messaging.core.remoting.MessagingBuffer;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
 /**

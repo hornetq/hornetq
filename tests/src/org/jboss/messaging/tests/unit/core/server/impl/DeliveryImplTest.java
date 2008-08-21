@@ -23,9 +23,9 @@ package org.jboss.messaging.tests.unit.core.server.impl;
 
 import org.easymock.EasyMock;
 import org.easymock.IAnswer;
+import org.jboss.messaging.core.remoting.CommandManager;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
-import org.jboss.messaging.core.server.CommandManager;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.DeliveryImpl;

@@ -23,7 +23,6 @@
 package org.jboss.messaging.core.remoting.spi;
 
 import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.remoting.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.RemotingHandler;
 
 /**

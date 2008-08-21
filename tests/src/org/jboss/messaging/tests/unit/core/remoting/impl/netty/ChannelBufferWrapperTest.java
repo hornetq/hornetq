@@ -22,8 +22,8 @@
 
 package org.jboss.messaging.tests.unit.core.remoting.impl.netty;
 
-import org.jboss.messaging.core.remoting.MessagingBuffer;
 import org.jboss.messaging.core.remoting.impl.netty.ChannelBufferWrapper;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.tests.unit.core.remoting.MessagingBufferTestBase;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
