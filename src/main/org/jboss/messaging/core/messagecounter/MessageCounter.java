@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Iterator;
 import java.util.List;
 
 import org.jboss.logging.Logger;
@@ -68,39 +67,6 @@ public class MessageCounter
    // per hour day counter history
    private int dayCounterMax;
    private ArrayList dayCounter;
-   
-   /**
-    * Get a list of message statistics from a list of message counters
-    * 
-    * @param counter the message counters
-    * @return the message statistics
-    * @throws Exception for any error
-    */
-   public static List getMessageStatistics(List counters) throws Exception
-   {
-      List list = new ArrayList(counters.size());
-      
-      Iterator iter = counters.iterator();
-      
-      while (iter.hasNext())
-      {
-         MessageCounter counter = (MessageCounter)iter.next();
-         
-         MessageStatistics stats = new MessageStatistics();
-         stats.setName(counter.getDestinationName());
-         stats.setSubscriptionID(counter.getDestinationSubscription());
-         stats.setTopic(counter.getDestinationTopic());
-         stats.setDurable(counter.getDestinationDurable());
-         stats.setCount(counter.getCount());
-         stats.setCountDelta(counter.getCountDelta());
-         stats.setDepth(counter.getMessageCount());
-         stats.setDepthDelta(counter.getMessageCountDelta());
-         stats.setTimeLastUpdate(counter.getLastUpdate());
-         
-         list.add(stats);
-      }
-      return list;
-   }
 
    /**
     *    Constructor

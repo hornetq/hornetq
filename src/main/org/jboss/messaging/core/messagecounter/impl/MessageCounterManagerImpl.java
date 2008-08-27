@@ -56,6 +56,8 @@ public class MessageCounterManagerImpl implements MessageCounterManager
    private long period;
    
    private PingMessageCountersTask task;
+
+   private int maxDayCount = 10;
           
    public MessageCounterManagerImpl(long period)
    {
@@ -114,6 +116,21 @@ public class MessageCounterManagerImpl implements MessageCounterManager
       {
          start();
       }
+   }
+   
+   public long getSamplePeriod()
+   {   
+      return period;
+   }
+   
+   public int getMaxDayCount()
+   {
+      return maxDayCount;
+   }
+   
+   public void setMaxDayCount(int count)
+   {
+      maxDayCount = count;  
    }
    
    public void registerMessageCounter(String name, MessageCounter counter)
@@ -200,4 +217,5 @@ public class MessageCounterManagerImpl implements MessageCounterManager
          cancel();
       }
    }
+
 }

@@ -391,6 +391,38 @@ public class MessagingServerControl extends StandardMBean implements
       return enableMessageCounters;
    } 
    
+   public synchronized long getMessageCounterSamplePeriod()
+   {
+      return messageCounterManager.getSamplePeriod();
+   }
+
+   public synchronized void setMessageCounterSamplePeriod(long newPeriod)
+   {
+      if (newPeriod < 1000)
+      {
+         throw new IllegalArgumentException("Cannot set MessageCounterSamplePeriod < 1000 ms");
+      }
+
+      if (messageCounterManager != null && newPeriod != messageCounterManager.getSamplePeriod())
+      {
+         messageCounterManager.reschedule(newPeriod);
+      }
+   }
+   
+   public int getMessageCounterMaxDayCount()
+   {
+      return messageCounterManager.getMaxDayCount();
+   }
+   
+   public void setMessageCounterMaxDayCount(int count)
+   {
+      if (count <= 0)
+      {
+         throw new IllegalArgumentException("invalid value: count must be greater than 0");
+      }
+      messageCounterManager.setMaxDayCount(count);
+   }
+   
    // NotificationEmitter implementation ----------------------------
 
    public void removeNotificationListener(final NotificationListener listener,

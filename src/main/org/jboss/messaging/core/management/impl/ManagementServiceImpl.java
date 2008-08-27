@@ -157,7 +157,7 @@ public class ManagementServiceImpl implements ManagementService
          final StorageManager storageManager) throws Exception
    {
       MessageCounter counter = new MessageCounter(queue.getName().toString(), null, queue, false, queue.isDurable(),
-            10);
+            messageCounterManager.getMaxDayCount());
       messageCounterManager.registerMessageCounter(queue.getName().toString(), counter);
       ObjectName objectName = getQueueObjectName(address, queue.getName());
       QueueControlMBean queueControl = new QueueControl(queue, storageManager,

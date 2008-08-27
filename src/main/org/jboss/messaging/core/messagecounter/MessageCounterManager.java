@@ -22,27 +22,31 @@
 
 package org.jboss.messaging.core.messagecounter;
 
-
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
+ * 
  * @version <tt>$Revision$</tt>
- *
+ * 
  */
 public interface MessageCounterManager
 {
+   void start();
 
-   public abstract void start();
+   void stop();
 
-   public abstract void stop();
+   void registerMessageCounter(String name, MessageCounter counter);
 
-   public abstract void registerMessageCounter(String name,
-         MessageCounter counter);
+   MessageCounter unregisterMessageCounter(String name);
 
-   public abstract MessageCounter unregisterMessageCounter(String name);
+   void resetAllCounters();
 
-   public abstract void resetAllCounters();
+   void resetAllCounterHistories();
 
-   public abstract void resetAllCounterHistories();
+   void reschedule(long newPeriod);
 
+   long getSamplePeriod();
+
+   int getMaxDayCount();
+
+   void setMaxDayCount(int count);
 }

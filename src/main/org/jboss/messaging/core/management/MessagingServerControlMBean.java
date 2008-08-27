@@ -83,6 +83,16 @@ public interface MessagingServerControlMBean
 
    Configuration getConfiguration();
    
+   boolean isEnableMessageCounters();
+
+   int getMessageCounterMaxDayCount();
+
+   void setMessageCounterMaxDayCount(int count);
+
+   long getMessageCounterSamplePeriod();
+
+   void setMessageCounterSamplePeriod(long newPeriod);
+   
    // Operations ----------------------------------------------------
 
    @Operation(desc = "Create a queue with the specified address", impact = ACTION)
@@ -119,5 +129,4 @@ public interface MessagingServerControlMBean
 
    void disableMessageCounters();
 
-   boolean isEnableMessageCounters();
 }
